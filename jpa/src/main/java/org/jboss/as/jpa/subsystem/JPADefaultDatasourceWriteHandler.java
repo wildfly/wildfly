@@ -35,11 +35,14 @@ public class JPADefaultDatasourceWriteHandler extends ServerWriteAttributeOperat
             context.addStep(new NewStepHandler() {
                 public void execute(NewOperationContext context, ModelNode operation) {
                     final String dataSourceName = newValue.resolve().asString();
-                    final ServiceRegistry registry = context.getServiceRegistry(false);
+                    final ServiceRegistry registry = context.getServiceRegistry(true);
                     ServiceController<?> sc = registry.getRequiredService(JPAService.SERVICE_NAME);
                     JPAService jpaService = JPAService.class.cast(sc.getValue());
+                    String currentDataSourceName = JPAService.getDefaultDataSourceName();
                     jpaService.setDefaultDataSourceName(dataSourceName);
-                    context.completeStep();
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        jpaService.setDefaultDataSourceName(currentDataSourceName);
+                    }
                 }
             }, NewOperationContext.Stage.RUNTIME);
         }

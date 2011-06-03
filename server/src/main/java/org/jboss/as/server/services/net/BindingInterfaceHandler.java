@@ -44,4 +44,9 @@ public class BindingInterfaceHandler extends AbstractBindingWriteHandler {
     void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) {
         // interface change always requires a restart
     }
+
+    @Override
+    void handleRuntimeRollback(ModelNode operation, String attributeName, ModelNode previousValue, SocketBinding binding) {
+        // interface change always requires a restart
+    }
 }

@@ -24,6 +24,7 @@ package org.jboss.as.weld;
 
 import java.util.List;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -49,7 +50,7 @@ import org.jboss.msc.service.ServiceController.Mode;
  * @author Stuart Douglas
  * @author Emanuel Muckenhuber
  */
-class WeldSubsystemAdd extends AbstractAddStepHandler {
+class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final WeldSubsystemAdd INSTANCE = new WeldSubsystemAdd();
 
@@ -57,22 +58,20 @@ class WeldSubsystemAdd extends AbstractAddStepHandler {
         model.setEmptyObject();
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        if (context.isBooting()) {
-            context.addStep(new AbstractDeploymentChainStep() {
-                protected void execute(DeploymentProcessorTarget processorTarget) {
-                    processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD, new WeldDependencyProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_DEPLOYMENT, new BeansXmlProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_WEB_INTEGRATION, new WebIntegrationProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION, new WeldEjbInterceptorIntegrationProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_BEAN_ARCHIVE, new BeanArchiveProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS, new WeldPortableExtensionProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_COMPONENT_INTEGRATION, new WeldComponentIntegrationProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WELD_DEPLOYMENT, new WeldDeploymentProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WELD_BEAN_MANAGER, new WeldBeanManagerServiceProcessor());
-                }
-            }, NewOperationContext.Stage.RUNTIME);
-        }
+    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD, new WeldDependencyProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_DEPLOYMENT, new BeansXmlProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_WEB_INTEGRATION, new WebIntegrationProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION, new WeldEjbInterceptorIntegrationProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_BEAN_ARCHIVE, new BeanArchiveProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS, new WeldPortableExtensionProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_COMPONENT_INTEGRATION, new WeldComponentIntegrationProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WELD_DEPLOYMENT, new WeldDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WELD_BEAN_MANAGER, new WeldBeanManagerServiceProcessor());
+            }
+        }, NewOperationContext.Stage.RUNTIME);
 
         TCCLSingletonService singleton = new TCCLSingletonService();
         newControllers.add(context.getServiceTarget().addService(TCCLSingletonService.SERVICE_NAME, singleton).setInitialMode(

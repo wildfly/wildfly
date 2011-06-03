@@ -33,11 +33,16 @@ public class BindingFixedPortHandler extends AbstractBindingWriteHandler {
     public static final BindingFixedPortHandler INSTANCE = new BindingFixedPortHandler();
 
     private BindingFixedPortHandler() {
-        super(new ModelTypeValidator(ModelType.BOOLEAN, true, true));
+        super(new ModelTypeValidator(ModelType.BOOLEAN, true, false));
     }
 
     @Override
     void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) {
         binding.setFixedPort(attributeValue.asBoolean());
+    }
+
+    @Override
+    void handleRuntimeRollback(ModelNode operation, String attributeName, ModelNode previousValue, SocketBinding binding) {
+        binding.setFixedPort(previousValue.asBoolean());
     }
 }

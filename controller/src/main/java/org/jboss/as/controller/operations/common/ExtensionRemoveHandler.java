@@ -21,9 +21,9 @@ package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.dmr.ModelNode;
@@ -33,21 +33,16 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public abstract class AbstractExtensionRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class ExtensionRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
-    public static ModelNode getRemoveExtensionOperation(ModelNode address) {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(OPERATION_NAME);
-        op.get(OP_ADDR).set(address);
-        return op;
-    }
+    public static final ExtensionRemoveHandler INSTANCE = new ExtensionRemoveHandler();
 
     /**
-     * Create the AbstractAddExtensionHandler
+     * Create the ExtensionRemoveHandler
      */
-    protected AbstractExtensionRemoveHandler() {
+    private ExtensionRemoveHandler() {
     }
 
     @Override
@@ -55,4 +50,14 @@ public abstract class AbstractExtensionRemoveHandler extends AbstractRemoveStepH
         return ExtensionDescription.getExtensionRemoveOperation(locale);
     }
 
+    @Override
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        context.reloadRequired();
+    }
+
+    @Override
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.recoverServices(context, operation, model);
+        context.revertReloadRequired();
+    }
 }

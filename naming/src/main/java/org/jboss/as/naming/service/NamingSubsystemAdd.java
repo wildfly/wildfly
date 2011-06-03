@@ -24,6 +24,7 @@ package org.jboss.as.naming.service;
 
 import java.util.List;
 import javax.management.MBeanServer;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -33,11 +34,6 @@ import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingEventCoordinator;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.server.BootOperationContext;
-import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.AbstractDeploymentChainStep;
-import org.jboss.as.server.DeploymentProcessorTarget;
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;

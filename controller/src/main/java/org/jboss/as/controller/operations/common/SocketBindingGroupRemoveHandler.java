@@ -20,37 +20,30 @@ package org.jboss.as.controller.operations.common;
 
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Abstract superclass of handlers for the socket-binding-group resource's remove operation.
+ * Handler for the socket-binding-group resource's remove operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public abstract class AbstractSocketBindingGroupRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class SocketBindingGroupRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
+
+    public static final SocketBindingGroupRemoveHandler INSTANCE = new SocketBindingGroupRemoveHandler();
 
     /**
      * Create the AbstractSocketBindingRemoveHandler
      */
-    protected AbstractSocketBindingGroupRemoveHandler() {
+    protected SocketBindingGroupRemoveHandler() {
     }
 
     @Override

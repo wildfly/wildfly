@@ -116,7 +116,6 @@ class SecuritySubsystemAdd implements NewStepHandler {
      * {@inheritDoc}
      */
     public void execute(NewOperationContext context, ModelNode operation) {
-        final ModelNode opAddr = operation.get(OP_ADDR);
 
         String authenticationManagerClassName = "default";
         String callbackHandlerClassName = "default";
@@ -223,80 +222,85 @@ class SecuritySubsystemAdd implements NewStepHandler {
         }
 
         if (context.getType() == NewOperationContext.Type.SERVER) {
-            if (context.isBooting()) {
+            if (!context.isBooting()) {
+                context.reloadRequired();
+            } else {
                 context.addStep(new AbstractDeploymentChainStep() {
                     protected void execute(DeploymentProcessorTarget processorTarget) {
                         processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE,
                                 new SecurityDependencyProcessor());
                     }
                 }, NewOperationContext.Stage.RUNTIME);
-            }
 
-            final Properties securityPropertiesStr = securityProperties;
+                final Properties securityPropertiesStr = securityProperties;
 
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) {
-                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    log.info("Activating Security Subsystem");
+                context.addStep(new NewStepHandler() {
+                    public void execute(NewOperationContext context, ModelNode operation) {
+                        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                        log.info("Activating Security Subsystem");
 
-                    final ServiceTarget target = context.getServiceTarget();
+                        final ServiceTarget target = context.getServiceTarget();
 
-                    // add bootstrap service
-                    final SecurityBootstrapService bootstrapService = new SecurityBootstrapService();
-                    if (securityPropertiesStr != null && !securityPropertiesStr.isEmpty())
-                        bootstrapService.setSecurityProperties(securityPropertiesStr);
+                        // add bootstrap service
+                        final SecurityBootstrapService bootstrapService = new SecurityBootstrapService();
+                        if (securityPropertiesStr != null && !securityPropertiesStr.isEmpty())
+                            bootstrapService.setSecurityProperties(securityPropertiesStr);
 
-                    target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService)
-                            .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                        target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService)
+                                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-                    // add service to bind SecurityDomainJndiInjectable to JNDI
-                    final SecurityDomainJndiInjectable securityDomainJndiInjectable = new SecurityDomainJndiInjectable();
-                    final BinderService binderService = new BinderService("jaas");
-                    target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jboss", "jaas"), binderService)
-                            .addInjection(binderService.getManagedObjectInjector(), securityDomainJndiInjectable)
-                            .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jboss"), NamingStore.class,
-                                    binderService.getNamingStoreInjector())
-                            .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
-                                    securityDomainJndiInjectable.getSecurityManagementInjector())
-                            .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                        // add service to bind SecurityDomainJndiInjectable to JNDI
+                        final SecurityDomainJndiInjectable securityDomainJndiInjectable = new SecurityDomainJndiInjectable();
+                        final BinderService binderService = new BinderService("jaas");
+                        target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jboss", "jaas"), binderService)
+                                .addInjection(binderService.getManagedObjectInjector(), securityDomainJndiInjectable)
+                                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jboss"), NamingStore.class,
+                                        binderService.getNamingStoreInjector())
+                                .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
+                                        securityDomainJndiInjectable.getSecurityManagementInjector())
+                                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-                    // add security management service
-                    final SecurityManagementService securityManagementService = new SecurityManagementService(
-                            resolvedAuthenticationManagerClassName, deepCopySubject, resolvedCallbackHandlerClassName,
-                            resolvedAuthorizationManagerClassName, resolvedAuditManagerClassName,
-                            resolvedIdentityTrustManagerClassName, resolvedMappingManagerClassName);
-                    target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService)
-                            .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                        // add security management service
+                        final SecurityManagementService securityManagementService = new SecurityManagementService(
+                                resolvedAuthenticationManagerClassName, deepCopySubject, resolvedCallbackHandlerClassName,
+                                resolvedAuthorizationManagerClassName, resolvedAuditManagerClassName,
+                                resolvedIdentityTrustManagerClassName, resolvedMappingManagerClassName);
+                        target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService)
+                                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-                    // add subject factory service
-                    final SubjectFactoryService subjectFactoryService = new SubjectFactoryService(
-                            resolvedSubjectFactoryClassName);
-                    target.addService(SubjectFactoryService.SERVICE_NAME, subjectFactoryService)
-                            .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
-                                    subjectFactoryService.getSecurityManagementInjector())
-                            .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                        // add subject factory service
+                        final SubjectFactoryService subjectFactoryService = new SubjectFactoryService(
+                                resolvedSubjectFactoryClassName);
+                        target.addService(SubjectFactoryService.SERVICE_NAME, subjectFactoryService)
+                                .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
+                                        subjectFactoryService.getSecurityManagementInjector())
+                                .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-                    // add jaas configuration service
-                    Configuration loginConfig = XMLLoginConfigImpl.getInstance();
-                    final JaasConfigurationService jaasConfigurationService = new JaasConfigurationService(loginConfig);
-                    target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
-                            .addListener(verificationHandler)
-                            .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .install();
+                        // add jaas configuration service
+                        Configuration loginConfig = XMLLoginConfigImpl.getInstance();
+                        final JaasConfigurationService jaasConfigurationService = new JaasConfigurationService(loginConfig);
+                        target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
+                                .addListener(verificationHandler)
+                                .setInitialMode(ServiceController.Mode.ACTIVE)
+                                .install();
 
-                    target.addService(SimpleSecurityManagerService.SERVICE_NAME, new SimpleSecurityManagerService())
-                            .addListener(verificationHandler)
-                            .install();
+                        target.addService(SimpleSecurityManagerService.SERVICE_NAME, new SimpleSecurityManagerService())
+                                .addListener(verificationHandler)
+                                .install();
 
-                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+                        context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
 
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(JaasConfigurationService.SERVICE_NAME);
+                        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                            context.removeService(JaasConfigurationService.SERVICE_NAME);
+                        }
                     }
-                }
-            }, NewOperationContext.Stage.RUNTIME);
+                }, NewOperationContext.Stage.RUNTIME);
+            }
         }
 
-        context.completeStep();
+        if (context.completeStep() != NewOperationContext.ResultAction.KEEP
+                && context.getType() == NewOperationContext.Type.SERVER && !context.isBooting()) {
+            context.revertReloadRequired();
+        }
     }
 }

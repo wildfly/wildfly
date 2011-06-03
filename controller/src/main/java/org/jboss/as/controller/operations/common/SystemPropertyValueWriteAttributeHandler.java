@@ -57,7 +57,13 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
                     final String propertyName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
                     final String propertyValue = newValue.isDefined() ? newValue.asString() : null;
                     SecurityActions.setSystemProperty(propertyName, propertyValue);
-                    context.completeStep();
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        if (currentValue.isDefined()) {
+                            SecurityActions.setSystemProperty(propertyName, currentValue.asString());
+                        } else {
+                            SecurityActions.clearSystemProperty(propertyName);
+                        }
+                    }
                 }
             }, NewOperationContext.Stage.RUNTIME);
         }

@@ -25,14 +25,11 @@ import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import org.jboss.as.jpa.service.JPAService;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Removes the JPA subsystem.
- * <p/>
  *
  * @author Brian Stansberry
  */
@@ -47,11 +44,11 @@ class JPASubSystemRemove extends AbstractRemoveStepHandler implements Descriptio
     }
 
     protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
-        context.removeService(JPAService.SERVICE_NAME);
+        context.reloadRequired();
     }
 
     protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+        context.revertReloadRequired();
     }
 
     @Override

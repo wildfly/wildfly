@@ -23,7 +23,8 @@
 package org.jboss.as.mc;
 
 import java.util.List;
-import org.jboss.as.controller.AbstractAddStepHandler;
+
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -39,7 +40,7 @@ import org.jboss.msc.service.ServiceController;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author Emanuel Muckenhuber
  */
-class McSubsystemAdd extends AbstractAddStepHandler {
+class McSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final McSubsystemAdd INSTANCE = new McSubsystemAdd();
 
@@ -47,15 +48,14 @@ class McSubsystemAdd extends AbstractAddStepHandler {
         model.setEmptyObject();
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        if (context.isBooting()) {
-            context.addStep(new AbstractDeploymentChainStep() {
-                public void execute(DeploymentProcessorTarget processorTarget) {
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MC_BEAN_DEPLOYMENT, new KernelDeploymentParsingProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MC_BEAN_DEPLOYMENT, new ParsedKernelDeploymentProcessor());
-                }
-            }, NewOperationContext.Stage.RUNTIME);
-        }
+    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+
+        context.addStep(new AbstractDeploymentChainStep() {
+            public void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MC_BEAN_DEPLOYMENT, new KernelDeploymentParsingProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MC_BEAN_DEPLOYMENT, new ParsedKernelDeploymentProcessor());
+            }
+        }, NewOperationContext.Stage.RUNTIME);
     }
 
     protected boolean requiresRuntimeVerification() {

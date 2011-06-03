@@ -23,7 +23,8 @@
 package org.jboss.as.jaxrs;
 
 import java.util.List;
-import org.jboss.as.controller.AbstractAddStepHandler;
+
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.jaxrs.deployment.JaxrsAnnotationProcessor;
@@ -42,7 +43,7 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author Stuart Douglas
  */
-class JaxrsSubsystemAdd extends AbstractAddStepHandler {
+class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final JaxrsSubsystemAdd INSTANCE = new JaxrsSubsystemAdd();
 
@@ -50,18 +51,17 @@ class JaxrsSubsystemAdd extends AbstractAddStepHandler {
         model.setEmptyObject();
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        if (context.isBooting()) {
-            context.addStep(new AbstractDeploymentChainStep() {
-                public void execute(DeploymentProcessorTarget processorTarget) {
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXRS_ANNOTATIONS, new JaxrsAnnotationProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRS, new JaxrsDependencyProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JAXRS_SCANNING, new JaxrsScanningProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JAXRS_COMPONENT, new JaxrsComponentDeployer());
-                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JAXRS_DEPLOYMENT, new JaxrsIntegrationProcessor());
-                }
-            }, NewOperationContext.Stage.RUNTIME);
-        }
+    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+
+        context.addStep(new AbstractDeploymentChainStep() {
+            public void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXRS_ANNOTATIONS, new JaxrsAnnotationProcessor());
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRS, new JaxrsDependencyProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JAXRS_SCANNING, new JaxrsScanningProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JAXRS_COMPONENT, new JaxrsComponentDeployer());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JAXRS_DEPLOYMENT, new JaxrsIntegrationProcessor());
+            }
+        }, NewOperationContext.Stage.RUNTIME);
     }
 
     protected boolean requiresRuntimeVerification() {

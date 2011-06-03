@@ -47,7 +47,6 @@ import org.jboss.msc.service.ServiceName;
 abstract class AbstractBindingWriteHandler extends ServerWriteAttributeOperationHandler {
 
     private static final ServiceName SOCKET_BINDING = SocketBinding.JBOSS_BINDING_NAME;
-    private static final ServiceName BINDING_MANAGER = SocketBindingManager.SOCKET_BINDING_MANAGER;
 
     protected AbstractBindingWriteHandler() {
         super();
@@ -82,30 +81,58 @@ abstract class AbstractBindingWriteHandler extends ServerWriteAttributeOperation
      */
     abstract void handleRuntimeChange(final ModelNode operation, final String attributeName, final ModelNode attributeValue, final SocketBinding binding) throws OperationFailedException;
 
+    /**
+     * Handle the actual runtime change.
+     *
+     * @param operation      the original operation
+     * @param attributeName  the attribute name
+     * @param previousValue  the attribute value before the change
+     * @param binding        the resolved socket binding
+     * @throws OperationFailedException
+     */
+    abstract void handleRuntimeRollback(final ModelNode operation, final String attributeName, final ModelNode previousValue, final SocketBinding binding);
+
     @Override
     protected void modelChanged(final NewOperationContext context, final ModelNode operation,
                                 final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final PathElement element = address.getLastElement();
-
+        final boolean restartRequired = requiresRestart();
+        boolean setReload = false;
         if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(SOCKET_BINDING.append(element.getValue()));
-                    if (controller != null) {
+            if (restartRequired) {
+                context.reloadRequired();
+                setReload = true;
+            } else {
+                context.addStep(new NewStepHandler() {
+                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                        validateResolvedValue(attributeName, newValue);
+                        final ModelNode resolvedValue = newValue.isDefined() ? newValue.resolve() : newValue;
+                        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+                        final PathElement element = address.getLastElement();
+                        final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(SOCKET_BINDING.append(element.getValue()));
                         final SocketBinding binding = SocketBinding.class.cast(controller.getValue());
-                        if (requiresRestart() || binding.isBound()) {
-                            ServerOperationContext.class.cast(context).restartRequired();
+                        boolean mustRestart = binding.isBound();
+                        if (mustRestart) {
+                            context.reloadRequired();
                         } else {
-                            handleRuntimeChange(operation, attributeName, newValue, binding);
+                            handleRuntimeChange(operation, attributeName, resolvedValue, binding);
+                        }
+
+                        if (context.completeStep() != NewOperationContext.ResultAction.KEEP ) {
+                            if (mustRestart) {
+                                context.revertReloadRequired();
+                            } else {
+                                ModelNode resolvedPrevious = currentValue.isDefined() ? currentValue.resolve() : currentValue;
+                                handleRuntimeRollback(operation, attributeName, resolvedPrevious, binding);
+                            }
                         }
                     }
-                    context.completeStep();
-                }
-            }, NewOperationContext.Stage.RUNTIME);
+                }, NewOperationContext.Stage.RUNTIME);
+            }
         }
-        context.completeStep();
+        if (context.completeStep() != NewOperationContext.ResultAction.KEEP && setReload) {
+            context.revertReloadRequired();
+        }
     }
 
 }

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import javax.management.MBeanServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -60,7 +61,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Emanuel Muckenhuber
  */
-class WebSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
 
     static final WebSubsystemAdd INSTANCE = new WebSubsystemAdd();
     private static final String DEFAULT_VIRTUAL_SERVER = "localhost";
@@ -79,48 +80,42 @@ class WebSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvi
         model.get(Constants.VIRTUAL_SERVER).setEmptyObject();
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ModelNode config = operation.get(Constants.CONTAINER_CONFIG);
-        final String defaultVirtualServer = operation.has(Constants.DEFAULT_VIRTUAL_SERVER) ?
+        final String defaultVirtualServer = operation.hasDefined(Constants.DEFAULT_VIRTUAL_SERVER) ?
                 operation.get(Constants.DEFAULT_VIRTUAL_SERVER).asString() : DEFAULT_VIRTUAL_SERVER;
-        final boolean useNative = operation.has(Constants.NATIVE) ?
+        final boolean useNative = operation.hasDefined(Constants.NATIVE) ?
                 operation.get(Constants.NATIVE).asBoolean() : DEFAULT_NATIVE;
 
-        if (context.isBooting()) {
-            context.addStep(new AbstractDeploymentChainStep() {
-                protected void execute(DeploymentProcessorTarget processorTarget) {
-                    final SharedWebMetaDataBuilder sharedWebBuilder = new SharedWebMetaDataBuilder(config.clone());
-                    final SharedTldsMetaDataBuilder sharedTldsBuilder = new SharedTldsMetaDataBuilder(config.clone());
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                final SharedWebMetaDataBuilder sharedWebBuilder = new SharedWebMetaDataBuilder(config.clone());
+                final SharedTldsMetaDataBuilder sharedTldsBuilder = new SharedTldsMetaDataBuilder(config.clone());
 
-                    processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR_DEPLOYMENT_INIT, new WarDeploymentInitializingProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()));
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT, new WebParsingDeploymentProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT_FRAGMENT, new WebFragmentParsingDeploymentProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JBOSS_WEB_DEPLOYMENT, new JBossWebParsingDeploymentProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_TLD_DEPLOYMENT, new TldParsingDeploymentProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ANNOTATION_WAR, new WarAnnotationDeploymentProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_COMPONENTS, new WebComponentProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_CONTEXT_ROOT, new EarContextRootProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_MERGE_METADATA, new WarMetaDataProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE, new WarClassloadingDependencyProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JsfManagedBeanProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JSF_ANNOTATIONS, new JsfAnnotationProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultVirtualServer));
-                }
-            }, NewOperationContext.Stage.RUNTIME);
-        }
+                processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR_DEPLOYMENT_INIT, new WarDeploymentInitializingProcessor());
+                processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()));
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT, new WebParsingDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT_FRAGMENT, new WebFragmentParsingDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JBOSS_WEB_DEPLOYMENT, new JBossWebParsingDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_TLD_DEPLOYMENT, new TldParsingDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ANNOTATION_WAR, new WarAnnotationDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_COMPONENTS, new WebComponentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_CONTEXT_ROOT, new EarContextRootProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_MERGE_METADATA, new WarMetaDataProcessor());
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE, new WarClassloadingDependencyProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JsfManagedBeanProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JSF_ANNOTATIONS, new JsfAnnotationProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultVirtualServer));
+            }
+        }, NewOperationContext.Stage.RUNTIME);
 
-        try {
-            final WebServerService service = new WebServerService(defaultVirtualServer, useNative);
-            newControllers.add(context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB, service)
-                    .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
-                    .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
-                    .setInitialMode(Mode.ON_DEMAND)
-                    .install());
-        } catch (Throwable t) {
-            throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-        }
+        final WebServerService service = new WebServerService(defaultVirtualServer, useNative);
+        newControllers.add(context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB, service)
+                .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
+                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
+                .setInitialMode(Mode.ON_DEMAND)
+                .install());
 
     }
 

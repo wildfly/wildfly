@@ -26,7 +26,7 @@ import java.util.List;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ejb3.component.EJBUtilities;
@@ -85,7 +85,7 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * @author Emanuel Muckenhuber
  */
-class EJB3SubsystemAdd extends AbstractAddStepHandler {
+class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final EJB3SubsystemAdd INSTANCE = new EJB3SubsystemAdd();
 
@@ -97,10 +97,9 @@ class EJB3SubsystemAdd extends AbstractAddStepHandler {
         model.setEmptyObject();
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        if (context.isBooting()) {
-            context.addStep(new AbstractDeploymentChainStep() {
-                protected void execute(DeploymentProcessorTarget processorTarget) {
+    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
                     // add the metadata parser deployment processor
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CREATE_COMPONENT_DESCRIPTIONS, new EJBComponentDescriptionFactory());
@@ -156,9 +155,8 @@ class EJB3SubsystemAdd extends AbstractAddStepHandler {
                     // add the real deployment processor
                     // TODO: add the proper deployment processors
                     // processorTarget.addDeploymentProcessor(processor, priority);
-                }
-            }, NewOperationContext.Stage.RUNTIME);
-        }
+            }
+        }, NewOperationContext.Stage.RUNTIME);
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final EJBUtilities utilities = new EJBUtilities();
@@ -170,7 +168,6 @@ class EJB3SubsystemAdd extends AbstractAddStepHandler {
                 .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install());
-
 
     }
 }

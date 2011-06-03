@@ -37,11 +37,16 @@ public class BindingMulticastPortHandler extends AbstractBindingWriteHandler {
     public static final BindingMulticastPortHandler INSTANCE = new BindingMulticastPortHandler();
 
     private BindingMulticastPortHandler() {
-        super(new IntRangeValidator(1, 65535, false, true));
+        super(new IntRangeValidator(1, 65535, true, true), new IntRangeValidator(1, 65535, true, false));
     }
 
     @Override
     void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) throws OperationFailedException {
+        binding.setMulticastPort(attributeValue.asInt());
+    }
+
+    @Override
+    void handleRuntimeRollback(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) {
         binding.setMulticastPort(attributeValue.asInt());
     }
 }
