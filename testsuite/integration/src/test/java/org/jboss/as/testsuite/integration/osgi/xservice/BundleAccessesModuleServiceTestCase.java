@@ -65,7 +65,7 @@ import org.osgi.framework.ServiceReference;
  * @since 14-Oct-2010
  */
 @RunWith(Arquillian.class)
-@Ignore
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCase {
 
     private static final String TARGET_MODULE_NAME = "example-xservice-target-module";

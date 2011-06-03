@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-testsuite-integration-spec</artifactId>
-    <name>JBoss Application Server: Test Suite: Spec Integration Tests</name>
+    <name>JBoss Application Server Test Suite: Specification Tests</name>
 
     <!-- 
     ONLY the Java EE Spec APIs are to be allowed in compile scope here

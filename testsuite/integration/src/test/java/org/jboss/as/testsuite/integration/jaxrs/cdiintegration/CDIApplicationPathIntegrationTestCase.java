@@ -31,8 +31,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,6 +43,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class CDIApplicationPathIntegrationTestCase {
 
     @Deployment(testable = false)
@@ -50,13 +51,12 @@ public class CDIApplicationPathIntegrationTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsapp.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(CDIApplicationPathIntegrationTestCase.class, CDIBean.class, CDIPathApplication.class, CDIResource.class);
-        war.addAsWebResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }
 
 
     private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/jaxrsapp/" + urlPattern, 5, TimeUnit.SECONDS);
+        return HttpRequest.get("http://localhost:8080/jaxrsapp/" + urlPattern, 10, TimeUnit.SECONDS);
     }
 
     @Test

@@ -37,7 +37,6 @@ public class EarClassPath1TestCase {
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
-        // war.addAsWebResource(EmptyAsset.INSTANCE, "beans.xml");
         JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
         libJar.addClasses(TestAA.class, EarClassPath1TestCase.class);
         war.addAsLibraries(libJar);

@@ -52,7 +52,7 @@ public class JaxrsMultipartProviderTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addPackage(JaxrsMultipartProviderTestCase.class.getPackage());
-        war.addAsWebResource(WebXml.get("<servlet-mapping>\n" +
+        war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
                 "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +

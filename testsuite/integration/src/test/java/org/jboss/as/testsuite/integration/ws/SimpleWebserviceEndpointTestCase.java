@@ -52,7 +52,7 @@ public class SimpleWebserviceEndpointTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ws-endpoint-example.war");
         war.addPackage(SimpleWebserviceEndpointImpl.class.getPackage());
         war.addClass(SimpleWebserviceEndpointImpl.class);
-        war.addAsWebResource(WebXml.get("<servlet>" +
+        war.addAsWebInfResource(WebXml.get("<servlet>" +
             "    <servlet-name>TestService</servlet-name>" +
             "    <servlet-class>org.jboss.as.testsuite.integration.ws.SimpleWebserviceEndpointImpl</servlet-class>" +
             "  </servlet>" +

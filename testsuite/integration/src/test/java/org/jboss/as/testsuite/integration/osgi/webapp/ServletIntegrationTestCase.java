@@ -59,7 +59,7 @@ import org.osgi.framework.ServiceReference;
  * @since 13-May-2011
  */
 @RunWith(Arquillian.class)
-@Ignore
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class ServletIntegrationTestCase {
 
     @Inject

@@ -41,36 +41,15 @@
     <artifactId>jboss-as-testsuite-integration</artifactId>
     <version>7.0.0.Beta4-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Test Suite: Integration Tests</name>
+    <name>JBoss Application Server Test Suite: Integration Tests</name>
 
     <properties>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.osgi.logging</groupId>
-            <artifactId>jboss-osgi-logging</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- Needed for @Resource(lookup=) -->
-        <dependency>
-           <groupId>org.jboss.spec.javax.annotation</groupId>
-           <artifactId>jboss-annotations-api_1.1_spec</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
-
     </build>
 
     <profiles>

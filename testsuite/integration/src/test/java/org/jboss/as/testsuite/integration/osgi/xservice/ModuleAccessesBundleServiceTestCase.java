@@ -67,7 +67,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * @since 19-Apr-2011
  */
 @RunWith(Arquillian.class)
-@Ignore
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCase {
 
     private static final String TARGET_BUNDLE_NAME = "example-xservice-target-bundle";

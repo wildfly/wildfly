@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.internals.as7_859;
 
-import static org.jboss.as.test.integration.common.Naming.lookup;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -29,7 +28,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.common.Naming;
+import org.jboss.as.testsuite.integration.common.Naming;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -53,7 +52,7 @@ public class PrivatePostConstructsTestCase {
 
     @Test
     public void testPostConstruct() throws NamingException {
-        final Child bean = lookup("java:global/as7_859/Child", Child.class);
+        final Child bean = Naming.lookup("java:global/as7_859/Child", Child.class);
         assertNotNull(bean);
         assertTrue("Child @PostConstruct has not been called", Child.postConstructCalled);
         assertTrue("Parent @PostConstruct has not been called", Parent.postConstructCalled);

@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.internals.as7_835;
 
-import static org.jboss.as.test.integration.common.Naming.lookup;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -30,7 +29,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.common.Naming;
+import org.jboss.as.testsuite.integration.common.Naming;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -60,7 +59,7 @@ public class DeployUnknownSessionTypeTestCase {
     @Ignore("@Resource java.lang.String var; isn't working")
     @Test
     public void testEnvEntry() throws NamingException {
-        final SimpleStatelessBean bean = lookup("java:global/as7_835/SimpleStatelessBean", SimpleStatelessBean.class);
+        final SimpleStatelessBean bean = Naming.lookup("java:global/as7_835/SimpleStatelessBean", SimpleStatelessBean.class);
         final String envValue = bean.getTest();
         // see ejb-jar.xml for the value
         assertEquals("*Hello world", envValue);
@@ -72,7 +71,7 @@ public class DeployUnknownSessionTypeTestCase {
     @Ignore("Interceptor overrides from xml are not working")
     @Test
     public void testInterceptor() throws NamingException {
-        final SimpleStatelessBean bean = lookup("java:global/as7_835/SimpleStatelessBean", SimpleStatelessBean.class);
+        final SimpleStatelessBean bean = Naming.lookup("java:global/as7_835/SimpleStatelessBean", SimpleStatelessBean.class);
         final String envValue = bean.getTest();
         // see SimpleStatelessBean.aroundInvoke for the value
         assertNotNull(envValue);
@@ -81,7 +80,7 @@ public class DeployUnknownSessionTypeTestCase {
 
     @Test
     public void testInvocation() throws NamingException {
-        final SimpleStatelessBean bean = lookup("java:global/as7_835/SimpleStatelessBean", SimpleStatelessBean.class);
+        final SimpleStatelessBean bean = Naming.lookup("java:global/as7_835/SimpleStatelessBean", SimpleStatelessBean.class);
         bean.getTest();
         // if we can invoke the bean it must have been deployed properly
     }

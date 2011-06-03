@@ -46,7 +46,7 @@ public class EjbLocalRefInjectionTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(EjbLocalRefInjectionTestCase.class, EjbLocalRefInjectionServlet.class, NamedSLSB.class, SimpleSLSB.class, Hello.class);
-        war.addAsWebResource(getWebXml(),"web.xml");
+        war.addAsWebInfResource(getWebXml(), "web.xml");
         return war;
     }
 

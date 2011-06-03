@@ -46,7 +46,7 @@ public class EnvEntryInjectionTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(EnvEntryInjectionTestCase.class, EnvEntryInjectionServlet.class);
-        war.addAsWebResource(getWebXml(),"web.xml");
+        war.addAsWebInfResource(getWebXml(),"web.xml");
         return war;
     }
 

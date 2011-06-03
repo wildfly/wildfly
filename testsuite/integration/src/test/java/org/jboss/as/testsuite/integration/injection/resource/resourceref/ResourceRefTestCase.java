@@ -50,7 +50,7 @@ public class ResourceRefTestCase {
     @Deployment
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "multiple-bindings-superclass.war");
-        war.addAsWebResource(getWebXml(),"web.xml");
+        war.addAsWebInfResource(getWebXml(),"web.xml");
         war.addPackage(ResourceRefTestCase.class.getPackage());
         return war;
     }

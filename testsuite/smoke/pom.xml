@@ -41,7 +41,7 @@
     <artifactId>jboss-as-testsuite-smoke</artifactId>
     <version>7.0.0.Beta4-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Test Suite: Smoke Tests</name>
+    <name>JBoss Application Server Test Suite: Smoke Tests</name>
 
     <properties>
     </properties>
@@ -57,11 +57,6 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-demos-internals</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

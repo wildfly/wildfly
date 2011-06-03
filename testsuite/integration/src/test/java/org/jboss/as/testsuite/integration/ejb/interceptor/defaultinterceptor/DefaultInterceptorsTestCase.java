@@ -29,7 +29,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,9 +44,9 @@ public class DefaultInterceptorsTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "testdefaultinterceptors.war");
-        war.addPackage(DefaultInterceptorsTestCase.class.getPackage());
-        war.addAsWebResource(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "testdefaultinterceptors");
+        archive.addPackage(DefaultInterceptorsTestCase.class.getPackage());
+        archive.addAsManifestResource(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
                 "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
                 "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd\"\n" +
@@ -64,7 +64,7 @@ public class DefaultInterceptorsTestCase {
                 "   </assembly-descriptor>\n" +
                 "\n" +
                 "</ejb-jar>"), "ejb-jar.xml");
-        return war;
+        return archive;
     }
 
 

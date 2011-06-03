@@ -70,8 +70,8 @@ public class PersistenceContextRefTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
         war.addPackage(PersistenceContextRefTestCase.class.getPackage());
 
-        war.addAsResource(new StringAsset(persistence_xml), "WEB-INF/classes/META-INF/persistence.xml");
-        war.addAsWebResource(getWebXml(), "web.xml");
+        war.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+        war.addAsWebInfResource(getWebXml(), "web.xml");
         return war;
     }
 

@@ -55,7 +55,7 @@ public class ApplicationIntegrationTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsapp.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(ApplicationIntegrationTestCase.class, HelloWorldResource.class,HelloWorldApplication.class);
-        war.addAsWebResource(WebXml.get("<servlet-mapping>\n" +
+        war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
                 "        <servlet-name>"+HelloWorldApplication.class.getName()+"</servlet-name>\n" +
                 "        <url-pattern>/hello/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +

@@ -65,7 +65,7 @@ import org.osgi.service.http.HttpService;
  * @since 23-Oct-2009
  */
 @RunWith(Arquillian.class)
-@Ignore
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class LifecycleInterceptorTestCase {
 
     @Inject

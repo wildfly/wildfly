@@ -58,7 +58,7 @@ public class NonTransactionalEmTestCase {
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "NonTransactionalEmTestCase.war");
         war.addClasses(HttpRequest.class, SimpleServlet.class, Employee.class);
-        war.addAsResource(new StringAsset(persistence_xml), "WEB-INF/classes/META-INF/persistence.xml");
+        war.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
         return war;
     }
 

@@ -53,7 +53,7 @@ public class ApplicationPathOverrideIntegrationTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsapp.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(ApplicationPathOverrideIntegrationTestCase.class, HelloWorldResource.class,HelloWorldPathApplication.class);
-        war.addAsWebResource(WebXml.get("<servlet-mapping>\n" +
+        war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
                 "        <servlet-name>"+HelloWorldPathApplication.class.getName()+"</servlet-name>\n" +
                 "        <url-pattern>/override/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +

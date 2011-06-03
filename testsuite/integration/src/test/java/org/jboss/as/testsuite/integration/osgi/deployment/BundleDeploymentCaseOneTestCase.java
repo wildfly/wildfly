@@ -44,7 +44,7 @@ import org.osgi.framework.BundleContext;
  * @since 12-Apr-2011
  */
 @RunWith(Arquillian.class)
-@Ignore
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class BundleDeploymentCaseOneTestCase {
 
     //@Inject

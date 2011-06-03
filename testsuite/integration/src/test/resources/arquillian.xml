@@ -5,8 +5,11 @@
 	<container qualifier="jboss" default="true">
 		<configuration>
 			<property name="jbossHome">target/jbossas</property>
-			<property name="javaVmArguments">-Djavax.net.ssl.trustStore=target/test-classes/security/server.keystore -Djavax.net.ssl.trustStorePassword=changeit</property>
 		</configuration>
+        <!-- 
+            [ARQ-425] config parser code not in sync with schema
+            Make executionType configurable
+         -->
         <protocol type="jmx-as7">
             <configuration>
                 <property name="executionType">REMOTE</property>

@@ -32,8 +32,8 @@ import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.as.testsuite.integration.jaxrs.servletintegration.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,6 +44,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class CDIResourceInjectionTestCase {
 
     @Deployment(testable = false)
@@ -51,18 +52,17 @@ public class CDIResourceInjectionTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(CDIResourceInjectionTestCase.class, CDIResource.class, CDIBean.class);
-        war.addAsWebResource(WebXml.get("<servlet-mapping>\n" +
+        war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
                 "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +
                 "\n"),"web.xml");
-        war.addAsWebResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }
 
 
     private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/jaxrsnoap/" + urlPattern, 5, TimeUnit.SECONDS);
+        return HttpRequest.get("http://localhost:8080/jaxrsnoap/" + urlPattern, 10, TimeUnit.SECONDS);
     }
 
     @Test

@@ -38,7 +38,6 @@ public class EarLibClassPathTransitiveClosureTestCase {
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
-        // war.addAsWebResource(EmptyAsset.INSTANCE, "beans.xml");
         JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
         libJar.addClasses(TestAA.class, EarLibClassPathTransitiveClosureTestCase.class);
         war.addAsLibraries(libJar);
