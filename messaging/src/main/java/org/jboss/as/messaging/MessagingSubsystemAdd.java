@@ -26,66 +26,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
-import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
-import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
-import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
-import static org.jboss.as.messaging.CommonAttributes.BACKUP;
-import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
-import static org.jboss.as.messaging.CommonAttributes.CLUSTER_PASSWORD;
-import static org.jboss.as.messaging.CommonAttributes.CLUSTER_USER;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL_OVERRIDE;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.CONSUME_NAME;
-import static org.jboss.as.messaging.CommonAttributes.CREATEDURABLEQUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.CREATE_BINDINGS_DIR;
-import static org.jboss.as.messaging.CommonAttributes.CREATE_JOURNAL_DIR;
-import static org.jboss.as.messaging.CommonAttributes.CREATE_NON_DURABLE_QUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.DELETEDURABLEQUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.DURABLE;
-import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
-import static org.jboss.as.messaging.CommonAttributes.FILTER;
-import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.JMX_DOMAIN;
-import static org.jboss.as.messaging.CommonAttributes.JMX_MANAGEMENT_ENABLED;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_BUFFER_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_BUFFER_TIMEOUT;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_COMPACT_MIN_FILES;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_COMPACT_PERCENTAGE;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_FILE_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_MAX_IO;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_MIN_FILES;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_NON_TRANSACTIONAL;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_TRANSACTIONAL;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_TYPE;
-import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
-import static org.jboss.as.messaging.CommonAttributes.LOG_JOURNAL_WRITE_RATE;
-import static org.jboss.as.messaging.CommonAttributes.LVQ;
-import static org.jboss.as.messaging.CommonAttributes.MANAGE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.MAX_DELIVERY_ATTEMPTS;
-import static org.jboss.as.messaging.CommonAttributes.MAX_SIZE_BYTES_NODE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
-import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.PARAM;
-import static org.jboss.as.messaging.CommonAttributes.PERF_BLAST_PAGES;
-import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
-import static org.jboss.as.messaging.CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
-import static org.jboss.as.messaging.CommonAttributes.PERSIST_ID_CACHE;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.REDELIVERY_DELAY;
-import static org.jboss.as.messaging.CommonAttributes.REDISTRIBUTION_DELAY;
-import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
-import static org.jboss.as.messaging.CommonAttributes.SEND_NAME;
-import static org.jboss.as.messaging.CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE;
-import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
-import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
+import static org.jboss.as.messaging.CommonAttributes.*;
+import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
+import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
+import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,6 +77,7 @@ import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
 class MessagingSubsystemAdd implements ModelAddOperationHandler {
 
@@ -161,6 +106,10 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
             }
         }
         subModel.get(QUEUE);
+        subModel.get(CONNECTION_FACTORY).setEmptyObject();
+        subModel.get(JMS_QUEUE).setEmptyObject();
+        subModel.get(JMS_TOPIC).setEmptyObject();
+        subModel.get(POOLED_CONNECTION_FACTORY).setEmptyObject();
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
@@ -197,7 +146,6 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
                     // Install the HornetQ Service
                     serviceBuilder.install();
 
-                    // TODO this should be added by the jms subsystem itself
                     JMSService.addService(serviceTarget);
                     resultHandler.handleResultComplete();
                 }
@@ -372,8 +320,9 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
             for(final Property property : params.get(QUEUE).asPropertyList()) {
                 final String queueName = property.getName();
                 final ModelNode config = property.getValue();
-                final CoreQueueConfiguration queue = new CoreQueueConfiguration(config.get(CommonAttributes.ADDRESS).asString(), queueName,
-                        config.get(FILTER).asString(), config.get(DURABLE).asBoolean());
+               boolean durable = config.get(DURABLE).isDefined()?config.get(DURABLE).asBoolean():true;
+               final CoreQueueConfiguration queue = new CoreQueueConfiguration(config.get(CommonAttributes.ADDRESS).asString(), queueName,
+                        config.get(FILTER).asString(), durable);
                 queues.add(queue);
             }
             configuration.setQueueConfigurations(queues);

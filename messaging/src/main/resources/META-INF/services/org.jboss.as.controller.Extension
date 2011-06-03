@@ -21,4 +21,3 @@
 #
 
 org.jboss.as.messaging.MessagingExtension
-org.jboss.as.messaging.jms.JMSExtension

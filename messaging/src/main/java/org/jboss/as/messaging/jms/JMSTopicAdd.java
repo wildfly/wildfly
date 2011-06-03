@@ -29,7 +29,7 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
+import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -49,13 +49,14 @@ import org.jboss.msc.service.ServiceName;
  * runtime action, will create the {@link JMSTopicService}.
  *
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-class JMSTopicAdd implements ModelAddOperationHandler {
+public class JMSTopicAdd implements ModelAddOperationHandler {
 
     public static final String OPERATION_NAME = ADD;
 
     /** Create an "add" operation using the existing model */
-    static ModelNode getOperation(ModelNode address, ModelNode existing) {
+    public static ModelNode getOperation(ModelNode address, ModelNode existing) {
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
         if (existing.hasDefined(ENTRIES)) {
             op.get(ENTRIES).set(existing.get(ENTRIES));
@@ -63,7 +64,7 @@ class JMSTopicAdd implements ModelAddOperationHandler {
         return op;
     }
 
-    static final JMSTopicAdd INSTANCE = new JMSTopicAdd();
+    public static final JMSTopicAdd INSTANCE = new JMSTopicAdd();
     private static final String[] NO_BINDINGS = new String[0];
 
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {

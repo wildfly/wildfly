@@ -33,17 +33,21 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
+import org.jboss.as.messaging.jms.JMSQueueAdd;
+import org.jboss.as.messaging.jms.JMSTopicAdd;
+import org.jboss.as.messaging.jms.PooledConnectionFactoryAdd;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
 class MessagingSubsystemDescribeHandler implements ModelQueryOperationHandler {
 
     static final MessagingSubsystemDescribeHandler INSTANCE = new MessagingSubsystemDescribeHandler();
 
-    /** {@inheritDoc} */
-    @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode subsystemAdd = new ModelNode();
@@ -59,6 +63,35 @@ class MessagingSubsystemDescribeHandler implements ModelQueryOperationHandler {
         }
         final ModelNode result = new ModelNode();
         result.add(subsystemAdd);
+
+        if(subModel.hasDefined(CommonAttributes.CONNECTION_FACTORY)) {
+            for(final Property property : subModel.get(CommonAttributes.CONNECTION_FACTORY).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(CommonAttributes.CONNECTION_FACTORY, property.getName());
+                result.add(ConnectionFactoryAdd.getAddOperation(address, property.getValue()));
+            }
+        }
+        if(subModel.hasDefined(CommonAttributes.QUEUE)) {
+            for(final Property property : subModel.get(CommonAttributes.QUEUE).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(CommonAttributes.QUEUE, property.getName());
+                result.add(JMSQueueAdd.getOperation(address, property.getValue()));
+            }
+        }
+        if(subModel.hasDefined(CommonAttributes.JMS_TOPIC)) {
+            for(final Property property : subModel.get(CommonAttributes.JMS_TOPIC).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(CommonAttributes.JMS_TOPIC, property.getName());
+                result.add(JMSTopicAdd.getOperation(address, property.getValue()));
+            }
+        }
+        if(subModel.hasDefined(CommonAttributes.POOLED_CONNECTION_FACTORY)) {
+            for(final Property property : subModel.get(CommonAttributes.POOLED_CONNECTION_FACTORY).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(CommonAttributes.POOLED_CONNECTION_FACTORY, property.getName());
+                result.add(PooledConnectionFactoryAdd.getAddOperation(address, property.getValue()));
+            }
+        }
         resultHandler.handleResultFragment(Util.NO_LOCATION, result);
         resultHandler.handleResultComplete();
         return new BasicOperationResult();

@@ -53,7 +53,7 @@ public class SubsystemParsingUnitTestCase extends TestCase {
     public void test() throws Exception {
 
         List<ModelNode> operations = parse("subsystem.xml");
-        Assert.assertEquals(1, operations.size());
+        Assert.assertEquals(6, operations.size());
         final ModelNode operation = operations.get(0);
         System.err.println(operation);
 

@@ -89,8 +89,8 @@ public class JmsClientTestCase {
             // Create the queue using the management API
             ModelNode op = new ModelNode();
             op.get("operation").set("add");
-            op.get("address").add("subsystem", "jms");
-            op.get("address").add("queue", QUEUE_NAME);
+            op.get("address").add("subsystem", "messaging");
+            op.get("address").add("jms-queue", QUEUE_NAME);
             op.get("entries").add(QUEUE_NAME);
             applyUpdate(op, client);
             actionsApplied = true;
@@ -152,8 +152,8 @@ public class JmsClientTestCase {
                 // Remove the queue using the management API
                 ModelNode op = new ModelNode();
                 op.get("operation").set("remove");
-                op.get("address").add("subsystem", "jms");
-                op.get("address").add("queue", QUEUE_NAME);
+                op.get("address").add("subsystem", "messaging");
+                op.get("address").add("jms-queue", QUEUE_NAME);
                 applyUpdate(op, client);
             }
             safeClose(client);

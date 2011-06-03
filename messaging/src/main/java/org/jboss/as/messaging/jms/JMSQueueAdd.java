@@ -29,9 +29,9 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.jms.CommonAttributes.DURABLE;
-import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
-import static org.jboss.as.messaging.jms.CommonAttributes.SELECTOR;
+import static org.jboss.as.messaging.CommonAttributes.DURABLE;
+import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
+import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -51,13 +51,14 @@ import org.jboss.msc.service.ServiceName;
  * runtime action will create the {@link JMSQueueService}.
  *
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-class JMSQueueAdd implements ModelAddOperationHandler {
+public class JMSQueueAdd implements ModelAddOperationHandler {
 
     public static final String OPERATION_NAME = ADD;
 
     /** Create an "add" operation using the existing model */
-    static ModelNode getOperation(ModelNode address, ModelNode existing) {
+    public static ModelNode getOperation(ModelNode address, ModelNode existing) {
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
         if (existing.hasDefined(SELECTOR)) {
             op.get(SELECTOR).set(existing.get(SELECTOR));
@@ -71,11 +72,9 @@ class JMSQueueAdd implements ModelAddOperationHandler {
         return op;
     }
 
-    static final JMSQueueAdd INSTANCE = new JMSQueueAdd();
+    public static final JMSQueueAdd INSTANCE = new JMSQueueAdd();
     private static final String[] NO_BINDINGS = new String[0];
 
-    /** {@inheritDoc} */
-    @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         ModelNode opAddr = operation.require(OP_ADDR);

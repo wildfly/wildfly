@@ -61,10 +61,6 @@ class HornetQService implements Service<HornetQServer> {
         return mbeanServer;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public synchronized void start(final StartContext context) throws StartException {
         ClassLoader origTCCL = SecurityActions.getContextClassLoader();
         // Validate whether the AIO native layer can be used
@@ -144,10 +140,6 @@ class HornetQService implements Service<HornetQServer> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public synchronized void stop(final StopContext context) {
         try {
             if (server != null) {
@@ -159,10 +151,6 @@ class HornetQService implements Service<HornetQServer> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public synchronized HornetQServer getValue() throws IllegalStateException {
         final HornetQServer server = this.server;
         if (server == null) {

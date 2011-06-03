@@ -26,10 +26,11 @@ import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.messaging.jms.CommonAttributes.*;
+import static org.jboss.as.messaging.CommonAttributes.*;
 
 /**
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
 public class JMSServices {
@@ -76,7 +77,7 @@ public class JMSServices {
     static String SETUP_ATTEMPTS_METHOD = "setupAttempts";
     static String SETUP_INTERVAL_METHOD = "setupInterval";
 
-    static NodeAttribute[] CONNECTION_FACTORY_ATTRS = new NodeAttribute[] {
+    public static NodeAttribute[] CONNECTION_FACTORY_ATTRS = new NodeAttribute[] {
         //Do these 2 most frequently used ones out of alphabetical order
         new NodeAttribute(CONNECTOR, ModelType.OBJECT, false),   //<------
         new NodeAttribute(ENTRIES, ModelType.LIST, ModelType.STRING, false),
@@ -112,7 +113,7 @@ public class JMSServices {
         new NodeAttribute(TRANSACTION_BATCH_SIZE, ModelType.INT, false),
         new NodeAttribute(USE_GLOBAL_POOLS, ModelType.BOOLEAN, false)};
 
-    static NodeAttribute[] POOLED_CONNECTION_FACTORY_ATTRS = new NodeAttribute[] {
+    public static NodeAttribute[] POOLED_CONNECTION_FACTORY_ATTRS = new NodeAttribute[] {
         //Do these 2 most frequently used ones out of alphabetical order
         new NodeAttribute(CONNECTOR, ModelType.OBJECT, false),   //<------
         new NodeAttribute(ENTRIES, ModelType.LIST, ModelType.STRING, false),
@@ -190,7 +191,7 @@ public class JMSServices {
         new PooledCFAttribute(SETUP_ATTEMPTS, Integer.class.getName(), SETUP_ATTEMPTS_METHOD),
         new PooledCFAttribute(SETUP_INTERVAL, Long.class.getName(), SETUP_INTERVAL_METHOD)};
 
-    static class NodeAttribute {
+    public static class NodeAttribute {
         private final String name;
         private final ModelType type;
         private final ModelType valueType;
@@ -208,19 +209,19 @@ public class JMSServices {
             this.valueType = valueType;
         }
 
-        String getName() {
+        public String getName() {
             return name;
         }
 
-        ModelType getType() {
+        public ModelType getType() {
             return type;
         }
 
-        ModelType getValueType() {
+        public ModelType getValueType() {
             return valueType;
         }
 
-        boolean isRequired() {
+        public boolean isRequired() {
             return required;
         }
     }

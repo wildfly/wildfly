@@ -25,38 +25,38 @@ package org.jboss.as.messaging.jms;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.jms.CommonAttributes.AUTO_GROUP;
-import static org.jboss.as.messaging.jms.CommonAttributes.BLOCK_ON_ACK;
-import static org.jboss.as.messaging.jms.CommonAttributes.BLOCK_ON_DURABLE_SEND;
-import static org.jboss.as.messaging.jms.CommonAttributes.BLOCK_ON_NON_DURABLE_SEND;
-import static org.jboss.as.messaging.jms.CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT;
-import static org.jboss.as.messaging.jms.CommonAttributes.CALL_TIMEOUT;
-import static org.jboss.as.messaging.jms.CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD;
-import static org.jboss.as.messaging.jms.CommonAttributes.CLIENT_ID;
-import static org.jboss.as.messaging.jms.CommonAttributes.CONFIRMATION_WINDOW_SIZE;
-import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTION_TTL;
-import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.jms.CommonAttributes.CONSUMER_MAX_RATE;
-import static org.jboss.as.messaging.jms.CommonAttributes.CONSUMER_WINDOW_SIZE;
-import static org.jboss.as.messaging.jms.CommonAttributes.DISCOVERY_GROUP_NAME;
-import static org.jboss.as.messaging.jms.CommonAttributes.DUPS_OK_BATCH_SIZE;
-import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
-import static org.jboss.as.messaging.jms.CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION;
-import static org.jboss.as.messaging.jms.CommonAttributes.GROUP_ID;
-import static org.jboss.as.messaging.jms.CommonAttributes.HA;
-import static org.jboss.as.messaging.jms.CommonAttributes.LOAD_BALANCING_CLASS_NAME;
-import static org.jboss.as.messaging.jms.CommonAttributes.MAX_RETRY_INTERVAL;
-import static org.jboss.as.messaging.jms.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
-import static org.jboss.as.messaging.jms.CommonAttributes.PRE_ACK;
-import static org.jboss.as.messaging.jms.CommonAttributes.PRODUCER_MAX_RATE;
-import static org.jboss.as.messaging.jms.CommonAttributes.PRODUCER_WINDOW_SIZE;
-import static org.jboss.as.messaging.jms.CommonAttributes.RECONNECT_ATTEMPTS;
-import static org.jboss.as.messaging.jms.CommonAttributes.RETRY_INTERVAL;
-import static org.jboss.as.messaging.jms.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.as.messaging.jms.CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE;
-import static org.jboss.as.messaging.jms.CommonAttributes.THREAD_POOL_MAX_SIZE;
-import static org.jboss.as.messaging.jms.CommonAttributes.TRANSACTION_BATCH_SIZE;
-import static org.jboss.as.messaging.jms.CommonAttributes.USE_GLOBAL_POOLS;
+import static org.jboss.as.messaging.CommonAttributes.AUTO_GROUP;
+import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_ACK;
+import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_DURABLE_SEND;
+import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_NON_DURABLE_SEND;
+import static org.jboss.as.messaging.CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT;
+import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD;
+import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
+import static org.jboss.as.messaging.CommonAttributes.CONFIRMATION_WINDOW_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.CONSUMER_MAX_RATE;
+import static org.jboss.as.messaging.CommonAttributes.CONSUMER_WINDOW_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
+import static org.jboss.as.messaging.CommonAttributes.DUPS_OK_BATCH_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
+import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION;
+import static org.jboss.as.messaging.CommonAttributes.GROUP_ID;
+import static org.jboss.as.messaging.CommonAttributes.HA;
+import static org.jboss.as.messaging.CommonAttributes.LOAD_BALANCING_CLASS_NAME;
+import static org.jboss.as.messaging.CommonAttributes.MAX_RETRY_INTERVAL;
+import static org.jboss.as.messaging.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.PRE_ACK;
+import static org.jboss.as.messaging.CommonAttributes.PRODUCER_MAX_RATE;
+import static org.jboss.as.messaging.CommonAttributes.PRODUCER_WINDOW_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.RECONNECT_ATTEMPTS;
+import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL;
+import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.THREAD_POOL_MAX_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_BATCH_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.USE_GLOBAL_POOLS;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -87,10 +87,11 @@ import org.jboss.msc.service.ServiceName;
  * runtime action will create the {@link ConnectionFactoryService}.
  *
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-class ConnectionFactoryAdd implements ModelAddOperationHandler {
+public class ConnectionFactoryAdd implements ModelAddOperationHandler {
 
-    static final ConnectionFactoryAdd INSTANCE = new ConnectionFactoryAdd();
+    public static final ConnectionFactoryAdd INSTANCE = new ConnectionFactoryAdd();
     private static final String[] NO_BINDINGS = new String[0];
 
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
@@ -111,7 +112,6 @@ class ConnectionFactoryAdd implements ModelAddOperationHandler {
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ConnectionFactoryConfiguration configuration = createConfiguration(name, operation);
                     final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
@@ -197,7 +197,7 @@ class ConnectionFactoryAdd implements ModelAddOperationHandler {
         return NO_BINDINGS;
     }
 
-    static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
+    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);

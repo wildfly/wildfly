@@ -41,13 +41,12 @@ import org.jboss.msc.service.ServiceController;
  * runtime action will remove the corresponding {@link JMSTopicService}.
  *
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-class JMSTopicRemove implements ModelRemoveOperationHandler {
+public class JMSTopicRemove implements ModelRemoveOperationHandler {
 
-    static final JMSTopicRemove INSTANCE = new JMSTopicRemove();
+    public static final JMSTopicRemove INSTANCE = new JMSTopicRemove();
 
-    /** {@inheritDoc} */
-    @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         ModelNode opAddr = operation.require(OP_ADDR);

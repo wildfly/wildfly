@@ -22,48 +22,18 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
-import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
-import static org.jboss.as.messaging.CommonAttributes.BACKUP;
-import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.BROADCAST_PERIOD;
-import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
-import static org.jboss.as.messaging.CommonAttributes.CLUSTER_PASSWORD;
-import static org.jboss.as.messaging.CommonAttributes.CLUSTER_USER;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL_OVERRIDE;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF;
-import static org.jboss.as.messaging.CommonAttributes.CREATE_BINDINGS_DIR;
-import static org.jboss.as.messaging.CommonAttributes.CREATE_JOURNAL_DIR;
-import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.JMX_DOMAIN;
-import static org.jboss.as.messaging.CommonAttributes.JMX_MANAGEMENT_ENABLED;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_BUFFER_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_BUFFER_TIMEOUT;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_COMPACT_MIN_FILES;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_COMPACT_PERCENTAGE;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_FILE_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_MAX_IO;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_MIN_FILES;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_NON_TRANSACTIONAL;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_TYPE;
-import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.PERF_BLAST_PAGES;
-import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
-import static org.jboss.as.messaging.CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
-import static org.jboss.as.messaging.CommonAttributes.PERSIST_ID_CACHE;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
-
 import java.util.Locale;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.messaging.CommonAttributes.*;
+import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
+import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
+
 /**
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
 class MessagingSubsystemProviders {
 
@@ -73,11 +43,10 @@ class MessagingSubsystemProviders {
         JOURNAL_BUFFER_SIZE, JOURNAL_BUFFER_TIMEOUT, JOURNAL_COMPACT_MIN_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_DIRECTORY,
         JOURNAL_MIN_FILES, JOURNAL_SYNC_NON_TRANSACTIONAL, JOURNAL_TYPE, JOURNAL_FILE_SIZE, JOURNAL_MAX_IO, LARGE_MESSAGES_DIRECTORY, PAGING_DIRECTORY,
         PERF_BLAST_PAGES, PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY, PERSIST_ID_CACHE, PERSISTENCE_ENABLED, QUEUE,
-        SECURITY_SETTING};
+        SECURITY_SETTING, CONNECTION_FACTORY, POOLED_CONNECTION_FACTORY, JMS_QUEUE, JMS_TOPIC};
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
-        @Override
         public ModelNode getModelDescription(final Locale locale) {
             return MessagingDescriptions.getRootResource(locale);
         }
@@ -85,7 +54,6 @@ class MessagingSubsystemProviders {
 
     static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
 
-        @Override
         public ModelNode getModelDescription(final Locale locale) {
             return MessagingDescriptions.getSubsystemAdd(locale);
         }
@@ -93,7 +61,6 @@ class MessagingSubsystemProviders {
 
     static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
 
-        @Override
         public ModelNode getModelDescription(Locale locale) {
             return MessagingDescriptions.getSubsystemDescribe(locale);
         }
@@ -101,7 +68,6 @@ class MessagingSubsystemProviders {
 
     static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
 
-        @Override
         public ModelNode getModelDescription(final Locale locale) {
             return MessagingDescriptions.getSubsystemRemove(locale);
         }
@@ -109,7 +75,6 @@ class MessagingSubsystemProviders {
 
     static final DescriptionProvider QUEUE_RESOURCE = new DescriptionProvider() {
 
-        @Override
         public ModelNode getModelDescription(final Locale locale) {
             return MessagingDescriptions.getQueueResource(locale);
         }
@@ -117,7 +82,6 @@ class MessagingSubsystemProviders {
 
     static final DescriptionProvider QUEUE_ADD = new DescriptionProvider() {
 
-        @Override
         public ModelNode getModelDescription(final Locale locale) {
             return MessagingDescriptions.getQueueAdd(locale);
         }
@@ -125,9 +89,95 @@ class MessagingSubsystemProviders {
 
     static final DescriptionProvider QUEUE_REMOVE = new DescriptionProvider() {
 
-        @Override
         public ModelNode getModelDescription(final Locale locale) {
             return MessagingDescriptions.getQueueRemove(locale);
+        }
+    };
+
+    public static final DescriptionProvider JMS_QUEUE_RESOURCE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getJmsQueueResource(locale);
+        }
+
+    };
+
+    public static final DescriptionProvider JMS_QUEUE_ADD = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getQueueAdd(locale);
+        }
+    };
+
+    public static final DescriptionProvider JMS_QUEUE_REMOVE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getQueueRemove(locale);
+        }
+    };
+
+    public static final DescriptionProvider CF = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getConnectionFactory(locale);
+        }
+
+    };
+
+    public static final DescriptionProvider CF_ADD = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getConnectionFactoryAdd(locale);
+        }
+    };
+
+    public static final DescriptionProvider CF_REMOVE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getConnectionFactoryRemove(locale);
+        }
+    };
+
+    public static final DescriptionProvider JMS_TOPIC_RESOURCE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getTopic(locale);
+        }
+    };
+
+    public static final DescriptionProvider JMS_TOPIC_ADD = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getTopicAdd(locale);
+        }
+    };
+
+    public static final DescriptionProvider JMS_TOPIC_REMOVE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getTopicRemove(locale);
+        }
+    };
+
+
+    public static final DescriptionProvider RA = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getPooledConnectionFactory(locale);
+        }
+    };
+
+    public static final DescriptionProvider RA_ADD = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getPooledConnectionFactoryAdd(locale);
+        }
+    };
+
+    public static final DescriptionProvider RA_REMOVE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getPooledConnectionFactoryRemove(locale);
         }
     };
 

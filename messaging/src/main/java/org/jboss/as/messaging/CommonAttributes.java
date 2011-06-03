@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 /**
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
 public interface CommonAttributes {
 
@@ -46,6 +47,7 @@ public interface CommonAttributes {
     String CONNECTORS ="connectors";
     String CONNECTOR_REF ="connector-ref";
     String CONSUME_NAME ="consume";
+    String CORE_QUEUES ="core-queues";
     String CREATEDURABLEQUEUE_NAME ="createDurableQueue";
     String CREATETEMPQUEUE_NAME ="createTempQueue";
     String CREATE_BINDINGS_DIR ="create-bindings-dir";
@@ -114,7 +116,6 @@ public interface CommonAttributes {
     String ROLE = "role";
     String QUEUE ="queue";
     String QUEUE_ADDRESS ="queue-address";
-    String QUEUES ="queues";
     String REDELIVERY_DELAY ="redelivery-delay";
     String REDISTRIBUTION_DELAY ="redistribution-delay";
     String REFRESH_TIMEOUT ="refresh-timeout";
@@ -139,5 +140,65 @@ public interface CommonAttributes {
     String TYPE_ATTR_NAME ="type";
     String VALUE ="value";
     String WILD_CARD_ROUTING_ENABLED ="wild-card-routing-enabled";
+
+   //JMS Stuff
+
+    String HA ="ha";
+    String AUTO_GROUP ="auto-group";
+    String BLOCK_ON_ACK ="block-on-acknowledge";
+    String BLOCK_ON_DURABLE_SEND ="block-on-durable-send";
+    String BLOCK_ON_NON_DURABLE_SEND ="block-on-non-durable-send";
+    String CACHE_LARGE_MESSAGE_CLIENT ="cache-large-message-client";
+    String CALL_TIMEOUT ="call-timeout";
+    String CLIENT_FAILURE_CHECK_PERIOD ="client-failure-check-period";
+    String CLIENT_ID ="client-id";
+    String CONFIRMATION_WINDOW_SIZE ="confirmation-window-size";
+    String CONNECTION_FACTORY ="connection-factory";
+    String CONNECTION_FACTORIES ="jms-connection-factories";
+    String CONNECTION_TTL ="connection-ttl";
+    String CONNECTOR_NAME ="connector-name";
+    String CONSUMER_MAX_RATE ="consumer-max-rate";
+    String CONSUMER_WINDOW_SIZE ="consumer-window-size";
+    String DISCOVERY_GROUP_NAME ="discovery-group-name";
+    String DISCOVERY_GROUP_REF ="discovery-group-ref";
+    String DISCOVERY_INITIAL_WAIT_TIMEOUT ="discovery-initial-wait-timeout";
+    String DUPS_OK_BATCH_SIZE ="dups-ok-batch-size";
+    String ENTRIES ="entries";
+    String ENTRY ="entry";
+    String FAILOVER_ON_INITIAL_CONNECTION ="failover-on-initial-connection";
+    String FAILOVER_ON_SERVER_SHUTDOWN ="failover-on-server-shutdown";
+    String GROUP_ID ="group-id";
+    String JMS_DESTINATIONS = "jms-destinations";
+    String JMS_TOPIC ="jms-topic";
+    String JMS_QUEUE ="jms-queue";
+    String LOAD_BALANCING_CLASS_NAME ="connection-load-balancing-policy-class-name";
+    String MAX_RETRY_INTERVAL ="max-retry-interval";
+    String MIN_LARGE_MESSAGE_SIZE ="min-large-message-size";
+    String PRE_ACK ="pre-acknowledge";
+    String PRODUCER_MAX_RATE ="producer-max-rate";
+    String PRODUCER_WINDOW_SIZE ="producer-window-size";
+    String RECONNECT_ATTEMPTS ="reconnect-attempts";
+    String RETRY_INTERVAL ="retry-interval";
+    String RETRY_INTERVAL_MULTIPLIER ="retry-interval-multiplier";
+    String SCHEDULED_THREAD_POOL_MAX_SIZE ="scheduled-thread-pool-max-size";
+    String SELECTOR ="selector";
+    String THREAD_POOL_MAX_SIZE ="thread-pool-max-size";
+    String TRANSACTION_BATCH_SIZE ="transaction-batch-size";
+    String USE_GLOBAL_POOLS ="use-global-pools";
+    String POOLED_CONNECTION_FACTORY = "pooled-connection-factory";
+    String INBOUND_CONFIG = "inbound-config";
+    String USE_JNDI = "use-jndi";
+    String JNDI_PARAMS = "jndi-params";
+    String USE_LOCAL_TX = "use-local-tx";
+    String SETUP_ATTEMPTS = "setup-attempts";
+    String SETUP_INTERVAL = "setup-interval";
+    String TRANSACTION = "transaction";
+    String LOCAL = "local";
+    String XA = "xa";
+    String NONE = "none";
+    String MODE = "mode";
+    String LOCAL_TX = "LocalTransaction";
+    String XA_TX = "XATransaction";
+    String NO_TX = "NoTransaction";
 
 }

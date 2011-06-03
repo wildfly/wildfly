@@ -80,11 +80,6 @@ public class XSDValidationUnitTestCase {
     }
 
     @Test
-    public void testJBossJMS() throws Exception {
-        validateXsd("jboss-jms.xsd");
-    }
-
-    @Test
     public void testJBossNaming() throws Exception {
         validateXsd("jboss-naming.xsd");
     }

@@ -34,18 +34,30 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
+import org.jboss.as.messaging.jms.ConnectionFactoryRemove;
+import org.jboss.as.messaging.jms.JMSQueueAdd;
+import org.jboss.as.messaging.jms.JMSQueueRemove;
+import org.jboss.as.messaging.jms.JMSTopicAdd;
+import org.jboss.as.messaging.jms.JMSTopicRemove;
+import org.jboss.as.messaging.jms.PooledConnectionFactoryAdd;
+import org.jboss.as.messaging.jms.PooledConnectionFactoryRemove;
 
 /**
  * Domain extension that integrates HornetQ.
  *
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
 public class MessagingExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "messaging";
 
-    /** {@inheritDoc} */
-    @Override
+    private static final PathElement CFS_PATH = PathElement.pathElement(CommonAttributes.CONNECTION_FACTORY);
+    private static final PathElement JMS_QUEUE_PATH = PathElement.pathElement(CommonAttributes.JMS_QUEUE);
+    private static final PathElement TOPIC_PATH = PathElement.pathElement(CommonAttributes.JMS_TOPIC);
+    private static final PathElement RA_PATH = PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
+
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(MessagingSubsystemProviders.SUBSYSTEM);
@@ -57,10 +69,25 @@ public class MessagingExtension implements Extension {
         final ModelNodeRegistration queue = registration.registerSubModel(PathElement.pathElement(QUEUE), MessagingSubsystemProviders.QUEUE_RESOURCE);
         queue.registerOperationHandler(ADD, QueueAdd.INSTANCE, QueueAdd.INSTANCE, false);
         queue.registerOperationHandler(REMOVE, QueueRemove.INSTANCE, QueueRemove.INSTANCE, false);
+
+        // Connection factories
+        final ModelNodeRegistration cfs = registration.registerSubModel(CFS_PATH, MessagingSubsystemProviders.CF);
+        cfs.registerOperationHandler(ADD, ConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.CF_ADD, false);
+        cfs.registerOperationHandler(REMOVE, ConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.CF_REMOVE, false);
+        // JMS Queues
+        final ModelNodeRegistration queues = registration.registerSubModel(JMS_QUEUE_PATH, MessagingSubsystemProviders.JMS_QUEUE_RESOURCE);
+        queues.registerOperationHandler(ADD, JMSQueueAdd.INSTANCE, MessagingSubsystemProviders.JMS_QUEUE_ADD, false);
+        queues.registerOperationHandler(REMOVE, JMSQueueRemove.INSTANCE, MessagingSubsystemProviders.JMS_QUEUE_REMOVE, false);
+        // JMS Topics
+        final ModelNodeRegistration topics = registration.registerSubModel(TOPIC_PATH, MessagingSubsystemProviders.JMS_TOPIC_RESOURCE);
+        topics.registerOperationHandler(ADD, JMSTopicAdd.INSTANCE, MessagingSubsystemProviders.JMS_TOPIC_ADD, false);
+        topics.registerOperationHandler(REMOVE, JMSTopicRemove.INSTANCE, MessagingSubsystemProviders.JMS_TOPIC_REMOVE, false);
+        // Resource Adapter Pooled connection factories
+        final ModelNodeRegistration resourceAdapters = registration.registerSubModel(RA_PATH, MessagingSubsystemProviders.RA);
+        resourceAdapters.registerOperationHandler(ADD, PooledConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.RA_ADD, false);
+        resourceAdapters.registerOperationHandler(REMOVE, PooledConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.RA_REMOVE);
     }
 
-    /** {@inheritDoc} */
-    @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
     }

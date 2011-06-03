@@ -29,6 +29,9 @@ public enum Attribute {
    STRING(CommonAttributes.STRING),
    TYPE_ATTR_NAME(CommonAttributes.TYPE_ATTR_NAME),
    VALUE(CommonAttributes.VALUE),
+   //JMS Stuff
+   CONNECTOR_NAME(CommonAttributes.CONNECTOR_NAME),
+   DISCOVERY_GROUP_NAME(CommonAttributes.DISCOVERY_GROUP_NAME),
    ;
    private final String name;
 

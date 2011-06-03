@@ -41,10 +41,11 @@ import org.jboss.msc.service.ServiceController;
  * runtime action will remove the corresponding {@link ConnectionFactoryService}.
  *
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-class ConnectionFactoryRemove implements ModelRemoveOperationHandler {
+public class ConnectionFactoryRemove implements ModelRemoveOperationHandler {
 
-    static final ConnectionFactoryRemove INSTANCE = new ConnectionFactoryRemove();
+    public static final ConnectionFactoryRemove INSTANCE = new ConnectionFactoryRemove();
 
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 

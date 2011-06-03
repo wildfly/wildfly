@@ -41,13 +41,12 @@ import org.jboss.msc.service.ServiceController;
  * runtime action will remove the corresponding {@link JMSQueueService}.
  *
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-class JMSQueueRemove implements ModelRemoveOperationHandler {
+public class JMSQueueRemove implements ModelRemoveOperationHandler {
 
-    static final JMSQueueRemove INSTANCE = new JMSQueueRemove();
+    public static final JMSQueueRemove INSTANCE = new JMSQueueRemove();
 
-    /** {@inheritDoc} */
-    @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         ModelNode opAddr = operation.require(OP_ADDR);
