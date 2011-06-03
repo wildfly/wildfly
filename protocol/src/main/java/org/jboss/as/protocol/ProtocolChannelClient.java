@@ -139,6 +139,18 @@ public class ProtocolChannelClient implements Closeable {
     }
 
     public void close() {
+        if (channel != null) {
+            try {
+                channel.writeShutdown();
+            } catch (IOException ignore) {
+            }
+            IoUtils.safeClose(channel);
+            try {
+                channel.awaitClosed();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
         IoUtils.safeClose(connection);
         IoUtils.safeClose(endpoint);
 

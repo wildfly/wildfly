@@ -26,7 +26,6 @@ import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.ProtocolChannelClient;
@@ -72,8 +71,9 @@ public abstract class ManagementClientChannelStrategy {
         private final String hostName;
         private final int port;
         private final ExecutorService executorService;
-        private volatile ProtocolChannel channel;
         private final ManagementOperationHandler handler;
+        private volatile ProtocolChannelClient client;
+        private volatile ProtocolChannel channel;
 
         public Establishing(String hostName, int port, final ExecutorService executorService, final ManagementOperationHandler handler) {
             this.hostName = hostName;
@@ -84,7 +84,6 @@ public abstract class ManagementClientChannelStrategy {
 
         @Override
         public ProtocolChannel getChannel() {
-            final ProtocolChannelClient client;
             try {
                 final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
                 configuration.setEndpointName("endpoint");
@@ -97,7 +96,8 @@ public abstract class ManagementClientChannelStrategy {
                 throw new RuntimeException(e);
             }
 
-            while (true) {
+            //Try reconnecting a few times
+            for (int i = 0 ; i < 20 ; i++) {
                 try {
                     client.connect();
                     break;
@@ -121,13 +121,7 @@ public abstract class ManagementClientChannelStrategy {
         @Override
         public void requestDone() {
             IoUtils.safeClose(channel);
-            executorService.shutdown();
-            try {
-                executorService.awaitTermination(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            executorService.shutdownNow();
+            IoUtils.safeClose(client);
         }
     }
 }

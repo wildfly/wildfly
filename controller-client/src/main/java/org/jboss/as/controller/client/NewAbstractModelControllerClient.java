@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
@@ -48,10 +49,17 @@ import org.jboss.threads.AsyncFuture;
  */
 abstract class NewAbstractModelControllerClient implements NewModelControllerClient, ManagementOperationHandler {
     private final Map<Integer, ExecuteRequestContext> activeRequests = Collections.synchronizedMap(new HashMap<Integer, ExecuteRequestContext>());
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    protected final ExecutorService executor = Executors.newCachedThreadPool();
 
     @Override
     public void close() throws IOException {
+        executor.shutdown();
+        try {
+            executor.awaitTermination(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        executor.shutdownNow();
     }
 
     @Override
