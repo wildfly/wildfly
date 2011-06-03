@@ -58,7 +58,7 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
 
     static final ServiceName ASYNC_EXECUTOR_SERVICE_NAME = ThreadsServices.EXECUTOR.append("ejb3-async");
 
-    protected AccessTimeout beanLevelAccessTimeout;
+    protected Map<String, AccessTimeout> beanLevelAccessTimeout;
     private final Set<Method> asynchronousMethods;
     protected Executor asyncExecutor;
     private final Map<String, ServiceName> viewServices;

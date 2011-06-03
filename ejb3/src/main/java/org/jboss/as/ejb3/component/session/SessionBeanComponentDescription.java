@@ -31,7 +31,6 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -53,7 +52,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -78,24 +77,24 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private ConcurrencyManagementType concurrencyManagementType;
 
     /**
-     * The bean level {@link LockType} for this bean.
+     * Map of class name to default {@link LockType} for this bean.
      */
-    private LockType beanLevelLockType;
+    private Map<String, LockType> beanLevelLockType = new HashMap<String, LockType>();
 
     /**
-     * The bean level {@link AccessTimeout} for this bean.
+     * Map of class name to default {@link AccessTimeout} for this component.
      */
-    private AccessTimeout beanLevelAccessTimeout;
+    private Map<String, AccessTimeout> beanLevelAccessTimeout = new HashMap<String, AccessTimeout>();
 
     /**
      * The {@link LockType} applicable for a specific bean methods.
      */
-    private Map<EJBMethodDescription, LockType> methodLockTypes = new ConcurrentHashMap<EJBMethodDescription, LockType>();
+    private Map<MethodIdentifier, LockType> methodLockTypes = new ConcurrentHashMap<MethodIdentifier, LockType>();
 
     /**
      * The {@link AccessTimeout} applicable for a specific bean methods.
      */
-    private Map<EJBMethodDescription, AccessTimeout> methodAccessTimeouts = new ConcurrentHashMap<EJBMethodDescription, AccessTimeout>();
+    private Map<MethodIdentifier, AccessTimeout> methodAccessTimeouts = new ConcurrentHashMap<MethodIdentifier, AccessTimeout>();
 
     /**
      * Methods on the component marked as @Asynchronous
@@ -221,14 +220,11 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     /**
      * Sets the {@link javax.ejb.LockType} applicable for the bean.
      *
+     * @param className The class that has the annotation
      * @param locktype The lock type applicable for the bean
-     * @throws IllegalArgumentException If the bean has already been marked for a different {@link javax.ejb.LockType} than the one passed
      */
-    public void setBeanLevelLockType(LockType locktype) {
-        if (this.beanLevelLockType != null && this.beanLevelLockType != locktype) {
-            throw new IllegalArgumentException(this.getEJBName() + " bean has already been marked for " + this.beanLevelLockType + " lock type. Cannot change it to " + locktype);
-        }
-        this.beanLevelLockType = locktype;
+    public void setBeanLevelLockType(String className, LockType locktype) {
+        this.beanLevelLockType.put(className, locktype);
     }
 
     /**
@@ -236,7 +232,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      *
      * @return
      */
-    public LockType getBeanLevelLockType() {
+    public Map<String, LockType> getBeanLevelLockType() {
         return this.beanLevelLockType;
     }
 
@@ -246,12 +242,12 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      * @param lockType The applicable lock type for the method
      * @param method   The method
      */
-    public void setLockType(LockType lockType, EJBMethodDescription method) {
+    public void setLockType(LockType lockType, MethodIdentifier method) {
         this.methodLockTypes.put(method, lockType);
     }
 
-    public Map<EJBMethodDescription, LockType> getMethodApplicableLockTypes() {
-        return Collections.unmodifiableMap(this.methodLockTypes);
+    public Map<MethodIdentifier, LockType> getMethodApplicableLockTypes() {
+        return this.methodLockTypes;
     }
 
     /**
@@ -259,21 +255,17 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      *
      * @return
      */
-    public AccessTimeout getBeanLevelAccessTimeout() {
+    public Map<String, AccessTimeout> getBeanLevelAccessTimeout() {
         return this.beanLevelAccessTimeout;
     }
 
     /**
      * Sets the {@link javax.ejb.AccessTimeout} applicable for the bean.
      *
-     * @param accessTimeout The access timeout applicable for the bean
-     * @throws IllegalArgumentException If the bean has already been marked for a different {@link javax.ejb.AccessTimeout} than the one passed
+     * @param accessTimeout The access timeout applicable for the class
      */
-    public void setBeanLevelAccessTimeout(AccessTimeout accessTimeout) {
-        if (this.beanLevelAccessTimeout != null && this.beanLevelAccessTimeout != accessTimeout) {
-            throw new IllegalArgumentException(this.getEJBName() + " bean has already been marked for " + this.beanLevelAccessTimeout + " access timeout. Cannot change it to " + accessTimeout);
-        }
-        this.beanLevelAccessTimeout = accessTimeout;
+    public void setBeanLevelAccessTimeout(String className, AccessTimeout accessTimeout) {
+        this.beanLevelAccessTimeout.put(className, accessTimeout);
     }
 
     /**
@@ -282,12 +274,12 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      * @param accessTimeout The applicable access timeout for the method
      * @param method        The method
      */
-    public void setAccessTimeout(AccessTimeout accessTimeout, EJBMethodDescription method) {
+    public void setAccessTimeout(AccessTimeout accessTimeout, MethodIdentifier method) {
         this.methodAccessTimeouts.put(method, accessTimeout);
     }
 
-    public Map<EJBMethodDescription, AccessTimeout> getMethodApplicableAccessTimeouts() {
-        return Collections.unmodifiableMap(this.methodAccessTimeouts);
+    public Map<MethodIdentifier, AccessTimeout> getMethodApplicableAccessTimeouts() {
+        return this.methodAccessTimeouts;
     }
 
     /**

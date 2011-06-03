@@ -26,7 +26,6 @@ import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
@@ -42,14 +41,11 @@ import org.jboss.metadata.ejb.spec.AccessTimeoutMetaData;
 import org.jboss.metadata.ejb.spec.AroundInvokeMetaData;
 import org.jboss.metadata.ejb.spec.BusinessLocalsMetaData;
 import org.jboss.metadata.ejb.spec.BusinessRemotesMetaData;
-import org.jboss.metadata.ejb.spec.ConcurrentMethodMetaData;
-import org.jboss.metadata.ejb.spec.ConcurrentMethodsMetaData;
 import org.jboss.metadata.ejb.spec.ContainerTransactionMetaData;
 import org.jboss.metadata.ejb.spec.ContainerTransactionsMetaData;
 import org.jboss.metadata.ejb.spec.MethodMetaData;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.MethodsMetaData;
-import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
@@ -227,16 +223,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         }
         // bean level lock-type
         LockType lockType = singletonBeanMetaData.getLockType();
-        singletonComponentDescription.setBeanLevelLockType(lockType);
-        // add method level lock type to the description
-        ConcurrentMethodsMetaData concurrentMethods = singletonBeanMetaData.getConcurrentMethods();
-        if (concurrentMethods != null) {
-            for (ConcurrentMethodMetaData concurrentMethod : concurrentMethods) {
-                LockType methodLockType = concurrentMethod.getLockType();
-                EJBMethodDescription method = this.getEJBMethodDescription(concurrentMethod.getMethod());
-                singletonComponentDescription.setLockType(methodLockType, method);
-            }
-        }
+        singletonComponentDescription.setBeanLevelLockType(singletonComponentDescription.getEJBClassName(), lockType);
 
         // concurrency management type
         ConcurrencyManagementType concurrencyManagementType = singletonBeanMetaData.getConcurrencyManagementType();
@@ -268,19 +255,8 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
                     return AccessTimeout.class;
                 }
             };
-            singletonComponentDescription.setBeanLevelAccessTimeout(accessTimeout);
+            singletonComponentDescription.setBeanLevelAccessTimeout(singletonComponentDescription.getEJBClassName(), accessTimeout);
         }
     }
 
-    private EJBMethodDescription getEJBMethodDescription(NamedMethodMetaData namedMethodMetaData) {
-        if (namedMethodMetaData == null) {
-            return null;
-        }
-        String methodName = namedMethodMetaData.getMethodName();
-        MethodParametersMetaData methodParams = namedMethodMetaData.getMethodParams();
-        if (methodParams == null) {
-            return new EJBMethodDescription(methodName, (String[]) null);
-        }
-        return new EJBMethodDescription(methodName, methodParams.toArray(new String[methodParams.size()]));
-    }
 }

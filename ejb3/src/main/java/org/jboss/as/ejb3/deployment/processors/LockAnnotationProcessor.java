@@ -22,15 +22,16 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.Type;
 import org.jboss.logging.Logger;
 
 import javax.ejb.ConcurrencyManagementType;
@@ -98,12 +99,19 @@ public class LockAnnotationProcessor extends AbstractAnnotationEJBProcessor<Sess
             LockType lockType = LockType.valueOf(annotationInstance.value().asEnum());
             if (target instanceof ClassInfo) {
                 // bean level
-                componentDescription.setBeanLevelLockType(lockType);
+                componentDescription.setBeanLevelLockType(((ClassInfo) target).name().toString(), lockType);
                 logger.debug("Bean " + componentDescription.getEJBName() + " marked for lock type " + lockType);
             } else if (target instanceof MethodInfo) {
                 // method specific lock type
                 final MethodInfo method = (MethodInfo) target;
-                componentDescription.setLockType(lockType, new EJBMethodDescription(method));
+                final MethodInfo methodInfo = (MethodInfo) target;
+                final String[] argTypes = new String[methodInfo.args().length];
+                int i = 0;
+                for (Type argType : methodInfo.args()) {
+                    argTypes[i++] = argType.name().toString();
+                }
+                MethodIdentifier identifier = MethodIdentifier.getIdentifier(methodInfo.returnType().name().toString(), methodInfo.name(), argTypes);
+                componentDescription.setLockType(lockType, identifier);
             }
         }
     }

@@ -192,24 +192,24 @@ public class EjbJarDescriptionMergingUtil {
         }
 
         // bean level lock type
-        LockType overrideBeanLockType = override.getBeanLevelLockType();
+        LockType overrideBeanLockType = override.getBeanLevelLockType().get(mergedBean.getEJBClassName());
         if (overrideBeanLockType != null) {
-            mergedBean.setBeanLevelLockType(overrideBeanLockType);
+            mergedBean.setBeanLevelLockType(mergedBean.getEJBClassName(), overrideBeanLockType);
         } else {
-            LockType originalBeanLockType = original.getBeanLevelLockType();
+            LockType originalBeanLockType = original.getBeanLevelLockType().get(mergedBean.getEJBClassName());
             if (originalBeanLockType != null) {
-                mergedBean.setBeanLevelLockType(originalBeanLockType);
+                mergedBean.setBeanLevelLockType(mergedBean.getEJBClassName(), originalBeanLockType);
             }
         }
 
         // access timeout
-        AccessTimeout overrideAccessTimeout = override.getBeanLevelAccessTimeout();
+        AccessTimeout overrideAccessTimeout = override.getBeanLevelAccessTimeout().get(mergedBean.getEJBClassName());
         if (overrideAccessTimeout != null) {
-            mergedBean.setBeanLevelAccessTimeout(overrideAccessTimeout);
+            mergedBean.setBeanLevelAccessTimeout(mergedBean.getEJBClassName(), overrideAccessTimeout);
         } else {
-            AccessTimeout originalAccessTimeout = original.getBeanLevelAccessTimeout();
+            AccessTimeout originalAccessTimeout = original.getBeanLevelAccessTimeout().get(mergedBean.getEJBClassName());
             if (originalAccessTimeout != null) {
-                mergedBean.setBeanLevelAccessTimeout(originalAccessTimeout);
+                mergedBean.setBeanLevelAccessTimeout(mergedBean.getEJBClassName(), originalAccessTimeout);
             }
         }
 

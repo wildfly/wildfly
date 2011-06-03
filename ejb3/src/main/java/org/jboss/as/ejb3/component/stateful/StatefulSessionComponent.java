@@ -42,8 +42,10 @@ import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -108,10 +110,26 @@ public class StatefulSessionComponent extends SessionBeanComponent {
             return accessTimeout;
         }
         // check bean level access timeout
-        if (this.beanLevelAccessTimeout != null) {
-            return this.beanLevelAccessTimeout;
+        final AccessTimeout timeout = this.beanLevelAccessTimeout.get(method.getDeclaringClass().getName());
+        if(timeout != null) {
+            return timeout;
         }
-        return null;
+        return new AccessTimeout() {
+            @Override
+            public long value() {
+                return 5;
+            }
+
+            @Override
+            public TimeUnit unit() {
+                return TimeUnit.MINUTES;
+            }
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return AccessTimeout.class;
+            }
+        };
     }
 
     //    @Override

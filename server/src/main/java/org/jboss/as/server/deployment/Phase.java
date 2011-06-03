@@ -300,6 +300,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0400;
     public static final int POST_MODULE_EJB_DD_REMOVE_METHOD            = 0x0500;
     public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0600;
+    public static final int POST_MODULE_EJB_DD_CONCURRENCY              = 0x0601;
     public static final int POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION = 0x0700;
     public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;
     public static final int POST_MODULE_AGGREGATE_COMPONENT_INDEX       = 0x0900;

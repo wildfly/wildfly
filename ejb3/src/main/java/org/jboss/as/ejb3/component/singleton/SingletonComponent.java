@@ -58,7 +58,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     private boolean initOnStartup;
 
-    private LockType beanLevelLockType;
+    private Map<String, LockType> beanLevelLockType;
 
     private Map<EJBBusinessMethod, LockType> methodLockTypes;
 
@@ -139,8 +139,9 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
             return lockType;
         }
         // check bean level lock type
-        if (this.beanLevelLockType != null) {
-            return this.beanLevelLockType;
+        final LockType type = this.beanLevelLockType.get(method.getDeclaringClass().getName());
+        if (type != null) {
+            return type;
         }
         // default WRITE lock type
         return LockType.WRITE;
@@ -154,10 +155,27 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
             return accessTimeout;
         }
         // check bean level access timeout
-        if (this.beanLevelAccessTimeout != null) {
-            return this.beanLevelAccessTimeout;
+        final AccessTimeout beanTimeout = this.beanLevelAccessTimeout.get(method.getDeclaringClass().getName());
+        if (beanTimeout != null) {
+            return beanTimeout;
         }
-        return null;
+        //TODO: this should be configurable
+        return new AccessTimeout() {
+            @Override
+            public long value() {
+                return 5;
+            }
+
+            @Override
+            public TimeUnit unit() {
+                return TimeUnit.MINUTES;
+            }
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return AccessTimeout.class;
+            }
+        };
     }
 
     @Override

@@ -26,29 +26,25 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
-import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.invocation.proxy.MethodIdentifier;
 
 import javax.ejb.AccessTimeout;
 import javax.ejb.LockType;
-import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
  * User: jpai
  */
 public abstract class SessionBeanComponentCreateService extends EJBComponentCreateService {
 
-    private final LockType beanLevelLockType;
+    private final Map<String, LockType> beanLevelLockType;
 
     private final Map<EJBBusinessMethod, LockType> methodApplicableLockTypes;
 
-    private final AccessTimeout beanLevelAccessTimeout;
+    private final Map<String, AccessTimeout> beanLevelAccessTimeout;
 
     private final Map<EJBBusinessMethod, AccessTimeout> methodApplicableAccessTimeouts;
 
@@ -61,49 +57,29 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
         super(componentConfiguration, ejbJarConfiguration);
 
         final SessionBeanComponentDescription sessionBeanComponentDescription = (SessionBeanComponentDescription) componentConfiguration.getComponentDescription();
-        this.beanLevelLockType = sessionBeanComponentDescription.getBeanLevelLockType() == null ? LockType.WRITE : sessionBeanComponentDescription.getBeanLevelLockType();
-        Map<EJBMethodDescription, LockType> methodLocks = sessionBeanComponentDescription.getMethodApplicableLockTypes();
+        this.beanLevelLockType = sessionBeanComponentDescription.getBeanLevelLockType();
+        Map<MethodIdentifier, LockType> methodLocks = sessionBeanComponentDescription.getMethodApplicableLockTypes();
         if (methodLocks == null) {
             this.methodApplicableLockTypes = Collections.emptyMap();
         } else {
             final Map<EJBBusinessMethod, LockType> locks = new HashMap();
-            for (Map.Entry<EJBMethodDescription, LockType> entry : methodLocks.entrySet()) {
-                final EJBMethodDescription ejbMethodDescription = entry.getKey();
+            for (Map.Entry<MethodIdentifier, LockType> entry : methodLocks.entrySet()) {
+                final MethodIdentifier ejbMethodDescription = entry.getKey();
                 final EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(ejbMethodDescription);
                 locks.put(ejbMethod, entry.getValue());
             }
             this.methodApplicableLockTypes = Collections.unmodifiableMap(locks);
         }
 
-        AccessTimeout accessTimeout = sessionBeanComponentDescription.getBeanLevelAccessTimeout();
-        // TODO: the configuration should always have an access timeout
-        if (accessTimeout == null) {
-            accessTimeout = new AccessTimeout() {
-                @Override
-                public long value() {
-                    return 5;
-                }
+        this.beanLevelAccessTimeout = sessionBeanComponentDescription.getBeanLevelAccessTimeout();
 
-                @Override
-                public TimeUnit unit() {
-                    return MINUTES;
-                }
-
-                @Override
-                public Class<? extends Annotation> annotationType() {
-                    return AccessTimeout.class;
-                }
-            };
-        }
-        this.beanLevelAccessTimeout = accessTimeout;
-
-        final Map<EJBMethodDescription, AccessTimeout> methodAccessTimeouts = sessionBeanComponentDescription.getMethodApplicableAccessTimeouts();
+        final Map<MethodIdentifier, AccessTimeout> methodAccessTimeouts = sessionBeanComponentDescription.getMethodApplicableAccessTimeouts();
         if (methodAccessTimeouts == null) {
             this.methodApplicableAccessTimeouts = Collections.emptyMap();
         } else {
             final Map<EJBBusinessMethod, AccessTimeout> accessTimeouts = new HashMap();
-            for (Map.Entry<EJBMethodDescription, AccessTimeout> entry : methodAccessTimeouts.entrySet()) {
-                final EJBMethodDescription ejbMethodDescription = entry.getKey();
+            for (Map.Entry<MethodIdentifier, AccessTimeout> entry : methodAccessTimeouts.entrySet()) {
+                final MethodIdentifier ejbMethodDescription = entry.getKey();
                 final EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(ejbMethodDescription);
                 accessTimeouts.put(ejbMethod, entry.getValue());
             }
@@ -112,7 +88,7 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
 
     }
 
-    public LockType getBeanLockType() {
+    public Map<String, LockType> getBeanLockType() {
         return this.beanLevelLockType;
     }
 
@@ -124,14 +100,14 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
         return this.methodApplicableAccessTimeouts;
     }
 
-    public AccessTimeout getBeanAccessTimeout() {
+    public Map<String, AccessTimeout> getBeanAccessTimeout() {
         return this.beanLevelAccessTimeout;
     }
 
-    private EJBBusinessMethod getEJBBusinessMethod(final EJBMethodDescription method) {
+    private EJBBusinessMethod getEJBBusinessMethod(final MethodIdentifier method) {
         final ClassLoader classLoader = this.getComponentClass().getClassLoader();
-        final String methodName = method.getMethodName();
-        final String[] types = method.getMethodParams();
+        final String methodName = method.getName();
+        final String[] types = method.getParameterTypes();
         if (types == null || types.length == 0) {
             return new EJBBusinessMethod(methodName);
         }
