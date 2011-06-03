@@ -25,7 +25,6 @@ package org.jboss.as.controller.client.helpers.standalone;
 import java.net.InetAddress;
 import java.util.concurrent.Future;
 
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.impl.ModelControllerClientServerDeploymentManager;
 
@@ -53,10 +52,9 @@ public interface ServerDeploymentManager {
         }
 
         /**
-         * Create an {@link ServerDeploymentManager} instance using the given {@link ModelControllerClient}.
+         * Create an {@link ServerDeploymentManager} instance using the given {@link NewModelControllerClient}.
          *
-         * @param address The remote address to connect to
-         * @param port The remote port
+         * @param client the client
          * @return A domain client
          */
         public static ServerDeploymentManager create(final NewModelControllerClient client) {

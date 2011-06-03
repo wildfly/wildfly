@@ -45,10 +45,12 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
+import org.junit.After;
+import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -69,14 +71,23 @@ public class DescribeOperationUnitTestCase {
         ignored.add("deployment-scanner");
     }
 
-    @Deployment()
+    private NewModelControllerClient client;
+
+    @Deployment
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
 
     // [ARQ-458] @Before not called with @RunAsClient
-    private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        return ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+    private NewModelControllerClient getModelControllerClient() throws UnknownHostException {
+        StreamUtils.safeClose(client);
+        client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        return client;
+    }
+
+    @After
+    public void tearDown() {
+        StreamUtils.safeClose(client);
     }
 
     @Test

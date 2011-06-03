@@ -58,8 +58,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperationBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.security.JBossJSSESecurityDomain;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -87,7 +87,7 @@ public class WebSecurityCERTTestCase {
      * @param name Name of the war file
      * @param servletClass a class that is the servlet
      * @param webxml {@link URL} to the web.xml. This can be null
-     * @return
+     * @return  the web archive
      */
     public static WebArchive create(String name, Class<?> servletClass, URL webxml) {
         WebArchive war = ShrinkWrap.create(WebArchive.class, name);
@@ -109,7 +109,7 @@ public class WebSecurityCERTTestCase {
     public static WebArchive deployment() {
         // FIXME hack to get things prepared before the deployment happens
         try {
-            final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            final NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
             // create the test connector
             createTestConnector(client);
             // create required security domains
@@ -127,7 +127,7 @@ public class WebSecurityCERTTestCase {
 
     @AfterClass
     public static void after() throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         // and remove the connector again
         removeTestConnector(client);
         // remove test security domains
@@ -163,7 +163,7 @@ public class WebSecurityCERTTestCase {
         }
     }
 
-    public static void createTestConnector(final ModelControllerClient client) throws Exception {
+    public static void createTestConnector(final NewModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
@@ -199,7 +199,7 @@ public class WebSecurityCERTTestCase {
         applyUpdates(updates, client);
     }
 
-    public static void createSecurityDomains(final ModelControllerClient client) throws Exception {
+    public static void createSecurityDomains(final NewModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
@@ -226,7 +226,7 @@ public class WebSecurityCERTTestCase {
         applyUpdates(updates, client);
     }
 
-    public static void removeTestConnector(final ModelControllerClient client) throws Exception {
+    public static void removeTestConnector(final NewModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
@@ -243,7 +243,7 @@ public class WebSecurityCERTTestCase {
         applyUpdates(updates, client);
     }
 
-    public static void removeSecurityDomains(final ModelControllerClient client) throws Exception {
+    public static void removeSecurityDomains(final NewModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
@@ -261,14 +261,14 @@ public class WebSecurityCERTTestCase {
         applyUpdates(updates, client);
     }
 
-    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
+    public static void applyUpdates(final List<ModelNode> updates, final NewModelControllerClient client) throws Exception {
         for (ModelNode update : updates) {
             applyUpdate(update, client);
         }
     }
 
-    public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
-        ModelNode result = client.execute(OperationBuilder.Factory.create(update).build());
+    public static void applyUpdate(ModelNode update, final NewModelControllerClient client) throws Exception {
+        ModelNode result = client.execute(new NewOperationBuilder(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));

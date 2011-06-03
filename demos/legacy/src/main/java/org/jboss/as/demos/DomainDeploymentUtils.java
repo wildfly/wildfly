@@ -22,6 +22,21 @@
 package org.jboss.as.demos;
 
 import static org.jboss.as.protocol.StreamUtils.safeClose;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperation;
+import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 import java.io.Closeable;
 import java.io.File;
@@ -67,16 +82,16 @@ import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 public class DomainDeploymentUtils implements Closeable {
 
     private final List<Deployment> deployments = new ArrayList<Deployment>();
-    private final ModelControllerClient client;
+    private final NewModelControllerClient client;
 //    private final DomainDeploymentManager manager;
     private boolean injectedClient = true;
 
     public DomainDeploymentUtils() throws UnknownHostException {
-        this(ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999));
+        this(NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999));
         this.injectedClient = false;
     }
 
-    public DomainDeploymentUtils(ModelControllerClient client) throws UnknownHostException {
+    public DomainDeploymentUtils(NewModelControllerClient client) throws UnknownHostException {
         this.client = client;
     }
 
@@ -100,7 +115,7 @@ public class DomainDeploymentUtils implements Closeable {
 
     public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException  {
         ModelNode op = new ModelNode();
-        OperationBuilder builder = OperationBuilder.Factory.create(op);
+        NewOperationBuilder builder = new NewOperationBuilder(op);
         op.get(ClientConstants.OP).set("composite");
         op.get(ClientConstants.OP_ADDR).setEmptyList();
         ModelNode steps = op.get("steps");
@@ -172,10 +187,10 @@ public class DomainDeploymentUtils implements Closeable {
     }
 
     private ModelNode execute(ModelNode op) throws IOException {
-        return execute(OperationBuilder.Factory.create(op).build());
+        return execute(new NewOperationBuilder(op).build());
     }
 
-    private ModelNode execute(Operation op) throws IOException {
+    private ModelNode execute(NewOperation op) throws IOException {
         ModelNode result = client.execute(op);
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             return result.get("result");
@@ -242,7 +257,7 @@ public class DomainDeploymentUtils implements Closeable {
             }
         }
 
-        public synchronized ModelNode addDeployment(OperationBuilder context) throws IOException {
+        public synchronized ModelNode addDeployment(NewOperationBuilder context) throws IOException {
 
 
             System.out.println("Deploying " + realArchive.getName());

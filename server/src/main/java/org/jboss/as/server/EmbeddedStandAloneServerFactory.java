@@ -22,6 +22,10 @@
 
 package org.jboss.as.server;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.xml.namespace.QName;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -36,25 +40,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.xml.namespace.QName;
-
-import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.client.Cancellable;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.OperationResult;
-import org.jboss.as.controller.client.ResultHandler;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
@@ -65,7 +56,6 @@ import org.jboss.as.embedded.ServerStartException;
 import org.jboss.as.embedded.StandaloneServer;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
-import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceActivator;
@@ -100,90 +90,6 @@ import org.jboss.vfs.VFSUtils;
 public class EmbeddedStandAloneServerFactory {
 
     public static final String JBOSS_EMBEDDED_ROOT = "jboss.embedded.root";
-
-    private static class ModelControllerToModelControllerClientAdapter implements ModelControllerClient {
-        private static class OperationResultAdapter implements Cancellable, OperationResult {
-            private final org.jboss.as.controller.OperationResult delegate;
-
-            OperationResultAdapter(org.jboss.as.controller.OperationResult delegate) {
-                this.delegate = delegate;
-            }
-
-            @Override
-            public boolean cancel() throws IOException {
-                return delegate.getCancellable().cancel();
-            }
-
-            @Override
-            public Cancellable getCancellable() {
-                return this;
-            }
-
-            @Override
-            public ModelNode getCompensatingOperation() {
-                return delegate.getCompensatingOperation();
-            }
-        }
-
-        private static class ResultHandlerAdapter implements org.jboss.as.controller.ResultHandler {
-            private final ResultHandler delegate;
-
-            ResultHandlerAdapter(ResultHandler delegate) {
-                this.delegate = delegate;
-            }
-
-            @Override
-            public void handleResultFragment(String[] location, ModelNode result) {
-                delegate.handleResultFragment(location, result);
-            }
-
-            @Override
-            public void handleResultComplete() {
-                delegate.handleResultComplete();
-            }
-
-            @Override
-            public void handleFailed(ModelNode failureDescription) {
-                delegate.handleFailed(failureDescription);
-            }
-
-            @Override
-            public void handleCancellation() {
-                delegate.handleCancellation();
-            }
-        };
-
-        private final ModelController delegate;
-
-        ModelControllerToModelControllerClientAdapter(ModelController delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public OperationResult execute(ModelNode operation, ResultHandler handler) {
-            return execute(OperationBuilder.Factory.create(operation).build(), handler);
-        }
-
-        @Override
-        public ModelNode execute(ModelNode operation) throws CancellationException, IOException {
-            return execute(OperationBuilder.Factory.create(operation).build());
-        }
-
-        @Override
-        public OperationResult execute(Operation operation, ResultHandler handler) {
-            return new OperationResultAdapter(delegate.execute(operation, new ResultHandlerAdapter(handler)));
-        }
-
-        @Override
-        public ModelNode execute(Operation operation) throws CancellationException, IOException {
-            return delegate.execute(operation);
-        }
-
-        @Override
-        public void close() throws IOException {
-            // no-op
-        }
-    };
 
     private EmbeddedStandAloneServerFactory() {
     }

@@ -46,12 +46,13 @@ import javax.management.ObjectName;
 
 import junit.framework.Assert;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.api.Run;
+import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperationBuilder;
 import org.jboss.as.test.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
@@ -66,12 +67,12 @@ import org.junit.runner.RunWith;
  * @author Emanuel Muckenhuber
  */
 @RunWith(Arquillian.class)
-@RunAsClient
+@Run(RunModeType.AS_CLIENT)
 public class JmsClientTestCase {
 
     private static final String QUEUE_NAME = "createdTestQueue";
 
-    @Deployment(testable = false)
+    @Deployment()
     public static Archive<?> createDeployment(){
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
         return ShrinkWrapUtils.createJavaArchive("demos/fakejndi.sar", FakeJndi.class.getPackage());
@@ -81,7 +82,7 @@ public class JmsClientTestCase {
     public void testMessagingClient() throws Exception {
         QueueConnection conn = null;
         QueueSession session = null;
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999);
+        NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999);
 
         boolean actionsApplied = false;
         try {
@@ -160,8 +161,8 @@ public class JmsClientTestCase {
         }
     }
 
-    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
-        ModelNode result = client.execute(OperationBuilder.Factory.create(update).build());
+    static void applyUpdate(ModelNode update, final NewModelControllerClient client) throws IOException {
+        ModelNode result = client.execute(new NewOperationBuilder(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));
