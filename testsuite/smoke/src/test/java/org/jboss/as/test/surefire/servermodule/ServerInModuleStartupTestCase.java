@@ -28,17 +28,16 @@ import java.net.InetAddress;
 import java.util.Properties;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.EmbeddedStandAloneServerFactory;
 import org.jboss.as.server.Main;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
-import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.shrinkwrap.api.Archive;
@@ -88,12 +87,13 @@ public class ServerInModuleStartupTestCase  {
      */
     @Test
     public void testReadConfigAsXml() throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        Assert.fail("Temporarily disabled - read-config-as-xml does not seem to exist");
+        NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             ModelNode request = new ModelNode();
             request.get("operation").set("read-config-as-xml");
             request.get("address").setEmptyList();
-            ModelNode r = client.execute(OperationBuilder.Factory.create(request).build());
+            ModelNode r = client.execute(NewOperationBuilder.Factory.create(request).build());
 
             Assert.assertEquals(serverDetails, SUCCESS, r.require(OUTCOME).asString());
         } finally {
@@ -108,13 +108,13 @@ public class ServerInModuleStartupTestCase  {
      */
     @Test
     public void testReadResourceDescription() throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             ModelNode request = new ModelNode();
             request.get("operation").set("read-resource");
             request.get("address").setEmptyList();
             request.get("recursive").set(true);
-            ModelNode r = client.execute(OperationBuilder.Factory.create(request).build());
+            ModelNode r = client.execute(request);
 
             Assert.assertEquals("response with failure details:"+r.toString() + ":" + serverDetails, SUCCESS, r.require(OUTCOME).asString());
 
@@ -123,7 +123,7 @@ public class ServerInModuleStartupTestCase  {
             request.get("address").setEmptyList();
             request.get("recursive").set(true);
             request.get("operations").set(true);
-            r = client.execute(OperationBuilder.Factory.create(request).build());
+            r = client.execute(new NewOperationBuilder(request).build());
 
             Assert.assertEquals("response with failure details:"+r.toString() + ":" + serverDetails, SUCCESS, r.require(OUTCOME).asString());
         } finally {
