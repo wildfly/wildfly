@@ -19,8 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.internals.as7_859;
+package org.jboss.as.testsuite.integration.as835;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -32,29 +33,60 @@ import org.jboss.as.testsuite.integration.common.Naming;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * [AS7-835] ejb-jar.xml doesn't need to define a session-type
+ *
+ * https://issues.jboss.org/browse/AS7-835
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @RunWith(Arquillian.class)
-public class PrivatePostConstructsTestCase {
+public class AS835TestCase {
+
     @Deployment
     public static Archive<?> deployment() {
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
-        WebArchive deployment = ShrinkWrap.create(WebArchive.class, "as7_859.war")
-                .addPackage(Child.class.getPackage())
-                .addPackage(Naming.class.getPackage());
+        WebArchive deployment = ShrinkWrap.create(WebArchive.class, "as835.war")
+                .addPackage(SimpleStatelessBean.class.getPackage())
+                .addPackage(Naming.class.getPackage())
+                .addAsWebInfResource("as835.jar/META-INF/ejb-jar.xml", "ejb-jar.xml");
         System.out.println(deployment.toString(true));
         return deployment;
     }
 
+    /**
+     * Make sure the ejb-jar.xml is actually processed.
+     */
+    @Ignore("@Resource java.lang.String var; isn't working")
     @Test
-    public void testPostConstruct() throws NamingException {
-        final Child bean = Naming.lookup("java:global/as7_859/Child", Child.class);
-        assertNotNull(bean);
-        assertTrue("Child @PostConstruct has not been called", Child.postConstructCalled);
-        assertTrue("Parent @PostConstruct has not been called", Parent.postConstructCalled);
+    public void testEnvEntry() throws NamingException {
+        final SimpleStatelessBean bean = Naming.lookup("java:global/as835/SimpleStatelessBean", SimpleStatelessBean.class);
+        final String envValue = bean.getTest();
+        // see ejb-jar.xml for the value
+        assertEquals("*Hello world", envValue);
+    }
+
+    /**
+     * Make sure the ejb-jar.xml is actually processed.
+     */
+    @Ignore("Interceptor overrides from xml are not working")
+    @Test
+    public void testInterceptor() throws NamingException {
+        final SimpleStatelessBean bean = Naming.lookup("java:global/as835/SimpleStatelessBean", SimpleStatelessBean.class);
+        final String envValue = bean.getTest();
+        // see SimpleStatelessBean.aroundInvoke for the value
+        assertNotNull(envValue);
+        assertTrue(envValue.startsWith("*"));
+    }
+
+    @Test
+    public void testInvocation() throws NamingException {
+        final SimpleStatelessBean bean = Naming.lookup("java:global/as835/SimpleStatelessBean", SimpleStatelessBean.class);
+        bean.getTest();
+        // if we can invoke the bean it must have been deployed properly
     }
 }

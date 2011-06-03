@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.internals.websecurity;
+package org.jboss.as.testsuite.integration.websecurity;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -87,8 +87,8 @@ import org.junit.runner.RunWith;
     at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:641)
     at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:576)
     at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:554)
-    at org.jboss.as.test.integration.internals.websecurity.WebSecurityCERTTestCase.makeCall(WebSecurityCERTTestCase.java:151)
-    at org.jboss.as.test.integration.internals.websecurity.WebSecurityCERTTestCase.testClientCertSucessfulAuth(WebSecurityCERTTestCase.java:137)
+    at org.jboss.as.testsuite.integration.websecurity.WebSecurityCERTTestCase.makeCall(WebSecurityCERTTestCase.java:151)
+    at org.jboss.as.testsuite.integration.websecurity.WebSecurityCERTTestCase.testClientCertSucessfulAuth(WebSecurityCERTTestCase.java:137)
     at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
     at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
     at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)

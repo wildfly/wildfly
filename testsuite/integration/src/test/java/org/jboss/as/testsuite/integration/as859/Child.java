@@ -19,33 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.internals.websecurity;
+package org.jboss.as.testsuite.integration.as859;
 
-import java.io.IOException;
-import java.io.Writer;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HttpConstraint;
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.annotation.PostConstruct;
+import javax.ejb.Stateful;
 
 /**
- * A simple servlet that just writes back a string
- *
- * @author Anil Saldhana
+ * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@WebServlet(name = "SecuredServlet", urlPatterns = { "/secured/" }, loadOnStartup = 1)
-@ServletSecurity(@HttpConstraint(rolesAllowed = { "gooduser" }))
-public class SecuredServlet extends HttpServlet {
+@Stateful
+public class Child extends Parent {
+    static boolean postConstructCalled = false;
 
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Writer writer = resp.getWriter();
-        writer.write("GOOD");
+    @PostConstruct
+    private void postConstruct() {
+        postConstructCalled = true;
     }
 }

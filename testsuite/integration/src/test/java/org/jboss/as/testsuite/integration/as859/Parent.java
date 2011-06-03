@@ -19,16 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.internals.as7_859;
+package org.jboss.as.testsuite.integration.as859;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.Stateful;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@Stateful
-public class Child extends Parent {
+public class Parent {
     static boolean postConstructCalled = false;
 
     @PostConstruct

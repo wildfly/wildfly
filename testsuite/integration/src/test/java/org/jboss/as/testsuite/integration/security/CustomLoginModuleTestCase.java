@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.internals.security;
+package org.jboss.as.testsuite.integration.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -55,8 +55,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.integration.internals.websecurity.SecuredServlet;
-import org.jboss.as.test.integration.internals.websecurity.WebSecurityPasswordBasedBase;
+import org.jboss.as.testsuite.integration.websecurity.SecuredServlet;
+import org.jboss.as.testsuite.integration.websecurity.WebSecurityPasswordBasedBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -218,7 +218,7 @@ public class CustomLoginModuleTestCase {
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
         op.get(OP_ADDR).add(SECURITY_DOMAIN, "custom-login-module");
         ModelNode loginModule = op.get(AUTHENTICATION).add();
-        loginModule.get(CODE).set("org.jboss.as.test.integration.internals.security.CustomTestLoginModule");
+        loginModule.get(CODE).set(CustomTestLoginModule.class.getName());
         loginModule.get(FLAG).set("required");
         updates.add(op);
 
