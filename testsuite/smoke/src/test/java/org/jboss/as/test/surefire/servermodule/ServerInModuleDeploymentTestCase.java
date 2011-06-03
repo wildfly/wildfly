@@ -55,7 +55,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -163,7 +163,7 @@ public class ServerInModuleDeploymentTestCase  {
 
         final File deployDir = createDeploymentDir("deployments");
 
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         final String scannerName = "zips";
         addDeploymentScanner(deployDir, client, scannerName);
 
@@ -270,7 +270,7 @@ public class ServerInModuleDeploymentTestCase  {
 
         final File deployDir = createDeploymentDir("exploded-deployments");
 
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         final String scannerName = "exploded";
         addDeploymentScanner(deployDir, client, scannerName);
 
@@ -363,7 +363,7 @@ public class ServerInModuleDeploymentTestCase  {
         }
     }
 
-    private ModelNode addDeploymentScanner(final File deployDir, final ModelControllerClient client, final String scannerName)
+    private ModelNode addDeploymentScanner(final File deployDir, final NewModelControllerClient client, final String scannerName)
             throws IOException {
         ModelNode add = new ModelNode();
         add.get(OP).set(ADD);
@@ -380,7 +380,7 @@ public class ServerInModuleDeploymentTestCase  {
         return result;
     }
 
-    private void removeDeploymentScanner(final ModelControllerClient client, final String scannerName) throws IOException {
+    private void removeDeploymentScanner(final NewModelControllerClient client, final String scannerName) throws IOException {
 
         ModelNode addr = new ModelNode();
         addr.add("subsystem", "deployment-scanner");
