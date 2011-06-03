@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
@@ -317,6 +318,13 @@ public interface NewOperationContext {
         DONE;
 
         Stage() {
+        }
+
+        boolean hasNext() {
+            if (this == DONE) {
+                return false;
+            }
+            return true;
         }
 
         Stage next() {
