@@ -53,6 +53,11 @@
         <mkdir dir="${output.dir}/domain/lib/ext"/>
     </target>
 
+    <target name="create-ext-content">
+        <mkdir dir="${output.dir}/modules/org/jboss/integration/ext-content/main/bundled"/>
+        <copy file="${org.jboss.seam.integration:jboss-seam-int-jbossas:jar}" tofile="${output.dir}/modules/org/jboss/integration/ext-content/main/bundled/jboss-seam-int.jar"/>
+    </target>
+
     <target name="modules">
 
         <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="${output.dir}/jboss-modules.jar"/>
@@ -637,6 +642,10 @@
             <maven-resource group="org.jboss.ejb3.tx2" artifact="jboss-ejb3-tx2-spi"/>
         </module-def>
 
+        <module-def name="org.jboss.integration.ext-content">
+            <!-- Bundling external content into deployments -->
+        </module-def>
+
         <module-def name="org.jboss.integration.jboss-jca-spi">
             <maven-resource group="org.jboss.integration" artifact="jboss-jca-spi"/>
         </module-def>
@@ -797,10 +806,6 @@
 
         <module-def name="org.jboss.resteasy.resteasy-multipart-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-multipart-provider" jandex="true"/>
-        </module-def>
-
-        <module-def name="org.jboss.seam.int">
-            <maven-resource group="org.jboss.seam.integration" artifact="jboss-seam-int-jbossas"/>
         </module-def>
 
         <module-def name="org.jboss.shrinkwrap.api">
@@ -1025,5 +1030,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="clean-target, modules, bundles, copy-files, make-dirs"/>
+    <target name="all" depends="clean-target, modules, bundles, copy-files, make-dirs, create-ext-content"/>
 </project>
