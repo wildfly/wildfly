@@ -104,6 +104,10 @@ public class ManagementChannelReceiver extends ProtocolChannelReceiver {
                 output.writeByte(ManagementProtocol.RESPONSE_END);
             } catch (Exception e) {
                 e.printStackTrace();
+                if (e instanceof IOException) {
+                    throw (IOException)e;
+                }
+                throw new IOException(e);
             } finally {
                 IoUtils.safeClose(output);
             }
