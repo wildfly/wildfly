@@ -76,7 +76,7 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
                 FlushableDataOutputImpl output = null;
                 try {
 
-                    channel.getReceiver(ManagementChannelReceiver.class).registerResponseHandler(currentRequestId, new DelegatingResponseHandler());
+                    channel.getReceiver(ManagementChannelReceiver.class).registerResponseHandler(currentRequestId, new DelegatingResponseHandler(channelStrategy));
                     output = FlushableDataOutputImpl.create(channel.writeMessage());
                     //Header
                     //TODO Handler Id should be possible to infer from the channel name
@@ -89,6 +89,7 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
                     //End
                     output.writeByte(ManagementProtocol.REQUEST_END);
                 } catch (Exception e) {
+                    e.printStackTrace();
                     future.failed(e);
                 } finally {
                     IoUtils.safeClose(output);
@@ -132,6 +133,12 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
     }
 
     private final class DelegatingResponseHandler extends ManagementResponseHandler<T>{
+        private final ManagementClientChannelStrategy clientChannelStrategy;
+
+        public DelegatingResponseHandler(ManagementClientChannelStrategy clientChannelStrategy) {
+            this.clientChannelStrategy = clientChannelStrategy;
+        }
+
         @Override
         protected T readResponse(DataInput input) {
             T result = null;
@@ -141,6 +148,8 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
                 return result;
             } catch (Exception e) {
                 future.failed(e);
+            } finally {
+                clientChannelStrategy.requestDone();
             }
             return result;
         }

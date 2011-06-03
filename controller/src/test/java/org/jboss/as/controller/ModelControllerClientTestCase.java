@@ -49,6 +49,7 @@ import org.jboss.threads.AsyncFuture;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.xnio.IoUtils;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -94,27 +95,31 @@ public class ModelControllerClientTestCase {
         serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
 
         NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
-        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler((ManagementOperationHandler)client);
+        try {
+            clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler((ManagementOperationHandler)client);
 
-        ModelNode operation = new ModelNode();
-        operation.get("test").set("123");
+            ModelNode operation = new ModelNode();
+            operation.get("test").set("123");
 
-        final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
+            final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
 
-        ModelNode result = client.execute(operation,
-                new OperationMessageHandler() {
+            ModelNode result = client.execute(operation,
+                    new OperationMessageHandler() {
 
-                    @Override
-                    public void handleReport(MessageSeverity severity, String message) {
-                        if (severity == MessageSeverity.INFO && message.startsWith("Test")) {
-                            messages.add(message);
+                        @Override
+                        public void handleReport(MessageSeverity severity, String message) {
+                            if (severity == MessageSeverity.INFO && message.startsWith("Test")) {
+                                messages.add(message);
+                            }
                         }
-                    }
-                });
-        assertEquals("123", controller.getOperation().get("test").asString());
-        assertEquals("123", result.get("testing").asString());
-        assertEquals("Test1", messages.take());
-        assertEquals("Test2", messages.take());
+                    });
+            assertEquals("123", controller.getOperation().get("test").asString());
+            assertEquals("123", result.get("testing").asString());
+            assertEquals("Test1", messages.take());
+            assertEquals("Test2", messages.take());
+        } finally {
+            IoUtils.safeClose(client);
+        }
     }
 
     @Test
@@ -173,23 +178,27 @@ public class ModelControllerClientTestCase {
         serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
 
         NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
-        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler((ManagementOperationHandler)client);
+        try {
+            clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler((ManagementOperationHandler)client);
 
-        ModelNode operation = new ModelNode();
-        operation.get("test").set("123");
+            ModelNode operation = new ModelNode();
+            operation.get("test").set("123");
 
-        ModelNode op = new ModelNode();
-        op.get("name").set(123);
-        NewOperationBuilder builder = new NewOperationBuilder(op);
-        builder.addInputStream(new ByteArrayInputStream(firstBytes));
-        builder.addInputStream(new ByteArrayInputStream(secondBytes));
-        builder.addInputStream(null);
-        ModelNode result = client.execute(builder.build());
-        executeLatch.await();
-        assertEquals(3, size.get());
-        assertArrays(firstBytes, firstResult.get());
-        assertArrays(secondBytes, secondResult.get());
-        assertArrays(new byte[0], thirdResult.get());
+            ModelNode op = new ModelNode();
+            op.get("name").set(123);
+            NewOperationBuilder builder = new NewOperationBuilder(op);
+            builder.addInputStream(new ByteArrayInputStream(firstBytes));
+            builder.addInputStream(new ByteArrayInputStream(secondBytes));
+            builder.addInputStream(null);
+            ModelNode result = client.execute(builder.build());
+            executeLatch.await();
+            assertEquals(3, size.get());
+            assertArrays(firstBytes, firstResult.get());
+            assertArrays(secondBytes, secondResult.get());
+            assertArrays(new byte[0], thirdResult.get());
+        } finally {
+            IoUtils.safeClose(client);
+        }
     }
 
     @Test
@@ -216,28 +225,32 @@ public class ModelControllerClientTestCase {
         serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
 
         NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
-        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler((ManagementOperationHandler)client);
+        try {
+            clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler((ManagementOperationHandler)client);
 
-        ModelNode operation = new ModelNode();
-        operation.get("test").set("123");
+            ModelNode operation = new ModelNode();
+            operation.get("test").set("123");
 
-        final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
+            final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
 
-        AsyncFuture<ModelNode> resultFuture = client.executeAsync(operation,
-                new OperationMessageHandler() {
+            AsyncFuture<ModelNode> resultFuture = client.executeAsync(operation,
+                    new OperationMessageHandler() {
 
-                    @Override
-                    public void handleReport(MessageSeverity severity, String message) {
-                        if (severity == MessageSeverity.INFO && message.startsWith("Test")) {
-                            messages.add(message);
+                        @Override
+                        public void handleReport(MessageSeverity severity, String message) {
+                            if (severity == MessageSeverity.INFO && message.startsWith("Test")) {
+                                messages.add(message);
+                            }
                         }
-                    }
-                });
-        ModelNode result = resultFuture.get();
-        assertEquals("123", controller.getOperation().get("test").asString());
-        assertEquals("123", result.get("testing").asString());
-        assertEquals("Test1", messages.take());
-        assertEquals("Test2", messages.take());
+                    });
+            ModelNode result = resultFuture.get();
+            assertEquals("123", controller.getOperation().get("test").asString());
+            assertEquals("123", result.get("testing").asString());
+            assertEquals("Test1", messages.take());
+            assertEquals("Test2", messages.take());
+        } finally {
+            IoUtils.safeClose(client);
+        }
     }
 
     private void assertArrays(byte[] expected, byte[] actual) {

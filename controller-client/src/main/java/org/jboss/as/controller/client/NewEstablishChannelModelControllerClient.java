@@ -24,8 +24,6 @@ package org.jboss.as.controller.client;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 
@@ -37,7 +35,6 @@ import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 class NewEstablishChannelModelControllerClient extends NewAbstractModelControllerClient {
     private final String hostName;
     private final int port;
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     public NewEstablishChannelModelControllerClient(final String hostName, int port){
         this.hostName = hostName;
@@ -51,6 +48,6 @@ class NewEstablishChannelModelControllerClient extends NewAbstractModelControlle
 
     @Override
     ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException{
-        return ManagementClientChannelStrategy.create(hostName, port, executorService, this);
+        return ManagementClientChannelStrategy.create(hostName, port, executor, this);
     }
 }

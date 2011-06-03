@@ -102,7 +102,8 @@ public class ManagementChannelReceiver extends ProtocolChannelReceiver {
                 output.writeByte(ManagementProtocol.RESPONSE_BODY);
                 requestHandler.writeResponse(output);
                 output.writeByte(ManagementProtocol.RESPONSE_END);
-
+            } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 IoUtils.safeClose(output);
             }
@@ -130,6 +131,7 @@ public class ManagementChannelReceiver extends ProtocolChannelReceiver {
                 }
                 return requestHandler;
             } catch (IOException e) {
+                e.printStackTrace();//TODO remove
                 throw e;
             } catch (Exception e) {
                 throw new IOException(e);
