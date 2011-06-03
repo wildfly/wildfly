@@ -26,24 +26,24 @@ import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICE_DEPLOYME
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentException;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
@@ -116,11 +116,8 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
    }
 
    private static List<AnnotationInstance> getAnnotations(final DeploymentUnit unit, final DotName annotation) {
-       final List<AnnotationInstance> retVal = new LinkedList<AnnotationInstance>();
-       for (final Index index : ASHelper.getRootAnnotationIndexes(unit)) {
-           retVal.addAll(index.getAnnotations(annotation));
-       }
-       return retVal;
+       final CompositeIndex compositeIndex = ASHelper.getRequiredAttachment(unit, Attachments.COMPOSITE_ANNOTATION_INDEX);
+       return compositeIndex.getAnnotations(annotation);
    }
 
    /**

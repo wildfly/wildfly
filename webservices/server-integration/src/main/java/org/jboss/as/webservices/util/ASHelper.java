@@ -32,8 +32,10 @@ import javax.jws.WebService;
 import javax.xml.ws.WebServiceProvider;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.deployment.WarMetaData;
@@ -322,8 +324,8 @@ public final class ASHelper {
      */
     private static List<ServletMetaData> getWebServiceServlets(final DeploymentUnit unit, final boolean jaxws) {
         final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
-        final List<Index> annotationIndexes = getRootAnnotationIndexes(unit);
-        return selectWebServiceServlets(annotationIndexes, jbossWebMD.getServlets(), jaxws);
+        final CompositeIndex compositeIndex = ASHelper.getRequiredAttachment(unit, Attachments.COMPOSITE_ANNOTATION_INDEX);
+        return selectWebServiceServlets(compositeIndex, jbossWebMD.getServlets(), jaxws);
     }
 
     /**
@@ -334,13 +336,13 @@ public final class ASHelper {
      * @param jaxws if passed value is <b>true</b> JAXWS servlets list will be returned, otherwise JAXRPC servlets list
      * @return either JAXRPC or JAXWS servlets list
      */
-    public static <T extends ServletMetaData> List<ServletMetaData> selectWebServiceServlets(final List<Index> indexes, final Collection<T> smd, final boolean jaxws) {
+    public static <T extends ServletMetaData> List<ServletMetaData> selectWebServiceServlets(final CompositeIndex index, final Collection<T> smd, final boolean jaxws) {
         if (smd == null) return Collections.emptyList();
 
         final List<ServletMetaData> endpoints = new ArrayList<ServletMetaData>();
 
         for (final ServletMetaData servletMD : smd) {
-            final boolean isWebServiceEndpoint = isWebserviceEndpoint(servletMD, indexes);
+            final boolean isWebServiceEndpoint = isWebserviceEndpoint(servletMD, index);
             final boolean isJaxwsEndpoint = jaxws && isWebServiceEndpoint;
             final boolean isJaxrpcEndpoint = !jaxws && isWebServiceEndpoint;
 
@@ -352,20 +354,17 @@ public final class ASHelper {
         return endpoints;
     }
 
-    private static boolean isWebserviceEndpoint(final ServletMetaData servletMD, final List<Index> annotationIndexes) {
+    private static boolean isWebserviceEndpoint(final ServletMetaData servletMD, final CompositeIndex index) {
         final String endpointClassName = ASHelper.getEndpointName(servletMD);
         if (isJSP(endpointClassName)) return false;
+        final DotName endpointDotName = DotName.createSimple(endpointClassName);
+        final ClassInfo endpointClassInfo = index.getClassByName(endpointDotName);
 
-        final DotName endpointDN = DotName.createSimple(endpointClassName);
-        ClassInfo endpointClassInfo = null;
-        for (final Index index : annotationIndexes) {
-            endpointClassInfo = index.getClassByName(endpointDN);
-            if (endpointClassInfo != null) {
-                if (endpointClassInfo.annotations().containsKey(WEB_SERVICE_ANNOTATION))
-                    return true;
-                if (endpointClassInfo.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION))
-                    return true;
-            }
+        if (endpointClassInfo != null) {
+            if (endpointClassInfo.annotations().containsKey(WEB_SERVICE_ANNOTATION))
+                return true;
+            if (endpointClassInfo.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION))
+                return true;
         }
 
         return false;
@@ -391,16 +390,5 @@ public final class ASHelper {
             }
         }
         return result;
-    }
-
-    public static List<Index> getRootAnnotationIndexes(final DeploymentUnit unit) {
-        final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(unit);
-        final List<Index> retVal = new LinkedList<Index>();
-        for (final ResourceRoot rr : indexes.keySet()) {
-            if (ModuleRootMarker.isModuleRoot(rr)) {
-                retVal.add(indexes.get(rr));
-            }
-        }
-        return retVal;
     }
 }
