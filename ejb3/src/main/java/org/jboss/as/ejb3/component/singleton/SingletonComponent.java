@@ -202,9 +202,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     private synchronized void destroySingletonInstance() {
         if (this.singletonComponentInstance != null) {
-            // TODO: Implement destroying an instance
-            logger.warn("Destorying of singleton instance not yet implemented");
-            //this.destroyInstance(this.singletonComponentInstance);
+            singletonComponentInstance.destroy();
             this.singletonComponentInstance = null;
         }
     }
