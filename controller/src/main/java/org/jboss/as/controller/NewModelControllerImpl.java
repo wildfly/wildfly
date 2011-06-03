@@ -105,14 +105,6 @@ class NewModelControllerImpl implements NewModelController {
         if (prepareStep != null) {
             context.addStep(response, operation, prepareStep, NewOperationContext.Stage.MODEL);
         }
-        context.addStep(response, operation, new NewStepHandler() {
-            public void execute(final NewOperationContext context, final ModelNode operation) {
-                if (context.completeStep() == NewOperationContext.ResultAction.KEEP && context.isModelAffected()) {
-                    // TODO store the model here
-                    // persister.store(null);
-                }
-            }
-        }, NewOperationContext.Stage.VERIFY);
         PathAddress address =  PathAddress.pathAddress(operation.get(OP_ADDR));
         String operationName =  operation.require(OP).asString();
         NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
