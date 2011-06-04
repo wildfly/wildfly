@@ -229,6 +229,7 @@ public enum Phase {
     public static final int PARSE_REMOVE_METHOD_ANNOTAION               = 0x1902;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1A00;
+    public static final int PARSE_EJB_STATEFUL_TIMEOUT_ANNOTATION       = 0x1A01;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION         = 0x1B00;
     // should be after all views are known

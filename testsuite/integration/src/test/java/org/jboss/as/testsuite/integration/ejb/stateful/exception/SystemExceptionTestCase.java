@@ -20,13 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ejb.remove;
+package org.jboss.as.testsuite.integration.ejb.stateful.exception;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -38,14 +37,15 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * @Remove tests
+ * Tests that post construct callbacks are not called on system exception,
+ * and that the bean is destroyed
  *
- * @author Scott Marlow
+ * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-public class RemoveTestCase {
+public class SystemExceptionTestCase {
 
-    private static final String ARCHIVE_NAME = "RemoveTestCase";
+    private static final String ARCHIVE_NAME = "SystemExceptionTestCase";
 
     private static InitialContext iniCtx;
 
@@ -58,34 +58,36 @@ public class RemoveTestCase {
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(RemoveTestCase.class,
-            SFSB1.class
-        );
-        jar.addResource(new StringAsset(""), "META-INF/MANIFEST.MF");
+        jar.addPackage(SystemExceptionTestCase.class.getPackage());
         return jar;
     }
 
-    protected static <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
-        return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
+    protected static <T> T lookup(Class<T> beanType) throws NamingException {
+        return beanType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanType.getSimpleName() + "!" + beanType.getName()));
     }
 
     /**
-     * Ensure that invoked a bean method with the @Remove annotation, destroys the bean.
+     * Ensure that a system exception destroys the bean.
      *
      * @throws Exception
      */
     @Test
-    public void testRemoveDestroysBean() throws Exception {
+    public void testSystemExceptionDestroysBean() throws Exception {
+
+        SFSB1 sfsb1 = lookup(SFSB1.class);
+        Assert.assertFalse(sfsb1.preDestroy);
         try {
-            SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-            sfsb1.done();   // first call is expected to work
-            sfsb1.done();   // second call is expected to fail since we are calling a destroyed bean
-            // uncomment the following line after @Remove is implemented
-            // fail("Expecting NoSuchEJBException");
-        } catch (NoSuchEJBException expectedException) {
-            // good
+            sfsb1.systemException();
+        } catch (RuntimeException e) {
+            Assert.assertTrue(e.getMessage().contains(SFSB1.MESSAGE));
+        }
+        Assert.assertFalse(sfsb1.preDestroy);
+        try {
+            sfsb1.systemException();
+            throw new RuntimeException("Expecting NoSuchEjbException");
+        } catch (NoSuchEJBException expected) {
+
         }
 
-        Assert.assertTrue(SFSB1.preDestroyCalled);
     }
 }

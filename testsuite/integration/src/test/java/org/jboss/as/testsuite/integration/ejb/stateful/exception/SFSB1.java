@@ -20,30 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ejb.remove;
+package org.jboss.as.testsuite.integration.ejb.stateful.exception;
 
 import javax.annotation.PreDestroy;
-import javax.ejb.Remove;
 import javax.ejb.Stateful;
 
 /**
  * stateful session bean
  *
- * @author Scott Marlow
  */
 @Stateful
 public class SFSB1 {
 
-    public static volatile boolean preDestroyCalled = false;
+    public final static String MESSAGE = "Expected Exception";
+
+    public volatile boolean preDestroy = false;
 
     @PreDestroy
-    private void preDestroy() {
-        preDestroyCalled = true;
+    public void preDestroy() {
+        this.preDestroy = true;
     }
 
-    // always throws a TransactionRequiredException
-    @Remove
-    public void done() {
-
+    public void systemException() {
+        throw new RuntimeException(MESSAGE);
     }
 }

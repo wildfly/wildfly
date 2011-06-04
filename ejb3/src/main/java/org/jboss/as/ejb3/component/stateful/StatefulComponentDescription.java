@@ -62,6 +62,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     private MethodDescription afterCompletion;
     private MethodDescription beforeCompletion;
     private Set<StatefulRemoveMethod> removeMethods = new HashSet<StatefulRemoveMethod>();
+    private StatefulTimeoutInfo statefulTimeout;
 
     private class StatefulRemoveMethod {
         private final MethodIdentifier methodIdentifier;
@@ -208,6 +209,14 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
     public Set<StatefulRemoveMethod> getRemoveMethods() {
         return Collections.unmodifiableSet(this.removeMethods);
+    }
+
+    public StatefulTimeoutInfo getStatefulTimeout() {
+        return statefulTimeout;
+    }
+
+    public void setStatefulTimeout(final StatefulTimeoutInfo statefulTimeout) {
+        this.statefulTimeout = statefulTimeout;
     }
 
     private void addStatefulInstanceAssociatingInterceptor(final ViewDescription view) {

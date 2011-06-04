@@ -27,12 +27,12 @@ import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.cache.Cache;
-import org.jboss.ejb3.cache.NoPassivationCache;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.StopContext;
 import org.jboss.tm.TxUtils;
 
 import javax.ejb.AccessTimeout;
@@ -75,12 +75,17 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     protected StatefulSessionComponent(final StatefulSessionComponentCreateService ejbComponentCreateService) {
         super(ejbComponentCreateService);
 
-        this.afterBegin = ejbComponentCreateService.afterBegin;
-        this.afterCompletion = ejbComponentCreateService.afterCompletion;
-        this.beforeCompletion = ejbComponentCreateService.beforeCompletion;
+        this.afterBegin = ejbComponentCreateService.getAfterBegin();
+        this.afterCompletion = ejbComponentCreateService.getAfterCompletion();
+        this.beforeCompletion = ejbComponentCreateService.getBeforeCompletion();
         this.methodAccessTimeouts = ejbComponentCreateService.getMethodApplicableAccessTimeouts();
 
-        cache = new NoPassivationCache<StatefulSessionComponentInstance>();
+        final StatefulTimeoutInfo statefulTimeout = ejbComponentCreateService.getStatefulTimeout();
+        if (statefulTimeout != null) {
+            cache = new ExpiringCache<StatefulSessionComponentInstance>(statefulTimeout.getValue(), statefulTimeout.getTimeUnit(), ejbComponentCreateService.getComponentClass().getName());
+        } else {
+            cache = new ExpiringCache<StatefulSessionComponentInstance>(-1, TimeUnit.MILLISECONDS, ejbComponentCreateService.getComponentClass().getName());
+        }
         cache.setStatefulObjectFactory(new StatefulObjectFactory<StatefulSessionComponentInstance>() {
             @Override
             public StatefulSessionComponentInstance createInstance() {
@@ -99,9 +104,8 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         throw new IllegalStateException("TimerService is not supported for Stateful session bean " + this.getComponentName());
     }
 
-        /**
+    /**
      * Returns the {@link AccessTimeout} applicable to given method
-     *
      */
     public AccessTimeout getAccessTimeout(Method method) {
         final EJBBusinessMethod ejbMethod = new EJBBusinessMethod(method);
@@ -111,7 +115,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         }
         // check bean level access timeout
         final AccessTimeout timeout = this.beanLevelAccessTimeout.get(method.getDeclaringClass().getName());
-        if(timeout != null) {
+        if (timeout != null) {
             return timeout;
         }
         return new AccessTimeout() {
@@ -195,7 +199,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     /**
      * Removes the session associated with the <code>sessionId</code>.
      *
-     * @param sessionId         The session id
+     * @param sessionId The session id
      */
     public void removeSession(final Serializable sessionId) {
         Transaction currentTx = null;
@@ -261,4 +265,15 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         }
     }
 
+    @Override
+    public void start() {
+        super.start();
+        cache.start();
+    }
+
+    @Override
+    public void stop(final StopContext stopContext) {
+        super.stop(stopContext);
+        cache.stop();
+    }
 }

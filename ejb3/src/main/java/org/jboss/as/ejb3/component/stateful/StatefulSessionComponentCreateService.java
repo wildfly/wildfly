@@ -40,9 +40,10 @@ import java.util.Arrays;
  * @author Stuart Douglas
  */
 public class StatefulSessionComponentCreateService extends SessionBeanComponentCreateService {
-    final InterceptorFactory afterBegin;
-    final InterceptorFactory afterCompletion;
-    final InterceptorFactory beforeCompletion;
+    private final InterceptorFactory afterBegin;
+    private final InterceptorFactory afterCompletion;
+    private final InterceptorFactory beforeCompletion;
+    private final StatefulTimeoutInfo statefulTimeout;
 
     /**
      * Construct a new instance.
@@ -59,6 +60,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.afterBegin = interceptorFactoryChain(tcclInterceptorFactory, namespaceContextInterceptorFactory, SessionInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(beanClass, componentDescription.getAfterBegin()));
         this.afterCompletion = interceptorFactoryChain(tcclInterceptorFactory, namespaceContextInterceptorFactory, SessionInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(beanClass, componentDescription.getAfterCompletion()));
         this.beforeCompletion = interceptorFactoryChain(tcclInterceptorFactory, namespaceContextInterceptorFactory, SessionInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(beanClass, componentDescription.getBeforeCompletion()));
+        this.statefulTimeout = componentDescription.getStatefulTimeout();
     }
 
     private static InterceptorFactory invokeMethodOnTarget(Class<?> beanClass, MethodDescription methodDescription) {
@@ -111,5 +113,21 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public InterceptorFactory getAfterBegin() {
+        return afterBegin;
+    }
+
+    public InterceptorFactory getAfterCompletion() {
+        return afterCompletion;
+    }
+
+    public InterceptorFactory getBeforeCompletion() {
+        return beforeCompletion;
+    }
+
+    public StatefulTimeoutInfo getStatefulTimeout() {
+        return statefulTimeout;
     }
 }

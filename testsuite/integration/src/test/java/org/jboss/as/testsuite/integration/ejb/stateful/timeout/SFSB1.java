@@ -20,30 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ejb.remove;
+package org.jboss.as.testsuite.integration.ejb.stateful.timeout;
 
 import javax.annotation.PreDestroy;
-import javax.ejb.Remove;
 import javax.ejb.Stateful;
+import javax.ejb.StatefulTimeout;
+import java.util.concurrent.TimeUnit;
 
 /**
  * stateful session bean
  *
- * @author Scott Marlow
  */
 @Stateful
+@StatefulTimeout(value = 100, unit = TimeUnit.MILLISECONDS)
 public class SFSB1 {
 
-    public static volatile boolean preDestroyCalled = false;
+    public static volatile boolean preDestroy = false;
 
     @PreDestroy
-    private void preDestroy() {
-        preDestroyCalled = true;
+    public void preDestroy() {
+        this.preDestroy = true;
     }
 
-    // always throws a TransactionRequiredException
-    @Remove
-    public void done() {
-
+    public void doStuff() {
     }
 }
