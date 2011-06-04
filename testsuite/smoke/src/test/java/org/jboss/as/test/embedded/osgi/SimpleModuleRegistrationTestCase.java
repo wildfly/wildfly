@@ -32,20 +32,20 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Version;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.packageadmin.ExportedPackage;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
- * Test the embedded OSGi framework
+ * Test the registration on a non OSGi deployement.
  *
  * @author thomas.diesler@jboss.com
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class SimpleModuleRegistrationTestCase {
 
     @Inject
@@ -56,27 +56,44 @@ public class SimpleModuleRegistrationTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-module-reg");
         archive.addClass(SimpleService.class);
         archive.setManifest(new Asset() {
-            @Override
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
                 builder.addManifestHeader("Dependencies", "org.osgi.core");
                 return builder.openStream();
             }
         });
-        archive.addAsManifestResource(new StringAsset("Export-Package: " + SimpleService.class.getPackage().getName()), "jbosgi-xservice.properties");
+        archive.addAsManifestResource(new StringAsset(
+                Constants.BUNDLE_SYMBOLICNAME + ": " + archive.getName() + "\n" +
+                Constants.EXPORT_PACKAGE + ": " + SimpleService.class.getPackage().getName()),
+                "jbosgi-xservice.properties");
         return archive;
     }
 
     @Test
-    public void testBundleContextInjection() throws Exception {
+    public void testModuleRegistered() throws Exception {
 
-        // Assert that the injected bundle
         assertNotNull("BundleContext injected", bundleContext);
 
-        Bundle bundle = bundleContext.getBundle();
-        assertNotNull("Bundle not null", bundle);
-        assertEquals(Constants.SYSTEM_BUNDLE_SYMBOLICNAME, bundle.getSymbolicName());
-        assertEquals(Version.emptyVersion, bundle.getVersion());
-        assertEquals(0, bundle.getBundleId());
+        ServiceReference sref = bundleContext.getServiceReference(PackageAdmin.class.getName());
+        PackageAdmin pa = (PackageAdmin) bundleContext.getService(sref);
+        assertNotNull("PackageAdmin not null", pa);
+
+        Bundle[] bundles = pa.getBundles("example-module-reg", null);
+        assertNotNull("Bundles not null", bundles);
+        assertEquals("One bundle", 1, bundles.length);
+
+        Bundle bundle = bundles[0];
+        assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+
+        Class<?> clazz = bundle.loadClass(SimpleService.class.getName());
+        assertNotNull("Loaded class", clazz);
+        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+
+        ExportedPackage[] exportedPackages = pa.getExportedPackages(bundle);
+        assertNotNull("ExportedPackages not null", exportedPackages);
+        assertEquals("One ExportedPackage", 1, exportedPackages.length);
+
+        ExportedPackage exportedPackage = exportedPackages[0];
+        assertEquals(SimpleService.class.getPackage().getName(), exportedPackage.getName());
     }
 }

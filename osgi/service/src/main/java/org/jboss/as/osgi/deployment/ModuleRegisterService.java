@@ -22,11 +22,13 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.server.deployment.Services.deploymentUnitName;
-
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -37,92 +39,83 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.metadata.OSGiMetaData;
 
 /**
  * Service responsible for creating and managing the life-cycle of an OSGi deployment.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 20-Sep-2010
+ * @since 03-Jun-2011
  */
-public class BundleInstallService implements Service<BundleInstallService> {
+public class ModuleRegisterService implements Service<ModuleRegisterService> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "deployment");
+    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "registration");
 
-    private final Deployment deployment;
+    private final Module module;
+    private final OSGiMetaData metadata;
     private InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
-    private InjectedValue<BundleStartTracker> injectedStartTracker = new InjectedValue<BundleStartTracker>();
     private ServiceName installedBundleName;
 
-    private BundleInstallService(Deployment deployment) {
-        this.deployment = deployment;
+    private ModuleRegisterService(Module module, OSGiMetaData metadata) {
+        this.module = module;
+        this.metadata = metadata;
     }
 
-    public static void addService(DeploymentPhaseContext phaseContext, Deployment deployment) {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final BundleInstallService service = new BundleInstallService(deployment);
-        final String contextName = deploymentUnit.getName();
-        final ServiceName serviceName = getServiceName(contextName);
+    public static void addService(DeploymentPhaseContext phaseContext, Module module, OSGiMetaData metadata) {
+        final ModuleRegisterService service = new ModuleRegisterService(module, metadata);
+        final ServiceName serviceName = getServiceName(module.getIdentifier());
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        ServiceBuilder<BundleInstallService> builder = serviceTarget.addService(serviceName, service);
+        ServiceBuilder<ModuleRegisterService> builder = serviceTarget.addService(serviceName, service);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
-        builder.addDependency(BundleStartTracker.SERVICE_NAME, BundleStartTracker.class, service.injectedStartTracker);
-        builder.addDependency(deploymentUnitName(contextName));
+        builder.addDependency(ServiceModuleLoader.moduleServiceName(module.getIdentifier()));
         builder.addDependency(Services.FRAMEWORK_ACTIVE);
         builder.install();
     }
 
-    public static void removeService(DeploymentUnit depUnit) {
-        final ServiceName serviceName = getServiceName(depUnit.getName());
-        final ServiceController<?> serviceController = depUnit.getServiceRegistry().getService(serviceName);
+    public static void removeService(DeploymentUnit deploymentUnit) {
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        ServiceName serviceName = getServiceName(module.getIdentifier());
+        final ServiceController<?> serviceController = deploymentUnit.getServiceRegistry().getService(serviceName);
         if (serviceController != null) {
             serviceController.setMode(Mode.REMOVE);
         }
     }
 
-    public static ServiceName getServiceName(String contextName) {
-        ServiceName deploymentServiceName = deploymentUnitName(contextName);
-        return BundleInstallService.SERVICE_NAME_BASE.append(deploymentServiceName.getSimpleName());
+    public static ServiceName getServiceName(ModuleIdentifier moduleIdentifier) {
+        return ModuleRegisterService.SERVICE_NAME_BASE.append(moduleIdentifier.toString());
     }
 
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
         log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        log.infof("Register module: %s", module);
         try {
             ServiceTarget serviceTarget = context.getChildTarget();
             BundleManagerService bundleManager = injectedBundleManager.getValue();
-            installedBundleName = bundleManager.installBundle(serviceTarget, deployment);
-            injectedStartTracker.getValue().addInstalledBundle(installedBundleName, deployment);
+            installedBundleName = bundleManager.registerModule(serviceTarget, module, metadata);
         } catch (Throwable t) {
-            throw new StartException("Failed to install deployment: " + deployment, t);
+            throw new StartException("Failed to register module: " + module, t);
         }
     }
 
     public synchronized void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        log.debugf("Stoppping: %s in mode %s", controller.getName(), controller.getMode());
+        log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        log.infof("Unregister module: %s", module);
         try {
             BundleManagerService bundleManager = injectedBundleManager.getValue();
-            bundleManager.uninstallBundle(deployment);
+            bundleManager.unregisterModule(module.getIdentifier());
         } catch (Throwable t) {
-            log.errorf(t, "Failed to uninstall deployment: %s", deployment);
-        }
-
-        // [JBAS-8801] Undeployment leaks root deployment service
-        // [TODO] remove this workaround
-        ServiceName serviceName = deploymentUnitName(context.getController().getName().getSimpleName());
-        ServiceController<?> deploymentController = context.getController().getServiceContainer().getService(serviceName);
-        if (deploymentController != null) {
-            deploymentController.setMode(Mode.REMOVE);
+            log.errorf(t, "Failed to uninstall module: %s", module);
         }
     }
 
     @Override
-    public BundleInstallService getValue() throws IllegalStateException {
+    public ModuleRegisterService getValue() throws IllegalStateException {
         return this;
     }
 

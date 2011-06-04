@@ -47,10 +47,10 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
-import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -103,6 +103,8 @@ public class FrameworkBootstrapService implements Service<Void> {
     }
 
     public synchronized void start(StartContext context) throws StartException {
+        ServiceController<?> controller = context.getController();
+        log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         try {
             ServiceContainer serviceContainer = context.getController().getServiceContainer();
 
@@ -135,6 +137,8 @@ public class FrameworkBootstrapService implements Service<Void> {
     }
 
     public synchronized void stop(StopContext context) {
+        ServiceController<?> controller = context.getController();
+        log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
         log.infof("Stopping OSGi Framework");
     }
 
@@ -161,7 +165,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
     }
 
-    private static final class SystemServicesIntegration extends AbstractService<SystemServicesProvider> implements SystemServicesProvider {
+    private static final class SystemServicesIntegration implements Service<SystemServicesProvider>, SystemServicesProvider {
 
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
         private ServiceContainer serviceContainer;
@@ -180,7 +184,15 @@ public class FrameworkBootstrapService implements Service<Void> {
 
         @Override
         public void start(StartContext context) throws StartException {
+            ServiceController<?> controller = context.getController();
+            log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
             serviceContainer = context.getController().getServiceContainer();
+        }
+
+        @Override
+        public void stop(StopContext context) {
+            ServiceController<?> controller = context.getController();
+            log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
         }
 
         @Override
@@ -220,10 +232,14 @@ public class FrameworkBootstrapService implements Service<Void> {
 
         @Override
         public void start(StartContext context) throws StartException {
+            ServiceController<?> controller = context.getController();
+            log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         }
 
         @Override
         public void stop(StopContext context) {
+            ServiceController<?> controller = context.getController();
+            log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
             frameworkModule = null;
         }
 

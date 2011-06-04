@@ -68,7 +68,7 @@ abstract class AbstractXServiceTestCase {
         Module module = moduleLoader.loadModule(identifier);
 
         ServiceTarget serviceTarget = getServiceContainer().subTarget();
-        ServiceName serviceName = bundleManager.installBundle(serviceTarget, module, null);
+        ServiceName serviceName = bundleManager.registerModule(serviceTarget, module, null);
         return getBundleFromService(serviceName);
     }
 

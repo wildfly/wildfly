@@ -49,7 +49,7 @@ import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
 import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
-import org.jboss.as.osgi.service.InstallHandlerIntegration;
+import org.jboss.as.osgi.service.BundleInstallProviderIntegration;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.dmr.ModelNode;
@@ -91,7 +91,7 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
 
                         ServiceTarget serviceTarget = context.getServiceTarget();
                         BundleStartTracker.addService(serviceTarget);
-                        InstallHandlerIntegration.addService(serviceTarget);
+                        BundleInstallProviderIntegration.addService(serviceTarget);
                         FrameworkBootstrapService.addService(serviceTarget, subsystemState);
 
                         ConfigAdminServiceImpl.addService(serviceTarget, subsystemState);

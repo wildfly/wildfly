@@ -85,14 +85,16 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting: %s", context.getController().getName());
+        ServiceController<?> controller = context.getController();
+        log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         serviceContainer = context.getController().getServiceContainer();
         serviceTarget = context.getChildTarget();
     }
 
     @Override
     public void stop(StopContext context) {
-        log.debugf("Stopping: %s", context.getController().getName());
+        ServiceController<?> controller = context.getController();
+        log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
     }
 
     @Override

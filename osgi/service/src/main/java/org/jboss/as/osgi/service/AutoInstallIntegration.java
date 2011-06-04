@@ -98,6 +98,8 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
 
     @Override
     public void start(StartContext context) throws StartException {
+        ServiceController<?> controller = context.getController();
+        log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         final Map<ServiceName, OSGiModule> pendingServices = createPendingServicesMap();
         try {
             final BundleManagerService bundleManager = injectedBundleManager.getValue();
@@ -121,7 +123,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
                     ModuleLoader moduleLoader = Module.getBootModuleLoader();
                     Module module = moduleLoader.loadModule(identifier);
                     OSGiMetaData metadata = getModuleMetadata(module);
-                    serviceName = bundleManager.installBundle(serviceTarget, module, metadata);
+                    serviceName = bundleManager.registerModule(serviceTarget, module, metadata);
                 }
                 pendingServices.put(serviceName, moduleMetaData);
             }

@@ -22,63 +22,45 @@
 
 package org.jboss.as.osgi.deployment;
 
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.modules.Module;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.deployment.deployer.DeploymentFactory;
-import org.jboss.osgi.spi.util.BundleInfo;
+import org.jboss.osgi.metadata.OSGiMetaData;
 
 /**
  * Processes deployments that have OSGi metadata attached.
  *
- * If so, it creates an {@link BundleInstallService}.
+ * If so, it creates an {@link ModuleRegisterService}.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 20-Sep-2010
+ * @since 03-Jun-2011
  */
-public class BundleInstallProcessor implements DeploymentUnitProcessor {
+public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final String contextName = deploymentUnit.getName();
 
         // Check if we already have an OSGi deployment
-        Deployment deployment = OSGiDeploymentAttachment.getDeployment(deploymentUnit);
+        final Deployment deployment = OSGiDeploymentAttachment.getDeployment(deploymentUnit);
+        if (deployment != null)
+            return;
 
-        // Check if {@link InstallHandlerIntegration} provided the {@link Deployment}
-        if (deployment == null) {
-            ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
-            ServiceController<Deployment> controller = DeploymentHolderService.getDeployment(serviceRegistry, contextName);
-            if (controller != null) {
-                deployment = controller.getValue();
-                controller.setMode(Mode.REMOVE);
-            }
-        }
-
-        // Check for attached BundleInfo
-        BundleInfo info = BundleInfoAttachment.getBundleInfo(deploymentUnit);
-        if (deployment == null && info != null) {
-            deployment = DeploymentFactory.createDeployment(info);
-            deployment.addAttachment(BundleInfo.class, info);
-            deployment.setAutoStart(true);
-            OSGiDeploymentAttachment.attachDeployment(deploymentUnit, deployment);
-        }
-
-        // Create the {@link BundleInstallService}
-        if (deployment != null) {
-            BundleInstallService.addService(phaseContext, deployment);
+        // Create the {@link ModuleRegisterService}
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        final OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaData(deploymentUnit);
+        if (module != null && metadata != null) {
+            ModuleRegisterService.addService(phaseContext, module, metadata);
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit deploymentUnit) {
-        BundleInstallService.removeService(deploymentUnit);
+        ModuleRegisterService.removeService(deploymentUnit);
     }
 }

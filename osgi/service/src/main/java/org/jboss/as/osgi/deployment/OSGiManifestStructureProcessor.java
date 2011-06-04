@@ -22,6 +22,8 @@
 
 package org.jboss.as.osgi.deployment;
 
+import java.util.jar.Manifest;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -29,8 +31,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.osgi.spi.util.BundleInfo;
-
-import java.util.jar.Manifest;
 
 /**
  * Processes deployments that contain a valid OSGi manifest.
@@ -43,11 +43,12 @@ public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        // Check if we already have an OSGiManifestAttachment
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if (deploymentRoot == null)
             return;
+
+        // Check if we already have an OSGiManifestAttachment
         Manifest manifest = deploymentUnit.getAttachment(Attachments.OSGI_MANIFEST);
         if (manifest != null)
             return;
@@ -59,7 +60,7 @@ public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
 
         // Check whether this is an OSGi manifest
         manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
-        if (BundleInfo.isValidateBundleManifest(manifest)) {
+        if (BundleInfo.isValidBundleManifest(manifest)) {
             deploymentUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
         }
     }

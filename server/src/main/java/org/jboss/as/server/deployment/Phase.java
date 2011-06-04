@@ -330,6 +330,7 @@ public enum Phase {
     public static final int INSTALL_MODULE_CONTEXT                      = 0x0400;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
     public static final int INSTALL_OSGI_DEPLOYMENT                     = 0x0600;
+    public static final int INSTALL_OSGI_MODULE                         = 0x0650;
     public static final int INSTALL_WAR_METADATA                        = 0x0700; //this needs to be removed, however WSDeploymentActivator still uses it
     public static final int INSTALL_RA_DEPLOYMENT                       = 0x0800;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;

@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -41,6 +41,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.Services;
@@ -54,7 +55,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * @author Thomas.Diesler@jboss.com
  * @since 30-Mar-2011
  */
-public class BundleStartTracker extends AbstractService<BundleStartTracker> {
+public class BundleStartTracker implements Service<BundleStartTracker> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
@@ -78,7 +79,15 @@ public class BundleStartTracker extends AbstractService<BundleStartTracker> {
 
     @Override
     public void start(StartContext context) throws StartException {
+        ServiceController<?> controller = context.getController();
+        log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         serviceContainer = context.getController().getServiceContainer();
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        ServiceController<?> controller = context.getController();
+        log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
     }
 
     @Override

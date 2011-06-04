@@ -33,7 +33,7 @@ import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPacka
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
 import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.arquillian.protocol.jmx.JMXProtocol;
-import org.jboss.as.arquillian.protocol.jmx.JMXProtocolExtension.ServiceArchiveHolder;
+import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
@@ -51,7 +51,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
  * It dynamically generates the arquillian-archive, which is deployed to the
  * target container before the test run.
  *
- * @see JMXProtocolEndpointDeployer
+ * @see ArquillianServiceDeployer
  *
  * @author Thomas.Diesler@jboss.com
  * @since 01-Jul-2011

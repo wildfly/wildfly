@@ -37,6 +37,7 @@ import org.jboss.as.server.ServerController;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -44,8 +45,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.BundleInstallProvider;
+import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.BundleException;
 
@@ -55,7 +56,7 @@ import org.osgi.framework.BundleException;
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public class InstallHandlerIntegration implements BundleInstallProvider {
+public class BundleInstallProviderIntegration implements BundleInstallProvider {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
@@ -64,7 +65,7 @@ public class InstallHandlerIntegration implements BundleInstallProvider {
     private ServerDeploymentManager deploymentManager;
 
     public static void addService(final ServiceTarget target) {
-        InstallHandlerIntegration service = new InstallHandlerIntegration();
+        BundleInstallProviderIntegration service = new BundleInstallProviderIntegration();
         ServiceBuilder<BundleInstallProvider> builder = target.addService(Services.BUNDLE_INSTALL_PROVIDER, service);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ServerController.class, service.injectedServerController);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
@@ -73,16 +74,20 @@ public class InstallHandlerIntegration implements BundleInstallProvider {
         builder.install();
     }
 
-    private InstallHandlerIntegration() {
+    private BundleInstallProviderIntegration() {
     }
 
     @Override
     public void start(StartContext context) throws StartException {
+        ServiceController<?> controller = context.getController();
+        log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         deploymentManager = new ModelControllerServerDeploymentManager(injectedServerController.getValue());
     }
 
     @Override
     public void stop(StopContext context) {
+        ServiceController<?> controller = context.getController();
+        log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
     }
 
     @Override
@@ -119,10 +124,6 @@ public class InstallHandlerIntegration implements BundleInstallProvider {
     @Override
     public void uninstallBundle(Deployment dep) {
         log.tracef("Uninstall deployment: %s", dep);
-
-        // Always uninstall from the bundle manager
-        BundleManagerService bundleManager = injectedBundleManager.getValue();
-        bundleManager.uninstallBundle(dep);
 
         try {
             // Undeploy through the deployment manager
