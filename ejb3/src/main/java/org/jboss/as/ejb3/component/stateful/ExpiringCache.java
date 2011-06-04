@@ -201,7 +201,7 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
 
     @Override
     public synchronized void start() {
-        if (millisecondTimeout != -1) {
+        if (millisecondTimeout >= 0) {
             expiryThread = new ExpirationTask();
             expiryThread.setDaemon(true);
             expiryThread.start();
