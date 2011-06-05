@@ -144,6 +144,14 @@ public class EjbJarDescriptionMergingUtil {
         mergeSessionBean(mergedStatefulBean, original, override);
 
         // now merge stateful bean specific info
+        // tx type
+        if (override.getStatefulTimeout() != null) {
+            mergedStatefulBean.setStatefulTimeout(override.getStatefulTimeout());
+        } else {
+            if (original.getStatefulTimeout() != null) {
+                mergedStatefulBean.setStatefulTimeout(original.getStatefulTimeout());
+            }
+        }
 
     }
 
@@ -152,6 +160,7 @@ public class EjbJarDescriptionMergingUtil {
         mergeSessionBean(mergedStatelessBean, original, override);
 
         // now merge stateless bean specific info
+
     }
 
     private static void mergeSessionBean(SessionBeanComponentDescription mergedBean, SessionBeanComponentDescription original, SessionBeanComponentDescription override) {

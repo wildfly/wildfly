@@ -26,6 +26,7 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -58,6 +59,22 @@ public class StatefulTimeoutTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addPackage(StatefulTimeoutTestCase.class.getPackage());
+        jar.add(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "    version=\"3.1\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd\">\n" +
+                "    <enterprise-beans>\n" +
+                "        <session>\n" +
+                "            <ejb-name>" + DescriptorBean.class.getSimpleName() + "</ejb-name>\n" +
+                "            <ejb-class>" + DescriptorBean.class.getName() + "</ejb-class>\n" +
+                "            <session-type>Stateful</session-type>\n" +
+                "            <stateful-timeout>\n" +
+                "                <timeout>1</timeout>\n" +
+                "                <unit>Seconds</unit>\n" +
+                "            </stateful-timeout>\n" +
+                "            <concurrency-management-type>Container</concurrency-management-type>\n" +
+                "        </session>\n" +
+                "    </enterprise-beans>\n" +
+                "</ejb-jar>"), "META-INF/ejb-jar.xml");
         return jar;
     }
 
@@ -66,10 +83,10 @@ public class StatefulTimeoutTestCase {
     }
 
     @Test
-    public void testStatefulTimeout() throws Exception {
+    public void testStatefulTimeoutFromAnnotation() throws Exception {
 
-        SFSB1 sfsb1 = lookup(SFSB1.class);
-        Assert.assertFalse(SFSB1.preDestroy);
+        AnnotatedBean sfsb1 = lookup(AnnotatedBean.class);
+        Assert.assertFalse(AnnotatedBean.preDestroy);
         sfsb1.doStuff();
         Thread.sleep(2000);
         try {
@@ -78,6 +95,24 @@ public class StatefulTimeoutTestCase {
         } catch (NoSuchEJBException expected) {
 
         }
-        Assert.assertTrue(SFSB1.preDestroy);
+        Assert.assertTrue(AnnotatedBean.preDestroy);
     }
+
+
+    @Test
+    public void testStatefulTimeoutFromDescriptor() throws Exception {
+
+        DescriptorBean sfsb1 = lookup(DescriptorBean.class);
+        Assert.assertFalse(DescriptorBean.preDestroy);
+        sfsb1.doStuff();
+        Thread.sleep(2000);
+        try {
+            sfsb1.doStuff();
+            throw new RuntimeException("Expecting NoSuchEjbException");
+        } catch (NoSuchEJBException expected) {
+
+        }
+        Assert.assertTrue(DescriptorBean.preDestroy);
+    }
+
 }

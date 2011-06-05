@@ -103,7 +103,7 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
 
     private final class Entry {
         private long lastUsed;
-        private State state = State.INACTIVE;
+        private State state = State.IN_USE;
         private final T value;
 
         public Entry(final T value) {
@@ -211,7 +211,9 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
 
     @Override
     public synchronized void stop() {
-        expiryThread.stopTask();
+        if(expiryThread != null) {
+            expiryThread.stopTask();
+        }
         synchronized (cache) {
             cache.clear();
         }
