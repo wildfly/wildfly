@@ -26,6 +26,7 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -34,8 +35,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.ejb.NoSuchEJBException;
+import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.transaction.UserTransaction;
 
 /**
  * Tests that the stateful timeout annotation works
@@ -48,6 +51,9 @@ public class StatefulTimeoutTestCase {
     private static final String ARCHIVE_NAME = "StatefulTimeoutTestCase";
 
     private static InitialContext iniCtx;
+
+    @Inject
+    private UserTransaction userTransaction;
 
     @BeforeClass
     public static void beforeClass() throws NamingException {
@@ -75,6 +81,7 @@ public class StatefulTimeoutTestCase {
                 "        </session>\n" +
                 "    </enterprise-beans>\n" +
                 "</ejb-jar>"), "META-INF/ejb-jar.xml");
+        jar.add(EmptyAsset.INSTANCE, "META-INF/beans.xml");
         return jar;
     }
 
@@ -113,6 +120,22 @@ public class StatefulTimeoutTestCase {
 
         }
         Assert.assertTrue(DescriptorBean.preDestroy);
+    }
+
+
+    @Test
+    public void testStatefulBeanNotDiscardedWhileInTransaction() throws Exception {
+        try {
+            userTransaction.begin();
+            AnnotatedBean2 sfsb1 = lookup(AnnotatedBean2.class);
+            Assert.assertFalse(AnnotatedBean2.preDestroy);
+            sfsb1.doStuff();
+            Thread.sleep(2000);
+            sfsb1.doStuff();
+            Assert.assertFalse(AnnotatedBean2.preDestroy);
+        } finally {
+            userTransaction.commit();
+        }
     }
 
 }
