@@ -57,7 +57,7 @@
         <version.antlr>2.7.7</version.antlr>
         <version.asm>3.1</version.asm>
         <version.cglib>2.2</version.cglib>
-        <version.ch.qos.cal10n.cal10n-api>0.7.4</version.ch.qos.cal10n.cal10n-api>
+        <version.ch.qos.cal10n.cal10n-api>0.7.2</version.ch.qos.cal10n.cal10n-api>
         <version.commons-beanutils>1.8.0</version.commons-beanutils>
         <version.commons-codec>1.4</version.commons-codec>
         <version.commons-collections>3.1</version.commons-collections>
