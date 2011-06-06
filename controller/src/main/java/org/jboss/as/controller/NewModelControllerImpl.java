@@ -166,7 +166,7 @@ class NewModelControllerImpl implements NewModelController {
             final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
             NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operation.require(OP).asString());
             if (stepHandler == null) {
-                throw new OperationFailedException(new ModelNode().set("No handler for operation address " + address));
+                context.getFailureDescription().set(new ModelNode().set("No handler for operation address " + address));
             } else {
                 NewOperationContext.Stage stage = NewOperationContext.Stage.MODEL;
                 if(stepHandler instanceof AbstractExtensionAddHandler) {
