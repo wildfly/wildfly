@@ -40,7 +40,6 @@ import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.FutureServiceValue;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.launch.Framework;
 
 /**
  * Abstract base for XService testing.
@@ -56,8 +55,8 @@ abstract class AbstractXServiceTestCase {
     Bundle registerModule(ModuleIdentifier identifier) throws Exception {
 
         // Make sure we have an active framework
-        ServiceController<Framework> frameworkController = (ServiceController<Framework>) getServiceContainer().getRequiredService(Services.FRAMEWORK_ACTIVE);
-        new FutureServiceValue<Framework>(frameworkController).get();
+        ServiceController<Void> frameworkController = (ServiceController<Void>) getServiceContainer().getRequiredService(Services.FRAMEWORK_ACTIVATOR);
+        new FutureServiceValue<Void>(frameworkController).get();
 
         // Get the {@link BundleManagerService}
         ServiceController<BundleManagerService> bundleManagerService = (ServiceController<BundleManagerService>) getServiceContainer().getRequiredService(Services.BUNDLE_MANAGER);

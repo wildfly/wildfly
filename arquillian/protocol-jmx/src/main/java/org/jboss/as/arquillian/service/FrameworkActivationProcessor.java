@@ -22,8 +22,6 @@
 
 package org.jboss.as.arquillian.service;
 
-import static org.jboss.osgi.framework.Services.FRAMEWORK_ACTIVE;
-
 import java.util.List;
 
 import javax.inject.Inject;
@@ -38,7 +36,6 @@ import org.jboss.jandex.FieldInfo;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * Uses the annotation index to check whether the OSGi needs to get activated.
@@ -72,7 +69,6 @@ public class FrameworkActivationProcessor {
                 String typeName = fieldInfo.type().toString();
                 if (typeName.startsWith("org.osgi.framework")) {
                     log.debugf("OSGi injection point of type '%s' detected: %s", typeName, fieldInfo.declaringClass());
-                    serviceContainer.getRequiredService(FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
                     arqConfig.addFrameworkDependency(builder);
                     break;
                 }

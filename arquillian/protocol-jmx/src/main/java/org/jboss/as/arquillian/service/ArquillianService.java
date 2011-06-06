@@ -55,7 +55,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.osgi.framework.launch.Framework;
+import org.osgi.framework.BundleContext;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.
@@ -240,8 +240,8 @@ public class ArquillianService implements Service<ArquillianService> {
                 throw new ClassNotFoundException("No Arquillian config found for: " + className);
 
             // Make the BundleContext available to the {@link OSGiTestEnricher}
-            Framework framework = arqConfig.getFramework();
-            BundleContextAssociation.setBundleContext(framework != null ? framework.getBundleContext() : null);
+            BundleContext bundleContext = arqConfig.getBundleContext();
+            BundleContextAssociation.setBundleContext(bundleContext);
 
             return arqConfig.loadClass(className);
         }

@@ -16,6 +16,8 @@
  */
 package org.jboss.as.arquillian.protocol.jmx;
 
+import static org.jboss.as.osgi.deployment.OSGiXServiceParseProcessor.XSERVICE_PROPERTIES_NAME;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,12 +39,14 @@ import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
@@ -79,7 +83,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
     private JavaArchive generateArquillianServiceArchive(Collection<Archive<?>> auxArchives) {
 
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-service");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-service");
         log.debugf("Generating: %s", archive.getName());
 
         archive.addPackage(ArquillianService.class.getPackage());
@@ -128,6 +132,14 @@ public class JMXProtocolPackager implements DeploymentPackager {
         // Add the ServiceActivator
         String serviceActivatorPath = "META-INF/services/" + ServiceActivator.class.getName();
         archive.addAsResource("arquillian-service/" + serviceActivatorPath, serviceActivatorPath);
+
+        // Add META-INF/jbosgi-xservice.properties which registers the arquillian service with the OSGi layer
+        // Generated default imports for OSGi tests are defined in {@link AbstractOSGiApplicationArchiveProcessor}
+        StringBuffer props = new StringBuffer(Constants.BUNDLE_SYMBOLICNAME + ": " + archive.getName() + "\n");
+        props.append(Constants.EXPORT_PACKAGE + ": org.jboss.arquillian.test.api,org.jboss.arquillian.junit,org.jboss.osgi.testing,");
+        props.append("org.jboss.shrinkwrap.api,org.jboss.shrinkwrap.api.asset,org.jboss.shrinkwrap.api.spec,");
+        props.append("org.junit,org.junit.runner,javax.inject,org.osgi.framework");
+        archive.add(new StringAsset(props.toString()), XSERVICE_PROPERTIES_NAME);
 
         // Replace the loadable extensions with the collected set
         archive.delete(ArchivePaths.create(loadableExtentionsPath));

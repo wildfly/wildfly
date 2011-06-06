@@ -28,7 +28,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
-import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.metadata.OSGiMetaData;
 
 /**
@@ -44,23 +43,21 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
-        // Check if we already have an OSGi deployment
-        final Deployment deployment = OSGiDeploymentAttachment.getDeployment(deploymentUnit);
-        if (deployment != null)
-            return;
-
         // Create the {@link ModuleRegisterService}
-        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        final OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaData(deploymentUnit);
+        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        final Module module = depUnit.getAttachment(Attachments.MODULE);
+        final OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaData(depUnit);
         if (module != null && metadata != null) {
             ModuleRegisterService.addService(phaseContext, module, metadata);
         }
     }
 
     @Override
-    public void undeploy(final DeploymentUnit deploymentUnit) {
-        ModuleRegisterService.removeService(deploymentUnit);
+    public void undeploy(final DeploymentUnit depUnit) {
+        final Module module = depUnit.getAttachment(Attachments.MODULE);
+        final OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaData(depUnit);
+        if (module != null && metadata != null) {
+            ModuleRegisterService.removeService(depUnit);
+        }
     }
 }

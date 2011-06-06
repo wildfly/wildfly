@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
+import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -42,8 +44,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.Services;
-import org.osgi.framework.launch.Framework;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 
 /**
  * The ArquillianConfig represents an Arquillian deployment.
@@ -59,8 +63,8 @@ class ArquillianConfig implements Service<ArquillianConfig> {
     private final ServiceName serviceName;
     private final List<String> testClasses = new ArrayList<String>();
 
-    // The optional dependency on the OSGi framework. This should perhaps be generic.
-    private final InjectedValue<Framework> injectedFramework = new InjectedValue<Framework>();
+    // The optional dependency on OSGi. This should perhaps be generic.
+    private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
 
     static ServiceName getServiceName(DeploymentUnit depUnit) {
         return ServiceName.JBOSS.append("arquillian", "config", depUnit.getName());
@@ -87,7 +91,8 @@ class ArquillianConfig implements Service<ArquillianConfig> {
     }
 
     void addFrameworkDependency(ServiceBuilder<ArquillianConfig> builder) {
-        builder.addDependency(Services.FRAMEWORK_ACTIVE, Framework.class, injectedFramework);
+        builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, injectedBundleContext);
+        builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
     }
 
     ServiceName getServiceName() {
@@ -102,8 +107,8 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         return Collections.unmodifiableList(testClasses);
     }
 
-    Framework getFramework() {
-        return injectedFramework.getOptionalValue();
+    BundleContext getBundleContext() {
+        return injectedBundleContext.getOptionalValue();
     }
 
     Class<?> loadClass(String className) throws ClassNotFoundException {
@@ -111,20 +116,22 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         if (testClasses.contains(className) == false)
             throw new ClassNotFoundException("Class '" + className + "' not found in: " + testClasses);
 
-        /*
+        Module module = depUnit.getAttachment(Attachments.MODULE);
         Deployment osgidep = OSGiDeploymentAttachment.getDeployment(depUnit);
+        if (module == null && osgidep == null)
+            throw new IllegalStateException("Cannot determine deployment type: " + depUnit);
         if (module != null && osgidep != null)
             throw new IllegalStateException("Found MODULE attachment for Bundle deployment: " + depUnit);
 
+        Class<?> testClass;
         if (osgidep != null) {
             Bundle bundle = osgidep.getAttachment(Bundle.class);
             testClass = bundle.loadClass(className);
             BundleAssociation.setBundle(bundle);
+        } else {
+            testClass = module.getClassLoader().loadClass(className);
         }
-        */
 
-        Module module = depUnit.getAttachment(Attachments.MODULE);
-        Class<?> testClass = module.getClassLoader().loadClass(className);
         return testClass;
     }
 

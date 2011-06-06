@@ -72,7 +72,7 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
         ServiceBuilder<ModuleRegisterService> builder = serviceTarget.addService(serviceName, service);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
         builder.addDependency(ServiceModuleLoader.moduleServiceName(module.getIdentifier()));
-        builder.addDependency(Services.FRAMEWORK_ACTIVE);
+        builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
         builder.install();
     }
 

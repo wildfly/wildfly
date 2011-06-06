@@ -39,7 +39,8 @@ public class OSGiDeploymentActivator {
     public void activate(final BootOperationContext updateContext) {
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_OSGI_MANIFEST, new OSGiManifestStructureProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_OSGI_BUNDLE_INFO, new OSGiBundleInfoParseProcessor());
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_OSGI_PROPERTIES, new OSGiXServiceParseProcessor());
+        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_OSGI_XSERVICE_PROPERTIES, new OSGiXServiceParseProcessor());
+        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_OSGI_DEPLOYMENT, new BundleDeploymentProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_OSGI_DEPLOYMENT, new BundleInstallProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_OSGI_MODULE, new ModuleRegisterProcessor());
     }

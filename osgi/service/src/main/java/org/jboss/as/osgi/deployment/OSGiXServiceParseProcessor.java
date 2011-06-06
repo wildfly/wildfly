@@ -41,6 +41,8 @@ import org.jboss.vfs.VirtualFile;
  */
 public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
 
+    public static final String XSERVICE_PROPERTIES_NAME = "META-INF/jbosgi-xservice.properties";
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
@@ -51,9 +53,8 @@ public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
             return;
 
         // Get the OSGi XService properties
-        String resName = "META-INF/jbosgi-xservice.properties";
         VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        VirtualFile xserviceFile = virtualFile.getChild(resName);
+        VirtualFile xserviceFile = virtualFile.getChild(XSERVICE_PROPERTIES_NAME);
         if (xserviceFile.exists() == false)
             return;
 
