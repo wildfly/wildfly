@@ -21,9 +21,9 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -33,9 +33,9 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -70,11 +70,7 @@ abstract class AbstractDeploymentHandler {
         if (operation.hasDefined(INPUT_STREAM_INDEX)) {
             int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
             message = "Null stream at index " + streamIndex;
-            try {
-                in = context.getAttachmentStream(streamIndex);
-            } catch (IOException e) {
-                throw new OperationFailedException(e, new ModelNode().set("Failed to get attached stream at index [" +  streamIndex + "]"));
-            }
+            in = context.getAttachmentStream(streamIndex);
         } else if (operation.hasDefined(BYTES)) {
             message = "Invalid byte stream.";
             in = new ByteArrayInputStream(operation.get(BYTES).asBytes());

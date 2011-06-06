@@ -22,20 +22,18 @@
 
 package org.jboss.as.controller;
 
-import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.NewOperation;
-import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Step handler that uses a proxied {@link NewModelController} to execute the step.
@@ -133,12 +131,7 @@ public class ProxyStepHandler implements NewStepHandler {
             int count = context.getAttachmentStreamCount();
             List<InputStream> result = new ArrayList<InputStream>(count);
             for (int i = 0; i < count; i++) {
-                try {
-                    result.add(context.getAttachmentStream(count));
-                } catch (IOException e) {
-                    // TODO use NewOperationAttachments; it's a better API for this usage
-                    throw new RuntimeException(e);
-                }
+                result.add(context.getAttachmentStream(count));
             }
             return result;
         }
