@@ -18,9 +18,19 @@
  */
 package org.jboss.as.server.deployment;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
@@ -30,9 +40,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VirtualFile;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
 
@@ -74,26 +81,39 @@ public class DeploymentHandlerUtil {
         if (context.getType() == NewOperationContext.Type.SERVER) {
             context.addStep(new NewStepHandler() {
                 public void execute(NewOperationContext context, ModelNode operation) {
-                    doDeploy(context, deploymentUnitName, managementName, contents);
-                    context.completeStep();
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                    final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, contents);
+
+                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+
+                    if(context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        for(ServiceController<?> controller : controllers) {
+                            context.removeService(controller.getName());
+                        }
+                    }
                 }
             }, NewOperationContext.Stage.RUNTIME);
         }
     }
 
-    private static void doDeploy(final NewOperationContext context, final String deploymentUnitName, final String managementName, final ContentItem... contents) {
+    private static Collection<ServiceController<?>> doDeploy(final NewOperationContext context, final String deploymentUnitName, final String managementName, final ServiceVerificationHandler verificationHandler, final ContentItem... contents) {
         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
         final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
         if (controller != null) {
+            controller.addListener(verificationHandler);
             controller.setMode(ServiceController.Mode.ACTIVE);
+            return Collections.emptySet();
+
         } else {
+            final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+
             final ServiceTarget serviceTarget = context.getServiceTarget();
             final ServiceController<?> contentService;
             // TODO: overlay service
             final ServiceName contentsServiceName = deploymentUnitServiceName.append("contents");
             if (contents[0].hash != null)
-                contentService = ContentServitor.addService(serviceTarget, contentsServiceName, contents[0].hash);
+                contentService = ContentServitor.addService(serviceTarget, contentsServiceName, contents[0].hash, verificationHandler);
             else {
                 final String path = contents[0].path;
                 final String relativeTo = contents[0].relativeTo;
@@ -101,13 +121,18 @@ public class DeploymentHandlerUtil {
                 final ServiceName relativeToPathServiceName = relativeTo != null ? RelativePathService.pathNameOf(relativeTo) : null;
                 contentService = PathContentServitor.addService(serviceTarget, contentsServiceName, path, relativeToPathServiceName);
             }
+            controllers.add(contentService);
+
             final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, managementName, null);
             final ServiceController<DeploymentUnit> deploymentUnitController = serviceTarget.addService(deploymentUnitServiceName, service)
                     .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                     .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
                     .addDependency(contentsServiceName, VirtualFile.class, service.contentsInjector)
+                    .addListener(verificationHandler)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
+            controllers.add(deploymentUnitController);
+
             contentService.addListener(new AbstractServiceListener<Object>() {
                 @Override
                 public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
@@ -116,32 +141,8 @@ public class DeploymentHandlerUtil {
                     }
                 }
             });
-        }
-    }
 
-    private static void executeWhenRemoved(final Runnable action, final ServiceRegistry serviceRegistry, final ServiceName... serviceNames) {
-        final CountDownLatch latch = new CountDownLatch(serviceNames.length);
-        final AtomicInteger ticket = new AtomicInteger(serviceNames.length);
-        for (final ServiceName serviceName : serviceNames) {
-            final ServiceController<?> controller = serviceRegistry.getService(serviceName);
-            if (controller != null) {
-                controller.addListener(new AbstractServiceListener<Object>() {
-                    @Override
-                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                        if (transition == ServiceController.Transition.REMOVING_to_REMOVED) {
-                            controller.removeListener(this);
-                            latch.countDown();
-                            if (ticket.decrementAndGet() == 0) {
-                                action.run();
-                            }
-                        }
-                    }
-                });
-            } else {
-                latch.countDown();
-                if (ticket.decrementAndGet() == 0)
-                    action.run();
-            }
+            return controllers;
         }
     }
 
@@ -151,35 +152,41 @@ public class DeploymentHandlerUtil {
         if (operationContext.getType() == NewOperationContext.Type.SERVER) {
             operationContext.addStep(new NewStepHandler() {
                 public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.deploymentUnitName(deploymentUnitName));
-                    if (controller != null) {
-                        controller.addListener(new AbstractServiceListener<Object>() {
-
-                            @Override
-                            public void listenerAdded(ServiceController<?> controller) {
-                                if (!controller.compareAndSetMode(ServiceController.Mode.ACTIVE, ServiceController.Mode.NEVER)) {
-                                    controller.removeListener(this);
-                                }
-                            }
-
-                            public void serviceStopping(ServiceController<?> controller) {
-                                controller.removeListener(this);
-                                controller.compareAndSetMode(ServiceController.Mode.NEVER, ServiceController.Mode.ACTIVE);
-                            }
-                        });
+                    final ServiceController<?> deploymentController = context.getServiceRegistry(false).getService(Services.deploymentUnitName(deploymentUnitName));
+                    if (deploymentController != null) {
+                        context.removeService(deploymentController.getName());
+                        context.removeService(deploymentController.getName().append("contents"));
+                        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                            final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
+                            final String name = model.require(NAME).asString();
+                            final String runtimeName = model.require(RUNTIME_NAME).asString();
+                            final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
+                            final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                            doDeploy(context, runtimeName, name, verificationHandler, contents);
+                        }
                     } else {
-                        doDeploy(context, deploymentUnitName, managementName, contents);
+                        context.completeStep();
                     }
-                    context.completeStep();
+
+                }
+            }, NewOperationContext.Stage.RUNTIME);
+
+            operationContext.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                    final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, contents);
+
+                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        for (ServiceController<?> controller : controllers) {
+                            context.removeService(controller.getName());
+                        }
+                    }
                 }
             }, NewOperationContext.Stage.RUNTIME);
         }
         operationContext.completeStep();
-    }
-
-    private static void remove(final ServiceRegistry serviceRegistry, final ServiceName serviceName) {
-        final ServiceController<?> controller = serviceRegistry.getService(serviceName);
-        controller.setMode(REMOVE);
     }
 
     public static void replace(final NewOperationContext operationContext, final String deploymentUnitName, final String managementName,
@@ -191,16 +198,32 @@ public class DeploymentHandlerUtil {
                 public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceName replacedDeploymentUnitServiceName = Services.deploymentUnitName(replacedDeploymentUnitName);
                     final ServiceName replacedContentsServiceName = replacedDeploymentUnitServiceName.append("contents");
-                    executeWhenRemoved(new Runnable() {
-                        @Override
-                        public void run() {
-                            doDeploy(operationContext, deploymentUnitName, managementName, contents);
-                        }
-                    }, operationContext.getServiceRegistry(false), replacedDeploymentUnitServiceName, replacedContentsServiceName);
                     operationContext.removeService(replacedDeploymentUnitServiceName);
                     operationContext.removeService(replacedContentsServiceName);
 
-                    context.completeStep();
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
+                        final String name = model.require(NAME).asString();
+                        final String runtimeName = model.require(RUNTIME_NAME).asString();
+                        final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
+                        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                        doDeploy(context, runtimeName, name, verificationHandler, contents);
+                    }
+                }
+             }, NewOperationContext.Stage.RUNTIME);
+
+             operationContext.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                    final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, contents);
+
+                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        for (ServiceController<?> controller : controllers) {
+                            context.removeService(controller.getName());
+                        }
+                    }
                 }
             }, NewOperationContext.Stage.RUNTIME);
         }
@@ -211,10 +234,18 @@ public class DeploymentHandlerUtil {
             context.addStep(new NewStepHandler() {
                 public void execute(NewOperationContext context, ModelNode operation) {
                     final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+
                     context.removeService(deploymentUnitServiceName);
                     context.removeService(deploymentUnitServiceName.append("contents"));
 
-                    context.completeStep();
+                    if(context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
+                        final String name = model.require(NAME).asString();
+                        final String runtimeName = model.require(RUNTIME_NAME).asString();
+                        final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
+                        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                        doDeploy(context, runtimeName, name, verificationHandler, contents);
+                    }
                 }
             }, NewOperationContext.Stage.RUNTIME);
         }
