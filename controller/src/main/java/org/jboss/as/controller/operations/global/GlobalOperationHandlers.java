@@ -167,7 +167,9 @@ public class GlobalOperationHandlers {
                         if (recursive) {
                             PathElement childPE = PathElement.pathElement(childType, child);
                             PathAddress relativeAddr = PathAddress.pathAddress(childPE);
-                            if (!proxies && registry.getProxyController(relativeAddr) != null) {  // TODO what about runtime resources and INCLUDE_RUNTIME?
+                            ModelNodeRegistration childReg = registry.getSubModel(relativeAddr);
+                            // We only invoke runtime resources if they are remote proxies
+                            if (childReg.isRuntimeOnly() && (!proxies || !childReg.isRemote())) {
                                 storeDirect = true;
                             } else {
                                 // Add a step to read the child resource
@@ -405,11 +407,13 @@ public class GlobalOperationHandlers {
             if (childNames == null) {
                 throw new OperationFailedException(new ModelNode().set(String.format("No known child type named %s", childType))); //TODO i18n
             }
+
             ModelNode result = context.getResult();
             result.setEmptyList();
             for (String childName : childNames) {
                 result.add(childName);
             }
+
             context.completeStep();
         }
     };
@@ -783,11 +787,19 @@ public class GlobalOperationHandlers {
         }
     }
 
-
+    /**
+     * Gets the addresses of the child resources under the given resource.
+     *
+     * @param registry  registry entry representing the resource
+     * @param model  model representing the resource
+     * @param validChildType a single child type to which the results should be limited. If {@code null} the result
+     *                       should include all child types
+     * @return map where the keys are the child types and the values are a set of child names associated with a type
+     */
     private static Map<String,Set<String>> getChildAddresses(final ModelNodeRegistration registry, final ModelNode model, final String validChildType) {
 
-        Set<PathElement> elements = registry.getChildAddresses(PathAddress.EMPTY_ADDRESS);
         Map<String,Set<String>> result = new HashMap<String, Set<String>>();
+        Set<PathElement> elements = registry.getChildAddresses(PathAddress.EMPTY_ADDRESS);
         for (PathElement element : elements) {
             String childType = element.getKey();
             if (validChildType != null && !validChildType.equals(childType)) {
@@ -797,16 +809,16 @@ public class GlobalOperationHandlers {
             if (set == null) {
                 set = new HashSet<String>();
                 result.put(childType, set);
-            }
-            if (element.isWildcard()) {
+                // Store all the model children the first time we see this child type
                 if (model.hasDefined(childType)) {
                     set.addAll(model.get(childType).keys());
                 }
-                // TODO we assume that no proxy controller will registered under a wildcard path element whereby
-                // we'd need to somehow as the PC for all the children names. We should probably formalize this
-                // by explicitly stating in the ModelNodeRegistration API that such PC's are illegal
-            } else {
-                set.add(element.getValue());
+            }
+            if (!element.isWildcard()) {
+                ModelNodeRegistration childReg = registry.getSubModel(PathAddress.pathAddress(element));
+                if (childReg.isRuntimeOnly()) {
+                    set.add(element.getValue());
+                }
             }
         }
 

@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import com.sun.tools.corba.se.idl.ParameterEntry;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -57,17 +56,30 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     @SuppressWarnings("unused")
     private volatile Map<String, AttributeAccess> attributes;
 
+    private final boolean runtimeOnly;
+
     private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "children"));
     private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, OperationEntry> operationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "operations"));
     private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, AttributeAccess> attributesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "attributes"));
     private static final AtomicReferenceFieldUpdater<ConcreteNodeRegistration, DescriptionProvider> descriptionProviderUpdater = AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, DescriptionProvider.class, "descriptionProvider");
 
-    ConcreteNodeRegistration(final String valueString, final NodeSubregistry parent, final DescriptionProvider provider) {
+    ConcreteNodeRegistration(final String valueString, final NodeSubregistry parent, final DescriptionProvider provider, final boolean runtimeOnly) {
         super(valueString, parent);
         childrenUpdater.clear(this);
         operationsUpdater.clear(this);
         attributesUpdater.clear(this);
         descriptionProviderUpdater.set(this, provider);
+        this.runtimeOnly = runtimeOnly;
+    }
+
+    @Override
+    public boolean isRuntimeOnly() {
+        return runtimeOnly;
+    }
+
+    @Override
+    public boolean isRemote() {
+        return false;
     }
 
     @Override
@@ -78,9 +90,30 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         if (descriptionProvider == null) {
             throw new IllegalArgumentException("descriptionProvider is null");
         }
+        if (runtimeOnly) {
+            throw new IllegalStateException("Cannot register non-runtime-only submodels with a runtime-only parent");
+        }
         final String key = address.getKey();
         final NodeSubregistry child = getOrCreateSubregistry(key);
-        return child.register(address.getValue(), descriptionProvider);
+        return child.register(address.getValue(), descriptionProvider, false);
+    }
+
+    @Override
+    public ModelNodeRegistration registerRuntimeSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
+        if (address == null) {
+            throw new IllegalArgumentException("address is null");
+        }
+        if (descriptionProvider == null) {
+            throw new IllegalArgumentException("descriptionProvider is null");
+        }
+        if ("*".equals(getValueString())) {
+            // We can'  resolve></>
+            throw new IllegalStateException("Cannot register a runtime-only sub model under a wildcard parent");
+        }
+
+        final String key = address.getKey();
+        final NodeSubregistry child = getOrCreateSubregistry(key);
+        return child.register(address.getValue(), descriptionProvider, true);
     }
 
     @Override

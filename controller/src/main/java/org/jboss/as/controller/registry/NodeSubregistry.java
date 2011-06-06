@@ -66,8 +66,8 @@ final class NodeSubregistry {
         return new HashSet<String>(snapshot.keySet());
     }
 
-    ModelNodeRegistration register(final String elementValue, final DescriptionProvider provider) {
-        final AbstractNodeRegistration newRegistry = new ConcreteNodeRegistration(elementValue, this, provider);
+    ModelNodeRegistration register(final String elementValue, final DescriptionProvider provider, boolean runtimeOnly) {
+        final AbstractNodeRegistration newRegistry = new ConcreteNodeRegistration(elementValue, this, provider, runtimeOnly);
         register(elementValue, newRegistry);
         return newRegistry;
     }
