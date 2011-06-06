@@ -47,43 +47,44 @@ public class ReadResourceHandler extends org.jboss.as.controller.operations.glob
 
     public ReadResourceHandler(DomainModelImpl domainModelImpl) {
         this.domainModelImpl = domainModelImpl;
+        throw new UnsupportedOperationException("FIXME handle semantics of commented out ops below");
     }
 
-    @Override
-    protected void addProxyNodes(final NewOperationContext context, final PathAddress address, final ModelNode originalOperation,
-            final ModelNode result, final ModelNodeRegistration registry) {
-
-        super.addProxyNodes(context, address, originalOperation, result, registry);
-
-        try {
-            if (address.size() == 0 && domainModelImpl.isMaster()) {
-                for (Map.Entry<String, DomainControllerSlaveClient> entry : domainModelImpl.getRemoteHosts().entrySet()) {
-                    final ModelNode operation = originalOperation.clone();
-                    final PathAddress hostAddr = PathAddress.pathAddress(PathElement.pathElement(HOST, entry.getKey()));
-                    operation.get(OP_ADDR).set(hostAddr.toModelNode());
-
-                    ModelNode hostResult = entry.getValue().execute(OperationBuilder.Factory.create(operation).build());
-                    addProxyResultToMainResult(hostAddr, result, hostResult);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void handleNonRecursiveProxyEntries(final NewOperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) {
-        if (address.size() == 0 && domainModelImpl.isMaster()) {
-            for (Map.Entry<String, DomainControllerSlaveClient> entry : domainModelImpl.getRemoteHosts().entrySet()) {
-                result.get(HOST, entry.getKey());
-            }
-        }
-    }
-
-    @Override
-    protected void addProxyResultToMainResult(final PathAddress address, final ModelNode mainResult, final ModelNode proxyResult) {
-        PathAddress addr = !domainModelImpl.isMaster() && address.size() > 0 && address.getElement(0).getKey().equals(HOST) ?
-                address.subAddress(1) : address;
-        super.addProxyResultToMainResult(addr, mainResult, proxyResult);
-    }
+//    @Override
+//    protected void addProxyNodes(final NewOperationContext context, final PathAddress address, final ModelNode originalOperation,
+//            final ModelNode result, final ModelNodeRegistration registry) {
+//
+//        super.addProxyNodes(context, address, originalOperation, result, registry);
+//
+//        try {
+//            if (address.size() == 0 && domainModelImpl.isMaster()) {
+//                for (Map.Entry<String, DomainControllerSlaveClient> entry : domainModelImpl.getRemoteHosts().entrySet()) {
+//                    final ModelNode operation = originalOperation.clone();
+//                    final PathAddress hostAddr = PathAddress.pathAddress(PathElement.pathElement(HOST, entry.getKey()));
+//                    operation.get(OP_ADDR).set(hostAddr.toModelNode());
+//
+//                    ModelNode hostResult = entry.getValue().execute(OperationBuilder.Factory.create(operation).build());
+//                    addProxyResultToMainResult(hostAddr, result, hostResult);
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    @Override
+//    protected void handleNonRecursiveProxyEntries(final NewOperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) {
+//        if (address.size() == 0 && domainModelImpl.isMaster()) {
+//            for (Map.Entry<String, DomainControllerSlaveClient> entry : domainModelImpl.getRemoteHosts().entrySet()) {
+//                result.get(HOST, entry.getKey());
+//            }
+//        }
+//    }
+//
+//    @Override
+//    protected void addProxyResultToMainResult(final PathAddress address, final ModelNode mainResult, final ModelNode proxyResult) {
+//        PathAddress addr = !domainModelImpl.isMaster() && address.size() > 0 && address.getElement(0).getKey().equals(HOST) ?
+//                address.subAddress(1) : address;
+//        super.addProxyResultToMainResult(addr, mainResult, proxyResult);
+//    }
 }

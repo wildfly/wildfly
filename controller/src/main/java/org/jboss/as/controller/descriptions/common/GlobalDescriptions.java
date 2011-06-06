@@ -69,9 +69,9 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, RECURSIVE, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, RECURSIVE, DESCRIPTION).set(bundle.getString("global.read-resource.recursive"));
         node.get(REQUEST_PROPERTIES, RECURSIVE, NILLABLE).set(true);
-        node.get(REQUEST_PROPERTIES, "proxies", TYPE).set(ModelType.BOOLEAN);
-        node.get(REQUEST_PROPERTIES, "proxies", DESCRIPTION).set(bundle.getString("global.read-resource.proxies"));
-        node.get(REQUEST_PROPERTIES, "proxies", NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, PROXIES, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, PROXIES, DESCRIPTION).set(bundle.getString("global.read-resource.proxies"));
+        node.get(REQUEST_PROPERTIES, PROXIES, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, DESCRIPTION).set(bundle.getString("global.read-resource.include-runtime"));
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, NILLABLE).set(true);
@@ -167,9 +167,9 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, RECURSIVE, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, RECURSIVE, DESCRIPTION).set(bundle.getString("global.read-children-resources.recursive"));
         node.get(REQUEST_PROPERTIES, RECURSIVE, NILLABLE).set(true);
-        node.get(REQUEST_PROPERTIES, "proxies", TYPE).set(ModelType.BOOLEAN);
-        node.get(REQUEST_PROPERTIES, "proxies", DESCRIPTION).set(bundle.getString("global.read-children-resources.proxies"));
-        node.get(REQUEST_PROPERTIES, "proxies", NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, PROXIES, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, PROXIES, DESCRIPTION).set(bundle.getString("global.read-children-resources.proxies"));
+        node.get(REQUEST_PROPERTIES, PROXIES, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, DESCRIPTION).set(bundle.getString("global.read-children-resources.include-runtime"));
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, NILLABLE).set(true);

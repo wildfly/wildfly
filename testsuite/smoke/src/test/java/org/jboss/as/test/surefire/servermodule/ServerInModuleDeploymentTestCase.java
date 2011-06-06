@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServer;
 import javax.management.MBeanServerDelegate;
 import javax.management.MBeanServerNotification;
 import javax.management.Notification;
