@@ -200,6 +200,16 @@ public class GlobalOperationsTestCase {
     }
 
     @Test
+    public void testRecursiveRead() throws Exception {
+        ModelNode operation = createOperation(READ_RESOURCE_OPERATION);
+        operation.get(RECURSIVE).set(true);
+
+        ModelNode result = executeForResult(operation);
+        assertTrue(result.hasDefined("profile"));
+        assertTrue(result.get("profile").hasDefined("profileA"));
+    }
+
+    @Test
     public void testRecursiveReadSubModelOperationSimple() throws Exception {
         ModelNode operation = createOperation(READ_RESOURCE_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(RECURSIVE).set(true);
