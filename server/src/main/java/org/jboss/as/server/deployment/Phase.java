@@ -335,7 +335,8 @@ public enum Phase {
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0B00;
     public static final int INSTALL_EE_COMP_LAZY_BINDING_SOURCE_HANDLER = 0x0C00;
     public static final int INSTALL_WS_LAZY_BINDING_SOURCE_HANDLER      = 0x0D00;
-    public static final int INSTALL_EE_MODULE_CONFIG                    = 0x1100;
+    public static final int INSTALL_EE_CLASS_CONFIG                     = 0x1100;
+    public static final int INSTALL_EE_MODULE_CONFIG                    = 0x1101;
     public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x1200;
     public static final int INSTALL_DEPENDS_ON_ANNOTATION               = 0x1210;
     public static final int INSTALL_EE_COMPONENT                        = 0x1230;

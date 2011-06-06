@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -31,18 +32,20 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 
 import java.util.Collection;
+import java.util.List;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
 
 /**
- * Deployment processor responsible for creating a {@link EEModuleConfiguration} from a {@link EEModuleDescription} and
- * populating it with component and class configurations
+ * Deployment processor responsible for creating class configuration data for the whole deployment. It only runs for
+ * top level deployments
  *
  * @author John Bailey
  */
-public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
+public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
 
-    private static final Logger logger = Logger.getLogger(EEModuleConfigurationProcessor.class);
+    private static final Logger logger = Logger.getLogger(EEClassConfigurationProcessor.class);
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -56,18 +59,44 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final EEModuleConfiguration moduleConfiguration = new EEModuleConfiguration(moduleDescription, phaseContext, module);
-        deploymentUnit.putAttachment(Attachments.EE_MODULE_CONFIGURATION, moduleConfiguration);
+        DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 
-        final Collection<ComponentDescription> componentDescriptions = moduleDescription.getComponentDescriptions();
-        if (componentDescriptions != null) {
-            for (ComponentDescription componentDescription : componentDescriptions) {
-                logger.debug("Configuring component class: " + componentDescription.getComponentClassName() + " named " + componentDescription.getComponentName());
-                final ComponentConfiguration componentConfiguration = componentDescription.createConfiguration(applicationDescription);
-                for (ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
-                    componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
+        if (deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.DEPLOYMENT_TYPE) == DeploymentType.EAR) {
+            /*
+             * We are an EAR, so we must inspect all of our subdeployments and aggregate all their component views
+             * into a single index, so that inter-module resolution will work.
+             */
+            // Add the application description
+            final List<DeploymentUnit> subdeployments = deploymentUnit.getAttachmentList(SUB_DEPLOYMENTS);
+            processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, deploymentUnit);
+            for (DeploymentUnit subdeployment : subdeployments) {
+                processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, subdeployment);
+            }
+        } else if (deploymentUnit.getParent() == null) {
+            /*
+             * We are a top-level EE deployment, or a non-EE deployment.  Our "aggregate" index is just a copy of
+             * our local EE module index.
+             */
+            if (moduleDescription == null) {
+                // Not an EE deployment.
+                return;
+            }
+            final Collection<EEModuleClassDescription> classDescriptions = moduleDescription.getClassDescriptions();
+            if (classDescriptions != null) {
+                for (EEModuleClassDescription classDescription : classDescriptions) {
+                    Class<?> clazz = null;
+                    try {
+                        clazz = Class.forName(classDescription.getClassName(), false, module.getClassLoader());
+                    } catch (ClassNotFoundException e) {
+                        throw new DeploymentUnitProcessingException("Failed to load class " + classDescription.getClassName(), e);
+                    }
+                    final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz, classDescription, deploymentReflectionIndex);
+                    logger.debug("Configuring EE module class: " + clazz);
+                    for (ClassConfigurator classConfigurator : classDescription.getConfigurators()) {
+                        classConfigurator.configure(phaseContext, classDescription, classConfiguration);
+                    }
+                    applicationDescription.addClass(classConfiguration);
                 }
-                moduleConfiguration.addComponentConfiguration(componentConfiguration);
             }
         }
 
