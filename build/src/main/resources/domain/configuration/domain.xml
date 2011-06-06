@@ -152,7 +152,24 @@
             <subsystem xmlns="urn:jboss:domain:jca:1.0">
                 <archive-validation enabled="true"/>
                 <bean-validation enabled="true"/>
-                <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
+                <default-workmanager>
+            	<short-running-threads>
+            		<bounded-queue-thread-pool xmlns="urn:jboss:domain:threads:1.0" name="jca-short-running" blocking="true">
+                		<core-threads count="10" per-cpu="20"/>
+                		<queue-length count="10" per-cpu="20"/>
+                		<max-threads count="10" per-cpu="20"/>
+                		<keepalive-time time="10" unit="seconds"/>
+            		</bounded-queue-thread-pool>
+            	</short-running-threads>
+            	<long-running-threads>
+	            	<bounded-queue-thread-pool xmlns="urn:jboss:domain:threads:1.0" name="jca-long-running" blocking="true">
+		                <core-threads count="10" per-cpu="20"/>
+		                <queue-length count="10" per-cpu="20"/>
+		                <max-threads count="10" per-cpu="20"/>
+		                <keepalive-time time="10" unit="seconds"/>
+	            	</bounded-queue-thread-pool> 
+            	</long-running-threads>
+            </default-workmanager>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:datasources:1.0">
                 <datasources>

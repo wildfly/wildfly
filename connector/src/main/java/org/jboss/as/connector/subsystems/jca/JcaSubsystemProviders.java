@@ -46,6 +46,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.threads.ThreadsSubsystemProviders;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -117,7 +118,50 @@ class JcaSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider DEFAULT_WORKMANAGER_THREADS_DESC = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("defaultwork-manager-threads"));
+            node.get(HEAD_COMMENT_ALLOWED).set(true);
+            node.get(TAIL_COMMENT_ALLOWED).set(true);
+            node.get(NAMESPACE).set(Namespace.JCA_1_0.getUriString());
+
+            return ThreadsSubsystemProviders.addThreadsDescriptionsToNode(locale, node);
+        }
+    };
+
     // Operations
+    static final DescriptionProvider DEFAULT_WORKMANAGER_THREADS_ADD_DESC = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set("add");
+            operation.get(DESCRIPTION).set(bundle.getString("default-workmanager-threads.add"));
+            operation.get(REQUEST_PROPERTIES).setEmptyObject();
+            operation.get(REPLY_PROPERTIES).setEmptyObject();
+            return operation;
+        }
+    };
+
+    static DescriptionProvider DEFAULT_WORKMANAGER_THREADS_REMOVE_DESC = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(REMOVE);
+            operation.get(DESCRIPTION).set(bundle.getString("default-workmanager-threads.remove"));
+            operation.get(REPLY_PROPERTIES).setEmptyObject();
+            return operation;
+        }
+    };
+
     static final DescriptionProvider SUBSYSTEM_ADD_DESC = new DescriptionProvider() {
 
         @Override

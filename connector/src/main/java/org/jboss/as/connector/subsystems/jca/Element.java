@@ -43,7 +43,13 @@ public enum Element {
     DEFAULT_WORKMANAGER("default-workmanager"),
 
     /** cached-connection-manager element **/
-    CACHED_CONNECTION_MANAGER("cached-connection-manager");
+    CACHED_CONNECTION_MANAGER("cached-connection-manager"),
+
+    /** short-running-threads element **/
+    SHORT_RUNNING_THREADS("short-running-threads"),
+
+    /** long-running-threads element **/
+    LONG_RUNNING_THREADS("long-running-threads");
 
     private final String name;
 

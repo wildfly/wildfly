@@ -24,12 +24,15 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="urn:jboss:domain:jca:1.0" 
            xmlns="urn:jboss:domain:jca:1.0"
+           xmlns:threads="urn:jboss:domain:threads:1.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.0">
-
+           version="1.0" xmlns:pref="urn:jboss:domain:threads:1.0">
+    
+    <xs:import namespace="urn:jboss:domain:threads:1.0" schemaLocation="../../../../../threads/src/main/resources/schema/new-jboss-threads.xsd"/>
+	
     <xs:element name="subsystem" type="subsystemType"/>
-
+	
     <xs:complexType name="subsystemType">
         <xs:all>
         	<xs:element name="archive-validation"
@@ -103,20 +106,10 @@
     </xs:complexType>
     
     <xs:complexType name="default-workmanagerType">
-        <xs:attribute name="short-running-thread-pool" type="xs:token" use="required">
-            <xs:annotation>
-                <xs:documentation>
-                    Specify the name of short running thread pool
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="long-running-thread-pool" type="xs:token" use="required">
-            <xs:annotation>
-                <xs:documentation>
-                    Specify the name of long running thread pool
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
+    	<xs:all>
+    		<xs:element name="short-running-threads" type="threads:threadsType" maxOccurs="1" minOccurs="1"></xs:element>
+    		<xs:element name="long-running-threads" type="threads:threadsType" maxOccurs="1" minOccurs="0"></xs:element>
+    	</xs:all>
     </xs:complexType>
 
     <xs:complexType name="cached-connection-managerType">

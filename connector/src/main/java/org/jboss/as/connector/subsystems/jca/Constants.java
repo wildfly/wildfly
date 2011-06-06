@@ -36,4 +36,8 @@ class Constants {
     static final String CACHED_CONNECTION_MANAGER_DEBUG = "cached-connection-manager-debug";
     static final String CACHED_CONNECTION_MANAGER_ERROR = "cached-connection-manager-error";
 
+    static final String DEFAULT_WORKMANAGER_THREADS = "default-workmanager-threads";
+    static final String SHORT_RUNNING_THREADS = "short-running-threads";
+    static final String LONG_RUNNING_THREADS = "long-running-threads";
+
 }

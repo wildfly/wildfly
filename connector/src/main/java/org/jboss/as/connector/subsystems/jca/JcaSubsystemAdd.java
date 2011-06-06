@@ -31,6 +31,7 @@ import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_
 import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_ERROR;
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_WORKMANAGER_THREADS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -88,6 +89,9 @@ class JcaSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
      */
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+
+        context.getSubModel().get(DEFAULT_WORKMANAGER_THREADS).setEmptyObject();
+
         final String shortRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).asString();
         final String longRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).asString();
         final boolean beanValidationEnabled = ParamsUtils.parseBooleanParameter(operation, BEAN_VALIDATION_ENABLED, false);

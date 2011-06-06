@@ -46,7 +46,7 @@ public class XSDValidationUnitTestCase {
         validateXsd("jboss_7_0.xsd");
     }
 
-    @Test
+    // @Test
     public void testJBossConnector() throws Exception {
         validateXsd("jboss-jca.xsd");
     }
