@@ -87,7 +87,7 @@ public class EeExtension implements Extension {
         context.setSubsystemXmlMapping(NAMESPACE, parser);
     }
 
-    static ModelNode createAddOperation() {
+    static ModelNode createEESubSystemAddOperation() {
         final ModelNode subsystem = new ModelNode();
         subsystem.get(OP).set(ADD);
         subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
@@ -105,10 +105,15 @@ public class EeExtension implements Extension {
             //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
             //context.startSubsystemElement(NewEeExtension.NAMESPACE, true);
             context.startSubsystemElement(EeExtension.NAMESPACE, false);
-            ModelNode node = context.getModelNode();
-            if (node.hasDefined(CommonAttributes.GLOBAL_MODULES)) {
+            ModelNode eeSubSystem = context.getModelNode();
+            // write the ear subdeployment isolation attribute
+            if (eeSubSystem.hasDefined(CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED)) {
+                writer.writeAttribute(Attribute.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName(),
+                        eeSubSystem.get(CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED).asString());
+            }
+            if (eeSubSystem.hasDefined(CommonAttributes.GLOBAL_MODULES)) {
                 writer.writeStartElement(Element.GLOBAL_MODULES.getLocalName());
-                final ModelNode globalModules = node.get(CommonAttributes.GLOBAL_MODULES);
+                final ModelNode globalModules = eeSubSystem.get(CommonAttributes.GLOBAL_MODULES);
                 for(ModelNode module : globalModules.asList()) {
                     writer.writeStartElement(Element.MODULE.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), module.get(CommonAttributes.NAME).asString());
@@ -127,10 +132,30 @@ public class EeExtension implements Extension {
          */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
+            final ModelNode eeSubSystem = createEESubSystemAddOperation();
+            // add the subsytem to the ModelNode(s)
+            list.add(eeSubSystem);
 
-            final ModelNode subsystem = createAddOperation();
-            list.add(subsystem);
+            Boolean earSubDeploymentsIsolated = null;
+            final int attrCount = reader.getAttributeCount();
+            for (int i = 0; i < attrCount; i++) {
+                requireNoNamespaceAttribute(reader, i);
+                final String attributeValue = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case EAR_SUBDEPLOYMENTS_ISOLATED: {
+                        earSubDeploymentsIsolated = Boolean.parseBoolean(attributeValue);
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+            // set the ear subdeployment isolation on the subsystem operation
+            if (earSubDeploymentsIsolated != null) {
+                eeSubSystem.get(CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED).set(earSubDeploymentsIsolated.booleanValue());
+            }
+
 
             // elements
             final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -144,7 +169,7 @@ public class EeExtension implements Extension {
                         switch (element) {
                             case GLOBAL_MODULES: {
                                 final ModelNode model = parseGlobalModules(reader);
-                                subsystem.get(CommonAttributes.GLOBAL_MODULES).set(model);
+                                eeSubSystem.get(CommonAttributes.GLOBAL_MODULES).set(model);
                                 break;
                             }
                             default: {
@@ -222,7 +247,7 @@ public class EeExtension implements Extension {
         @Override
         public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
             ModelNode node = new ModelNode();
-            node.add(createAddOperation());
+            node.add(createEESubSystemAddOperation());
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, node);
             resultHandler.handleResultComplete();
