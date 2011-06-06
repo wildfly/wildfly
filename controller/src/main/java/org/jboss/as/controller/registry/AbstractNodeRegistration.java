@@ -57,6 +57,10 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     /** {@inheritDoc} */
     @Override
+    public abstract ModelNodeRegistration registerRuntimeSubModel(final PathElement address, final DescriptionProvider descriptionProvider);
+
+    /** {@inheritDoc} */
+    @Override
     public void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider) {
         registerOperationHandler(operationName, handler, descriptionProvider, false);
     }
@@ -198,6 +202,10 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
     }
 
     abstract void resolveAddress(final PathAddress address, final PathAddress base, Set<PathAddress> addresses);
+
+    final String getValueString()  {
+        return valueString;
+    }
 
     final String getLocationString() {
         if (parent == null) {

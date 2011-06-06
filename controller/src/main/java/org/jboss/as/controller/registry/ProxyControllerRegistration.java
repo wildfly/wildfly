@@ -58,7 +58,22 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
     }
 
     @Override
+    public boolean isRuntimeOnly() {
+        return true;
+    }
+
+    @Override
+    public boolean isRemote() {
+        return true;
+    }
+
+    @Override
     public ModelNodeRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
+        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+    }
+
+    @Override
+    public ModelNodeRegistration registerRuntimeSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 

@@ -39,7 +39,25 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 public interface ModelNodeRegistration {
 
     /**
-     * Register the existence of an addressable sub-node of this model node.
+     * Gets whether this model node only exists in the runtime and has no representation in the
+     * persistent configuration model.
+     *
+     * @return {@code true} if the model node has no representation in the
+     * persistent configuration model; {@code false} otherwise
+     */
+    boolean isRuntimeOnly();
+
+    /**
+     * Gets whether operations against the resource represented by this registration will be proxied to
+     * a remote process.
+     *
+     * @return {@code true} if this registration represents a remote resource; {@code false} otherwise
+     */
+    boolean isRemote();
+
+    /**
+     * Register the existence of an addressable sub-node of this model node. The submodel is expected to have some
+     * representation in the persistent configuration model.
      *
      * @param address the address of the submodel (may include a wildcard)
      * @param descriptionProvider source for descriptive information describing this
@@ -47,8 +65,27 @@ public interface ModelNodeRegistration {
      * @return a model node registration which may be used to add operations
      *
      * @throws IllegalArgumentException if a submodel is already registered at {@code address}
+     * @throws IllegalStateException if {@link #isRuntimeOnly()} returns {@code true}
      */
     ModelNodeRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider);
+
+    /**
+     * Register the existence of an addressable sub-node of this model node that only exists in the runtime and has no
+     * representation in the persistent configuration model.
+     *
+     * @param address the address of the submodel (may include a wildcard)
+     * @param descriptionProvider source for descriptive information describing this
+     *                            portion of the model (must not be {@code null})
+     * @return a model node registration which may be used to add operations
+     *
+     * @throws IllegalArgumentException if a submodel is already registered at {@code address}
+     * @throws IllegalStateException if the {@link PathElement} used to register {@code this} node was a
+     *           {@link org.jboss.as.controller.PathElement#isWildcard() wildcard } path element. Runtime-only
+     *           submodels can only be registered under parents with concrete addresses
+     *
+     * @see #isRuntimeOnly()
+     */
+    ModelNodeRegistration registerRuntimeSubModel(PathElement address, DescriptionProvider descriptionProvider);
 
     /**
      * Register the existence of an addressable sub-node of this model node.
@@ -61,6 +98,7 @@ public interface ModelNodeRegistration {
      *              {@code subModel} was created by a different {@link Factory} than the creator of
      *              this object
      */
+    @Deprecated
     void registerSubModel(PathElement address, ModelNodeRegistration subModel);
 
     /**
@@ -272,7 +310,7 @@ public interface ModelNodeRegistration {
             if (rootModelDescriptionProvider == null) {
                 throw new IllegalArgumentException("rootModelDescriptionProvider is null");
             }
-            return new ConcreteNodeRegistration(null, null, rootModelDescriptionProvider);
+            return new ConcreteNodeRegistration(null, null, rootModelDescriptionProvider, false);
         }
     }
 }

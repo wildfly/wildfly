@@ -354,9 +354,6 @@ public class GlobalOperationsTestCase {
         List<String> names =  modelNodeListToStringList(result.asList());
         assertTrue(names.contains("subsystem1"));
         assertTrue(names.contains("subsystem2"));
-//        assertTrue(names.contains("subsystem3"));
-//        assertTrue(names.contains("subsystem4"));
-//        assertTrue(names.contains("subsystem5"));
 
         operation = createOperation(READ_CHILDREN_NAMES_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(CHILD_TYPE).set("type2");
@@ -377,17 +374,30 @@ public class GlobalOperationsTestCase {
 
         operation = createOperation(READ_CHILDREN_NAMES_OPERATION, "profile", "profileC", "subsystem", "subsystem4");
         operation.get(CHILD_TYPE).set("type1");
-        result = executeForResult(operation);
-        assertNotNull(result);
-        assertEquals(ModelType.LIST, result.getType());
-        assertTrue(result.asList().isEmpty());
+        // BES 2011/06/06 These assertions make no sense; as they are no different from "non-existant-child" case
+        // Replacing with a fail check
+//          result = executeForResult(operation);
+//        assertNotNull(result);
+//        assertEquals(ModelType.LIST, result.getType());
+//        assertTrue(result.asList().isEmpty());
+        try {
+            result = executeForResult(operation);
+            fail("Expected error for type1 child under subsystem4");
+        } catch (OperationFailedException expected) {
+        }
 
         operation = createOperation(READ_CHILDREN_NAMES_OPERATION, "profile", "profileC", "subsystem", "subsystem5");
         operation.get(CHILD_TYPE).set("type1");
+        // BES 2011/06/06 see comment above
         result = executeForResult(operation);
         assertNotNull(result);
         assertEquals(ModelType.LIST, result.getType());
         assertTrue(result.asList().isEmpty());
+//        try {
+//            result = executeForResult(operation);
+//            fail("Expected error for type1 child under subsystem5");
+//        } catch (OperationFailedException expected) {
+//        }
     }
 
     @Test
@@ -477,16 +487,23 @@ public class GlobalOperationsTestCase {
 
         operation = createOperation(READ_CHILDREN_RESOURCES_OPERATION, "profile", "profileC", "subsystem", "subsystem4");
         operation.get(CHILD_TYPE).set("type1");
-        result = executeForResult(operation);
-        assertNotNull(result);
-        assertEquals(ModelType.OBJECT, result.getType());
-        assertTrue(result.asList().isEmpty());
+        // BES 2011/06/06 These assertions make no sense; as they are no different from "non-existant-child" case
+        // Replacing with a fail check
+//          result = executeForResult(operation);
+//        assertNotNull(result);
+//        assertEquals(ModelType.LIST, result.getType());
+//        assertTrue(result.asList().isEmpty());
+        try {
+            result = executeForResult(operation);
+            fail("Expected error for type1 child under subsystem4");
+        } catch (OperationFailedException expected) {
+        }
 
         operation = createOperation(READ_CHILDREN_RESOURCES_OPERATION, "profile", "profileC", "subsystem", "subsystem5");
         operation.get(CHILD_TYPE).set("type1");
         result = executeForResult(operation);
         assertNotNull(result);
-        assertEquals(ModelType.LIST, result.getType());
+        assertEquals(ModelType.OBJECT, result.getType());
         assertTrue(result.asList().isEmpty());
     }
 
@@ -538,10 +555,17 @@ public class GlobalOperationsTestCase {
 
         operation = createOperation(READ_CHILDREN_RESOURCES_OPERATION, "profile", "profileC", "subsystem", "subsystem4");
         operation.get(CHILD_TYPE).set("type1");
-        result = executeForResult(operation);
-        assertNotNull(result);
-        assertEquals(ModelType.OBJECT, result.getType());
-        assertTrue(result.asList().isEmpty());
+        // BES 2011/06/06 These assertions make no sense; as they are no different from "non-existant-child" case
+        // Replacing with a fail check
+//          result = executeForResult(operation);
+//        assertNotNull(result);
+//        assertEquals(ModelType.LIST, result.getType());
+//        assertTrue(result.asList().isEmpty());
+        try {
+            result = executeForResult(operation);
+            fail("Expected error for type1 child under subsystem4");
+        } catch (OperationFailedException expected) {
+        }
 
         operation = createOperation(READ_CHILDREN_RESOURCES_OPERATION, "profile", "profileC", "subsystem", "subsystem5");
         operation.get(CHILD_TYPE).set("type1");
