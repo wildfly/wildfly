@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
+import com.sun.tools.corba.se.idl.ParameterEntry;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -112,19 +113,23 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
+    NewStepHandler getInheritedHandler(final String operationName) {
+        final OperationEntry entry = operationsUpdater.get(this, operationName);
+        if (entry != null && entry.isInherited()) {
+            return entry.getOperationHandler();
+        }
+        return null;
+    }
+
+    @Override
     void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, OperationEntry> providers, final boolean inherited) {
 
-        if (!iterator.hasNext() || inherited) {
-            for (final Map.Entry<String, OperationEntry> entry : operationsUpdater.get(this).entrySet()) {
-                if (!providers.containsKey(entry.getKey())) {
-                    if (!iterator.hasNext() || (inherited && entry.getValue().isInherited())) {
-                        providers.put(entry.getKey(), entry.getValue());
-                    }
-                }
+        if (!iterator.hasNext() ) {
+            providers.putAll(operationsUpdater.get(this));
+            if (inherited) {
+                getInheritedOperations(providers, true);
             }
-            if (!iterator.hasNext()) {
-                return;
-            }
+            return;
         }
         final PathElement next = iterator.next();
         try {
@@ -136,6 +141,15 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
             }
         } finally {
             iterator.previous();
+        }
+    }
+
+    @Override
+    void getInheritedOperationEntries(final Map<String, OperationEntry> providers) {
+        for (final Map.Entry<String, OperationEntry> entry : operationsUpdater.get(this).entrySet()) {
+            if (entry.getValue().isInherited() && !providers.containsKey(entry.getKey())) {
+                providers.put(entry.getKey(), entry.getValue());
+            }
         }
     }
 

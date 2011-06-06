@@ -21,42 +21,62 @@
  */
 package org.jboss.as.controller.operations.global;
 
-import org.jboss.as.controller.BasicOperationResult;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCALE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROXIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyStepHandler;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import org.jboss.dmr.ModelType;
 
 /**
  * Global {@code OperationHanlder}s.
@@ -84,86 +104,235 @@ public class GlobalOperationHandlers {
      */
     public static class ReadResourceHandler implements NewStepHandler {
 
-        static final String PROXIES = "proxies";
+        private final ParametersValidator validator = new ParametersValidator();
+
+        public ReadResourceHandler() {
+            validator.registerValidator(RECURSIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(INCLUDE_RUNTIME, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(PROXIES, new ModelTypeValidator(ModelType.BOOLEAN, true));
+        }
 
         @Override
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-            final ModelNode result = readModel(context, operation, PathAddress.EMPTY_ADDRESS);
-            context.getResult().set(result);
+            validator.validate(operation);
+
+            final String opName = operation.require(OP).asString();
+            final ModelNode opAddr = operation.get(OP_ADDR);
+            final PathAddress address = PathAddress.pathAddress(opAddr);
+            final boolean recursive = operation.get(RECURSIVE).asBoolean(false);
+            final boolean queryRuntime = !recursive && operation.get(INCLUDE_RUNTIME).asBoolean(false);
+            final boolean proxies = operation.get(PROXIES).asBoolean(false);
+
+            // Attributes read directly from the model with no special read handler step in the middle
+            final Map<String, ModelNode> directAttributes = new HashMap<String, ModelNode>();
+            // Children names read directly from the model with no special read handler step in the middle
+            final Map<String, ModelNode> directChildren = new HashMap<String, ModelNode>();
+            // Attributes of AccessType.METRIC
+            final Map<String, ModelNode> metrics = queryRuntime ? new HashMap<String, ModelNode>() : Collections.<String, ModelNode>emptyMap();
+            // Non-AccessType.METRIC attributes with a special read handler registered
+            final Map<String, ModelNode> otherAttributes = new HashMap<String, ModelNode>();
+            // Child resources recursively read
+            final Map<PathElement, ModelNode> childResources = recursive ? new HashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
+
+            // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
+            // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
+
+            // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
+            final ReadResourceAssemblyHandler assemblyHandler = new ReadResourceAssemblyHandler(directAttributes, metrics, otherAttributes, directChildren, childResources);
+            context.addStep(assemblyHandler, NewOperationContext.Stage.IMMEDIATE);
+
+            final ModelNodeRegistration registry = context.getModelNodeRegistration();
+            final ModelNode model = safeReadModel(context);
+
+            final Map<String, Set<String>> childrenByType = registry != null ? getChildAddresses(registry, model, null): Collections.<String, Set<String>>emptyMap();
+
+            // Store direct attributes first
+            for (String key : model.keys()) {
+                if (!childrenByType.containsKey(key)) {
+                    directAttributes.put(key, model.get(key));
+                }
+            }
+
+            // Next, process child resources
+            for (Map.Entry<String, Set<String>> entry : childrenByType.entrySet()) {
+                String childType = entry.getKey();
+                Set<String> children = entry.getValue();
+                if (children.isEmpty()) {
+                    // Just treat it like an undefined attribute
+                    directAttributes.put(childType, new ModelNode());
+                } else {
+                    for (String child : children) {
+                        boolean storeDirect = !recursive;
+                        if (recursive) {
+                            PathElement childPE = PathElement.pathElement(childType, child);
+                            PathAddress relativeAddr = PathAddress.pathAddress(childPE);
+                            if (!proxies && registry.getProxyController(relativeAddr) != null) {  // TODO what about runtime resources and INCLUDE_RUNTIME?
+                                storeDirect = true;
+                            } else {
+                                // Add a step to read the child resource
+                                ModelNode rrOp = new ModelNode();
+                                rrOp.get(OP).set(opName);
+                                rrOp.get(OP_ADDR).set(PathAddress.pathAddress(address, childPE).toModelNode());
+                                rrOp.get(RECURSIVE).set(true);
+                                rrOp.get(PROXIES).set(proxies);
+                                rrOp.get(INCLUDE_RUNTIME).set(queryRuntime);
+                                ModelNode rrRsp = new ModelNode();
+                                childResources.put(childPE, rrRsp);
+
+                                NewStepHandler rrHandler = registry.getOperationHandler(relativeAddr, opName);
+                                context.addStep(rrRsp, rrOp, rrHandler, NewOperationContext.Stage.IMMEDIATE);
+                            }
+                        }
+                        if (storeDirect) {
+                            ModelNode childMap = directChildren.get(childType);
+                            if (childMap == null) {
+                                childMap = new ModelNode();
+                                childMap.setEmptyObject();
+                                directChildren.put(childType, childMap);
+                            }
+                            // Add a "child" => undefined
+                            childMap.get(child);
+                        }
+                    }
+                }
+            }
+
+            // Last, handle attributes with read handlers registered
+            final Set<String> attributeNames = registry != null ? registry.getAttributeNames(PathAddress.EMPTY_ADDRESS) : Collections.<String>emptySet();
+            for(final String attributeName : attributeNames) {
+                final AttributeAccess access = registry.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
+                if(access == null) {
+                    continue;
+                } else {
+                    final AttributeAccess.Storage storage = access.getStorageType();
+                    if(!queryRuntime && storage != AttributeAccess.Storage.CONFIGURATION) {
+                        continue;
+                    }
+                    final AccessType type = access.getAccessType();
+                    final NewStepHandler handler = access.getReadHandler();
+                    if (handler != null) {
+                        // Discard any directAttribute map entry for this, as the read handler takes precedence
+                        directAttributes.remove(attributeName);
+                        // Create the attribute operation
+                        final ModelNode attributeOperation = new ModelNode();
+                        attributeOperation.get(OP_ADDR).set(opAddr);
+                        attributeOperation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+                        attributeOperation.get(NAME).set(attributeName);
+
+                        final ModelNode attrResponse = new ModelNode();
+                        if (type == AccessType.METRIC) {
+                            metrics.put(attributeName, attrResponse);
+                        } else {
+                            otherAttributes.put(attributeName, attrResponse);
+                        }
+
+                        context.addStep(attrResponse, attributeOperation, handler, NewOperationContext.Stage.IMMEDIATE);
+                    }
+                }
+            }
             context.completeStep();
         }
-
-        protected ModelNode readModel(final NewOperationContext context, final ModelNode readOperation, final PathAddress address) throws OperationFailedException {
-            final ModelNodeRegistration registry = context.getModelNodeRegistration();
-            final ModelNode model = context.readModel(address);
-            final ModelNode result;
-            if (readOperation.get(RECURSIVE).asBoolean(false)) {
-                    // FIXME security checks JBAS-8842
-                    result = model.clone();
-                    // FIXME deal with proxies
-            } else {
-                    result = new ModelNode();
-
-                    final Set<String> childNames = registry != null ? registry.getChildNames(address) : Collections.<String>emptySet();
-
-                    final ModelNode subModel = model.clone();
-                    for (final String key : subModel.keys()) {
-                        final ModelNode child = subModel.get(key);
-                        if (childNames.contains(key)) {
-                            //Prune the value for this child
-                            if (subModel.get(key).isDefined()) {
-                                for (final String childKey : child.keys()) {
-                                    subModel.get(key, childKey).set(new ModelNode());
-                                }
-                            }
-
-                            result.get(key).set(child);
-                        } else {
-                            result.get(key).set(child);
-                        }
-                    }
-                    // Handle attributes
-                    final boolean queryRuntime = readOperation.get(INCLUDE_RUNTIME).asBoolean(false);
-                    final Set<String> attributeNames = registry != null ? registry.getAttributeNames(address) : Collections.<String>emptySet();
-                    for(final String attributeName : attributeNames) {
-                        final AttributeAccess access = registry.getAttributeAccess(address, attributeName);
-                        if(access == null) {
-                            continue;
-                        } else {
-                            final AttributeAccess.Storage storage = access.getStorageType();
-                            if(! queryRuntime && storage != AttributeAccess.Storage.CONFIGURATION) {
-                                continue;
-                            }
-                            final AccessType type = access.getAccessType();
-                            // FIXME incorrect cast just to compile
-                            final NewStepHandler handler = access.getReadHandler();
-                            if(handler != null) {
-                                // Create the attribute operation
-                                final ModelNode attributeOperation = readOperation.clone();
-                                attributeOperation.get(NAME).set(attributeName);
-                                context.addStep(result.get(attributeName), attributeOperation, handler, NewOperationContext.Stage.MODEL);
-                            }
-                        }
-                    }
-                // FIXME deal with proxies
-            }
-            return result;
-        }
-
-        protected void addProxyNodes(NewOperationContext context, PathAddress address, ModelNode originalOperation, ModelNode result, ModelNodeRegistration registry) {
-            // FIXME implement
-            throw new UnsupportedOperationException();
-        }
-        protected void handleNonRecursiveProxyEntries(final NewOperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) {
-            // FIXME implement
-            throw new UnsupportedOperationException();
-        }
-        protected void addProxyResultToMainResult(final PathAddress address, final ModelNode mainResult, final ModelNode proxyResult) {
-            // FIXME implement
-            throw new UnsupportedOperationException();
-        }
     };
+
+    /**
+     * Assembles the resonse to a read-resource request from the components gathered by earlier steps.
+     */
+    private static class ReadResourceAssemblyHandler implements NewStepHandler {
+
+        private final Map<String, ModelNode> directAttributes;
+        private final Map<String, ModelNode> directChildren;
+        private final Map<String, ModelNode> metrics;
+        private final Map<String, ModelNode> otherAttributes;
+        private final Map<PathElement, ModelNode> childResources;
+
+        /**
+         * Creates a ReadResourceAssemblyHandler that will assemble the response using the contents
+         * of the given maps.
+         *
+         * @param directAttributes
+         * @param metrics map of attributes of AccessType.METRIC. Keys are the attribute names, values are the full
+         *                read-attribute response from invoking the attribute's read handler. Will not be {@code null}
+         * @param otherAttributes map of attributes not of AccessType.METRIC that have a read handler registered. Keys
+*                        are the attribute names, values are the full read-attribute response from invoking the
+*                        attribute's read handler. Will not be {@code null}
+         * @param directChildren
+         * @param childResources read-resource response from child resources, where the key is the PathAddress
+*                       relative to the address of the operation this handler is handling and the
+*                       value is the full read-resource response. Will not be {@code null}
+         */
+        private ReadResourceAssemblyHandler(final Map<String, ModelNode> directAttributes, final Map<String, ModelNode> metrics,
+                                            final Map<String, ModelNode> otherAttributes, Map<String, ModelNode> directChildren, final Map<PathElement, ModelNode> childResources) {
+            this.directAttributes = directAttributes;
+            this.metrics = metrics;
+            this.otherAttributes = otherAttributes;
+            this.directChildren = directChildren;
+            this.childResources = childResources;
+        }
+
+        @Override
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+
+            Map<String, ModelNode> sortedAttributes = new TreeMap<String, ModelNode>();
+            Map<String, ModelNode> sortedChildren = new TreeMap<String, ModelNode>();
+            boolean failed = false;
+            for (Map.Entry<String, ModelNode> entry : otherAttributes.entrySet()) {
+                ModelNode value = entry.getValue();
+                if (!value.has(FAILURE_DESCRIPTION)) {
+                    sortedAttributes.put(entry.getKey(), value.get(RESULT));
+                } else if (!failed && value.hasDefined(FAILURE_DESCRIPTION)) {
+                    context.getFailureDescription().set(value.get(FAILURE_DESCRIPTION));
+                    failed = true;
+                    break;
+                }
+            }
+            if (!failed) {
+                for (Map.Entry<PathElement, ModelNode> entry : childResources.entrySet()) {
+                    PathElement path = entry.getKey();
+                    ModelNode value = entry.getValue();
+                    if (!value.has(FAILURE_DESCRIPTION)) {
+                        ModelNode childTypeNode = sortedChildren.get(path.getKey());
+                        if (childTypeNode == null) {
+                            childTypeNode = new ModelNode();
+                            sortedChildren.put(path.getKey(), childTypeNode);
+                        }
+                        childTypeNode.get(path.getValue()).set(value.get(RESULT));
+                    } else if (!failed && value.hasDefined(FAILURE_DESCRIPTION)) {
+                        context.getFailureDescription().set(value.get(FAILURE_DESCRIPTION));
+                        failed = true;
+                    }
+                }
+            }
+            if (!failed) {
+                for (Map.Entry<String, ModelNode> simpleAttribute : directAttributes.entrySet()) {
+                    sortedAttributes.put(simpleAttribute.getKey(), simpleAttribute.getValue());
+                }
+                for (Map.Entry<String, ModelNode> directChild : directChildren.entrySet()) {
+                    sortedChildren.put(directChild.getKey(), directChild.getValue());
+                }
+                for (Map.Entry<String, ModelNode> metric : metrics.entrySet()) {
+                    ModelNode value = metric.getValue();
+                    if (!value.has(FAILURE_DESCRIPTION)) {
+                        sortedAttributes.put(metric.getKey(), value.get(RESULT));
+                    }
+                    // we ignore metric failures
+                    // TODO how to prevent the metric failure screwing up the overall context?
+                }
+
+                final ModelNode result = context.getResult();
+                result.setEmptyObject();
+                for (Map.Entry<String, ModelNode> entry : sortedAttributes.entrySet()) {
+                    result.get(entry.getKey()).set(entry.getValue());
+                }
+
+                for (Map.Entry<String, ModelNode> entry : sortedChildren.entrySet()) {
+                    result.get(entry.getKey()).set(entry.getValue());
+                }
+            }
+
+            context.completeStep();
+        }
+    }
 
     /**
      * {@link OperationHandler} reading a single attribute at the given operation address. The required request parameter "name" represents the attribute name.
@@ -173,7 +342,7 @@ public class GlobalOperationHandlers {
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
             final String attributeName = operation.require(NAME).asString();
-            final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
+            final ModelNode subModel = safeReadModel(context);
             final AttributeAccess attributeAccess = context.getModelNodeRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
             if (attributeAccess == null) {
                 final Set<String> children = context.getModelNodeRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
@@ -184,7 +353,7 @@ public class GlobalOperationHandlers {
                     context.getResult().set(result);
                     context.completeStep();
                 } else {
-                    throw new OperationFailedException(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
+                    throw new OperationFailedException(new ModelNode().set(String.format("No known attribute %s", attributeName))); // TODO i18n
                 }
             } else if (attributeAccess.getReadHandler() == null) {
                 final ModelNode result = subModel.get(attributeName);
@@ -217,34 +386,29 @@ public class GlobalOperationHandlers {
      * {@link OperationHandler} querying the children names of a given "child-type".
      */
     public static class ReadChildrenNamesOperationHandler implements NewStepHandler {
+
+        private final ParametersValidator validator = new ParametersValidator();
+
+        public ReadChildrenNamesOperationHandler() {
+            validator.registerValidator(CHILD_TYPE, new StringLengthValidator(1));
+        }
+
         @Override
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-            final String childName = operation.require(CHILD_TYPE).asString();
-            ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
-
-            if (!subModel.isDefined()) {
-                final ModelNode result = new ModelNode();
-                context.getResult().setEmptyList();
-            } else {
-                final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-                final Set<String> childNames = context.getModelNodeRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
-                if (!childNames.contains(childName)) {
-                    throw new OperationFailedException(new ModelNode().set("No known child called " + childName)); //TODO i18n
-                } else {
-                    final ModelNode result = new ModelNode();
-                    subModel = subModel.get(childName);
-                    if (!subModel.isDefined()) {
-                        result.setEmptyList();
-                    } else {
-                        for (final String key : subModel.keys()) {
-                            final ModelNode node = new ModelNode();
-                            node.set(key);
-                            result.add(node);
-                        }
-                    }
-                    context.getResult().set(result);
-                }
+            validator.validate(operation);
+            final String childType = operation.require(CHILD_TYPE).asString();
+            ModelNode subModel = safeReadModel(context);
+            ModelNodeRegistration registry = context.getModelNodeRegistration();
+            Map<String, Set<String>> childAddresses = getChildAddresses(registry, subModel, childType);
+            Set<String> childNames = childAddresses.get(childType);
+            if (childNames == null) {
+                throw new OperationFailedException(new ModelNode().set(String.format("No known child type named %s", childType))); //TODO i18n
+            }
+            ModelNode result = context.getResult();
+            result.setEmptyList();
+            for (String childName : childNames) {
+                result.add(childName);
             }
             context.completeStep();
         }
@@ -254,45 +418,116 @@ public class GlobalOperationHandlers {
      * {@link OperationHandler} querying the children resources of a given "child-type".
      */
     public static class ReadChildrenResourcesOperationHandler implements NewStepHandler {
+
+        private final ParametersValidator validator = new ParametersValidator();
+
+        public ReadChildrenResourcesOperationHandler() {
+            validator.registerValidator(CHILD_TYPE, new StringLengthValidator(1));
+            validator.registerValidator(RECURSIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(INCLUDE_RUNTIME, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(PROXIES, new ModelTypeValidator(ModelType.BOOLEAN, true));
+        }
+
         @Override
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-            final String childName = operation.require(CHILD_TYPE).asString();
 
-            ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
-            if (!subModel.isDefined()) {
-                context.getResult().setEmptyList();
+            validator.validate(operation);
+            final String childType = operation.require(CHILD_TYPE).asString();
+
+            final Set<String> childNames = context.getModelNodeRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
+            if (!childNames.contains(childType)) {
+                throw new OperationFailedException(new ModelNode().set(String.format("No known child type named %s", childType))); //TODO i18n
+            }
+            final Map<PathElement, ModelNode> resources = new HashMap<PathElement, ModelNode>();
+
+            ModelNode subModel = safeReadModel(context);
+            if (!subModel.hasDefined(childType)) {
+                context.getResult().setEmptyObject();
             } else {
-                final Set<String> childNames = context.getModelNodeRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
-                if (!childNames.contains(childName)) {
-                    throw new OperationFailedException(new ModelNode().set("No known child called " + childName)); //TODO i18n
-                } else {
-                    final ModelNode result = context.getResult();
-                    subModel = subModel.get(childName);
-                    if (!subModel.isDefined()) {
-                        result.setEmptyList();
-                    } else {
-                        for (final String key : subModel.keys()) {
-                            final PathAddress childAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(childName, key));
+                // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
+                // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
 
-                            final ModelNode readOp = new ModelNode();
-                            readOp.get(OP).set(READ_RESOURCE_OPERATION);
-                            readOp.get(OP_ADDR).set(childAddress.toModelNode());
+                // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
+                final ReadChildrenResourcesAssemblyHandler assemblyHandler = new ReadChildrenResourcesAssemblyHandler(resources);
+                context.addStep(assemblyHandler, NewOperationContext.Stage.IMMEDIATE);
+                final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+                for (final String key : subModel.get(childType).keys()) {
+                    final PathElement childPath =  PathElement.pathElement(childType, key);
+                    final PathAddress childAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(childType, key));
 
-                            if(operation.hasDefined(INCLUDE_RUNTIME)) {
-                                readOp.get(INCLUDE_RUNTIME).set(operation.get(INCLUDE_RUNTIME).asBoolean());
-                            }
-                            final NewStepHandler handler = context.getModelNodeRegistration().getOperationHandler(childAddress, READ_RESOURCE_OPERATION);
-                            if(handler == null) {
-                                throw new OperationFailedException(new ModelNode().set("no operation handler"));
-                            }
-                            context.addStep(result.get(key), readOp, handler, NewOperationContext.Stage.MODEL);
-                        }
+                    final ModelNode readOp = new ModelNode();
+                    readOp.get(OP).set(READ_RESOURCE_OPERATION);
+                    readOp.get(OP_ADDR).set(PathAddress.pathAddress(address, childPath).toModelNode());
+
+                    if(operation.hasDefined(INCLUDE_RUNTIME)) {
+                        readOp.get(INCLUDE_RUNTIME).set(operation.get(INCLUDE_RUNTIME));
                     }
+                    if (operation.hasDefined(RECURSIVE)) {
+                        readOp.get(RECURSIVE).set(operation.get(RECURSIVE));
+                    }
+                    if (operation.hasDefined(PROXIES)) {
+                        readOp.get(PROXIES).set(operation.get(PROXIES));
+                    }
+                    final NewStepHandler handler = context.getModelNodeRegistration().getOperationHandler(childAddress, READ_RESOURCE_OPERATION);
+                    if(handler == null) {
+                        throw new OperationFailedException(new ModelNode().set("no operation handler"));
+                    }
+                    ModelNode rrRsp = new ModelNode();
+                    resources.put(childPath, rrRsp);
+                    context.addStep(rrRsp, readOp, handler, NewOperationContext.Stage.IMMEDIATE);
                 }
             }
+
             context.completeStep();
         }
     };
+
+    /**
+     * Assembles the resonse to a read-resource request from the components gathered by earlier steps.
+     */
+    private static class ReadChildrenResourcesAssemblyHandler implements NewStepHandler {
+
+        private final Map<PathElement, ModelNode> resources;
+
+        /**
+         * Creates a ReadResourceAssemblyHandler that will assemble the response using the contents
+         * of the given maps.
+         *
+         * @param resources read-resource response from child resources, where the key is the path of the resource
+*                       relative to the address of the operation this handler is handling and the
+*                       value is the full read-resource response. Will not be {@code null}
+         */
+        private ReadChildrenResourcesAssemblyHandler(final Map<PathElement, ModelNode> resources) {
+            this.resources = resources;
+        }
+
+        @Override
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+
+            Map<String, ModelNode> sortedChildren = new TreeMap<String, ModelNode>();
+            boolean failed = false;
+            for (Map.Entry<PathElement, ModelNode> entry : resources.entrySet()) {
+                PathElement path = entry.getKey();
+                ModelNode value = entry.getValue();
+                if (!value.has(FAILURE_DESCRIPTION)) {
+                    sortedChildren.put(path.getValue(), value.get(RESULT));
+                } else if (!failed && value.hasDefined(FAILURE_DESCRIPTION)) {
+                    context.getFailureDescription().set(value.get(FAILURE_DESCRIPTION));
+                    failed = true;
+                }
+            }
+            if (!failed) {
+                final ModelNode result = context.getResult();
+                result.setEmptyObject();
+
+                for (Map.Entry<String, ModelNode> entry : sortedChildren.entrySet()) {
+                    result.get(entry.getKey()).set(entry.getValue());
+                }
+            }
+
+            context.completeStep();
+        }
+    }
 
     /**
      * {@link OperationHandler} querying the child types of a given node.
@@ -300,19 +535,12 @@ public class GlobalOperationHandlers {
     public static final NewStepHandler READ_CHILDREN_TYPES = new NewStepHandler() {
         @Override
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-
-            ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
-            if (!subModel.isDefined()) {
-                context.getResult().setEmptyList();
-            } else {
-                Set<String> childTypes = context.getModelNodeRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
-                final ModelNode result = new ModelNode();
-                for (final String key : childTypes) {
-                    final ModelNode node = new ModelNode();
-                    node.set(key);
-                    result.add(node);
-                }
-                context.getResult().set(result);
+            final ModelNodeRegistration registry = context.getModelNodeRegistration();
+            Set<String> childTypes = registry.getChildNames(PathAddress.EMPTY_ADDRESS);
+            final ModelNode result = context.getResult();
+            result.setEmptyList();
+            for (final String key : childTypes) {
+                result.add(key);
             }
             context.completeStep();
         }
@@ -440,7 +668,7 @@ public class GlobalOperationHandlers {
                         operation.get(RECURSIVE).set(true);
                         operation.get(OPERATIONS).set(operations);
                         if (locale != null) {
-                            operation.get(OPERATIONS).set(locale.toString());
+                            operation.get(LOCALE).set(locale.toString());
                         }
                         // TODO
                         child = new ModelNode();
@@ -449,7 +677,7 @@ public class GlobalOperationHandlers {
                         child = provider.getModelDescription(locale);
                         addDescription(context, child, recursive, operations, inheritedOps, registry, childAddress, locale);
                     }
-                    result.get(CHILDREN, element.getKey(),MODEL_DESCRIPTION, element.getValue()).set(child);
+                    result.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue()).set(child);
                 }
             }
         }
@@ -523,7 +751,7 @@ public class GlobalOperationHandlers {
                     final Collection<PathAddress> resolved;
                     // FIXME we don't have this metadata with NewStepHandler
                     if(operationHandler instanceof ModelQueryOperationHandler) {
-                        resolved = PathAddress.resolve(address, context.readModel(PathAddress.EMPTY_ADDRESS), operationHandler instanceof ModelAddOperationHandler);
+                        resolved = PathAddress.resolve(address, safeReadModel(context), operationHandler instanceof ModelAddOperationHandler);
                     } else {
                         resolved = context.getModelNodeRegistration().resolveAddress(address);
                     }
@@ -541,9 +769,48 @@ public class GlobalOperationHandlers {
         /** {@inheritDoc} */
         @Override
         public ModelNode getModelDescription(Locale locale) {
+            // This is a private operation, so don't bother
             return new ModelNode();
         }
 
+    }
+
+    private static ModelNode safeReadModel(final NewOperationContext context) {
+        try {
+            return context.readModel(PathAddress.EMPTY_ADDRESS);
+        } catch (Exception e) {
+            return new ModelNode().setEmptyObject();
+        }
+    }
+
+
+    private static Map<String,Set<String>> getChildAddresses(final ModelNodeRegistration registry, final ModelNode model, final String validChildType) {
+
+        Set<PathElement> elements = registry.getChildAddresses(PathAddress.EMPTY_ADDRESS);
+        Map<String,Set<String>> result = new HashMap<String, Set<String>>();
+        for (PathElement element : elements) {
+            String childType = element.getKey();
+            if (validChildType != null && !validChildType.equals(childType)) {
+                continue;
+            }
+            Set<String> set = result.get(childType);
+            if (set == null) {
+                set = new HashSet<String>();
+                result.put(childType, set);
+            }
+            if (element.isWildcard()) {
+                if (model.hasDefined(childType)) {
+                    set.addAll(model.get(childType).keys());
+                }
+                // TODO we assume that no proxy controller will registered under a wildcard path element whereby
+                // we'd need to somehow as the PC for all the children names. We should probably formalize this
+                // by explicitly stating in the ModelNodeRegistration API that such PC's are illegal
+            } else {
+                set.add(element.getValue());
+            }
+        }
+
+        return result;
     }
 
     private static Locale getLocale(final ModelNode operation) {

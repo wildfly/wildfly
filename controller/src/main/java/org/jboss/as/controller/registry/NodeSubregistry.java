@@ -54,6 +54,10 @@ final class NodeSubregistry {
         childRegistriesUpdater.clear(this);
     }
 
+    AbstractNodeRegistration getParent() {
+        return parent;
+    }
+
     Set<String> getChildNames(){
         final Map<String, AbstractNodeRegistration> snapshot = this.childRegistries;
         if (snapshot == null) {
@@ -225,7 +229,10 @@ final class NodeSubregistry {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
         AbstractNodeRegistration childRegistry = snapshot.get(child);
         if (childRegistry == null) {
-            return null;
+            childRegistry = snapshot.get("*");
+            if (childRegistry == null) {
+                return null;
+            }
         }
         return childRegistry.getNodeRegistration(iterator);
     }
@@ -259,4 +266,6 @@ final class NodeSubregistry {
             childRegistry.resolveAddress(address, base.append(current), addresses);
         }
     }
+
+
 }

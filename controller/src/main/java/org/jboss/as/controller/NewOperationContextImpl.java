@@ -275,7 +275,7 @@ final class NewOperationContextImpl implements NewOperationContext {
                     }
                 }
             } else {
-                return executeStep(response, step);
+                return executeStep(step);
             }
         } while (currentStage != Stage.DONE);
         final AtomicReference<ResultAction> ref = new AtomicReference<ResultAction>(transactionControl == null ? ResultAction.KEEP : ResultAction.ROLLBACK);
@@ -303,12 +303,13 @@ final class NewOperationContextImpl implements NewOperationContext {
         return resultAction;
     }
 
-    private ResultAction executeStep(ModelNode response, final Step step) {
+    private ResultAction executeStep(final Step step) {
         PathAddress oldModelAddress = modelAddress;
         ModelNode oldOperation = operation;
-        ModelNode oldResponse = response;
+        ModelNode oldResponse = this.response;
         StampHolder oldRestartStamp = restartStampHolder;
         Stage stepStage = null;
+        ModelNode response = null;
         try {
             // next step runs at the next depth level
             depth++;
@@ -319,7 +320,6 @@ final class NewOperationContextImpl implements NewOperationContext {
             try {
                 step.handler.execute(this, newOperation);
             } catch (OperationFailedException ofe) {
-                ofe.printStackTrace();
                 if (currentStage != Stage.DONE) {
                     // Handler threw OFE before calling completeStep(); that's equivalent to
                     // a request that we set the failure description and call completeStep()
@@ -334,7 +334,6 @@ final class NewOperationContextImpl implements NewOperationContext {
             }
             assert resultAction != null;
         } catch (Throwable t) {
-            t.printStackTrace();
             // If this block is entered, then the next step failed
             // The question is, did it fail before or after calling completeStep()?
             if (currentStage != Stage.DONE) {

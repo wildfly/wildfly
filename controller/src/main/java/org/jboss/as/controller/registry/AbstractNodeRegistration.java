@@ -88,10 +88,24 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
      */
     @Override
     public final NewStepHandler getOperationHandler(final PathAddress pathAddress, final String operationName) {
-        return getHandler(pathAddress.iterator(), operationName);
+        NewStepHandler result =  getHandler(pathAddress.iterator(), operationName);
+        if (result == null && parent != null) {
+            result = parent.getParent().getInheritedOperationHandler(operationName);
+        }
+        return result;
     }
 
     abstract NewStepHandler getHandler(ListIterator<PathElement> iterator, String operationName);
+
+    private NewStepHandler getInheritedOperationHandler(final String operationName) {
+        NewStepHandler result =  getInheritedHandler(operationName);
+        if (result == null && parent != null) {
+            result = parent.getParent().getInheritedOperationHandler(operationName);
+        }
+        return result;
+    }
+
+    abstract NewStepHandler getInheritedHandler(String operationName);
 
     @Override
     public AttributeAccess getAttributeAccess(final PathAddress address, final String attributeName) {
@@ -192,4 +206,15 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
             return parent.getLocationString() + valueString + ")";
         }
     }
+
+    void getInheritedOperations(final Map<String, OperationEntry> providers, boolean skipSelf) {
+        if (!skipSelf) {
+            getInheritedOperationEntries(providers);
+        }
+        if (parent != null) {
+            parent.getParent().getInheritedOperations(providers, false);
+        }
+    }
+
+    abstract void getInheritedOperationEntries(final Map<String, OperationEntry> providers);
 }
