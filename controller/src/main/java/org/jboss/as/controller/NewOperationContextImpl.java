@@ -34,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_UPDATE_SKIPPED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -146,7 +145,7 @@ final class NewOperationContextImpl implements NewOperationContext {
         serviceTarget = new ContextServiceTarget(modelController);
     }
 
-    public InputStream getAttachmentStream(final int index) throws IOException {
+    public InputStream getAttachmentStream(final int index) {
         if (attachments == null) {
             throw new ArrayIndexOutOfBoundsException(index);
         }

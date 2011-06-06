@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.jboss.as.controller.client.MessageSeverity;
@@ -69,9 +68,8 @@ public interface NewOperationContext {
      *
      * @param index the index
      * @return the input stream
-     * @throws IOException if an error occurs while opening the stream
      */
-    InputStream getAttachmentStream(int index) throws IOException;
+    InputStream getAttachmentStream(int index);
 
     /**
      * Gets the number of streams attached to the request.
