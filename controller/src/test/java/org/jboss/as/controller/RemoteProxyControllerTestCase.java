@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.NewModelController.OperationTransaction;
-import org.jboss.as.controller._TempNewProxyController.ProxyOperationControl;
+import org.jboss.as.controller.NewProxyController.ProxyOperationControl;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.OperationAttachments;

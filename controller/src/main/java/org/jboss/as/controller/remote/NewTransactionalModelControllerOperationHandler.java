@@ -33,8 +33,8 @@ import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewModelController.OperationTransaction;
-import org.jboss.as.controller._TempNewProxyController;
-import org.jboss.as.controller._TempNewProxyController.ProxyOperationControl;
+import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.NewProxyController.ProxyOperationControl;
 import org.jboss.as.controller.client.NewModelControllerProtocol;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.protocol.ProtocolChannel;
@@ -72,7 +72,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
     }
 
     /**
-     * Handles incoming {@link _TempNewProxyController#execute(ModelNode, OperationMessageHandler, ProxyOperationControl, org.jboss.as.controller.client._TempNewOperationAttachments)}
+     * Handles incoming {@link NewProxyController#execute(ModelNode, OperationMessageHandler, ProxyOperationControl, org.jboss.as.controller.client.OperationAttachments)}
      * requests from the remote proxy controller and forwards them to the target model controller
      */
     private class ExecuteRequestHandler extends ManagementRequestHandler {
