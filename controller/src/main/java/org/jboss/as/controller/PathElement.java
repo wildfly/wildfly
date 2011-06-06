@@ -43,7 +43,7 @@ public class PathElement {
      * A valid key contains alphanumerics and underscores, cannot start with a
      * number, and cannot start or end with {@code -}.
      */
-    private static final Pattern VALID_KEY_PATTERN = Pattern.compile("[_a-zA-Z](?:[-_a-zA-Z0-9]*[_a-zA-Z0-9])?");
+    private static final Pattern VALID_KEY_PATTERN = Pattern.compile("\\*{2}+|[_a-zA-Z](?:[-_a-zA-Z0-9]*[_a-zA-Z0-9])?");
 
     private static final Pattern VALID_VALUE_PATTERN = Pattern.compile("\\*|[^*\\p{Space}\\p{Cntrl}]+");
 

@@ -34,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROXIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
@@ -42,12 +41,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -55,18 +53,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.ProxyStepHandler;
-import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -80,7 +73,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Global {@code OperationHanlder}s.
+ * Global {@code OperationHandler}s.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -91,7 +84,6 @@ public class GlobalOperationHandlers {
     public static final NewStepHandler READ_CHILDREN_NAMES = new ReadChildrenNamesOperationHandler();
     public static final NewStepHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
     public static final NewStepHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
-    public static final ResolveAddressOperationHandler RESOLVE = new ResolveAddressOperationHandler();
 
     private GlobalOperationHandlers() {
         //
@@ -690,93 +682,78 @@ public class GlobalOperationHandlers {
     };
 
 
-    public static final class ResolveAddressOperationHandler implements NewStepHandler, DescriptionProvider {
+    public static final class MultiTargetOperationHandler implements NewStepHandler {
 
-        public static final String OPERATION_NAME = "resolve-address";
-        public static final String ADDRESS_PARAM = "address-to-resolve";
-        public static final String ORIGINAL_OPERATION = "original-operation";
+        public static final ModelNode FAKE_OPERATION;
 
-        /** {@inheritDoc} */
-        @Override
-        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
-            final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS_PARAM));
-            final String operationName = operation.require(ORIGINAL_OPERATION).asString();
-            // First check if the address is handled by a proxy
-            final Collection<ProxyController> proxies = context.getModelNodeRegistration().getProxyControllers(PathAddress.EMPTY_ADDRESS);
-            final int size = proxies.size();
-            if(size > 0) {
-                final Map<NewProxyController, ModelNode> proxyResponses = new HashMap<NewProxyController, ModelNode>();
-                for(final ProxyController proxy : proxies) {
-                    final PathAddress proxyAddress = proxy.getProxyNodeAddress();
-                    final ModelNode newOperation = operation.clone();
-                    newOperation.get(OP_ADDR).set(address.subAddress(proxyAddress.size()).toModelNode());
-                    NewProxyController newProxyController = (NewProxyController) proxy;
-                    ProxyStepHandler proxyHandler = new ProxyStepHandler(newProxyController);
-                    ModelNode proxyResponse = new ModelNode();
-                    proxyResponses.put(newProxyController, proxyResponse);
-                    context.addStep(proxyResponse, newOperation, proxyHandler, NewOperationContext.Stage.IMMEDIATE);
-                }
+        static {
+            final ModelNode resolve = new ModelNode();
+            resolve.get(OP).set("resolve");
+            resolve.get(OP_ADDR).setEmptyList();
+            resolve.protect();
+            FAKE_OPERATION = resolve;
+        }
 
-                context.addStep(new NewStepHandler() {
-                    @Override
-                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModelNode failures = new ModelNode().setEmptyObject();
-                        ModelNode combined = new ModelNode().setEmptyList();
-                        for (Map.Entry<NewProxyController, ModelNode> entry : proxyResponses.entrySet()) {
-                            ModelNode rsp = entry.getValue();
-                            if (!SUCCESS.equals(rsp.get(OUTCOME))) {
-                               failures.get(entry.getKey().getProxyNodeAddress().toString()).set(rsp.get(FAILURE_DESCRIPTION));
-                            } else {
-                                ModelNode result = rsp.get(RESULT);
-                                if (result.isDefined()) {
-                                    for (ModelNode item : result.asList()) {
-                                        combined.add(item);
-                                    }
-                                }
-                            }
-                            if (failures.asInt() > 0) {
-                                ModelNode failMsg = new ModelNode();
-                                failMsg.add("Controllers for one or more addresses failed");
-                                failMsg.add(failures);
-                                context.getFailureDescription().set(failMsg);
-
-                            } else {
-                                context.getResult().set(combined);
-                            }
-                        }
-                        context.completeStep();
-                    }
-                }, NewOperationContext.Stage.MODEL);
-
-            } else {
-                // Deal with it directly
-                final NewStepHandler operationHandler = context.getModelNodeRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
-                if(operationHandler == null) {
-                    context.getFailureDescription().set("No operation handler" + operationName);
-                } else {
-                    final Collection<PathAddress> resolved;
-                    // FIXME we don't have this metadata with NewStepHandler
-                    if(operationHandler instanceof ModelQueryOperationHandler) {
-                        resolved = PathAddress.resolve(address, safeReadModel(context), operationHandler instanceof ModelAddOperationHandler);
-                    } else {
-                        resolved = context.getModelNodeRegistration().resolveAddress(address);
-                    }
-                    if(! resolved.isEmpty()) {
-                        ModelNode list = context.getResult().setEmptyList();
-                        for(PathAddress a : resolved) {
-                            list.add(a.toModelNode());
-                        }
-                    }
-                }
-            }
-            context.completeStep();
+        private final ModelNode operation;
+        public MultiTargetOperationHandler(final ModelNode operation) {
+            this.operation = operation;
         }
 
         /** {@inheritDoc} */
         @Override
-        public ModelNode getModelDescription(Locale locale) {
-            // This is a private operation, so don't bother
-            return new ModelNode();
+        public void execute(final NewOperationContext context, final ModelNode ignored) throws OperationFailedException {
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            context.getResult().setEmptyList();
+            execute(address, PathAddress.EMPTY_ADDRESS, context);
+            context.completeStep();
+        }
+
+        void execute(final PathAddress address, final PathAddress base, final NewOperationContext context) {
+            final PathAddress current = address.subAddress(base.size());
+            final Iterator<PathElement> iterator = current.iterator();
+            if(iterator.hasNext()) {
+                final PathElement element = iterator.next();
+                if(element.isMultiTarget()) {
+                    final String childType;
+                    if(element.getKey().equals("**")) {
+                        childType = null;
+                    } else {
+                        childType = element.getKey();
+                    }
+                    final ModelNodeRegistration registration = context.getModelNodeRegistration().getSubModel(base);
+                    final ModelNode model = context.readModel(base);
+                    final Map<String, Set<String>> resolved = getChildAddresses(registration, model, childType);
+                    for (Map.Entry<String, Set<String>> entry : resolved.entrySet()) {
+                        final String key = entry.getKey();
+                        final Set<String> children = entry.getValue();
+                        if(children.isEmpty()) {
+                            continue;
+                        }
+                        if(element.isWildcard()) {
+                            for(final String child : children) {
+                                execute(address, base.append(PathElement.pathElement(key, child)), context);
+                            }
+                        } else {
+                            for(final String segment : element.getSegments()) {
+                                if(children.contains(segment)) {
+                                    execute(address, base.append(PathElement.pathElement(key, segment)), context);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    execute(address, base.append(element), context);
+                }
+            } else {
+                final String operationName = operation.require(OP).asString();
+                final ModelNode newOp = operation.clone();
+                newOp.get(OP_ADDR).set(base.toModelNode());
+
+                final ModelNode result = context.getResult().add();
+                result.get(OP_ADDR).set(base.toModelNode());
+                final NewStepHandler handler = context.getModelNodeRegistration().getOperationHandler(base, operationName);
+                context.addStep(result, newOp, handler, NewOperationContext.Stage.MODEL);
+            }
         }
 
     }

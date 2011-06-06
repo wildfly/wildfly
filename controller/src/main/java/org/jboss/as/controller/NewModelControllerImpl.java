@@ -35,7 +35,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -46,7 +50,9 @@ import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -107,19 +113,24 @@ class NewModelControllerImpl implements NewModelController {
         if (prepareStep != null) {
             context.addStep(response, operation, prepareStep, NewOperationContext.Stage.MODEL);
         }
-        PathAddress address =  PathAddress.pathAddress(operation.get(OP_ADDR));
-        String operationName =  operation.require(OP).asString();
-        NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
-        if (stepHandler != null) {
-            context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
-            RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
-            try {
-                context.completeStep();
-            } finally {
-                RB_ON_RT_FAILURE.set(null);
-            }
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        if(address.isMultiTarget()) {
+            context.addStep(response, GlobalOperationHandlers.MultiTargetOperationHandler.FAKE_OPERATION,
+                    new GlobalOperationHandlers.MultiTargetOperationHandler(operation), NewOperationContext.Stage.MODEL);
         } else {
-            reportNoHandler(operationName, address, response);
+            final String operationName =  operation.require(OP).asString();
+            final NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
+            if(stepHandler != null) {
+                context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
+            } else {
+                reportNoHandler(operationName, address, response);
+            }
+        }
+        RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
+        try {
+            context.completeStep();
+        } finally {
+            RB_ON_RT_FAILURE.set(null);
         }
         ControlledProcessState.State state = processState.getState();
         switch (state) {
