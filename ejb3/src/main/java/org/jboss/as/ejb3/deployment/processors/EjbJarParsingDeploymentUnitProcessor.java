@@ -36,6 +36,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.parser.spec.EjbJarMetaDataParser;
+import org.jboss.metadata.ejb.spec.EjbJar31MetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 import org.jboss.vfs.VirtualFile;
@@ -103,6 +104,8 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         // get the root of the deployment unit
         VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+
         // Locate a ejb-jar.xml
         VirtualFile ejbJarXml = null;
         // EJB 3.1 FR 20.4 Enterprise Beans Packaged in a .war
@@ -140,6 +143,13 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             EjbJarMetaData ejbJarMetaData = EjbJarMetaDataParser.parse(reader, dtdInfo);
             // attach the EjbJarMetaData to the deployment unit
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA, ejbJarMetaData);
+
+            if(ejbJarMetaData instanceof EjbJar31MetaData) {
+                EjbJar31MetaData ejbJar31MetaData = (EjbJar31MetaData)ejbJarMetaData;
+                if(ejbJar31MetaData.getModuleName() != null) {
+                    eeModuleDescription.setModuleName(ejbJar31MetaData.getModuleName());
+                }
+            }
 
         } catch (XMLStreamException xmlse) {
             throw new DeploymentUnitProcessingException("Exception while parsing ejb-jar.xml: " + ejbJarXml.getPathName(), xmlse);

@@ -168,7 +168,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
             // Parsing persistence.xml in EJB jar/war files is handled as subdeployments.
             // We need to handle jars in the EAR/lib folder here
-            List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+            List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             assert resourceRoots != null;
             for (ResourceRoot resourceRoot : resourceRoots) {
                 // look at lib/*.jar files that aren't subdeployments (subdeployments are passed
