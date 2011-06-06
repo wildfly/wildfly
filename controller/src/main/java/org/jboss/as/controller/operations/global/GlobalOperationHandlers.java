@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.ModelQueryOperationHandler;
@@ -407,7 +408,8 @@ public class GlobalOperationHandlers {
             if (childNames == null) {
                 throw new OperationFailedException(new ModelNode().set(String.format("No known child type named %s", childType))); //TODO i18n
             }
-
+            // Sort the result
+            childNames = new TreeSet<String>(childNames);
             ModelNode result = context.getResult();
             result.setEmptyList();
             for (String childName : childNames) {
@@ -781,10 +783,14 @@ public class GlobalOperationHandlers {
 
     private static ModelNode safeReadModel(final NewOperationContext context) {
         try {
-            return context.readModel(PathAddress.EMPTY_ADDRESS);
+            ModelNode result = context.readModel(PathAddress.EMPTY_ADDRESS);
+            if (result.isDefined()) {
+                return result;
+            }
         } catch (Exception e) {
-            return new ModelNode().setEmptyObject();
+            // ignore
         }
+        return new ModelNode().setEmptyObject();
     }
 
     /**

@@ -129,6 +129,7 @@ public class NamingExtension implements Extension {
 
         public void execute(NewOperationContext context, ModelNode operation) {
             context.getResult().add(createAddOperation());
+            context.completeStep();
         }
 
         @Override
