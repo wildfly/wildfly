@@ -35,8 +35,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller._TempNewProxyController;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.NewModelControllerProtocol;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -59,7 +59,7 @@ import org.jboss.remoting3.CloseHandler;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NewRemoteProxyController implements _TempNewProxyController, ManagementOperationHandler {
+public class NewRemoteProxyController implements NewProxyController, ManagementOperationHandler {
 
     private final PathAddress pathAddress;
     private final ProtocolChannel channel;
