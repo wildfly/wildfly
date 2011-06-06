@@ -35,6 +35,10 @@ import org.jboss.staxmapper.XMLElementWriter;
  */
 public final class NullConfigurationPersister extends AbstractConfigurationPersister {
 
+    public NullConfigurationPersister() {
+        super(null);
+    }
+
     public NullConfigurationPersister(XMLElementWriter<ModelMarshallingContext> rootDeparser) {
         super(rootDeparser);
     }
