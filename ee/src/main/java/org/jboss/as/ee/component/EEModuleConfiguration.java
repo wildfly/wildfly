@@ -31,9 +31,7 @@ import org.jboss.modules.ModuleClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -41,7 +39,6 @@ import java.util.Map;
 public final class EEModuleConfiguration {
     private final String applicationName;
     private final String moduleName;
-    private final Map<String, EEModuleClassConfiguration> classesByName;
     private final List<ComponentConfiguration> componentConfigurations;
 
     // Module Bindings
@@ -58,7 +55,6 @@ public final class EEModuleConfiguration {
             configurator.configure(context, description, this);
         }
 
-        this.classesByName = new HashMap<String, EEModuleClassConfiguration>();
         this.componentConfigurations = new ArrayList<ComponentConfiguration>();
     }
 
@@ -68,14 +64,6 @@ public final class EEModuleConfiguration {
 
     public String getModuleName() {
         return moduleName;
-    }
-
-    public void addClassConfiguration(EEModuleClassConfiguration configuration) {
-        classesByName.put(configuration.getModuleClass().getName(), configuration);
-    }
-
-    public EEModuleClassConfiguration getClassConfiguration(String className) {
-        return classesByName.get(className);
     }
 
     public Collection<ComponentConfiguration> getComponentConfigurations() {

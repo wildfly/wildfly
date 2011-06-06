@@ -114,9 +114,8 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EAR_DEPENDENCY, new EarDependencyProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_INITIALIZE_IN_ORDER, new InitalizeInOrderProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_INJECTION_ANNOTATION, new ResourceInjectionAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_ENV_ENTRY, new ResourceReferenceProcessor());
 
-
-            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ENV_ENTRY, new ResourceReferenceProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_JNDI_BINDINGS, new ModuleJndiBindingProcessor());

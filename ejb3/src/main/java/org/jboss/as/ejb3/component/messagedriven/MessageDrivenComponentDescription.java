@@ -25,7 +25,7 @@ package org.jboss.as.ejb3.component.messagedriven;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEModuleConfiguration;
+import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
@@ -60,8 +60,8 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(EEModuleConfiguration moduleConfiguration) {
-        final ComponentConfiguration mdbComponentConfiguration = new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
+    public ComponentConfiguration createConfiguration(EEApplicationDescription applicationDescription) {
+        final ComponentConfiguration mdbComponentConfiguration = new ComponentConfiguration(this, applicationDescription.getClassConfiguration(getComponentClassName()));
         // setup the component create service
         mdbComponentConfiguration.setComponentCreateServiceFactory(new MessageDrivenComponentCreateServiceFactory());
         return mdbComponentConfiguration;

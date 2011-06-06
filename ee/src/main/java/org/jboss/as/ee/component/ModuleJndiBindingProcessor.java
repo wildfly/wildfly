@@ -54,6 +54,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
         if (moduleConfiguration == null) {
             return;
@@ -122,20 +123,20 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             final Set<EEModuleClassConfiguration> classConfigurations = new HashSet<EEModuleClassConfiguration>();
             classConfigurations.add(componentConfiguration.getModuleClassConfiguration());
             for (final InterceptorDescription interceptor : componentConfiguration.getComponentDescription().getAllInterceptors()) {
-                final EEModuleClassConfiguration interceptorClass = moduleConfiguration.getClassConfiguration(interceptor.getInterceptorClassName());
+                final EEModuleClassConfiguration interceptorClass = applicationDescription.getClassConfiguration(interceptor.getInterceptorClassName());
                 if (interceptorClass != null) {
                     classConfigurations.add(interceptorClass);
                 }
             }
-            processClassConfigurations(phaseContext, moduleConfiguration, existingBindings, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations);
+            processClassConfigurations(phaseContext, applicationDescription, moduleConfiguration, existingBindings, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations);
 
         }
 
     }
 
-    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> existingBindings, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<EEModuleClassConfiguration> classConfigurations) throws DeploymentUnitProcessingException {
+    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> existingBindings, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<EEModuleClassConfiguration> classConfigurations) throws DeploymentUnitProcessingException {
         for (final EEModuleClassConfiguration classConfiguration : classConfigurations) {
-            new ClassDescriptionTraversal(classConfiguration, moduleConfiguration) {
+            new ClassDescriptionTraversal(classConfiguration, applicationDescription) {
 
                 @Override
                 protected void handle(final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {

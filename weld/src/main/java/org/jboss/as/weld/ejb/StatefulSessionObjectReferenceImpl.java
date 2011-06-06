@@ -90,7 +90,12 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     @Override
     public boolean isRemoved() {
         if(!removed) {
-            return getComponent().getCache().get(id) == null;
+            try {
+                getComponent().getCache().get(id);
+                return false;
+            } catch (NoSuchEJBException e) {
+                return true;
+            }
         }
         return true;
     }

@@ -316,6 +316,10 @@ public enum Phase {
     public static final int POST_MODULE_EJB_JNDI_BINDINGS               = 0x1100;
     public static final int POST_MODULE_EJB_MODULE_CONFIGURATION        = 0x1200;
     public static final int POST_INITIALIZE_IN_ORDER                    = 0x1300;
+    public static final int POST_MODULE_ENV_ENTRY                       = 0x1400;
+    public static final int POST_MODULE_EJB_REF                         = 0x1500;
+    public static final int POST_MODULE_PERSISTENCE_REF                 = 0x1600;
+    public static final int POST_MODULE_DATASOURCE_REF                  = 0x1700;
 
 
     // INSTALL
@@ -331,10 +335,6 @@ public enum Phase {
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0B00;
     public static final int INSTALL_EE_COMP_LAZY_BINDING_SOURCE_HANDLER = 0x0C00;
     public static final int INSTALL_WS_LAZY_BINDING_SOURCE_HANDLER      = 0x0D00;
-    public static final int INSTALL_ENV_ENTRY                           = 0x0E00;
-    public static final int INSTALL_EJB_REF                             = 0x0F00;
-    public static final int INSTALL_PERSISTENCE_REF                     = 0x1000;
-    public static final int INSTALL_DATASOURCE_REF                      = 0x1010;
     public static final int INSTALL_EE_MODULE_CONFIG                    = 0x1100;
     public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x1200;
     public static final int INSTALL_DEPENDS_ON_ANNOTATION               = 0x1210;

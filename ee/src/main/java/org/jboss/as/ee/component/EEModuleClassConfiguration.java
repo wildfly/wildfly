@@ -62,9 +62,6 @@ import java.util.Set;
  */
 public final class EEModuleClassConfiguration {
 
-    // Module
-    private final EEModuleConfiguration moduleConfiguration;
-
     private final EEModuleClassDescription moduleClassDescription;
 
     // Module class
@@ -87,20 +84,10 @@ public final class EEModuleClassConfiguration {
      */
     private volatile Set<Method> classMethods;
 
-    EEModuleClassConfiguration(final Class<?> moduleClass, final EEModuleConfiguration moduleConfiguration, EEModuleClassDescription moduleClassDescription, final DeploymentReflectionIndex deploymentReflectionIndex) {
+    public EEModuleClassConfiguration(final Class<?> moduleClass, EEModuleClassDescription moduleClassDescription, final DeploymentReflectionIndex deploymentReflectionIndex) {
         this.moduleClass = moduleClass;
-        this.moduleConfiguration = moduleConfiguration;
         this.moduleClassDescription = moduleClassDescription;
         this.deploymentReflectionIndex = deploymentReflectionIndex;
-    }
-
-    /**
-     * Get the EE module configuration corresponding to this class configuration.
-     *
-     * @return the module configuration
-     */
-    public EEModuleConfiguration getModuleConfiguration() {
-        return moduleConfiguration;
     }
 
     /**

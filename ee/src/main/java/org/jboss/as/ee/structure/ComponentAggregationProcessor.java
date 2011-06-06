@@ -24,12 +24,14 @@ package org.jboss.as.ee.structure;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationDescription;
+import org.jboss.as.ee.component.EEModuleConfigurationProcessor;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.logging.Logger;
 
 import java.util.List;
 
@@ -39,14 +41,19 @@ import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Stuart Douglas
  */
 public final class ComponentAggregationProcessor implements DeploymentUnitProcessor {
 
+    private static final Logger logger = Logger.getLogger(EEModuleConfigurationProcessor.class);
+
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EEApplicationDescription applicationDescription = new EEApplicationDescription();
 
         if (deploymentUnit.getAttachment(Attachments.DEPLOYMENT_TYPE) == DeploymentType.EAR) {
+
+            final EEApplicationDescription applicationDescription = new EEApplicationDescription();
+            deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION, applicationDescription);
             /*
              * We are an EAR, so we must inspect all of our subdeployments and aggregate all their component views
              * into a single index, so that inter-module resolution will work.
@@ -66,6 +73,9 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
                 subdeployment.putAttachment(EE_APPLICATION_DESCRIPTION, applicationDescription);
             }
         } else if (deploymentUnit.getParent() == null) {
+
+            final EEApplicationDescription applicationDescription = new EEApplicationDescription();
+            deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION, applicationDescription);
             /*
              * We are a top-level EE deployment, or a non-EE deployment.  Our "aggregate" index is just a copy of
              * our local EE module index.
@@ -79,7 +89,6 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
             for (ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
                 applicationDescription.addComponent(componentDescription, deploymentRoot.getRoot());
             }
-            deploymentUnit.putAttachment(EE_APPLICATION_DESCRIPTION, applicationDescription);
         }
     }
 

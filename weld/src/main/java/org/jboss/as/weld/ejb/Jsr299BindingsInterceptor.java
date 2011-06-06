@@ -34,8 +34,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJBContext;
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InterceptionType;
 import javax.enterprise.inject.spi.Interceptor;
+import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 import javax.naming.InitialContext;
@@ -63,6 +65,9 @@ public class Jsr299BindingsInterceptor implements Serializable {
     private volatile String ejbName;
 
     private volatile CreationalContext<Object> creationalContext;
+
+    @Inject
+    private BeanManager beanManager;
 
     @PostConstruct
     public void doPostConstruct(InvocationContext invocationContext) throws Exception {
@@ -99,14 +104,7 @@ public class Jsr299BindingsInterceptor implements Serializable {
     }
 
     private InterceptorBindings getInterceptorBindings(String ejbName) {
-        //it does not matter if this is invoked twice
-        final BeanManagerImpl beanManager;
-        try {
-            beanManager = (BeanManagerImpl) new InitialContext().lookup("java:comp/BeanManager");
-        } catch (NamingException e) {
-            return null;
-        }
-
+        BeanManagerImpl beanManager = (BeanManagerImpl)this.beanManager;
         EjbServices ejbServices = beanManager.getServices().get(EjbServices.class);
         if (ejbServices instanceof ForwardingEjbServices) {
             ejbServices = ((ForwardingEjbServices) ejbServices).delegate();

@@ -82,6 +82,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final String moduleName = configuration.getModuleName();
         final String componentName = configuration.getComponentName();
         final ServiceName baseName = configuration.getComponentDescription().getServiceName();
+        final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
 
         //create additional injectors
         final ServiceName createServiceName = baseName.append("CREATE");
@@ -158,7 +159,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             deploymentDescriptorBindings.putAll(existingBindings);
 
             // The bindings for the component class
-            new ClassDescriptionTraversal(configuration.getModuleClassConfiguration(), moduleConfiguration) {
+            new ClassDescriptionTraversal(configuration.getModuleClassConfiguration(), applicationDescription) {
                 @Override
                 protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                     processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), existingBindings, deploymentDescriptorBindings);
@@ -167,10 +168,10 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
 
             for (InterceptorDescription interceptor : configuration.getComponentDescription().getAllInterceptors()) {
-                final EEModuleClassConfiguration interceptorClass = moduleConfiguration.getClassConfiguration(interceptor.getInterceptorClassName());
+                final EEModuleClassConfiguration interceptorClass = applicationDescription.getClassConfiguration(interceptor.getInterceptorClassName());
 
                 if (interceptorClass != null) {
-                    new ClassDescriptionTraversal(interceptorClass, moduleConfiguration) {
+                    new ClassDescriptionTraversal(interceptorClass, applicationDescription) {
                         @Override
                         protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                             processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), existingBindings, deploymentDescriptorBindings);

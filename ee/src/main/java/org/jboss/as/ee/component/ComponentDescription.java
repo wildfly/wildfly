@@ -136,8 +136,8 @@ public class ComponentDescription {
         configurators.addLast(FIRST_CONFIGURATOR);
     }
 
-    public ComponentConfiguration createConfiguration(EEModuleConfiguration moduleConfiguration) {
-        return new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(this.getComponentClassName()));
+    public ComponentConfiguration createConfiguration(EEApplicationDescription applicationDescription) {
+        return new ComponentConfiguration(this, applicationDescription.getClassConfiguration(this.getComponentClassName()));
     }
 
     /**
@@ -464,10 +464,10 @@ public class ComponentDescription {
             final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(REFLECTION_INDEX);
             final Object instanceKey = BasicComponentInstance.INSTANCE_KEY;
             final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+            final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
 
             // Module stuff
             final EEModuleClassConfiguration componentClassConfiguration = configuration.getModuleClassConfiguration();
-            final EEModuleConfiguration moduleConfiguration = componentClassConfiguration.getModuleConfiguration();
 
             final Deque<InterceptorFactory> instantiators = new ArrayDeque<InterceptorFactory>();
             final Deque<InterceptorFactory> injectors = new ArrayDeque<InterceptorFactory>();
@@ -496,7 +496,7 @@ public class ComponentDescription {
             }
             destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(instanceKey));
 
-            new ClassDescriptionTraversal(componentClassConfiguration, moduleConfiguration) {
+            new ClassDescriptionTraversal(componentClassConfiguration, applicationDescription) {
 
                 @Override
                 public void handle(EEModuleClassConfiguration classConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
@@ -520,7 +520,7 @@ public class ComponentDescription {
 
             for (final InterceptorDescription interceptorDescription : description.getAllInterceptors()) {
                 final String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                final EEModuleClassConfiguration interceptorConfiguration = moduleConfiguration.getClassConfiguration(interceptorClassName);
+                final EEModuleClassConfiguration interceptorConfiguration = applicationDescription.getClassConfiguration(interceptorClassName);
 
                 //we store the interceptor instance under the class key
                 final Object contextKey = interceptorConfiguration.getModuleClass();
@@ -533,7 +533,7 @@ public class ComponentDescription {
                 final boolean interceptorHasLifecycleCallbacks = interceptorWithLifecycleCallbacks.contains(interceptorDescription);
                 final ClassReflectionIndex<?> interceptorIndex = deploymentReflectionIndex.getClassIndex(interceptorConfiguration.getModuleClass());
 
-                new ClassDescriptionTraversal(interceptorConfiguration, moduleConfiguration) {
+                new ClassDescriptionTraversal(interceptorConfiguration, applicationDescription) {
                     @Override
                     public void handle(EEModuleClassConfiguration interceptorClassConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                         final ClassReflectionIndex<?> interceptorClassIndex = deploymentReflectionIndex.getClassIndex(interceptorClassConfiguration.getModuleClass());
@@ -606,7 +606,7 @@ public class ComponentDescription {
             }
 
 
-            new ClassDescriptionTraversal(componentClassConfiguration, moduleConfiguration) {
+            new ClassDescriptionTraversal(componentClassConfiguration, applicationDescription) {
                 @Override
                 public void handle(EEModuleClassConfiguration configuration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                     final ClassReflectionIndex classReflectionIndex = deploymentReflectionIndex.getClassIndex(configuration.getModuleClass());

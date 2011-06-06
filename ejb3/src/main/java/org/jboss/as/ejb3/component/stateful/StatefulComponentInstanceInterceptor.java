@@ -26,6 +26,8 @@ import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 
+import javax.ejb.ConcurrentAccessException;
+import javax.ejb.ConcurrentAccessTimeoutException;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -61,6 +63,9 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
             // Detect app exception
             if (component.getApplicationException(ex.getClass()) != null) {
                 // it's an application exception, just throw it back.
+                throw ex;
+            }
+            if(ex instanceof ConcurrentAccessTimeoutException || ex instanceof ConcurrentAccessException) {
                 throw ex;
             }
             if (ex instanceof RuntimeException || ex instanceof RemoteException) {

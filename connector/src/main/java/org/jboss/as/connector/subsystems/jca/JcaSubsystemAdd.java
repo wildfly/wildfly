@@ -136,7 +136,7 @@ class JcaSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
             // EE subsystem
             bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION_ANNOTATION,
                     new DataSourceDefinitionAnnotationParser());
-            bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DATASOURCE_REF,
+            bootContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_DATASOURCE_REF,
                     new DataSourceDefinitionDeploymentDescriptorParser());
 
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {

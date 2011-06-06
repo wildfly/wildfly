@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A reflection index for a deployment.  Not safe for multi-threaded access.
+ * A reflection index for a deployment.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */

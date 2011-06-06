@@ -31,18 +31,18 @@ import java.util.Deque;
  */
 public abstract class ClassDescriptionTraversal {
     final EEModuleClassConfiguration classConfiguration;
-    final EEModuleConfiguration moduleConfiguration;
+    final EEApplicationDescription applicationDescription;
 
-    ClassDescriptionTraversal(final EEModuleClassConfiguration classConfiguration, final EEModuleConfiguration moduleConfiguration) {
+    ClassDescriptionTraversal(final EEModuleClassConfiguration classConfiguration, final EEApplicationDescription applicationDescription) {
         this.classConfiguration = classConfiguration;
-        this.moduleConfiguration = moduleConfiguration;
+        this.applicationDescription = applicationDescription;
     }
 
     public void run() throws DeploymentUnitProcessingException {
         Class clazz = classConfiguration.getModuleClass();
         final Deque<EEModuleClassConfiguration> queue = new ArrayDeque<EEModuleClassConfiguration>();
         while (clazz != null && clazz != Object.class) {
-            EEModuleClassConfiguration configuration = moduleConfiguration.getClassConfiguration(clazz.getName());
+            EEModuleClassConfiguration configuration = applicationDescription.getClassConfiguration(clazz.getName());
             if (configuration != null) {
                 queue.addFirst(configuration);
             }

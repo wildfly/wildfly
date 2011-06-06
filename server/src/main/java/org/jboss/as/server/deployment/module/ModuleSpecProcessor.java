@@ -100,6 +100,13 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                 moduleIdentifier);
         phaseContext.addDeploymentDependency(moduleServiceName, Attachments.MODULE);
 
+        for(DeploymentUnit subDeployment : deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS)) {
+            ModuleIdentifier moduleId = subDeployment.getAttachment(Attachments.MODULE_IDENTIFIER);
+            if(moduleId != null) {
+                phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, ServiceModuleLoader.moduleSpecServiceName(moduleId));
+            }
+        }
+
         final List<AdditionalModuleSpecification> additionalModules = deploymentUnit.getAttachment(Attachments.ADDITIONAL_MODULES);
         if (additionalModules == null) {
             return;
