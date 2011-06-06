@@ -25,9 +25,11 @@ package org.jboss.as.naming;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -46,11 +48,12 @@ public class InitialContextFactoryService extends AbstractService<InitialContext
 
     private InjectedValue<NamingStore> injectedNamingStore = new InjectedValue<NamingStore>();
 
-    public static void addService(final ServiceTarget target) {
+    public static ServiceController<InitialContext> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
         InitialContextFactoryService service = new InitialContextFactoryService();
-        ServiceBuilder<?> serviceBuilder = target.addService(SERVICE_NAME, service);
+        ServiceBuilder<InitialContext> serviceBuilder = target.addService(SERVICE_NAME, service);
         serviceBuilder.addDependency(NamingService.SERVICE_NAME, NamingStore.class, service.injectedNamingStore);
-        serviceBuilder.install();
+        serviceBuilder.addListener(verificationHandler);
+        return serviceBuilder.install();
     }
 
     @Override

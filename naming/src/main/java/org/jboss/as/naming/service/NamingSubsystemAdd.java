@@ -82,7 +82,7 @@ public class NamingSubsystemAdd extends AbstractAddStepHandler {
         newControllers.add(addContextFactory(target, "comp", verificationHandler));
 
         // Provide the {@link InitialContext} as OSGi service
-        InitialContextFactoryService.addService(target);
+        newControllers.add(InitialContextFactoryService.addService(target, verificationHandler));
 
         final JndiView jndiView = new JndiView();
         newControllers.add(target.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)
