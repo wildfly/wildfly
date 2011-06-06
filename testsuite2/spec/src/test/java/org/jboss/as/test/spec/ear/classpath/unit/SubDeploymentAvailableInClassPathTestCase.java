@@ -46,10 +46,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.naming.InitialContext;
-
 /**
- * User: jpai
+ * Tests various scenarios for class access between subdeployments within a .ear.
+ *
+ * @see https://issues.jboss.org/browse/AS7-306
+ *      User: Jaikiran Pai
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -111,6 +112,18 @@ public class SubDeploymentAvailableInClassPathTestCase {
         return ear;
     }
 
+    /**
+     * Tests that for a .ear like this one:
+     * myapp.ear
+     * |
+     * |--- web.war
+     * |
+     * |--- ejb.jar
+     * <p/>
+     * the classes within the web.war have access to the classes in the ejb.jar
+     *
+     * @throws Exception
+     */
     @Test
     @OperateOnDeployment("ear-with-single-war")
     public void testEjbClassAvailableInServlet() throws Exception {
@@ -127,6 +140,19 @@ public class SubDeploymentAvailableInClassPathTestCase {
 
     }
 
+    /**
+     * Tests that for a .ear like this one:
+     * myapp.ear
+     * |
+     * |--- web.war
+     * |
+     * |--- ejb.jar
+     * <p/>
+     * <p/>
+     * the classes within the ejb.jar *don't* have access to the classes in the web.war
+     *
+     * @throws Exception
+     */
     @Test
     @OperateOnDeployment("ear-with-single-war")
     public void testServletClassNotAvailableToEjbInEar() throws Exception {
@@ -142,6 +168,19 @@ public class SubDeploymentAvailableInClassPathTestCase {
     }
 
 
+    /**
+     * Tests that for a .ear like this one:
+     * myapp.ear
+     * |
+     * |--- web-one.war
+     * |
+     * |--- web-two.war
+     * <p/>
+     * <p/>
+     * the classes within the web-one.war *don't* have access to the classes in the web-two.war
+     *
+     * @throws Exception
+     */
     @Test
     @OperateOnDeployment("ear-with-multiple-wars")
     public void testWarsDontSeeEachOtherInEar() throws Exception {
