@@ -40,7 +40,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
@@ -133,12 +132,13 @@ public class DescribeOperationUnitTestCase {
 
     private ModelNode executeForResult(final ModelNode operation) throws Exception {
         final ModelNode result = getModelControllerClient().execute(operation);
-        checkSuccessful(result);
+        checkSuccessful(result, operation);
         return result.get(RESULT);
     }
 
-    static void checkSuccessful(final ModelNode result) {
+    static void checkSuccessful(final ModelNode result, final ModelNode operation) {
         if(! SUCCESS.equals(result.get(OUTCOME).asString())) {
+            System.out.println("Failed result:\n" + result + "\n for operation:\n" + operation);
             Assert.fail("operation failed: " + result.get(FAILURE_DESCRIPTION));
         }
     }

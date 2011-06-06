@@ -527,19 +527,21 @@ public class RemotingExtension implements Extension {
 
             result.add(subsystem);
 
-            for (org.jboss.dmr.Property prop : model.get(CONNECTOR).asPropertyList()) {
-                final ModelNode connector = prop.getValue();
-                final ModelNode add = Util.getEmptyOperation(ADD_CONNECTOR, address.append(PathElement.pathElement(CONNECTOR, prop.getName())).toModelNode());
-                if (connector.hasDefined(SOCKET_BINDING)) {
-                    add.get(SOCKET_BINDING).set(connector.get(SOCKET_BINDING));
+            if (model.hasDefined(CONNECTOR)) {
+                for (org.jboss.dmr.Property prop : model.get(CONNECTOR).asPropertyList()) {
+                    final ModelNode connector = prop.getValue();
+                    final ModelNode add = Util.getEmptyOperation(ADD_CONNECTOR, address.append(PathElement.pathElement(CONNECTOR, prop.getName())).toModelNode());
+                    if (connector.hasDefined(SOCKET_BINDING)) {
+                        add.get(SOCKET_BINDING).set(connector.get(SOCKET_BINDING));
+                    }
+                    if (connector.hasDefined(AUTHENTICATION_PROVIDER)) {
+                        add.get(AUTHENTICATION_PROVIDER).set(AUTHENTICATION_PROVIDER);
+                    }
+                    if (connector.hasDefined(SASL)) {
+                        add.get(SASL);
+                    }
+                    result.add(connector);
                 }
-                if (connector.hasDefined(AUTHENTICATION_PROVIDER)) {
-                    add.get(AUTHENTICATION_PROVIDER).set(AUTHENTICATION_PROVIDER);
-                }
-                if (connector.hasDefined(SASL)) {
-                    add.get(SASL);
-                }
-                result.add(connector);
             }
             context.completeStep();
         }

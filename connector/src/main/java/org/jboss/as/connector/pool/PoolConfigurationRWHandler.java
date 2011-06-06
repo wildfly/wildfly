@@ -63,6 +63,7 @@ public class PoolConfigurationRWHandler {
             IDLETIMEOUTMINUTES, BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMINUTES, POOL_PREFILL, POOL_USE_STRICT_MIN,
             USE_FAST_FAIL};
 
+    // TODO this seems to just do what the default handler does, so registering it is probably unnecessary
     public static class PoolConfigurationReadHandler implements NewStepHandler {
         public static PoolConfigurationReadHandler INSTANCE = new PoolConfigurationReadHandler();
 
@@ -70,7 +71,7 @@ public class PoolConfigurationRWHandler {
             final String parameterName = operation.require(NAME).asString();
 
             final ModelNode submodel = context.readModel(PathAddress.EMPTY_ADDRESS);
-            final ModelNode currentValue = submodel.get(parameterName).clone();
+            final ModelNode currentValue = submodel.hasDefined(parameterName) ? submodel.get(parameterName).clone() : new ModelNode();
 
             context.getResult().set(currentValue);
 
