@@ -27,6 +27,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.MountExplodedMarker;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
@@ -73,7 +74,7 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
             boolean failed = false;
             Closeable handle = null;
             try {
-                final boolean mountExploded = deploymentName.endsWith("war");
+                final boolean mountExploded = MountExplodedMarker.isMountExploded(deploymentUnit);
                 handle = serverDeploymentRepository.mountDeploymentContent(deploymentContents, deploymentRoot, mountExploded);
                 mountHandle = new MountHandle(handle);
             } catch (IOException e) {

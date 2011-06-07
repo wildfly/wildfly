@@ -29,7 +29,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.as.server.deployment.MountExplodedMarker;
 
 /**
  * Processor that marks a war deployment.
@@ -45,9 +45,9 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
         if(deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
             return;
         }
-        VirtualFile virtualFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        if(virtualFile.getLowerCaseName().endsWith(WAR_EXTENSION)) {
+        if(deploymentUnit.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
             DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
+            MountExplodedMarker.setMountExploded(deploymentUnit);
         }
     }
 
