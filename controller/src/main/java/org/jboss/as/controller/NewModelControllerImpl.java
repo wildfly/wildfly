@@ -114,23 +114,18 @@ class NewModelControllerImpl implements NewModelController {
             context.addStep(response, operation, prepareStep, NewOperationContext.Stage.MODEL);
         }
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        if(address.isMultiTarget()) {
-            context.addStep(response, GlobalOperationHandlers.MultiTargetOperationHandler.FAKE_OPERATION,
-                    new GlobalOperationHandlers.MultiTargetOperationHandler(operation), NewOperationContext.Stage.MODEL);
-        } else {
-            final String operationName =  operation.require(OP).asString();
-            final NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
-            if(stepHandler != null) {
-                context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
-            } else {
-                reportNoHandler(operationName, address, response);
+        final String operationName =  operation.require(OP).asString();
+        final NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
+        if(stepHandler != null) {
+            context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
+            RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
+            try {
+                context.completeStep();
+            } finally {
+                RB_ON_RT_FAILURE.set(null);
             }
-        }
-        RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
-        try {
-            context.completeStep();
-        } finally {
-            RB_ON_RT_FAILURE.set(null);
+        } else {
+            reportNoHandler(operationName, address, response);
         }
         ControlledProcessState.State state = processState.getState();
         switch (state) {
@@ -161,7 +156,7 @@ class NewModelControllerImpl implements NewModelController {
 
     private static void reportNoHandler(final String operationName, final PathAddress address, final ModelNode response) {
         response.get(OUTCOME).set(FAILED);
-        response.get(FAILURE_DESCRIPTION).set(String.format("No handler for %s at address %s", operationName, address));
+        response.get(FAILURE_DESCRIPTION).set(String.format("No handler for operation %s at address %s", operationName, address));
     }
 
     class BootStepHandler implements NewStepHandler {
@@ -175,9 +170,10 @@ class NewModelControllerImpl implements NewModelController {
 
         public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
-            NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operation.require(OP).asString());
+            final String operationName = operation.require(OP).asString();
+            final NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
             if (stepHandler == null) {
-                context.getFailureDescription().set(new ModelNode().set("No handler for operation address " + address));
+                context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, address));
             } else {
                 NewOperationContext.Stage stage = NewOperationContext.Stage.MODEL;
                 if(stepHandler instanceof AbstractExtensionAddHandler) {

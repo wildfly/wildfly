@@ -95,7 +95,7 @@ public class GlobalOperationHandlers {
      * all children and configuration attributes. Non-recursive queries can include runtime attributes by setting the request parameter
      * "include-runtime" to "true".
      */
-    public static class ReadResourceHandler implements NewStepHandler {
+    public static class ReadResourceHandler extends AbstractMultiTargetHandler implements NewStepHandler {
 
         private final ParametersValidator validator = new ParametersValidator();
 
@@ -106,7 +106,7 @@ public class GlobalOperationHandlers {
         }
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
             validator.validate(operation);
 
@@ -332,9 +332,10 @@ public class GlobalOperationHandlers {
     /**
      * {@link OperationHandler} reading a single attribute at the given operation address. The required request parameter "name" represents the attribute name.
      */
-    public static class ReadAttributeHandler implements NewStepHandler {
+    public static class ReadAttributeHandler extends AbstractMultiTargetHandler implements NewStepHandler {
+
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
             final String attributeName = operation.require(NAME).asString();
             final ModelNode subModel = safeReadModel(context);
@@ -681,11 +682,38 @@ public class GlobalOperationHandlers {
         }
     };
 
+    public abstract static class AbstractMultiTargetHandler implements NewStepHandler {
 
-    public static final class MultiTargetOperationHandler implements NewStepHandler {
+        @Override
+        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            // In case if it's a multiTarget operation, resolve the address first
+            // This only works for model resources, which can be resolved into a concrete addresses
+            if(address.isMultiTarget()) {
+                // The final result should be a list of executed operations
+                final ModelNode result = context.getResult().setEmptyList();
+                // Trick the context to give us the model-root
+                context.addStep(new ModelNode(), AddressResolutionHandler.FAKE_OPERATION,
+                        new AddressResolutionHandler(operation, result), NewOperationContext.Stage.IMMEDIATE);
+                context.completeStep();
+            } else {
+                doExecute(context, operation);
+            }
+        }
+
+        /**
+         * Execute the actual operation if it is not addressed to multiple targets.
+         *
+         * @param context the operation context
+         * @param operation the original operation
+         * @throws OperationFailedException
+         */
+        abstract void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException;
+    }
+
+    public static final class AddressResolutionHandler implements NewStepHandler {
 
         public static final ModelNode FAKE_OPERATION;
-
         static {
             final ModelNode resolve = new ModelNode();
             resolve.get(OP).set("resolve");
@@ -695,15 +723,16 @@ public class GlobalOperationHandlers {
         }
 
         private final ModelNode operation;
-        public MultiTargetOperationHandler(final ModelNode operation) {
+        private final ModelNode result;
+        public AddressResolutionHandler(final ModelNode operation, final ModelNode result) {
             this.operation = operation;
+            this.result = result;
         }
 
         /** {@inheritDoc} */
         @Override
         public void execute(final NewOperationContext context, final ModelNode ignored) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            context.getResult().setEmptyList();
             execute(address, PathAddress.EMPTY_ADDRESS, context);
             context.completeStep();
         }
@@ -715,12 +744,15 @@ public class GlobalOperationHandlers {
                 final PathElement element = iterator.next();
                 if(element.isMultiTarget()) {
                     final String childType;
-                    if(element.getKey().equals("**")) {
+                    if(element.getKey().equals("*")) {
                         childType = null;
                     } else {
                         childType = element.getKey();
                     }
                     final ModelNodeRegistration registration = context.getModelNodeRegistration().getSubModel(base);
+                    if(registration.isRemote() || registration.isRuntimeOnly()) {
+                        // TODO dispatch
+                    }
                     final ModelNode model = context.readModel(base);
                     final Map<String, Set<String>> resolved = getChildAddresses(registration, model, childType);
                     for (Map.Entry<String, Set<String>> entry : resolved.entrySet()) {
@@ -749,7 +781,7 @@ public class GlobalOperationHandlers {
                 final ModelNode newOp = operation.clone();
                 newOp.get(OP_ADDR).set(base.toModelNode());
 
-                final ModelNode result = context.getResult().add();
+                final ModelNode result = this.result.add();
                 result.get(OP_ADDR).set(base.toModelNode());
                 final NewStepHandler handler = context.getModelNodeRegistration().getOperationHandler(base, operationName);
                 context.addStep(result, newOp, handler, NewOperationContext.Stage.MODEL);
