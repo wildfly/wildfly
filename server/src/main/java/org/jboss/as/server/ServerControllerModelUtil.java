@@ -97,7 +97,7 @@ import org.jboss.as.server.deployment.DeploymentUndeployHandler;
 import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
 import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
-import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.HttpManagementAddHandler;
 import org.jboss.as.server.operations.LaunchTypeHandler;

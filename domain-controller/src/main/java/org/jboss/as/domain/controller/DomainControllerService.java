@@ -29,7 +29,7 @@ import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.protocol.old.StreamUtils;
-import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;

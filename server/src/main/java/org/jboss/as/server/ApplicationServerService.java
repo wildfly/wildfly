@@ -23,10 +23,8 @@
 package org.jboss.as.server;
 
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.server.Bootstrap.Configuration;
-import org.jboss.as.server.deployment.impl.ContentRepositoryImpl;
-import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
+import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
+import org.jboss.as.server.deployment.repository.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
@@ -40,25 +38,18 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceListener;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.AsyncFuture;
-import org.jboss.threads.AsyncFutureTask;
-import org.jboss.threads.JBossExecutors;
 
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

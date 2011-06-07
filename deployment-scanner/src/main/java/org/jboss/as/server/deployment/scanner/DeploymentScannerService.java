@@ -31,8 +31,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.server.Services;
-import org.jboss.as.server.deployment.api.ContentRepository;
-import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.path.RelativePathService;

@@ -41,7 +41,7 @@ import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLH
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadUtil;
 import org.jboss.as.domain.controller.plan.RolloutPlanController;
 import org.jboss.as.domain.controller.plan.ServerOperationExecutor;
-import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;

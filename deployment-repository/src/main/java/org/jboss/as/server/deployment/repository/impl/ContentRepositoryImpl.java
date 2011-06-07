@@ -20,9 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.deployment.impl;
+package org.jboss.as.server.deployment.repository.impl;
 
-import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceTarget;
@@ -45,7 +45,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * Default implementation of {@link org.jboss.as.server.deployment.api.ContentRepository}.
+ * Default implementation of {@link org.jboss.as.server.deployment.repository.api.ContentRepository}.
  * @author John Bailey
  */
 public class ContentRepositoryImpl implements ContentRepository, Service<ContentRepository> {

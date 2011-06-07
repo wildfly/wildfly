@@ -54,7 +54,7 @@ import static org.jboss.as.domain.controller.operations.deployment.AbstractDeplo
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
 
 import org.jboss.as.protocol.old.StreamUtils;
-import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
