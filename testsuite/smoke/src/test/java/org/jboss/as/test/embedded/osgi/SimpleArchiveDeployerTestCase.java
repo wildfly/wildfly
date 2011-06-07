@@ -16,35 +16,28 @@
  */
 package org.jboss.as.test.embedded.osgi;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.io.InputStream;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.embedded.osgi.bundle.SimpleActivator;
 import org.jboss.as.test.embedded.osgi.bundle.SimpleService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleListener;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
@@ -54,29 +47,25 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * @since 09-Sep-2010
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class SimpleArchiveDeployerTestCase {
 
-    //@Inject
-    //public DeploymentProvider provider;
+    private static final String DEPLOYMENT_NAME = "arquillian-deployer-test-bundle";
 
-    //@Inject
-    //public ArchiveDeployer archiveDeployer;
+    @ArquillianResource
+    public Deployer deployer;
 
     @Inject
     public BundleContext context;
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-deployment-provider");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-arquillian-deployer");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                // [TODO] remove these explicit imports
-                builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
                 builder.addImportPackages(PackageAdmin.class);
                 return builder.openStream();
             }
@@ -87,11 +76,8 @@ public class SimpleArchiveDeployerTestCase {
     @Test
     public void testClientDeploymentAsArchive() throws Exception {
 
-        String symbolicName = "archive-deployer-test-bundle";
-        Archive<?> archive = null; //provider.getClientDeployment(symbolicName);
-        String depname = null; //archiveDeployer.deploy(archive);
-
-        final Bundle bundle = getDeployedBundle(symbolicName);
+        InputStream input = deployer.getDeployment(DEPLOYMENT_NAME);
+        Bundle bundle = context.installBundle(DEPLOYMENT_NAME, input);
         assertNotNull("Bundle found", bundle);
 
         // Start the bundle
@@ -102,36 +88,13 @@ public class SimpleArchiveDeployerTestCase {
         bundle.stop();
         OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
 
-        final CountDownLatch uninstallLatch = new CountDownLatch(1);
-        context.addBundleListener(new BundleListener() {
-            @Override
-            public void bundleChanged(BundleEvent event) {
-                Bundle eventSource = event.getBundle();
-                if (eventSource.equals(bundle) && event.getType() == BundleEvent.UNINSTALLED)
-                    uninstallLatch.countDown();
-            }
-        });
-
-        //archiveDeployer.undeploy(depname);
-
-        if (uninstallLatch.await(1000, TimeUnit.MILLISECONDS) == false)
-            fail("UNINSTALLED event not received");
-
+        bundle.uninstall();
         OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
     }
 
-    private Bundle getDeployedBundle(String symbolicName) {
-        ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
-        PackageAdmin packageAdmin = (PackageAdmin) context.getService(sref);
-        Bundle[] bundles = packageAdmin.getBundles(symbolicName, null);
-        assertNotNull("Bundles found", bundles);
-        assertEquals("One bundle found", 1, bundles.length);
-        return bundles[0];
-    }
-
-    //@ArchiveProvider
-    public static JavaArchive getTestArchive(String name) {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
+    @Deployment(name = DEPLOYMENT_NAME, managed = false, testable = false)
+    public static JavaArchive getTestArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, DEPLOYMENT_NAME);
         archive.addClasses(SimpleActivator.class, SimpleService.class);
         archive.setManifest(new Asset() {
             @Override

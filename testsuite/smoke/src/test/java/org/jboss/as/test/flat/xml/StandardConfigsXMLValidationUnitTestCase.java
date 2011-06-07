@@ -56,16 +56,14 @@ public class StandardConfigsXMLValidationUnitTestCase {
         parseXml("domain/configuration/host.xml");
     }
 
-    // FIXME disabled until it passes
     @Test
-    @Ignore
+    @Ignore("[AS7-814] Fix or remove ignored smoke tests")
     public void testDomain() throws Exception {
         parseXml("domain/configuration/domain.xml");
     }
 
-    // FIXME disabled until it passes
     @Test
-    @Ignore
+    @Ignore("[AS7-814] Fix or remove ignored smoke tests")
     public void testStandalone() throws Exception {
         parseXml("standalone/configuration/standalone.xml");
     }

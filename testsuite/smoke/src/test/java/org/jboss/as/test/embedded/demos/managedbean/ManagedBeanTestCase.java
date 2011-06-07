@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
  * @version $Revision: 1.1 $
  */
 @RunWith(Arquillian.class)
-@Ignore("JBAS-9352")
+@Ignore("[AS7-814] Fix or remove ignored smoke tests")
 public class ManagedBeanTestCase {
 
     @Deployment

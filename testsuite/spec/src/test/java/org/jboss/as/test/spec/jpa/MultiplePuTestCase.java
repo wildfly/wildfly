@@ -46,8 +46,8 @@ import org.junit.runner.RunWith;
  *
  * @author Scott Marlow
  */
-@Ignore // Currently failing during AS7-734 Migration
 @RunWith(Arquillian.class)
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class MultiplePuTestCase {
 
     private static final String ARCHIVE_NAME = "MultiplePuTestCase";

@@ -15,22 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.arquillian.protocol.jmx;
+package org.jboss.as.arquillian.service;
 
-import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
+import org.jboss.arquillian.container.test.spi.command.CommandService;
 import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.arquillian.protocol.jmx.JMXCommandService;
 
 /**
- * JMXProtocolExtension
+ * JMXProtocolEndpointExtension
  *
  * @author thomas.diesler@jboss.com
  * @since 31-May-2011
  */
-public class JMXProtocolExtension implements LoadableExtension {
+public class JMXProtocolEndpointExtension implements LoadableExtension {
 
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(Protocol.class, JMXProtocolAS7.class);
-        builder.observer(ArquillianServiceDeployer.class);
+        builder.service(CommandService.class, JMXCommandService.class);
     }
 }

@@ -42,7 +42,7 @@ import org.junit.Test;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Ignore("Test migrated to managed container")
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class ServerInModuleStartupTestCase extends AbstractServerInModuleTestCase {
 
     /**

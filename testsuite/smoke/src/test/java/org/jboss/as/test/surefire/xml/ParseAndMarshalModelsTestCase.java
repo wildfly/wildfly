@@ -75,7 +75,7 @@ import org.junit.Test;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision: 1.1 $
  */
-@Ignore("Test migrated to managed container")
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class ParseAndMarshalModelsTestCase {
 
     @Test

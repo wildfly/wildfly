@@ -42,6 +42,7 @@ import org.junit.runner.RunWith;
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class DatasourceTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_sessionfactory";
@@ -90,11 +91,8 @@ public class DatasourceTestCase {
     }
 
     @Test
-    @Ignore
     public void testEntityManagerInvocation() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.getEmployeeNoTX(1);
     }
-
-
 }

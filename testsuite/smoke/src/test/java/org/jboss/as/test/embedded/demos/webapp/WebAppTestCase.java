@@ -59,8 +59,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("This test has never been run, awaiting fix either remote jndi or multiple @Deployment methods supported by " +
-		"Arquillian AND the same issues as org.jboss.as.test.embedded.demos.ds.DsTestCase")
+@Ignore("[AS7-814] Fix or remove ignored smoke tests")
 public class WebAppTestCase {
 
     @Deployment(testable = false)

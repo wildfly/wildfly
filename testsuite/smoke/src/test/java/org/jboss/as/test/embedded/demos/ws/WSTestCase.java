@@ -63,7 +63,7 @@ public class WSTestCase {
     }
 
     @Test
-    @Ignore("Fix endpoint access")
+    @Ignore("[AS7-814] Fix or remove ignored smoke tests")
     public void testAccess() throws Exception {
         URL wsdlURL = new URL("http://localhost:8080/ws-example?wsdl");
         QName serviceName = new QName("http://archive.ws.demos.as.jboss.org/", "EndpointService");

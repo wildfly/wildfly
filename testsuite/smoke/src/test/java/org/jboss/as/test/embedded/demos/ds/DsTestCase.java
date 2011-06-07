@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
  * @version $Revision: 1.1 $
  */
 @RunWith(Arquillian.class)
-@Ignore("We need Arquillian support for multiple test deployments because we need to deploy jdbc-driver and local-jdbc.rar before the test itself")
+@Ignore("[AS7-814] Fix or remove ignored smoke tests")
 public class DsTestCase {
     private static final String JNDI_NAME = "java:/H2DS";
 

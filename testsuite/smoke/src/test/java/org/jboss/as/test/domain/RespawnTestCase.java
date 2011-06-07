@@ -51,7 +51,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Ignore("Test migrated to managed container")
+@Ignore("[AS7-814] Fix or remove ignored smoke tests")
 public class RespawnTestCase {
 
     private static final int TIMEOUT = 15000;

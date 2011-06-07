@@ -69,7 +69,7 @@ import org.junit.Test;
  * filesystem scanner.
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-@Ignore("Test migrated to managed container")
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTestCase {
 
     @Test

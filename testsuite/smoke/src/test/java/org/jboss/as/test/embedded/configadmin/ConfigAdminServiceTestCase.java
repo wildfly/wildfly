@@ -56,7 +56,7 @@ import org.junit.runner.RunWith;
  * @since 11-Dec-2010
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
+@Ignore("[AS7-814] Fix or remove ignored smoke tests")
 public class ConfigAdminServiceTestCase {
 
     @Inject

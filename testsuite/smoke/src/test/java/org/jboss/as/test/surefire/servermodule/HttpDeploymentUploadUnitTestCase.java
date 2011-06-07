@@ -51,7 +51,7 @@ import org.junit.Test;
  *
  * @author Jonathan Pearlin
  */
-@Ignore("Test migrated to managed container")
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class HttpDeploymentUploadUnitTestCase extends AbstractServerInModuleTestCase {
 
     private static final String BOUNDARY_PARAM = "NeAG1QNIHHOyB5joAS7Rox!!";
