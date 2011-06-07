@@ -53,35 +53,6 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
     @Override
     NewStepHandler getHandler(final ListIterator<PathElement> iterator, final String operationName) {
         return new ProxyStepHandler(proxyController);
-//        return new NewStepHandler() {
-//
-//            @Override
-//            public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
-//                //TODO some logic for when to propagate to the proxies
-//                OperationMessageHandler handler = null;
-//                NewProxyController.ProxyOperationControl control = null;
-//                OperationAttachments attachments = new OperationAttachments() {
-//
-//                    @Override
-//                    public List<InputStream> getInputStreams() {
-//                        if (context.getAttachmentStreamCount() == 0) {
-//                            return Collections.emptyList();
-//                        }
-//                        List<InputStream> streams = new ArrayList<InputStream>();
-//                        for (int i = 0 ; i < context.getAttachmentStreamCount() ; i++) {
-//                            streams.add(context.getAttachmentStream(i));
-//                        }
-//                        return Collections.unmodifiableList(streams);
-//                    }
-//                };
-//                proxyController.execute(operation, handler, control, attachments);
-//            }
-//        };
-    }
-
-    @Override
-    NewStepHandler getInheritedHandler(final String operationName) {
-        return null;
     }
 
     @Override
@@ -209,5 +180,10 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
         //TODO
         //return proxyController.execute(operation, handler, control, attachments);
         return new ModelNode();
+    }
+
+    @Override
+    NewStepHandler getInheritedHandler(String operationName) {
+        return null;
     }
 }

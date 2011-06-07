@@ -58,6 +58,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -108,10 +109,8 @@ import org.junit.Test;
 public abstract class AbstractProxyControllerTest {
 
     private ExecutorService executor;
-    private ModelNode proxyModel;
-    private ModelNode mainModel;
-    private NewModelControllerClient mainController;
-    private NewModelControllerClient proxiedController;
+    private NewModelControllerClient mainControllerClient;
+    private NewModelControllerClient proxiedControllerClient;
     private ServiceContainer container;
 
     @Before
@@ -131,8 +130,8 @@ public abstract class AbstractProxyControllerTest {
         mainBuilder.install();
 
         mainService.latch.await();
-        mainController = mainService.getValue().createClient(executor);
-        proxiedController = proxyService.getValue().createClient(executor);
+        mainControllerClient = mainService.getValue().createClient(executor);
+        proxiedControllerClient = proxyService.getValue().createClient(executor);
         processState.setRunning();
     }
 
@@ -157,14 +156,14 @@ public abstract class AbstractProxyControllerTest {
         NewOperation operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
         operation.getOperation().get(RECURSIVE).set(true);
 
-        ModelNode result = proxiedController.execute(operation);
+        ModelNode result = proxiedControllerClient.execute(operation);
 
         checkHostSubModelDescription(result.get(RESULT), false);
 
-        result = mainController.execute(operation);
+        result = mainControllerClient.execute(operation);
         checkRootSubModelDescription(result.get(RESULT), false);
 
-        result = mainController.execute(operation);
+        result = mainControllerClient.execute(operation);
         checkRootSubModelDescription(result.get(RESULT), false);
     }
 
@@ -173,11 +172,11 @@ public abstract class AbstractProxyControllerTest {
         NewOperation operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "host", "hostA");
         operation.getOperation().get(RECURSIVE).set(true);
 
-        ModelNode result = mainController.execute(operation);
+        ModelNode result = mainControllerClient.execute(operation);
 
         checkHostSubModelDescription(result.get(RESULT), false);
 
-        result = mainController.execute(operation);
+        result = mainControllerClient.execute(operation);
         checkHostSubModelDescription(result.get(RESULT), false);
     }
 
@@ -187,7 +186,7 @@ public abstract class AbstractProxyControllerTest {
         operation.getOperation().get(RECURSIVE).set(true);
         operation.getOperation().get(OPERATIONS).set(true);
 
-        ModelNode result = mainController.execute(operation);
+        ModelNode result = mainControllerClient.execute(operation);
         checkRootSubModelDescription(result.get(RESULT), true);
     }
 
@@ -197,11 +196,10 @@ public abstract class AbstractProxyControllerTest {
         operation.getOperation().get(PROXIES).set(true);
         operation.getOperation().get(RECURSIVE).set(true);
 
-        ModelNode result = proxiedController.execute(operation);
+        ModelNode result = proxiedControllerClient.execute(operation);
         checkHostNode(result.get(RESULT));
 
-        result = mainController.execute(operation);
-        System.out.println(result);
+        result = mainControllerClient.execute(operation);
         checkRootNode(result.get(RESULT));
     }
 
@@ -210,7 +208,7 @@ public abstract class AbstractProxyControllerTest {
         NewOperation operation = createOperation(READ_RESOURCE_OPERATION, "host", "hostA");
         operation.getOperation().get(RECURSIVE).set(true);
 
-        ModelNode result = mainController.execute(operation);
+        ModelNode result = mainControllerClient.execute(operation);
         checkHostNode(result.get(RESULT));
     }
 
@@ -219,18 +217,18 @@ public abstract class AbstractProxyControllerTest {
         NewOperation write = createOperation(WRITE_ATTRIBUTE_OPERATION, "hostchild", "hcA", "child", "childA");
         write.getOperation().get(NAME).set("value");
         write.getOperation().get(VALUE).set("NewValue");
-        proxiedController.execute(write);
+        proxiedControllerClient.execute(write);
 
-        assertEquals("NewValue", proxyModel.get("hostchild", "hcA", "child", "childA", "value").asString());
+        //assertEquals("NewValue", proxyModel.get("hostchild", "hcA", "child", "childA", "value").asString());
 
         NewOperation read = createOperation(READ_RESOURCE_OPERATION, "hostchild", "hcA", "child", "childA");
         read.getOperation().get(RECURSIVE).set(true);
-        ModelNode result = proxiedController.execute(read);
+        ModelNode result = proxiedControllerClient.execute(read);
         assertEquals("NewValue", result.get(RESULT, "value").asString());
 
         read = createOperation(READ_RESOURCE_OPERATION, "host", "hostA", "hostchild", "hcA", "child", "childA");
         read.getOperation().get(RECURSIVE).set(true);
-        result = mainController.execute(read);
+        result = mainControllerClient.execute(read);
         assertEquals("NewValue", result.get(RESULT, "value").asString());
     }
 
@@ -239,18 +237,18 @@ public abstract class AbstractProxyControllerTest {
         NewOperation write = createOperation(WRITE_ATTRIBUTE_OPERATION, "host", "hostA", "hostchild", "hcA", "child", "childA");
         write.getOperation().get(NAME).set("value");
         write.getOperation().get(VALUE).set("NewValue2");
-        mainController.execute(write);
+        mainControllerClient.execute(write);
 
-        assertEquals("NewValue2", proxyModel.get("hostchild", "hcA", "child", "childA", "value").asString());
+        //assertEquals("NewValue2", proxyModel.get("hostchild", "hcA", "child", "childA", "value").asString());
 
         NewOperation read = createOperation(READ_RESOURCE_OPERATION, "hostchild", "hcA", "child", "childA");
         read.getOperation().get(RECURSIVE).set(true);
-        ModelNode result = proxiedController.execute(read);
+        ModelNode result = proxiedControllerClient.execute(read);
         assertEquals("NewValue2", result.get(RESULT, "value").asString());
 
         read = createOperation(READ_RESOURCE_OPERATION, "host", "hostA", "hostchild", "hcA", "child", "childA");
         read.getOperation().get(RECURSIVE).set(true);
-        result = mainController.execute(read);
+        result = mainControllerClient.execute(read);
         assertEquals("NewValue2", result.get(RESULT, "value").asString());
     }
 
@@ -258,26 +256,26 @@ public abstract class AbstractProxyControllerTest {
     public void testReadAttributeOperationInChildController() throws Exception {
         NewOperation read = createOperation(READ_ATTRIBUTE_OPERATION, "hostchild", "hcA", "child", "childA");
         read.getOperation().get(NAME).set("name");
-        ModelNode result = proxiedController.execute(read);
+        ModelNode result = proxiedControllerClient.execute(read);
         assertEquals("childName", result.get(RESULT).asString());
 
         read.getOperation().get(NAME).set("metric");
-        result = proxiedController.execute(read);
+        result = proxiedControllerClient.execute(read);
         assertEquals(ModelType.INT, result.get(RESULT).getType());
     }
 
     @Test
     public void testReadOperationNames() throws Exception {
         NewOperation read = createOperation(READ_OPERATION_NAMES_OPERATION);
-        ModelNode result = mainController.execute(read);
+        ModelNode result = mainControllerClient.execute(read);
         checkOperationNames(result.get(RESULT), false);
 
         read = createOperation(READ_OPERATION_NAMES_OPERATION, HOST, "hostA");
-        result = mainController.execute(read);
+        result = mainControllerClient.execute(read);
         checkOperationNames(result.get(RESULT), true);
 
         read = createOperation(READ_OPERATION_NAMES_OPERATION,  HOST, "hostA", "hostchild", "hcA");
-        result = mainController.execute(read);
+        result = mainControllerClient.execute(read);
         checkOperationNames(result.get(RESULT), true);
     }
 
@@ -285,17 +283,17 @@ public abstract class AbstractProxyControllerTest {
     public void testReadOperationDescription() throws Exception {
         NewOperation read = createOperation(READ_OPERATION_DESCRIPTION_OPERATION);
         read.getOperation().get(NAME).set(READ_ATTRIBUTE_OPERATION);
-        ModelNode result = mainController.execute(read);
+        ModelNode result = mainControllerClient.execute(read);
         checkReadAttributeOperationDescription(result.get(RESULT));
 
         read = createOperation(READ_OPERATION_DESCRIPTION_OPERATION, HOST, "hostA");
         read.getOperation().get(NAME).set(READ_ATTRIBUTE_OPERATION);
-        result = mainController.execute(read);
+        result = mainControllerClient.execute(read);
         checkReadAttributeOperationDescription(result.get(RESULT));
 
         read = createOperation(READ_OPERATION_DESCRIPTION_OPERATION, HOST, "hostA", "hostchild", "hcA");
         read.getOperation().get(NAME).set(READ_ATTRIBUTE_OPERATION);
-        result = mainController.execute(read);
+        result = mainControllerClient.execute(read);
         assertFalse(result.get(RESULT).isDefined());
     }
 
@@ -303,7 +301,7 @@ public abstract class AbstractProxyControllerTest {
     public void testReadChildNames() throws Exception {
         NewOperation read = createOperation(READ_CHILDREN_NAMES_OPERATION);
         read.getOperation().get(CHILD_TYPE).set("host");
-        ModelNode result = mainController.execute(read).get(RESULT);
+        ModelNode result = mainControllerClient.execute(read).get(RESULT);
         assertNotNull(result);
         assertEquals(ModelType.LIST, result.getType());
         assertEquals(1, result.asList().size());
@@ -311,7 +309,7 @@ public abstract class AbstractProxyControllerTest {
 
         read = createOperation(READ_CHILDREN_NAMES_OPERATION, HOST, "hostA");
         read.getOperation().get(CHILD_TYPE).set("hostchild");
-        result = mainController.execute(read).get(RESULT);
+        result = mainControllerClient.execute(read).get(RESULT);
         assertNotNull(result);
         assertEquals(ModelType.LIST, result.getType());
         assertEquals(1, result.asList().size());
@@ -319,7 +317,7 @@ public abstract class AbstractProxyControllerTest {
 
         read = createOperation(READ_CHILDREN_NAMES_OPERATION, HOST, "hostA", "hostchild", "hcA");
         read.getOperation().get(CHILD_TYPE).set("child");
-        result = mainController.execute(read).get(RESULT);
+        result = mainControllerClient.execute(read).get(RESULT);
         assertNotNull(result);
         assertEquals(ModelType.LIST, result.getType());
         assertEquals(1, result.asList().size());
@@ -330,7 +328,7 @@ public abstract class AbstractProxyControllerTest {
     @Test
     public void testReadChildTypes() throws Exception {
         NewOperation read = createOperation(READ_CHILDREN_TYPES_OPERATION);
-        ModelNode result = mainController.execute(read).get(RESULT);
+        ModelNode result = mainControllerClient.execute(read).get(RESULT);
         assertNotNull(result);
         assertEquals(ModelType.LIST, result.getType());
         List<ModelNode> nodes = result.asList();
@@ -347,7 +345,7 @@ public abstract class AbstractProxyControllerTest {
         assertTrue(Arrays.asList("host", "profile").containsAll(typeNames));
 
         read = createOperation(READ_CHILDREN_TYPES_OPERATION, HOST, "hostA", "hostchild", "hcA");
-        result = mainController.execute(read).get(RESULT);
+        result = mainControllerClient.execute(read).get(RESULT);
         assertNotNull(result);
         assertEquals(ModelType.LIST, result.getType());
         nodes = result.asList();
@@ -530,7 +528,7 @@ public abstract class AbstractProxyControllerTest {
 
         @Override
         public List<ModelNode> load() throws ConfigurationPersistenceException {
-            return null;
+            return Collections.emptyList();
         }
 
         @Override
@@ -552,154 +550,6 @@ public abstract class AbstractProxyControllerTest {
         }
 
     }
-
-//    class TestMainModelController extends BasicModelController {
-//        protected TestMainModelController(ModelNode model) {
-//            super(model, new NullConfigurationPersister(), new DescriptionProvider() {
-//                @Override
-//                public ModelNode getModelDescription(Locale locale) {
-//                    ModelNode node = new ModelNode();
-//                    node.get(DESCRIPTION).set("The root node of the test management API");
-//                    node.get(CHILDREN, HOST, DESCRIPTION).set("A list of hosts");
-//                    node.get(CHILDREN, HOST, MIN_OCCURS).set(1);
-//                    node.get(CHILDREN, HOST, MODEL_DESCRIPTION);
-//                    node.get(CHILDREN, PROFILE, DESCRIPTION).set("A list of profiles");
-//                    node.get(CHILDREN, PROFILE, MODEL_DESCRIPTION);
-//                    return node;
-//                }
-//            });
-//
-//            getRegistry().registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
-//            getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
-//            getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
-//            getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
-//            getRegistry().registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
-//            getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
-//            getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
-//            getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
-//
-//            getRegistry().registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
-//
-//                @Override
-//                public ModelNode getModelDescription(Locale locale) {
-//                    ModelNode node = new ModelNode();
-//                    node.get(DESCRIPTION).set("A host child");
-//                    node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-//                    node.get(ATTRIBUTES, NAME, DESCRIPTION).set("The name of the profile");
-//                    node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-//                    return node;
-//                }
-//            });
-//
-//
-//        }
-//
-//        @Override
-//        public ModelNodeRegistration getRegistry() {
-//            return super.getRegistry();
-//        }
-//    }
-//
-//    class TestProxyModelController extends BasicModelController {
-//        protected TestProxyModelController(ModelNode model) {
-//            super(model, new NullConfigurationPersister(), new DescriptionProvider() {
-//                @Override
-//                public ModelNode getModelDescription(Locale locale) {
-//                    ModelNode node = new ModelNode();
-//                    node.get(DESCRIPTION).set("A host");
-//                    node.get(CHILDREN, "hostchild", DESCRIPTION).set("A list of children");
-//                    node.get(CHILDREN, "hostchild", MIN_OCCURS).set(1);
-//                    node.get(CHILDREN, "hostchild", MODEL_DESCRIPTION);
-//                    return node;
-//                }
-//            });
-//
-//            getRegistry().registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
-//            getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
-//            getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
-//            getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
-//            getRegistry().registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
-//            getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
-//            getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
-//            getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
-//            getRegistry().registerOperationHandler("Test",
-//                    new NewStepHandler() {
-//                        @Override
-//                        public void execute(NewOperationContext context, ModelNode operation) {
-//                            context.completeStep();
-//                        }
-//                    },
-//                    new DescriptionProvider() {
-//
-//                        @Override
-//                        public ModelNode getModelDescription(Locale locale) {
-//                            ModelNode node = new ModelNode();
-//                            node.get(OPERATION_NAME).set("Test");
-//                            return node;
-//                        }
-//                    },
-//                    true);
-//
-//
-//            ModelNodeRegistration hostReg = getRegistry().registerSubModel(PathElement.pathElement("hostchild", "*"), new DescriptionProvider() {
-//
-//                @Override
-//                public ModelNode getModelDescription(Locale locale) {
-//                    ModelNode node = new ModelNode();
-//                    node.get(DESCRIPTION).set("A host child");
-//                    node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-//                    node.get(ATTRIBUTES, NAME, DESCRIPTION).set("The name of the host child");
-//                    node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-//                    node.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
-//                    node.get(CHILDREN, "child", DESCRIPTION).set("The children of the host child");
-//                    node.get(CHILDREN, "child", MIN_OCCURS).set(1);
-//                    node.get(CHILDREN, "child", MODEL_DESCRIPTION);
-//                    return node;
-//                }
-//            });
-//
-//            ModelNodeRegistration hostChildReg = hostReg.registerSubModel(PathElement.pathElement("child", "*"), new DescriptionProvider() {
-//
-//                @Override
-//                public ModelNode getModelDescription(Locale locale) {
-//                    ModelNode node = new ModelNode();
-//                    node.get(DESCRIPTION).set("A named set of children");
-//                    node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-//                    node.get(ATTRIBUTES, NAME, DESCRIPTION).set("The name of the child");
-//                    node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-//                    node.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
-//                    node.get(ATTRIBUTES, VALUE, TYPE).set(ModelType.STRING);
-//                    node.get(ATTRIBUTES, VALUE, DESCRIPTION).set("The value of the child");
-//                    node.get(ATTRIBUTES, VALUE, REQUIRED).set(true);
-//                    node.get(ATTRIBUTES, VALUE, MIN_LENGTH).set(1);
-//                    return node;
-//                }
-//            });
-//            hostChildReg.registerReadWriteAttribute("value", null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.STRING), AttributeAccess.Storage.CONFIGURATION);
-//            hostChildReg.registerMetric("metric", GlobalOperationsTestCase.TestMetricHandler.INSTANCE);
-//
-//            hostChildReg.registerOperationHandler("test-op",
-//                    new NewStepHandler() {
-//                        @Override
-//                        public void execute(NewOperationContext context, ModelNode operation) {
-//                            return;
-//                        }
-//                    },
-//                    new DescriptionProvider() {
-//                        @Override
-//                        public ModelNode getModelDescription(Locale locale) {
-//                            ModelNode node = new ModelNode();
-//                            node.get(OPERATION_NAME).set("test-op");
-//                            node.get(REQUEST_PROPERTIES).setEmptyObject();
-//                            node.get(REPLY_PROPERTIES, DESCRIPTION).setEmptyObject();
-//                            node.protect();
-//
-//                            return node;
-//                        }
-//                    },
-//                    false);
-//        }
-//    }
 
     public class MainModelControllerService extends AbstractControllerService {
 
@@ -729,7 +579,7 @@ public abstract class AbstractProxyControllerTest {
         }
 
         protected ModelNode createCoreModel() {
-            mainModel = new ModelNode();
+            ModelNode mainModel = new ModelNode();
             mainModel.get("host", "hostA");  //Create an empty node to be got from the proxied model
             mainModel.get("profile", "profileA").get(NAME).set("Profile A");
             return mainModel;
@@ -787,7 +637,7 @@ public abstract class AbstractProxyControllerTest {
         }
 
         protected ModelNode createCoreModel() {
-            proxyModel = new ModelNode();
+            ModelNode proxyModel = new ModelNode();
             proxyModel.get("hostchild", "hcA", "name").set("hostA");
             proxyModel.get("hostchild", "hcA", "child", "childA", "name").set("childName");
             proxyModel.get("hostchild", "hcA", "child", "childA", "value").set("childValue");
