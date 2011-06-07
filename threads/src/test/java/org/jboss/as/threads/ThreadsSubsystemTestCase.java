@@ -38,13 +38,21 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
@@ -72,8 +80,11 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -82,25 +93,38 @@ import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BasicModelController;
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.threads.NewThreadsParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -122,39 +146,56 @@ public class ThreadsSubsystemTestCase {
         profileAddress.add("profile", "test");
     }
 
+    private static final DescriptionProvider profileDescriptionProvider = new DescriptionProvider() {
+
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ModelNode node = new ModelNode();
+                node.get(DESCRIPTION).set("A named set of subsystem configs");
+                node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, NAME, DESCRIPTION).set("The name of the profile");
+                node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
+                node.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
+                node.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set("The subsystems that make up the profile");
+                node.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(1);
+                node.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
+                return node;
+            }
+        };
+
     private ModelNode model;
-    // private ModelNode root = new ModelNode();
-    private TestController controller;
+
+    private ServiceContainer container;
+    private NewModelController controller;
 
     @Before
-    public void setup() throws Exception {
-        model = new ModelNode();
-        controller = new TestController();
-        model.get("profile", "test", "subsystem");
+    public void setupController() throws InterruptedException {
+        container = ServiceContainer.Factory.create("test");
+        ServiceTarget target = container.subTarget();
+        ControlledProcessState processState = new ControlledProcessState(true);
+        ModelControllerService svc = new ModelControllerService(container, processState);
+        ServiceBuilder<NewModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
+        builder.install();
+        svc.latch.await();
+        controller = svc.getValue();
+        ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
+        controller.execute(setup, null, null, null);
+        processState.setRunning();
+    }
 
-        final ModelNodeRegistration testProfileRegistration = controller.getRegistry().registerSubModel(
-                PathElement.pathElement("profile", "*"), new DescriptionProvider() {
-
-                    @Override
-                    public ModelNode getModelDescription(Locale locale) {
-                        ModelNode node = new ModelNode();
-                        node.get(DESCRIPTION).set("A named set of subsystem configs");
-                        node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-                        node.get(ATTRIBUTES, NAME, DESCRIPTION).set("The name of the profile");
-                        node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-                        node.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
-                        node.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set("The subsystems that make up the profile");
-                        node.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(1);
-                        node.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
-                        return node;
-                    }
-                });
-
-        TestNewExtensionContext context = new TestNewExtensionContext(testProfileRegistration);
-        ThreadsExtension extension = new ThreadsExtension();
-        extension.initialize(context);
-        Assert.assertNotNull(context.createdRegistration);
-
+    @After
+    public void shutdownServiceContainer() {
+        if (container != null) {
+            container.shutdown();
+            try {
+                container.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            finally {
+                container = null;
+            }
+        }
     }
 
     @Test
@@ -162,7 +203,7 @@ public class ThreadsSubsystemTestCase {
         ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "test");
         operation.get(RECURSIVE).set(true);
         operation.get(OPERATIONS).set(true);
-        ModelNode result = controller.executeForResult(operation);
+        ModelNode result = executeForResult(operation);
 
         ModelNode threadsDescription = result.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION, THREADS);
         assertTrue(threadsDescription.isDefined());
@@ -286,7 +327,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.executeForResult(update);
+                executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -302,9 +343,9 @@ public class ThreadsSubsystemTestCase {
     public void testSimpleThreadFactoryInvalidPriorityValue() throws Exception {
         List<ModelNode> updates = createSubSystem("<thread-factory name=\"test-factory\" priority=\"12\"/>");
         assertEquals(2, updates.size());
-        controller.executeForResult(updates.get(0));
+        executeForResult(updates.get(0));
         try {
-            controller.executeForResult(updates.get(1));
+            executeForResult(updates.get(1));
             fail("Expected failure for invalid priority");
         } catch (OperationFailedException e) {
         }
@@ -317,9 +358,8 @@ public class ThreadsSubsystemTestCase {
                 + "      <property name=\"propA\" value=\"valueA\"/>" + "      <property name=\"propB\" value=\"valueB\"/>"
                 + "   </properties>" + "</thread-factory>");
 
-        TestResultHandler handler = new TestResultHandler();
-        controller.executeForResult(updates.get(0));
-        controller.execute(OperationBuilder.Factory.create(updates.get(1)).build(), handler);
+        executeForResult(updates.get(0));
+        controller.execute(updates.get(1), null, null, null);
 
         checkFullTreadFactory();
     }
@@ -356,7 +396,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.executeForResult(update);
+                executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -378,7 +418,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.executeForResult(update);
+                executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -392,15 +432,21 @@ public class ThreadsSubsystemTestCase {
 
     @Test
     public void testFullUnboundedQueueThreadPool() throws Exception {
-        List<ModelNode> updates = createSubSystem("<unbounded-queue-thread-pool name=\"test-pool\">"
-                + "   <max-threads count=\"100\" per-cpu=\"5\"/>" + "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>"
-                + "   <thread-factory name=\"test-factory\"/>" + "   <properties>"
-                + "      <property name=\"propA\" value=\"valueA\"/>" + "      <property name=\"propB\" value=\"valueB\"/>"
-                + "   </properties>" + "</unbounded-queue-thread-pool>");
+        List<ModelNode> updates = createSubSystem(
+                "<thread-factory name=\"test-factory\"/>" +
+                "<unbounded-queue-thread-pool name=\"test-pool\">" +
+                "   <max-threads count=\"100\" per-cpu=\"5\"/>" +
+                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                "   <thread-factory name=\"test-factory\"/>" +
+                "   <properties>" +
+                "      <property name=\"propA\" value=\"valueA\"/>" +
+                "      <property name=\"propB\" value=\"valueB\"/>" +
+                "   </properties>" +
+                "</unbounded-queue-thread-pool>");
 
-        TestResultHandler handler = new TestResultHandler();
-        controller.executeForResult(updates.get(0));
-        controller.execute(OperationBuilder.Factory.create(updates.get(1)).build(), handler);
+        executeForResult(updates.get(0));
+        executeForResult(updates.get(1));
+        executeForResult(updates.get(2));
 
         checkFullUnboundedThreadPool();
     }
@@ -439,7 +485,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.executeForResult(update);
+                executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -459,7 +505,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.executeForResult(update);
+                executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -473,15 +519,21 @@ public class ThreadsSubsystemTestCase {
 
     @Test
     public void testFullScheduledThreadPool() throws Exception {
-        List<ModelNode> updates = createSubSystem("<scheduled-thread-pool name=\"test-pool\">"
-                + "   <max-threads count=\"100\" per-cpu=\"5\"/>" + "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>"
-                + "   <thread-factory name=\"test-factory\"/>" + "   <properties>"
-                + "      <property name=\"propA\" value=\"valueA\"/>" + "      <property name=\"propB\" value=\"valueB\"/>"
-                + "   </properties>" + "</scheduled-thread-pool>");
+        List<ModelNode> updates = createSubSystem(
+                "<thread-factory name=\"test-factory\"/>" +
+                "<scheduled-thread-pool name=\"test-pool\">" +
+                "   <max-threads count=\"100\" per-cpu=\"5\"/>" +
+                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                "   <thread-factory name=\"test-factory\"/>" +
+                "   <properties>" +
+                "      <property name=\"propA\" value=\"valueA\"/>" +
+                "      <property name=\"propB\" value=\"valueB\"/>" +
+                "   </properties>" +
+                "</scheduled-thread-pool>");
 
-        TestResultHandler handler = new TestResultHandler();
-        controller.executeForResult(updates.get(0));
-        controller.execute(OperationBuilder.Factory.create(updates.get(1)).build(), handler);
+        executeForResult(updates.get(0));
+        executeForResult(updates.get(1));
+        executeForResult(updates.get(2));
 
         checkFullScheduledThreadPool();
     }
@@ -520,7 +572,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.executeForResult(update);
+                executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -540,7 +592,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.executeForResult(update);
+                executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -554,15 +606,22 @@ public class ThreadsSubsystemTestCase {
 
     @Test
     public void testFullQueuelessThreadPool() throws Exception {
-        List<ModelNode> updates = createSubSystem("<queueless-thread-pool name=\"test-pool\" blocking=\"true\">"
-                + "   <max-threads count=\"100\" per-cpu=\"5\"/>" + "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>"
-                + "   <thread-factory name=\"test-factory\"/>" + "   <handoff-executor name=\"other\"/>" + "   <properties>"
-                + "      <property name=\"propA\" value=\"valueA\"/>" + "      <property name=\"propB\" value=\"valueB\"/>"
-                + "   </properties>" + "</queueless-thread-pool>");
+        List<ModelNode> updates = createSubSystem(
+                "<thread-factory name=\"test-factory\"/>" +
+                "<queueless-thread-pool name=\"test-pool\" blocking=\"true\">" +
+                "   <max-threads count=\"100\" per-cpu=\"5\"/>" +
+                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                "   <thread-factory name=\"test-factory\"/>" +
+                "   <handoff-executor name=\"other\"/>" +
+                "   <properties>" +
+                "      <property name=\"propA\" value=\"valueA\"/>" +
+                "      <property name=\"propB\" value=\"valueB\"/>" +
+                "   </properties>" +
+                "</queueless-thread-pool>");
 
-        TestResultHandler handler = new TestResultHandler();
-        controller.executeForResult(updates.get(0));
-        controller.execute(OperationBuilder.Factory.create(updates.get(1)).build(), handler);
+        executeForResult(updates.get(0));
+        executeForResult(updates.get(1));
+        executeForResult(updates.get(2));
 
         checkFullQueuelessThreadPool();
 
@@ -605,7 +664,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.executeForResult(update);
+                executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -626,7 +685,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(2, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.executeForResult(update);
+                executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -640,21 +699,24 @@ public class ThreadsSubsystemTestCase {
 
     @Test
     public void testFullBoundedQueueThreadPool() throws Exception {
-        List<ModelNode> updates = createSubSystem("<bounded-queue-thread-pool name=\"test-pool\" blocking=\"true\" allow-core-timeout=\"true\">"
-                + "   <core-threads count=\"200\" per-cpu=\"15\"/>"
-                + "   <max-threads count=\"100\" per-cpu=\"5\"/>"
-                + "   <queue-length count=\"300\" per-cpu=\"25\"/>"
-                + "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>"
-                + "   <thread-factory name=\"test-factory\"/>"
-                + "   <handoff-executor name=\"other\"/>"
-                + "   <properties>"
-                + "      <property name=\"propA\" value=\"valueA\"/>"
-                + "      <property name=\"propB\" value=\"valueB\"/>"
-                + "   </properties>" + "</bounded-queue-thread-pool>");
+        List<ModelNode> updates = createSubSystem(
+                "<thread-factory name=\"test-factory\"/>" +
+                "<bounded-queue-thread-pool name=\"test-pool\" blocking=\"true\" allow-core-timeout=\"true\">" +
+                "   <core-threads count=\"200\" per-cpu=\"15\"/>" +
+                "   <max-threads count=\"100\" per-cpu=\"5\"/>" +
+                "   <queue-length count=\"300\" per-cpu=\"25\"/>" +
+                "   <keepalive-time time=\"1000\" unit=\"MILLISECONDS\"/>" +
+                "   <thread-factory name=\"test-factory\"/>" +
+                "   <handoff-executor name=\"other\"/>" +
+                "   <properties>" +
+                "      <property name=\"propA\" value=\"valueA\"/>" +
+                "      <property name=\"propB\" value=\"valueB\"/>" +
+                "   </properties>" +
+                "</bounded-queue-thread-pool>");
 
-        TestResultHandler handler = new TestResultHandler();
-        controller.executeForResult(updates.get(0));
-        controller.execute(OperationBuilder.Factory.create(updates.get(1)).build(), handler);
+        executeForResult(updates.get(0));
+        executeForResult(updates.get(1));
+        executeForResult(updates.get(2));
 
         checkFullBoundedQueueThreadPool();
     }
@@ -701,7 +763,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(3, updates.size());
         for (ModelNode update : updates) {
             try {
-                controller.executeForResult(update);
+                executeForResult(update);
             } catch (OperationFailedException e) {
                 throw new RuntimeException(e.getFailureDescription().toString());
             }
@@ -860,29 +922,117 @@ public class ThreadsSubsystemTestCase {
         return updates;
     }
 
-    static class TestResultHandler implements ResultHandler {
-        ModelNode failureDescription;
+//    static class TestResultHandler implements ResultHandler {
+//        ModelNode failureDescription;
+//
+//        @Override
+//        public void handleResultFragment(String[] location, ModelNode result) {
+//        }
+//
+//        @Override
+//        public void handleResultComplete() {
+//        }
+//
+//        @Override
+//        public void handleCancellation() {
+//        }
+//
+//        @Override
+//        public void handleFailed(ModelNode failureDescription) {
+//            this.failureDescription = failureDescription;
+//        }
+//
+//        void clear() {
+//            failureDescription = null;
+//        }
+//
+//
+//    }
 
-        @Override
-        public void handleResultFragment(String[] location, ModelNode result) {
+    public class ModelControllerService extends AbstractControllerService {
+
+        private final CountDownLatch latch = new CountDownLatch(1);
+
+        ModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
+            super(NewOperationContext.Type.SERVER, new TestConfigurationPersister(), processState, NULL_PROVIDER, null);
         }
 
         @Override
-        public void handleResultComplete() {
+        public void start(StartContext context) throws StartException {
+            super.start(context);
+            latch.countDown();
+        }
+
+        protected ModelNode createCoreModel() {
+            model = new ModelNode();
+            model.get("profile", "test", "subsystem");
+            return model;
+        }
+
+        protected void initModel(ModelNodeRegistration rootRegistration) {
+            rootRegistration.registerOperationHandler(GlobalOperationHandlers.ResolveAddressOperationHandler.OPERATION_NAME, GlobalOperationHandlers.RESOLVE, (DescriptionProvider) GlobalOperationHandlers.RESOLVE, false, OperationEntry.EntryType.PRIVATE);
+            rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
+            rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+
+            ModelNodeRegistration profileRegistration = rootRegistration.registerSubModel(PathElement.pathElement("profile"), profileDescriptionProvider);
+            TestNewExtensionContext context = new TestNewExtensionContext(profileRegistration);
+            ThreadsExtension extension = new ThreadsExtension();
+            extension.initialize(context);
+            Assert.assertNotNull(context.createdRegistration);
+        }
+
+    }
+
+    private class TestConfigurationPersister implements ConfigurationPersister{
+
+        @Override
+        public void store(ModelNode model) throws ConfigurationPersistenceException {
+            ThreadsSubsystemTestCase.this.model = model;
         }
 
         @Override
-        public void handleCancellation() {
+        public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
         }
 
         @Override
-        public void handleFailed(ModelNode failureDescription) {
-            this.failureDescription = failureDescription;
+        public List<ModelNode> load() throws ConfigurationPersistenceException {
+            return Collections.emptyList();
         }
 
-        void clear() {
-            failureDescription = null;
+        @Override
+        public void successfulBoot() throws ConfigurationPersistenceException {
         }
 
+        @Override
+        public String snapshot() {
+            return null;
+        }
+
+        @Override
+        public SnapshotInfo listSnapshots() {
+            return NULL_SNAPSHOT_INFO;
+        }
+
+        @Override
+        public void deleteSnapshot(String name) {
+        }
+    }
+
+    /**
+     * Override to get the actual result from the response.
+     */
+    public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
+        ModelNode rsp = controller.execute(operation, null, null, null);
+        if (FAILED.equals(rsp.get(OUTCOME).asString())) {
+            throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
+        }
+        return rsp.get(RESULT);
     }
 }

@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -74,6 +75,7 @@ public class UnboundedQueueThreadPoolAdd implements NewStepHandler, DescriptionP
         if (params.getMaxThreads() != null) {
             model.get(MAX_THREADS).set(operation.get(MAX_THREADS));
         }
+
         if (params.getKeepAliveTime() != null) {
             model.get(KEEPALIVE_TIME).set(operation.get(KEEPALIVE_TIME));
         }
