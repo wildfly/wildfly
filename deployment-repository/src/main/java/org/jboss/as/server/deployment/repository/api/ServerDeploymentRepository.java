@@ -20,13 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.deployment.api;
+package org.jboss.as.server.deployment.repository.api;
 
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 
 /**

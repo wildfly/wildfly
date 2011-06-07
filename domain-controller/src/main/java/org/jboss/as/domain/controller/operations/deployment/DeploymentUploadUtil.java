@@ -5,7 +5,7 @@ package org.jboss.as.domain.controller.operations.deployment;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
 import java.io.ByteArrayInputStream;

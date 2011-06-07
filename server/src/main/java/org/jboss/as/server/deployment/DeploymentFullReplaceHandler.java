@@ -56,7 +56,7 @@ import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFai
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getInputStream;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
-import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

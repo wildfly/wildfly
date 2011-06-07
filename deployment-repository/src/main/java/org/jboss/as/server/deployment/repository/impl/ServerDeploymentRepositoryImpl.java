@@ -20,9 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.deployment.impl;
+package org.jboss.as.server.deployment.repository.impl;
 
-import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceTarget;
@@ -32,23 +32,12 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
-import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
 import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.security.AccessController;
-import java.security.DigestOutputStream;
-import java.security.MessageDigest;
 import java.util.concurrent.Executors;
-
-import static org.jboss.as.server.deployment.impl.ContentRepositoryImpl.safeClose;
 
 /**
  * Default implementation of {@link ServerDeploymentRepository}.
