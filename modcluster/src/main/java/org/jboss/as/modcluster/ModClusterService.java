@@ -22,6 +22,9 @@
 package org.jboss.as.modcluster;
 
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -96,9 +99,22 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         final ModelNode httpdconf = proxyconf.get(CommonAttributes.HTTPD_CONF);
         final ModelNode nodeconf = proxyconf.get(CommonAttributes.NODES_CONF);
 
+        // Check that Advertise could work.
+        boolean defaultavert = false;
+        try {
+            for (Enumeration<NetworkInterface> ni = NetworkInterface.getNetworkInterfaces(); ni.hasMoreElements();) {
+                NetworkInterface intf = ni.nextElement();
+                if (intf.isUp() && intf.supportsMulticast())
+                    defaultavert = true;
+             }
+        } catch (SocketException e) {
+            // Ignore it.
+        }
+
+
         // Set some defaults...
         if (!httpdconf.hasDefined(CommonAttributes.PROXY_LIST)) {
-            config.setAdvertise(true);
+            config.setAdvertise(defaultavert);
         }
         config.setAdvertisePort(23364);
         config.setAdvertiseGroupAddress("224.0.1.105");
@@ -111,6 +127,8 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             // TODO: That should be a socket-binding....
             config.setAdvertisePort(23364);
             config.setAdvertiseGroupAddress("224.0.1.105");
+            if (!defaultavert)
+                log.error("Mod_cluster requires Advertise but Multicast interface");
             config.setAdvertise(true);
         }
         if (httpdconf.hasDefined(CommonAttributes.SSL)) {
