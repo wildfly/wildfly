@@ -76,6 +76,16 @@
     <dependencies>
 
         <dependency>
+            <groupId>antlr</groupId>
+            <artifactId>antlr</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>asm</groupId>
+            <artifactId>asm</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>ch.qos.cal10n</groupId>
             <artifactId>cal10n-api</artifactId>
         </dependency>
@@ -111,8 +121,28 @@
         </dependency>
 
         <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>gnu-getopt</groupId>
+            <artifactId>getopt</artifactId>
         </dependency>
 
         <dependency>
@@ -158,26 +188,6 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.velocity</groupId>
-            <artifactId>velocity</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.xalan</groupId>
-            <artifactId>serializer</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.xalan</groupId>
-            <artifactId>xalan</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
         </dependency>
 
         <dependency>
@@ -391,8 +401,23 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.ws.security</groupId>
             <artifactId>wss4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xalan</groupId>
+            <artifactId>serializer</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xalan</groupId>
+            <artifactId>xalan</artifactId>
         </dependency>
 
         <dependency>
@@ -430,13 +455,58 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-common-core</artifactId>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-commons-annotations</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-entitymanager</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-infinispan</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-validator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.0-api</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-core</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-jms</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-core</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jandex</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-common-core</artifactId>
         </dependency>
 
         <dependency>
@@ -910,6 +980,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.seam.integration</groupId>
+            <artifactId>jboss-seam-int-jbossas</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.slf4j</groupId>
             <artifactId>slf4j-jboss-logmanager</artifactId>
         </dependency>
@@ -1040,16 +1115,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.xnio</groupId>
-            <artifactId>xnio-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.xnio</groupId>
-            <artifactId>xnio-nio</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.ws</groupId>
             <artifactId>jbossws-common-tools</artifactId>
         </dependency>
@@ -1086,6 +1151,21 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.xnio</groupId>
+            <artifactId>xnio-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.xnio</groupId>
+            <artifactId>xnio-nio</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jgroups</groupId>
+            <artifactId>jgroups</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
         </dependency>
@@ -1093,85 +1173,6 @@
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-commons-annotations</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>antlr</groupId>
-            <artifactId>antlr</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>asm</groupId>
-            <artifactId>asm</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>dom4j</groupId>
-            <artifactId>dom4j</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>gnu-getopt</groupId>
-            <artifactId>getopt</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate.javax.persistence</groupId>
-            <artifactId>hibernate-jpa-2.0-api</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-entitymanager</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-infinispan</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-validator</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.hornetq</groupId>
-          <artifactId>hornetq-core</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.hornetq</groupId>
-          <artifactId>hornetq-jms</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jgroups</groupId>
-            <artifactId>jgroups</artifactId>
         </dependency>
 
         <dependency>
@@ -1205,8 +1206,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.seam.integration</groupId>
-            <artifactId>jboss-seam-int-jbossas</artifactId>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
         </dependency>
 
     </dependencies>
