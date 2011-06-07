@@ -58,12 +58,16 @@ public final class DeploymentReflectionIndex {
      * @param clazz the class
      * @return the index
      */
-    @SuppressWarnings( { "unchecked" })
+    @SuppressWarnings({"unchecked"})
     public synchronized <T> ClassReflectionIndex<T> getClassIndex(Class<T> clazz) {
-        ClassReflectionIndex<T> index = (ClassReflectionIndex<T>) classes.get(clazz);
-        if (index == null) {
-            classes.put(clazz, index = new ClassReflectionIndex<T>(clazz, this));
+        try {
+            ClassReflectionIndex<T> index = (ClassReflectionIndex<T>) classes.get(clazz);
+            if (index == null) {
+                classes.put(clazz, index = new ClassReflectionIndex<T>(clazz, this));
+            }
+            return index;
+        } catch (Throwable e) {
+            throw new RuntimeException("Error getting reflective information for class " + clazz, e);
         }
-        return index;
     }
 }
