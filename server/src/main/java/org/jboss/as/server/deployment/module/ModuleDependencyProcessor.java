@@ -72,7 +72,7 @@ public final class ModuleDependencyProcessor implements DeploymentUnitProcessor 
 
             final String[] dependencyDefs = dependencyString.split(",");
             for (final String dependencyDef : dependencyDefs) {
-                final String[] dependencyParts = dependencyDef.split(" ");
+                final String[] dependencyParts = dependencyDef.trim().split(" ");
                 if (dependencyParts.length == 0) {
                     throw new RuntimeException("Invalid dependency: " + dependencyString);
                 }
