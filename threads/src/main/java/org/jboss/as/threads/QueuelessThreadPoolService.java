@@ -60,7 +60,7 @@ public class QueuelessThreadPoolService implements Service<ExecutorService> {
 
     public synchronized void start(final StartContext context) throws StartException {
         final TimeSpec keepAliveSpec = keepAlive;
-        long keepAlive = keepAliveSpec == null ? Long.MAX_VALUE : keepAliveSpec.getDuration();
+        long keepAlive = keepAliveSpec == null ? Long.MAX_VALUE : keepAliveSpec.getUnit().toMillis(keepAliveSpec.getDuration());
         executor = new QueuelessExecutor(threadFactoryValue.getValue(), JBossExecutors.directExecutor(), handoffExecutorValue.getOptionalValue(), keepAlive);
         executor.setMaxThreads(maxThreads);
         executor.setBlocking(blocking);

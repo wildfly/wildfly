@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.concurrent.Executor;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -62,7 +63,7 @@ public class BoundedQueueThreadPoolAdd implements NewStepHandler, DescriptionPro
     /**
      * {@inheritDoc}
      */
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         final BoundedOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseBoundedThreadPoolOperationParameters(operation);
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -80,6 +81,7 @@ public class BoundedQueueThreadPoolAdd implements NewStepHandler, DescriptionPro
         if (params.getMaxThreads() != null) {
             model.get(MAX_THREADS).set(operation.get(MAX_THREADS));
         }
+
         if (params.getKeepAliveTime() != null) {
             model.get(KEEPALIVE_TIME).set(operation.get(KEEPALIVE_TIME));
         }
@@ -91,6 +93,8 @@ public class BoundedQueueThreadPoolAdd implements NewStepHandler, DescriptionPro
         model.get(ALLOW_CORE_TIMEOUT).set(params.isAllowCoreTimeout());
         if (params.getQueueLength() != null) {
             model.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
+        } else {
+            throw new OperationFailedException(new ModelNode().set("Parameter " + QUEUE_LENGTH + " may not be null "));
         }
 
         if (params.getCoreThreads() != null) {
@@ -102,9 +106,10 @@ public class BoundedQueueThreadPoolAdd implements NewStepHandler, DescriptionPro
                 public void execute(NewOperationContext context, ModelNode operation) {
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     ServiceTarget target = context.getServiceTarget();
+                    final int coreThreads =  params.getCoreThreads() == null ? params.getMaxThreads().getScaledCount() : params.getCoreThreads().getScaledCount();
                     final ServiceName serviceName = ThreadsServices.executorName(params.getName());
                     final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(
-                            params.getCoreThreads().getScaledCount(),
+                            coreThreads,
                             params.getMaxThreads().getScaledCount(),
                             params.getQueueLength().getScaledCount(),
                             params.isBlocking(),

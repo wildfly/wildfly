@@ -34,6 +34,7 @@ import org.jboss.threads.QueueExecutor;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service responsible for creating, starting and stopping a thread pool executor with a bounded queue.
@@ -64,7 +65,9 @@ public class BoundedQueueThreadPoolService implements Service<Executor> {
     }
 
     public synchronized void start(final StartContext context) throws StartException {
-        executor = new QueueExecutor(coreThreads, maxThreads, keepAlive.getDuration(), keepAlive.getUnit(), queueLength, threadFactoryValue.getValue(), blocking, handoffExecutorValue.getOptionalValue());
+        final TimeSpec keepAliveSpec = keepAlive;
+        long keepAliveTime = keepAliveSpec == null ? Long.MAX_VALUE : keepAliveSpec.getUnit().toNanos(keepAliveSpec.getDuration());
+        executor = new QueueExecutor(coreThreads, maxThreads, keepAliveTime, TimeUnit.NANOSECONDS, queueLength, threadFactoryValue.getValue(), blocking, handoffExecutorValue.getOptionalValue());
         executor.setAllowCoreThreadTimeout(allowCoreTimeout);
         value = JBossExecutors.protectedBlockingExecutor(executor);
     }
