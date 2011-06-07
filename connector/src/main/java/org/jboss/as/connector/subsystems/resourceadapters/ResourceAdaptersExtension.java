@@ -541,8 +541,9 @@ public class ResourceAdaptersExtension implements Extension {
             setStringIfNotNull(condefModel, CLASS_NAME, conDef.getClassName());
             setStringIfNotNull(condefModel, JNDI_NAME, conDef.getJndiName());
             setStringIfNotNull(condefModel, POOL_NAME, conDef.getPoolName());
-            setBooleanIfNotNull(condefModel, ENABLED, conDef.isEnabled());
-            setBooleanIfNotNull(condefModel, USE_JAVA_CONTEXT, conDef.isUseJavaContext());
+            setBooleanIfNotNull(condefModel, ENABLED, conDef.isEnabled() != null ? conDef.isEnabled() : true);
+            setBooleanIfNotNull(condefModel, USE_JAVA_CONTEXT, conDef.isUseJavaContext() != null ? conDef.isUseJavaContext()
+                    : true);
             setBooleanIfNotNull(condefModel, USE_CCM, conDef.isUseCcm());
 
             if (conDef.getPool() != null) {

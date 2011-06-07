@@ -54,6 +54,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 import org.jboss.as.security.service.SubjectFactoryService;
+
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
  * service for ResourceAdapter.
@@ -105,41 +106,31 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
 
             for (org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter raxml : raxmls.getResourceAdapters()) {
 
-                String archive = raxml.getArchive();
-                URL deployment = null;
-                Set<String> deployments = mdr.getResourceAdapters();
-
-                for (String s : deployments) {
-                    if (s.endsWith(archive) || s.endsWith(archive.substring(0, archive.indexOf(".rar"))))
-                        deployment = new URL(s);
-                }
-
-                if (deployment != null) {
-
-                    Connector cmd = mdr.getResourceAdapter(deployment.toExternalForm());
-                    IronJacamar ijmd = mdr.getIronJacamar(deployment.toExternalForm());
-                    File root = mdr.getRoot(deployment.toExternalForm());
-
-                    cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(raxml, cmd);
-
-                    String deploymentName = archive.substring(0, archive.indexOf(".rar"));
-
-                    ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(connectorXmlDescriptor, raxml, cmd, ijmd, module, deploymentName, root);
-                    // Create the service
-                    serviceTarget
-                        .addService(ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(deploymentName), service)
+                ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(connectorXmlDescriptor,
+                        raxml, module);
+                // Create the service
+                serviceTarget
+                        .addService(
+                                ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(connectorXmlDescriptor
+                                        .getDeploymentName()), service)
                         .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, service.getMdrInjector())
-                        .addDependency(ConnectorServices.RA_REPOSISTORY_SERVICE, ResourceAdapterRepository.class, service.getRaRepositoryInjector())
-                        .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class, service.getManagementRepositoryInjector())
-                        .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, service.getRegistryInjector())
-                        .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, service.getTxIntegrationInjector())
-                        .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, service.getConfigInjector())
-                        .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, service.getSubjectFactoryInjector())
+                        .addDependency(ConnectorServices.RA_REPOSISTORY_SERVICE, ResourceAdapterRepository.class,
+                                service.getRaRepositoryInjector())
+                        .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class,
+                                service.getManagementRepositoryInjector())
+                        .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE,
+                                ResourceAdapterDeploymentRegistry.class, service.getRegistryInjector())
+                        .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
+                                service.getTxIntegrationInjector())
+                        .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class,
+                                service.getConfigInjector())
+                        .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
+                                service.getSubjectFactoryInjector())
                         .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, service.getCcmInjector())
                         .addDependency(NamingService.SERVICE_NAME)
-                        .setInitialMode(Mode.ACTIVE)
-                        .install();
-                }
+                        .addDependencies(
+                                ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(connectorXmlDescriptor
+                                        .getDeploymentName())).setInitialMode(Mode.ACTIVE).install();
             }
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);

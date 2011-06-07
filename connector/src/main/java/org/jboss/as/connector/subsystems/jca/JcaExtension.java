@@ -47,6 +47,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.readBooleanAttributeEle
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -368,8 +369,12 @@ public class JcaExtension implements Extension {
         }
 
         private void parseBeanValidation(final XMLExtendedStreamReader reader, final ModelNode node) throws XMLStreamException {
-            final boolean enabled = readBooleanAttributeElement(reader, Attribute.ENABLED.getLocalName());
-            node.get(BEAN_VALIDATION_ENABLED).set(enabled);
+            requireSingleAttribute(reader, Attribute.ENABLED.getLocalName());
+            final boolean value = reader.getAttributeValue(0) != null ? Boolean.parseBoolean(reader.getAttributeValue(0))
+                    : true;
+            requireNoContent(reader);
+
+            node.get(BEAN_VALIDATION_ENABLED).set(value);
             // Don't add a requireNoContent here as readBooleanAttributeElement
             // already performs that check.
         }

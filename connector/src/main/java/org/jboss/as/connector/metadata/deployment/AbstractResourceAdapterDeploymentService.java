@@ -121,7 +121,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 try {
                     mdr.getValue().unregisterResourceAdapter(value.getDeployment().getDeploymentName());
                 } catch (Throwable t) {
-                    log.warn("Exception during unregistering deployment", t);
+                    log.debug("Exception during unregistering deployment", t);
                 }
             }
 
@@ -133,8 +133,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
                         String jndi = value.getDeployment().getCfJndiNames()[i];
 
                         mdr.getValue().unregisterJndiMapping(value.getDeployment().getURL().toExternalForm(), cf, jndi);
-                    } catch (NotFoundException nfe) {
-                        log.warn("Exception during JNDI unbinding", nfe);
+                    } catch (Throwable nfe) {
+                        log.debug("Exception during JNDI unbinding", nfe);
                     }
                 }
             }
@@ -147,8 +147,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
                         String jndi = value.getDeployment().getAoJndiNames()[i];
 
                         mdr.getValue().unregisterJndiMapping(value.getDeployment().getURL().toExternalForm(), ao, jndi);
-                    } catch (NotFoundException nfe) {
-                        log.warn("Exception during JNDI unbinding", nfe);
+                    } catch (Throwable nfe) {
+                        log.debug("Exception during JNDI unbinding", nfe);
                     }
                 }
             }
