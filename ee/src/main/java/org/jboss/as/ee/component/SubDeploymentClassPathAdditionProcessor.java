@@ -29,13 +29,9 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentUtils;
-import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.vfs.VirtualFile;
 
 import java.util.List;
 
@@ -59,40 +55,32 @@ public class SubDeploymentClassPathAdditionProcessor implements DeploymentUnitPr
         if (parentEar == null) {
             return;
         }
-
-        final List<ResourceRoot> allResourceRootsOfEar = DeploymentUtils.allResourceRoots(parentEar);
-        if (allResourceRootsOfEar == null || allResourceRootsOfEar.isEmpty()) {
+        final List<DeploymentUnit> subDeployments = parentEar.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+        if (subDeployments == null || subDeployments.isEmpty()) {
             return;
         }
         // root of the current deployment unit being processed
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        // root of the parent .ear
-        final ResourceRoot parentEarResourceRoot = parentEar.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        for (ResourceRoot resourceRoot : allResourceRootsOfEar) {
-            // if it's not a sub deployment, then skip
-            if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
+        for (DeploymentUnit subDeployment : subDeployments) {
+            final ResourceRoot subDeploymentRoot = subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            // if it's the same as the deployment unit being processed then skip. i.e. a subdeployment
+            // doesn't add a classpath dependency on itself
+            if (subDeploymentRoot.equals(deploymentRoot)) {
                 continue;
             }
-            // if it's the same as the deployment unit being processed then skip
-            if (resourceRoot.equals(deploymentRoot)) {
-                continue;
-            }
-            // if it's a .war then don't add it to the classpath of the subdeployment, since .war shouldn't be available
+            // if it's a .war then don't add it to the classpath of the other subdeployment, since .war shouldn't be available
             // to the other subdeployments within the .ear
-            if (DeploymentTypeMarker.isType(DeploymentType.WAR, resourceRoot)) {
+            if (DeploymentTypeMarker.isType(DeploymentType.WAR, subDeployment)) {
                 continue;
             }
-            // get the resource root of the subdeployment
-            final VirtualFile subDeploymentResourceRoot = resourceRoot.getRoot();
-            // get the path of the sub deployment, relative to the parent .ear
-            final String relativePath = subDeploymentResourceRoot.getPathNameRelativeTo(parentEarResourceRoot.getRoot());
             // get the module identifier of the sub deployment
-            final ModuleIdentifier moduleIdentifier = ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + parentEar.getName() + '.' + relativePath.replace('/', '.'));
-            logger.debug("Subdeployment " + subDeploymentResourceRoot + " with module identifier " + moduleIdentifier +
+            final ModuleIdentifier subDeploymentModuleIdentifier = subDeployment.getAttachment(Attachments.MODULE_IDENTIFIER);
+            logger.debug("Subdeployment " + subDeployment + " with module identifier " + subDeploymentModuleIdentifier +
                     " will be added to the classpath entries of deployment unit " + deploymentUnit);
             // add it to the class path entries list of the deployment unit being processed, so that the sub deployment
             // is now available in the classpath of the deployment unit
-            deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleIdentifier);
+            deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, subDeploymentModuleIdentifier);
+
         }
     }
 

@@ -34,7 +34,6 @@ enum Attribute {
     UNKNOWN(null),
     NAME("name"),
     SLOT("slot"),
-    EAR_SUBDEPLOYMENTS_ISOLATED(CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED)
     ;
     private final String name;
 

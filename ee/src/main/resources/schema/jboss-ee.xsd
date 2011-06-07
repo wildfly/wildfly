@@ -31,12 +31,25 @@
     <xs:element name="subsystem" type="subsystem"/>
 
     <xs:complexType name="subsystem">
-        <xs:all>
-            <xs:element name="global-modules" type="modulesType" minOccurs="0"/>
-        </xs:all>
+        <xs:choice>
+            <xs:element name="global-modules" type="modulesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="ear-subdeployments-isolated" default="false" type="ear-subdeployments-isolatedType" minOccurs="0" maxOccurs="1"/>
+        </xs:choice>
+    </xs:complexType>
 
-        <xs:attribute default="false" name="ear-subdeployments-isolated" type="xs:boolean" use="optional">
-            <xs:annotation>
+    <xs:complexType name="modulesType">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="module" type="moduleType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="moduleType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="slot" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:simpleType name="ear-subdeployments-isolatedType">
+        <xs:annotation>
                 <xs:documentation>
                     Flag indicating whether each of the subdeployments within a .ear can access classes belonging to
                     another subdeployment within the same .ear. Setting this to false, allows the subdeployments to
@@ -59,21 +72,9 @@
                     and other subdeployments within that .ear will not be able to access classes from that .war. This is
                     as per spec*
                 </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-
-    </xs:complexType>
-
-    <xs:complexType name="modulesType">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="module" type="moduleType"/>
-        </xs:choice>
-    </xs:complexType>
-
-    <xs:complexType name="moduleType">
-        <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="slot" type="xs:string"/>
-    </xs:complexType>
-
+        </xs:annotation>
+        
+        <xs:restriction base="xs:boolean"/>
+    </xs:simpleType>
 
 </xs:schema>

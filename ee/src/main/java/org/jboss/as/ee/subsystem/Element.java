@@ -33,6 +33,7 @@ enum Element {
 
     GLOBAL_MODULES("global-modules"),
     MODULE("module"),
+    EAR_SUBDEPLOYMENTS_ISOLATED("ear-subdeployments-isolated"),
     UNKNOWN(null);
 
     private final String name;

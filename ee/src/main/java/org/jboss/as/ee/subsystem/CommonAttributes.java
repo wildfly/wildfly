@@ -29,6 +29,5 @@ public interface CommonAttributes {
     String NAME = "name";
     String SLOT = "slot";
     String GLOBAL_MODULES = "global-modules";
-    String EAR_SUBDEPLOYMENTS_ISOLATED = "ear-subdeployments-isolated";
 
 }

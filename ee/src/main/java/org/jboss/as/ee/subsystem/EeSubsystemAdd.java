@@ -91,8 +91,8 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         }
         // see if the ear subdeployment isolation flag is set. By default, we don't isolate subdeployments, so that
         // they can see each other's classes.
-        final Boolean earSubDeploymentsIsolated = operation.hasDefined(CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED)
-            ? operation.get(CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED).asBoolean()
+        final Boolean earSubDeploymentsIsolated = operation.hasDefined(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName())
+            ? operation.get(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName()).asBoolean()
             : Boolean.FALSE;
 
         if (context instanceof BootOperationContext) {
