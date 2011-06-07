@@ -53,13 +53,17 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.threads.AsyncFuture;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -982,13 +986,9 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     private TesteeSet createTestee(final MockServerController sc, final ScheduledExecutorService executor) throws OperationFailedException {
         final MockDeploymentRepository repo = new MockDeploymentRepository();
-        if (true) {
-            throw new IllegalStateException("Test needs rewriting to use NewModelController(Client)");
-        }
-//        final FileSystemDeploymentService testee = new FileSystemDeploymentService(null, tmpDir, null, sc, executor, repo, repo);
-//        testee.startScanner();
-//        return new TesteeSet(testee, repo, sc);
-        return null;
+        final FileSystemDeploymentService testee = new FileSystemDeploymentService(null, tmpDir, null, sc, executor, repo, repo);
+        testee.startScanner();
+        return new TesteeSet(testee, repo, sc);
     }
 
     private File createFile(String fileName) throws IOException {
@@ -1081,12 +1081,48 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     }
 
-    private static class MockServerController implements ServerController {
+    private static class MockServerController implements NewModelControllerClient {
 
         private final List<ModelNode> requests = new ArrayList<ModelNode>(1);
         private final List<Response> responses = new ArrayList<Response>(1);
         private final Map<String, byte[]> added = new HashMap<String, byte[]>();
         private final Map<String, byte[]> deployed = new HashMap<String, byte[]>();
+
+        @Override
+        public ModelNode execute(ModelNode operation) throws IOException {
+            requests.add(operation);
+            return processOp(operation);
+        }
+
+        @Override
+        public ModelNode execute(NewOperation operation) throws IOException {
+            return execute(operation.getOperation());
+        }
+
+        @Override
+        public ModelNode execute(ModelNode operation, OperationMessageHandler messageHandler) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ModelNode execute(NewOperation operation, OperationMessageHandler messageHandler) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationMessageHandler messageHandler) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AsyncFuture<ModelNode> executeAsync(NewOperation operation, OperationMessageHandler messageHandler) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void close() throws IOException {
+            throw new UnsupportedOperationException();
+        }
 
         private static class Response {
             private final boolean ok;
@@ -1161,18 +1197,6 @@ public class FileSystemDeploymentServiceUnitTestCase {
             return content;
         }
 
-        @Override
-        public OperationResult execute(Operation operation, ResultHandler handler) {
-            throw new UnsupportedOperationException("not supported");
-        }
-
-        @Override
-        public ModelNode execute(Operation operation) throws CancellationException {
-            ModelNode op = operation.getOperation();
-            requests.add(op);
-            return processOp(op);
-        }
-
         private ModelNode processOp(ModelNode op) {
 
             String opName = op.require(OP).asString();
@@ -1229,21 +1253,6 @@ public class FileSystemDeploymentServiceUnitTestCase {
             else {
                 throw new IllegalArgumentException("unexpected operation " + opName);
             }
-        }
-
-        @Override
-        public ServerEnvironment getServerEnvironment() {
-            throw new UnsupportedOperationException("not supported");
-        }
-
-        @Override
-        public ServiceRegistry getServiceRegistry() {
-            throw new UnsupportedOperationException("not supported");
-        }
-
-        @Override
-        public State getState() {
-            throw new UnsupportedOperationException("not supported");
         }
 
     }
