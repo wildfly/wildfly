@@ -359,6 +359,7 @@
                                         <searchTransitive>true</searchTransitive>
                                         <excludes>
                                             <exclude>commons-logging:commons-logging</exclude>
+                                            <exclude>concurrent:concurrent</exclude>
                                             <exclude>javax.servlet:servlet-api</exclude>
                                             <exclude>javax.xml:jaxrpc-api</exclude>
                                             <exclude>javax.xml.soap:saaj-api</exclude>
@@ -2539,6 +2540,12 @@
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.eventadmin</artifactId>
                 <version>${version.org.apache.felix.eventadmin}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>concurrent</groupId>
+                        <artifactId>concurrent</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
