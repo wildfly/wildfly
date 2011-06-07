@@ -31,13 +31,14 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
+import org.junit.Ignore;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-
+@Ignore("Pending Kabir's proxy controller work")
 public class ProxyControllerTestCase extends AbstractProxyControllerTest {
 
     @Before
