@@ -34,12 +34,14 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
+@Ignore
 public class ProxyControllerTestCase extends AbstractProxyControllerTest {
 
     static ExecutorService fakeProtocolExecutor;
@@ -128,7 +130,6 @@ public class ProxyControllerTestCase extends AbstractProxyControllerTest {
                         @Override
                         public void operationCompleted(ModelNode response) {
                             control.operationCompleted(response);
-                            latch.countDown();
                         }
                     }, attachments);
                 }

@@ -32,9 +32,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.NewModelController.OperationTransaction;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.MessageSeverity;
@@ -159,7 +161,35 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
     /** {@inheritDoc} */
     @Override
     public void execute(final ModelNode operation, final OperationMessageHandler handler, final ProxyOperationControl control, final OperationAttachments attachments) {
-        new ExecuteRequest(operation, handler, control, attachments).execute(executorService, getChannelStrategy());
+        //As per the interface javadoc this method should block until either the operationFailed() or the operationPrepared() methods of the ProxyOperationControl have been called
+        final CountDownLatch completedLatch = new CountDownLatch(1);
+        new ExecuteRequest(
+            operation,
+            handler,
+            new ProxyOperationControl() {
+                @Override
+                public void operationPrepared(OperationTransaction transaction, ModelNode result) {
+                    control.operationPrepared(transaction, result);
+                    completedLatch.countDown();
+                }
+
+                @Override
+                public void operationFailed(ModelNode response) {
+                    control.operationFailed(response);
+                    completedLatch.countDown();
+                }
+
+                @Override
+                public void operationCompleted(ModelNode response) {
+                    control.operationCompleted(response);
+                }
+            },
+            attachments).execute(executorService, getChannelStrategy());
+        try {
+            completedLatch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Thread was interrupted");
+        }
     }
 
     private ManagementClientChannelStrategy getChannelStrategy() {

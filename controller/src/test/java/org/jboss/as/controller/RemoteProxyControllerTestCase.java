@@ -81,27 +81,29 @@ public class RemoteProxyControllerTestCase {
 
     @Test
     public void testOperationMessageHandler() throws Exception {
-        ProtocolChannel serverChannel = channels.getServerChannel();
-        ProtocolChannel clientChannel = channels.getClientChannel();
-        clientChannel.startReceiving();
-
         final CountDownLatch executeLatch = new CountDownLatch(1);
-        MockModelController controller = new MockModelController() {
+        final MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
                 this.operation = operation;
                 handler.handleReport(MessageSeverity.INFO, "Test1");
                 handler.handleReport(MessageSeverity.INFO, "Test2");
+                control.operationPrepared(new OperationTransaction() {
+
+                    @Override
+                    public void rollback() {
+                    }
+
+                    @Override
+                    public void commit() {
+                    }
+                }, new ModelNode());
                 executeLatch.countDown();
                 return new ModelNode();
             }
         };
+        final NewRemoteProxyController proxyController = setupProxyHandlers(controller);
 
-        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
-        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
-
-        NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
-        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(proxyController);
 
         ModelNode operation = new ModelNode();
         operation.get("test").set("123");
@@ -128,11 +130,7 @@ public class RemoteProxyControllerTestCase {
 
     @Test
     public void testOperationControlFailed() throws Exception {
-        ProtocolChannel serverChannel = channels.getServerChannel();
-        ProtocolChannel clientChannel = channels.getClientChannel();
-        clientChannel.startReceiving();
-
-        MockModelController controller = new MockModelController() {
+        final MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
                 final ModelNode result = new ModelNode();
@@ -141,12 +139,7 @@ public class RemoteProxyControllerTestCase {
                 return result;
             }
         };
-
-        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
-        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
-
-        NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
-        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(proxyController);
+        final NewRemoteProxyController proxyController = setupProxyHandlers(controller);
 
         ModelNode operation = new ModelNode();
         operation.get("test").set("123");
@@ -183,22 +176,13 @@ public class RemoteProxyControllerTestCase {
 
     @Test
     public void testOperationControlExceptionInController() throws Exception {
-        ProtocolChannel serverChannel = channels.getServerChannel();
-        ProtocolChannel clientChannel = channels.getClientChannel();
-        clientChannel.startReceiving();
-
-        MockModelController controller = new MockModelController() {
+        final MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
                 throw new RuntimeException("Crap");
             }
         };
-
-        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
-        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
-
-        NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
-        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(proxyController);
+        final NewRemoteProxyController proxyController = setupProxyHandlers(controller);
 
         ModelNode operation = new ModelNode();
         operation.get("test").set("123");
@@ -235,9 +219,6 @@ public class RemoteProxyControllerTestCase {
 
     @Test
     public void testTransactionCommit() throws Exception {
-        ProtocolChannel serverChannel = channels.getServerChannel();
-        ProtocolChannel clientChannel = channels.getClientChannel();
-        clientChannel.startReceiving();
 
         final CountDownLatch commitLatch = new CountDownLatch(1);
         final OperationTransaction tx = new OperationTransaction() {
@@ -271,11 +252,7 @@ public class RemoteProxyControllerTestCase {
             }
         };
 
-        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
-        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
-
-        NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
-        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(proxyController);
+        final NewRemoteProxyController proxyController = setupProxyHandlers(controller);
 
         ModelNode operation = new ModelNode();
         operation.get("test").set("123");
@@ -320,9 +297,6 @@ public class RemoteProxyControllerTestCase {
 
     @Test
     public void testTransactionRollback() throws Exception {
-        ProtocolChannel serverChannel = channels.getServerChannel();
-        ProtocolChannel clientChannel = channels.getClientChannel();
-        clientChannel.startReceiving();
 
         final CountDownLatch rollbackLatch = new CountDownLatch(1);
         final OperationTransaction tx = new OperationTransaction() {
@@ -355,11 +329,7 @@ public class RemoteProxyControllerTestCase {
             }
         };
 
-        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
-        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
-
-        NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
-        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(proxyController);
+        final NewRemoteProxyController proxyController = setupProxyHandlers(controller);
 
         ModelNode operation = new ModelNode();
         operation.get("test").set("123");
@@ -404,10 +374,6 @@ public class RemoteProxyControllerTestCase {
         final byte[] firstBytes = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         final byte[] secondBytes = new byte[] {10, 9, 8 , 7 , 6, 5, 4, 3, 2, 1};
 
-        ProtocolChannel serverChannel = channels.getServerChannel();
-        ProtocolChannel clientChannel = channels.getClientChannel();
-        clientChannel.startReceiving();
-
         final CountDownLatch executeLatch = new CountDownLatch(1);
         final AtomicInteger size = new AtomicInteger();
         final AtomicReference<byte[]> firstResult = new AtomicReference<byte[]>();
@@ -445,16 +411,22 @@ public class RemoteProxyControllerTestCase {
                     }
                 }
                 size.set(streamIndex);
+                control.operationPrepared(new OperationTransaction() {
+
+                    @Override
+                    public void rollback() {
+                    }
+
+                    @Override
+                    public void commit() {
+                    }
+                }, new ModelNode());
                 executeLatch.countDown();
                 return new ModelNode();
             }
         };
 
-        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
-        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
-
-        NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
-        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(proxyController);
+        final NewRemoteProxyController proxyController = setupProxyHandlers(controller);
 
         ModelNode operation = new ModelNode();
         operation.get("test").set("123");
@@ -488,6 +460,20 @@ public class RemoteProxyControllerTestCase {
         for (int i = 0 ; i < expected.length ; i++) {
             assertEquals(expected[i], actual[i]);
         }
+    }
+
+    private NewRemoteProxyController setupProxyHandlers(MockModelController controller) {
+        ProtocolChannel serverChannel = channels.getServerChannel();
+        ProtocolChannel clientChannel = channels.getClientChannel();
+        clientChannel.startReceiving();
+
+        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
+        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
+
+        NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
+        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(proxyController);
+
+        return proxyController;
     }
 
     private static abstract class MockModelController implements NewModelController {
