@@ -21,10 +21,8 @@
  */
 package org.jboss.as.embedded.ejb3;
 
-import org.junit.Assert;
 import org.junit.Test;
 
-import javax.ejb.embeddable.EJBContainer;
 import java.io.File;
 import java.util.Collections;
 
@@ -58,23 +56,6 @@ public class ClassPathEjbJarScannerTest {
             if (oldProperty != null)
                 System.setProperty("surefire.test.class.path", oldProperty);
         }
-    }
-
-
-    @Test
-    public void testSpecifyingFile() {
-        final String myFile = "/my/file.jar";
-        final String[] results = ClassPathEjbJarScanner.getEjbJars(Collections.singletonMap(EJBContainer.MODULES, new File(myFile)));
-        Assert.assertEquals(1, results.length);
-        Assert.assertEquals(myFile, results[0]);
-    }
-
-        @Test
-    public void testSpecifyingFileArray() {
-        final String myFile = "/my/file.jar";
-        final String[] results = ClassPathEjbJarScanner.getEjbJars(Collections.singletonMap(EJBContainer.MODULES, new File[]{new File(myFile)}));
-        Assert.assertEquals(1, results.length);
-        Assert.assertEquals(myFile, results[0]);
     }
 
 }
