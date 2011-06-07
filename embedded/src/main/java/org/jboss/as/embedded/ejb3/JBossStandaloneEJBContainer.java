@@ -105,9 +105,6 @@ public class JBossStandaloneEJBContainer extends EJBContainer {
             }
             FileOutputStream out = new FileOutputStream(tempEar);
             ZipOutputStream zip = new ZipOutputStream(out);
-            zip.putNextEntry(new ZipEntry("jboss-deployment-structure.xml"));
-            byte[] bytes = "<jboss-deployment-structure><extended-class-visibility>true</extended-class-visibility></jboss-deployment-structure>".getBytes();
-            zip.write(bytes);
             try {
                 byte[] buf = new byte[1024];
                 for (final String candidate : candidates) {

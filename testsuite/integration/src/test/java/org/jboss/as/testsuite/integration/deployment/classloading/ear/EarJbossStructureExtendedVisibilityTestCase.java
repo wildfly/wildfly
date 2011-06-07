@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests the extended-class-visibility option in jboss-structure.xml
+ * Tests the ear-subdeployments-isolated option in jboss-deployment-structure.xml
  *
  * By default ejb-jar's should not be visible to each other, with this option enabled they are.
  *
@@ -59,7 +59,7 @@ public class EarJbossStructureExtendedVisibilityTestCase {
         ear.addModule(ejb);
 
         ear.addManifestResource(new StringAsset(
-               "<jboss-deployment-structure><extended-class-visibility>true</extended-class-visibility></jboss-deployment-structure>"),
+               "<jboss-deployment-structure><ear-subdeployments-isolated>false</ear-subdeployments-isolated></jboss-deployment-structure>"),
                 "jboss-deployment-structure.xml");
 
         return ear;

@@ -27,7 +27,7 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.ee.component.SubDeploymentClassPathAdditionProcessor;
+import org.jboss.as.ee.component.DefaultEarSubDeploymentsIsolationProcessor;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
 import org.jboss.as.ee.component.AroundInvokeAnnotationParsingProcessor;
 import org.jboss.as.ee.component.ComponentInstallProcessor;
@@ -112,10 +112,7 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_INTERCEPTORS_ANNOTATION, new InterceptorsAnnotationParsingProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_LIEFCYCLE_ANNOTATION, new LifecycleAnnotationParsingProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_AROUNDINVOKE_ANNOTATION, new AroundInvokeAnnotationParsingProcessor());
-            // if the ear subdeployments should have access to each other's classes, then add the SubDeploymentClassPathAdditionProcessor
-            if (!earSubDeploymentsIsolated) {
-                updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SUBDEPLOYMENT_CLASSPATH_ADDITION, new SubDeploymentClassPathAdditionProcessor());
-            }
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_SUBDEPLOYMENTS_ISOLATION_DEFAULT, new DefaultEarSubDeploymentsIsolationProcessor(earSubDeploymentsIsolated));
 
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new JavaEEDependencyProcessor());
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_GLOBAL_MODULES, new GlobalModuleDependencyProcessor(globalModules));

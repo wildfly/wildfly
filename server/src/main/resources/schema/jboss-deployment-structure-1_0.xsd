@@ -45,11 +45,29 @@
             </xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="extended-class-visibility" type="xsd:boolean" minOccurs="0" maxOccurs="1" >
+            <xsd:element name="ear-subdeployments-isolated" type="xsd:boolean" minOccurs="0" maxOccurs="1" >
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>
-                        If this is set to true then ejb-jar's are accessible from other modules
-                        without an explicit Class-Path: reference.
+                    Flag indicating whether each of the subdeployments within a .ear can access classes belonging to
+                    another subdeployment within the same .ear. Setting this to false, allows the subdeployments to
+                    see classes belonging to other subdeployments within the .ear.
+                    For example:
+                    myapp.ear
+                     |
+                     |--- web.war
+                     |
+                     |--- ejb1.jar
+                     |
+                     |--- ejb2.jar
+
+                    If the ear-subdeployments-isolated is set to false, then the classes in web.war can access classes
+                    belonging to ejb1.jar and ejb2.jar. Similarly, classes from ejb1.jar can access classes from ejb2.jar
+                    (and vice-versa).
+
+                    *Note that this flag, has no effect on the isolated classloader of the .war file(s). i.e. irrespective
+                    of whether this flag is set to true or false, the .war within a .ear will have a isolated classloader
+                    and other subdeployments within that .ear will not be able to access classes from that .war. This is
+                    as per spec*
                     </documentation>
                 </annotation>
             </xsd:element>

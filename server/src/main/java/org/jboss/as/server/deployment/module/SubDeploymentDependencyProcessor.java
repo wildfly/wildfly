@@ -62,9 +62,8 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
             }
         }
 
-        //If the extended class visibility flag is set up we need to set
-        //up dependencies on other sub deployments
-        if (parentModuleSpec.isExtendedClassVisibility()) {
+        //If the sub deployments aren't isolated, then we need to set up dependencies between the sub deployments
+        if (!parentModuleSpec.isSubDeploymentModulesIsolated()) {
             final List<DeploymentUnit> subDeployments = parent.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
             final List<ModuleDependency> accessibleModules = new ArrayList<ModuleDependency>();
             for (DeploymentUnit subDeployment : subDeployments) {

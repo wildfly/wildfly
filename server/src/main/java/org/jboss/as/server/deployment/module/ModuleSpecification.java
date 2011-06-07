@@ -43,9 +43,9 @@ public class ModuleSpecification extends SimpleAttachable {
     private Boolean childFirst;
 
     /**
-     * Flag that is set to true if non private sub deployments should be able to see each other
+     * Flag that is set to true if modules of non private sub deployments should be able to see each other
      */
-    private boolean extendedClassVisibility;
+    private boolean subDeploymentModulesIsolated;
 
     /**
      * Flag that indicates that this module should never be visible to other sub deployments
@@ -80,12 +80,12 @@ public class ModuleSpecification extends SimpleAttachable {
         return Collections.unmodifiableList(resourceLoaders);
     }
 
-    public boolean isExtendedClassVisibility() {
-        return extendedClassVisibility;
+    public boolean isSubDeploymentModulesIsolated() {
+        return subDeploymentModulesIsolated;
     }
 
-    public void setExtendedClassVisibility(boolean extendedClassVisibility) {
-        this.extendedClassVisibility = extendedClassVisibility;
+    public void setSubDeploymentModulesIsolated(boolean subDeploymentModulesIsolated) {
+        this.subDeploymentModulesIsolated = subDeploymentModulesIsolated;
     }
 
     public boolean isPrivateModule() {

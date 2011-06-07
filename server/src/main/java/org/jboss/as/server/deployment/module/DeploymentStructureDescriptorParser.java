@@ -58,9 +58,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * Parses <code>jboss-structure.xml</code>, and merges the result with the deployment.
+ * Parses <code>jboss-deployment-structure.xml</code>, and merges the result with the deployment.
  *
- * <code>jboss-structure.xml</code> is only parsed for top level deployments. It allows configuration of the following for
+ * <code>jboss-deployment-structure.xml</code> is only parsed for top level deployments. It allows configuration of the following for
  * deployments and sub deployments:
  * <ul>
  * <li>Additional dependencies</li>
@@ -130,7 +130,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
     }
 
     private static class ParseResult {
-        private boolean extendedClassVisibility = false;
+        private Boolean earSubDeploymentsIsolated = null;
         private ModuleStructureSpec rootDeploymentSpecification;
         private final Map<String, ModuleStructureSpec> subDeploymentSpecifications = new HashMap<String, ModuleStructureSpec>();
         private final List<ModuleStructureSpec> additionalModules = new ArrayList<ModuleStructureSpec>();
@@ -147,8 +147,8 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
 
     enum Element {
-        JBOSS_STRUCTURE,
-        EXTENDED_CLASS_VISIBILITY,
+        JBOSS_DEPLOYMENT_STRUCTURE,
+        EAR_SUBDEPLOYMENTS_ISOLATED,
         DEPLOYMENT,
         SUB_DEPLOYMENT,
         MODULE,
@@ -172,8 +172,8 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
 
         static {
             Map<QName, Element> elementsMap = new HashMap<QName, Element>();
-            elementsMap.put(new QName(NAMESPACE, "jboss-deployment-structure"), Element.JBOSS_STRUCTURE);
-            elementsMap.put(new QName(NAMESPACE, "extended-class-visibility"), Element.EXTENDED_CLASS_VISIBILITY);
+            elementsMap.put(new QName(NAMESPACE, "jboss-deployment-structure"), Element.JBOSS_DEPLOYMENT_STRUCTURE);
+            elementsMap.put(new QName(NAMESPACE, "ear-subdeployments-isolated"), Element.EAR_SUBDEPLOYMENTS_ISOLATED);
             elementsMap.put(new QName(NAMESPACE, "deployment"), Element.DEPLOYMENT);
             elementsMap.put(new QName(NAMESPACE, "sub-deployment"), Element.SUB_DEPLOYMENT);
             elementsMap.put(new QName(NAMESPACE, "module"), Element.MODULE);
@@ -278,10 +278,13 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         }
 
         try {
-            ParseResult result = parse(deploymentFile.getPhysicalFile(), resourceRoot.getRoot(), moduleLoader);
+            ParseResult result = parse(deploymentFile.getPhysicalFile(), deploymentUnit, moduleLoader);
 
             ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-            moduleSpec.setExtendedClassVisibility(result.extendedClassVisibility);
+            if (result.earSubDeploymentsIsolated != null) {
+                // set the ear subdeployment isolation value overridden via the jboss-deployment-structure.xml
+                moduleSpec.setSubDeploymentModulesIsolated(result.earSubDeploymentsIsolated);
+            }
             // handle the the root deployment
             if (result.rootDeploymentSpecification != null) {
                 moduleSpec.addDependencies(result.rootDeploymentSpecification.getModuleDependencies());
@@ -346,16 +349,16 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
 
     }
 
-    static ParseResult parse(final File file, VirtualFile deploymentRoot, ModuleLoader moduleLoader)
+    static ParseResult parse(final File file, DeploymentUnit deploymentUnit, ModuleLoader moduleLoader)
             throws DeploymentUnitProcessingException {
         final FileInputStream fis;
         try {
             fis = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            throw new DeploymentUnitProcessingException("No jboss-structure.xml file found at " + file);
+            throw new DeploymentUnitProcessingException("No jboss-deployment-structure.xml file found at " + file);
         }
         try {
-            return parse(fis, file, deploymentRoot, moduleLoader);
+            return parse(fis, file, deploymentUnit, moduleLoader);
         } finally {
             safeClose(fis);
         }
@@ -367,7 +370,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         }
     }
 
-    private static ParseResult parse(InputStream source, File file, VirtualFile deploymentRoot, ModuleLoader moduleLoader)
+    private static ParseResult parse(InputStream source, File file, DeploymentUnit deploymentUnit, ModuleLoader moduleLoader)
             throws DeploymentUnitProcessingException {
         try {
             final XMLInputFactory inputFactory = INPUT_FACTORY;
@@ -376,7 +379,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             final XMLStreamReader streamReader = inputFactory.createXMLStreamReader(source);
             try {
                 ParseResult result = new ParseResult();
-                parseDocument(deploymentRoot, streamReader, result, moduleLoader);
+                parseDocument(deploymentUnit, streamReader, result, moduleLoader);
                 return result;
             } finally {
                 safeClose(streamReader);
@@ -478,19 +481,19 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         return new XMLStreamException(b.toString(), location);
     }
 
-    private static void parseDocument(VirtualFile deploymentRoot, XMLStreamReader reader, ParseResult result,
+    private static void parseDocument(DeploymentUnit deploymentUnit, XMLStreamReader reader, ParseResult result,
             ModuleLoader moduleLoader) throws XMLStreamException {
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case XMLStreamConstants.START_DOCUMENT: {
-                    parseRootElement(deploymentRoot, reader, result, moduleLoader);
+                    parseRootElement(deploymentUnit, reader, result, moduleLoader);
                     return;
                 }
                 case XMLStreamConstants.START_ELEMENT: {
-                    if (Element.of(reader.getName()) != Element.JBOSS_STRUCTURE) {
+                    if (Element.of(reader.getName()) != Element.JBOSS_DEPLOYMENT_STRUCTURE) {
                         throw unexpectedContent(reader);
                     }
-                    parseStructureContents(deploymentRoot, reader, result, moduleLoader);
+                    parseStructureContents(deploymentUnit, reader, result, moduleLoader);
                     parseEndDocument(reader);
                     return;
                 }
@@ -502,15 +505,15 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         throw endOfDocument(reader.getLocation());
     }
 
-    private static void parseRootElement(VirtualFile deploymentRoot, XMLStreamReader reader, ParseResult result,
+    private static void parseRootElement(DeploymentUnit deploymentUnit, XMLStreamReader reader, ParseResult result,
             ModuleLoader moduleLoader) throws XMLStreamException {
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case XMLStreamConstants.START_ELEMENT: {
-                    if (Element.of(reader.getName()) != Element.JBOSS_STRUCTURE) {
+                    if (Element.of(reader.getName()) != Element.JBOSS_DEPLOYMENT_STRUCTURE) {
                         throw unexpectedContent(reader);
                     }
-                    parseStructureContents(deploymentRoot, reader, result, moduleLoader);
+                    parseStructureContents(deploymentUnit, reader, result, moduleLoader);
                     parseEndDocument(reader);
                     return;
                 }
@@ -522,7 +525,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         throw endOfDocument(reader.getLocation());
     }
 
-    private static void parseStructureContents(VirtualFile deploymentRoot, XMLStreamReader reader, ParseResult result,
+    private static void parseStructureContents(DeploymentUnit deploymentUnit, XMLStreamReader reader, ParseResult result,
             ModuleLoader moduleLoader) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         if (count != 0) {
@@ -539,12 +542,15 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                     final Element element = Element.of(reader.getName());
 
                     switch (element) {
-                        case EXTENDED_CLASS_VISIBILITY:
+                        case EAR_SUBDEPLOYMENTS_ISOLATED:
+                            // TODO: This element should only be allowed for jboss-deployment-structure.xml
+                            // of an .ear and *not* for a .war. Should we throw an error for this based on the deployment
+                            // unit type?
                             String value = reader.getElementText();
                             if(value == null || value.isEmpty()) {
-                                result.extendedClassVisibility = true;
+                                result.earSubDeploymentsIsolated = true;
                             } else {
-                                result.extendedClassVisibility = Boolean.valueOf(value);
+                                result.earSubDeploymentsIsolated = Boolean.valueOf(value);
                             }
                             break;
                         case DEPLOYMENT:
@@ -552,13 +558,13 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                                 throw unexpectedContent(reader);
                             }
                             deploymentVisited = true;
-                            parseDeployment(deploymentRoot, reader, result, moduleLoader);
+                            parseDeployment(deploymentUnit, reader, result, moduleLoader);
                             break;
                         case SUB_DEPLOYMENT:
-                            parseSubDeployment(deploymentRoot, reader, result, moduleLoader);
+                            parseSubDeployment(deploymentUnit, reader, result, moduleLoader);
                             break;
                         case MODULE:
-                            parseModule(deploymentRoot, reader, result, moduleLoader);
+                            parseModule(deploymentUnit, reader, result, moduleLoader);
                             break;
                         default:
                             throw unexpectedContent(reader);
@@ -573,13 +579,13 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         throw endOfDocument(reader.getLocation());
     }
 
-    private static void parseDeployment(VirtualFile deploymentRoot, XMLStreamReader reader, ParseResult result,
+    private static void parseDeployment(DeploymentUnit deploymentUnit, XMLStreamReader reader, ParseResult result,
             ModuleLoader moduleLoader) throws XMLStreamException {
         result.rootDeploymentSpecification = new ModuleStructureSpec();
-        parseModuleStructureSpec(deploymentRoot, reader, result.rootDeploymentSpecification, moduleLoader);
+        parseModuleStructureSpec(deploymentUnit, reader, result.rootDeploymentSpecification, moduleLoader);
     }
 
-    private static void parseSubDeployment(VirtualFile deploymentRoot, XMLStreamReader reader, ParseResult result,
+    private static void parseSubDeployment(DeploymentUnit deploymentUnit, XMLStreamReader reader, ParseResult result,
             ModuleLoader moduleLoader) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         String name = null;
@@ -603,10 +609,10 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         }
         ModuleStructureSpec moduleSpecification = new ModuleStructureSpec();
         result.subDeploymentSpecifications.put(name, moduleSpecification);
-        parseModuleStructureSpec(deploymentRoot, reader, moduleSpecification, moduleLoader);
+        parseModuleStructureSpec(deploymentUnit, reader, moduleSpecification, moduleLoader);
     }
 
-    private static void parseModule(VirtualFile deploymentRoot, XMLStreamReader reader, ParseResult result,
+    private static void parseModule(DeploymentUnit deploymentUnit, XMLStreamReader reader, ParseResult result,
             ModuleLoader moduleLoader) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         String name = null;
@@ -637,10 +643,10 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         ModuleStructureSpec moduleSpecification = new ModuleStructureSpec();
         moduleSpecification.setModuleIdentifier(ModuleIdentifier.create(name, slot));
         result.additionalModules.add(moduleSpecification);
-        parseModuleStructureSpec(deploymentRoot, reader, moduleSpecification, moduleLoader);
+        parseModuleStructureSpec(deploymentUnit, reader, moduleSpecification, moduleLoader);
     }
 
-    private static void parseModuleStructureSpec(VirtualFile deploymentRoot, XMLStreamReader reader,
+    private static void parseModuleStructureSpec(DeploymentUnit deploymentUnit, XMLStreamReader reader,
             ModuleStructureSpec moduleSpec, ModuleLoader moduleLoader) throws XMLStreamException {
         // xsd:all
         Set<Element> visited = EnumSet.noneOf(Element.class);
@@ -663,7 +669,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                             parseDependencies(reader, moduleSpec, moduleLoader);
                             break;
                         case RESOURCES:
-                            parseResources(deploymentRoot, reader, moduleSpec);
+                            parseResources(deploymentUnit, reader, moduleSpec);
                             break;
                         case CHILD_FIRST:
                             parseChildFirst(reader, moduleSpec);
@@ -801,7 +807,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         }
     }
 
-    private static void parseResources(final VirtualFile deploymentRoot, final XMLStreamReader reader,
+    private static void parseResources(final DeploymentUnit deploymentUnit, final XMLStreamReader reader,
             final ModuleStructureSpec specBuilder) throws XMLStreamException {
         // xsd:choice
         while (reader.hasNext()) {
@@ -812,7 +818,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 case XMLStreamConstants.START_ELEMENT: {
                     switch (Element.of(reader.getName())) {
                         case RESOURCE_ROOT: {
-                            parseResourceRoot(deploymentRoot, reader, specBuilder);
+                            parseResourceRoot(deploymentUnit, reader, specBuilder);
                             break;
                         }
                         default:
@@ -828,7 +834,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         throw endOfDocument(reader.getLocation());
     }
 
-    private static void parseResourceRoot(final VirtualFile deploymentRoot, final XMLStreamReader reader,
+    private static void parseResourceRoot(final DeploymentUnit deploymentUnit, final XMLStreamReader reader,
             final ModuleStructureSpec specBuilder) throws XMLStreamException {
         String name = null;
         String path = null;
@@ -863,7 +869,9 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                                 "External resource roots not supported, resource roots may not start with a '/' :" + path);
                     } else {
                         try {
-                            VirtualFile child = deploymentRoot.getChild(path);
+                            final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+                            final VirtualFile deploymentRootFile = deploymentRoot.getRoot();
+                            VirtualFile child = deploymentRootFile.getChild(path);
                             final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService
                                     .provider()) : null;
                             final MountHandle mountHandle = new MountHandle(closable);
