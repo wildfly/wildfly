@@ -128,7 +128,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             config.setAdvertisePort(23364);
             config.setAdvertiseGroupAddress("224.0.1.105");
             if (!defaultavert)
-                log.error("Mod_cluster requires Advertise but Multicast interface");
+                log.error("Mod_cluster requires Advertise but Multicast interface is not available");
             config.setAdvertise(true);
         }
         if (httpdconf.hasDefined(CommonAttributes.SSL)) {
