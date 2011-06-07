@@ -48,6 +48,7 @@ import org.jboss.as.cli.handlers.CreateJmsCFHandler;
 import org.jboss.as.cli.handlers.CreateJmsQueueHandler;
 import org.jboss.as.cli.handlers.CreateJmsResourceHandler;
 import org.jboss.as.cli.handlers.CreateJmsTopicHandler;
+import org.jboss.as.cli.handlers.DataSourceRemoveHandler;
 import org.jboss.as.cli.handlers.DeleteJmsCFHandler;
 import org.jboss.as.cli.handlers.DeleteJmsQueueHandler;
 import org.jboss.as.cli.handlers.DeleteJmsResourceHandler;
@@ -126,6 +127,7 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new VersionHandler(), "version");
 
         cmdRegistry.registerHandler(new CreateDatasourceHandler(), "create-datasource");
+        cmdRegistry.registerHandler(new DataSourceRemoveHandler(), "remove-data-source");
     }
 
     public static void main(String[] args) throws Exception {

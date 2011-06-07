@@ -33,6 +33,7 @@ import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.impl.RequestParamArg;
+import org.jboss.as.cli.impl.RequestParamPropertiesArg;
 import org.jboss.as.cli.impl.RequiredRequestParamArg;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -49,13 +50,7 @@ public class CreateDatasourceHandler extends BaseOperationCommand {
     private final ArgumentWithValue profile;
     private final ArgumentWithValue jndiName;
 
-//TODO    private final ArgumentWithValue connectionProperties;
 //TODO    private final ArgumentWithValue driverClass;
-
-    //TODO    private final ArgumentWithValue reauthPluginProps;
-    // TODO private final ArgumentWithValue exceptionSorterProps;
-    // TODO private final ArgumentWithValue staleConnectionCheckerProps;
-    // TODO private final ArgumentWithValue validConnectionCheckerProps;
 
     public CreateDatasourceHandler() {
         super("create-datasource", true);
@@ -130,6 +125,9 @@ public class CreateDatasourceHandler extends BaseOperationCommand {
 
         CommandArgument lastRequired = jndiName;
 
+        RequestParamArg connectionProperties = new RequestParamPropertiesArg("connection-properties", this);
+        connectionProperties.addRequiredPreceding(lastRequired);
+
         RequestParamArg useJavaContext =  new RequestParamArg("use-java-context", this, SimpleTabCompleter.BOOLEAN_COMPLETER);
         useJavaContext.addRequiredPreceding(lastRequired);
 
@@ -166,7 +164,7 @@ public class CreateDatasourceHandler extends BaseOperationCommand {
         RequestParamArg poolUseStrictMin =  new RequestParamArg("pool-use-strict-min", this, SimpleTabCompleter.BOOLEAN_COMPLETER);
         poolUseStrictMin.addRequiredPreceding(lastRequired);
 
-        RequestParamArg flushStrategy =  new RequestParamArg("flush-strategy", this, new SimpleTabCompleter(new String[]{"FailingConnectionOnly", "IdleConnections", "EntirePool"}));
+        RequestParamArg flushStrategy =  new RequestParamArg("flush-strategy", this, new SimpleTabCompleter(new String[]{"FAILING_CONNECTION_ONLY", "IDLE_CONNECTIONS", "ENTIRE_POOL"}));
         flushStrategy.addRequiredPreceding(lastRequired);
 
         RequestParamArg securityDomain = new RequestParamArg("security-domain", this);
@@ -174,6 +172,8 @@ public class CreateDatasourceHandler extends BaseOperationCommand {
 
         RequestParamArg reauthPluginClass = new RequestParamArg("reauth-plugin-class-name", this);
         reauthPluginClass.addRequiredPreceding(lastRequired);
+        RequestParamArg reauthPluginProps = new RequestParamPropertiesArg("reauth-plugin-properties", this);
+        reauthPluginProps.addRequiredPreceding(reauthPluginClass);
 
         RequestParamArg psCacheSize = new RequestParamArg("prepared-statements-cacheSize", this, "--prepared-statements-cache-size");
         psCacheSize.addRequiredPreceding(lastRequired);
@@ -211,14 +211,20 @@ public class CreateDatasourceHandler extends BaseOperationCommand {
         RequestParamArg checkValidConnectionSql =  new RequestParamArg("check-valid-connection-sql", this);
         checkValidConnectionSql.addRequiredPreceding(lastRequired);
 
-        RequestParamArg exceptionSorterClass =  new RequestParamArg("exception-sorter-class-name", this);
+        RequestParamArg exceptionSorterClass =  new RequestParamArg("exception-sorter-class-name", this, "--exception-sorter-class");
         exceptionSorterClass.addRequiredPreceding(lastRequired);
+        RequestParamArg exceptionSorterProps =  new RequestParamPropertiesArg("exceptionsorter-properties", this, "--exception-sorter-properties");
+        exceptionSorterProps.addRequiredPreceding(exceptionSorterClass);
 
-        RequestParamArg staleConnectionCheckerClass =  new RequestParamArg("stale-connection-checker-class-name", this);
+        RequestParamArg staleConnectionCheckerClass =  new RequestParamArg("stale-connection-checker-class-name", this, "--stale-connection-checker-class");
         staleConnectionCheckerClass.addRequiredPreceding(lastRequired);
+        RequestParamArg staleConnectionCheckerProps =  new RequestParamPropertiesArg("staleconnectionchecker-properties", this, "--stale-connection-checker-properties");
+        staleConnectionCheckerProps.addRequiredPreceding(staleConnectionCheckerClass);
 
-        RequestParamArg validConnectionCheckerClass =  new RequestParamArg("valid-connection-checker-class-name", this);
+        RequestParamArg validConnectionCheckerClass =  new RequestParamArg("valid-connection-checker-class-name", this, "--valid-connection-checker-class");
         validConnectionCheckerClass.addRequiredPreceding(lastRequired);
+        RequestParamArg validConnectionCheckerProps =  new RequestParamPropertiesArg("validconnectionchecker-properties", this, "--valid-connection-checker-properties");
+        validConnectionCheckerProps.addRequiredPreceding(validConnectionCheckerClass);
 
         RequestParamArg backgroundValidation =  new RequestParamArg("background-validation", this, SimpleTabCompleter.BOOLEAN_COMPLETER);
         backgroundValidation.addRequiredPreceding(lastRequired);
