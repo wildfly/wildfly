@@ -1,5 +1,5 @@
-/*
- * JBoss, Home of Professional Open Source.
+
+ss, Home of Professional Open Source.
  * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
@@ -784,3 +784,4 @@ public class DataSourcesExtension implements Extension {
     }
 
 }
+
