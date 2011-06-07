@@ -7,7 +7,7 @@
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * the License, or =at your option) any later version.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -26,11 +26,9 @@ package org.jboss.as.webservices.dmr;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class Constants {
-
     private Constants() {
         // forbidden inheritance
     }
-
     public static final String MODIFY_WSDL_ADDRESS = "modify-wsdl-address";
     public static final String WSDL_HOST = "wsdl-host";
     public static final String WSDL_PORT = "wsdl-port";
@@ -41,4 +39,21 @@ public final class Constants {
     public static final String ENDPOINT_CLASS = "class";
     public static final String ENDPOINT_TYPE = "type";
     public static final String ENDPOINT_WSDL = "wsdl-url";
+    public static final String ENDPOINT_CONFIG = "endpoint-config";
+    public static final String CONFIG_NAME = "config-name";
+    public static final String PROPERTY="property";
+    public static final String PROPERTY_NAME="property-name";
+    public static final String PROPERTY_VALUE="property-value";
+    public static final String FEATURE="feature";
+    public static final String FEATURE_NAME="feature-name";
+    public static final String FEATURE_DATA="feature-data";
+    public static final String PRE_HANDLER_CHAINS="pre-handler-chains";
+    public static final String POST_HANDLER_CHAINS="post-handler-chains";
+    public static final String HANDLER_CHAIN="handler-chain";
+    public static final String PROTOCOL_BINDING="protocol-bindings";
+    public static final String SERVICE_NAME_PATTERN="service-name-pattern";
+    public static final String PORT_NAME_PATTERN="port-name-pattern";
+    public static final String HANDLER="handler";
+    public static final String HANDLER_NAME="handler-name";
+    public static final String HANDLER_CLASS="handler-class";
 }

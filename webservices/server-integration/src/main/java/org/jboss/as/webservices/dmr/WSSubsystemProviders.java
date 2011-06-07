@@ -24,10 +24,13 @@ package org.jboss.as.webservices.dmr;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
@@ -110,6 +113,25 @@ final class WSSubsystemProviders {
             return Descriptions.getEndpointRemoveDescription(locale);
         }
     };
+
+    static final DescriptionProvider ENDPOINTCONFIG_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointConfigDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider ENDPOINTCONFIG_ADD_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointConfigAddDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider ENDPOINTCONFIG_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointConfigRemoveDescription(locale);
+        }
+    };
+
 
     private static ResourceBundle getResourceBundle(final Locale locale) {
         return ResourceBundle.getBundle(RESOURCE_NAME, locale == null ? Locale.getDefault() : locale);
@@ -254,6 +276,97 @@ final class WSSubsystemProviders {
 
             return node;
         }
+
+        static ModelNode getEndpointConfigDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("endpoint-config"));
+            node.get(ATTRIBUTES, Constants.CONFIG_NAME).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.CONFIG_NAME, DESCRIPTION).set(bundle.getString("endpoint-config.name"));
+            node.get(ATTRIBUTES, Constants.CONFIG_NAME, REQUIRED).set(true);
+
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, DESCRIPTION).set(bundle.getString("protocol-binding"));
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handle.name"));
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handle.name"));
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(false);
+
+
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, DESCRIPTION).set(bundle.getString("protocol-binding"));
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handle.name"));
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handle.name"));
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(false);
+
+            return node;
+        }
+
+        static ModelNode getEndpointConfigAddDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set(ADD);
+            node.get(DESCRIPTION).set(bundle.getString("endpoint-config.add"));
+            node.get(REQUEST_PROPERTIES, Constants.CONFIG_NAME).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.CONFIG_NAME, DESCRIPTION).set(bundle.getString("endpoint-config.name"));
+            node.get(REQUEST_PROPERTIES, Constants.CONFIG_NAME, REQUIRED).set(true);
+
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, DESCRIPTION).set(bundle.getString("protocol-binding"));
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, REQUIRED).set(false);
+
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handle.name"));
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(false);
+
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handle.name"));
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(false);
+
+
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, DESCRIPTION).set(bundle.getString("protocol-binding"));
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, REQUIRED).set(false);
+
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handle.name"));
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(false);
+
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handle.name"));
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(false);
+            return node;
+        }
+
+        static ModelNode getEndpointConfigRemoveDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+
+            node.get(OPERATION_NAME).set(REMOVE);
+            node.get(DESCRIPTION).set(bundle.getString("endpoint-config.remove"));
+
+            node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("endpoint-config.name"));
+            node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+
+            node.get(REPLY_PROPERTIES).setEmptyObject();
+
+            return node;
+        }
+
+
 
         static ModelNode getSubsystemAdd(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);

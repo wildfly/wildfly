@@ -23,6 +23,7 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
@@ -124,6 +125,7 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         if (operation.has(WSDL_SECURE_PORT)) {
             submodel.get(WSDL_SECURE_PORT).set(operation.require(WSDL_SECURE_PORT));
         }
+        submodel.get(ENDPOINT_CONFIG).setEmptyObject();
         submodel.get(ENDPOINT).setEmptyObject();
     }
 
