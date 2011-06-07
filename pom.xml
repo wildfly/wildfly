@@ -391,6 +391,9 @@
                                             <exclude>jboss.web:servlet-api</exclude>
                                             <exclude>sun-jaxb:jaxb-api</exclude>
                                             <exclude>javax.xml.stream:stax-api</exclude>
+                                            <exclude>javax.xml:jaxrpc-api</exclude>
+                                            <exclude>javax.xml.soap:saaj-api</exclude>
+                                            <exclude>javax.servlet:servlet-api</exclude>
 
                                             <!-- JBAS-9000 more duplicate crap -->
                                             <exclude>xalan:xalan</exclude>
@@ -2682,6 +2685,7 @@
                 <artifactId>jaxb-xjc</artifactId>
                 <version>${version.sun.jaxb}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.com.sun.httpserver</groupId>
                 <artifactId>httpserver</artifactId>
@@ -3829,6 +3833,12 @@
                 <groupId>org.jboss.spec.javax.ejb</groupId>
                 <artifactId>jboss-ejb-api_3.1_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec}</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>javax.xml</groupId>
+                    <artifactId>jaxrpc-api</artifactId>
+                  </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -4724,6 +4734,10 @@
                 <artifactId>jboss-seam-int-jbossas</artifactId>
                 <version>${version.org.jboss.seam.int}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>org.jboss.seam.integration</groupId>
                         <artifactId>jboss-seam-int-microcontainer</artifactId>
