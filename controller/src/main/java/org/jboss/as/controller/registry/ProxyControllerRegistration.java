@@ -25,31 +25,58 @@ package org.jboss.as.controller.registry;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.ProxyStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ProxyControllerRegistration extends AbstractNodeRegistration {
+final class ProxyControllerRegistration extends AbstractNodeRegistration implements DescriptionProvider {
 
-    private final ProxyController proxyController;
+    private final NewProxyController proxyController;
 
-    ProxyControllerRegistration(final String valueString, final NodeSubregistry parent, final ProxyController proxyController) {
+    ProxyControllerRegistration(final String valueString, final NodeSubregistry parent, final NewProxyController proxyController) {
         super(valueString, parent);
         this.proxyController = proxyController;
     }
 
     @Override
     NewStepHandler getHandler(final ListIterator<PathElement> iterator, final String operationName) {
-        return null;
+        return new ProxyStepHandler(proxyController);
+//        return new NewStepHandler() {
+//
+//            @Override
+//            public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+//                //TODO some logic for when to propagate to the proxies
+//                OperationMessageHandler handler = null;
+//                NewProxyController.ProxyOperationControl control = null;
+//                OperationAttachments attachments = new OperationAttachments() {
+//
+//                    @Override
+//                    public List<InputStream> getInputStreams() {
+//                        if (context.getAttachmentStreamCount() == 0) {
+//                            return Collections.emptyList();
+//                        }
+//                        List<InputStream> streams = new ArrayList<InputStream>();
+//                        for (int i = 0 ; i < context.getAttachmentStreamCount() ; i++) {
+//                            streams.add(context.getAttachmentStream(i));
+//                        }
+//                        return Collections.unmodifiableList(streams);
+//                    }
+//                };
+//                proxyController.execute(operation, handler, control, attachments);
+//            }
+//        };
     }
 
     @Override
@@ -103,7 +130,7 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    public void registerProxyController(final PathElement address, final ProxyController proxyController) throws IllegalArgumentException {
+    public void registerProxyController(final PathElement address, final NewProxyController proxyController) throws IllegalArgumentException {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
@@ -152,18 +179,21 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    ProxyController getProxyController(Iterator<PathElement> iterator) {
+    NewProxyController getProxyController(Iterator<PathElement> iterator) {
         return proxyController;
     }
 
     @Override
-    void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers) {
+    void getProxyControllers(Iterator<PathElement> iterator, Set<NewProxyController> controllers) {
         controllers.add(proxyController);
     }
 
     @Override
     ModelNodeRegistration getNodeRegistration(Iterator<PathElement> iterator) {
-        return null;
+        if (!iterator.hasNext()) {
+            return this;
+        }
+        throw new IllegalArgumentException("Can't get child registrations of a proxy");
     }
 
     /** {@inheritDoc} */
@@ -172,5 +202,12 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
         assert base.equals(proxyController.getProxyNodeAddress()) : "invalid address " + base;
         final PathAddress subAddress = address.subAddress(base.size());
         addresses.add(address.append(subAddress));
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        //TODO
+        //return proxyController.execute(operation, handler, control, attachments);
+        return new ModelNode();
     }
 }

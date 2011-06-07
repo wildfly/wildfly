@@ -21,16 +21,17 @@
 */
 package org.jboss.as.controller.test;
 
-import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.NewModelController.OperationTransaction;
+import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
-import org.junit.Before;
 import org.junit.Ignore;
 
 /**
@@ -41,21 +42,18 @@ import org.junit.Ignore;
 @Ignore("Pending Kabir's proxy controller work")
 public class ProxyControllerTestCase extends AbstractProxyControllerTest {
 
-    @Before
-    public void start() throws Exception {
-        setupNodes();
-    }
+    ExecutorService fakeProtocolExecutor = Executors.newCachedThreadPool();
 
     @Override
-    protected ProxyController createProxyController(final ModelController proxiedController, final PathAddress proxyNodeAddress) {
+    protected NewProxyController createProxyController(final NewModelController proxiedController, final PathAddress proxyNodeAddress) {
         return new TestProxyController(proxiedController, proxyNodeAddress);
     }
 
-    static class TestProxyController implements ProxyController {
-        private final ModelController targetController;
+    class TestProxyController implements NewProxyController {
+        private final NewModelController targetController;
         private final PathAddress proxyNodeAddress;
 
-        public TestProxyController(final ModelController targetController, final PathAddress proxyNodeAddress) {
+        public TestProxyController(final NewModelController targetController, final PathAddress proxyNodeAddress) {
             this.targetController = targetController;
             this.proxyNodeAddress = proxyNodeAddress;
         }
@@ -66,13 +64,70 @@ public class ProxyControllerTestCase extends AbstractProxyControllerTest {
         }
 
         @Override
-        public OperationResult execute(final Operation operation, final ResultHandler resultHandler) {
-            return targetController.execute(operation, resultHandler);
-        }
+        public void execute(final ModelNode operation, final OperationMessageHandler handler, final ProxyOperationControl control, final OperationAttachments attachments) {
+            final CountDownLatch latch = new CountDownLatch(1);
 
-        @Override
-        public ModelNode execute(final Operation operation) throws CancellationException {
-            return targetController.execute(operation);
+            fakeProtocolExecutor.execute(new Runnable() {
+
+                @Override
+                public void run() {
+                    ModelNode node = targetController.execute(operation, handler, new ProxyOperationControl() {
+
+                        @Override
+                        public void operationPrepared(final OperationTransaction transaction, final ModelNode result) {
+                            final CountDownLatch completedTx = new CountDownLatch(1);
+                            control.operationPrepared(new OperationTransaction() {
+
+                                @Override
+                                public void rollback() {
+                                    fakeProtocolExecutor.execute(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            transaction.rollback();
+                                            completedTx.countDown();
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void commit() {
+                                    fakeProtocolExecutor.execute(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            transaction.commit();
+                                            completedTx.countDown();
+                                            latch.countDown();
+                                        }
+                                    });
+                                }
+                            }, result);
+                            latch.countDown();
+                            try {
+                                completedTx.await();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        @Override
+                        public void operationFailed(ModelNode response) {
+                            control.operationFailed(response);
+                            latch.countDown();
+                        }
+
+                        @Override
+                        public void operationCompleted(ModelNode response) {
+                            control.operationCompleted(response);
+                            latch.countDown();
+                        }
+                    }, attachments);
+                }
+            });
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

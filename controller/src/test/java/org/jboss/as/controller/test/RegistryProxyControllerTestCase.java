@@ -30,15 +30,13 @@ import static junit.framework.Assert.fail;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 
 import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
@@ -104,7 +102,7 @@ public class RegistryProxyControllerTestCase {
         assertNull(root.getProxyController(PathAddress.pathAddress(profileB, PathElement.pathElement("a", "b"))));
 
         PathAddress address = PathAddress.pathAddress(profileB, proxyA);
-        ProxyController proxy = root.getProxyController(address);
+        NewProxyController proxy = root.getProxyController(address);
         assertNotNull(proxy);
         assertEquals(address, proxy.getProxyNodeAddress());
 
@@ -214,7 +212,7 @@ public class RegistryProxyControllerTestCase {
 
     private Set<PathAddress> getProxyAddresses(PathAddress address){
         Set<PathAddress> addresses = new HashSet<PathAddress>();
-        for (ProxyController proxy : root.getProxyControllers(address)) {
+        for (NewProxyController proxy : root.getProxyControllers(address)) {
             addresses.add(proxy.getProxyNodeAddress());
         }
         return addresses;
@@ -241,7 +239,7 @@ public class RegistryProxyControllerTestCase {
         }
     }
 
-    static class TestProxyController implements ProxyController {
+    static class TestProxyController implements NewProxyController {
 
         private final PathAddress address;
 
@@ -251,18 +249,12 @@ public class RegistryProxyControllerTestCase {
         }
 
         @Override
-        public OperationResult execute(Operation operation, ResultHandler handler) {
-            return null;
-        }
-
-        @Override
-        public ModelNode execute(Operation operation) throws CancellationException {
-            return null;
-        }
-
-        @Override
         public PathAddress getProxyNodeAddress() {
             return address;
+        }
+
+        @Override
+        public void execute(ModelNode operation, OperationMessageHandler handler, ProxyOperationControl control, OperationAttachments attachments) {
         }
 
     }

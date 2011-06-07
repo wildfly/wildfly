@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
+import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -86,12 +86,14 @@ final class NodeSubregistry {
         }
     }
 
-    void registerProxyController(final String elementValue, final ProxyController proxyController) {
-        final AbstractNodeRegistration newRegistry = new ProxyControllerRegistration(elementValue, this, proxyController);
+    ProxyControllerRegistration registerProxyController(final String elementValue, final NewProxyController proxyController) {
+        final ProxyControllerRegistration newRegistry = new ProxyControllerRegistration(elementValue, this, proxyController);
         final AbstractNodeRegistration appearingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
         if (appearingRegistry != null) {
             throw new IllegalArgumentException("A node is already registered at '" + getLocationString() + elementValue + ")'");
         }
+        //register(elementValue, newRegistry);
+        return newRegistry;
     }
 
     void unregisterProxyController(final String elementValue) {
@@ -215,7 +217,7 @@ final class NodeSubregistry {
         return childRegistry.getChildAddresses(iterator);
     }
 
-    ProxyController getProxyController(final Iterator<PathElement> iterator, final String child) {
+    NewProxyController getProxyController(final Iterator<PathElement> iterator, final String child) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
         AbstractNodeRegistration childRegistry = snapshot.get(child);
         if (childRegistry == null) {
@@ -237,7 +239,7 @@ final class NodeSubregistry {
         return childRegistry.getNodeRegistration(iterator);
     }
 
-    void getProxyControllers(final Iterator<PathElement> iterator, final String child, Set<ProxyController> controllers) {
+    void getProxyControllers(final Iterator<PathElement> iterator, final String child, Set<NewProxyController> controllers) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
         if (child != null) {
             AbstractNodeRegistration childRegistry = snapshot.get(child);

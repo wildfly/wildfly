@@ -29,10 +29,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 
@@ -77,7 +77,7 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     /** {@inheritDoc} */
     @Override
-    public abstract void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException;
+    public abstract void registerProxyController(final PathElement address, final NewProxyController controller) throws IllegalArgumentException;
 
     /** {@inheritDoc} */
     @Override
@@ -171,19 +171,19 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     abstract Set<PathElement> getChildAddresses(Iterator<PathElement> iterator);
 
-    public ProxyController getProxyController(final PathAddress address) {
+    public NewProxyController getProxyController(final PathAddress address) {
         return getProxyController(address.iterator());
     }
 
-    abstract ProxyController getProxyController(Iterator<PathElement> iterator);
+    abstract NewProxyController getProxyController(Iterator<PathElement> iterator);
 
-    public Set<ProxyController> getProxyControllers(PathAddress address){
-        Set<ProxyController> controllers = new HashSet<ProxyController>();
+    public Set<NewProxyController> getProxyControllers(PathAddress address){
+        Set<NewProxyController> controllers = new HashSet<NewProxyController>();
         getProxyControllers(address.iterator(), controllers);
         return controllers;
     }
 
-    abstract void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers);
+    abstract void getProxyControllers(Iterator<PathElement> iterator, Set<NewProxyController> controllers);
 
     /** {@inheritDoc} */
     @Override

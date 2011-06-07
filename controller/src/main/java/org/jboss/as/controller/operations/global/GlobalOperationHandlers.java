@@ -54,12 +54,12 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -175,7 +175,7 @@ public class GlobalOperationHandlers {
                                 ModelNode rrRsp = new ModelNode();
                                 childResources.put(childPE, rrRsp);
 
-                                NewStepHandler rrHandler = registry.getOperationHandler(relativeAddr, opName);
+                                NewStepHandler rrHandler = childReg.getOperationHandler(relativeAddr, opName);
                                 context.addStep(rrRsp, rrOp, rrHandler, NewOperationContext.Stage.IMMEDIATE);
                             }
                         }
@@ -655,7 +655,7 @@ public class GlobalOperationHandlers {
                     final ModelNode child;
                     if (provider == null) {
                         //It is probably a proxy
-                        Set<ProxyController> proxyControllers = registry.getProxyControllers(childAddress);
+                        Set<NewProxyController> proxyControllers = registry.getProxyControllers(childAddress);
                         if (proxyControllers.size() != 1) {
                             throw new IllegalStateException("No description provider found for " + childAddress +
                                     ". Tried to search for proxies, expected to find 1 proxy controller, found: " + proxyControllers.size());
@@ -831,7 +831,7 @@ public class GlobalOperationHandlers {
             }
             if (!element.isWildcard()) {
                 ModelNodeRegistration childReg = registry.getSubModel(PathAddress.pathAddress(element));
-                if (childReg.isRuntimeOnly()) {
+                if (childReg != null && childReg.isRuntimeOnly()) {
                     set.add(element.getValue());
                 }
             }
