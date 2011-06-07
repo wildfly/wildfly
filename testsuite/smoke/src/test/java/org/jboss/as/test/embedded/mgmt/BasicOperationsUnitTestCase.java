@@ -55,6 +55,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -65,6 +66,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Run(RunModeType.AS_CLIENT)
+@Ignore("Emanuel to re-enable when multitarget ops are done")
 public class BasicOperationsUnitTestCase {
 
     private NewModelControllerClient client;
