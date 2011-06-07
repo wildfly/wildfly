@@ -86,7 +86,6 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers.ResolveAddressOperationHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -113,7 +112,7 @@ import org.junit.Test;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class GlobalOperationsTestCase {
+public class GlobalOperationsTestCase extends AbstractControllerTestBase {
 
     public static DescriptionProvider rootDescriptionProvider = new DescriptionProvider() {
         @Override
@@ -164,39 +163,6 @@ public class GlobalOperationsTestCase {
         model.get("profile", "profileC", "subsystem", "subsystem5", "name").set("Test");
 
         return model;
-    }
-
-    private ServiceContainer container;
-    private NewModelController controller;
-
-    @Before
-    public void setupController() throws InterruptedException {
-        container = ServiceContainer.Factory.create("test");
-        ServiceTarget target = container.subTarget();
-        ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerService svc = new ModelControllerService(container, processState);
-        ServiceBuilder<NewModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
-        builder.install();
-        svc.latch.await();
-        controller = svc.getValue();
-        ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
-        controller.execute(setup, null, null, null);
-        processState.setRunning();
-    }
-
-    @After
-    public void shutdownServiceContainer() {
-        if (container != null) {
-            container.shutdown();
-            try {
-                container.awaitTermination(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            finally {
-                container = null;
-            }
-        }
     }
 
     @Test
@@ -749,7 +715,6 @@ public class GlobalOperationsTestCase {
         assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
         assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
         assertTrue(ops.contains(READ_RESOURCE_OPERATION));
-        assertFalse(ops.contains(ResolveAddressOperationHandler.OPERATION_NAME));
         for (String op : ops) {
             assertEquals(op, result.require(OPERATIONS).require(op).require(OPERATION_NAME).asString());
         }
@@ -1049,345 +1014,301 @@ public class GlobalOperationsTestCase {
         return result;
     }
 
-    private static class NullConfigurationPersister implements ConfigurationPersister{
-
-        @Override
-        public void store(ModelNode model) throws ConfigurationPersistenceException {
-        }
-
-        @Override
-        public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
-        }
-
-        @Override
-        public List<ModelNode> load() throws ConfigurationPersistenceException {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public void successfulBoot() throws ConfigurationPersistenceException {
-        }
-
-        @Override
-        public String snapshot() {
-            return null;
-        }
-
-        @Override
-        public SnapshotInfo listSnapshots() {
-            return NULL_SNAPSHOT_INFO;
-        }
-
-        @Override
-        public void deleteSnapshot(String name) {
-        }
+    @Override
+    DescriptionProvider getRootDescriptionProvider() {
+        return rootDescriptionProvider;
     }
 
-    public static class ModelControllerService extends AbstractControllerService {
+    @Override
+    protected ModelNode createCoreModel() {
+        return createTestNode();
+    }
 
-        private final CountDownLatch latch = new CountDownLatch(1);
-
-        ModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
-            super(NewOperationContext.Type.SERVER, new NullConfigurationPersister(), processState, rootDescriptionProvider, null);
-        }
-
-        @Override
-        public void start(StartContext context) throws StartException {
-            super.start(context);
-            latch.countDown();
-        }
-
-        protected ModelNode createCoreModel() {
-            return createTestNode();
-        }
-
-        protected void initModel(ModelNodeRegistration rootRegistration) {
-            rootRegistration.registerOperationHandler(GlobalOperationHandlers.ResolveAddressOperationHandler.OPERATION_NAME, GlobalOperationHandlers.RESOLVE, (DescriptionProvider) GlobalOperationHandlers.RESOLVE, false, OperationEntry.EntryType.PRIVATE);
-            rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
-            rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
-            rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+    @Override
+    protected void initModel(ModelNodeRegistration rootRegistration) {
+        rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
+        rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
+        rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
+        rootRegistration.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
+        rootRegistration.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
+        rootRegistration.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true);
+        rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
+        rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
+        rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
 
-            ModelNodeRegistration profileReg = rootRegistration.registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
+        ModelNodeRegistration profileReg = rootRegistration.registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
 
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(DESCRIPTION).set("A named set of subsystem configs");
-                    node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-                    node.get(ATTRIBUTES, NAME, DESCRIPTION).set("The name of the profile");
-                    node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-                    node.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
-                    node.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set("The subsystems that make up the profile");
-                    node.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(1);
-                    node.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
-                    return node;
-                }
-            });
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ModelNode node = new ModelNode();
+                node.get(DESCRIPTION).set("A named set of subsystem configs");
+                node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, NAME, DESCRIPTION).set("The name of the profile");
+                node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
+                node.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
+                node.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set("The subsystems that make up the profile");
+                node.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(1);
+                node.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
+                return node;
+            }
+        });
 
-            ModelNodeRegistration profileSub1Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem1"), new DescriptionProvider() {
+        ModelNodeRegistration profileSub1Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem1"), new DescriptionProvider() {
 
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(DESCRIPTION).set("A test subsystem 1");
-                    node.get(ATTRIBUTES, "attr1", TYPE).set(ModelType.LIST);
-                    node.get(ATTRIBUTES, "attr1", VALUE_TYPE).set(ModelType.INT);
-                    node.get(ATTRIBUTES, "attr1", DESCRIPTION).set("The values");
-                    node.get(ATTRIBUTES, "attr1", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "read-only", TYPE).set(ModelType.INT);
-                    node.get(ATTRIBUTES, "read-only", DESCRIPTION).set("A r/o int");
-                    node.get(ATTRIBUTES, "read-only", REQUIRED).set(false);
-                    node.get(ATTRIBUTES, "metric1", TYPE).set(ModelType.INT);
-                    node.get(ATTRIBUTES, "metric1", DESCRIPTION).set("A random metric");
-                    node.get(ATTRIBUTES, "read-write", TYPE).set(ModelType.INT);
-                    node.get(ATTRIBUTES, "metric2", TYPE).set(ModelType.INT);
-                    node.get(ATTRIBUTES, "read-write", DESCRIPTION).set("A r/w int");
-                    node.get(ATTRIBUTES, "read-write", REQUIRED).set(false);
-                    node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
-                    node.get(CHILDREN, "type1", MIN_OCCURS).set(1);
-                    node.get(CHILDREN, "type1", MODEL_DESCRIPTION);
-                    node.get(CHILDREN, "type2", DESCRIPTION).set("The children2");
-                    node.get(CHILDREN, "type2", MIN_OCCURS).set(1);
-                    node.get(CHILDREN, "type2", MODEL_DESCRIPTION);
-                    return node;
-                }
-            });
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ModelNode node = new ModelNode();
+                node.get(DESCRIPTION).set("A test subsystem 1");
+                node.get(ATTRIBUTES, "attr1", TYPE).set(ModelType.LIST);
+                node.get(ATTRIBUTES, "attr1", VALUE_TYPE).set(ModelType.INT);
+                node.get(ATTRIBUTES, "attr1", DESCRIPTION).set("The values");
+                node.get(ATTRIBUTES, "attr1", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "read-only", TYPE).set(ModelType.INT);
+                node.get(ATTRIBUTES, "read-only", DESCRIPTION).set("A r/o int");
+                node.get(ATTRIBUTES, "read-only", REQUIRED).set(false);
+                node.get(ATTRIBUTES, "metric1", TYPE).set(ModelType.INT);
+                node.get(ATTRIBUTES, "metric1", DESCRIPTION).set("A random metric");
+                node.get(ATTRIBUTES, "read-write", TYPE).set(ModelType.INT);
+                node.get(ATTRIBUTES, "metric2", TYPE).set(ModelType.INT);
+                node.get(ATTRIBUTES, "read-write", DESCRIPTION).set("A r/w int");
+                node.get(ATTRIBUTES, "read-write", REQUIRED).set(false);
+                node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
+                node.get(CHILDREN, "type1", MIN_OCCURS).set(1);
+                node.get(CHILDREN, "type1", MODEL_DESCRIPTION);
+                node.get(CHILDREN, "type2", DESCRIPTION).set("The children2");
+                node.get(CHILDREN, "type2", MIN_OCCURS).set(1);
+                node.get(CHILDREN, "type2", MODEL_DESCRIPTION);
+                return node;
+            }
+        });
 
-            profileSub1Reg.registerReadOnlyAttribute("read-only", null, AttributeAccess.Storage.CONFIGURATION);
-            profileSub1Reg.registerReadWriteAttribute("read-write", null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.INT), AttributeAccess.Storage.CONFIGURATION);
-            profileSub1Reg.registerMetric("metric1", TestMetricHandler.INSTANCE);
-            profileSub1Reg.registerMetric("metric2", TestMetricHandler.INSTANCE);
-            //TODO Validation if we try to set a handler for an attribute that does not exist in model?
+        profileSub1Reg.registerReadOnlyAttribute("read-only", null, AttributeAccess.Storage.CONFIGURATION);
+        profileSub1Reg.registerReadWriteAttribute("read-write", null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.INT), AttributeAccess.Storage.CONFIGURATION);
+        profileSub1Reg.registerMetric("metric1", TestMetricHandler.INSTANCE);
+        profileSub1Reg.registerMetric("metric2", TestMetricHandler.INSTANCE);
+        //TODO Validation if we try to set a handler for an attribute that does not exist in model?
 
-            DescriptionProvider thingProvider = new DescriptionProvider() {
+        DescriptionProvider thingProvider = new DescriptionProvider() {
 
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(DESCRIPTION).set("A type 1");
-                    node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
-                    node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
-                    node.get(ATTRIBUTES, "name", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "value", TYPE).set(ModelType.INT);
-                    node.get(ATTRIBUTES, "value", DESCRIPTION).set("The value of the thing");
-                    node.get(ATTRIBUTES, "value", REQUIRED).set(true);
-                    return node;
-                }
-            };
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ModelNode node = new ModelNode();
+                node.get(DESCRIPTION).set("A type 1");
+                node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
+                node.get(ATTRIBUTES, "name", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "value", TYPE).set(ModelType.INT);
+                node.get(ATTRIBUTES, "value", DESCRIPTION).set("The value of the thing");
+                node.get(ATTRIBUTES, "value", REQUIRED).set(true);
+                return node;
+            }
+        };
 
-            ModelNodeRegistration profileSub1RegChildType11 = profileSub1Reg.registerSubModel(PathElement.pathElement("type1", "*"), thingProvider);
-            ModelNodeRegistration profileSub1RegChildType2 = profileSub1Reg.registerSubModel(PathElement.pathElement("type2", "other"), new DescriptionProvider() {
+        ModelNodeRegistration profileSub1RegChildType11 = profileSub1Reg.registerSubModel(PathElement.pathElement("type1", "*"), thingProvider);
+        ModelNodeRegistration profileSub1RegChildType2 = profileSub1Reg.registerSubModel(PathElement.pathElement("type2", "other"), new DescriptionProvider() {
 
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(DESCRIPTION).set("A type 2");
-                    node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
-                    node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
-                    node.get(ATTRIBUTES, "name", REQUIRED).set(true);
-                    return node;
-                }
-            });
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ModelNode node = new ModelNode();
+                node.get(DESCRIPTION).set("A type 2");
+                node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
+                node.get(ATTRIBUTES, "name", REQUIRED).set(true);
+                return node;
+            }
+        });
 
-            ModelNodeRegistration profileASub2Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem2"), new DescriptionProvider() {
+        ModelNodeRegistration profileASub2Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem2"), new DescriptionProvider() {
 
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(DESCRIPTION).set("A test subsystem 2");
-                    node.get(ATTRIBUTES, "bigdecimal", TYPE).set(ModelType.BIG_DECIMAL);
-                    node.get(ATTRIBUTES, "bigdecimal", DESCRIPTION).set("A big decimal");
-                    node.get(ATTRIBUTES, "bigdecimal", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "biginteger", TYPE).set(ModelType.BIG_DECIMAL);
-                    node.get(ATTRIBUTES, "biginteger", DESCRIPTION).set("A big integer");
-                    node.get(ATTRIBUTES, "biginteger", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "boolean", TYPE).set(ModelType.BOOLEAN);
-                    node.get(ATTRIBUTES, "boolean", DESCRIPTION).set("A boolean");
-                    node.get(ATTRIBUTES, "boolean", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "bytes", TYPE).set(ModelType.BYTES);
-                    node.get(ATTRIBUTES, "bytes", DESCRIPTION).set("A bytes");
-                    node.get(ATTRIBUTES, "bytes", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "double", TYPE).set(ModelType.DOUBLE);
-                    node.get(ATTRIBUTES, "double", DESCRIPTION).set("A double");
-                    node.get(ATTRIBUTES, "double", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "expression", TYPE).set(ModelType.EXPRESSION);
-                    node.get(ATTRIBUTES, "expression", DESCRIPTION).set("A double");
-                    node.get(ATTRIBUTES, "expression", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "int", TYPE).set(ModelType.INT);
-                    node.get(ATTRIBUTES, "int", DESCRIPTION).set("A int");
-                    node.get(ATTRIBUTES, "int", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "list", TYPE).set(ModelType.LIST);
-                    node.get(ATTRIBUTES, "list", VALUE_TYPE).set(ModelType.STRING);
-                    node.get(ATTRIBUTES, "list", DESCRIPTION).set("A list");
-                    node.get(ATTRIBUTES, "list", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "long", TYPE).set(ModelType.LONG);
-                    node.get(ATTRIBUTES, "long", DESCRIPTION).set("A long");
-                    node.get(ATTRIBUTES, "long", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "object", TYPE).set(ModelType.OBJECT);
-                    node.get(ATTRIBUTES, "object", VALUE_TYPE).set(ModelType.STRING);
-                    node.get(ATTRIBUTES, "object", DESCRIPTION).set("A object");
-                    node.get(ATTRIBUTES, "object", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "property", TYPE).set(ModelType.PROPERTY);
-                    node.get(ATTRIBUTES, "property", VALUE_TYPE).set(ModelType.STRING);
-                    node.get(ATTRIBUTES, "property", DESCRIPTION).set("A property");
-                    node.get(ATTRIBUTES, "property", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "string1", TYPE).set(ModelType.STRING);
-                    node.get(ATTRIBUTES, "string1", DESCRIPTION).set("A string");
-                    node.get(ATTRIBUTES, "string1", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "string2", TYPE).set(ModelType.STRING);
-                    node.get(ATTRIBUTES, "string2", DESCRIPTION).set("A string");
-                    node.get(ATTRIBUTES, "string2", REQUIRED).set(true);
-                    node.get(ATTRIBUTES, "type", TYPE).set(ModelType.TYPE);
-                    node.get(ATTRIBUTES, "type", DESCRIPTION).set("A type");
-                    node.get(ATTRIBUTES, "type", REQUIRED).set(true);
-
-
-                    return node;
-                }
-            });
-
-            profileASub2Reg.registerReadWriteAttribute("long", null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.LONG, false), AttributeAccess.Storage.CONFIGURATION);
-
-            ModelNodeRegistration profileBSub3Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem3"), new DescriptionProvider() {
-
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(DESCRIPTION).set("A test subsystem 1");
-                    node.get(ATTRIBUTES, "attr1", TYPE).set(ModelType.INT);
-                    node.get(ATTRIBUTES, "attr1", DESCRIPTION).set("The value");
-                    node.get(ATTRIBUTES, "attr1", REQUIRED).set(true);
-                    node.get(CHILDREN).setEmptyObject();
-                    return node;
-                }
-            });
-
-            profileSub1Reg.registerOperationHandler("testA1-1",
-                    new NewStepHandler() {
-                        @Override
-                        public void execute(NewOperationContext context, ModelNode operation) {
-                            return;
-                        }
-                    },
-                    new DescriptionProvider() {
-
-                        @Override
-                        public ModelNode getModelDescription(Locale locale) {
-                            ModelNode node = new ModelNode();
-                            node.get(OPERATION_NAME).set("testA1");
-                            node.get(REQUEST_PROPERTIES, "paramA1", TYPE).set(ModelType.INT);
-                            return node;
-                        }
-                    },
-                    false);
-            profileSub1Reg.registerOperationHandler("testA1-2",
-                    new NewStepHandler() {
-
-                        @Override
-                        public void execute(NewOperationContext context, ModelNode operation) {
-                            return;
-                        }
-                    },
-                    new DescriptionProvider() {
-
-                        @Override
-                        public ModelNode getModelDescription(Locale locale) {
-                            ModelNode node = new ModelNode();
-                            node.get(OPERATION_NAME).set("testA2");
-                            node.get(REQUEST_PROPERTIES, "paramA2", TYPE).set(ModelType.STRING);
-                            return node;
-                        }
-                    },
-                    false);
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ModelNode node = new ModelNode();
+                node.get(DESCRIPTION).set("A test subsystem 2");
+                node.get(ATTRIBUTES, "bigdecimal", TYPE).set(ModelType.BIG_DECIMAL);
+                node.get(ATTRIBUTES, "bigdecimal", DESCRIPTION).set("A big decimal");
+                node.get(ATTRIBUTES, "bigdecimal", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "biginteger", TYPE).set(ModelType.BIG_DECIMAL);
+                node.get(ATTRIBUTES, "biginteger", DESCRIPTION).set("A big integer");
+                node.get(ATTRIBUTES, "biginteger", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "boolean", TYPE).set(ModelType.BOOLEAN);
+                node.get(ATTRIBUTES, "boolean", DESCRIPTION).set("A boolean");
+                node.get(ATTRIBUTES, "boolean", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "bytes", TYPE).set(ModelType.BYTES);
+                node.get(ATTRIBUTES, "bytes", DESCRIPTION).set("A bytes");
+                node.get(ATTRIBUTES, "bytes", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "double", TYPE).set(ModelType.DOUBLE);
+                node.get(ATTRIBUTES, "double", DESCRIPTION).set("A double");
+                node.get(ATTRIBUTES, "double", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "expression", TYPE).set(ModelType.EXPRESSION);
+                node.get(ATTRIBUTES, "expression", DESCRIPTION).set("A double");
+                node.get(ATTRIBUTES, "expression", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "int", TYPE).set(ModelType.INT);
+                node.get(ATTRIBUTES, "int", DESCRIPTION).set("A int");
+                node.get(ATTRIBUTES, "int", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "list", TYPE).set(ModelType.LIST);
+                node.get(ATTRIBUTES, "list", VALUE_TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, "list", DESCRIPTION).set("A list");
+                node.get(ATTRIBUTES, "list", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "long", TYPE).set(ModelType.LONG);
+                node.get(ATTRIBUTES, "long", DESCRIPTION).set("A long");
+                node.get(ATTRIBUTES, "long", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "object", TYPE).set(ModelType.OBJECT);
+                node.get(ATTRIBUTES, "object", VALUE_TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, "object", DESCRIPTION).set("A object");
+                node.get(ATTRIBUTES, "object", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "property", TYPE).set(ModelType.PROPERTY);
+                node.get(ATTRIBUTES, "property", VALUE_TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, "property", DESCRIPTION).set("A property");
+                node.get(ATTRIBUTES, "property", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "string1", TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, "string1", DESCRIPTION).set("A string");
+                node.get(ATTRIBUTES, "string1", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "string2", TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, "string2", DESCRIPTION).set("A string");
+                node.get(ATTRIBUTES, "string2", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "type", TYPE).set(ModelType.TYPE);
+                node.get(ATTRIBUTES, "type", DESCRIPTION).set("A type");
+                node.get(ATTRIBUTES, "type", REQUIRED).set(true);
 
 
-            profileASub2Reg.registerOperationHandler("testA2",
-                    new NewStepHandler() {
+                return node;
+            }
+        });
 
-                        @Override
-                        public void execute(NewOperationContext context, ModelNode operation) {
-                            return;
-                        }
-                    },
-                    new DescriptionProvider() {
+        profileASub2Reg.registerReadWriteAttribute("long", null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.LONG, false), AttributeAccess.Storage.CONFIGURATION);
 
-                        @Override
-                        public ModelNode getModelDescription(Locale locale) {
-                            ModelNode node = new ModelNode();
-                            node.get(OPERATION_NAME).set("testB");
-                            node.get(REQUEST_PROPERTIES, "paramB", TYPE).set(ModelType.LONG);
-                            return node;
-                        }
-                    },
-                    false);
+        ModelNodeRegistration profileBSub3Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem3"), new DescriptionProvider() {
 
-            ModelNodeRegistration profileCSub4Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem4"), new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ModelNode node = new ModelNode();
+                node.get(DESCRIPTION).set("A test subsystem 1");
+                node.get(ATTRIBUTES, "attr1", TYPE).set(ModelType.INT);
+                node.get(ATTRIBUTES, "attr1", DESCRIPTION).set("The value");
+                node.get(ATTRIBUTES, "attr1", REQUIRED).set(true);
+                node.get(CHILDREN).setEmptyObject();
+                return node;
+            }
+        });
 
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(DESCRIPTION).set("A subsystem");
-                    node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
-                    node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
-                    node.get(ATTRIBUTES, "name", REQUIRED).set(false);
-                    node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
-                    node.get(CHILDREN, "type1", MIN_OCCURS).set(0);
-                    node.get(CHILDREN, "type1", MODEL_DESCRIPTION);
-                    return node;
-                }
-            });
+        profileSub1Reg.registerOperationHandler("testA1-1",
+                new NewStepHandler() {
+                    @Override
+                    public void execute(NewOperationContext context, ModelNode operation) {
+                        return;
+                    }
+                },
+                new DescriptionProvider() {
 
+                    @Override
+                    public ModelNode getModelDescription(Locale locale) {
+                        ModelNode node = new ModelNode();
+                        node.get(OPERATION_NAME).set("testA1");
+                        node.get(REQUEST_PROPERTIES, "paramA1", TYPE).set(ModelType.INT);
+                        return node;
+                    }
+                },
+                false);
+        profileSub1Reg.registerOperationHandler("testA1-2",
+                new NewStepHandler() {
 
-            ModelNodeRegistration profileCSub5Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem5"), new DescriptionProvider() {
+                    @Override
+                    public void execute(NewOperationContext context, ModelNode operation) {
+                        return;
+                    }
+                },
+                new DescriptionProvider() {
 
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(DESCRIPTION).set("A subsystem");
-                    node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
-                    node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
-                    node.get(ATTRIBUTES, "name", REQUIRED).set(false);
-                    node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
-                    node.get(CHILDREN, "type1", MIN_OCCURS).set(0);
-                    node.get(CHILDREN, "type1", MODEL_DESCRIPTION);
-                    return node;
-                }
-            });
-            profileCSub5Reg.registerReadOnlyAttribute("name", new NewStepHandler() {
-
-                @Override
-                public void execute(NewOperationContext context, ModelNode operation) {
-                    context.getResult().set("Overridden by special read handler");
-                    context.completeStep();
-                }
-            }, AttributeAccess.Storage.CONFIGURATION);
+                    @Override
+                    public ModelNode getModelDescription(Locale locale) {
+                        ModelNode node = new ModelNode();
+                        node.get(OPERATION_NAME).set("testA2");
+                        node.get(REQUEST_PROPERTIES, "paramA2", TYPE).set(ModelType.STRING);
+                        return node;
+                    }
+                },
+                false);
 
 
-            ModelNodeRegistration profileCSub5Type1Reg = profileCSub5Reg.registerSubModel(PathElement.pathElement("type1", "thing1"), new DescriptionProvider() {
+        profileASub2Reg.registerOperationHandler("testA2",
+                new NewStepHandler() {
 
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(DESCRIPTION).set("A subsystem");
-                    return node;
-                }
-            });
-        }
+                    @Override
+                    public void execute(NewOperationContext context, ModelNode operation) {
+                        return;
+                    }
+                },
+                new DescriptionProvider() {
 
+                    @Override
+                    public ModelNode getModelDescription(Locale locale) {
+                        ModelNode node = new ModelNode();
+                        node.get(OPERATION_NAME).set("testB");
+                        node.get(REQUEST_PROPERTIES, "paramB", TYPE).set(ModelType.LONG);
+                        return node;
+                    }
+                },
+                false);
+
+        ModelNodeRegistration profileCSub4Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem4"), new DescriptionProvider() {
+
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ModelNode node = new ModelNode();
+                node.get(DESCRIPTION).set("A subsystem");
+                node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
+                node.get(ATTRIBUTES, "name", REQUIRED).set(false);
+                node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
+                node.get(CHILDREN, "type1", MIN_OCCURS).set(0);
+                node.get(CHILDREN, "type1", MODEL_DESCRIPTION);
+                return node;
+            }
+        });
+
+
+        ModelNodeRegistration profileCSub5Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem5"), new DescriptionProvider() {
+
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ModelNode node = new ModelNode();
+                node.get(DESCRIPTION).set("A subsystem");
+                node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
+                node.get(ATTRIBUTES, "name", REQUIRED).set(false);
+                node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
+                node.get(CHILDREN, "type1", MIN_OCCURS).set(0);
+                node.get(CHILDREN, "type1", MODEL_DESCRIPTION);
+                return node;
+            }
+        });
+        profileCSub5Reg.registerReadOnlyAttribute("name", new NewStepHandler() {
+
+            @Override
+            public void execute(NewOperationContext context, ModelNode operation) {
+                context.getResult().set("Overridden by special read handler");
+                context.completeStep();
+            }
+        }, AttributeAccess.Storage.CONFIGURATION);
+
+
+        ModelNodeRegistration profileCSub5Type1Reg = profileCSub5Reg.registerSubModel(PathElement.pathElement("type1", "thing1"), new DescriptionProvider() {
+
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ModelNode node = new ModelNode();
+                node.get(DESCRIPTION).set("A subsystem");
+                return node;
+            }
+        });
     }
 
     /**
      * Override to get the actual result from the response.
      */
     public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
-        ModelNode rsp = controller.execute(operation, null, null, null);
+        ModelNode rsp = getController().execute(operation, null, null, null);
         if (FAILED.equals(rsp.get(OUTCOME).asString())) {
             throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
         }
