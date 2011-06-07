@@ -358,20 +358,18 @@
                                     <bannedDependencies>
                                         <searchTransitive>true</searchTransitive>
                                         <excludes>
-                                            <!-- Logging dependencies which cause errors -->
-                                            <exclude>jboss:jboss-logging-spi</exclude>
-                                            <exclude>org.jboss.logging:jboss-logging-spi</exclude>
-                                            <exclude>org.jboss.logging:jboss-logging-log4j</exclude>
-                                            <exclude>org.jboss.logging:jboss-logging-jdk</exclude>
-                                            <exclude>org.jboss.logging:jboss-logging-logmanager</exclude>
-                                            <exclude>org.slf4j:slf4j-nop</exclude>
-                                            <exclude>org.slf4j:slf4j-jdk14</exclude>
-                                            <exclude>org.slf4j:slf4j-log4j12</exclude>
-                                            <exclude>org.slf4j:slf4j-log4j13</exclude>
-                                            <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
                                             <exclude>commons-logging:commons-logging</exclude>
-
-                                            <!-- JBAS-7558 Exclude older jboss-javaee artifacts -->
+                                            <exclude>javax.servlet:servlet-api</exclude>
+                                            <exclude>javax.xml:jaxrpc-api</exclude>
+                                            <exclude>javax.xml.soap:saaj-api</exclude>
+                                            <exclude>javax.xml.stream:stax-api</exclude>
+                                            <exclude>jboss:jboss-logging-spi</exclude>
+                                            <exclude>jboss.web:el-api</exclude>
+                                            <exclude>jboss.web:jsp-api</exclude>
+                                            <exclude>jboss.web:servlet-api</exclude>
+                                            <exclude>org.hibernate:ejb3-persistence</exclude>
+                                            <exclude>org.hibernate.java-persistence:jpa-api</exclude>
+                                            <exclude>org.jboss.interceptor:jboss-interceptor-api</exclude>
                                             <exclude>org.jboss.javaee:jboss-javaee</exclude>
                                             <exclude>org.jboss.javaee:jboss-ejb-api</exclude>
                                             <exclude>org.jboss.javaee:jboss-ejb-api_3.1</exclude>
@@ -383,24 +381,20 @@
                                             <exclude>org.jboss.javaee:servlet-api</exclude>
                                             <exclude>org.jboss.javaee:jsp-api</exclude>
                                             <exclude>org.jboss.javaee:jboss-transaction-api</exclude>
-                                            <exclude>org.jboss.interceptor:jboss-interceptor-api</exclude>
-                                            <exclude>org.hibernate.java-persistence:jpa-api</exclude>
-                                            <exclude>org.hibernate:ejb3-persistence</exclude>
-                                            <exclude>jboss.web:el-api</exclude>
-                                            <exclude>jboss.web:jsp-api</exclude>
-                                            <exclude>jboss.web:servlet-api</exclude>
+                                            <exclude>org.jboss.logging:jboss-logging-spi</exclude>
+                                            <exclude>org.jboss.logging:jboss-logging-log4j</exclude>
+                                            <exclude>org.jboss.logging:jboss-logging-jdk</exclude>
+                                            <exclude>org.jboss.logging:jboss-logging-logmanager</exclude>
+                                            <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
+                                            <exclude>org.slf4j:slf4j-nop</exclude>
+                                            <exclude>org.slf4j:slf4j-jdk14</exclude>
+                                            <exclude>org.slf4j:slf4j-log4j12</exclude>
+                                            <exclude>org.slf4j:slf4j-log4j13</exclude>
                                             <exclude>sun-jaxb:jaxb-api</exclude>
-                                            <exclude>javax.xml.stream:stax-api</exclude>
-                                            <exclude>javax.xml:jaxrpc-api</exclude>
-                                            <exclude>javax.xml.soap:saaj-api</exclude>
-                                            <exclude>javax.servlet:servlet-api</exclude>
-
-                                            <!-- JBAS-9000 more duplicate crap -->
-                                            <exclude>xalan:xalan</exclude>
-                                            <exclude>xalan:serializer</exclude>
-                                            <exclude>xml-apis:xml-apis</exclude>
-
                                             <exclude>trove:trove</exclude>
+                                            <exclude>xalan:serializer</exclude>
+                                            <exclude>xalan:xalan</exclude>
+                                            <exclude>xml-apis:xml-apis</exclude>
                                         </excludes>
                                     </bannedDependencies>
                                 </rules>
