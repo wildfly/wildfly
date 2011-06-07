@@ -32,17 +32,27 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
-import org.junit.Ignore;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-@Ignore("Pending Kabir's proxy controller work")
 public class ProxyControllerTestCase extends AbstractProxyControllerTest {
 
-    ExecutorService fakeProtocolExecutor = Executors.newCachedThreadPool();
+    static ExecutorService fakeProtocolExecutor;
+
+    @BeforeClass
+    public static void createExecutor() {
+        fakeProtocolExecutor = Executors.newCachedThreadPool();
+    }
+
+    @AfterClass
+    public static void stopExecutor() {
+        fakeProtocolExecutor.shutdownNow();
+    }
 
     @Override
     protected NewProxyController createProxyController(final NewModelController proxiedController, final PathAddress proxyNodeAddress) {

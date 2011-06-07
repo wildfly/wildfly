@@ -149,11 +149,14 @@ public abstract class AbstractProxyControllerTest {
             }
         }
         executor.shutdownNow();
+        mainControllerClient = null;
+        proxiedControllerClient = null;
     }
 
     @Test
     public void testRecursiveReadResourceDescriptionOperation() throws Exception {
         NewOperation operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
+        operation.getOperation().get(PROXIES).set(true);
         operation.getOperation().get(RECURSIVE).set(true);
 
         ModelNode result = proxiedControllerClient.execute(operation);
@@ -183,6 +186,7 @@ public abstract class AbstractProxyControllerTest {
     @Test
     public void testRecursiveReadResourceDescriptionWithOperations() throws Exception {
         NewOperation operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
+        operation.getOperation().get(PROXIES).set(true);
         operation.getOperation().get(RECURSIVE).set(true);
         operation.getOperation().get(OPERATIONS).set(true);
 
@@ -219,8 +223,6 @@ public abstract class AbstractProxyControllerTest {
         write.getOperation().get(VALUE).set("NewValue");
         proxiedControllerClient.execute(write);
 
-        //assertEquals("NewValue", proxyModel.get("hostchild", "hcA", "child", "childA", "value").asString());
-
         NewOperation read = createOperation(READ_RESOURCE_OPERATION, "hostchild", "hcA", "child", "childA");
         read.getOperation().get(RECURSIVE).set(true);
         ModelNode result = proxiedControllerClient.execute(read);
@@ -237,13 +239,11 @@ public abstract class AbstractProxyControllerTest {
         NewOperation write = createOperation(WRITE_ATTRIBUTE_OPERATION, "host", "hostA", "hostchild", "hcA", "child", "childA");
         write.getOperation().get(NAME).set("value");
         write.getOperation().get(VALUE).set("NewValue2");
-        mainControllerClient.execute(write);
-
-        //assertEquals("NewValue2", proxyModel.get("hostchild", "hcA", "child", "childA", "value").asString());
+        ModelNode result = mainControllerClient.execute(write);
 
         NewOperation read = createOperation(READ_RESOURCE_OPERATION, "hostchild", "hcA", "child", "childA");
         read.getOperation().get(RECURSIVE).set(true);
-        ModelNode result = proxiedControllerClient.execute(read);
+        result = proxiedControllerClient.execute(read);
         assertEquals("NewValue2", result.get(RESULT, "value").asString());
 
         read = createOperation(READ_RESOURCE_OPERATION, "host", "hostA", "hostchild", "hcA", "child", "childA");
