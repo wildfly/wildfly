@@ -22,7 +22,10 @@
 
 package org.jboss.as.testsuite.integration.ejb.packaging.multimodule;
 
-import org.jboss.arquillian.api.Deployment;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -32,9 +35,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * Tests that lifecycle methods defined on classes in a different module to the component class
@@ -58,10 +58,10 @@ public class MultiModuleLifecycleMethodTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "lib.jar");
         lib.addClass(BaseBean.class);
-        ear.addLibrary(lib);
+        ear.addAsLibrary(lib);
         JavaArchive module = ShrinkWrap.create(JavaArchive.class, "module.jar");
         module.addClasses(MultiModuleLifecycleMethodTestCase.class, ChildBean.class);
-        ear.addModule(module);
+        ear.addAsModule(module);
         return ear;
     }
 

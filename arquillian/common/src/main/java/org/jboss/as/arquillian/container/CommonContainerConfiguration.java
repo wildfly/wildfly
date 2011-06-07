@@ -16,11 +16,11 @@
  */
 package org.jboss.as.arquillian.container;
 
-import org.jboss.arquillian.spi.ContainerConfiguration;
-import org.jboss.arquillian.spi.ContainerProfile;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
+import org.jboss.arquillian.container.spi.ConfigurationException;
+import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 
 /**
  * JBossAS7 server configuration
@@ -34,6 +34,7 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
     private int managementPort;
     private int jmxPort;
     private int httpPort;
+    private long startupTimeout;
 
     public CommonContainerConfiguration() {
         bindAddress = getInetAddress("127.0.0.1");
@@ -41,11 +42,6 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
         jmxPort = 1090;
         httpPort = 8080;
         startupTimeout = 30000;
-    }
-
-    @Override
-    public ContainerProfile getContainerProfile() {
-        return ContainerProfile.STANDALONE;
     }
 
     public InetAddress getBindAddress() {
@@ -78,6 +74,14 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public void setHttpPort(int httpPort) {
         this.httpPort = httpPort;
+    }
+
+    public long getStartupTimeout() {
+        return startupTimeout;
+    }
+
+    public void setStartupTimeout(long startupTimeout) {
+        this.startupTimeout = startupTimeout;
     }
 
     private InetAddress getInetAddress(String name) {

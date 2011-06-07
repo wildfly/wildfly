@@ -21,20 +21,20 @@
  */
 package org.jboss.as.testsuite.integration.ejb.transaction.cmt.mandatory;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import javax.ejb.EJBTransactionRequiredException;
 import javax.inject.Inject;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Test that makes sure a SFSB is not discarded if the transaction
@@ -42,6 +42,7 @@ import javax.transaction.UserTransaction;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class SFSBMandatoryTransactionTestCase {
 
     @Inject
@@ -54,7 +55,6 @@ public class SFSBMandatoryTransactionTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test-mandatory.war");
         war.addPackage(SFSBMandatoryTransactionTestCase.class.getPackage());
-        war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }
 

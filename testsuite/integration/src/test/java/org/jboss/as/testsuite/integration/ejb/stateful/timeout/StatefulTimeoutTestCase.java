@@ -22,7 +22,13 @@
 
 package org.jboss.as.testsuite.integration.ejb.stateful.timeout;
 
-import org.jboss.arquillian.api.Deployment;
+import javax.ejb.NoSuchEJBException;
+import javax.inject.Inject;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.transaction.UserTransaction;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -33,12 +39,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.NoSuchEJBException;
-import javax.inject.Inject;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.transaction.UserTransaction;
 
 /**
  * Tests that the stateful timeout annotation works
