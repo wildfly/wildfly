@@ -45,6 +45,7 @@ import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.webservices.dmr.WSExtension;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
@@ -65,6 +66,8 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class ModelUpdateService extends AbstractService<Void> {
+
+    private static final Logger log = Logger.getLogger(ModelUpdateService.class);
 
     private final InjectedValue<NewModelController> controllerValue = new InjectedValue<NewModelController>();
     private static final ModelUpdateService INSTANCE = new ModelUpdateService();
@@ -108,24 +111,28 @@ public final class ModelUpdateService extends AbstractService<Void> {
     public void add(final Endpoint endpoint) {
         final NewModelController controller = controllerValue.getOptionalValue();
         if (controller != null) {
-            final ModelNode addOperation = newAddOperation(endpoint);
-            try {
-                client.execute(addOperation);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            // TODO AS7-855
+            log.warn("Registering webservice endpoints in the management model is temporarily disabled (AS7-855)");
+//            final ModelNode addOperation = newAddOperation(endpoint);
+//            try {
+//                client.execute(addOperation);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
         }
     }
 
     public void remove(final Endpoint endpoint) {
         final NewModelController controller = controllerValue.getOptionalValue();
         if (controller != null) {
-            final ModelNode removeOperation = newRemoveOperation(endpoint);
-            try {
-                client.execute(removeOperation);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            // TODO AS7-855
+            log.warn("Registering webservice endpoints in the management model is temporarily disabled (AS7-855)");
+//            final ModelNode removeOperation = newRemoveOperation(endpoint);
+//            try {
+//                client.execute(removeOperation);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
         }
     }
 
