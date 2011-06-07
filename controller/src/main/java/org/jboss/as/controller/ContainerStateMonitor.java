@@ -171,9 +171,10 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
      */
     private void tick() {
         int tick = busyServiceCount.decrementAndGet();
-        if (tick == 0) {
-            synchronized (this) {
-                notifyAll();
+
+        synchronized (this) {
+            notifyAll();
+            if (tick == 0) {
                 final Set<ServiceName> missingDeps = new HashSet<ServiceName>();
                 for (ServiceController<?> controller : servicesWithMissingDeps) {
                     missingDeps.addAll(controller.getImmediateUnavailableDependencies());

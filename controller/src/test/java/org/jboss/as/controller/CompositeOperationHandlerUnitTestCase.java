@@ -58,14 +58,14 @@ public class CompositeOperationHandlerUnitTestCase {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
         ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerImplUnitTestCase.ModelControllerService svc = new ModelControllerImplUnitTestCase.ModelControllerService(container, processState);
+        ModelControllerImplUnitTestCase.ModelControllerService svc = new ModelControllerImplUnitTestCase.ModelControllerService(processState);
         ServiceBuilder<NewModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         sharedState = svc.state;
         svc.latch.await();
         controller = svc.getValue();
-        ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
-        controller.execute(setup, null, null, null);
+//        ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
+//        controller.execute(setup, null, null, null);
         processState.setRunning();
     }
 
