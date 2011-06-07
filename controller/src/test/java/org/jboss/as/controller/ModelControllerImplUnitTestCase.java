@@ -59,6 +59,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
@@ -109,14 +110,14 @@ public class ModelControllerImplUnitTestCase {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
         ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerService svc = new ModelControllerService(container, processState);
+        ModelControllerService svc = new ModelControllerService(processState);
         ServiceBuilder<NewModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         sharedState = svc.state;
         svc.latch.await();
         controller = svc.getValue();
-        ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
-        controller.execute(setup, null, null, null);
+//        ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
+//        controller.execute(setup, null, null, null);
         processState.setRunning();
     }
 
@@ -135,25 +136,31 @@ public class ModelControllerImplUnitTestCase {
         }
     }
 
-    /** TODO make this an AbstractControllerService subclass once we sort setting up the registry */
-    public static class ModelControllerService implements Service<NewModelController> {
+    public static class ModelControllerService extends AbstractControllerService {
 
         final AtomicBoolean state = new AtomicBoolean(true);
         final CountDownLatch latch = new CountDownLatch(1);
-        private NewModelController value;
-        private final ServiceContainer serviceContainer;
-        private final ControlledProcessState processState;
 
-        ModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
-            this.serviceContainer = serviceContainer;
-            this.processState = processState;
+        ModelControllerService(final ControlledProcessState processState) {
+            super(NewOperationContext.Type.SERVER, new NullConfigurationPersister(), processState, DESC_PROVIDER, null);
         }
 
         @Override
-        public void start(StartContext context) throws StartException {
-            ServiceTarget target = serviceContainer.subTarget();
-            ServiceController<?> serviceController = context.getController();
-            ModelNodeRegistration rootRegistration = ModelNodeRegistration.Factory.create(DESC_PROVIDER);
+        protected ModelNode createCoreModel() {
+
+            ModelNode model = new ModelNode();
+
+            //Atttributes
+            model.get("attr1").set(1);
+            model.get("attr2").set(2);
+
+            model.get("child", "one", "attribute1").set(1);
+            model.get("child", "two", "attribute2").set(2);
+            return model;
+        }
+
+        @Override
+        protected void initModel(ModelNodeRegistration rootRegistration) {
 
             rootRegistration.registerOperationHandler("setup", new SetupHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("composite", NewCompositeOperationHandler.INSTANCE, DESC_PROVIDER, false);
@@ -180,20 +187,12 @@ public class ModelControllerImplUnitTestCase {
             rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
             rootRegistration.registerSubModel(PathElement.pathElement("child"), DESC_PROVIDER);
+        }
 
-            value = new NewModelControllerImpl(new ModelNode(), context.getController().getServiceContainer(), target, rootRegistration, new ContainerStateMonitor(serviceContainer, serviceController),
-                    new NullConfigurationPersister(), NewOperationContext.Type.SERVER, null, processState);
+        @Override
+        public void start(StartContext context) throws StartException {
+            super.start(context);
             latch.countDown();
-        }
-
-        @Override
-        public void stop(StopContext context) {
-            value = null;
-        }
-
-        @Override
-        public NewModelController getValue() throws IllegalStateException, IllegalArgumentException {
-            return value;
         }
     }
 
@@ -872,7 +871,7 @@ public class ModelControllerImplUnitTestCase {
 
         @Override
         public List<ModelNode> load() throws ConfigurationPersistenceException {
-            return null;
+            return Collections.emptyList();
         }
 
         @Override

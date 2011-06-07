@@ -51,6 +51,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.AsyncFuture;
@@ -92,6 +93,7 @@ class NewModelControllerImpl implements NewModelController {
         this.controllerType = controllerType;
         this.prepareStep = prepareStep;
         this.processState = processState;
+        this.serviceTarget.addListener(ServiceListener.Inheritance.ALL, stateMonitor);
     }
 
     static final ThreadLocal<Boolean> RB_ON_RT_FAILURE = new ThreadLocal<Boolean>();
