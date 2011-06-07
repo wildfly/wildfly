@@ -29,6 +29,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
@@ -197,7 +198,23 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
 
         @Override
         public void operationPrepared(final OperationTransaction transaction, final ModelNode result) {
-            activeTransactions.put(executionId, transaction);
+            final CountDownLatch completedLatch = new CountDownLatch(1);
+            //Operation prepared should not return until the Tx has been committed or rolled back
+            final OperationTransaction blockingTransaction = new OperationTransaction() {
+
+                @Override
+                public void rollback() {
+                    transaction.rollback();
+                    completedLatch.countDown();
+                }
+
+                @Override
+                public void commit() {
+                    transaction.commit();
+                    completedLatch.countDown();
+                }
+            };
+            activeTransactions.put(executionId, blockingTransaction);
             new OperationStatusRequest(executionId, result) {
 
                 @Override
