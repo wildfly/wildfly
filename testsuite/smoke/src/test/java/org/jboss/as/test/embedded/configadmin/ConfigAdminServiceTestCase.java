@@ -42,10 +42,11 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.osgi.service.ConfigAdminListener;
 import org.jboss.as.osgi.service.ConfigAdminService;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,11 +57,13 @@ import org.junit.runner.RunWith;
  * @since 11-Dec-2010
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-814] Fix or remove ignored smoke tests")
 public class ConfigAdminServiceTestCase {
 
     @Inject
     public ServiceContainer serviceContainer;
+
+    @Inject
+    public ServiceTarget serviceTarget;
 
     @Deployment
     public static Archive<?> deployment() {
@@ -157,6 +160,7 @@ public class ConfigAdminServiceTestCase {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testConfiguredService() throws Exception {
 
         Dictionary<String, String> config = new Hashtable<String, String>();
@@ -166,8 +170,17 @@ public class ConfigAdminServiceTestCase {
         ConfigAdminService configAdmin = getConfigAdminService();
         configAdmin.putConfiguration(ConfiguredService.SERVICE_PID, config);
         try {
-            ConfiguredService.addService(serviceContainer);
-            ConfiguredService service = ConfiguredService.await(serviceContainer, 5, TimeUnit.SECONDS);
+            ConfiguredService.addService(serviceTarget);
+            final CountDownLatch latch = new CountDownLatch(1);
+            final ServiceController<ConfiguredService> controller = (ServiceController<ConfiguredService>) serviceContainer.getService(ConfiguredService.SERVICE_NAME);
+            controller.addListener(new AbstractServiceListener<ConfiguredService>(){
+                public void serviceStarted(ServiceController<? extends ConfiguredService> controller) {
+                    controller.removeListener(this);
+                    latch.countDown();
+                }
+            });
+            latch.await(3, TimeUnit.SECONDS);
+            ConfiguredService service = controller.getValue();
             assertEquals("bar", service.getConfigValue("foo"));
         } finally {
             configAdmin.removeConfiguration(ConfiguredService.SERVICE_PID);

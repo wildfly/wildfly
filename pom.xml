@@ -545,6 +545,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-build</artifactId>
                 <type>pom</type>
                 <version>${project.version}</version>
@@ -2892,6 +2898,12 @@
             <dependency>
               <groupId>org.jboss.arquillian.container</groupId>
               <artifactId>arquillian-container-test-api</artifactId>
+              <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+            
+            <dependency>
+              <groupId>org.jboss.arquillian.container</groupId>
+              <artifactId>arquillian-container-test-spi</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
             

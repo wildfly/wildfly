@@ -16,14 +16,23 @@
  */
 package org.jboss.arquillian.testenricher.msc;
 
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
- * An injector for the {@link ServiceContainer}
+ * A thread local {@link ServiceTarget} association
  *
  * @author thomas.diesler@jboss.com
  * @since 18-Nov-2010
  */
-public interface ServiceContainerInjector extends Injector<ServiceContainer> {
+public final class ServiceTargetAssociation {
+
+    private static ThreadLocal<ServiceTarget> association = new ThreadLocal<ServiceTarget>();
+
+    public static ServiceTarget getServiceTarget() {
+        return association.get();
+    }
+
+    public static void setServiceTarget(ServiceTarget type) {
+        association.set(type);
+    }
 }

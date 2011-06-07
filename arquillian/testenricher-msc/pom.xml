@@ -27,12 +27,12 @@
 
     <!-- org.jboss.arquillian -->
     <dependency>
-      <groupId>org.jboss.arquillian.core</groupId>
-      <artifactId>arquillian-core-spi</artifactId>
+      <groupId>org.jboss.arquillian.test</groupId>
+      <artifactId>arquillian-test-spi</artifactId>
     </dependency>
     <dependency>
-        <groupId>org.jboss.arquillian.test</groupId>
-        <artifactId>arquillian-test-spi</artifactId>
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-container-test-spi</artifactId>
     </dependency>
     <dependency>
       <groupId>javax.inject</groupId>

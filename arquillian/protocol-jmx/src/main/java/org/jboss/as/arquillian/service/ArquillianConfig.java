@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.arquillian.testenricher.msc.ServiceContainerAssociation;
+import org.jboss.arquillian.testenricher.msc.ServiceTargetAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -36,6 +38,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -65,6 +68,8 @@ class ArquillianConfig implements Service<ArquillianConfig> {
 
     // The optional dependency on OSGi. This should perhaps be generic.
     private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
+    private ServiceContainer serviceContainer;
+    private ServiceTarget serviceTarget;
 
     static ServiceName getServiceName(DeploymentUnit depUnit) {
         return ServiceName.JBOSS.append("arquillian", "config", depUnit.getName());
@@ -132,11 +137,17 @@ class ArquillianConfig implements Service<ArquillianConfig> {
             testClass = module.getClassLoader().loadClass(className);
         }
 
+        // Always make the MSC artefacts available
+        ServiceTargetAssociation.setServiceTarget(serviceTarget);
+        ServiceContainerAssociation.setServiceContainer(serviceContainer);
+
         return testClass;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
+        serviceContainer = context.getController().getServiceContainer();
+        serviceTarget = context.getChildTarget();
         arqService.registerArquillianConfig(this);
     }
 

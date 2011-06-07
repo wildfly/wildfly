@@ -22,47 +22,40 @@ import java.lang.reflect.Method;
 import javax.inject.Inject;
 
 import org.jboss.arquillian.test.spi.TestEnricher;
-import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * The MSC TestEnricher
  *
- * The enricher supports the injection of the {@link ServiceContainer}.
+ * The enricher supports the injection of the {@link ServiceTarget} that
+ * is associated with this test case.
  *
  * <pre>
  * <code>
  *    @Inject
- *    ServiceContainer container;
+ *    ServiceTarget serviceTarget;
+ *
+ *    @Inject
+ *    ServiceContainer serviceContainer;
  * </code>
  * </pre>
  *
  * @author thomas.diesler@jboss.com
  * @since 18-Nov-2010
  */
-public class ServiceContainerEnricher implements TestEnricher, ServiceContainerInjector {
-
-    private ServiceContainer serviceContainer;
-
-    @Override
-    public void inject(ServiceContainer value) throws InjectionException {
-        serviceContainer = value;
-    }
-
-    @Override
-    public void uninject() {
-    }
+public class MSCTestEnricher implements TestEnricher {
 
     @Override
     public void enrich(Object testCase) {
-        // [TODO] Remove this hack when it becomes possible to pass data to the enrichers
-        inject(ServiceContainerAssociation.getServiceContainer());
-
         Class<? extends Object> testClass = testCase.getClass();
         for (Field field : testClass.getDeclaredFields()) {
             if (field.isAnnotationPresent(Inject.class)) {
                 if (field.getType().isAssignableFrom(ServiceContainer.class)) {
                     injectServiceContainer(testCase, field);
+                }
+                else if (field.getType().isAssignableFrom(ServiceTarget.class)) {
+                    injectServiceTarget(testCase, field);
                 }
             }
         }
@@ -75,9 +68,19 @@ public class ServiceContainerEnricher implements TestEnricher, ServiceContainerI
 
     private void injectServiceContainer(Object testCase, Field field) {
         try {
+            ServiceContainer serviceContainer = ServiceContainerAssociation.getServiceContainer();
             field.set(testCase, serviceContainer);
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Cannot inject ServiceContainer", ex);
+        }
+    }
+
+    private void injectServiceTarget(Object testCase, Field field) {
+        try {
+            ServiceTarget serviceTarget = ServiceTargetAssociation.getServiceTarget();
+            field.set(testCase, serviceTarget);
+        } catch (IllegalAccessException ex) {
+            throw new IllegalStateException("Cannot inject ServiceTarget", ex);
         }
     }
 }
