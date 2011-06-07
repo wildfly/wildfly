@@ -22,15 +22,13 @@
 
 package org.jboss.as.test.embedded.mgmt;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -38,7 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -52,10 +49,8 @@ import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -66,7 +61,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Run(RunModeType.AS_CLIENT)
-@Ignore("Emanuel to re-enable when multitarget ops are done")
 public class BasicOperationsUnitTestCase {
 
     private NewModelControllerClient client;
@@ -113,7 +107,7 @@ public class BasicOperationsUnitTestCase {
     }
 
     @Test
-    public void testSocketBindingDescriptions() throws IOException {
+    public void testReadAttributeWildcards() throws IOException {
 
         final ModelNode address = new ModelNode();
         address.add("socket-binding-group", "*");
@@ -121,8 +115,9 @@ public class BasicOperationsUnitTestCase {
         address.protect();
 
         final ModelNode operation = new ModelNode();
-        operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
+        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set(PORT);
 
         final ModelNode result = getModelControllerClient().execute(operation);
         Assert.assertTrue(result.hasDefined(RESULT));
@@ -132,12 +127,36 @@ public class BasicOperationsUnitTestCase {
         for(final ModelNode step : steps) {
             Assert.assertTrue(step.hasDefined(OP_ADDR));
             Assert.assertTrue(step.hasDefined(RESULT));
-            Assert.assertEquals(SUCCESS, step.get(OUTCOME).asString());
-            final ModelNode stepResult = step.get(RESULT);
-            Assert.assertTrue(stepResult.hasDefined(DESCRIPTION));
-            Assert.assertTrue(stepResult.hasDefined(ATTRIBUTES));
+            Assert.assertTrue(step.get(RESULT).asInt() > 0);
         }
     }
+
+//    @Test
+//    public void testSocketBindingDescriptions() throws IOException {
+//
+//        final ModelNode address = new ModelNode();
+//        address.add("socket-binding-group", "*");
+//        address.add("socket-binding", "*");
+//        address.protect();
+//
+//        final ModelNode operation = new ModelNode();
+//        operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
+//        operation.get(OP_ADDR).set(address);
+//
+//        final ModelNode result = client.execute(operation);
+//        Assert.assertTrue(result.hasDefined(RESULT));
+//        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+//        final Collection<ModelNode> steps = getSteps(result.get(RESULT));
+//        Assert.assertFalse(steps.isEmpty());
+//        for(final ModelNode step : steps) {
+//            Assert.assertTrue(step.hasDefined(OP_ADDR));
+//            Assert.assertTrue(step.hasDefined(RESULT));
+//            Assert.assertEquals(SUCCESS, step.get(OUTCOME).asString());
+//            final ModelNode stepResult = step.get(RESULT);
+//            Assert.assertTrue(stepResult.hasDefined(DESCRIPTION));
+//            Assert.assertTrue(stepResult.hasDefined(ATTRIBUTES));
+//        }
+//    }
 
     @Test
     public void testHttpSocketBinding() throws IOException {
@@ -209,10 +228,6 @@ public class BasicOperationsUnitTestCase {
 
     protected static List<ModelNode> getSteps(final ModelNode result) {
         Assert.assertTrue(result.isDefined());
-        final List<ModelNode> steps = new ArrayList<ModelNode>();
-        for(final Property property : result.asPropertyList()) {
-            steps.add(property.getValue());
-        }
-        return steps;
+        return result.asList();
     }
 }
