@@ -132,17 +132,24 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     @Override
     NewStepHandler getHandler(final ListIterator<PathElement> iterator, final String operationName) {
         final OperationEntry entry = operationsUpdater.get(this, operationName);
-        if (entry != null && entry.isInherited()) {
-            return entry.getOperationHandler();
-        }
         if (! iterator.hasNext()) {
-            return entry == null ? null : entry.getOperationHandler();
+            if (entry != null) {
+                return entry.getOperationHandler();
+            }
+        } else {
+            final PathElement next = iterator.next();
+            final String key = next.getKey();
+            final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
+            final NodeSubregistry subregistry = snapshot.get(key);
+            NewStepHandler handler = subregistry == null ? null : subregistry.getHandler(iterator, next.getValue(), operationName);
+            if (handler != null) {
+                return handler;
+            }
+            if (entry != null && entry.isInherited()) {
+                return entry.getOperationHandler();
+            }
         }
-        final PathElement next = iterator.next();
-        final String key = next.getKey();
-        final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
-        final NodeSubregistry subregistry = snapshot.get(key);
-        return subregistry == null ? null : subregistry.getHandler(iterator, next.getValue(), operationName);
+        return null;
     }
 
     @Override

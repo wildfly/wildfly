@@ -82,7 +82,7 @@ public class ProxyStepHandler implements NewStepHandler {
             final PathAddress newAddr;
             if (addr.size() == proxyController.getProxyNodeAddress().size()) {
                 newAddr = PathAddress.EMPTY_ADDRESS;
-            } else if (proxyController.getProxyNodeAddress().size() < addr.size()) {
+            } else if (proxyController.getProxyNodeAddress().size() > addr.size()) {
                 throw new IllegalArgumentException(addr + " does not appear to capture proxy " + proxyController.getProxyNodeAddress());
             } else {
                 newAddr = addr.subAddress(proxyController.getProxyNodeAddress().size());
