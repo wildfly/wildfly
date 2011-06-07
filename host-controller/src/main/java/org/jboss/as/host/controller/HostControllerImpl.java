@@ -30,13 +30,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import java.util.Map;
 import java.util.concurrent.Executors;
 
+import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.controller.remote.RemoteProxyController;
+import org.jboss.as.controller.remote.NewRemoteProxyController;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.operations.ServerRestartHandler;
 import org.jboss.as.host.controller.operations.ServerStartHandler;
@@ -126,7 +126,8 @@ public class HostControllerImpl implements HostController {
     @Override
     public void registerRunningServer(String serverName, ProtocolChannel channel) {
         final PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
-        final ProxyController serverController = RemoteProxyController.create(channel, Executors.newCachedThreadPool(), PathAddress.pathAddress(PathElement.pathElement(HOST, name), element));
+
+        final NewProxyController serverController = NewRemoteProxyController.create(Executors.newCachedThreadPool(), PathAddress.pathAddress(PathElement.pathElement(HOST, name), element), channel);
         registry.registerProxyController(element, serverController);
         model.get(element.getKey(), element.getValue());
     }

@@ -25,10 +25,10 @@ package org.jboss.as.controller.registry;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -176,7 +176,7 @@ public interface ModelNodeRegistration {
      * @param address the child of this registry that should be proxied
      * @param proxyController the proxy controller
      */
-    void registerProxyController(PathElement address, ProxyController proxyController);
+    void registerProxyController(PathElement address, NewProxyController proxyController);
 
     /**
      * Unregister a proxy controller
@@ -262,7 +262,7 @@ public interface ModelNodeRegistration {
      * @param address the address to look for a proxy under
      * @return the found proxy controller, or <code>null</code> if there is none
      */
-    ProxyController getProxyController(final PathAddress address);
+    NewProxyController getProxyController(final PathAddress address);
 
     /**
      * Finds all proxy controllers registered at the passed in address, or at lower levels.
@@ -274,7 +274,7 @@ public interface ModelNodeRegistration {
      * @param address the address to start looking for proxies under
      * @return the found proxy controllers, or an empty set if there are none
      */
-    Set<ProxyController> getProxyControllers(PathAddress address);
+    Set<NewProxyController> getProxyControllers(PathAddress address);
 
     /**
      * Resolve a address against the registry.

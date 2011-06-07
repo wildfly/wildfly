@@ -333,6 +333,7 @@ final class NewOperationContextImpl implements NewOperationContext {
             }
             assert resultAction != null;
         } catch (Throwable t) {
+            t.printStackTrace();
             // If this block is entered, then the next step failed
             // The question is, did it fail before or after calling completeStep()?
             if (currentStage != Stage.DONE) {
