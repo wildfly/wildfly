@@ -32,7 +32,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.Operation;
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -70,7 +70,7 @@ public class RemoteProxyController implements ProxyController {
      * @param executor the executor
      * @param proxyNodeAddress the address in the host ModelController where this proxy controller applies to
      */
-    public static ProxyController create(final ProtocolChannel channel, final ExecutorService executor, final PathAddress proxyNodeAddress) {
+    public static ProxyController create(final ManagementChannel channel, final ExecutorService executor, final PathAddress proxyNodeAddress) {
         if (channel == null) {
             throw new IllegalArgumentException("Null channel");
         }

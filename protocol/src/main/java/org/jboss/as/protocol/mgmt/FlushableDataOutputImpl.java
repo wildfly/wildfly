@@ -30,7 +30,7 @@ import org.jboss.remoting3.MessageOutputStream;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class FlushableDataOutputImpl implements FlushableDataOutput, Closeable {
+class FlushableDataOutputImpl implements FlushableDataOutput, Closeable {
 
     private final SimpleDataOutput output;
 

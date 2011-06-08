@@ -27,7 +27,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.xnio.IoUtils;
 
@@ -38,11 +37,11 @@ import org.xnio.IoUtils;
  */
 public abstract class ManagementClientChannelStrategy {
 
-    public abstract ProtocolChannel getChannel();
+    public abstract ManagementChannel getChannel();
 
     public abstract void requestDone();
 
-    public static synchronized ManagementClientChannelStrategy create(final ProtocolChannel channel) {
+    public static synchronized ManagementClientChannelStrategy create(final ManagementChannel channel) {
         return new Existing(channel);
     }
 
@@ -51,14 +50,14 @@ public abstract class ManagementClientChannelStrategy {
     }
 
     private static class Existing extends ManagementClientChannelStrategy {
-        private final ProtocolChannel channel;
+        private final ManagementChannel channel;
 
-        Existing(final ProtocolChannel channel) {
+        Existing(final ManagementChannel channel) {
             this.channel = channel;
         }
 
         @Override
-        public ProtocolChannel getChannel() {
+        public ManagementChannel getChannel() {
             return channel;
         }
 
@@ -72,8 +71,8 @@ public abstract class ManagementClientChannelStrategy {
         private final int port;
         private final ExecutorService executorService;
         private final ManagementOperationHandler handler;
-        private volatile ProtocolChannelClient client;
-        private volatile ProtocolChannel channel;
+        private volatile ProtocolChannelClient<ManagementChannel> client;
+        private volatile ManagementChannel channel;
 
         public Establishing(String hostName, int port, final ExecutorService executorService, final ManagementOperationHandler handler) {
             this.hostName = hostName;
@@ -83,14 +82,14 @@ public abstract class ManagementClientChannelStrategy {
         }
 
         @Override
-        public ProtocolChannel getChannel() {
+        public ManagementChannel getChannel() {
             try {
-                final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
+                final ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
                 configuration.setEndpointName("endpoint");
                 configuration.setUriScheme("remote");
                 configuration.setUri(new URI("remote://" + hostName +  ":" + port));
                 configuration.setExecutor(executorService);
-                configuration.setChannelReceiverFactory(new ManagementChannelReceiverFactory());
+                configuration.setChannelFactory(new ManagementChannelFactory());
                 client = ProtocolChannelClient.create(configuration);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -109,7 +108,7 @@ public abstract class ManagementClientChannelStrategy {
 
             try {
                 channel = client.openChannel("management");
-                channel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(handler);
+                channel.setOperationHandler(handler);
                 channel.startReceiving();
                 return channel;
             } catch (IOException e) {

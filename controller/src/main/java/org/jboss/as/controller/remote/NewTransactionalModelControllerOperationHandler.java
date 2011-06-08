@@ -39,9 +39,9 @@ import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewProxyController.ProxyOperationControl;
 import org.jboss.as.controller.client.NewModelControllerProtocol;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
@@ -84,15 +84,14 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_EXECUTION_ID);
-            executionId = input.readInt();
+            executionId = getContext().getHeader().getExecutionId();
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_OPERATION);
             operation.readExternal(input);
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
             attachmentsLength = input.readInt();
 
             //TODO make sure this is only added once
-            getChannel().addCloseHandler(new CloseHandler<Channel>() {
+            getContext().getChannel().addCloseHandler(new CloseHandler<Channel>() {
                 @Override
                 public void handleClose(Channel closed) {
                     synchronized (activeTransactions) {
@@ -111,14 +110,15 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ProxyOperationControlProxy control = new ProxyOperationControlProxy(getChannel(), executionId);
+                    final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(getContext(), executionId);
+                    final ProxyOperationControlProxy control = new ProxyOperationControlProxy(getContext(), executionId);
                     final ModelNode result;
                     try {
                         result = controller.execute(
                                 operation,
-                                new OperationMessageHandlerProxy(getChannel(), executionId),
+                                messageHandlerProxy,
                                 control,
-                                new OperationAttachmentsProxy(getChannel(), executionId, attachmentsLength));
+                                new OperationAttachmentsProxy(getContext(), executionId, attachmentsLength));
                     } catch (Exception e) {
                         final ModelNode failure = new ModelNode();
                         failure.get(OUTCOME).set(FAILED);
@@ -144,8 +144,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_EXECUTION_ID);
-            int executionId = input.readInt();
+            final int executionId = getContext().getHeader().getExecutionId();
             OperationTransaction tx = activeTransactions.remove(executionId);
             if (tx == null) {
                 throw new IOException("No active transaction with id " + executionId);
@@ -188,11 +187,11 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
      * A proxy to the proxy operation control proxy on the remote caller
      */
     private class ProxyOperationControlProxy implements ProxyOperationControl {
-        final ProtocolChannel channel;
+        final ManagementRequestContext context;
         final int executionId;
 
-        public ProxyOperationControlProxy(final ProtocolChannel channel, final int executionId) {
-            this.channel = channel;
+        public ProxyOperationControlProxy(final ManagementRequestContext context, final int executionId) {
+            this.context = context;
             this.executionId = executionId;
         }
 
@@ -222,7 +221,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                     return NewModelControllerProtocol.OPERATION_PREPARED_REQUEST;
                 }
 
-            }.execute(executorService, getChannelStrategy(channel));
+            }.execute(executorService, getChannelStrategy(context.getChannel()));
 
             try {
                 completedLatch.await();
@@ -241,7 +240,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                     return NewModelControllerProtocol.OPERATION_FAILED_REQUEST;
                 }
 
-            }.execute(executorService, getChannelStrategy(channel));
+            }.execute(executorService, getChannelStrategy(context.getChannel()));
         }
 
         @Override
@@ -253,24 +252,21 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                     return NewModelControllerProtocol.OPERATION_COMPLETED_REQUEST;
                 }
 
-            }.execute(executorService, getChannelStrategy(channel));
+            }.execute(executorService, getChannelStrategy(context.getChannel()));
         }
 
         /**
          * Base class for sending operation status reports back to the remote caller
          */
         private abstract class OperationStatusRequest extends ManagementRequest<Void> {
-            private final int executionId;
             private final ModelNode response;
 
             public OperationStatusRequest(final int executionId, final ModelNode response) {
-                this.executionId = executionId;
+                super(executionId);
                 this.response = response;
             }
             @Override
             protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-                output.write(NewModelControllerProtocol.PARAM_EXECUTION_ID);
-                output.writeInt(executionId);
                 output.write(NewModelControllerProtocol.PARAM_RESPONSE);
                 response.writeExternal(output);
             }

@@ -74,10 +74,4 @@ class ManagementResponseHeader extends ManagementProtocolHeader {
     byte getType() {
         return ManagementProtocol.RESPONSE;
     }
-
-    @Override
-    boolean isRequest() {
-        return false;
-    }
-
 }

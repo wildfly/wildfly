@@ -28,8 +28,8 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.remote.ModelControllerClientToModelControllerAdapter;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.DomainControllerSlaveClient;
-import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.old.StreamUtils;
@@ -50,11 +50,11 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
     // We delegate non-transactional requests
     private final ModelController delegate;
     private final String hostId;
-    private final ProtocolChannel channel;
+    private final ManagementChannel channel;
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("RemoteDomainConnection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
-    public RemoteDomainControllerSlaveClient(final String hostId, final ProtocolChannel channel) {
+    public RemoteDomainControllerSlaveClient(final String hostId, final ManagementChannel channel) {
         this.hostId = hostId;
         this.channel = channel;
         this.delegate = new ModelControllerClientToModelControllerAdapter(channel, executorService);

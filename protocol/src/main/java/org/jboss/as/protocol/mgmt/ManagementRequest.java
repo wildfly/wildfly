@@ -31,7 +31,6 @@ import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.remoting3.Channel;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
-import org.xnio.IoUtils;
 
 /**
  * Base management request used for remote requests.  Provides the basic mechanism for connecting to a remote host controller
@@ -43,9 +42,34 @@ import org.xnio.IoUtils;
  */
 public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> {
     private static final AtomicInteger requestId = new AtomicInteger();
-    protected final int currentRequestId = requestId.getAndIncrement();
+    private final int currentRequestId = requestId.incrementAndGet();
     private final ManagementFuture<T> future = new ManagementFuture<T>();
+    private final int executionId;
 
+    /**
+     * Create a new ManagementRequest that is not part of an 'execution', i.e. this is a standalone request.
+     */
+    protected ManagementRequest() {
+        this(false);
+    }
+
+    /**
+     * Create a new ManagementRequest that is part of an 'execution'.
+     *
+     *  @param executionId the id of the 'execution' this request is a part of
+     */
+    protected ManagementRequest(int executionId) {
+        this.executionId = executionId;
+    }
+
+    /**
+     * Create a new ManagementRequest
+     *
+     * @param startExecution if {@code false} see {@link #ManagementRequest()}, if {@code true} it starts a new 'execution' with the current request id
+     */
+    protected ManagementRequest(boolean startExecution) {
+        executionId = startExecution ? currentRequestId : 0;
+    }
 
     /**
      * Get the id of the protocol request. The {@link ManagementOperationHandler} will use this to
@@ -55,7 +79,12 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
      */
     protected abstract byte getRequestCode();
 
-    protected ManagementRequest() {
+    protected int getCurrentRequestId() {
+        return currentRequestId;
+    }
+
+    protected int getExecutionId() {
+        return executionId;
     }
 
     /**
@@ -71,34 +100,31 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
 
             @Override
             public void run() {
-                final ProtocolChannel channel = channelStrategy.getChannel();
+                final ManagementChannel channel = channelStrategy.getChannel();
 
-                FlushableDataOutputImpl output = null;
                 try {
-
-                    //System.out.println("Executing " + ManagementRequest.this + " " + currentRequestId + " " + getRequestCode());
-                    channel.getReceiver(ManagementChannelReceiver.class).registerResponseHandler(currentRequestId, new DelegatingResponseHandler(channelStrategy));
-                    output = FlushableDataOutputImpl.create(channel.writeMessage());
-                    //Header
-                    //TODO Handler Id should be possible to infer from the channel name
-                    final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, currentRequestId);
-                    managementRequestHeader.write(output);
-
-                    //Body
-                    writeRequestBody(channel, output);
-
-                    //End
-                    output.writeByte(ManagementProtocol.REQUEST_END);
+                    //System.out.println("Executing " + ManagementRequest.this + " " + currentRequestId + "(" + executionId + ") - 0x" + Integer.toHexString(getRequestCode()));
+                    //Ends up in writeRequest(ProtocolChannel, FlushableDataOutput)
+                    channel.executeRequest(ManagementRequest.this, new DelegatingResponseHandler(channelStrategy));
                 } catch (Exception e) {
                     e.printStackTrace();
                     future.failed(e);
-                } finally {
-                    IoUtils.safeClose(output);
                 }
             }
         });
 
         return future;
+    }
+
+    void writeRequest(ProtocolChannel channel, FlushableDataOutput output) throws IOException {
+        final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, currentRequestId, executionId);
+        managementRequestHeader.write(output);
+
+        //Body
+        writeRequestBody(channel, output);
+
+        //End
+        output.writeByte(ManagementProtocol.REQUEST_END);
     }
 
     /**

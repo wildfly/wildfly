@@ -27,7 +27,6 @@ import java.util.concurrent.Future;
 
 import junit.framework.Assert;
 
-import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.mgmt.support.ConcurrentRequestOperationHandler;
 import org.jboss.as.protocol.mgmt.support.RemotingChannelPairSetup;
 import org.jboss.as.protocol.mgmt.support.SimpleHandlers;
@@ -58,18 +57,18 @@ public abstract class AbstractManagementTestCase {
 
     @Test
     public void testSimpleRequest() throws Exception {
-        ProtocolChannel channel = channels.getServerChannel();
+        ManagementChannel channel = channels.getServerChannel();
         channels.getClientChannel().startReceiving();
-        channel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(new SimpleHandlers.OperationHandler());
+        channel.setOperationHandler(new SimpleHandlers.OperationHandler());
         SimpleHandlers.Request request = new SimpleHandlers.Request(600);
         Assert.assertEquals(Integer.valueOf(1200), request.executeForResult(channels.getExecutorService(), ManagementClientChannelStrategy.create(channels.getClientChannel())));
     }
 
     @Test
     public void testTwoSimpleRequests() throws Exception {
-        ProtocolChannel channel = channels.getServerChannel();
+        ManagementChannel channel = channels.getServerChannel();
         channels.getClientChannel().startReceiving();
-        channel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(new SimpleHandlers.OperationHandler());
+        channel.setOperationHandler(new SimpleHandlers.OperationHandler());
         SimpleHandlers.Request request = new SimpleHandlers.Request(600);
         Assert.assertEquals(Integer.valueOf(1200), request.executeForResult(channels.getExecutorService(), ManagementClientChannelStrategy.create(channels.getClientChannel())));
 
@@ -79,9 +78,9 @@ public abstract class AbstractManagementTestCase {
 
     @Test
     public void testSeveralConcurrentSimpleRequests() throws Exception {
-        ProtocolChannel channel = channels.getServerChannel();
+        ManagementChannel channel = channels.getServerChannel();
         channels.getClientChannel().startReceiving();
-        channel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(new ConcurrentRequestOperationHandler(3));
+        channel.setOperationHandler(new ConcurrentRequestOperationHandler(3));
         System.out.println("-----");
 
         SimpleHandlers.Request request1 = new SimpleHandlers.Request(600);

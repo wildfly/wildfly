@@ -32,22 +32,26 @@ import java.io.IOException;
  * request should be handled by.
  *
  * @author John Bailey
+ * @author Kabir Khan
  */
-class ManagementRequestHeader extends ManagementProtocolHeader {
+public class ManagementRequestHeader extends ManagementProtocolHeader {
     private int requestId;
+    private int executionId;
 
     /**
      * Construct an instance with the protocol version and operation handler for the header.
      *
      * @param version The protocol version
      * @param requestId The request id
+     * @param executionId The execution id
      */
-    public ManagementRequestHeader(final int version, final  int requestId) {
+    ManagementRequestHeader(final int version, final  int requestId, final int executionId) {
         super(version);
         this.requestId = requestId;
+        this.executionId = executionId;
     }
 
-    public ManagementRequestHeader(final int version, final DataInput input) throws IOException {
+    ManagementRequestHeader(final int version, final DataInput input) throws IOException {
         super(version);
         read(input);
     }
@@ -55,12 +59,14 @@ class ManagementRequestHeader extends ManagementProtocolHeader {
     /** {@inheritDoc} */
     public void read(final DataInput input) throws IOException {
         requestId = input.readInt();
+        executionId = input.readInt();
     }
 
     /** {@inheritDoc} */
     public void write(final DataOutput output) throws IOException {
         super.write(output);
         output.writeInt(requestId);
+        output.writeInt(executionId);
     }
 
     /**
@@ -70,6 +76,13 @@ class ManagementRequestHeader extends ManagementProtocolHeader {
      */
     public int getRequestId() {
         return requestId;
+    }
+
+    /**
+     * The ID of the execution this request belongs to
+     */
+    public int getExecutionId() {
+        return executionId;
     }
 
     @Override

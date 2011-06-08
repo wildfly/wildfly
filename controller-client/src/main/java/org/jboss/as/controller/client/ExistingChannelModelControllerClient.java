@@ -21,7 +21,7 @@
 */
 package org.jboss.as.controller.client;
 
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 
 /**
@@ -30,9 +30,9 @@ import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
  * @version $Revision: 1.1 $
  */
 class ExistingChannelModelControllerClient extends AbstractModelControllerClient {
-    private final ProtocolChannel channel;
+    private final ManagementChannel channel;
 
-    public ExistingChannelModelControllerClient(final ProtocolChannel channel) {
+    public ExistingChannelModelControllerClient(final ManagementChannel channel) {
         this.channel = channel;
     }
 

@@ -24,26 +24,45 @@ package org.jboss.as.protocol.mgmt;
 import java.io.DataInput;
 import java.io.IOException;
 
-import org.jboss.as.protocol.ProtocolChannel;
-
 /**
+ * Base class for handling a management request
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
 public abstract class ManagementRequestHandler {
 
-    private ProtocolChannel channel;
+    private ManagementRequestContext context;
 
-    void setChannel(ProtocolChannel channel) {
-        this.channel = channel;
+    /**
+     * Get the request context
+     *
+     * @return the context
+     */
+    public ManagementRequestContext getContext() {
+        return context;
     }
 
-    protected ProtocolChannel getChannel() {
-        return channel;
+    /**
+     * Set the context
+     *
+     * @param context the context to set
+     */
+    public void setContext(ManagementRequestContext context) {
+        this.context = context;
     }
 
+    /**
+     * Read the request for this management request
+     *
+     * @param input the data input
+     */
     protected abstract void readRequest(DataInput input) throws IOException;
 
+    /**
+     * Write the response for this management response
+     *
+     * @param output the data output
+     */
     protected abstract void writeResponse(FlushableDataOutput output) throws IOException;
 }

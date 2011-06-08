@@ -57,31 +57,31 @@ import org.xnio.Xnio;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ProtocolChannelClient implements Closeable {
+public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeable {
     private final Endpoint endpoint;
     private final URI uri;
     private final ReadChannelThread readChannelThread;
     private final WriteChannelThread writeChannelThread;
     private final ConnectionChannelThread connectionChannelThread;
-    private final ProtocolChannelReceiverFactory channelReceiverFactory;
+    private final ProtocolChannelFactory<T> channelFactory;
     private volatile Connection connection;
-    private volatile ProtocolChannel channel;
+    private volatile T channel;
 
     private ProtocolChannelClient(final Endpoint endpoint,
             final URI uri,
             final ReadChannelThread readChannelThread,
             final WriteChannelThread writeChannelThread,
             final ConnectionChannelThread connectionChannelThread,
-            final ProtocolChannelReceiverFactory channelReceiverFactory) {
+            final ProtocolChannelFactory<T> channelFactory) {
         this.endpoint = endpoint;
         this.uri = uri;
         this.readChannelThread = readChannelThread;
         this.writeChannelThread = writeChannelThread;
         this.connectionChannelThread = connectionChannelThread;
-        this.channelReceiverFactory = channelReceiverFactory;
+        this.channelFactory = channelFactory;
     }
 
-    public static ProtocolChannelClient create(final Configuration configuration) throws IOException, URISyntaxException {
+    public static <T extends ProtocolChannel> ProtocolChannelClient<T> create(final Configuration<T> configuration) throws IOException, URISyntaxException {
         if (configuration == null) {
             throw new IllegalArgumentException("Null configuration");
         }
@@ -105,7 +105,7 @@ public class ProtocolChannelClient implements Closeable {
 
         endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(xnio, bufferPool, readPool, writePool, connectionPool));
 
-        return new ProtocolChannelClient(endpoint, configuration.getUri(), readChannelThread, writeChannelThread, connectionChannelThread, configuration.getChannelReceiverFactory());
+        return new ProtocolChannelClient<T>(endpoint, configuration.getUri(), readChannelThread, writeChannelThread, connectionChannelThread, configuration.getChannelFactory());
     }
 
     public Connection connect() throws IOException {
@@ -129,12 +129,12 @@ public class ProtocolChannelClient implements Closeable {
         }
     }
 
-    public ProtocolChannel openChannel(String channelName) throws IOException {
+    public T openChannel(String channelName) throws IOException {
         if (connection == null) {
             throw new IllegalStateException("Not connected");
         }
         Channel channel = connection.openChannel(channelName, OptionMap.EMPTY).get();
-        this.channel = ProtocolChannel.create(channelName, channel, channelReceiverFactory);
+        this.channel = channelFactory.create(channelName, channel);
         return this.channel;
     }
 
@@ -159,7 +159,7 @@ public class ProtocolChannelClient implements Closeable {
         connectionChannelThread.shutdown();
     }
 
-    public static final class Configuration {
+    public static final class Configuration<T extends ProtocolChannel> {
         private Endpoint endpoint;
 
         private String endpointName;
@@ -169,7 +169,7 @@ public class ProtocolChannelClient implements Closeable {
         private ThreadFactory connectionChannelThreadFactory = Executors.defaultThreadFactory();
         private String uriScheme;
         private URI uri;
-        private ProtocolChannelReceiverFactory channelReceiverFactory;
+        private ProtocolChannelFactory<T> channelFactory;
         private Executor executor;
 
         public Configuration() {
@@ -188,8 +188,8 @@ public class ProtocolChannelClient implements Closeable {
             if (uri == null) {
                 throw new IllegalArgumentException("Null uri");
             }
-            if (channelReceiverFactory == null) {
-                throw new IllegalArgumentException("Null channel receiver factory");
+            if (channelFactory == null) {
+                throw new IllegalArgumentException("Null channel factory");
             }
         }
 
@@ -257,12 +257,12 @@ public class ProtocolChannelClient implements Closeable {
             this.executor = readExecutor;
         }
 
-        public ProtocolChannelReceiverFactory getChannelReceiverFactory() {
-            return channelReceiverFactory;
+        public ProtocolChannelFactory<T> getChannelFactory() {
+            return channelFactory;
         }
 
-        public void setChannelReceiverFactory(ProtocolChannelReceiverFactory channelReceiverFactory) {
-            this.channelReceiverFactory = channelReceiverFactory;
+        public void setChannelFactory(ProtocolChannelFactory<T> channelFactory) {
+            this.channelFactory = channelFactory;
         }
     }
 

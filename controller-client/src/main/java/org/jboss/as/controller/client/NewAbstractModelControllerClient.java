@@ -130,6 +130,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         private final ModelNode operation;
 
         ExecuteRequest(final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
+            super(true);
             this.operation = operation;
             executeRequestContext = new ExecuteRequestContext(messageHandler, attachments);
         }
@@ -142,10 +143,8 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         @Override
         protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
             //TODO Cleanup: this could leak if something goes wrong in the calling code
-            activeRequests.put(currentRequestId, executeRequestContext);
+            activeRequests.put(getCurrentRequestId(), executeRequestContext);
 
-            output.write(NewModelControllerProtocol.PARAM_EXECUTION_ID);
-            output.writeInt(currentRequestId);
             output.write(NewModelControllerProtocol.PARAM_OPERATION);
             operation.writeExternal(output);
             output.write(NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
@@ -167,7 +166,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
                 node.readExternal(input);
                 return node;
             } finally {
-                activeRequests.remove(currentRequestId);
+                activeRequests.remove(getCurrentRequestId());
             }
         }
     }
@@ -180,8 +179,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_EXECUTION_ID);
-            int executionId = input.readInt();
+            int executionId = getContext().getHeader().getExecutionId();
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
             MessageSeverity severity = Enum.valueOf(MessageSeverity.class, input.readUTF());
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_MESSAGE);
@@ -209,8 +207,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         InputStream attachmentInput;
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_EXECUTION_ID);
-            int executionId = input.readInt();
+            int executionId = getContext().getHeader().getExecutionId();
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
             int index = input.readInt();
 

@@ -37,7 +37,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.process.ProcessControllerClient;
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
@@ -94,7 +94,7 @@ class ManagedServer implements ModelController {
     private final ManagedServerBootConfiguration bootConfiguration;
     private final byte[] authKey;
     private volatile ServerState state;
-    private volatile ProtocolChannel serverManagementChannel;
+    private volatile ManagementChannel serverManagementChannel;
 
     public ManagedServer(final String serverName, final ProcessControllerClient processControllerClient,
             final InetSocketAddress managementSocket, final ManagedServerBootConfiguration bootConfiguration) {
@@ -124,7 +124,7 @@ class ManagedServer implements ModelController {
         return serverProcessName;
     }
 
-    ProtocolChannel getServerManagementChannel() {
+    ManagementChannel getServerManagementChannel() {
         return serverManagementChannel;
     }
 
@@ -150,7 +150,7 @@ class ManagedServer implements ModelController {
         return null;
     }
 
-    void setServerManagementChannel(ProtocolChannel serverManagementChannel) {
+    void setServerManagementChannel(ManagementChannel serverManagementChannel) {
         this.serverManagementChannel = serverManagementChannel;
     }
 

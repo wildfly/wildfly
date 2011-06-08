@@ -32,7 +32,8 @@ import java.util.concurrent.Executors;
 
 import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiverFactory;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -51,20 +52,20 @@ public class HostControllerConnectionService implements Service<ProtocolChannel>
     private final InjectedValue<InetSocketAddress> hcAddress = new InjectedValue<InetSocketAddress>();
 
     private volatile ProtocolChannel channel;
-    private volatile ProtocolChannelClient client;
+    private volatile ProtocolChannelClient<ManagementChannel> client;
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
 
-        ProtocolChannelClient client;
+        ProtocolChannelClient<ManagementChannel> client;
         try {
             ExecutorService executorService = Executors.newCachedThreadPool();
-            ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
+            ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
             configuration.setEndpointName("endpoint");
             configuration.setUriScheme("remote");
             configuration.setUri(new URI("remote://" + hcAddress.getValue().getHostName() + ":" + hcAddress.getValue().getPort()));
             configuration.setExecutor(executorService);
-            configuration.setChannelReceiverFactory(new ManagementChannelReceiverFactory());
+            configuration.setChannelFactory(new ManagementChannelFactory());
             client = ProtocolChannelClient.create(configuration);
         } catch (Exception e) {
             throw new StartException(e);

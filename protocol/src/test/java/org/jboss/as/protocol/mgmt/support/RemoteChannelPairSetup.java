@@ -31,9 +31,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiverFactory;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.OpenListener;
 import org.xnio.IoUtils;
@@ -52,16 +52,16 @@ public class RemoteChannelPairSetup implements RemotingChannelPairSetup {
     ChannelServer channelServer;
 
     protected ExecutorService executorService;
-    protected ProtocolChannel serverChannel;
-    protected ProtocolChannel clientChannel;
+    protected ManagementChannel serverChannel;
+    protected ManagementChannel clientChannel;
 
     final CountDownLatch clientConnectedLatch = new CountDownLatch(1);
 
-    public ProtocolChannel getServerChannel() {
+    public ManagementChannel getServerChannel() {
         return serverChannel;
     }
 
-    public ProtocolChannel getClientChannel() {
+    public ManagementChannel getClientChannel() {
         return clientChannel;
     }
 
@@ -86,7 +86,7 @@ public class RemoteChannelPairSetup implements RemotingChannelPairSetup {
 
             @Override
             public void channelOpened(Channel channel) {
-                serverChannel = ProtocolChannel.create(TEST_CHANNEL, channel, new ManagementChannelReceiverFactory());
+                serverChannel = new ManagementChannelFactory().create(TEST_CHANNEL, channel);
                 serverChannel.startReceiving();
                 clientConnectedLatch.countDown();
             }
@@ -94,14 +94,14 @@ public class RemoteChannelPairSetup implements RemotingChannelPairSetup {
     }
 
     public void startChannels() throws IOException, URISyntaxException {
-        ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
+        ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
         configuration.setEndpointName(ENDPOINT_NAME);
         configuration.setUriScheme(URI_SCHEME);
         configuration.setUri(new URI("" + URI_SCHEME + "://[::1]:" + PORT + ""));
         configuration.setExecutor(executorService);
-        configuration.setChannelReceiverFactory(new ManagementChannelReceiverFactory());
+        configuration.setChannelFactory(new ManagementChannelFactory());
 
-        ProtocolChannelClient client = ProtocolChannelClient.create(configuration);
+        ProtocolChannelClient<ManagementChannel> client = ProtocolChannelClient.create(configuration);
         client.connect();
         clientChannel = client.openChannel(TEST_CHANNEL);
         try {

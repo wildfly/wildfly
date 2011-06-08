@@ -22,35 +22,32 @@
 package org.jboss.as.protocol;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.remoting3.Attachments;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
+import org.xnio.IoUtils;
 
 /**
- * A wrapper around the Channel to make sure the receiver only gets set once
+ * A wrapper around the {@link Channel} that handles repeated receives on the Channel.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ProtocolChannel implements Channel {
+public abstract class ProtocolChannel implements Channel, Channel.Receiver {
     private final String name;
     private final Channel channel;
-    private final ProtocolChannelReceiver channelReceiver;
     private boolean start;
+    private final AtomicBoolean closed = new AtomicBoolean();
+    private final AtomicBoolean shutdownWrites = new AtomicBoolean();
+    private final AtomicBoolean stopReceiving = new AtomicBoolean();
 
-    private ProtocolChannel(String name, Channel channel, ProtocolChannelReceiver channelReceiver) {
+    protected ProtocolChannel(String name, Channel channel) {
         this.name = name;
         this.channel = channel;
-        this.channelReceiver = channelReceiver;
-    }
-
-    public static ProtocolChannel create(String name, Channel channel, ProtocolChannelReceiverFactory factory) {
-        ProtocolChannelReceiver receiver = factory.create();
-        ProtocolChannel protocolChannel = new ProtocolChannel(name, channel, receiver);
-        receiver.setChannel(protocolChannel);
-        return protocolChannel;
     }
 
     public void startReceiving() {
@@ -60,15 +57,11 @@ public class ProtocolChannel implements Channel {
             throw new IllegalStateException("Channel and receiver already started");
         }
 
-        channelReceiver.receive();
+        channel.receiveMessage(this);
     }
 
     public String getName() {
         return name;
-    }
-
-    public <T extends ProtocolChannelReceiver> T getReceiver(Class<T> clazz) {
-        return clazz.cast(channelReceiver);
     }
 
     /**
@@ -110,6 +103,14 @@ public class ProtocolChannel implements Channel {
      * {@inheritDoc}
      */
     public void writeShutdown() throws IOException {
+        if (!shutdownWrites.compareAndSet(false, true)) {
+            throw new IllegalStateException("Writes already shut down");
+        }
+        try {
+            waitUntilClosable();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         channel.writeShutdown();
     }
 
@@ -124,7 +125,70 @@ public class ProtocolChannel implements Channel {
      * {@inheritDoc}
      */
     public void close() throws IOException {
-        channelReceiver.stop();
+        if (!closed.compareAndSet(false, true)) {
+            throw new IllegalStateException("Channel already closed");
+        }
+        try {
+            waitUntilClosable();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         channel.close();
     }
+
+    @Override
+    public void handleError(Channel channel, IOException error) {
+        //TODO handle this?
+        error.printStackTrace();
+    }
+
+    @Override
+    public void handleEnd(Channel channel) {
+        //TODO handle this?
+    }
+
+    void receive() {
+        channel.receiveMessage(this);
+    }
+
+    public void stopReceiving() {
+        if (!stopReceiving.compareAndSet(false, true)) {
+            throw new IllegalStateException("Channel already stopped receiving");
+        }
+        try {
+            waitUntilClosable();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    protected boolean getClosed() {
+        return closed.get();
+    }
+
+    protected boolean getWritesShutdown() {
+        return shutdownWrites.get();
+    }
+
+    protected boolean getStopReceiving() {
+        return stopReceiving.get();
+    }
+
+    @Override
+    public void handleMessage(final Channel channel, final MessageInputStream message) {
+        channel.receiveMessage(this);
+        try {
+            doHandle(channel, message);
+        } finally {
+            if (stopReceiving.get()) {
+                IoUtils.safeClose(channel);
+            }
+        }
+    }
+
+    protected void waitUntilClosable() throws InterruptedException {
+    }
+
+    protected abstract void doHandle(final Channel channel, final MessageInputStream message);
+
 }

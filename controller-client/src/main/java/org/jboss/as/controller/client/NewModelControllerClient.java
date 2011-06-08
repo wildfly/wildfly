@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
 
@@ -105,7 +105,7 @@ public interface NewModelControllerClient extends Closeable {
          * @return A model controller client
          * @throws UnknownHostException if the host cannot be found
          */
-        public static NewModelControllerClient create(final ProtocolChannel channel) {
+        public static NewModelControllerClient create(final ManagementChannel channel) {
             return new NewExistingChannelModelControllerClient(channel);
         }
 

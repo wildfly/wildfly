@@ -49,11 +49,10 @@ import org.jboss.as.domain.controller.DomainControllerSlave;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
-import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiverFactory;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
@@ -78,16 +77,15 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private final String name;
     private final RemoteFileRepository remoteFileRepository;
 
-    private volatile ProtocolChannelClient channelClient;
+    private volatile ProtocolChannelClient<ManagementChannel> channelClient;
     /** Used to invoke ModelController ops on the master */
     private volatile ModelController masterProxy;
     /** Handler for transactional operations */
     private volatile TransactionalModelControllerOperationHandler txOperationHandler;
     private final AtomicBoolean shutdown = new AtomicBoolean();
-    private volatile ProtocolChannel channel;
+    private volatile ManagementChannel channel;
     private volatile ReconnectInfo reconnectInfo;
     private final ExecutorService executor = Executors.newCachedThreadPool();
-    private volatile ManagementChannelReceiver receiver;
 
     public RemoteDomainConnectionService(final String name, final InetAddress host, final int port, final FileRepository localRepository){
         this.name = name;
@@ -128,14 +126,14 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
     private synchronized void connect(final String hostName, final InetAddress ourAddress, final int ourPort, final DomainControllerSlave slave) {
         txOperationHandler = new SlaveDomainControllerOperationHandler(slave);
-        ProtocolChannelClient client;
+        ProtocolChannelClient<ManagementChannel> client;
         try {
-            ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
+            ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
             configuration.setEndpointName("endpoint");
             configuration.setUriScheme("remote");
             configuration.setUri(new URI("remote://" + host.getHostAddress() + ":" + port));
             configuration.setExecutor(executor);
-            configuration.setChannelReceiverFactory(new ManagementChannelReceiverFactory(txOperationHandler));
+            configuration.setChannelFactory(new ManagementChannelFactory(txOperationHandler));
             client = ProtocolChannelClient.create(configuration);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -149,7 +147,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             }
 
             //TODO rename to management
-            ProtocolChannel channel = client.openChannel("domain");
+            ManagementChannel channel = client.openChannel("domain");
             this.channel = channel;
             channel.startReceiving();
 
@@ -182,7 +180,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             log.errorf(e, "Error unregistering from master");
         }
         finally {
-            receiver.stop();
+            channel.stopReceiving();
             channelClient.close();
         }
     }

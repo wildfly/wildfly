@@ -21,9 +21,8 @@
 */
 package org.jboss.as.remoting;
 
-import org.jboss.as.protocol.ProtocolChannel;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiverFactory;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -53,7 +52,6 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
     private final String channelName;
     private final OptionMap optionMap;
     private volatile Registration registration;
-    private volatile ManagementChannelReceiver receiver;
 
     public ChannelOpenListenerService(final String channelName, OptionMap optionMap) {
         this.channelName = channelName;
@@ -95,12 +93,12 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
 
     @Override
     public void channelOpened(Channel channel) {
-        ProtocolChannel protocolChannel = ProtocolChannel.create(channelName, channel, new ManagementChannelReceiverFactory(operationHandlerValue.getValue()));
+        final ManagementChannel protocolChannel = new ManagementChannelFactory().create(channelName, channel);
         protocolChannel.startReceiving();
         channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed) {
-                receiver.stop();
+                protocolChannel.stopReceiving();
             }
         });
     }
