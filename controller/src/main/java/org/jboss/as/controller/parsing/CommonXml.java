@@ -200,7 +200,13 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseSchemaLocations(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updateList, final int idx) throws XMLStreamException {
-        final List<String> values = reader.getListAttributeValue(idx);
+        final List<String> elements = reader.getListAttributeValue(idx);
+        final List<String> values = new ArrayList<String>();
+        for(String element : elements) {
+            if(!element.trim().isEmpty()) {
+                values.add(element);
+            }
+        }
         if ((values.size() & 1) != 0) {
             throw invalidAttributeValue(reader, idx);
         }
