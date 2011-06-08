@@ -89,8 +89,8 @@ public class ServerToHostOperationHandler implements ManagementOperationHandler,
         public void readRequest(final DataInput input) throws IOException {
             expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
             final String serverName = input.readUTF();
-            log.infof("Server [%s] registered using connection [%s]", serverName, getChannel());
-            ServerToHostOperationHandler.this.callback.getValue().serverRegistered(serverName, getChannel());
+            log.infof("Server [%s] registered using connection [%s]", serverName, getContext().getChannel());
+            ServerToHostOperationHandler.this.callback.getValue().serverRegistered(serverName, getContext().getChannel());
         }
 
         @Override

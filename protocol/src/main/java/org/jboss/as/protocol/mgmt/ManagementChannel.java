@@ -1,24 +1,21 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2006, Red Hat Middleware LLC, and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * JBoss, Home of Professional Open Source
+ * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * as indicated by the @authors tag. All rights reserved.
+ * See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This copyrighted material is made available to anyone wishing to use,
+ * modify, copy, or redistribute it subject to the terms and conditions
+ * of the GNU Lesser General Public License, v. 2.1.
+ * This program is distributed in the hope that it will be useful, but WITHOUT A
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License,
+ * v.2.1 along with this distribution; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA  02110-1301, USA.
+ */
 package org.jboss.as.protocol.mgmt;
 
 import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
@@ -28,9 +25,12 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
-import org.jboss.as.protocol.ProtocolChannelReceiver;
+import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.remoting3.Channel;
@@ -42,24 +42,26 @@ import org.xnio.IoUtils;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ManagementChannelReceiver extends ProtocolChannelReceiver {
+public class ManagementChannel extends ProtocolChannel implements ManagementRequestExecutionCallback {
+
+    private final CountDownLatch completedActiveRequestsLatch = new CountDownLatch(1);
 
     private final RequestReceiver requestReceiver = new RequestReceiver();
     private final ResponseReceiver responseReceiver = new ResponseReceiver();
 
-    ManagementChannelReceiver() {
+    //GuardedBy(this)
+    private final Set<Integer> outgoingExecutions = new HashSet<Integer>();
+
+    ManagementChannel(String name, Channel channel) {
+        super(name, channel);
     }
 
     public void setOperationHandler(final ManagementOperationHandler handler) {
         requestReceiver.setOperationHandler(handler);
     }
 
-    public void registerResponseHandler(final int requestId, final ManagementResponseHandler<?> handler) throws IOException {
-        responseReceiver.registerResponseHandler(requestId, handler);
-    }
-
     @Override
-    public void doHandle(final Channel channel, final MessageInputStream message) {
+    protected void doHandle(final Channel channel, final MessageInputStream message) {
         final SimpleDataInput input = new SimpleDataInput(Marshalling.createByteInput(message)) {
 
         };
@@ -78,6 +80,49 @@ public class ManagementChannelReceiver extends ProtocolChannelReceiver {
         }
     }
 
+    void executeRequest(ManagementRequest<?> request, ManagementResponseHandler<?> responseHandler) throws IOException {
+        responseReceiver.registerResponseHandler(request.getCurrentRequestId(), responseHandler);
+        FlushableDataOutputImpl output = FlushableDataOutputImpl.create(this.writeMessage());
+        try {
+            request.writeRequest(this, output);
+        } finally {
+            IoUtils.safeClose(output);
+        }
+    }
+
+    @Override
+    public synchronized void registerOutgoingExecution(int executionId) {
+        //System.out.println("--- Start outgoing execution " + executionId);
+        outgoingExecutions.add(executionId);
+    }
+
+    @Override
+    public synchronized void completeOutgoingExecution(int executionId) {
+        outgoingExecutions.remove(executionId);
+        if ((getClosed() || getWritesShutdown()) && outgoingExecutions.size() == 0) {
+            completedActiveRequestsLatch.countDown();
+        }
+        //System.out.println("--- End outgoing execution " + executionId);
+    }
+
+    protected void waitUntilClosable() throws InterruptedException {
+        boolean wait = false;
+        synchronized (this) {
+            wait = outgoingExecutions.size() > 0;
+        }
+        if (wait) {
+            completedActiveRequestsLatch.await();
+        }
+    }
+
+    synchronized FlushableDataOutputImpl writeMessage(int executionId) throws IOException {
+        if (getClosed() || getWritesShutdown()) {
+            if (!outgoingExecutions.contains(executionId)) {
+                throw new IOException("Can't accept new requests in a closed channel");
+            }
+        }
+        return FlushableDataOutputImpl.create(writeMessage());
+    }
 
     private class RequestReceiver {
         private ManagementOperationHandler operationHandler;
@@ -88,7 +133,7 @@ public class ManagementChannelReceiver extends ProtocolChannelReceiver {
             //System.out.println("Handling " + header.getRequestId());
             FlushableDataOutputImpl output;
             try {
-                output = FlushableDataOutputImpl.create(getChannel().writeMessage());
+                output = writeMessage(header.getExecutionId());
             } catch (IOException e) {
                 // AutoGenerated
                 throw new IOException("Error handling " + header.getRequestId(), e);
@@ -99,7 +144,7 @@ public class ManagementChannelReceiver extends ProtocolChannelReceiver {
                 ManagementRequestHandler requestHandler = getRequestHandler(operationHandler, input);
                 expectHeader(input, ManagementProtocol.REQUEST_START);
                 expectHeader(input, ManagementProtocol.REQUEST_BODY);
-                requestHandler.setChannel(getChannel());
+                requestHandler.setContext(new ManagementRequestContext(ManagementChannel.this, header));
                 requestHandler.readRequest(input);
                 expectHeader(input, ManagementProtocol.REQUEST_END);
 

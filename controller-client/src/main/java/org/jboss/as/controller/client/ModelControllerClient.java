@@ -28,7 +28,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.CancellationException;
 
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -86,7 +86,7 @@ public interface ModelControllerClient extends Closeable {
          * @return A model controller client
          * @throws UnknownHostException if the host cannot be found
          */
-        public static ModelControllerClient create(final ProtocolChannel channel) {
+        public static ModelControllerClient create(final ManagementChannel channel) {
             return new ExistingChannelModelControllerClient(channel);
         }
 

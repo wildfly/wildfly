@@ -25,14 +25,14 @@ package org.jboss.as.host.controller;
 import java.util.Map;
 
 import org.jboss.as.process.ProcessInfo;
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 
 /**
  * @author Emanuel Muckenhuber
  */
 public interface ManagedServerLifecycleCallback {
 
-    void serverRegistered(String serverName, ProtocolChannel channel);
+    void serverRegistered(String serverName, ManagementChannel channel);
     void serverStartFailed(String serverName);
     void serverStopped(String serverName);
     void processInventory(Map<String, ProcessInfo> processInfos);

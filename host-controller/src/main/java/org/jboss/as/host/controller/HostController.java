@@ -24,7 +24,7 @@ package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -97,7 +97,7 @@ public interface HostController {
      * @param serverName the name of the server
      * @param channel the channel to the running server
      */
-    void registerRunningServer(String serverName, ProtocolChannel channel);
+    void registerRunningServer(String serverName, ManagementChannel channel);
 
     /**
      * Unregisters a running server from the domain model

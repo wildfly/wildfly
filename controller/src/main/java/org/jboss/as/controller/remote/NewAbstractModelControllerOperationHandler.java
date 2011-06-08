@@ -35,11 +35,12 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.NewModelControllerProtocol;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.old.ProtocolUtils;
 
@@ -61,7 +62,7 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
     @Override
     public abstract ManagementRequestHandler getRequestHandler(final byte id);
 
-    protected ManagementClientChannelStrategy getChannelStrategy(ProtocolChannel channel) {
+    protected ManagementClientChannelStrategy getChannelStrategy(ManagementChannel channel) {
         return ManagementClientChannelStrategy.create(channel);
     }
 
@@ -69,24 +70,20 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
      * A proxy to the operation message handler on the remote caller
      */
     class OperationMessageHandlerProxy implements OperationMessageHandler {
-        final ProtocolChannel channel;
+        final ManagementRequestContext context;
         final int executionId;
 
-        public OperationMessageHandlerProxy(final ProtocolChannel channel, final int executionId) {
-            this.channel = channel;
+        public OperationMessageHandlerProxy(final ManagementRequestContext context, final int executionId) {
+            this.context = context;
             this.executionId = executionId;
         }
 
         @Override
         public void handleReport(final MessageSeverity severity, final String message) {
-//            if (true) {
-//                System.out.println("!!!! REENABLE MESSAGE HANDLER PROXY");
-//                return;
-//            }
             try {
                 //Invoke this synchronously so that the messages appear in the right order on the
                 //remote caller
-                new ManagementRequest<Void>() {
+                new ManagementRequest<Void>(executionId) {
 
                     @Override
                     protected byte getRequestCode() {
@@ -95,8 +92,6 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
 
                     @Override
                     protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-                        output.write(NewModelControllerProtocol.PARAM_EXECUTION_ID);
-                        output.writeInt(executionId);
                         output.write(NewModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
                         output.writeUTF(severity.toString());
                         output.write(NewModelControllerProtocol.PARAM_MESSAGE);
@@ -107,7 +102,7 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
                     protected Void readResponse(final DataInput input) throws IOException {
                         return null;
                     }
-                }.executeForResult(executorService, getChannelStrategy(channel));
+                }.executeForResult(executorService, getChannelStrategy(context.getChannel()));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -117,10 +112,10 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
     class OperationAttachmentsProxy implements OperationAttachments {
         final List<InputStream> proxiedStreams;
 
-        OperationAttachmentsProxy(final ProtocolChannel channel, final int executionId, final int size){
+        OperationAttachmentsProxy(final ManagementRequestContext context, final int executionId, final int size){
             proxiedStreams = new ArrayList<InputStream>(size);
             for (int i = 0 ; i < size ; i++) {
-                proxiedStreams.add(new ProxiedInputStream(channel, executionId, i));
+                proxiedStreams.add(new ProxiedInputStream(context, executionId, i));
             }
         }
 
@@ -131,14 +126,14 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
     }
 
     private class ProxiedInputStream extends InputStream {
-        final ProtocolChannel channel;
+        final ManagementRequestContext context;
         final int executionId;
         final int index;
         volatile byte[] bytes;
         volatile ByteArrayInputStream delegate;
 
-        public ProxiedInputStream(final ProtocolChannel channel, final int executionId, final int index) {
-            this.channel = channel;
+        public ProxiedInputStream(final ManagementRequestContext context, final int executionId, final int index) {
+            this.context = context;
             this.executionId = executionId;
             this.index = index;
         }
@@ -166,7 +161,7 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
 
         void initializeBytes() {
             if (bytes == null) {
-                new ManagementRequest<Void>() {
+                new ManagementRequest<Void>(executionId) {
                     @Override
                     protected byte getRequestCode() {
                         return NewModelControllerProtocol.GET_INPUTSTREAM_REQUEST;
@@ -174,8 +169,6 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
 
                     @Override
                     protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
-                        output.write(NewModelControllerProtocol.PARAM_EXECUTION_ID);
-                        output.writeInt(executionId);
                         output.write(NewModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
                         output.writeInt(index);
                     }
@@ -196,7 +189,7 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
                         }
                         return null;
                     }
-                }.execute(executorService, getChannelStrategy(channel));
+                }.execute(executorService, getChannelStrategy(context.getChannel()));
             }
         }
     }

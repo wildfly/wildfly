@@ -32,7 +32,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -59,7 +59,7 @@ public class ModelControllerClientToModelControllerAdapter implements ModelContr
      *
      * @param connection the connection
      */
-    public ModelControllerClientToModelControllerAdapter(final ProtocolChannel channel, ExecutorService executorService) {
+    public ModelControllerClientToModelControllerAdapter(final ManagementChannel channel, ExecutorService executorService) {
         //TODO Get the executor from somewhere
         client = ModelControllerClient.Factory.create(channel);
     }

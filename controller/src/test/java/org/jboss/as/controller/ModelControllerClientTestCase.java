@@ -41,8 +41,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
-import org.jboss.as.protocol.ProtocolChannel;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
@@ -73,8 +72,8 @@ public class ModelControllerClientTestCase {
 
     @Test
     public void testSynchronousOperationMessageHandler() throws Exception {
-        ProtocolChannel serverChannel = channels.getServerChannel();
-        ProtocolChannel clientChannel = channels.getClientChannel();
+        ManagementChannel serverChannel = channels.getServerChannel();
+        ManagementChannel clientChannel = channels.getClientChannel();
         clientChannel.startReceiving();
 
         final CountDownLatch executeLatch = new CountDownLatch(1);
@@ -92,11 +91,11 @@ public class ModelControllerClientTestCase {
         };
 
         NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
-        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
+        serverChannel.setOperationHandler(operationHandler);
 
         NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
         try {
-            clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler((ManagementOperationHandler)client);
+            clientChannel.setOperationHandler((ManagementOperationHandler)client);
 
             ModelNode operation = new ModelNode();
             operation.get("test").set("123");
@@ -128,8 +127,8 @@ public class ModelControllerClientTestCase {
         final byte[] firstBytes = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         final byte[] secondBytes = new byte[] {10, 9, 8 , 7 , 6, 5, 4, 3, 2, 1};
 
-        ProtocolChannel serverChannel = channels.getServerChannel();
-        ProtocolChannel clientChannel = channels.getClientChannel();
+        ManagementChannel serverChannel = channels.getServerChannel();
+        ManagementChannel clientChannel = channels.getClientChannel();
         clientChannel.startReceiving();
 
         final CountDownLatch executeLatch = new CountDownLatch(1);
@@ -175,11 +174,11 @@ public class ModelControllerClientTestCase {
         };
 
         NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
-        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
+        serverChannel.setOperationHandler(operationHandler);
 
         NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
         try {
-            clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler((ManagementOperationHandler)client);
+            clientChannel.setOperationHandler((ManagementOperationHandler)client);
 
             ModelNode operation = new ModelNode();
             operation.get("test").set("123");
@@ -203,8 +202,8 @@ public class ModelControllerClientTestCase {
 
     @Test
     public void testAsynchronousOperationWithMessageHandler() throws Exception {
-        ProtocolChannel serverChannel = channels.getServerChannel();
-        ProtocolChannel clientChannel = channels.getClientChannel();
+        ManagementChannel serverChannel = channels.getServerChannel();
+        ManagementChannel clientChannel = channels.getClientChannel();
         clientChannel.startReceiving();
 
         final CountDownLatch executeLatch = new CountDownLatch(1);
@@ -222,11 +221,11 @@ public class ModelControllerClientTestCase {
         };
 
         NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
-        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
+        serverChannel.setOperationHandler(operationHandler);
 
         NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
         try {
-            clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler((ManagementOperationHandler)client);
+            clientChannel.setOperationHandler((ManagementOperationHandler)client);
 
             ModelNode operation = new ModelNode();
             operation.get("test").set("123");

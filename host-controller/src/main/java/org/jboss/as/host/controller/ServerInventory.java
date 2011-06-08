@@ -34,7 +34,7 @@ import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -207,7 +207,7 @@ class ServerInventory implements ManagedServerLifecycleCallback {
 
     /** {@inheritDoc} */
     @Override
-    public void serverRegistered(String serverName, ProtocolChannel channel) {
+    public void serverRegistered(String serverName, ManagementChannel channel) {
         try {
             final ManagedServer server = servers.get(serverName);
             if (server == null) {

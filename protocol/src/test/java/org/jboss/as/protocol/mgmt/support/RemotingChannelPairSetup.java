@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 
 /**
  *
@@ -33,8 +33,8 @@ import org.jboss.as.protocol.ProtocolChannel;
  * @version $Revision: 1.1 $
  */
 public interface RemotingChannelPairSetup {
-    ProtocolChannel getServerChannel();
-    ProtocolChannel getClientChannel();
+    ManagementChannel getServerChannel();
+    ManagementChannel getClientChannel();
     ExecutorService getExecutorService();
     void setupRemoting() throws IOException;
     void startChannels() throws IOException, URISyntaxException;

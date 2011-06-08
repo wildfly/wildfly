@@ -38,7 +38,7 @@ import java.util.Arrays;
  */
 abstract class ManagementProtocolHeader {
 
-    protected int version;
+    private int version;
 
     /**
      * Construct an instance with the protocol version for the header.
@@ -48,19 +48,6 @@ abstract class ManagementProtocolHeader {
     protected ManagementProtocolHeader(int version) {
         this.version = version;
     }
-
-//    /**
-//     * Read the header information from the provided {@link java.io.DataInput}.
-//     *
-//     * @param input The input to read from
-//     * @throws IOException If any problems occur reading from the input
-//     */
-//    public void read(final DataInput input) throws IOException {
-//        validateSignature(input);
-//        expectHeader(input, ManagementProtocol.VERSION_FIELD);
-//        this.version = input.readInt();
-//    }
-
     /**
      * Write the header information to the provided {@link java.io.DataOutput}.
      *
@@ -96,7 +83,9 @@ abstract class ManagementProtocolHeader {
      *
      * @return true if this header is a request; false if it is a response
      */
-    abstract boolean isRequest();
+    boolean isRequest() {
+        return getType() == ManagementProtocol.REQUEST;
+    }
 
     /**
      * Validate the header signature.

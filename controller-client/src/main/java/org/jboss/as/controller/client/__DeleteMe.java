@@ -27,8 +27,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,12 +41,12 @@ public class __DeleteMe {
 
     public static void main(String[] args) throws Exception {
         ExecutorService executorService = Executors.newCachedThreadPool();
-        ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
+        ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
         configuration.setEndpointName("endpoint");
         configuration.setUriScheme("remote");
         configuration.setUri(new URI("remote://localhost:9999"));
         configuration.setExecutor(executorService);
-        ProtocolChannelClient client = ProtocolChannelClient.create(configuration);
+        ProtocolChannelClient<ManagementChannel> client = ProtocolChannelClient.create(configuration);
 
         while (true) {
             try {
@@ -56,7 +56,7 @@ public class __DeleteMe {
             } catch (ConnectException e) {
             }
         }
-        ProtocolChannel channel = client.openChannel("management");
+        ManagementChannel channel = client.openChannel("management");
         ModelControllerClient modelControllerClient = ModelControllerClient.Factory.create(channel);
 
         //ModelControllerClient modelControllerClient = ModelControllerClient.Factory.create("localhost", 9999);

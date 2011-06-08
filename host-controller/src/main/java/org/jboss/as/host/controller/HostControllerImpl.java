@@ -43,7 +43,7 @@ import org.jboss.as.host.controller.operations.ServerStartHandler;
 import org.jboss.as.host.controller.operations.ServerStatusHandler;
 import org.jboss.as.host.controller.operations.ServerStopHandler;
 import org.jboss.as.process.ProcessInfo;
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -124,7 +124,7 @@ public class HostControllerImpl implements HostController {
     }
 
     @Override
-    public void registerRunningServer(String serverName, ProtocolChannel channel) {
+    public void registerRunningServer(String serverName, ManagementChannel channel) {
         final PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
 
         final NewProxyController serverController = NewRemoteProxyController.create(Executors.newCachedThreadPool(), PathAddress.pathAddress(PathElement.pathElement(HOST, name), element), channel);

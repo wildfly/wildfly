@@ -51,8 +51,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
 import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
-import org.jboss.as.protocol.ProtocolChannel;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFutureTask;
 import org.junit.After;
@@ -450,15 +449,15 @@ public class RemoteProxyControllerTestCase {
     }
 
     private NewRemoteProxyController setupProxyHandlers(MockModelController controller) {
-        ProtocolChannel serverChannel = channels.getServerChannel();
-        ProtocolChannel clientChannel = channels.getClientChannel();
+        ManagementChannel serverChannel = channels.getServerChannel();
+        ManagementChannel clientChannel = channels.getClientChannel();
         clientChannel.startReceiving();
 
         NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
-        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
+        serverChannel.setOperationHandler(operationHandler);
 
         NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
-        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(proxyController);
+        clientChannel.setOperationHandler(proxyController);
 
         return proxyController;
     }

@@ -101,7 +101,7 @@ public class MasterDomainControllerOperationHandlerImpl extends ModelControllerO
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
             ModelNode node;
             try {
-                getController().addClient(new RemoteDomainControllerSlaveClient(hostId, getChannel()));
+                getController().addClient(new RemoteDomainControllerSlaveClient(hostId, getContext().getChannel()));
                 node = getController().getDomainModel();
             } catch (IllegalArgumentException e){
                 log.error(e);

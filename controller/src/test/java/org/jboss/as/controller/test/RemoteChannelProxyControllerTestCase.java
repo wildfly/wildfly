@@ -27,8 +27,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
 import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
-import org.jboss.as.protocol.ProtocolChannel;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.junit.After;
 
 /**
@@ -56,15 +55,15 @@ public class RemoteChannelProxyControllerTestCase extends AbstractProxyControlle
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        ProtocolChannel serverChannel = channels.getServerChannel();
-        ProtocolChannel clientChannel = channels.getClientChannel();
+        ManagementChannel serverChannel = channels.getServerChannel();
+        ManagementChannel clientChannel = channels.getClientChannel();
         clientChannel.startReceiving();
 
         NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), proxiedController);
-        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
+        serverChannel.setOperationHandler(operationHandler);
 
         NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), proxyNodeAddress, channels.getClientChannel());
-        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(proxyController);
+        clientChannel.setOperationHandler(proxyController);
 
         return proxyController;
     }
