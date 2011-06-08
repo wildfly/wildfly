@@ -33,6 +33,7 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -251,7 +252,15 @@ public class EeExtension implements Extension {
         static final EESubsystemDescribeHandler INSTANCE = new EESubsystemDescribeHandler();
 
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-            context.getResult().add(createEESubSystemAddOperation());
+            final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
+            final ModelNode op = createEESubSystemAddOperation();
+            if (model.hasDefined(CommonAttributes.GLOBAL_MODULES)) {
+                op.get(CommonAttributes.GLOBAL_MODULES).set(model.get(CommonAttributes.GLOBAL_MODULES));
+            }
+            if (model.hasDefined(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName())) {
+                op.get(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName()).set(model.get(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName()));
+            }
+            context.getResult().add(op);
             context.completeStep();
         }
 
