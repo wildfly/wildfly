@@ -944,6 +944,9 @@
         <module-def name="javax.wsdl4j.api">
             <maven-resource group="wsdl4j" artifact="wsdl4j"/>
         </module-def>
+
+        <module-def name="sun.jdk"/>
+
     </target>
 
     <target name="bundles">
