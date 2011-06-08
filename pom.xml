@@ -361,6 +361,7 @@
                                     <bannedDependencies>
                                         <searchTransitive>true</searchTransitive>
                                         <excludes>
+                                            <exclude>args4j:args4j</exclude>
                                             <exclude>com.fasterxml:classmate</exclude>
                                             <exclude>com.google.inject:guice</exclude>
                                             <exclude>commons-logging:commons-logging</exclude>
@@ -3668,6 +3669,12 @@
                 <groupId>org.jboss.osgi.spi</groupId>
                 <artifactId>jbosgi-spi</artifactId>
                 <version>${version.org.jboss.osgi.spi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>args4j</groupId>
+                        <artifactId>args4j</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
