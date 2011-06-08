@@ -25,6 +25,9 @@ package org.jboss.as.txn;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import static org.jboss.as.txn.CommonAttributes.BINDING;
 import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
 import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
@@ -123,104 +126,112 @@ class TransactionSubsystemAdd implements NewStepHandler {
         subModel.get(OBJECT_STORE,PATH).set(operation.get(OBJECT_STORE, PATH));
 
         if (context.getType() == NewOperationContext.Type.SERVER) {
+            if(context.isBooting()) {
+                context.addStep(new AbstractDeploymentChainStep() {
+                    protected void execute(DeploymentProcessorTarget processorTarget) {
+                        processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_TRANSACTION_BINDINGS, new TransactionJndiBindingProcessor());
+                    }
+                }, NewOperationContext.Stage.RUNTIME);
+            }
+
             context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) {
-                    final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
-                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    final ServiceTarget target = context.getServiceTarget();
+                        public void execute(NewOperationContext context, ModelNode operation) {
+                            final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+                            final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                            final ServiceTarget target = context.getServiceTarget();
 
-                    // Configure the core configuration.
-                    String socketBindingName = null;
-                    final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier, varDirPath);
-                    if (processId.hasDefined(ProcessIdType.UUID.getName())) {
-                        // Use the UUID based id
-                        UuidProcessId id = new UuidProcessId();
-                        coreEnvironmentService.setProcessImplementation(id);
-                    }
-                    else if(processId.hasDefined(ProcessIdType.SOCKET.getName())) {
-                        // Use the socket process id
-                        coreEnvironmentService.setProcessImplementationClassName(ProcessIdType.SOCKET.getClazz());
-                        ModelNode socket = processId.get(ProcessIdType.SOCKET.getName());
-                        socketBindingName = socket.require(BINDING).asString();
-                        if(socket.hasDefined(SOCKET_PROCESS_ID_MAX_PORTS)) {
-                            int ports = socket.get(SOCKET_PROCESS_ID_MAX_PORTS).asInt(maxPorts);
-                            coreEnvironmentService.setSocketProcessIdMaxPorts(ports);
+                            // Configure the core configuration.
+                            String socketBindingName = null;
+                            final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier, varDirPath);
+                            if (processId.hasDefined(ProcessIdType.UUID.getName())) {
+                                // Use the UUID based id
+                                UuidProcessId id = new UuidProcessId();
+                                coreEnvironmentService.setProcessImplementation(id);
+                            } else if (processId.hasDefined(ProcessIdType.SOCKET.getName())) {
+                                // Use the socket process id
+                                coreEnvironmentService.setProcessImplementationClassName(ProcessIdType.SOCKET.getClazz());
+                                ModelNode socket = processId.get(ProcessIdType.SOCKET.getName());
+                                socketBindingName = socket.require(BINDING).asString();
+                                if (socket.hasDefined(SOCKET_PROCESS_ID_MAX_PORTS)) {
+                                    int ports = socket.get(SOCKET_PROCESS_ID_MAX_PORTS).asInt(maxPorts);
+                                    coreEnvironmentService.setSocketProcessIdMaxPorts(ports);
+                                }
+                            } else {
+                                // Default to UUID implementation
+                                UuidProcessId id = new UuidProcessId();
+                                coreEnvironmentService.setProcessImplementation(id);
+                            }
+                            ServiceBuilder<?> coreEnvBuilder = target.addService(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT, coreEnvironmentService);
+                            if (socketBindingName != null) {
+                                // Add a dependency on the socket id binding
+                                ServiceName bindingName = SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName);
+                                coreEnvBuilder.addDependency(bindingName, SocketBinding.class, coreEnvironmentService.getSocketProcessBindingInjector());
+                            }
+                            ServiceController<String> varDirRPS = RelativePathService.addService(INTERNAL_CORE_ENV_VAR_PATH, varDirPath, varDirPathRef, target);
+                            controllers.add(varDirRPS);
+                            controllers.add(coreEnvBuilder.addDependency(varDirRPS.getName(), String.class, coreEnvironmentService.getPathInjector())
+                                    .addListener(verificationHandler)
+                                    .setInitialMode(Mode.ACTIVE)
+                                    .install());
+
+                            // XATerminator has no deps, so just add it in there
+                            final XATerminatorService xaTerminatorService = new XATerminatorService();
+                            controllers.add(target.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(Mode.ACTIVE).install());
+
+                            // Configure the ObjectStoreEnvironmentBeans
+                            ServiceController<String> objectStoreRPS = RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target);
+                            controllers.add(objectStoreRPS);
+                            final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService();
+                            controllers.add(target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
+                                    .addDependency(objectStoreRPS.getName(), String.class, objStoreEnvironmentService.getPathInjector())
+                                    .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
+                                    .addListener(verificationHandler).setInitialMode(Mode.ACTIVE).install());
+
+                            final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener);
+                            controllers.add(target.addService(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, recoveryManagerService)
+                                    .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, recoveryManagerService.getOrbInjector())
+                                    .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, recoveryManagerService.getRecoveryBindingInjector())
+                                    .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, recoveryManagerService.getStatusBindingInjector())
+                                    .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
+                                    .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
+                                    .addListener(verificationHandler)
+                                    .setInitialMode(Mode.ACTIVE)
+                                    .install());
+
+                            final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable);
+                            controllers.add(target.addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService)
+                                    .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector())
+                                    .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector())
+                                    .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
+                                    .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
+                                    .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER)
+                                    .addListener(verificationHandler)
+                                    .setInitialMode(Mode.ACTIVE)
+                                    .install());
+
+                            controllers.add(TransactionManagerService.addService(target, verificationHandler));
+                            controllers.add(UserTransactionService.addService(target, verificationHandler));
+                            controllers.add(target.addService(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, new UserTransactionRegistryService())
+                                    .addListener(verificationHandler).setInitialMode(Mode.ACTIVE).install());
+                            controllers.add(TransactionSynchronizationRegistryService.addService(target, verificationHandler));
+
+                            //we need to initialize this class when we have the correct TCCL set
+                            //so we force it to be initialized here
+                            try {
+                                Class.forName("com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple", true, getClass().getClassLoader());
+                            } catch (ClassNotFoundException e) {
+                                log.warn("Could not load com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple", e);
+                            }
+
+                            context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+
+                            if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                                for (ServiceController<?> controller : controllers) {
+                                    context.removeService(controller.getName());
+                                }
+                            }
                         }
-                    } else {
-                        // Default to UUID implementation
-                        UuidProcessId id = new UuidProcessId();
-                        coreEnvironmentService.setProcessImplementation(id);
-                    }
-                    ServiceBuilder<?> coreEnvBuilder = target.addService(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT, coreEnvironmentService);
-                    if(socketBindingName != null) {
-                        // Add a dependency on the socket id binding
-                        ServiceName bindingName = SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName);
-                        coreEnvBuilder.addDependency(bindingName, SocketBinding.class, coreEnvironmentService.getSocketProcessBindingInjector());
-                    }
-                    ServiceController<String> varDirRPS = RelativePathService.addService(INTERNAL_CORE_ENV_VAR_PATH, varDirPath, varDirPathRef, target);
-                    coreEnvBuilder
-                        .addDependency(varDirRPS.getName(), String.class, coreEnvironmentService.getPathInjector())
-                        .setInitialMode(Mode.ACTIVE)
-                        .install();
-
-                    // XATerminator has no deps, so just add it in there
-                    final XATerminatorService xaTerminatorService = new XATerminatorService();
-                    target.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(Mode.ACTIVE).install();
-
-                    // Configure the ObjectStoreEnvironmentBeans
-                    ServiceController<String> objectStoreRPS = RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target);
-                    final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService();
-
-                    controllers.add(target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
-                            .addDependency(objectStoreRPS.getName(), String.class, objStoreEnvironmentService.getPathInjector())
-                            .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
-                            .addListener(verificationHandler).setInitialMode(Mode.ACTIVE).install());
-
-                    final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener);
-                    controllers.add(target.addService(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, recoveryManagerService)
-                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, recoveryManagerService.getOrbInjector())
-                        .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, recoveryManagerService.getRecoveryBindingInjector())
-                        .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, recoveryManagerService.getStatusBindingInjector())
-                        .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
-                        .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
-                        .addListener(verificationHandler)
-                        .setInitialMode(Mode.ACTIVE)
-                        .install());
-
-                    final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable);
-                    controllers.add(target.addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService)
-                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector())
-                        .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector())
-                        .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
-                        .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
-                        .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER)
-                        .addListener(verificationHandler)
-                        .setInitialMode(Mode.ACTIVE)
-                        .install());
-
-                    TransactionManagerService.addService(target);
-                    UserTransactionService.addService(target);
-                    controllers.add(target.addService(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, new UserTransactionRegistryService())
-                            .addListener(verificationHandler).setInitialMode(Mode.ACTIVE).install());
-                    TransactionSynchronizationRegistryService.addService(target);
-
-                    //we need to initialize this class when we have the correct TCCL set
-                    //so we force it to be initialized here
-                    try {
-                        Class.forName("com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple", true, getClass().getClassLoader());
-                    } catch (ClassNotFoundException e) {
-                        log.warn("Could not load com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple", e);
-                    }
-
-                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
-
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                        for (ServiceController<?> controller : controllers) {
-                            context.removeService(controller.getName());
-                        }
-                    }
-                }
-            }, NewOperationContext.Stage.RUNTIME);
+                    }, NewOperationContext.Stage.RUNTIME);
         }
 
         context.completeStep();
