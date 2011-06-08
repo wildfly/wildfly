@@ -23,13 +23,11 @@ package org.jboss.as.server.deployment.module;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.logging.Logger;
-import org.jboss.vfs.VirtualFile;
 
 /**
  * Marker that indicates that the contents of a resource roots META-INF directory should be ignored.
  *
  * @author Stuart Douglas
- *
  */
 public class IgnoreMetaInfMarker {
 
@@ -38,10 +36,6 @@ public class IgnoreMetaInfMarker {
     private static AttachmentKey<Boolean> IGNORE_META_INF = AttachmentKey.create(Boolean.class);
 
     public static void mark(ResourceRoot root) {
-        VirtualFile file = root.getRoot().getChild("META-INF");
-        if(file.exists()) {
-            log.warnf("META-INF directory %s ignored as it is not a valid location for META-INF", file.getPathName());
-        }
         root.putAttachment(IGNORE_META_INF, true);
     }
 

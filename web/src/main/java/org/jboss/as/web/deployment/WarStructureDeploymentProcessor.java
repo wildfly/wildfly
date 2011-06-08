@@ -36,6 +36,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
+import org.jboss.logging.Logger;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VFS;
@@ -55,6 +56,8 @@ import java.util.List;
  * @author Emanuel Muckenhuber
  */
 public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor {
+
+    private static final Logger logger = Logger.getLogger(WarStructureDeploymentProcessor.class);
 
     public static final String WEB_INF_LIB = "WEB-INF/lib";
     public static final String WEB_INF_CLASSES = "WEB-INF/classes";
@@ -145,7 +148,13 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         // WEB-INF classes
         final ResourceRoot webInfClassesRoot = new ResourceRoot(deploymentRoot.getChild(WEB_INF_CLASSES).getName(), deploymentRoot
                 .getChild(WEB_INF_CLASSES), null);
-        IgnoreMetaInfMarker.mark(webInfClassesRoot);
+        final VirtualFile webInfClassMetaInf = webInfClassesRoot.getRoot().getChild("META-INF");
+        // ignore all other files, except persistence.xml from the WEB-INF/classes/META-INF folder.
+        if (this.containsNonPersistenceXmlFiles(webInfClassMetaInf)) {
+            IgnoreMetaInfMarker.mark(webInfClassesRoot);
+            logger.warnf("Files, except persistence.xml, under META-INF directory %s ignored as it is not a " +
+                    "valid location for META-INF", webInfClassMetaInf.getPathName());
+        }
         ModuleRootMarker.mark(webInfClassesRoot);
         entries.add(webInfClassesRoot);
         // WEB-INF lib
@@ -174,6 +183,36 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
                     throw new DeploymentUnitProcessingException("failed to process " + archive, e);
                 }
             }
+        }
+    }
+
+    private boolean containsNonPersistenceXmlFiles(final VirtualFile webInfClassesMetaInf) {
+        if (webInfClassesMetaInf == null) {
+            return false;
+        }
+        try {
+            List<VirtualFile> children = webInfClassesMetaInf.getChildren(new NonPersistenceXmlFileFilter());
+            if (children != null && !children.isEmpty()) {
+                // we found a file which isn't persistence.xml, so return true.
+                return true;
+            }
+        } catch (IOException ioe) {
+            // just log and ignore
+            logger.debug("Ignoring exception while looking for file under: " + webInfClassesMetaInf, ioe);
+            // let's return that we didn't find any non persistence.xml files
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Filter which accepts all files *except* persistence.xml
+     */
+    private class NonPersistenceXmlFileFilter implements VirtualFileFilter {
+
+        @Override
+        public boolean accepts(VirtualFile file) {
+            return file.getName().equals("persistence.xml") == false;
         }
     }
 }
