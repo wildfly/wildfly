@@ -394,6 +394,7 @@
                                             <exclude>org.jboss.logging:jboss-logging-logmanager</exclude>
                                             <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
                                             <exclude>org.jboss.spec.javax.resource:jboss-connector-api_1.5_spec</exclude>
+                                            <exclude>org.opensaml:opensaml</exclude>
                                             <exclude>org.slf4j:slf4j-nop</exclude>
                                             <exclude>org.slf4j:slf4j-jdk14</exclude>
                                             <exclude>org.slf4j:slf4j-log4j12</exclude>
@@ -2610,6 +2611,10 @@
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.opensaml</groupId>
+                        <artifactId>opensaml</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>xalan</groupId>
