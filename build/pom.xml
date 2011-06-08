@@ -126,8 +126,18 @@
         </dependency>
 
         <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
         </dependency>
 
         <dependency>
@@ -186,8 +196,23 @@
         </dependency>
 
         <dependency>
+            <groupId>jline</groupId>
+            <artifactId>jline</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.nekohtml</groupId>
+            <artifactId>nekohtml</artifactId>
         </dependency>
 
         <dependency>
@@ -206,8 +231,8 @@
         </dependency>
 
         <dependency>
-             <groupId>org.apache.cxf</groupId>
-             <artifactId>cxf-api</artifactId>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-api</artifactId>
         </dependency>
 
         <dependency>
@@ -384,6 +409,26 @@
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.webconsole</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.james</groupId>
+            <artifactId>apache-mime4j</artifactId>
+        </dependency>
         
         <dependency>
             <groupId>org.apache.neethi</groupId>
@@ -465,18 +510,18 @@
         </dependency>
 
         <dependency>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-entitymanager</artifactId>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
         </dependency>
 
         <dependency>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-infinispan</artifactId>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-infinispan</artifactId>
         </dependency>
 
         <dependency>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-validator</artifactId>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
         </dependency>
 
         <dependency>
@@ -485,13 +530,13 @@
         </dependency>
 
         <dependency>
-          <groupId>org.hornetq</groupId>
-          <artifactId>hornetq-core</artifactId>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-core</artifactId>
         </dependency>
 
         <dependency>
-          <groupId>org.hornetq</groupId>
-          <artifactId>hornetq-jms</artifactId>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-jms</artifactId>
         </dependency>
 
         <dependency>
@@ -511,17 +556,27 @@
 
         <dependency>
             <groupId>org.jboss</groupId>
+            <artifactId>jboss-dmr</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-vfs</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
             <artifactId>staxmapper</artifactId>
         </dependency>
 
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-cli</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-cli</artifactId>
         </dependency>
 
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-clustering</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-clustering</artifactId>
         </dependency>
 
         <dependency>
@@ -676,8 +731,28 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.com.sun.httpserver</groupId>
+            <artifactId>httpserver</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-core-pool</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3.concurrency</groupId>
+            <artifactId>jboss-ejb3-concurrency-impl</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.ejb3.effigy</groupId>
             <artifactId>jboss-ejb3-effigy-int2</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3.tx2</groupId>
+            <artifactId>jboss-ejb3-tx2-impl</artifactId>
         </dependency>
 
         <dependency>
@@ -685,7 +760,7 @@
             <artifactId>jboss-as-jpa</artifactId>
         </dependency>
 
-		<dependency>
+        <dependency>
             <groupId>org.jboss.integration</groupId>
             <artifactId>jboss-jca-spi</artifactId>
         </dependency>
@@ -738,6 +813,16 @@
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
             <artifactId>ironjacamar-deployers-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-spec-api</artifactId>
         </dependency>
 
         <dependency>
@@ -798,6 +883,26 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-ear</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-ejb</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-web</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
         </dependency>
@@ -815,6 +920,11 @@
         <dependency>
             <groupId>org.jboss.osgi.blueprint</groupId>
             <artifactId>jbosgi-blueprint</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.osgi.deployment</groupId>
+            <artifactId>jbosgi-deployment</artifactId>
         </dependency>
             
         <dependency>
@@ -839,12 +949,27 @@
 
         <dependency>
             <groupId>org.jboss.osgi.resolver</groupId>
+            <artifactId>jbosgi-resolver-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.osgi.resolver</groupId>
             <artifactId>jbosgi-resolver-felix</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.osgi.resolver</groupId>
             <artifactId>jbosgi-resolver-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.osgi.spi</groupId>
+            <artifactId>jbosgi-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.osgi.vfs</groupId>
+            <artifactId>jbosgi-vfs</artifactId>
         </dependency>
 
         <dependency>
@@ -1129,8 +1254,8 @@
         </dependency>
 
         <dependency>
-          <groupId>org.picketbox</groupId>
-          <artifactId>picketbox</artifactId>
+            <groupId>org.picketbox</groupId>
+            <artifactId>picketbox</artifactId>
         </dependency>
 
         <dependency>
