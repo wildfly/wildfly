@@ -403,6 +403,7 @@
                                             <exclude>xalan:serializer</exclude>
                                             <exclude>xalan:xalan</exclude>
                                             <exclude>xml-apis:xml-apis</exclude>
+                                            <exclude>xml-resolver:xml-resolver</exclude>
                                         </excludes>
                                     </bannedDependencies>
                                 </rules>
@@ -3708,13 +3709,17 @@
             <dependency>
                 <groupId>org.jboss.osgi.xerces</groupId>
                 <artifactId>jboss-osgi-xerces</artifactId>
+                <version>${version.org.jboss.osgi.xerces}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.osgi</groupId>
                         <artifactId>jboss-osgi-spi</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>xml-resolver</groupId>
+                        <artifactId>xml-resolver</artifactId>
+                    </exclusion>
                 </exclusions>
-                <version>${version.org.jboss.osgi.xerces}</version>
             </dependency>
 
             <dependency>
