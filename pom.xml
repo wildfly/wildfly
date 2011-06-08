@@ -377,6 +377,7 @@
                                             <exclude>jboss.web:el-api</exclude>
                                             <exclude>jboss.web:jsp-api</exclude>
                                             <exclude>jboss.web:servlet-api</exclude>
+                                            <exclude>net.sf.kxml:kxml2</exclude>
                                             <exclude>org.hibernate:ejb3-persistence</exclude>
                                             <exclude>org.hibernate.java-persistence:jpa-api</exclude>
                                             <exclude>org.jboss.interceptor:jboss-interceptor-api</exclude>
@@ -2588,6 +2589,10 @@
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.metatype</artifactId>
                 <exclusions>
+                    <exclusion>
+                        <groupId>net.sf.kxml</groupId>
+                        <artifactId>kxml2</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>org.apache.felix</groupId>
                         <artifactId>org.osgi.core</artifactId>
