@@ -30,15 +30,13 @@ import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
 import org.junit.After;
-import org.junit.Ignore;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-@Ignore
-public class RemoteProxyControllerTestCase extends AbstractProxyControllerTest {
+public class RemoteChannelProxyControllerTestCase extends AbstractProxyControllerTest {
 
     static RemoteChannelPairSetup channels;
 

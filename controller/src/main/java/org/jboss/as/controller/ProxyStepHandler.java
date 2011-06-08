@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.MessageSeverity;
@@ -54,6 +55,7 @@ public class ProxyStepHandler implements NewStepHandler {
 
         OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
 
+        final CountDownLatch completedLatch = new CountDownLatch(1);
         final AtomicReference<NewModelController.OperationTransaction> txRef = new AtomicReference<NewModelController.OperationTransaction>();
         final AtomicReference<ModelNode> preparedResultRef = new AtomicReference<ModelNode>();
         final AtomicReference<ModelNode> finalResultRef = new AtomicReference<ModelNode>();
@@ -73,6 +75,7 @@ public class ProxyStepHandler implements NewStepHandler {
             @Override
             public void operationCompleted(ModelNode response) {
                 finalResultRef.set(response);
+                completedLatch.countDown();
             }
         };
 
@@ -101,17 +104,29 @@ public class ProxyStepHandler implements NewStepHandler {
             ModelNode preparedResult = preparedResultRef.get();
             context.getResult().set(preparedResult.get(RESULT));
             if (preparedResult.hasDefined(FAILURE_DESCRIPTION)) {
-                context.getFailureDescription().set(finalResult.get(FAILURE_DESCRIPTION));
+                context.getFailureDescription().set(preparedResult.get(FAILURE_DESCRIPTION));
             }
 
+            boolean waitForCompletion = false;
             NewOperationContext.ResultAction resultAction = context.completeStep();
             NewModelController.OperationTransaction tx = txRef.get();
             if (tx != null) {
                 if (resultAction == NewOperationContext.ResultAction.KEEP) {
                     tx.commit();
+                    waitForCompletion = true;
                 } else {
                     tx.rollback();
                 }
+            }
+
+            try {
+                if (waitForCompletion) {
+                    //Wait for the Tx to complete before returning
+                    completedLatch.await();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Thread was interrupted waiting for final result from transaction");
             }
 
             // TODO what if the response on the proxy changed following the operationPrepared callback?

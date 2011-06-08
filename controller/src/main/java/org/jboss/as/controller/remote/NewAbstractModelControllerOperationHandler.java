@@ -79,6 +79,10 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
 
         @Override
         public void handleReport(final MessageSeverity severity, final String message) {
+//            if (true) {
+//                System.out.println("!!!! REENABLE MESSAGE HANDLER PROXY");
+//                return;
+//            }
             try {
                 //Invoke this synchronously so that the messages appear in the right order on the
                 //remote caller
