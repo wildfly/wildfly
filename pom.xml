@@ -362,6 +362,7 @@
                                         <searchTransitive>true</searchTransitive>
                                         <excludes>
                                             <exclude>args4j:args4j</exclude>
+                                            <exclude>biz.aQute:bnd</exclude>
                                             <exclude>com.fasterxml:classmate</exclude>
                                             <exclude>com.google.inject:guice</exclude>
                                             <exclude>commons-logging:commons-logging</exclude>
@@ -3600,6 +3601,12 @@
                 <groupId>org.jboss.osgi.blueprint</groupId>
                 <artifactId>jbosgi-blueprint</artifactId>
                 <version>${version.org.jboss.osgi.blueprint}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>biz.aQute</groupId>
+                        <artifactId>bnd</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
