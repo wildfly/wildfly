@@ -53,6 +53,7 @@ import org.jboss.as.server.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.server.deployment.module.ModuleExtensionListProcessor;
 import org.jboss.as.server.deployment.module.ModuleExtensionNameProcessor;
 import org.jboss.as.server.deployment.module.ModuleIdentifierProcessor;
+import org.jboss.as.server.deployment.module.ModuleInformationServiceProcessor;
 import org.jboss.as.server.deployment.module.ModuleSpecProcessor;
 import org.jboss.as.server.deployment.module.SubDeploymentDependencyProcessor;
 import org.jboss.as.server.deployment.reflect.InstallReflectionIndexProcessor;
@@ -234,6 +235,7 @@ final class ServerControllerService implements Service<ServerController> {
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_EXTENSION_LIST, new ModuleExtensionListProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SUB_DEPLOYMENTS, new SubDeploymentDependencyProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_JDK, new JdkDependenciesProcessor()));
+        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_MODULE_INFO_SERVICE, new ModuleInformationServiceProcessor()));
         deployers.get(Phase.CONFIGURE_MODULE).add(new RegisteredProcessor(Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor()));
         deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_INSTALL_EXTENSION, new ModuleExtensionNameProcessor()));
         deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_REFLECTION_INDEX, new InstallReflectionIndexProcessor()));

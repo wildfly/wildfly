@@ -21,12 +21,7 @@
  */
 package org.jboss.as.osgi.service;
 
-import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
-
-import java.util.List;
-
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.logging.Logger;
 import org.jboss.modules.DependencySpec;
@@ -45,6 +40,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.ModuleLoaderProvider;
@@ -53,10 +50,16 @@ import org.jboss.osgi.resolver.XModule;
 import org.jboss.osgi.resolver.XModuleIdentity;
 import org.jboss.osgi.spi.NotImplementedException;
 
+import java.util.List;
+
+import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
+import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
+import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
+
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
  * are registered with the {@link BundleManagerService}.
- *
+ * <p/>
  * Plain AS7 modules can create dependencies on OSGi deployments, because OSGi modules can also be loaded from the
  * {@link ServiceModuleLoader}
  *
@@ -115,6 +118,11 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
         ModuleIdentifier identifier = moduleSpec.getModuleIdentifier();
         log.debugf("Add module spec to loader: %s", identifier);
         ServiceName serviceName = ServiceModuleLoader.moduleSpecServiceName(identifier);
+
+        //we also need to install the corresponding module information service
+        serviceTarget.addService(ServiceModuleLoader.moduleInformationServiceName(identifier), new ValueService<ModuleSpecification>(new ImmediateValue<ModuleSpecification>(new ModuleSpecification())))
+                .install();
+
         ServiceBuilder<ModuleSpec> builder = serviceTarget.addService(serviceName, new AbstractService<ModuleSpec>() {
             public ModuleSpec getValue() throws IllegalStateException {
                 return moduleSpec;
@@ -126,10 +134,10 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     /**
      * Add an already loaded {@link Module} to the OSGi {@link ModuleLoader}. This happens when AS registers an existing
      * {@link Module} with the {@link BundleManagerService}.
-     *
+     * <p/>
      * The {@link Module} may not necessarily result from a user deployment. We use the same {@link ServiceName} convention as
      * in {@link ServiceModuleLoader#moduleServiceName(ModuleIdentifier)}
-     *
+     * <p/>
      * The {@link ServiceModuleLoader} cannot load these modules.
      */
     @Override
@@ -137,12 +145,16 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
         ServiceName serviceName = getModuleServiceName(module.getIdentifier());
         if (serviceContainer.getService(serviceName) == null) {
             log.debugf("Add module to loader: %s", module.getIdentifier());
+
+
             ServiceBuilder<Module> builder = serviceTarget.addService(serviceName, new AbstractService<Module>() {
                 public Module getValue() throws IllegalStateException {
                     return module;
                 }
             });
             builder.install();
+
+
         }
     }
 
@@ -161,6 +173,10 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
         controller = serviceContainer.getService(serviceName);
         if (controller != null) {
             log.debugf("Remove module fom loader: %s", serviceName);
+            controller.setMode(Mode.REMOVE);
+        }
+        controller = serviceContainer.getService(ServiceModuleLoader.moduleInformationServiceName(identifier));
+        if (controller != null) {
             controller.setMode(Mode.REMOVE);
         }
     }

@@ -33,7 +33,6 @@ import java.util.List;
  * Information used to build a module.
  *
  * @author Stuart Douglas
- *
  */
 public class ModuleSpecification extends SimpleAttachable {
 
@@ -51,6 +50,12 @@ public class ModuleSpecification extends SimpleAttachable {
      * Flag that indicates that this module should never be visible to other sub deployments
      */
     private boolean privateModule;
+
+    /**
+     * If set to true this indicates that a dependency on this module requires a dependency on all it's transitive
+     * dependencies.
+     */
+    private boolean requiresTransitiveDependencies;
 
     public Boolean getChildFirst() {
         return childFirst;
@@ -95,4 +100,13 @@ public class ModuleSpecification extends SimpleAttachable {
     public void setPrivateModule(boolean privateModule) {
         this.privateModule = privateModule;
     }
+
+    public boolean isRequiresTransitiveDependencies() {
+        return requiresTransitiveDependencies;
+    }
+
+    public void setRequiresTransitiveDependencies(final boolean requiresTransitiveDependencies) {
+        this.requiresTransitiveDependencies = requiresTransitiveDependencies;
+    }
+
 }

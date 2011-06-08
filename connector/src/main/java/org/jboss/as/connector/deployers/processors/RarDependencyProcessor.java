@@ -61,6 +61,10 @@ public class RarDependencyProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+
+        //if a module depends on a rar it also needs a dep on all the rar's dependencies
+        moduleSpecification.setRequiresTransitiveDependencies(true);
+
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAX_ID, false, false, false));
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JMS_ID, false, false, false));
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, LOGGING_ID, false, false, false));
