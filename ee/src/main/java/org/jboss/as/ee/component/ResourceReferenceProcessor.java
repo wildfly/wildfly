@@ -133,11 +133,10 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             if (!isEmpty(resourceRef.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getLookupName()));
             } else {
-                //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
                 if (resourceRef.getResourceRefName().startsWith("java:")) {
-                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getResourceRefName()));
+                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:jboss/resources/" + resourceRef.getResourceRefName()));
                 } else {
-                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:/" + resourceRef.getResourceRefName()));
+                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getResourceRefName()));
                 }
             }
             bindings.add(bindingConfiguration);
