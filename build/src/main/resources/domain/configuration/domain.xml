@@ -345,16 +345,16 @@
          are shown.
     -->
     <interfaces>
-        <interface name="loopback">
+        <interface name="management">
             <inet-address value="127.0.0.1"/>
         </interface>
-        <interface name="external">
-            <any-ipv4-address/>
+        <interface name="public">
+           <inet-address value="127.0.0.1"/>
         </interface>
     </interfaces>
 
     <socket-binding-groups>
-         <socket-binding-group name="standard-sockets" default-interface="external">
+         <socket-binding-group name="standard-sockets" default-interface="public">
             <include socket-binding-group="messaging-sockets"/>
             <socket-binding name="jmx-connector-registry" port="1090"/>
             <socket-binding name="jmx-connector-server" port="1091"/>
@@ -366,7 +366,7 @@
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
          </socket-binding-group>
-         <socket-binding-group name="messaging-sockets" default-interface="external">
+         <socket-binding-group name="messaging-sockets" default-interface="public">
             <socket-binding name="messaging" port="5445" />
             <socket-binding name="messaging-throughput" port="5455"/>
          </socket-binding-group>

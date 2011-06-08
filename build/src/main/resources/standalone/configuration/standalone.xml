@@ -76,8 +76,8 @@
     </paths>
 
     <management-interfaces>
-       <native-interface interface="default" port="9999"/>
-       <http-interface interface="default" port="9990"/>
+       <native-interface interface="management" port="9999"/>
+       <http-interface interface="management" port="9990"/>
     </management-interfaces>
 
     <profile name="ignore">
@@ -371,26 +371,15 @@
     </profile>
 
     <interfaces>
-        <interface name="default">
+        <interface name="management">
             <inet-address value="127.0.0.1"/>
         </interface>
-        <interface name="any">
-           <any-address/>
-        </interface>
-        <interface name="complex">
-           <any>
-              <subnet-match value="192.168.0.0/16"/>
-              <public-address/>
-           </any>
-           <not>
-             <site-local-address/>
-           </not>
-           <up/>
-           <multicast/>
+        <interface name="public">
+           <inet-address value="127.0.0.1"/>
         </interface>
     </interfaces>
 
-        <socket-binding-group name="standard-sockets" default-interface="default">
+        <socket-binding-group name="standard-sockets" default-interface="public">
            <socket-binding name="jndi" port="1099"/>
            <socket-binding name="jmx-connector-registry" port="1090"/>
            <socket-binding name="jmx-connector-server" port="1091"/>
