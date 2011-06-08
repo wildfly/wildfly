@@ -352,6 +352,8 @@ public class RemoteProxyControllerTestCase {
         assertFalse(failed.get());
         assertFalse(result.isDone());
         preparedTx.get().rollback();
+        assertEquals(SUCCESS, result.get().get(OUTCOME).asString());
+        assertEquals("prepared", result.get().get(RESULT).asString());
     }
 
     @Test

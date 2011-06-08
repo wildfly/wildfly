@@ -107,26 +107,14 @@ public class ProxyStepHandler implements NewStepHandler {
                 context.getFailureDescription().set(preparedResult.get(FAILURE_DESCRIPTION));
             }
 
-            boolean waitForCompletion = false;
             NewOperationContext.ResultAction resultAction = context.completeStep();
             NewModelController.OperationTransaction tx = txRef.get();
             if (tx != null) {
                 if (resultAction == NewOperationContext.ResultAction.KEEP) {
                     tx.commit();
-                    waitForCompletion = true;
                 } else {
                     tx.rollback();
                 }
-            }
-
-            try {
-                if (waitForCompletion) {
-                    //Wait for the Tx to complete before returning
-                    completedLatch.await();
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Thread was interrupted waiting for final result from transaction");
             }
 
             // TODO what if the response on the proxy changed following the operationPrepared callback?
