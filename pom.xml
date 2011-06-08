@@ -2792,16 +2792,16 @@
             </dependency>
 
             <dependency>
-               <groupId>jline</groupId>
-               <artifactId>jline</artifactId>
-               <version>${version.jline}</version>
+                <groupId>jline</groupId>
+                <artifactId>jline</artifactId>
+                <version>${version.jline}</version>
             </dependency>
 
             <dependency>
-               <groupId>junit</groupId>
-               <artifactId>junit</artifactId>
-               <version>${version.junit}</version>
-               <scope>test</scope>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.junit}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
