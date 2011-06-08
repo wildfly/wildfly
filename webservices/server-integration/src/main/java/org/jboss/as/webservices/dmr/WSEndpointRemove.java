@@ -23,10 +23,6 @@
 package org.jboss.as.webservices.dmr;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Removes WS endpoint from webservices subsystem model.
