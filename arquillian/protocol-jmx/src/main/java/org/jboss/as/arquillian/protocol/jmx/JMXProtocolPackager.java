@@ -138,7 +138,9 @@ public class JMXProtocolPackager implements DeploymentPackager {
         // Add META-INF/jbosgi-xservice.properties which registers the arquillian service with the OSGi layer
         // Generated default imports for OSGi tests are defined in {@link AbstractOSGiApplicationArchiveProcessor}
         StringBuffer props = new StringBuffer(Constants.BUNDLE_SYMBOLICNAME + ": " + archive.getName() + "\n");
-        props.append(Constants.EXPORT_PACKAGE + ": org.jboss.arquillian.container.test.api,org.jboss.arquillian.junit,org.jboss.arquillian.test.api,org.jboss.osgi.testing,");
+        props.append(Constants.EXPORT_PACKAGE + ": ");
+        props.append("org.jboss.arquillian.container.test.api,org.jboss.arquillian.junit,org.jboss.arquillian.osgi,org.jboss.arquillian.test.api,");
+        props.append("org.jboss.osgi.testing,");
         props.append("org.jboss.shrinkwrap.api,org.jboss.shrinkwrap.api.asset,org.jboss.shrinkwrap.api.spec,");
         props.append("org.junit,org.junit.runner,javax.inject,org.osgi.framework");
         archive.add(new StringAsset(props.toString()), XSERVICE_PROPERTIES_NAME);
