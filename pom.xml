@@ -361,6 +361,7 @@
                                     <bannedDependencies>
                                         <searchTransitive>true</searchTransitive>
                                         <excludes>
+                                            <exclude>com.fasterxml:classmate</exclude>
                                             <exclude>commons-logging:commons-logging</exclude>
                                             <exclude>concurrent:concurrent</exclude>
                                             <exclude>javax.servlet:servlet-api</exclude>
@@ -4604,6 +4605,10 @@
                 <artifactId>hibernate-core</artifactId>
                 <version>${version.org.hibernate}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>com.fasterxml</groupId>
+                        <artifactId>classmate</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>javax.transaction</groupId>
                         <artifactId>jta</artifactId>
