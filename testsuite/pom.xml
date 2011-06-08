@@ -39,14 +39,7 @@
     <name>JBoss Application Server Test Suite: Aggregator</name>
 
     <modules>
-        <!-- empty 
-        <module>api</module>
-        -->
-        
         <module>smoke</module>
-        <!-- [AS7-734] move to allTests profile when done -->
-        <module>spec</module>
-        <module>integration</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -191,10 +184,8 @@
             <modules>
                 <module>stress</module>
                 <module>benchmark</module>
-                <!-- 
                 <module>spec</module>
                 <module>integration</module>
-                -->
             </modules>
         </profile>
         

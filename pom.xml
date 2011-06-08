@@ -108,8 +108,8 @@
         <version.org.hornetq.hornetq-jms>2.2.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.infinispan>5.0.0.CR2</version.org.infinispan>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
-        <version.org.jboss.arquillian.core>1.0.0.Beta2-SNAPSHOT</version.org.jboss.arquillian.core>
-        <version.org.jboss.arquillian.osgi>1.0.0.Beta2-SNAPSHOT</version.org.jboss.arquillian.osgi>
+        <version.org.jboss.arquillian.core>1.0.0.Beta2</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.osgi>1.0.0.Beta2</version.org.jboss.arquillian.osgi>
         <version.org.jboss.classfilewriter>1.0.0.Alpha7</version.org.jboss.classfilewriter>
         <version.org.jboss.com.sun.httpserver>1.0.0.Beta1</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb3>2.0.0-beta-1</version.org.jboss.ejb3>
@@ -141,7 +141,7 @@
         <version.org.jboss.netty>3.2.1.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.blueprint>1.0.2</version.org.jboss.osgi.blueprint>
         <version.org.jboss.osgi.deployment>1.0.10</version.org.jboss.osgi.deployment>
-        <version.org.jboss.osgi.framework>1.0.0.CR4-SNAPSHOT</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.framework>1.0.0.CR4</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.http>1.0.3</version.org.jboss.osgi.http>
         <version.org.jboss.osgi.jmx>1.0.10</version.org.jboss.osgi.jmx>
         <version.org.jboss.osgi.logging>1.0.0</version.org.jboss.osgi.logging>
