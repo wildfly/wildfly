@@ -362,6 +362,7 @@
                                         <searchTransitive>true</searchTransitive>
                                         <excludes>
                                             <exclude>com.fasterxml:classmate</exclude>
+                                            <exclude>com.google.inject:guice</exclude>
                                             <exclude>commons-logging:commons-logging</exclude>
                                             <exclude>concurrent:concurrent</exclude>
                                             <exclude>javax.servlet:servlet-api</exclude>
@@ -3580,6 +3581,12 @@
                 <artifactId>jboss-as-console</artifactId>
                 <version>${version.org.jboss.management.console}</version>
                 <classifier>resources</classifier>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.inject</groupId>
+                        <artifactId>guice</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
