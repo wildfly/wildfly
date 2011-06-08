@@ -76,6 +76,7 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
                 FlushableDataOutputImpl output = null;
                 try {
 
+                    //System.out.println("Executing " + ManagementRequest.this + " " + currentRequestId + " " + getRequestCode());
                     channel.getReceiver(ManagementChannelReceiver.class).registerResponseHandler(currentRequestId, new DelegatingResponseHandler(channelStrategy));
                     output = FlushableDataOutputImpl.create(channel.writeMessage());
                     //Header

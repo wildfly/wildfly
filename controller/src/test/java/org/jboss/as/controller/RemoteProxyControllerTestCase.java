@@ -68,6 +68,7 @@ public class RemoteProxyControllerTestCase {
     RemoteChannelPairSetup channels;
     @Before
     public void start() throws Exception {
+        System.out.println("---- Test ----");
         channels = new RemoteChannelPairSetup();
         channels.setupRemoting();
         channels.startChannels();
@@ -75,13 +76,13 @@ public class RemoteProxyControllerTestCase {
 
     @After
     public void stop() throws Exception {
+        System.out.println("Closing channels");
         channels.stopChannels();
         channels.shutdownRemoting();
     }
 
     @Test
     public void testOperationMessageHandler() throws Exception {
-        final CountDownLatch executeLatch = new CountDownLatch(1);
         final MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
@@ -98,7 +99,6 @@ public class RemoteProxyControllerTestCase {
                     public void commit() {
                     }
                 }, new ModelNode());
-                executeLatch.countDown();
                 return new ModelNode();
             }
         };
@@ -110,6 +110,7 @@ public class RemoteProxyControllerTestCase {
 
         final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
 
+        CommitProxyOperationControl commitControl = new CommitProxyOperationControl();
         proxyController.execute(operation,
                 new OperationMessageHandler() {
 
@@ -120,12 +121,12 @@ public class RemoteProxyControllerTestCase {
                         }
                     }
                 },
-                NoopProxyOperationControl.INSTANCE,
+                commitControl,
                 null);
-        executeLatch.await();
         assertEquals("123", controller.getOperation().get("test").asString());
         assertEquals("Test1", messages.take());
         assertEquals("Test2", messages.take());
+        commitControl.latch.await();
     }
 
     @Test
@@ -220,7 +221,6 @@ public class RemoteProxyControllerTestCase {
     @Test
     public void testTransactionCommit() throws Exception {
 
-        final CountDownLatch commitLatch = new CountDownLatch(1);
         final OperationTransaction tx = new OperationTransaction() {
 
             @Override
@@ -229,7 +229,6 @@ public class RemoteProxyControllerTestCase {
 
             @Override
             public void commit() {
-                commitLatch.countDown();
             }
         };
         MockModelController controller = new MockModelController() {
@@ -242,11 +241,6 @@ public class RemoteProxyControllerTestCase {
                 node.get(RESULT).set("prepared");
                 control.operationPrepared(tx, node);
 
-                try {
-                    commitLatch.await();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
                 node.get(RESULT).set("final");
                 return node;
             }
@@ -297,13 +291,10 @@ public class RemoteProxyControllerTestCase {
 
     @Test
     public void testTransactionRollback() throws Exception {
-
-        final CountDownLatch rollbackLatch = new CountDownLatch(1);
         final OperationTransaction tx = new OperationTransaction() {
 
             @Override
             public void rollback() {
-                rollbackLatch.countDown();
             }
 
             @Override
@@ -320,11 +311,6 @@ public class RemoteProxyControllerTestCase {
                 node.get(RESULT).set("prepared");
                 control.operationPrepared(tx, node);
 
-                try {
-                    rollbackLatch.await();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
                 return node;
             }
         };
@@ -374,7 +360,6 @@ public class RemoteProxyControllerTestCase {
         final byte[] firstBytes = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         final byte[] secondBytes = new byte[] {10, 9, 8 , 7 , 6, 5, 4, 3, 2, 1};
 
-        final CountDownLatch executeLatch = new CountDownLatch(1);
         final AtomicInteger size = new AtomicInteger();
         final AtomicReference<byte[]> firstResult = new AtomicReference<byte[]>();
         final AtomicReference<byte[]> secondResult = new AtomicReference<byte[]>();
@@ -421,7 +406,6 @@ public class RemoteProxyControllerTestCase {
                     public void commit() {
                     }
                 }, new ModelNode());
-                executeLatch.countDown();
                 return new ModelNode();
             }
         };
@@ -443,15 +427,16 @@ public class RemoteProxyControllerTestCase {
             }
         };
 
+        CommitProxyOperationControl commitControl = new CommitProxyOperationControl();
         proxyController.execute(operation,
                 null,
-                NoopProxyOperationControl.INSTANCE,
+                commitControl,
                 attachments);
-        executeLatch.await();
         assertEquals(3, size.get());
         assertArrays(firstBytes, firstResult.get());
         assertArrays(secondBytes, secondResult.get());
         assertArrays(new byte[0], thirdResult.get());
+        commitControl.latch.await();
         System.out.println("--------- done");
     }
 
@@ -490,10 +475,11 @@ public class RemoteProxyControllerTestCase {
 
     }
 
-    private static class NoopProxyOperationControl implements ProxyOperationControl {
-        static NoopProxyOperationControl INSTANCE = new NoopProxyOperationControl();
+    private static class CommitProxyOperationControl implements ProxyOperationControl {
+        CountDownLatch latch = new CountDownLatch(1);
         @Override
         public void operationPrepared(OperationTransaction transaction, ModelNode result) {
+            transaction.commit();
         }
 
         @Override
@@ -502,6 +488,7 @@ public class RemoteProxyControllerTestCase {
 
         @Override
         public void operationCompleted(ModelNode response) {
+            latch.countDown();
         }
 
     }

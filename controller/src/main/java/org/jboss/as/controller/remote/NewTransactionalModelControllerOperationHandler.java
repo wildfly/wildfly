@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -54,7 +55,7 @@ import org.jboss.remoting3.CloseHandler;
  */
 public class NewTransactionalModelControllerOperationHandler extends NewAbstractModelControllerOperationHandler {
 
-    private Map<Integer, OperationTransaction> activeTransactions = new HashMap<Integer, NewModelController.OperationTransaction>();
+    private Map<Integer, OperationTransaction> activeTransactions = Collections.synchronizedMap(new HashMap<Integer, NewModelController.OperationTransaction>());
 
     public NewTransactionalModelControllerOperationHandler(final ExecutorService executorService, final NewModelController controller) {
         super(executorService, controller);
@@ -99,6 +100,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                             tx.rollback();
                         }
                     }
+                    activeTransactions.clear();
                 }
             });
 
@@ -118,7 +120,6 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                                 control,
                                 new OperationAttachmentsProxy(getChannel(), executionId, attachmentsLength));
                     } catch (Exception e) {
-                        activeTransactions.remove(executionId);
                         final ModelNode failure = new ModelNode();
                         failure.get(OUTCOME).set(FAILED);
                         failure.get(FAILURE_DESCRIPTION).set(e.getClass().getName() + ":" + e.getMessage());
@@ -126,7 +127,6 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                         return;
                     }
                     if (result.hasDefined(OUTCOME) && result.get(OUTCOME).asString().equals(FAILED)) {
-                        activeTransactions.remove(executionId);
                         control.operationFailed(result);
                     } else {
                         control.operationCompleted(result);
@@ -223,11 +223,17 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                 }
 
             }.execute(executorService, getChannelStrategy(channel));
+
+            try {
+                completedLatch.await();
+            } catch(InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted while waiting for Tx commit/rollback");
+            }
         }
 
         @Override
         public void operationFailed(final ModelNode response) {
-            activeTransactions.remove(executionId);
             new OperationStatusRequest(executionId, response) {
 
                 @Override

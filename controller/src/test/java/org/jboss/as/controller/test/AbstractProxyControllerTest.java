@@ -115,6 +115,7 @@ public abstract class AbstractProxyControllerTest {
 
     @Before
     public void setupController() throws InterruptedException {
+        //System.out.println("\n------- test -------\n");
         executor = Executors.newCachedThreadPool();
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
