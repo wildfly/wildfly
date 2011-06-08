@@ -38,46 +38,14 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class CreateJmsCFHandler extends BatchModeCommandHandler {
+public class JmsTopicAddHandler extends BatchModeCommandHandler {
 
     private final ArgumentWithValue name;
-    //private final ArgumentWithValue autoGroup;
     private final ArgumentWithValue entries;
     private final ArgumentWithValue profile;
-/*    private final ArgumentWithValue connector;
-    private final ArgumentWithValue blockOnAcknowledge;
-    private final ArgumentWithValue blockOnDurableSend;
-    private final ArgumentWithValue blockOnNonDurableSend;
-    private final ArgumentWithValue cacheLargeMessageClient;
-    private final ArgumentWithValue callTimeout;
-    private final ArgumentWithValue clientFailureCheckPeriod;
-*/
-//    private final ArgumentWithValue clientId;
-/*    private final ArgumentWithValue confirmationWindowSize;
-    private final ArgumentWithValue connectionTtl;
-    private final ArgumentWithValue consumer;
-    private final ArgumentWithValue consumerMaxRate;
-    private final ArgumentWithValue consumerWindowSize;
-    private final ArgumentWithValue discoveryGroupName;
-    private final ArgumentWithValue dupsOkBatchSize;
-    private final ArgumentWithValue failoverOnInitialConnection;
-    private final ArgumentWithValue failoverOnServerShutdown;
-    private final ArgumentWithValue groupId;
-    private final ArgumentWithValue maxRetryInterval;
-    private final ArgumentWithValue minLargeMessageSize;
-    private final ArgumentWithValue oreAcknowledge;
-    private final ArgumentWithValue producerMaxRate;
-    private final ArgumentWithValue producerWindowSize;
-    private final ArgumentWithValue reconnectAttempts;
-    private final ArgumentWithValue retryInterval;
-    private final ArgumentWithValue retryIntervalMultiplier;
-    private final ArgumentWithValue scheduledThreadPoolMaxSize;
-    private final ArgumentWithValue threadPoolMaxSize;
-    private final ArgumentWithValue transactionBatchSize;
-    private final ArgumentWithValue useGlobalPools;
-*/
-    public CreateJmsCFHandler() {
-        super("create-jms-cf", true);
+
+    public JmsTopicAddHandler() {
+        super("jms-topic-add", true);
 
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
@@ -93,7 +61,7 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
             }
         };
 
-        name = new ArgumentWithValue(this, /*0, */"--name") {
+        name = new ArgumentWithValue(this, /*0,*/ "--name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
@@ -103,20 +71,14 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
             }
         };
 
-        //autoGroup = new ArgumentWithValue(this, "--auto-group");
-
-        entries = new ArgumentWithValue(this, "--entries");
+        entries = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{"topic/"}), "--entries");
         entries.addRequiredPreceding(name);
-
-/*        clientId = new ArgumentWithValue("--client-id");
-        addArgument(clientId);
-*/    }
+    }
 
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-
         ParsedArguments args = ctx.getParsedArguments();
 
         if(ctx.isDomainMode()) {
@@ -127,15 +89,14 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
             builder.addNode("profile",profile);
         }
 
-        builder.addNode("subsystem", "jms");
-        builder.setOperationName("add");
-
         final String name = this.name.getValue(args, true);
 
-        final String entriesStr = this.entries.getValue(args);
+        builder.addNode("subsystem", "jms");
+        builder.addNode("topic", name);
+        builder.setOperationName("add");
 
-        builder.addNode("connection-factory", name);
         ModelNode entriesNode = builder.getModelNode().get("entries");
+        final String entriesStr = this.entries.getValue(args);
         if(entriesStr == null) {
             entriesNode.add(name);
         } else {

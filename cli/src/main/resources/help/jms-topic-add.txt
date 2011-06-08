@@ -1,4 +1,4 @@
-Synopsis:	create-jms-topic [--profile=profile_name] --name=topic_name [--entries=entry(,entry)*]
+Synopsis:	add-jms-topic [--profile=profile_name] --name=topic_name [--entries=entry(,entry)*]
 
 Description:	creates a JMS topic
 

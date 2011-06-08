@@ -21,31 +21,31 @@
  */
 package org.jboss.as.cli.handlers;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class CreateJmsTopicHandler extends BatchModeCommandHandler {
+public class JmsQueueRemoveHandler extends BatchModeCommandHandler {
 
-    private final ArgumentWithValue name;
-    private final ArgumentWithValue entries;
     private final ArgumentWithValue profile;
+    private final ArgumentWithValue name;
 
-    public CreateJmsTopicHandler() {
-        super("create-jms-topic", true);
+    public JmsQueueRemoveHandler() {
+        super("jms-queue-remove", true);
 
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
@@ -61,7 +61,27 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
             }
         };
 
-        name = new ArgumentWithValue(this, /*0,*/ "--name") {
+        name = new ArgumentWithValue(this, new DefaultCompleter(new DefaultCompleter.CandidatesProvider() {
+            @Override
+            public List<String> getAllCandidates(CommandContext ctx) {
+                ModelControllerClient client = ctx.getModelControllerClient();
+                if (client == null) {
+                    return Collections.emptyList();
+                    }
+
+                final String profileArg;
+                if (!ctx.isDomainMode()) {
+                    profileArg = null;
+                } else {
+                    profileArg = profile.getValue(ctx.getParsedArguments());
+                    if (profileArg == null) {
+                        return Collections.emptyList();
+                        }
+                    }
+
+                return Util.getJmsResources(ctx.getModelControllerClient(), profileArg, "queue");
+                }
+            }), 0, "--name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
@@ -70,44 +90,25 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
-
-        entries = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{"topic/"}), "--entries");
-        entries.addRequiredPreceding(name);
     }
 
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-        ParsedArguments args = ctx.getParsedArguments();
-
         if(ctx.isDomainMode()) {
-            String profile = this.profile.getValue(args);
+            final String profile = this.profile.getValue(ctx.getParsedArguments());
             if(profile == null) {
-                throw new OperationFormatException("--profile argument value is missing.");
+                throw new OperationFormatException("Required argument --profile is missing.");
             }
-            builder.addNode("profile",profile);
+            builder.addNode("profile", profile);
         }
 
-        final String name = this.name.getValue(args, true);
+        final String name = this.name.getValue(ctx.getParsedArguments(), true);
 
         builder.addNode("subsystem", "jms");
-        builder.addNode("topic", name);
-        builder.setOperationName("add");
-
-        ModelNode entriesNode = builder.getModelNode().get("entries");
-        final String entriesStr = this.entries.getValue(args);
-        if(entriesStr == null) {
-            entriesNode.add(name);
-        } else {
-            String[] split = entriesStr.split(",");
-            for(int i = 0; i < split.length; ++i) {
-                String entry = split[i].trim();
-                if(!entry.isEmpty()) {
-                    entriesNode.add(entry);
-                }
-            }
-        }
+        builder.addNode("queue", name);
+        builder.setOperationName("remove");
 
         return builder.buildRequest();
     }

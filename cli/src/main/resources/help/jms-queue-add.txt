@@ -1,4 +1,4 @@
-Synopsis:	create-jms-queue [--profile=profile_name] --name=queue_name [--entries=entry(,entry)*] [--selector=selector_name] [--durable=(true|false)]
+Synopsis:	add-jms-queue [--profile=profile_name] --name=queue_name [--entries=entry(,entry)*] [--selector=selector_name] [--durable=(true|false)]
 
 Description:	creates a JMS queue
 

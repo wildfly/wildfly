@@ -39,13 +39,13 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
+public class JmsTopicRemoveHandler extends BatchModeCommandHandler {
 
     private final ArgumentWithValue profile;
     private final ArgumentWithValue name;
 
-    public DeleteJmsQueueHandler() {
-        super("delete-jms-queue", true);
+    public JmsTopicRemoveHandler() {
+        super("jms-topic-remove", true);
 
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
@@ -79,7 +79,7 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
                         }
                     }
 
-                return Util.getJmsResources(ctx.getModelControllerClient(), profileArg, "queue");
+                return Util.getJmsResources(ctx.getModelControllerClient(), profileArg, "topic");
                 }
             }), 0, "--name") {
             @Override
@@ -107,7 +107,7 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
         final String name = this.name.getValue(ctx.getParsedArguments(), true);
 
         builder.addNode("subsystem", "jms");
-        builder.addNode("queue", name);
+        builder.addNode("topic", name);
         builder.setOperationName("remove");
 
         return builder.buildRequest();

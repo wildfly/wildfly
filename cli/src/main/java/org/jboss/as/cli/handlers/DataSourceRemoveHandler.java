@@ -45,7 +45,7 @@ public class DataSourceRemoveHandler extends BatchModeCommandHandler {
     private final ArgumentWithValue name;
 
     public DataSourceRemoveHandler() {
-        super("remove-data-source", true);
+        super("data-source-remove", true);
 
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override

@@ -1,4 +1,4 @@
-Synopsis:	create-jms-cf [--profile=profile_name] --name=cf_name [arguments below]
+Synopsis:	add-jms-cf [--profile=profile_name] --name=cf_name [arguments below]
 
 Description:	creates a JMS connection factory
 

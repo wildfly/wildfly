@@ -1,10 +1,10 @@
-Synopsis:	delete-jms-queue [--profile=profile_name] name
+Synopsis:	remove-jms-topic [--profile=profile_name] name
 
-Description:	removes a JMS queue
+Description:	removes a JMS topic
 
 Arguments:
 
 	profile		- is allowed and required only in the domain mode, specifies the profile
 				from which the JMS resource should be deleted. 
 
-	name	- the name of the JMS queue.
+	name	- the name of the JMS topic.

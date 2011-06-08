@@ -45,15 +45,15 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class CreateDatasourceHandler extends BaseOperationCommand {
+public class DataSourceAddHandler extends BaseOperationCommand {
 
     private final ArgumentWithValue profile;
     private final ArgumentWithValue jndiName;
 
 //TODO    private final ArgumentWithValue driverClass;
 
-    public CreateDatasourceHandler() {
-        super("create-datasource", true);
+    public DataSourceAddHandler() {
+        super("data-source-add", true);
 
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
