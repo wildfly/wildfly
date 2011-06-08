@@ -1852,7 +1852,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         if (offset < 0) {
             offset = 0;
         }
-        if (offset >= 0) {
+        if (offset > 0) {
             update = Util.getWriteAttributeOperation(address, SOCKET_BINDING_PORT_OFFSET, offset);
         }
         updates.add(update);
@@ -2113,7 +2113,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         attr = bindingGroup.get(DEFAULT_INTERFACE);
         writeAttribute(writer, Attribute.DEFAULT_INTERFACE, attr.asString());
 
-        if (fromServer && bindingGroup.hasDefined(PORT_OFFSET) && bindingGroup.get(PORT_OFFSET).asInt() >= 0) {
+        if (fromServer && bindingGroup.hasDefined(PORT_OFFSET) && bindingGroup.get(PORT_OFFSET).asInt() > 0) {
             attr = bindingGroup.get(PORT_OFFSET);
             writeAttribute(writer, Attribute.PORT_OFFSET, attr.asString());
         }

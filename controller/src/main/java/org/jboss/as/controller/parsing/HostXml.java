@@ -594,7 +594,7 @@ public class HostXml extends CommonXml {
             if (server.hasDefined(SOCKET_BINDING_GROUP)) {
                 writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
                 writeAttribute(writer, Attribute.REF, server.get(SOCKET_BINDING_GROUP).asString());
-                if (server.has(SOCKET_BINDING_PORT_OFFSET)) {
+                if (server.hasDefined(SOCKET_BINDING_PORT_OFFSET) && server.get(SOCKET_BINDING_PORT_OFFSET).asInt() > 0) {
                     writeAttribute(writer, Attribute.PORT_OFFSET, server.get(SOCKET_BINDING_PORT_OFFSET).asString());
                 }
                 writer.writeEndElement();
