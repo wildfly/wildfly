@@ -1403,30 +1403,6 @@
                             </execution>
                         </executions>
                     </plugin>
-<!--
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>assemble</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <configuration>
-                                    <descriptors>
-                                        <descriptor>assembly.xml</descriptor>
-                                    </descriptors>
-                                    <finalName>jboss-${project.version}</finalName>
-                                    <appendAssemblyId>false</appendAssemblyId>
-                                    <outputDirectory>target/distribution</outputDirectory>
-                                    <workDirectory>target/assembly/work</workDirectory>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
--->
                 </plugins>
             </build>
         </profile>
