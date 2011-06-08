@@ -365,6 +365,7 @@
                                             <exclude>biz.aQute:bnd</exclude>
                                             <exclude>com.fasterxml:classmate</exclude>
                                             <exclude>com.google.inject:guice</exclude>
+                                            <exclude>commons-httpclient:commons-httpclient</exclude>
                                             <exclude>commons-logging:commons-logging</exclude>
                                             <exclude>concurrent:concurrent</exclude>
                                             <exclude>javax.servlet:servlet-api</exclude>
@@ -3274,6 +3275,10 @@
                 <version>${version.org.jboss.jbossts.jbossjts}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>commons-httpclient</groupId>
+                        <artifactId>commons-httpclient</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
@@ -3397,6 +3402,10 @@
                 <artifactId>jbossjts-integration</artifactId>
                 <version>${version.org.jboss.jbossts.jbossjts-integration}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>commons-httpclient</groupId>
+                        <artifactId>commons-httpclient</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
