@@ -119,16 +119,20 @@ class TransactionSubsystemAdd implements NewStepHandler {
         subModel.get(OBJECT_STORE, RELATIVE_TO).set(operation.get(OBJECT_STORE, RELATIVE_TO));
         subModel.get(OBJECT_STORE,PATH).set(operation.get(OBJECT_STORE, PATH));
 
+        boolean setReload = false;
         if (context.getType() == NewOperationContext.Type.SERVER) {
-            if(context.isBooting()) {
+            if(!context.isBooting()) {
+                context.reloadRequired();
+                setReload = true;
+            } else {
                 context.addStep(new AbstractDeploymentChainStep() {
                     protected void execute(DeploymentProcessorTarget processorTarget) {
                         processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_TRANSACTION_BINDINGS, new TransactionJndiBindingProcessor());
                     }
                 }, NewOperationContext.Stage.RUNTIME);
-            }
 
-            context.addStep(new NewStepHandler() {
+
+                context.addStep(new NewStepHandler() {
                         public void execute(NewOperationContext context, ModelNode operation) {
                             final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
                             final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
@@ -224,9 +228,12 @@ class TransactionSubsystemAdd implements NewStepHandler {
                             }
                         }
                     }, NewOperationContext.Stage.RUNTIME);
+            }
         }
 
-        context.completeStep();
+        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK && setReload) {
+            context.revertReloadRequired();
+        }
     }
 
 }
