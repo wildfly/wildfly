@@ -17,8 +17,8 @@
  */
 package org.jboss.arquillian.testenricher.msc;
 
-import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveAppender;
-import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.arquillian.container.test.spi.RemoteLoadableExtension;
+import org.jboss.arquillian.test.spi.TestEnricher;
 
 /**
  * MSCEnricherExtension
@@ -26,10 +26,10 @@ import org.jboss.arquillian.core.spi.LoadableExtension;
  * @author Thomas.Diesler@jboss.com
  * @since 07-Jun-2011
  */
-public class MSCEnricherExtension implements LoadableExtension {
+public class MSCEnricherRemoteExtension implements RemoteLoadableExtension {
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(AuxiliaryArchiveAppender.class, MSCAuxiliaryArchiveAppender.class);
+        builder.service(TestEnricher.class, MSCTestEnricher.class);
     }
 
 }
