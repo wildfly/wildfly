@@ -31,7 +31,7 @@
     <dependencies>
         <!-- JAXB API + REF IMPL -->
         <module name="javax.xml.bind.api" export="true"/>
-        <module name="com.sun.xml.bind" services="export"/>
+        <module name="com.sun.xml.bind" export="true" services="export"/>
         <module name="javax.xml.ws.api" />
         <!-- JBossWS API -->
         <module name="org.jboss.ws.api" export="true" />
