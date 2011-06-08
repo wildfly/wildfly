@@ -17,9 +17,7 @@
  */
 package org.jboss.as.arquillian.service;
 
-import org.jboss.arquillian.container.test.spi.command.CommandService;
-import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.arquillian.protocol.jmx.JMXCommandService;
+import org.jboss.arquillian.protocol.jmx.JMXExtension;
 
 /**
  * JMXProtocolEndpointExtension
@@ -27,10 +25,10 @@ import org.jboss.arquillian.protocol.jmx.JMXCommandService;
  * @author thomas.diesler@jboss.com
  * @since 31-May-2011
  */
-public class JMXProtocolEndpointExtension implements LoadableExtension {
+public class JMXProtocolEndpointExtension extends JMXExtension {
 
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(CommandService.class, JMXCommandService.class);
+        super.register(builder);
     }
 }

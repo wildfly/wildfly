@@ -17,9 +17,7 @@
 package org.jboss.as.arquillian.container.managed;
 
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
-import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
 import org.jboss.as.arquillian.container.CommonContainerExtension;
-import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7;
 
 /**
  * The extensions used by the managed container.
@@ -33,7 +31,6 @@ public class ManagedContainerExtension extends CommonContainerExtension {
     @Override
     public void register(ExtensionBuilder builder) {
         super.register(builder);
-        builder.service(Protocol.class, JMXProtocolAS7.class);
         builder.service(DeployableContainer.class, ManagedDeployableContainer.class);
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<arquillian xmlns="http://www.jboss.org/arquillian-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.jboss.org/arquillian-1.0 http://jboss.org/schema/arquillian/arquillian-1.0.xsd">
+<arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
 
 	<container qualifier="jboss" default="true">
 		<configuration>
@@ -11,9 +11,7 @@
             Make executionType configurable
          -->
         <protocol type="jmx-as7">
-            <configuration>
                 <property name="executionType">REMOTE</property>
-            </configuration>
         </protocol>
 	</container>
 </arquillian>
