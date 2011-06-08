@@ -6,14 +6,8 @@
 		<configuration>
 			<property name="jbossHome">target/jbossas</property>
 		</configuration>
-        <!-- 
-            [ARQ-425] config parser code not in sync with schema
-            Make executionType configurable
-         -->
         <protocol type="jmx-as7">
-            <configuration>
-                <property name="executionType">REMOTE</property>
-            </configuration>
+            <property name="executionType">REMOTE</property>
         </protocol>
 	</container>
 </arquillian>
