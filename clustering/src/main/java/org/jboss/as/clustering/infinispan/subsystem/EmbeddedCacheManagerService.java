@@ -21,17 +21,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.security.AccessController;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
-
-import javax.management.JMException;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import javax.transaction.TransactionManager;
-
 import org.infinispan.config.Configuration;
 import org.infinispan.config.FluentGlobalConfiguration;
 import org.infinispan.config.GlobalConfiguration;
@@ -51,7 +40,7 @@ import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
-import org.jboss.logging.Logger;
+import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -59,6 +48,17 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.util.loading.ContextClassLoaderSwitcher;
 import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
+
+import javax.management.JMException;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import java.security.AccessController;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author Paul Ferraro
@@ -168,6 +168,13 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
         TransactionManager transactionManager = this.configuration.getTransactionManager();
         if (transactionManager != null) {
             defaultConfig.fluent().transaction().transactionManagerLookup(new TransactionManagerProvider(transactionManager));
+        }
+
+        TransactionSynchronizationRegistry transactionSynchronizationRegistry =
+            this.configuration.getTransactionSynchronizationRegistry();
+        if (transactionSynchronizationRegistry != null) {
+            defaultConfig.fluent().transaction().transactionSynchronizationRegistryLookup(
+                new TransactionSynchronizationRegistryProvider(transactionSynchronizationRegistry));
         }
 
         SwitchContext switchContext = switcher.getSwitchContext(this.getClass().getClassLoader());

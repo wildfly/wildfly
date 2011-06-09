@@ -19,32 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.config.Configuration;
+package org.jboss.as.clustering.infinispan;
 
-import javax.management.MBeanServer;
-import javax.transaction.TransactionManager;
+import org.infinispan.transaction.lookup.TransactionSynchronizationRegistryLookup;
+
 import javax.transaction.TransactionSynchronizationRegistry;
-import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * @author Paul Ferraro
+ * Passes the TransactionSynchronizationRegistry to Infinispan.
+ *
+ * @author Scott Marlow
  */
-public interface EmbeddedCacheManagerConfiguration {
+public class TransactionSynchronizationRegistryProvider implements TransactionSynchronizationRegistryLookup {
+    private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
 
-    String getName();
-    String getDefaultCache();
-    Map<String, Configuration> getConfigurations();
+    public TransactionSynchronizationRegistryProvider(TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
+        this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+    }
 
-    TransportConfiguration getTransportConfiguration();
-    EmbeddedCacheManagerDefaults getDefaults();
-    TransactionManager getTransactionManager();
-    TransactionSynchronizationRegistry getTransactionSynchronizationRegistry();
-    MBeanServer getMBeanServer();
-    Executor getListenerExecutor();
-    ScheduledExecutorService getEvictionExecutor();
-    ScheduledExecutorService getReplicationQueueExecutor();
+    @Override
+    public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() throws Exception {
+        return transactionSynchronizationRegistry;
+    }
 }

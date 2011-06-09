@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.config.CacheLoaderManagerConfig;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.config.FluentConfiguration;
@@ -68,6 +67,7 @@ import org.jboss.msc.value.InjectedValue;
 
 import javax.management.MBeanServer;
 import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -163,6 +163,7 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                     ServiceBuilder<CacheContainer> builder = target.addService(serviceName, new EmbeddedCacheManagerService(config))
                         .addDependency(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, EmbeddedCacheManagerDefaults.class, config.getDefaultsInjector())
                         .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, config.getTransactionManagerInjector())
+                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionSynchronizationRegistry"), TransactionSynchronizationRegistry.class, config.getTransactionSynchronizationRegistryInjector())
                         .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, config.getMBeanServerInjector())
                         .addAliases(aliases)
                         .setInitialMode(ServiceController.Mode.ON_DEMAND)
@@ -404,6 +405,8 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
     static class EmbeddedCacheManager implements EmbeddedCacheManagerConfiguration {
         private final InjectedValue<EmbeddedCacheManagerDefaults> defaults = new InjectedValue<EmbeddedCacheManagerDefaults>();
         private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
+        private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry =
+            new InjectedValue<TransactionSynchronizationRegistry>();
         private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
         private final InjectedValue<Executor> listenerExecutor = new InjectedValue<Executor>();
         private final InjectedValue<ScheduledExecutorService> evictionExecutor = new InjectedValue<ScheduledExecutorService>();
@@ -426,6 +429,11 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
         Injector<TransactionManager> getTransactionManagerInjector() {
             return this.transactionManager;
         }
+
+        Injector<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
+            return this.transactionSynchronizationRegistry;
+        }
+
 
         Injector<MBeanServer> getMBeanServerInjector() {
             return this.mbeanServer;
@@ -475,6 +483,11 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
         @Override
         public TransactionManager getTransactionManager() {
             return this.transactionManager.getOptionalValue();
+        }
+
+        @Override
+        public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
+            return this.transactionSynchronizationRegistry.getOptionalValue();
         }
 
         @Override
