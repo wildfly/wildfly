@@ -39,6 +39,10 @@
     <name>JBoss Application Server: Arquillian Embedded Container</name>
 
     <packaging>jar</packaging>
+    
+    <properties>
+        <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -48,7 +52,7 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
+            <artifactId>jboss-as-arquillian-protocol-jmx</artifactId>
         </dependency>
 
         <dependency>
@@ -58,7 +62,7 @@
 
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-core</artifactId>
+            <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>        
         
@@ -73,6 +77,21 @@
             <artifactId>javax.inject</artifactId>
             <scope>test</scope>
         </dependency>
+        
+        <!-- ALR testing, remove stuff below this line -->
+        <!-- TODO: should really be optional -->
+        <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>jboss-logmanager</artifactId>
+            <version>1.2.0.CR9</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.modules</groupId>
+            <artifactId>jboss-modules</artifactId>
+            <version>1.0.0.CR3</version>
+        </dependency>
 
     </dependencies>
 
@@ -80,9 +99,44 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${jboss.home}</directory>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <systemProperties>
+                        <property>
+                          <name>java.util.logging.manager</name>
+                          <value>org.jboss.logmanager.LogManager</value>
+                        </property>
+                        <property>
+                          <name>jboss.home</name>
+                          <value>${basedir}/target/jbossas</value>
+                        </property>
+                    </systemProperties>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
             </plugin>
         </plugins>

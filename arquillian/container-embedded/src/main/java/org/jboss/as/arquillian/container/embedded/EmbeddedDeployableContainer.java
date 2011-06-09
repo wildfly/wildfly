@@ -24,12 +24,11 @@ import java.util.Properties;
 
 import javax.management.MBeanServerConnection;
 
-import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
-import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
-import org.jboss.arquillian.spi.ContainerMethodExecutor;
-import org.jboss.arquillian.spi.Context;
-import org.jboss.arquillian.spi.LifecycleException;
-import org.jboss.as.arquillian.container.AbstractDeployableContainer;
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
+import org.jboss.arquillian.core.api.InstanceProducer;
+import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.as.arquillian.container.CommonDeployableContainer;
 import org.jboss.as.embedded.EmbeddedServerFactory;
 import org.jboss.as.embedded.StandaloneServer;
 
@@ -38,13 +37,18 @@ import org.jboss.as.embedded.StandaloneServer;
  *
  * @author Thomas.Diesler@jboss.com
  * @author Kabir Khan
+ * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  * @since 17-Nov-2010
  */
-public final class JBossAsEmbeddedContainer extends AbstractDeployableContainer {
+public final class EmbeddedDeployableContainer extends CommonDeployableContainer<EmbeddedContainerConfiguration> {
     private StandaloneServer server;
 
+    @Inject
+    @ContainerScoped
+    private InstanceProducer<MBeanServerConnection> mbeanServerInst;
+
     @Override
-    protected void startInternal(Context context) throws LifecycleException {
+    protected void startInternal() throws LifecycleException {
         try {
             String jbossHomeKey = "jboss.home";
             String jbossHomeProp = System.getProperty(jbossHomeKey);
@@ -66,6 +70,7 @@ public final class JBossAsEmbeddedContainer extends AbstractDeployableContainer 
             sysprops.setProperty("logging.configuration", "file:" + jbossHomeDir + "/standalone/configuration/logging.properties");
             sysprops.setProperty("org.jboss.boot.log.file", jbossHomeDir + "/standalone/log/boot.log");
 
+            mbeanServerInst.set(getMBeanServerConnection(5000));
 
             server = EmbeddedServerFactory.create(jbossHomeDir, sysprops, System.getenv(), getSystemPackages(sysprops, "org.jboss.logmanager"));
             server.start();
@@ -84,7 +89,7 @@ public final class JBossAsEmbeddedContainer extends AbstractDeployableContainer 
     }
 
     @Override
-    protected void stopInternal(Context context) throws LifecycleException {
+    protected void stopInternal() throws LifecycleException {
         try {
             if (server != null)
                 server.stop();
@@ -98,11 +103,6 @@ public final class JBossAsEmbeddedContainer extends AbstractDeployableContainer 
         return ManagementFactory.getPlatformMBeanServer();
     }
 
-    @Override
-    protected ContainerMethodExecutor getContainerMethodExecutor() {
-        return new JMXMethodExecutor(getMBeanServerConnection(), ExecutionType.EMBEDDED);
-    }
-
     private LifecycleException handleStartThrowable(Throwable th) throws LifecycleException {
         if (th instanceof UndeclaredThrowableException)
             throw handleStartThrowable(((UndeclaredThrowableException) th).getUndeclaredThrowable());
@@ -114,5 +114,10 @@ public final class JBossAsEmbeddedContainer extends AbstractDeployableContainer 
             throw (RuntimeException) th;
 
         return new LifecycleException("Could not start container", th);
+    }
+
+    @Override
+    public Class<EmbeddedContainerConfiguration> getConfigurationClass() {
+        return EmbeddedContainerConfiguration.class;
     }
 }

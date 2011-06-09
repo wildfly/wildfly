@@ -23,9 +23,8 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.embedded.archive.ConfigService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -39,7 +38,7 @@ import org.junit.runner.RunWith;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.AS_CLIENT)
+@RunAsClient
 @Ignore("Hangs in Surefire")
 public class JBossASEmbeddedAsClientTestCase extends JBossASEmbeddedInContainerTestCase {
 
@@ -49,7 +48,7 @@ public class JBossASEmbeddedAsClientTestCase extends JBossASEmbeddedInContainerT
         archive.addPackage(ConfigService.class.getPackage());
         String path = "META-INF/jboss-service.xml";
         URL resourceURL = JBossASEmbeddedAsClientTestCase.class.getResource("/sar-example.sar/" + path);
-        archive.addResource(new File(resourceURL.getFile()), path);
+        archive.addAsResource(new File(resourceURL.getFile()), path);
         return archive;
     }
 
