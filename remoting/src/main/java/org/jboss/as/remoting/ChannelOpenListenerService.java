@@ -93,7 +93,7 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
 
     @Override
     public void channelOpened(Channel channel) {
-        final ManagementChannel protocolChannel = new ManagementChannelFactory().create(channelName, channel);
+        final ManagementChannel protocolChannel = new ManagementChannelFactory(operationHandlerValue.getValue()).create(channelName, channel);
         protocolChannel.startReceiving();
         channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
