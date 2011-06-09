@@ -36,6 +36,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.osgi.webapp.bundle.EndpointServlet;
 import org.jboss.osgi.http.HttpServiceCapability;
+import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -45,8 +46,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-
-import aQute.lib.osgi.Constants;
 
 /**
  * A test that deployes a WAR bundle
