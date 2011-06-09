@@ -685,7 +685,6 @@ public final class NewThreadsParser implements XMLStreamConstants, XMLElementRea
     }
 
     public void writeThreadsElement(final XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-        writer.setDefaultNamespace(Namespace.THREADS_1_0.getUriString());
         if (node.hasDefined(THREAD_FACTORY)) {
             for (String name : node.get(THREAD_FACTORY).keys()) {
                 final ModelNode child = node.get(THREAD_FACTORY, name);
