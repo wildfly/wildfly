@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.servlet.Servlet;
@@ -33,6 +34,8 @@ import javax.servlet.http.HttpServlet;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
 import org.jboss.as.testsuite.integration.osgi.http.bundle.EndpointServlet;
 import org.jboss.as.testsuite.integration.osgi.http.bundle.HttpExampleActivator;
 import org.jboss.osgi.http.HttpServiceCapability;
@@ -41,13 +44,14 @@ import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.http.HttpService;
 import org.osgi.service.log.LogService;
+import org.osgi.service.startlevel.StartLevel;
 import org.osgi.util.tracker.ServiceTracker;
 
 /**
@@ -57,16 +61,19 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 23-Jan-2009
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class HttpServiceTestCase {
+public class HttpServiceTestCase extends OSGiTestSupport {
+
+    @Inject
+    public BundleContext context;
 
     @Inject
     public Bundle bundle;
 
     @Deployment
+    @StartLevelAware(startLevel = 3)
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-http");
-        archive.addClasses(HttpExampleActivator.class, EndpointServlet.class);
+        archive.addClasses(OSGiTestSupport.class, HttpExampleActivator.class, EndpointServlet.class);
         archive.addAsResource("osgi/http/message.txt", "res/message.txt");
         archive.setManifest(new Asset() {
             public InputStream openStream() {
@@ -74,7 +81,7 @@ public class HttpServiceTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(HttpExampleActivator.class);
-                builder.addImportPackages(HttpService.class, LogService.class, BundleActivator.class, ServiceTracker.class);
+                builder.addImportPackages(StartLevel.class, HttpService.class, LogService.class, BundleActivator.class, ServiceTracker.class);
                 builder.addImportPackages(HttpServiceCapability.class, LogServiceTracker.class);
                 builder.addImportPackages(HttpServlet.class, Servlet.class);
                 return builder.openStream();
@@ -85,6 +92,9 @@ public class HttpServiceTestCase {
 
     @Test
     public void testServletAccess() throws Exception {
+
+        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
+
         bundle.start();
         String line = getHttpResponse("/servlet?test=plain", 5000);
         assertEquals("Hello from Servlet", line);
