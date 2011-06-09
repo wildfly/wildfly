@@ -61,15 +61,6 @@ import org.jboss.dmr.ModelNode;
  */
 public class DomainLifecycleUtil {
 
-    private static final ObjectName OBJECT_NAME;
-    static {
-        try {
-            OBJECT_NAME = new ObjectName("jboss.arquillian:service=jmx-test-runner");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private static final ThreadFactory threadFactory = new AsyncThreadFactory();
 
     private final Logger log = Logger.getLogger(DomainLifecycleUtil.class.getName());
@@ -218,12 +209,12 @@ public class DomainLifecycleUtil {
                         try {
                             MBeanServerConnectionProvider provider = getMBeanServerConnectionProvider(entry.getKey());
                             MBeanServerConnection mbeanServer = provider == null ? null : provider.getConnection();
-                            boolean isAvailable = mbeanServer != null && mbeanServer.isRegistered(OBJECT_NAME);
-                            if (isAvailable) {
+                            if (mbeanServer != null) {
                                 connections.put(entry.getKey(), mbeanServer);
                                 available++;
                             }
                         } catch (Exception ignore) {
+                            log.severe(String.format("Failed accessing mbean server on %s: %s", entry.getKey(), ignore));
                         }
                     }
                 }
@@ -242,7 +233,7 @@ public class DomainLifecycleUtil {
                         notStartedServers.add(entry.getKey());
                     }
                 }
-                throw new TimeoutException(String.format("Could not connect to the managed server's MBeanServer for servers with port offsets %s within [%d] seconds", notStartedServers.toString(), configuration.getStartupTimeoutInSeconds()));
+                throw new TimeoutException(String.format("Could not connect to the managed server's MBeanServer for servers %s within [%d] seconds", notStartedServers.toString(), configuration.getStartupTimeoutInSeconds()));
             }
 
             log.info("All containers available");

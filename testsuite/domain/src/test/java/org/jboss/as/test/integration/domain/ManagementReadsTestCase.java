@@ -56,7 +56,7 @@ public class ManagementReadsTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = new DomainTestSupport(CoreResourceManagementTestCase.class.getSimpleName(), "domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml");
+        testSupport = new DomainTestSupport(ManagementReadsTestCase.class.getSimpleName(), "domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml");
         testSupport.start();
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
         domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();

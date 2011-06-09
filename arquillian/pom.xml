@@ -43,8 +43,8 @@
         <module>container-managed</module>
         <module>protocol-jmx</module>
         <module>testenricher-msc</module>
-        <!-- 
         <module>container-managed-domain</module>
+        <!--
         <module>container-embedded</module>
         <module>container-remote</module>
         <module>protocol-servlet</module>

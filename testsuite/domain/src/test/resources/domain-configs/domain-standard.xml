@@ -22,10 +22,28 @@
 
 <domain xmlns="urn:jboss:domain:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd">
+        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
+                            urn:jboss:domain:jca:1.0 jboss-jca.xsd
+                            urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
+                            urn:jboss:domain:ejb3:1.0 jboss-ejb3.xsd
+                            urn:jboss:domain:ee:1.0 jboss-ee.xsd
+                            urn:jboss:domain:jaxrs:1.0 jboss-jaxrs.xsd
+                            urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
+                            urn:jboss:domain:jpa:1.0 jboss-jpa.xsd
+                            urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
+                            urn:jboss:domain:naming:1.0 jboss-naming.xsd
+                            urn:jboss:domain:osgi:1.0 jboss-osgi.xsd
+                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
+                            urn:jboss:domain:resourceadapters:1.0 jboss-resource-adapters.xsd
+                            urn:jboss:domain:sar:1.0 jboss-sar.xsd
+                            urn:jboss:domain:threads:1.0 jboss-threads.xsd
+                            urn:jboss:domain:transactions:1.0 jboss-txn.xsd
+                            urn:jboss:domain:web:1.0 jboss-web.xsd
+                            urn:jboss:domain:security:1.0 jboss-security.xsd
+                            urn:jboss:domain:webservices:1.0 jboss-webservices.xsd
+                            urn:jboss:domain:weld:1.0 jboss-weld.xsd">
 
     <extensions>
-        <extension module="org.jboss.as.arquillian.service"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
@@ -33,7 +51,6 @@
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jaxrs"/>
-        <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
@@ -100,7 +117,6 @@
                     <keepalive-time time="10" unit="seconds"/>
                 </bounded-queue-thread-pool>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
             <subsystem xmlns="urn:jboss:domain:ejb3:1.0" />
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
@@ -130,10 +146,27 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:weld:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:connector:1.0">
+            <subsystem xmlns="urn:jboss:domain:jca:1.0">
                 <archive-validation enabled="true"/>
                 <bean-validation enabled="true"/>
-                <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
+                <default-workmanager>
+            	<short-running-threads>
+            		<bounded-queue-thread-pool xmlns="urn:jboss:domain:threads:1.0" name="jca-short-running" blocking="true">
+                		<core-threads count="10" per-cpu="20"/>
+                		<queue-length count="10" per-cpu="20"/>
+                		<max-threads count="10" per-cpu="20"/>
+                		<keepalive-time time="10" unit="seconds"/>
+            		</bounded-queue-thread-pool>
+            	</short-running-threads>
+            	<long-running-threads>
+	            	<bounded-queue-thread-pool xmlns="urn:jboss:domain:threads:1.0" name="jca-long-running" blocking="true">
+		                <core-threads count="10" per-cpu="20"/>
+		                <queue-length count="10" per-cpu="20"/>
+		                <max-threads count="10" per-cpu="20"/>
+		                <keepalive-time time="10" unit="seconds"/>
+	            	</bounded-queue-thread-pool>
+            	</long-running-threads>
+            </default-workmanager>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:datasources:1.0">
                 <datasources>
@@ -296,12 +329,13 @@
                </virtual-server>
              </subsystem>
            <subsystem xmlns="urn:jboss:domain:webservices:1.0">
-                <wsdl-host>localhost</wsdl-host>
-                <modify-wsdl-address>true</modify-wsdl-address>
+             <modify-wsdl-address>true</modify-wsdl-address>
+             <wsdl-host>localhost</wsdl-host>
+             <!--
+             <wsdl-port>8080</wsdl-port>
+             <wsdl-secure-port>8443</wsdl-secure-port>
+             -->
           </subsystem>
-		  <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-		        <mod-cluster-config advertise-socket="mod_cluster" />
-		  </subsystem>
         </profile>
     </profiles>
 
@@ -311,10 +345,12 @@
          are shown.
     -->
     <interfaces>
-        <interface name="loopback">
+        <interface name="management">
             <inet-address value="127.0.0.1"/>
         </interface>
-        <interface name="public"/>
+        <interface name="public">
+           <inet-address value="127.0.0.1"/>
+        </interface>
     </interfaces>
 
     <socket-binding-groups>
@@ -330,7 +366,7 @@
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
          </socket-binding-group>
-         <socket-binding-group name="messaging-sockets" default-interface="external">
+         <socket-binding-group name="messaging-sockets" default-interface="public">
             <socket-binding name="messaging" port="5445" />
             <socket-binding name="messaging-throughput" port="5455"/>
          </socket-binding-group>
