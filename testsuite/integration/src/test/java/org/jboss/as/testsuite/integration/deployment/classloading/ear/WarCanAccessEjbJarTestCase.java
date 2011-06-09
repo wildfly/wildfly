@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class WarCanAccessEjbJarTestCase {
 
     @Deployment

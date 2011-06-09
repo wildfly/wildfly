@@ -32,6 +32,7 @@ import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.as.testsuite.integration.jaxrs.servletintegration.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -44,13 +45,13 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class CDIResourceInjectionTestCase {
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
+        war.add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
         war.addClasses(CDIResourceInjectionTestCase.class, CDIResource.class, CDIBean.class);
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
                 "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +

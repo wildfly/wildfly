@@ -36,13 +36,13 @@ import org.junit.runner.RunWith;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class XmlManagedBeanTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "jsfmanagedbean.war");
         war.addPackage(XmlManagedBeanTestCase.class.getPackage());
+        war.addAsWebInfResource(new StringAsset(""), "beans.xml");
         war.addAsWebInfResource(new StringAsset("<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<faces-config version=\"1.2\" \n" +
                 "    xmlns=\"http://java.sun.com/xml/ns/javaee\" \n" +
