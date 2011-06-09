@@ -24,12 +24,15 @@ package org.jboss.as.testsuite.integration.osgi.jmx;
 import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.management.MBeanServer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
 import org.jboss.as.testsuite.integration.osgi.jmx.bundle.Foo;
 import org.jboss.as.testsuite.integration.osgi.jmx.bundle.FooMBean;
 import org.jboss.as.testsuite.integration.osgi.jmx.bundle.MBeanActivator;
@@ -38,13 +41,13 @@ import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.startlevel.StartLevel;
 import org.osgi.util.tracker.ServiceTracker;
 
 /**
@@ -54,16 +57,19 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 12-Feb-2009
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class MBeanServerTestCase {
+public class MBeanServerTestCase extends OSGiTestSupport {
+
+    @Inject
+    public BundleContext context;
 
     @Inject
     public Bundle bundle;
 
     @Deployment
+    @StartLevelAware(startLevel = 3)
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-mbean");
-        archive.addClasses(Foo.class, FooMBean.class, MBeanActivator.class);
+        archive.addClasses(OSGiTestSupport.class, Foo.class, FooMBean.class, MBeanActivator.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -71,7 +77,7 @@ public class MBeanServerTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(MBeanActivator.class);
                 builder.addImportPackages(BundleActivator.class, ServiceTracker.class);
-                builder.addImportPackages(MBeanServer.class, MBeanProxy.class);
+                builder.addImportPackages(StartLevel.class, MBeanServer.class, MBeanProxy.class);
                 return builder.openStream();
             }
         });
@@ -80,6 +86,9 @@ public class MBeanServerTestCase {
 
     @Test
     public void testMBeanAccess() throws Exception {
+
+        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
+
         bundle.start();
         BundleContext context = bundle.getBundleContext();
         ServiceReference sref = context.getServiceReference(MBeanServer.class.getName());

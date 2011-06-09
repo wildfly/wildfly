@@ -52,18 +52,19 @@ public abstract class OSGiTestSupport {
     protected void changeStartLevel(BundleContext context, int level, long timeout, TimeUnit units) throws InterruptedException, TimeoutException {
         ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
         StartLevel startLevel = (StartLevel) context.getService(sref);
-
-        final CountDownLatch latch = new CountDownLatch(1);
-        context.addFrameworkListener(new FrameworkListener() {
-            public void frameworkEvent(FrameworkEvent event) {
-                if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
-                    latch.countDown();
+        if (level != startLevel.getStartLevel()) {
+            final CountDownLatch latch = new CountDownLatch(1);
+            context.addFrameworkListener(new FrameworkListener() {
+                public void frameworkEvent(FrameworkEvent event) {
+                    if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
+                        latch.countDown();
+                    }
                 }
-            }
-        });
-        startLevel.setStartLevel(level);
-        if (latch.await(timeout, units) == false)
-            throw new TimeoutException("Timeout changing start level");
+            });
+            startLevel.setStartLevel(level);
+            if (latch.await(timeout, units) == false)
+                throw new TimeoutException("Timeout changing start level");
+        }
     }
 
     /**

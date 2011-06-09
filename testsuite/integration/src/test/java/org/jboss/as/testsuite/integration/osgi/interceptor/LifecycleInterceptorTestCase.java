@@ -69,7 +69,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @since 23-Oct-2009
  */
 @RunWith(Arquillian.class)
-public class LifecycleInterceptorTestCase  extends OSGiTestSupport {
+public class LifecycleInterceptorTestCase extends OSGiTestSupport {
 
     static final String PROCESSOR_NAME = "interceptor-processor";
     static final String ENDPOINT_NAME = "interceptor-endpoint";
