@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
 
 import javax.inject.Inject;
@@ -34,18 +35,18 @@ import javax.servlet.http.HttpServlet;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
 import org.jboss.as.testsuite.integration.osgi.webapp.bundle.EndpointServlet;
-import org.jboss.osgi.http.HttpServiceCapability;
-import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * A test that deployes a WAR bundle
@@ -54,8 +55,7 @@ import org.osgi.framework.BundleContext;
  * @since 06-Oct-2009
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class WebAppTestCase {
+public class WebAppTestCase extends OSGiTestSupport {
 
     @Inject
     public BundleContext context;
@@ -64,11 +64,12 @@ public class WebAppTestCase {
     public Bundle bundle;
 
     @Deployment
+    @StartLevelAware(startLevel = 4)
     public static WebArchive createdeployment() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, "example-webapp");
-        archive.addClasses(EndpointServlet.class);
+        archive.addClasses(OSGiTestSupport.class, EndpointServlet.class);
         archive.addAsResource("osgi/webapp/message.txt", "message.txt");
-        archive.addAsResource("osgi/webapp/webA.xml", "WEB-INF/web.xml");
+        archive.addAsWebInfResource("osgi/webapp/webA.xml", "web.xml");
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
         archive.add(new Asset() {
             public InputStream openStream() {
@@ -77,8 +78,7 @@ public class WebAppTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addManifestHeader(Constants.BUNDLE_CLASSPATH, ".,WEB-INF/classes");
                 builder.addManifestHeader("Web-ContextPath", "example-webapp");
-                builder.addImportPackages(HttpServiceCapability.class);
-                builder.addImportPackages(HttpServlet.class, Servlet.class);
+                builder.addImportPackages(StartLevel.class, HttpServlet.class, Servlet.class);
                 return builder.openStream();
             }
         }, JarFile.MANIFEST_NAME);
@@ -87,6 +87,9 @@ public class WebAppTestCase {
 
     @Test
     public void testServletAccess() throws Exception {
+
+        changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
+
         bundle.start();
         String line = getHttpResponse("/example-webapp/servlet?test=plain", 5000);
         assertEquals("Hello from Servlet", line);
@@ -107,6 +110,6 @@ public class WebAppTestCase {
     }
 
     private String getHttpResponse(String reqPath, int timeout) throws IOException {
-        return HttpServiceCapability.getHttpResponse("localhost", DEFAULT_HTTP_SERVICE_PORT, reqPath, timeout);
+        return getHttpResponse("localhost", DEFAULT_HTTP_SERVICE_PORT, reqPath, timeout);
     }
 }

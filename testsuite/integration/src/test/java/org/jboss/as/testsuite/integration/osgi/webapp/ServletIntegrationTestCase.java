@@ -31,20 +31,20 @@ import java.util.jar.JarFile;
 
 import javax.inject.Inject;
 
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.container.ArchiveDeployer;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
 import org.jboss.as.testsuite.integration.osgi.xservice.api.Echo;
 import org.jboss.as.testsuite.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.logging.Logger;
-import org.jboss.osgi.http.HttpServiceCapability;
+import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -59,28 +59,27 @@ import org.osgi.framework.ServiceReference;
  * @since 13-May-2011
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class ServletIntegrationTestCase {
+public class ServletIntegrationTestCase extends OSGiTestSupport {
+
+    static final String WAR_DEPLOYMENT_NAME = "web-osgi-client.war";
 
     @Inject
     public Bundle bundle;
 
-    @Inject
-    public ArchiveDeployer deployer;
+    @ArquillianResource
+    public Deployer deployer;
 
     @Deployment
     public static JavaArchive createDeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "web-osgi-target");
-        archive.addClasses(Echo.class, TargetBundleActivator.class);
+        archive.addClasses(OSGiTestSupport.class, Echo.class, TargetBundleActivator.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(TargetBundleActivator.class);
-                // [TODO] remove these explicit imports
-                builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
-                builder.addImportPackages(BundleActivator.class, Logger.class, HttpServiceCapability.class);
+                builder.addImportPackages(BundleActivator.class, Logger.class);
                 return builder.openStream();
             }
         });
@@ -98,25 +97,24 @@ public class ServletIntegrationTestCase {
 
     @Test
     public void testServiceAccess() throws Exception {
-        Archive<?> webArchive = null; //provider.getClientDeployment("web-osgi-client.war");
-        String webName = deployer.deploy(webArchive);
+        deployer.deploy(WAR_DEPLOYMENT_NAME);
         try {
             assertEquals("web-osgi-target", getHttpResponse(BUNDLE_SYMBOLICNAME));
             assertEquals("foo", getHttpResponse("foo"));
         } finally {
-            deployer.undeploy(webName);
+            deployer.undeploy(WAR_DEPLOYMENT_NAME);
         }
     }
 
-    //@ArchiveProvider
-    public static WebArchive getTestArchive(String name) {
-        final WebArchive archive = ShrinkWrap.create(WebArchive.class, name);
+    @Deployment(name = WAR_DEPLOYMENT_NAME, managed = false, testable = false)
+    public static WebArchive getTestArchive() {
+        final WebArchive archive = ShrinkWrap.create(WebArchive.class, WAR_DEPLOYMENT_NAME);
         archive.addClass(SimpleClientServlet.class);
-        archive.addAsResource("osgi/webapp/webB.xml", "WEB-INF/web.xml");
+        archive.addAsWebInfResource("osgi/webapp/webB.xml", "web.xml");
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
         archive.add(new Asset() {
             public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                ManifestBuilder builder = ManifestBuilder.newInstance();
                 builder.addManifestHeader("Dependencies", "org.osgi.core,deployment.web-osgi-target:0.0.0");
                 return builder.openStream();
             }
@@ -126,7 +124,6 @@ public class ServletIntegrationTestCase {
 
     private String getHttpResponse(String message) throws IOException {
         String reqPath = "/web-osgi-client/servlet?msg=" + message;
-        return HttpServiceCapability.getHttpResponse("localhost", 8080, reqPath, 2000);
+        return getHttpResponse("localhost", 8080, reqPath, 2000);
     }
-
 }
