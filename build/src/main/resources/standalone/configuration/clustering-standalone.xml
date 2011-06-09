@@ -185,7 +185,7 @@
 		                <queue-length count="10" per-cpu="20"/>
 		                <max-threads count="10" per-cpu="20"/>
 		                <keepalive-time time="10" unit="seconds"/>
-	            	</bounded-queue-thread-pool> 
+	            	</bounded-queue-thread-pool>
             	</long-running-threads>
             </default-workmanager>
         </subsystem>
@@ -193,8 +193,7 @@
             <datasources>
                 <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
-                    <driver-class>org.h2.Driver</driver-class>
-                    <driver>org.h2.Driver#1.2</driver>
+                    <driver>h2</driver>
                     <pool></pool>
                     <security>
                         <user-name>sa</user-name>
@@ -204,23 +203,14 @@
                     <timeout></timeout>
                     <statement></statement>
                 </datasource>
+	            <drivers>
+	                <driver name="h2" module="com.h2database.h2">
+	                	<xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+	                </driver>
+	            </drivers>
             </datasources>
-            <drivers>
-                <driver module="com.h2database.h2"/>
-            </drivers>
-        </subsystem>
-        <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0">
-                <!--  <resource-adapters>
-				  <resource-adapter>
-				    <archive>ra16out.rar</archive>
-				    <connection-definitions>
-				      <connection-definition jndi-name="java:/eis/ra16out-raxml"
-				                             class-name="org.jboss.jca.test.deployers.spec.rars.ra16out.TestManagedConnectionFactory">
-				      </connection-definition>
-				    </connection-definitions>
-				  </resource-adapter>
-				</resource-adapters>-->
        </subsystem>
+       <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
        <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                 <property name="manager.root">jboss-osgi</property>

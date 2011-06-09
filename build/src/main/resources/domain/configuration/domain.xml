@@ -52,6 +52,7 @@
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.messaging"/>
+        <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
@@ -164,7 +165,7 @@
 		                <queue-length count="10" per-cpu="20"/>
 		                <max-threads count="10" per-cpu="20"/>
 		                <keepalive-time time="10" unit="seconds"/>
-	            	</bounded-queue-thread-pool> 
+	            	</bounded-queue-thread-pool>
             	</long-running-threads>
             </default-workmanager>
             </subsystem>
@@ -336,21 +337,22 @@
              <wsdl-secure-port>8443</wsdl-secure-port>
              -->
           </subsystem>
+          <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+             <mod-cluster-config advertise-socket="mod_cluster" />
+          </subsystem>
         </profile>
     </profiles>
 
     <!--
-         Named interfaces that can be referenced elsewhere. Different
-         mechanisms for associating an IP address with the interface
-         are shown.
+         Named interfaces that can be referenced elsewhere in the configuration. The configuration
+         for how to associate these logical names with an actual network interface can either
+         be specified here or can be declared on a per-host basis in the equivalent element in host.xml.
+
+         These default configurations require the binding specification to be done in host.xml.
     -->
     <interfaces>
-        <interface name="management">
-            <inet-address value="127.0.0.1"/>
-        </interface>
-        <interface name="public">
-           <inet-address value="127.0.0.1"/>
-        </interface>
+        <interface name="management"/>
+        <interface name="public"/>
     </interfaces>
 
     <socket-binding-groups>
@@ -376,7 +378,7 @@
         <!-- IPv4 is not required, but setting this helps avoid unintended use of IPv6 -->
         <property name="java.net.preferIPv4Stack" value="true"/>
     </system-properties>
-    
+
     <server-groups>
         <server-group name="main-server-group" profile="default">
             <socket-binding-group ref="standard-sockets"/>
@@ -392,6 +394,6 @@
             </jvm>
         </server-group>
     </server-groups>
-    
+
 
 </domain>

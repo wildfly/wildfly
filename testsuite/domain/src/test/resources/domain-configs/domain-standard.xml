@@ -52,6 +52,7 @@
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.messaging"/>
+        <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
@@ -335,6 +336,9 @@
              <wsdl-port>8080</wsdl-port>
              <wsdl-secure-port>8443</wsdl-secure-port>
              -->
+          </subsystem>
+          <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+             <mod-cluster-config advertise-socket="mod_cluster" />
           </subsystem>
         </profile>
     </profiles>
