@@ -21,14 +21,19 @@
  */
 package org.jboss.as.testsuite.integration.osgi;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
 
 
@@ -59,5 +64,18 @@ public abstract class OSGiTestSupport {
         startLevel.setStartLevel(level);
         if (latch.await(timeout, units) == false)
             throw new TimeoutException("Timeout changing start level");
+    }
+
+    /**
+     * Use {@link PackageAdmin#getBundles(String, String)} to find a deployed bundle by
+     * symbolic name and version range
+     */
+    protected Bundle getDeployedBundle(BundleContext context, String symbolicName, String versionRange) {
+        ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
+        PackageAdmin packageAdmin = (PackageAdmin) context.getService(sref);
+        Bundle[] bundles = packageAdmin.getBundles(symbolicName, versionRange);
+        assertNotNull("Bundles found", bundles);
+        assertEquals("One bundle found", 1, bundles.length);
+        return bundles[0];
     }
 }
