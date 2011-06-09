@@ -25,6 +25,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.management.MBeanServer;
@@ -34,17 +35,19 @@ import javax.management.openmbean.TabularData;
 import org.apache.aries.jmx.framework.BundleState;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
 import org.jboss.osgi.jmx.MBeanProxy;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.jmx.framework.BundleStateMBean;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * Test {@link BundleState} functionality
@@ -53,22 +56,23 @@ import org.osgi.jmx.framework.BundleStateMBean;
  * @since 15-Feb-2010
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class BundleStateTestCase {
+public class BundleStateTestCase extends OSGiTestSupport {
 
     @Inject
     public BundleContext context;
 
     @Deployment
+    @StartLevelAware(startLevel = 3)
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-bundlestate");
+        archive.addClass(OSGiTestSupport.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(BundleStateMBean.class);
-                builder.addImportPackages(MBeanServer.class, MBeanProxy.class);
+                builder.addImportPackages(StartLevel.class, MBeanServer.class, MBeanProxy.class);
                 return builder.openStream();
             }
         });
@@ -77,6 +81,8 @@ public class BundleStateTestCase {
 
     @Test
     public void testBundleStateMBean() throws Exception {
+
+        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
 
         ServiceReference sref = context.getServiceReference(MBeanServer.class.getName());
         MBeanServer server = (MBeanServer) context.getService(sref);
