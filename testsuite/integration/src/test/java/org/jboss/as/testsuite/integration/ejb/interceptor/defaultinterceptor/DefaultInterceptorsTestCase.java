@@ -41,12 +41,11 @@ import org.junit.runner.RunWith;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class DefaultInterceptorsTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "testdefaultinterceptors");
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "testdefaultinterceptors.jar");
         archive.addPackage(DefaultInterceptorsTestCase.class.getPackage());
         archive.addAsManifestResource(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
