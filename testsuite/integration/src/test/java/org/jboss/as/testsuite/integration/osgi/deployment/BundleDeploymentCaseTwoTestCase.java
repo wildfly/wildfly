@@ -54,7 +54,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
 @RunWith(Arquillian.class)
 public class BundleDeploymentCaseTwoTestCase extends OSGiTestSupport {
 
-    static final String BUNDLE_DEPLOYMENT = "test-bundle-two";
+    static final String BUNDLE_DEPLOYMENT_NAME = "test-bundle-two";
 
     @ArquillianResource
     public Deployer deployer;
@@ -81,10 +81,10 @@ public class BundleDeploymentCaseTwoTestCase extends OSGiTestSupport {
     @Test
     public void testBundleDeployment() throws Exception {
 
-        deployer.deploy(BUNDLE_DEPLOYMENT);
+        deployer.deploy(BUNDLE_DEPLOYMENT_NAME);
 
         // Find the deployed bundle
-        Bundle bundle = getDeployedBundle(context, BUNDLE_DEPLOYMENT, null);
+        Bundle bundle = getDeployedBundle(context, BUNDLE_DEPLOYMENT_NAME, null);
 
         // Start the bundle. Note, it may have started already
         bundle.start();
@@ -102,7 +102,7 @@ public class BundleDeploymentCaseTwoTestCase extends OSGiTestSupport {
             }
         });
 
-        deployer.undeploy(BUNDLE_DEPLOYMENT);
+        deployer.undeploy(BUNDLE_DEPLOYMENT_NAME);
 
         if (uninstallLatch.await(1000, TimeUnit.MILLISECONDS) == false)
             fail("UNINSTALLED event not received");
@@ -110,9 +110,9 @@ public class BundleDeploymentCaseTwoTestCase extends OSGiTestSupport {
         OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
     }
 
-    @Deployment(name = BUNDLE_DEPLOYMENT, managed = false, testable = false)
+    @Deployment(name = BUNDLE_DEPLOYMENT_NAME, managed = false, testable = false)
     public static JavaArchive getTestArchive() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_DEPLOYMENT);
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_DEPLOYMENT_NAME);
         archive.addClasses(SimpleActivator.class, SimpleService.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
