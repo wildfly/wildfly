@@ -40,8 +40,11 @@ import org.osgi.service.startlevel.StartLevel;
  */
 public abstract class OSGiTestSupport {
 
-    protected void changeStartLevel(int level, long timeout, TimeUnit units) throws InterruptedException, TimeoutException {
-        BundleContext context = getBundleContext();
+    /**
+     * Changes the framework start level and waits for the STARTLEVEL_CHANGED event
+     * Note, changing the framework start level is an asynchronous operation.
+     */
+    protected void changeStartLevel(BundleContext context, int level, long timeout, TimeUnit units) throws InterruptedException, TimeoutException {
         ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
         StartLevel startLevel = (StartLevel) context.getService(sref);
 
@@ -57,6 +60,4 @@ public abstract class OSGiTestSupport {
         if (latch.await(timeout, units) == false)
             throw new TimeoutException("Timeout changing start level");
     }
-
-    protected abstract BundleContext getBundleContext();
 }

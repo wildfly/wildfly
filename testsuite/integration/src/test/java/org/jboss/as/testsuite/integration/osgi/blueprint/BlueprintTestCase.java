@@ -65,9 +65,6 @@ public class BlueprintTestCase extends OSGiTestSupport {
     @Inject
     public Bundle bundle;
 
-    @Inject
-    public StartLevel startLevel;
-
     @Deployment
     @StartLevelAware(startLevel = 4)
     public static JavaArchive createdeployment() {
@@ -79,21 +76,18 @@ public class BlueprintTestCase extends OSGiTestSupport {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(BlueprintContainer.class);
+                builder.addImportPackages(StartLevel.class, BlueprintContainer.class);
                 return builder.openStream();
             }
         });
         return archive;
     }
 
-    @Override
-    protected BundleContext getBundleContext() {
-        return context;
-    }
-
     @Test
     public void testBlueprintContainerAvailable() throws Exception {
-        changeStartLevel(4, 10, TimeUnit.SECONDS);
+
+        changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
+
         bundle.start();
         assertEquals("example-blueprint", bundle.getSymbolicName());
 
