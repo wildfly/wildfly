@@ -31,6 +31,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -42,7 +43,6 @@ import org.junit.runner.RunWith;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class SFSBMandatoryTransactionTestCase {
 
     @Inject
@@ -55,6 +55,7 @@ public class SFSBMandatoryTransactionTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test-mandatory.war");
         war.addPackage(SFSBMandatoryTransactionTestCase.class.getPackage());
+        war.add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
         return war;
     }
 
