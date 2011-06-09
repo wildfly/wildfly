@@ -21,7 +21,7 @@
  */
 package org.jboss.as.testsuite.integration.weld.extensions;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -64,15 +64,15 @@ public class ExtensionsInEarDiscoveredTestCase {
         warLib.addClasses(MyBean.class, AddBeanExtension.class);
         warLib.add(new StringAsset(AddBeanExtension.class.getName()), "META-INF/services/" + Extension.class.getName());
 
-        war.addLibraries(warLib);
+        war.addAsLibrary(warLib);
         war.addClass(WarSLSB.class);
         war.add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "lib.jar");
         lib.addClasses(ExtensionsInEarDiscoveredTestCase.class, SomeInterface.class);
-        ear.addLibrary(lib);
+        ear.addAsLibrary(lib);
 
-        ear.addModule(war);
+        ear.addAsModule(war);
 
         return ear;
 
