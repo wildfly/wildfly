@@ -1014,7 +1014,7 @@
 
         <dependency>
             <groupId>org.jboss.osgi.webapp</groupId>
-            <artifactId>jboss-osgi-webapp</artifactId>
+            <artifactId>jbosgi-webapp</artifactId>
         </dependency>
     
         <dependency>

@@ -148,7 +148,7 @@
         <version.org.jboss.osgi.resolver>1.0.9</version.org.jboss.osgi.resolver>
         <version.org.jboss.osgi.spi>1.0.27</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.0.6</version.org.jboss.osgi.vfs>
-        <version.org.jboss.osgi.webapp>1.0.1</version.org.jboss.osgi.webapp>
+        <version.org.jboss.osgi.webapp>1.0.2</version.org.jboss.osgi.webapp>
         <version.org.jboss.osgi.webconsole>1.0.6</version.org.jboss.osgi.webconsole>
         <version.org.jboss.osgi.xerces>2.9.1.SP7</version.org.jboss.osgi.xerces>
         <version.org.jboss.remoting3.jboss-remoting>3.1.0.Beta2</version.org.jboss.remoting3.jboss-remoting>
@@ -3791,11 +3791,11 @@
 
             <dependency>
                 <groupId>org.jboss.osgi.webapp</groupId>
-                <artifactId>jboss-osgi-webapp</artifactId>
+                <artifactId>jbosgi-webapp</artifactId>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.osgi</groupId>
-                        <artifactId>jboss-osgi-spi</artifactId>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
                     </exclusion>
                 </exclusions>
                 <version>${version.org.jboss.osgi.webapp}</version>
