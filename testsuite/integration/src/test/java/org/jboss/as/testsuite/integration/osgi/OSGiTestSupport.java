@@ -21,13 +21,16 @@
  */
 package org.jboss.as.testsuite.integration.osgi;
 
-import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
+
 
 /**
  * OSGi integration test support.
@@ -35,42 +38,25 @@ import org.osgi.service.startlevel.StartLevel;
  * @author thomas.diesler@jboss.com
  * @since 24-May-2011
  */
-public class OSGiTestSupport {
+public abstract class OSGiTestSupport {
 
-    protected void setStartLevel(BundleContext context, int level) {
+    protected void changeStartLevel(int level, long timeout, TimeUnit units) throws InterruptedException, TimeoutException {
+        BundleContext context = getBundleContext();
         ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
         StartLevel startLevel = (StartLevel) context.getService(sref);
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        context.addFrameworkListener(new FrameworkListener() {
+            public void frameworkEvent(FrameworkEvent event) {
+                if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
+                    latch.countDown();
+                }
+            }
+        });
         startLevel.setStartLevel(level);
+        if (latch.await(timeout, units) == false)
+            throw new TimeoutException("Timeout changing start level");
     }
 
-    protected void setBundleStartLevel(BundleContext context, Bundle bundle, int level) {
-        ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
-        StartLevel startLevel = (StartLevel) context.getService(sref);
-        startLevel.setBundleStartLevel(bundle, level);
-    }
-
-    /**
-     * Get an array of bundles for the given symbolic name and version range.
-     * @see PackageAdmin#getBundles(String, String)
-     */
-    protected Bundle[] getBundles(BundleContext context, String symbolicName, String versionRange) {
-        ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
-        PackageAdmin padmin = (PackageAdmin) context.getService(sref);
-        Bundle[] bundles = padmin.getBundles(symbolicName, versionRange);
-        return bundles;
-    }
-
-    /**
-     * Get a single bundle for the given symbolic name and version range.
-     * @see PackageAdmin#getBundles(String, String)
-     */
-    protected Bundle getBundle(BundleContext context, String symbolicName, String versionRange) {
-        Bundle[] bundles = getBundles(context, symbolicName, versionRange);
-        if (bundles == null)
-            return null;
-        if (bundles.length != 1)
-            throw new IllegalStateException("Cannot obtain a single bundle, found: " + Arrays.asList(bundles));
-
-        return bundles[0];
-    }
+    protected abstract BundleContext getBundleContext();
 }
