@@ -22,23 +22,24 @@
 package org.jboss.as.testsuite.integration.osgi.eventadmin;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -48,6 +49,7 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * A test that deployes the EventAdmin and sends/receives messages on a topic.
@@ -56,8 +58,7 @@ import org.osgi.service.event.EventHandler;
  * @since 08-Dec-2009
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class EventAdminTestCase {
+public class EventAdminTestCase extends OSGiTestSupport {
 
     static String TOPIC = "org/jboss/test/osgi/example/event";
 
@@ -68,14 +69,16 @@ public class EventAdminTestCase {
     public BundleContext context;
 
     @Deployment
+    @StartLevelAware(startLevel = 3)
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-eventadmin");
+        archive.addClass(OSGiTestSupport.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(EventAdmin.class);
+                builder.addImportPackages(StartLevel.class, EventAdmin.class);
                 return builder.openStream();
             }
         });
@@ -86,7 +89,7 @@ public class EventAdminTestCase {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testEventHandler() throws Exception {
 
-        assertNotNull("Bundle injected", bundle);
+        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
 
         bundle.start();
         assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
