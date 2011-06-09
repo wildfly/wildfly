@@ -26,14 +26,18 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
 
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.container.ArchiveDeployer;
+import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
 import org.jboss.as.testsuite.integration.osgi.interceptor.bundle.EndpointServlet;
 import org.jboss.as.testsuite.integration.osgi.interceptor.bundle.HttpMetadata;
 import org.jboss.as.testsuite.integration.osgi.interceptor.bundle.InterceptorActivator;
@@ -44,15 +48,15 @@ import org.jboss.osgi.deployment.interceptor.LifecycleInterceptor;
 import org.jboss.osgi.http.HttpServiceCapability;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.vfs.VirtualFile;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.http.HttpService;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * A test that deployes a bundle that contains some metadata and an interceptor bundle that processes the metadata and
@@ -65,23 +69,28 @@ import org.osgi.service.http.HttpService;
  * @since 23-Oct-2009
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class LifecycleInterceptorTestCase {
+public class LifecycleInterceptorTestCase  extends OSGiTestSupport {
+
+    static final String PROCESSOR_NAME = "interceptor-processor";
+    static final String ENDPOINT_NAME = "interceptor-endpoint";
 
     @Inject
-    public ArchiveDeployer deployer;
+    public BundleContext context;
+
+    @ArquillianResource
+    public Deployer deployer;
 
     @Deployment
+    @StartLevelAware(startLevel = 3)
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-interceptor");
+        archive.addClass(OSGiTestSupport.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                // [TODO] remove these explicit imports
-                builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
-                builder.addImportPackages(HttpServiceCapability.class);
+                builder.addImportPackages(StartLevel.class, HttpServiceCapability.class);
                 return builder.openStream();
             }
         });
@@ -90,56 +99,57 @@ public class LifecycleInterceptorTestCase {
 
     @Test
     public void testServletAccess() throws Exception {
-        Archive<?> procArchive = null; //provider.getClientDeployment("interceptor-processor");
-        String procName = deployer.deploy(procArchive);
+
+        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
+
+        deployer.deploy(PROCESSOR_NAME);
         try {
-            Archive<?> httpArchive = null; //provider.getClientDeployment("interceptor-endpoint");
-            String httpName = deployer.deploy(httpArchive);
+            deployer.deploy(ENDPOINT_NAME);
             try {
                 String line = getHttpResponse("/servlet", 5000);
                 assertEquals("Hello from Servlet", line);
+            } finally {
+                deployer.undeploy(ENDPOINT_NAME);
             }
-            finally {
-                deployer.undeploy(httpName);
-            }
-        }
-        finally {
-            deployer.undeploy(procName);
+        } finally {
+            deployer.undeploy(PROCESSOR_NAME);
         }
     }
 
-    //@ArchiveProvider
-    public static JavaArchive getTestArchive(String name) {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
-        if ("interceptor-processor".equals(name)) {
-            archive.addClasses(HttpMetadata.class, InterceptorActivator.class, ParserInterceptor.class, PublisherInterceptor.class);
-            archive.setManifest(new Asset() {
-                @Override
-                public InputStream openStream() {
-                    OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                    builder.addBundleSymbolicName(archive.getName());
-                    builder.addBundleManifestVersion(2);
-                    builder.addBundleActivator(InterceptorActivator.class);
-                    builder.addImportPackages(BundleActivator.class, LifecycleInterceptor.class, HttpService.class);
-                    builder.addImportPackages(HttpServlet.class, Servlet.class, Logger.class, VirtualFile.class);
-                    return builder.openStream();
-                }
-            });
-        }
-        if ("interceptor-endpoint".equals(name)) {
-            archive.addClasses(EndpointServlet.class);
-            archive.addAsResource("osgi/interceptor/http-metadata.properties", "http-metadata.properties");
-            archive.setManifest(new Asset() {
-                @Override
-                public InputStream openStream() {
-                    OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                    builder.addBundleSymbolicName(archive.getName());
-                    builder.addBundleManifestVersion(2);
-                    builder.addImportPackages(HttpServlet.class, Servlet.class);
-                    return builder.openStream();
-                }
-            });
-        }
+    @Deployment(name = PROCESSOR_NAME, managed = false, testable = false)
+    public static JavaArchive getProcessorArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, PROCESSOR_NAME);
+        archive.addClasses(HttpMetadata.class, InterceptorActivator.class, ParserInterceptor.class, PublisherInterceptor.class);
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addBundleActivator(InterceptorActivator.class);
+                builder.addImportPackages(BundleActivator.class, LifecycleInterceptor.class, HttpService.class);
+                builder.addImportPackages(HttpServlet.class, Servlet.class, Logger.class, VirtualFile.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = ENDPOINT_NAME, managed = false, testable = false)
+    public static JavaArchive getEndpointArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, ENDPOINT_NAME);
+        archive.addClasses(EndpointServlet.class);
+        archive.addAsResource("osgi/interceptor/http-metadata.properties", "http-metadata.properties");
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(HttpServlet.class, Servlet.class);
+                return builder.openStream();
+            }
+        });
         return archive;
     }
 
