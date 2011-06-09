@@ -365,7 +365,9 @@
                                             <exclude>args4j:args4j</exclude>
                                             <exclude>biz.aQute:bnd</exclude>
                                             <exclude>com.fasterxml:classmate</exclude>
+                                            <exclude>com.google.gwt.inject:gin</exclude>
                                             <exclude>com.google.inject:guice</exclude>
+                                            <exclude>com.gwtplatform:gwtp-all</exclude>
                                             <exclude>commons-httpclient:commons-httpclient</exclude>
                                             <exclude>commons-logging:commons-logging</exclude>
                                             <exclude>concurrent:concurrent</exclude>
@@ -3663,8 +3665,16 @@
                 <classifier>resources</classifier>
                 <exclusions>
                     <exclusion>
+                        <groupId>com.google.gwt.inject</groupId>
+                        <artifactId>gin</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>com.google.inject</groupId>
                         <artifactId>guice</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.gwtplatform</groupId>
+                        <artifactId>gwtp-all</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
