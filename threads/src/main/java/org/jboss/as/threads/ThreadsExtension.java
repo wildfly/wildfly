@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import org.jboss.as.controller.registry.AttributeAccess;
 import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
@@ -43,6 +44,12 @@ import static org.jboss.as.threads.CommonAttributes.THREADS;
 import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
 import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.threads.ThreadsDescriptionUtil.addBoundedQueueThreadPool;
+import static org.jboss.as.threads.ThreadsDescriptionUtil.addQueuelessThreadPool;
+import static org.jboss.as.threads.ThreadsDescriptionUtil.addScheduledThreadPool;
+import static org.jboss.as.threads.ThreadsDescriptionUtil.addThreadFactory;
+import static org.jboss.as.threads.ThreadsDescriptionUtil.addUnboundedQueueThreadPool;
+import static org.jboss.as.threads.ThreadsDescriptionUtil.pathAddress;
 import static org.jboss.as.threads.ThreadsSubsystemProviders.BOUNDED_QUEUE_THREAD_POOL_DESC;
 import static org.jboss.as.threads.ThreadsSubsystemProviders.QUEUELESS_THREAD_POOL_DESC;
 import static org.jboss.as.threads.ThreadsSubsystemProviders.SCHEDULED_THREAD_POOL_DESC;
@@ -58,7 +65,6 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -66,7 +72,6 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -90,19 +95,55 @@ public class ThreadsExtension implements Extension {
 
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(THREADS);
-        registration.registerXMLElementWriter(NewThreadsParser.INSTANCE);
+        registration.registerXMLElementWriter(ThreadsParser.INSTANCE);
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM_PROVIDER);
         subsystem.registerOperationHandler(ADD, ThreadsSubsystemAdd.INSTANCE, ThreadsSubsystemAdd.INSTANCE, false);
         subsystem.registerOperationHandler(DESCRIBE, ThreadsSubsystemDescribeHandler.INSTANCE,
                 ThreadsSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-        NewThreadsUtils.registerOperations(subsystem);
+        final ModelNodeRegistration threadFactories = subsystem.registerSubModel(PathElement.pathElement(THREAD_FACTORY),
+                THREAD_FACTORY_DESC);
+        threadFactories.registerOperationHandler(ADD, ThreadFactoryAdd.INSTANCE, ThreadFactoryAdd.INSTANCE, false);
+        threadFactories.registerOperationHandler(REMOVE, ThreadFactoryRemove.INSTANCE, ThreadFactoryRemove.INSTANCE, false);
+        threadFactories.registerReadWriteAttribute(THREAD_NAME_PATTERN, null, ThreadFactoryThreadNamePatternUpdate.INSTANCE,
+                AttributeAccess.Storage.CONFIGURATION);
+        threadFactories.registerReadWriteAttribute(GROUP_NAME, null, ThreadFactoryGroupNameUpdate.INSTANCE,
+                AttributeAccess.Storage.CONFIGURATION);
+        threadFactories.registerReadWriteAttribute(PRIORITY, null, ThreadFactoryPriorityUpdate.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+
+        final ModelNodeRegistration boundedQueueThreadPools = subsystem.registerSubModel(
+                PathElement.pathElement(BOUNDED_QUEUE_THREAD_POOL), BOUNDED_QUEUE_THREAD_POOL_DESC);
+        boundedQueueThreadPools.registerOperationHandler(ADD, BoundedQueueThreadPoolAdd.INSTANCE,
+                BoundedQueueThreadPoolAdd.INSTANCE, false);
+        boundedQueueThreadPools.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE,
+                BoundedQueueThreadPoolRemove.INSTANCE, false);
+
+        final ModelNodeRegistration unboundedQueueThreadPools = subsystem.registerSubModel(
+                PathElement.pathElement(UNBOUNDED_QUEUE_THREAD_POOL), UNBOUNDED_QUEUE_THREAD_POOL_DESC);
+        unboundedQueueThreadPools.registerOperationHandler(ADD, UnboundedQueueThreadPoolAdd.INSTANCE,
+                UnboundedQueueThreadPoolAdd.INSTANCE, false);
+        unboundedQueueThreadPools.registerOperationHandler(REMOVE, UnboundedQueueThreadPoolRemove.INSTANCE,
+                UnboundedQueueThreadPoolRemove.INSTANCE, false);
+
+        final ModelNodeRegistration queuelessThreadPools = subsystem.registerSubModel(
+                PathElement.pathElement(QUEUELESS_THREAD_POOL), QUEUELESS_THREAD_POOL_DESC);
+        queuelessThreadPools.registerOperationHandler(ADD, QueuelessThreadPoolAdd.INSTANCE, QueuelessThreadPoolAdd.INSTANCE,
+                false);
+        queuelessThreadPools.registerOperationHandler(REMOVE, QueuelessThreadPoolRemove.INSTANCE,
+                QueuelessThreadPoolRemove.INSTANCE, false);
+
+        final ModelNodeRegistration scheduledThreadPools = subsystem.registerSubModel(
+                PathElement.pathElement(SCHEDULED_THREAD_POOL), SCHEDULED_THREAD_POOL_DESC);
+        scheduledThreadPools.registerOperationHandler(ADD, ScheduledThreadPoolAdd.INSTANCE, ScheduledThreadPoolAdd.INSTANCE,
+                false);
+        scheduledThreadPools.registerOperationHandler(REMOVE, ScheduledThreadPoolRemove.INSTANCE,
+                ScheduledThreadPoolRemove.INSTANCE, false);
     }
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewThreadsParser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), ThreadsParser.INSTANCE);
     }
 
     static class ThreadsSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
@@ -127,50 +168,11 @@ public class ThreadsExtension implements Extension {
             return new BasicOperationResult();
         }
 
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
-        }
-
         private void addBoundedQueueThreadPools(final ModelNode result, final ModelNode model) {
             if (model.hasDefined(BOUNDED_QUEUE_THREAD_POOL)) {
                 ModelNode pools = model.get(BOUNDED_QUEUE_THREAD_POOL);
                 for (Property poolProp : pools.asPropertyList()) {
-                    final ModelNode operation = Util.getEmptyOperation(
-                            ADD,
-                            pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
-                                    PathElement.pathElement(BOUNDED_QUEUE_THREAD_POOL, poolProp.getName())));
-                    final ModelNode pool = poolProp.getValue();
-
-                    operation.get(NAME).set(pool.require(NAME));
-                    if (pool.hasDefined(THREAD_FACTORY)) {
-                        operation.get(THREAD_FACTORY).set(pool.get(THREAD_FACTORY));
-                    }
-                    if (pool.hasDefined(PROPERTIES)) {
-                        operation.get(PROPERTIES).set(pool.get(PROPERTIES));
-                    }
-                    if (pool.hasDefined(MAX_THREADS)) {
-                        operation.get(MAX_THREADS).set(pool.get(MAX_THREADS));
-                    }
-                    if (pool.hasDefined(KEEPALIVE_TIME)) {
-                        operation.get(KEEPALIVE_TIME).set(pool.get(KEEPALIVE_TIME));
-                    }
-                    if (pool.hasDefined(BLOCKING)) {
-                        operation.get(BLOCKING).set(pool.get(BLOCKING));
-                    }
-                    if (pool.hasDefined(HANDOFF_EXECUTOR)) {
-                        operation.get(HANDOFF_EXECUTOR).set(pool.get(HANDOFF_EXECUTOR));
-                    }
-                    if (pool.hasDefined(ALLOW_CORE_TIMEOUT)) {
-                        operation.get(ALLOW_CORE_TIMEOUT).set(pool.get(ALLOW_CORE_TIMEOUT));
-                    }
-                    if (pool.hasDefined(QUEUE_LENGTH)) {
-                        operation.get(QUEUE_LENGTH).set(pool.get(QUEUE_LENGTH));
-                    }
-                    if (pool.hasDefined(CORE_THREADS)) {
-                        operation.get(CORE_THREADS).set(pool.get(CORE_THREADS));
-                    }
-                    result.add(operation);
+                    addBoundedQueueThreadPool(result, poolProp.getValue(), PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(BOUNDED_QUEUE_THREAD_POOL, poolProp.getName()));
                 }
             }
         }
@@ -179,32 +181,7 @@ public class ThreadsExtension implements Extension {
             if (model.hasDefined(QUEUELESS_THREAD_POOL)) {
                 ModelNode pools = model.get(QUEUELESS_THREAD_POOL);
                 for (Property poolProp : pools.asPropertyList()) {
-                    final ModelNode operation = Util.getEmptyOperation(
-                            ADD,
-                            pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
-                                    PathElement.pathElement(QUEUELESS_THREAD_POOL, poolProp.getName())));
-                    final ModelNode pool = poolProp.getValue();
-
-                    operation.get(NAME).set(pool.require(NAME));
-                    if (pool.hasDefined(THREAD_FACTORY)) {
-                        operation.get(THREAD_FACTORY).set(pool.get(THREAD_FACTORY));
-                    }
-                    if (pool.hasDefined(PROPERTIES)) {
-                        operation.get(PROPERTIES).set(pool.get(PROPERTIES));
-                    }
-                    if (pool.hasDefined(MAX_THREADS)) {
-                        operation.get(MAX_THREADS).set(pool.get(MAX_THREADS));
-                    }
-                    if (pool.hasDefined(KEEPALIVE_TIME)) {
-                        operation.get(KEEPALIVE_TIME).set(pool.get(KEEPALIVE_TIME));
-                    }
-                    if (pool.hasDefined(BLOCKING)) {
-                        operation.get(BLOCKING).set(pool.get(BLOCKING));
-                    }
-                    if (pool.hasDefined(HANDOFF_EXECUTOR)) {
-                        operation.get(HANDOFF_EXECUTOR).set(pool.get(HANDOFF_EXECUTOR));
-                    }
-                    result.add(operation);
+                    addQueuelessThreadPool(result, poolProp.getValue(), PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(QUEUELESS_THREAD_POOL, poolProp.getName()));
                 }
             }
         }
@@ -213,26 +190,7 @@ public class ThreadsExtension implements Extension {
             if (model.hasDefined(THREAD_FACTORY)) {
                 ModelNode pools = model.get(THREAD_FACTORY);
                 for (Property poolProp : pools.asPropertyList()) {
-                    final ModelNode operation = Util.getEmptyOperation(
-                            ADD,
-                            pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
-                                    PathElement.pathElement(THREAD_FACTORY, poolProp.getName())));
-                    final ModelNode pool = poolProp.getValue();
-
-                    operation.get(NAME).set(pool.require(NAME));
-                    if (pool.hasDefined(GROUP_NAME)) {
-                        operation.get(GROUP_NAME).set(pool.get(GROUP_NAME));
-                    }
-                    if (pool.hasDefined(THREAD_NAME_PATTERN)) {
-                        operation.get(THREAD_NAME_PATTERN).set(pool.get(THREAD_NAME_PATTERN));
-                    }
-                    if (pool.hasDefined(PRIORITY)) {
-                        operation.get(PRIORITY).set(pool.get(PRIORITY));
-                    }
-                    if (pool.hasDefined(PROPERTIES)) {
-                        operation.get(PROPERTIES).set(pool.get(PROPERTIES));
-                    }
-                    result.add(operation);
+                    addThreadFactory(result, poolProp.getValue(), PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(THREAD_FACTORY, poolProp.getName()));
                 }
             }
         }
@@ -241,26 +199,7 @@ public class ThreadsExtension implements Extension {
             if (model.hasDefined(SCHEDULED_THREAD_POOL)) {
                 ModelNode pools = model.get(SCHEDULED_THREAD_POOL);
                 for (Property poolProp : pools.asPropertyList()) {
-                    final ModelNode operation = Util.getEmptyOperation(
-                            ADD,
-                            pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
-                                    PathElement.pathElement(SCHEDULED_THREAD_POOL, poolProp.getName())));
-                    final ModelNode pool = poolProp.getValue();
-
-                    operation.get(NAME).set(pool.require(NAME));
-                    if (pool.hasDefined(THREAD_FACTORY)) {
-                        operation.get(THREAD_FACTORY).set(pool.get(THREAD_FACTORY));
-                    }
-                    if (pool.hasDefined(PROPERTIES)) {
-                        operation.get(PROPERTIES).set(pool.get(PROPERTIES));
-                    }
-                    if (pool.hasDefined(MAX_THREADS)) {
-                        operation.get(MAX_THREADS).set(pool.get(MAX_THREADS));
-                    }
-                    if (pool.hasDefined(KEEPALIVE_TIME)) {
-                        operation.get(KEEPALIVE_TIME).set(pool.get(KEEPALIVE_TIME));
-                    }
-                    result.add(operation);
+                    addScheduledThreadPool(result, poolProp.getValue(), PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(SCHEDULED_THREAD_POOL, poolProp.getName()));
                 }
             }
         }
@@ -269,32 +208,14 @@ public class ThreadsExtension implements Extension {
             if (model.hasDefined(UNBOUNDED_QUEUE_THREAD_POOL)) {
                 ModelNode pools = model.get(UNBOUNDED_QUEUE_THREAD_POOL);
                 for (Property poolProp : pools.asPropertyList()) {
-                    final ModelNode operation = Util.getEmptyOperation(
-                            ADD,
-                            pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
-                                    PathElement.pathElement(UNBOUNDED_QUEUE_THREAD_POOL, poolProp.getName())));
-                    final ModelNode pool = poolProp.getValue();
-
-                    operation.get(NAME).set(pool.require(NAME));
-                    if (pool.hasDefined(THREAD_FACTORY)) {
-                        operation.get(THREAD_FACTORY).set(pool.get(THREAD_FACTORY));
-                    }
-                    if (pool.hasDefined(PROPERTIES)) {
-                        operation.get(PROPERTIES).set(pool.get(PROPERTIES));
-                    }
-                    if (pool.hasDefined(MAX_THREADS)) {
-                        operation.get(MAX_THREADS).set(pool.get(MAX_THREADS));
-                    }
-                    if (pool.hasDefined(KEEPALIVE_TIME)) {
-                        operation.get(KEEPALIVE_TIME).set(pool.get(KEEPALIVE_TIME));
-                    }
-                    result.add(operation);
+                    addUnboundedQueueThreadPool(result, poolProp.getValue(), PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(UNBOUNDED_QUEUE_THREAD_POOL, poolProp.getName()));
                 }
             }
         }
 
-        private ModelNode pathAddress(PathElement... elements) {
-            return PathAddress.pathAddress(elements).toModelNode();
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
     }
 

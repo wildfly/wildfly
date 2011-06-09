@@ -176,22 +176,18 @@
             <archive-validation enabled="false" />
             <bean-validation enabled="false" />
             <default-workmanager>
-            	<short-running-threads>
-            		<bounded-queue-thread-pool xmlns="urn:jboss:domain:threads:1.0" name="jca-short-running" blocking="true">
-                		<core-threads count="10" per-cpu="20"/>
-                		<queue-length count="10" per-cpu="20"/>
-                		<max-threads count="10" per-cpu="20"/>
-                		<keepalive-time time="10" unit="seconds"/>
-            		</bounded-queue-thread-pool>
-            	</short-running-threads>
-            	<long-running-threads>
-	            	<bounded-queue-thread-pool xmlns="urn:jboss:domain:threads:1.0" name="jca-long-running" blocking="true">
-		                <core-threads count="10" per-cpu="20"/>
-		                <queue-length count="10" per-cpu="20"/>
-		                <max-threads count="10" per-cpu="20"/>
-		                <keepalive-time time="10" unit="seconds"/>
-	            	</bounded-queue-thread-pool> 
-            	</long-running-threads>
+                <short-running-threads blocking="true">
+                <core-threads count="10" per-cpu="20"/>
+                        <queue-length count="10" per-cpu="20"/>
+                        <max-threads count="10" per-cpu="20"/>
+                        <keepalive-time time="10" unit="seconds"/>
+                </short-running-threads>
+                <long-running-threads blocking="true">
+                        <core-threads count="10" per-cpu="20"/>
+                        <queue-length count="10" per-cpu="20"/>
+                        <max-threads count="10" per-cpu="20"/>
+                        <keepalive-time time="10" unit="seconds"/>
+                </long-running-threads>
             </default-workmanager>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:datasources:1.0">
@@ -208,11 +204,11 @@
                     <timeout></timeout>
                     <statement></statement>
                 </datasource>
-	            <drivers>
-	                <driver name="h2" module="com.h2database.h2">
-	                	<xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
-	                </driver>
-	            </drivers>
+                <drivers>
+                    <driver name="h2" module="com.h2database.h2">
+                        <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+                    </driver>
+                </drivers>
             </datasources>
        </subsystem>
        <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />

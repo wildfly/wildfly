@@ -31,13 +31,11 @@ class Constants {
     static final String ARCHIVE_VALIDATION_FAIL_ON_ERROR = "archive-validation-fail-on-error";
     static final String ARCHIVE_VALIDATION_FAIL_ON_WARN = "archive-validation-fail-on-warn";
     static final String BEAN_VALIDATION_ENABLED = "bean-validation-enabled";
-    static final String DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL = "default-workmanager-short-running-thread-pool";
-    static final String DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL = "default-workmanager-long-running-thread-pool";
     static final String CACHED_CONNECTION_MANAGER_DEBUG = "cached-connection-manager-debug";
     static final String CACHED_CONNECTION_MANAGER_ERROR = "cached-connection-manager-error";
 
-    static final String DEFAULT_WORKMANAGER_THREADS = "default-workmanager-threads";
-    static final String SHORT_RUNNING_THREADS = "short-running-threads";
-    static final String LONG_RUNNING_THREADS = "long-running-threads";
+    static final String THREAD_POOL = "thread-pool";
+    static final String SHORT_RUNNING_THREADS = "jca-short-running-threads";
+    static final String LONG_RUNNING_THREADS = "jca-long-running-threads";
 
 }

@@ -99,18 +99,6 @@
                     <max-threads count="10" per-cpu="20"/>
                     <keepalive-time time="10" unit="seconds"/>
                 </scheduled-thread-pool>
-                <bounded-queue-thread-pool name="jca-short-running" blocking="true">
-                    <core-threads count="10" per-cpu="20"/>
-                    <queue-length count="10" per-cpu="20"/>
-                    <max-threads count="10" per-cpu="20"/>
-                    <keepalive-time time="10" unit="seconds"/>
-                </bounded-queue-thread-pool>
-                <bounded-queue-thread-pool name="jca-long-running" blocking="true">
-                    <core-threads count="10" per-cpu="20"/>
-                    <queue-length count="10" per-cpu="20"/>
-                    <max-threads count="10" per-cpu="20"/>
-                    <keepalive-time time="10" unit="seconds"/>
-                </bounded-queue-thread-pool>
                 <bounded-queue-thread-pool name="ejb3-async" blocking="true">
                     <core-threads count="10" per-cpu="20"/>
                     <queue-length count="10" per-cpu="20"/>
@@ -151,44 +139,40 @@
                 <archive-validation enabled="true"/>
                 <bean-validation enabled="true"/>
                 <default-workmanager>
-            	<short-running-threads>
-            		<bounded-queue-thread-pool xmlns="urn:jboss:domain:threads:1.0" name="jca-short-running" blocking="true">
-                		<core-threads count="10" per-cpu="20"/>
-                		<queue-length count="10" per-cpu="20"/>
-                		<max-threads count="10" per-cpu="20"/>
-                		<keepalive-time time="10" unit="seconds"/>
-            		</bounded-queue-thread-pool>
-            	</short-running-threads>
-            	<long-running-threads>
-	            	<bounded-queue-thread-pool xmlns="urn:jboss:domain:threads:1.0" name="jca-long-running" blocking="true">
-		                <core-threads count="10" per-cpu="20"/>
-		                <queue-length count="10" per-cpu="20"/>
-		                <max-threads count="10" per-cpu="20"/>
-		                <keepalive-time time="10" unit="seconds"/>
-	            	</bounded-queue-thread-pool>
-            	</long-running-threads>
-            </default-workmanager>
+                    <short-running-threads blocking="true">
+                        <core-threads count="10" per-cpu="20"/>
+                        <queue-length count="10" per-cpu="20"/>
+                        <max-threads count="10" per-cpu="20"/>
+                        <keepalive-time time="10" unit="seconds"/>
+                    </short-running-threads>
+                    <long-running-threads blocking="true">
+                        <core-threads count="10" per-cpu="20"/>
+                        <queue-length count="10" per-cpu="20"/>
+                        <max-threads count="10" per-cpu="20"/>
+                        <keepalive-time time="10" unit="seconds"/>
+                    </long-running-threads>
+                </default-workmanager>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:datasources:1.0">
                 <datasources>
-	                <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
-	                    <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
-	                    <driver>h2</driver>
-	                    <pool></pool>
-	                    <security>
-	                        <user-name>sa</user-name>
-	                        <password>sa</password>
-	                    </security>
-	                    <validation></validation>
-	                    <timeout></timeout>
-	                    <statement></statement>
-	                </datasource>
-		            <drivers>
-		                <driver name="h2" module="com.h2database.h2">
-		                	<xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
-		                </driver>
-		            </drivers>
-	            </datasources>
+                    <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
+                        <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+                        <driver>h2</driver>
+                        <pool></pool>
+                        <security>
+                            <user-name>sa</user-name>
+                            <password>sa</password>
+                        </security>
+                        <validation></validation>
+                        <timeout></timeout>
+                        <statement></statement>
+                    </datasource>
+                    <drivers>
+                        <driver name="h2" module="com.h2database.h2">
+                            <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+                        </driver>
+                    </drivers>
+                </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
            <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">

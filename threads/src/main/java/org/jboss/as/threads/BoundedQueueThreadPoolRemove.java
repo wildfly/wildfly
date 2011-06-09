@@ -57,7 +57,7 @@ import org.jboss.msc.service.ServiceController;
  */
 public class BoundedQueueThreadPoolRemove implements ModelRemoveOperationHandler, DescriptionProvider {
 
-    static final BoundedQueueThreadPoolRemove INSTANCE = new BoundedQueueThreadPoolRemove();
+    public static final BoundedQueueThreadPoolRemove INSTANCE = new BoundedQueueThreadPoolRemove();
 
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {

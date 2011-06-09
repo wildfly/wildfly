@@ -88,14 +88,6 @@ public class JcaSubSystemRemove implements ModelRemoveOperationHandler {
         if (model.has(BEAN_VALIDATION_ENABLED)) {
             compensating.get(BEAN_VALIDATION_ENABLED).set(model.get(BEAN_VALIDATION_ENABLED));
         }
-        if (model.has(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL)) {
-            compensating.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).set(
-                    model.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL));
-        }
-        if (model.has(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL)) {
-            compensating.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(
-                    model.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL));
-        }
         if (model.has(CACHED_CONNECTION_MANAGER_DEBUG)) {
             compensating.get(CACHED_CONNECTION_MANAGER_DEBUG).set(model.get(CACHED_CONNECTION_MANAGER_DEBUG));
         }

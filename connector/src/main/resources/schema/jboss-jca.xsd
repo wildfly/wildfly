@@ -30,44 +30,44 @@
            version="1.0" xmlns:pref="urn:jboss:domain:threads:1.0">
     
     <xs:import namespace="urn:jboss:domain:threads:1.0" schemaLocation="../../../../../threads/src/main/resources/schema/new-jboss-threads.xsd"/>
-	
+    
     <xs:element name="subsystem" type="subsystemType"/>
-	
+    
     <xs:complexType name="subsystemType">
         <xs:all>
-        	<xs:element name="archive-validation"
-        		type="archive-validationType" minOccurs="0">
-        		<xs:annotation>
-        			<xs:documentation>
-        				Toggle archive validation for the deployment
-        				units. If it's not present it's considered true
-        				with default attributes.
-        			</xs:documentation>
-        		</xs:annotation>
-        	</xs:element>
+            <xs:element name="archive-validation"
+                type="archive-validationType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Toggle archive validation for the deployment
+                        units. If it's not present it's considered true
+                        with default attributes.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
 
-        	<xs:element name="bean-validation"
-        		type="bean-validationType" minOccurs="0">
-        		<xs:annotation>
-        			<xs:documentation>
-        				Toggle bean validation (JSR-303) for the
-        				deployment units. If it's not present it's
-        				considered true
-        			</xs:documentation>
-        		</xs:annotation>
-        	</xs:element>
+            <xs:element name="bean-validation"
+                type="bean-validationType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Toggle bean validation (JSR-303) for the
+                        deployment units. If it's not present it's
+                        considered true
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
 
-        	<xs:element name="default-workmanager"
-        		type="default-workmanagerType" minOccurs="1">
-        		<xs:annotation>
-        			<xs:documentation>
-        				Configurations for thread pools used by default
-        				workmanager
-        			</xs:documentation>
-        		</xs:annotation>
-        	</xs:element>
+            <xs:element name="default-workmanager"
+                type="default-workmanagerType" minOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        Configurations for thread pools used by default
+                        workmanager
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
 
-        	<xs:element name="cached-connection-manager" type="cached-connection-managerType" minOccurs="0" maxOccurs="1"></xs:element>
+            <xs:element name="cached-connection-manager" type="cached-connection-managerType" minOccurs="0" maxOccurs="1"></xs:element>
         </xs:all>
     </xs:complexType>
 
@@ -106,14 +106,14 @@
     </xs:complexType>
     
     <xs:complexType name="default-workmanagerType">
-    	<xs:all>
-    		<xs:element name="short-running-threads" type="threads:threadsType" maxOccurs="1" minOccurs="1"></xs:element>
-    		<xs:element name="long-running-threads" type="threads:threadsType" maxOccurs="1" minOccurs="0"></xs:element>
-    	</xs:all>
+        <xs:all>
+            <xs:element name="short-running-threads" type="threads:unbounded-queue-thread-pool" maxOccurs="1" minOccurs="1"></xs:element>
+            <xs:element name="long-running-threads" type="threads:bounded-queue-thread-pool" maxOccurs="1" minOccurs="0"></xs:element>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="cached-connection-managerType">
-    	<xs:attribute name="debug" type="xs:boolean" use="optional"></xs:attribute>
-    	<xs:attribute name="error" type="xs:boolean" use="optional"></xs:attribute>
+        <xs:attribute name="debug" type="xs:boolean" use="optional"></xs:attribute>
+        <xs:attribute name="error" type="xs:boolean" use="optional"></xs:attribute>
     </xs:complexType>
 </xs:schema>

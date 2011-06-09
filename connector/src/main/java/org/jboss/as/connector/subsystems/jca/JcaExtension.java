@@ -27,23 +27,20 @@ import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION
 import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION_ENABLED;
 import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_DEBUG;
 import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_ERROR;
-import static org.jboss.as.connector.subsystems.jca.Constants.*;
-import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
-import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_WORKMANAGER_THREADS;
 import static org.jboss.as.connector.subsystems.jca.Constants.JCA;
-import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.DEFAULT_WORKMANAGER_THREADS_ADD_DESC;
-import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.DEFAULT_WORKMANAGER_THREADS_DESC;
-import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.DEFAULT_WORKMANAGER_THREADS_REMOVE_DESC;
+import static org.jboss.as.connector.subsystems.jca.Constants.LONG_RUNNING_THREADS;
+import static org.jboss.as.connector.subsystems.jca.Constants.SHORT_RUNNING_THREADS;
+import static org.jboss.as.connector.subsystems.jca.Constants.THREAD_POOL;
 import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.SUBSYSTEM_REMOVE_DESC;
+import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
-import static org.jboss.as.controller.parsing.ParseUtils.readBooleanAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
@@ -62,7 +59,6 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -73,8 +69,12 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.threads.NewThreadsParser;
-import org.jboss.as.threads.NewThreadsUtils;
+import org.jboss.as.threads.BoundedQueueThreadPoolAdd;
+import org.jboss.as.threads.BoundedQueueThreadPoolRemove;
+import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
+import static org.jboss.as.threads.ThreadsDescriptionUtil.addBoundedQueueThreadPool;
+import org.jboss.as.threads.ThreadsParser;
+import static org.jboss.as.threads.ThreadsSubsystemProviders.BOUNDED_QUEUE_THREAD_POOL_DESC;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
@@ -90,6 +90,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class JcaExtension implements Extension {
     private static final Logger log = Logger.getLogger("org.jboss.as.connector");
 
+    private static String SUBSYSTEM_NAME = "jca";
+
     @Override
     public void initialize(final ExtensionContext context) {
         log.debugf("Initializing Connector Extension");
@@ -104,12 +106,11 @@ public class JcaExtension implements Extension {
         subsystem.registerOperationHandler(REMOVE, JcaSubSystemRemove.INSTANCE, SUBSYSTEM_REMOVE_DESC, false);
         subsystem.registerOperationHandler(DESCRIBE, ConnectorSubsystemDescribeHandler.INSTANCE,
                 ConnectorSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        final ModelNodeRegistration threads = subsystem.registerSubModel(PathElement.pathElement(DEFAULT_WORKMANAGER_THREADS),
-                DEFAULT_WORKMANAGER_THREADS_DESC);
-        threads.registerOperationHandler(ADD, ThreadsAdd.INSTANCE, DEFAULT_WORKMANAGER_THREADS_ADD_DESC, false);
-        threads.registerOperationHandler(REMOVE, ThreadsRemove.INSTANCE, DEFAULT_WORKMANAGER_THREADS_REMOVE_DESC, false);
 
-        NewThreadsUtils.registerOperations(threads);
+
+        final ModelNodeRegistration threadPools = subsystem.registerSubModel(PathElement.pathElement(THREAD_POOL), BOUNDED_QUEUE_THREAD_POOL_DESC);
+        threadPools.registerOperationHandler(ADD, BoundedQueueThreadPoolAdd.INSTANCE, BoundedQueueThreadPoolAdd.INSTANCE, false);
+        threadPools.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE, BoundedQueueThreadPoolRemove.INSTANCE, false);
     }
 
     @Override
@@ -179,19 +180,14 @@ public class JcaExtension implements Extension {
         }
 
         private void writeDefaultWorkManager(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-            if (node.hasDefined(DEFAULT_WORKMANAGER_THREADS)) {
+            if (node.hasDefined(THREAD_POOL)) {
                 writer.writeStartElement(Element.DEFAULT_WORKMANAGER.getLocalName());
-                NewThreadsParser threadParser = new NewThreadsParser();
-                for (Property prop : node.get(DEFAULT_WORKMANAGER_THREADS).asPropertyList()) {
+                for (Property prop : node.get(THREAD_POOL).asPropertyList()) {
                     if (LONG_RUNNING_THREADS.equals(prop.getName())) {
-                        writer.writeStartElement(Element.LONG_RUNNING_THREADS.getLocalName());
-                        threadParser.writeThreadsElement(writer, prop.getValue());
-                        writer.writeEndElement();
+                        ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
                     }
                     if (SHORT_RUNNING_THREADS.equals(prop.getName())) {
-                        writer.writeStartElement(Element.SHORT_RUNNING_THREADS.getLocalName());
-                        threadParser.writeThreadsElement(writer, prop.getValue());
-                        writer.writeEndElement();
+                        ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
                     }
                 }
                 writer.writeEndElement();
@@ -334,28 +330,11 @@ public class JcaExtension implements Extension {
 
                 switch (element) {
                     case LONG_RUNNING_THREADS: {
-                        final ModelNode op = new ModelNode();
-                        op.get(OP).set(ADD);
-                        final ModelNode address = parentAddress.clone();
-                        address.add(DEFAULT_WORKMANAGER_THREADS, LONG_RUNNING_THREADS);
-                        address.protect();
-                        op.get(OP_ADDR).set(address);
-                        list.add(op);
-
-                        String name = (new NewThreadsParser()).readXmlElements(reader, list, address);
-                        node.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).set(name);
+                        ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, parentAddress, list, THREAD_POOL, LONG_RUNNING_THREADS);
                         break;
                     }
                     case SHORT_RUNNING_THREADS: {
-                        final ModelNode op = new ModelNode();
-                        list.add(op);
-                        op.get(OP).set(ADD);
-                        final ModelNode address = parentAddress.clone();
-                        address.add(DEFAULT_WORKMANAGER_THREADS, SHORT_RUNNING_THREADS);
-                        address.protect();
-                        op.get(OP_ADDR).set(address);
-                        String name = (new NewThreadsParser()).readXmlElements(reader, list, address);
-                        node.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(name);
+                        ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, parentAddress, list, THREAD_POOL, SHORT_RUNNING_THREADS);
                         break;
                     }
                     default:
@@ -365,7 +344,6 @@ public class JcaExtension implements Extension {
             }
             // Handle elements
             requireNoContent(reader);
-
         }
 
         private void parseBeanValidation(final XMLExtendedStreamReader reader, final ModelNode node) throws XMLStreamException {
@@ -400,14 +378,6 @@ public class JcaExtension implements Extension {
             final ModelNode add = createEmptyAddOperation();
             final ModelNode model = context.getSubModel();
 
-            if (model.hasDefined(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL)) {
-                add.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(
-                        model.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL));
-            }
-            if (model.hasDefined(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL)) {
-                add.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).set(
-                        model.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL));
-            }
             if (model.hasDefined(BEAN_VALIDATION_ENABLED)) {
                 add.get(BEAN_VALIDATION_ENABLED).set(model.get(BEAN_VALIDATION_ENABLED));
             }
@@ -429,6 +399,17 @@ public class JcaExtension implements Extension {
 
             ModelNode result = new ModelNode();
             result.add(add);
+
+            if (model.hasDefined(THREAD_POOL)) {
+                ModelNode pools = model.get(THREAD_POOL);
+                for (Property poolProp : pools.asPropertyList()) {
+                    if (poolProp.getName().equals(LONG_RUNNING_THREADS)) {
+                        addBoundedQueueThreadPool(result, poolProp.getValue(), PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(THREAD_POOL, LONG_RUNNING_THREADS));
+                    } else if (poolProp.getName().equals(SHORT_RUNNING_THREADS)) {
+                        addBoundedQueueThreadPool(result, poolProp.getValue(), PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(THREAD_POOL, SHORT_RUNNING_THREADS));
+                    }
+                }
+            }
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, result);
             resultHandler.handleResultComplete();

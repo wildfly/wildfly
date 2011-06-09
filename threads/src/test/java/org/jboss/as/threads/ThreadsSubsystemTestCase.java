@@ -911,7 +911,7 @@ public class ThreadsSubsystemTestCase {
 
         XMLMapper xmlMapper = XMLMapper.Factory.create();
         xmlMapper.registerRootElement(new QName(org.jboss.as.threads.Namespace.CURRENT.getUriString(), "subsystem"),
-                NewThreadsParser.INSTANCE);
+                ThreadsParser.INSTANCE);
 
         List<ModelNode> updates = new ArrayList<ModelNode>();
         xmlMapper.parseDocument(updates, xmlReader);

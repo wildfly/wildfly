@@ -27,9 +27,9 @@ import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION
 import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION_ENABLED;
 import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_DEBUG;
 import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_ERROR;
-import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
-import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
+import static org.jboss.as.connector.subsystems.jca.Constants.THREAD_POOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
@@ -46,7 +46,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.threads.ThreadsSubsystemProviders;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -69,16 +68,6 @@ class JcaSubsystemProviders {
             subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
             subsystem.get(NAMESPACE).set(Namespace.JCA_1_0.getUriString());
-
-            subsystem.get(ATTRIBUTES, DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL, DESCRIPTION).set(
-                    bundle.getString("default-workmanager.short-running-thread-pool"));
-            subsystem.get(ATTRIBUTES, DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL, REQUIRED).set(true);
-
-            subsystem.get(ATTRIBUTES, DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL, DESCRIPTION).set(
-                    bundle.getString("default-workmanager.long-running-thread-pool"));
-            subsystem.get(ATTRIBUTES, DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL, REQUIRED).set(true);
 
             subsystem.get(ATTRIBUTES, BEAN_VALIDATION_ENABLED, DESCRIPTION).set(bundle.getString("bean-validation.enabled"));
             subsystem.get(ATTRIBUTES, BEAN_VALIDATION_ENABLED, TYPE).set(ModelType.BOOLEAN);
@@ -114,51 +103,10 @@ class JcaSubsystemProviders {
             subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, REQUIRED).set(false);
             subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, DEFAULT).set(false);
 
+            subsystem.get(CHILDREN, THREAD_POOL, DESCRIPTION).set(bundle.getString("threadpool"));
+            subsystem.get(CHILDREN, THREAD_POOL, REQUIRED).set(false);
+
             return subsystem;
-        }
-    };
-
-    static final DescriptionProvider DEFAULT_WORKMANAGER_THREADS_DESC = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            node.get(DESCRIPTION).set(bundle.getString("defaultwork-manager-threads"));
-            node.get(HEAD_COMMENT_ALLOWED).set(true);
-            node.get(TAIL_COMMENT_ALLOWED).set(true);
-            node.get(NAMESPACE).set(Namespace.JCA_1_0.getUriString());
-
-            return ThreadsSubsystemProviders.addThreadsDescriptionsToNode(locale, node);
-        }
-    };
-
-    // Operations
-    static final DescriptionProvider DEFAULT_WORKMANAGER_THREADS_ADD_DESC = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-            final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set("add");
-            operation.get(DESCRIPTION).set(bundle.getString("default-workmanager-threads.add"));
-            operation.get(REQUEST_PROPERTIES).setEmptyObject();
-            operation.get(REPLY_PROPERTIES).setEmptyObject();
-            return operation;
-        }
-    };
-
-    static DescriptionProvider DEFAULT_WORKMANAGER_THREADS_REMOVE_DESC = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-            ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(REMOVE);
-            operation.get(DESCRIPTION).set(bundle.getString("default-workmanager-threads.remove"));
-            operation.get(REPLY_PROPERTIES).setEmptyObject();
-            return operation;
         }
     };
 
@@ -195,16 +143,6 @@ class JcaSubsystemProviders {
                     bundle.getString("connector.archive-validation.fail-on-warn"));
             operation.get(REQUEST_PROPERTIES, BEAN_VALIDATION_ENABLED, TYPE).set(ModelType.BOOLEAN);
             operation.get(REQUEST_PROPERTIES, BEAN_VALIDATION_ENABLED, REQUIRED).set(false);
-
-            operation.get(REQUEST_PROPERTIES, DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL, DESCRIPTION).set(
-                    bundle.getString("connector.default-workmanager.short-running-thread-pool"));
-            operation.get(REQUEST_PROPERTIES, DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL, TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL, REQUIRED).set(true);
-
-            operation.get(REQUEST_PROPERTIES, DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL, DESCRIPTION).set(
-                    bundle.getString("connector.default-workmanager.long-running-thread-pool"));
-            operation.get(REQUEST_PROPERTIES, DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL, TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL, REQUIRED).set(false);
 
             operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_DEBUG, DESCRIPTION).set(
                     bundle.getString("cached-connection-manager.debug"));

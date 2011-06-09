@@ -139,7 +139,7 @@ public class ThreadsSubsystemProviders {
         }
     };
 
-    static DescriptionProvider BOUNDED_QUEUE_THREAD_POOL_DESC = new DescriptionProvider() {
+    public static DescriptionProvider BOUNDED_QUEUE_THREAD_POOL_DESC = new DescriptionProvider() {
 
         @Override
         public ModelNode getModelDescription(final Locale locale) {

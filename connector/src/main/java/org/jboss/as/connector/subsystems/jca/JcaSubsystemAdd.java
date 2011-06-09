@@ -29,9 +29,9 @@ import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION
 import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION_ENABLED;
 import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_DEBUG;
 import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_ERROR;
-import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
-import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
-import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_WORKMANAGER_THREADS;
+import static org.jboss.as.connector.subsystems.jca.Constants.LONG_RUNNING_THREADS;
+import static org.jboss.as.connector.subsystems.jca.Constants.SHORT_RUNNING_THREADS;
+import static org.jboss.as.connector.subsystems.jca.Constants.THREAD_POOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -90,10 +90,8 @@ class JcaSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        context.getSubModel().get(DEFAULT_WORKMANAGER_THREADS).setEmptyObject();
+        context.getSubModel().get(THREAD_POOL).setEmptyObject();
 
-        final String shortRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).asString();
-        final String longRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).asString();
         final boolean beanValidationEnabled = ParamsUtils.parseBooleanParameter(operation, BEAN_VALIDATION_ENABLED, false);
         final boolean archiveValidationEnabled = ParamsUtils
                 .parseBooleanParameter(operation, ARCHIVE_VALIDATION_ENABLED, false);
@@ -105,14 +103,6 @@ class JcaSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
         // Apply to the model
         final ModelNode model = context.getSubModel();
 
-        if (shortRunningThreadPool != null) {
-            model.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(shortRunningThreadPool);
-
-        }
-        if (longRunningThreadPool != null) {
-            model.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).set(longRunningThreadPool);
-
-        }
         if (ParamsUtils.has(operation, BEAN_VALIDATION_ENABLED)) {
             model.get(BEAN_VALIDATION_ENABLED).set(beanValidationEnabled);
         }
@@ -174,9 +164,9 @@ class JcaSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
                     final WorkManagerService wmService = new WorkManagerService(wm);
                     serviceTarget
                             .addService(ConnectorServices.WORKMANAGER_SERVICE, wmService)
-                            .addDependency(ThreadsServices.EXECUTOR.append(shortRunningThreadPool), Executor.class,
+                            .addDependency(ThreadsServices.EXECUTOR.append(SHORT_RUNNING_THREADS), Executor.class,
                                     wmService.getExecutorShortInjector())
-                            .addDependency(ThreadsServices.EXECUTOR.append(longRunningThreadPool), Executor.class,
+                            .addDependency(ThreadsServices.EXECUTOR.append(LONG_RUNNING_THREADS), Executor.class,
                                     wmService.getExecutorLongInjector())
                             .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
                                     wmService.getXaTerminatorInjector()).setInitialMode(Mode.ACTIVE).install();

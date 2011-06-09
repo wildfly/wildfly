@@ -62,7 +62,7 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class BoundedQueueThreadPoolAdd implements ModelAddOperationHandler, DescriptionProvider {
 
-    static final BoundedQueueThreadPoolAdd INSTANCE = new BoundedQueueThreadPoolAdd();
+    public static final BoundedQueueThreadPoolAdd INSTANCE = new BoundedQueueThreadPoolAdd();
 
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
