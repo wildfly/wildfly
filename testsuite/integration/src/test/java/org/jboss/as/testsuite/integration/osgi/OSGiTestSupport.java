@@ -24,6 +24,10 @@ package org.jboss.as.testsuite.integration.osgi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -78,5 +82,40 @@ public abstract class OSGiTestSupport {
         assertNotNull("Bundles found", bundles);
         assertEquals("One bundle found", 1, bundles.length);
         return bundles[0];
+    }
+
+    protected  String getHttpResponse(String host, int port, String reqPath, int timeout) throws IOException
+    {
+       int fraction = 200;
+
+       String line = null;
+       IOException lastException = null;
+       while (line == null && 0 < (timeout -= fraction))
+       {
+          try
+          {
+             URL url = new URL("http://" + host + ":" + port + reqPath);
+             BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+             line = br.readLine();
+             br.close();
+          }
+          catch (IOException ex)
+          {
+             lastException = ex;
+             try
+             {
+                Thread.sleep(fraction);
+             }
+             catch (InterruptedException ie)
+             {
+                // ignore
+             }
+          }
+       }
+
+       if (line == null && lastException != null)
+          throw lastException;
+
+       return line;
     }
 }
