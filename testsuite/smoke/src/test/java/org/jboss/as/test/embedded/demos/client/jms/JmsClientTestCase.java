@@ -46,9 +46,8 @@ import javax.management.ObjectName;
 
 import junit.framework.Assert;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.controller.client.NewModelControllerClient;
@@ -67,12 +66,12 @@ import org.junit.runner.RunWith;
  * @author Emanuel Muckenhuber
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.AS_CLIENT)
+@RunAsClient
 public class JmsClientTestCase {
 
     private static final String QUEUE_NAME = "createdTestQueue";
 
-    @Deployment()
+    @Deployment
     public static Archive<?> createDeployment(){
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
         return ShrinkWrapUtils.createJavaArchive("demos/fakejndi.sar", FakeJndi.class.getPackage());

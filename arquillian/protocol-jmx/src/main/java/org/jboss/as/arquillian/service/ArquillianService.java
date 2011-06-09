@@ -105,25 +105,26 @@ public class ArquillianService implements Service<ArquillianService> {
         listener = new AbstractServiceListener<Object>() {
 
             @Override
-            public void serviceStarted(ServiceController<? extends Object> controller) {
-                ServiceName serviceName = controller.getName();
-                String simpleName = serviceName.getSimpleName();
-                if (JBOSS_DEPLOYMENT.isParentOf(serviceName) && simpleName.equals(Phase.INSTALL.toString())) {
-                    ServiceName parentName = serviceName.getParent();
-                    ServiceController<?> parentController = serviceContainer.getService(parentName);
-                    DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
-                    ArquillianConfig arqConfig = ArquillianConfigBuilder.processDeployment(arqService, depUnit);
-                    if (arqConfig != null) {
-                        log.infof("Arquillian deployment detected: %s", arqConfig);
-                        ServiceBuilder<ArquillianConfig> builder = arqConfig.buildService(serviceTarget, controller);
-                        FrameworkActivationProcessor.process(serviceContainer, builder, arqConfig);
-                        builder.install();
+            public void transition(ServiceController<? extends Object> serviceController, ServiceController.Transition transition) {
+                switch (transition) {
+                    case STARTING_to_UP: {
+                        ServiceName serviceName = serviceController.getName();
+                        String simpleName = serviceName.getSimpleName();
+                        if (JBOSS_DEPLOYMENT.isParentOf(serviceName) && simpleName.equals(Phase.INSTALL.toString())) {
+                            ServiceName parentName = serviceName.getParent();
+                            ServiceController<?> parentController = serviceContainer.getService(parentName);
+                            DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
+                            ArquillianConfig arqConfig = ArquillianConfigBuilder.processDeployment(arqService, depUnit);
+                            if (arqConfig != null) {
+                                log.infof("Arquillian deployment detected: %s", arqConfig);
+                                ServiceBuilder<ArquillianConfig> builder = arqConfig.buildService(serviceTarget, serviceController);
+                                FrameworkActivationProcessor.process(serviceContainer, builder, arqConfig);
+                                builder.install();
+                            }
+                        }
+
                     }
                 }
-            }
-
-            @Override
-            public void serviceStopped(ServiceController<? extends Object> controller) {
             }
         };
         serviceContainer.addListener(listener);

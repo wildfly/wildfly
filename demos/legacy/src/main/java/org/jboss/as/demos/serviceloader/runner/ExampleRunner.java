@@ -23,15 +23,12 @@ package org.jboss.as.demos.serviceloader.runner;
 
 import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
-import javax.management.Attribute;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.serviceloader.archive.TestService;
 import org.jboss.as.demos.serviceloader.mbean.Test;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-import org.jboss.as.demos.sar.archive.ConfigService;
 
 
 /**
@@ -56,15 +53,8 @@ public class ExampleRunner {
             String s = (String)mbeanServer.invoke(objectName, "decorateWithServiceLoader", new Object[] {"Hello"}, new String[] {"java.lang.String"});
             System.out.println("Received reply: " + s);
         } finally {
-<<<<<<< HEAD:demos/legacy/src/main/java/org/jboss/as/demos/serviceloader/runner/ExampleRunner.java
             utils.undeploy();
             safeClose(utils);
-=======
-            if (deploymentUtils != null) {
-                deploymentUtils.undeploy();
-            }
-            safeClose(deploymentUtils);
->>>>>>> Start working on getting deployments working:demos/src/main/java/org/jboss/as/demos/sar/runner/ExampleRunner.java
         }
     }
 

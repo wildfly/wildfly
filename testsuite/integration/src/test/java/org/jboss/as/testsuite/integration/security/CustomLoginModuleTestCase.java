@@ -50,9 +50,8 @@ import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.websecurity.SecuredServlet;
 import org.jboss.as.testsuite.integration.websecurity.WebSecurityPasswordBasedBase;
@@ -71,7 +70,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.AS_CLIENT)
+@RunAsClient
 public class CustomLoginModuleTestCase {
 
     protected final String URL = "http://localhost:8080/" + getContextPath() + "/secured/";
