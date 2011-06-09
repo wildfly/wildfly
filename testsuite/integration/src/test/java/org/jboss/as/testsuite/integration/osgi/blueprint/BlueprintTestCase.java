@@ -25,12 +25,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.management.MBeanServer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
 import org.jboss.as.testsuite.integration.osgi.blueprint.bundle.BeanA;
 import org.jboss.as.testsuite.integration.osgi.blueprint.bundle.BeanB;
 import org.jboss.as.testsuite.integration.osgi.blueprint.bundle.ServiceA;
@@ -39,13 +42,13 @@ import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.blueprint.container.BlueprintContainer;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * A simple Blueprint Container test.
@@ -54,8 +57,7 @@ import org.osgi.service.blueprint.container.BlueprintContainer;
  * @since 12-Jul-2009
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class BlueprintTestCase {
+public class BlueprintTestCase extends OSGiTestSupport {
 
     @Inject
     public BundleContext context;
@@ -63,10 +65,14 @@ public class BlueprintTestCase {
     @Inject
     public Bundle bundle;
 
+    @Inject
+    public StartLevel startLevel;
+
     @Deployment
+    @StartLevelAware(startLevel = 4)
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-blueprint");
-        archive.addClasses(BeanA.class, ServiceA.class, BeanB.class, ServiceB.class);
+        archive.addClasses(OSGiTestSupport.class, BeanA.class, ServiceA.class, BeanB.class, ServiceB.class);
         archive.addAsResource("osgi/blueprint/blueprint-example.xml", "OSGI-INF/blueprint/blueprint-example.xml");
         archive.setManifest(new Asset() {
             public InputStream openStream() {
@@ -80,8 +86,14 @@ public class BlueprintTestCase {
         return archive;
     }
 
+    @Override
+    protected BundleContext getBundleContext() {
+        return context;
+    }
+
     @Test
     public void testBlueprintContainerAvailable() throws Exception {
+        changeStartLevel(4, 10, TimeUnit.SECONDS);
         bundle.start();
         assertEquals("example-blueprint", bundle.getSymbolicName());
 
