@@ -21,7 +21,7 @@
  */
 package org.jboss.as.demos.managedbean.runner;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -34,11 +34,6 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 /**
  *

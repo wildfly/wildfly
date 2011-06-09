@@ -41,11 +41,7 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-<<<<<<< HEAD:demos/legacy/src/main/java/org/jboss/as/demos/DeploymentUtils.java
-import org.jboss.as.controller.client.ModelControllerClient;
-=======
 import org.jboss.as.controller.client.NewModelControllerClient;
->>>>>>> Get rid of CCEs by using NewModelControllerClient everywhere:demos/src/main/java/org/jboss/as/demos/DeploymentUtils.java
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DuplicateDeploymentNameException;

@@ -32,7 +32,7 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaD
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.modules.management.ObjectProperties;
 import org.jboss.msc.service.ServiceController.State;
@@ -62,7 +62,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     }
 
     private T containerConfig;
-    private ModelControllerClient modelControllerClient;
+    private NewModelControllerClient modelControllerClient;
 
     @Inject
     @ContainerScoped
@@ -78,7 +78,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @Override
     public void setup(T config) {
         containerConfig = config;
-        modelControllerClient = ModelControllerClient.Factory.create(config.getBindAddress(), config.getManagementPort());
+        modelControllerClient = NewModelControllerClient.Factory.create(config.getBindAddress(), config.getManagementPort());
         ArchiveDeployer archiveDeployer = new ArchiveDeployer(ServerDeploymentManager.Factory.create(modelControllerClient));
         archiveDeployerInst.set(archiveDeployer);
     }
@@ -101,7 +101,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
         return containerConfig;
     }
 
-    protected ModelControllerClient getModelControllerClient() {
+    protected NewModelControllerClient getModelControllerClient() {
         return modelControllerClient;
     }
 

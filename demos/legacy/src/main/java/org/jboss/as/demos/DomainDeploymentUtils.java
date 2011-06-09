@@ -21,23 +21,12 @@
  */
 package org.jboss.as.demos;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperation;
-import org.jboss.as.controller.client.NewOperationBuilder;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.ClientConstants;
-import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,14 +43,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperation;
+import org.jboss.as.controller.client.NewOperationBuilder;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
 import org.jboss.dmr.ModelNode;
@@ -70,7 +54,6 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 /**
  * Used to deploy/undeploy deployments to a running <b>domain controller</b>

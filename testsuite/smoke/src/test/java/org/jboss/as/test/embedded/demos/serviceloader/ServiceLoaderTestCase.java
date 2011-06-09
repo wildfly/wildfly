@@ -28,18 +28,12 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.serviceloader.archive.TestService;
-<<<<<<< HEAD:testsuite/smoke/src/test/java/org/jboss/as/test/embedded/demos/serviceloader/ServiceLoaderTestCase.java
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.modules.Module;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-=======
-import org.jboss.as.demos.serviceloader.mbean.Test;
-
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
->>>>>>> Non-compiling cherry-pick of remoting work:demos/src/main/java/org/jboss/as/demos/serviceloader/runner/ExampleRunner.java
 
 /**
  *
