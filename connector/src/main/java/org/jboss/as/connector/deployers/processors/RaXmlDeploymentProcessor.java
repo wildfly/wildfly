@@ -101,8 +101,16 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
 
             for (org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter raxml : raxmls.getResourceAdapters()) {
                 if (deploymentUnit.getName().equals(raxml.getArchive())) {
+
+                    final String deployment;
+                    if (deploymentUnit.getName().lastIndexOf('.') == -1) {
+                        deployment = deploymentUnit.getName();
+                    } else {
+                        deployment = deploymentUnit.getName().substring(0, deploymentUnit.getName().lastIndexOf('.'));
+                    }
+
                     ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(connectorXmlDescriptor,
-                            raxml, module);
+                            raxml, module, deployment);
                     // Create the service
                     serviceTarget
                             .addService(

@@ -22,22 +22,7 @@
 
 package org.jboss.as.connector.metadata.deployment;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.resource.spi.IllegalStateException;
-import javax.resource.spi.ResourceAdapter;
-import javax.transaction.TransactionManager;
-
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.services.AdminObjectReferenceFactoryService;
 import org.jboss.as.connector.services.AdminObjectService;
@@ -50,18 +35,12 @@ import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.api.metadata.ra.AdminObject;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
-import org.jboss.jca.common.api.metadata.ra.ConnectionDefinition;
 import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.api.metadata.ra.Connector.Version;
-import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
-import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
-import org.jboss.jca.core.spi.mdr.NotFoundException;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.deployers.common.AbstractResourceAdapterDeployer;
@@ -70,12 +49,22 @@ import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
+
+import javax.resource.spi.IllegalStateException;
+import javax.resource.spi.ResourceAdapter;
+import javax.transaction.TransactionManager;
+import java.io.File;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.List;
 
 /**
  * A ResourceAdapterDeploymentService.
@@ -201,18 +190,17 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     protected abstract class AbstractAS7RaDeployer extends AbstractResourceAdapterDeployer {
 
-        private final ServiceContainer serviceContainer;
-
+        protected final ServiceTarget serviceTarget;
         protected final URL url;
         protected final String deploymentName;
         protected final File root;
         protected final ClassLoader cl;
         protected final Connector cmd;
 
-        protected AbstractAS7RaDeployer(ServiceContainer serviceContainer, URL url, String deploymentName, File root,
+        protected AbstractAS7RaDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root,
                 ClassLoader cl, Connector cmd) {
             super(true, Logger.getLogger(AbstractAS7RaDeployer.class));
-            this.serviceContainer = serviceContainer;
+            this.serviceTarget = serviceTarget;
             this.url = url;
             this.deploymentName = deploymentName;
             this.root = root;
@@ -237,18 +225,18 @@ public abstract class AbstractResourceAdapterDeploymentService {
             final ConnectionFactoryService connectionFactoryService = new ConnectionFactoryService(cf);
 
             final ServiceName connectionFactoryServiceName = ConnectionFactoryService.SERVICE_NAME_BASE.append(jndi);
-            serviceContainer.addService(connectionFactoryServiceName, connectionFactoryService)
+            serviceTarget.addService(connectionFactoryServiceName, connectionFactoryService)
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             final ConnectionFactoryReferenceFactoryService referenceFactoryService = new ConnectionFactoryReferenceFactoryService();
             final ServiceName referenceFactoryServiceName = ConnectionFactoryReferenceFactoryService.SERVICE_NAME_BASE
                     .append(jndi);
-            serviceContainer.addService(referenceFactoryServiceName, referenceFactoryService)
+            serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
                     .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
             final BinderService binderService = new BinderService(jndi.substring(6));
             final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndi);
-            serviceContainer
+            serviceTarget
                     .addService(binderServiceName, binderService)
                     .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
                             binderService.getManagedObjectInjector())
@@ -288,17 +276,17 @@ public abstract class AbstractResourceAdapterDeploymentService {
             final AdminObjectService adminObjectService = new AdminObjectService(ao);
 
             final ServiceName adminObjectServiceName = AdminObjectService.SERVICE_NAME_BASE.append(jndi);
-            serviceContainer.addService(adminObjectServiceName, adminObjectService)
+            serviceTarget.addService(adminObjectServiceName, adminObjectService)
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             final AdminObjectReferenceFactoryService referenceFactoryService = new AdminObjectReferenceFactoryService();
             final ServiceName referenceFactoryServiceName = AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(jndi);
-            serviceContainer.addService(referenceFactoryServiceName, referenceFactoryService)
+            serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
                     .addDependency(adminObjectServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
             final BinderService binderService = new BinderService(jndi.substring(6));
             final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndi);
-            serviceContainer
+            serviceTarget
                     .addService(binderServiceName, binderService)
                     .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
                             binderService.getManagedObjectInjector())
