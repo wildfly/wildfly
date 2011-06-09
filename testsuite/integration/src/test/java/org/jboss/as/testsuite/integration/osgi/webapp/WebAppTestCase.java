@@ -21,7 +21,6 @@
  */
 package org.jboss.as.testsuite.integration.osgi.webapp;
 
-import static org.jboss.osgi.http.HttpServiceCapability.DEFAULT_HTTP_SERVICE_PORT;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -46,6 +45,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.service.startlevel.StartLevel;
 
 /**
@@ -68,7 +68,7 @@ public class WebAppTestCase extends OSGiTestSupport {
     public static WebArchive createdeployment() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, "example-webapp");
         archive.addClasses(OSGiTestSupport.class, EndpointServlet.class);
-        archive.addAsResource("osgi/webapp/message.txt", "message.txt");
+        archive.addAsWebResource("osgi/webapp/message.txt", "message.txt");
         archive.addAsWebInfResource("osgi/webapp/webA.xml", "web.xml");
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
         archive.add(new Asset() {
@@ -87,9 +87,7 @@ public class WebAppTestCase extends OSGiTestSupport {
 
     @Test
     public void testServletAccess() throws Exception {
-
         changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
-
         bundle.start();
         String line = getHttpResponse("/example-webapp/servlet?test=plain", 5000);
         assertEquals("Hello from Servlet", line);
@@ -110,6 +108,6 @@ public class WebAppTestCase extends OSGiTestSupport {
     }
 
     private String getHttpResponse(String reqPath, int timeout) throws IOException {
-        return getHttpResponse("localhost", DEFAULT_HTTP_SERVICE_PORT, reqPath, timeout);
+        return getHttpResponse("localhost", 8090, reqPath, timeout);
     }
 }
