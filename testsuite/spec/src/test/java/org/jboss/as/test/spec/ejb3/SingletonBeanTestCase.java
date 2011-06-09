@@ -67,7 +67,6 @@ import static junit.framework.Assert.assertTrue;
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class SingletonBeanTestCase {
 
     private static final Logger log = Logger.getLogger(SingletonBeanTestCase.class.getName());
@@ -85,16 +84,16 @@ public class SingletonBeanTestCase {
         return jar;
     }
 
-    @EJB(mappedName = "java:global/test/SimpleSingletonBean!org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal")
+    @EJB(mappedName = "java:global/ejb3-singleton-bean-example/SimpleSingletonBean!org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal")
     private SimpleSingletonLocal singletonBean;
 
-    @EJB(mappedName = "java:global/test/CallTrackerSingletonBean!org.jboss.as.demos.ejb3.archive.CallTrackerSingletonBean")
+    @EJB(mappedName = "java:global/ejb3-singleton-bean-example/CallTrackerSingletonBean!org.jboss.as.demos.ejb3.archive.CallTrackerSingletonBean")
     private CallTrackerSingletonBean callTrackerSingletonBean;
 
-    @EJB(mappedName = "java:global/test/ReadOnlySingletonBean!org.jboss.as.test.spec.ejb3.ReadOnlySingletonBean")
+    @EJB(mappedName = "java:global/ejb3-singleton-bean-example/ReadOnlySingletonBean!org.jboss.as.test.spec.ejb3.ReadOnlySingletonBean")
     private ReadOnlySingletonBean readOnlySingletonBean;
 
-    @EJB(mappedName = "java:global/test/LongWritesSingletonBean!org.jboss.as.test.spec.ejb3.LongWritesSingletonBean")
+    @EJB(mappedName = "java:global/ejb3-singleton-bean-example/LongWritesSingletonBean!org.jboss.as.test.spec.ejb3.LongWritesSingletonBean")
     private LongWritesSingletonBean longWritesSingletonBean;
 
     /**
@@ -153,7 +152,6 @@ public class SingletonBeanTestCase {
 
         // let's invoke a bean method (with WRITE lock semantics) which takes a long time to complete
         final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-        final Future<?> firstInvocationResult = singleThreadExecutor.submit(new LongWritesSingletonBeanInvoker(this.longWritesSingletonBean));
 
         // let's now try and invoke on this bean while the previous operation is in progress.
         // we expect a ConcurrentAccessTimeoutException
@@ -179,17 +177,15 @@ public class SingletonBeanTestCase {
                 throwables.add(ee.getCause());
             }
         }
-        // get/wait (for) the result of the first invocation. Is expected to have completed successfully
-        firstInvocationResult.get(10, TimeUnit.SECONDS);
         // only one call succeeded, so count should be 1
         Assert.assertEquals("Unexpected count on singleton bean after invocation on method with WRITE lock semantic: ", 1, this.longWritesSingletonBean.getCount());
 
-        assertEquals(1, passed.size());
-        assertEquals(NUM_THREADS - 1, throwables.size());
         for (Throwable t : throwables) {
             assertTrue(t instanceof ConcurrentAccessTimeoutException);
         }
 
+        assertEquals(1, passed.size());
+        assertEquals(NUM_THREADS - 1, throwables.size());
     }
 
     private class ReadOnlySingletonBeanInvoker implements Callable<String> {
