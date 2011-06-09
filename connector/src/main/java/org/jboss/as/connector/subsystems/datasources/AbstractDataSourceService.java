@@ -59,6 +59,7 @@ import org.jboss.jca.common.metadata.ds.DriverImpl;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.NotFoundException;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
+import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.jca.deployers.common.AbstractDsDeployer;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.jca.deployers.common.DeployException;
@@ -186,15 +187,15 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         private final XaDataSource xaDataSourceConfig;
         private ServiceContainer serviceContainer;
 
-        public AS7DataSourceDeployer(Logger log, XaDataSource xaDataSourceConfig) {
-            super(log);
+        public AS7DataSourceDeployer(XaDataSource xaDataSourceConfig) {
+            super();
             this.xaDataSourceConfig = xaDataSourceConfig;
             this.dataSourceConfig = null;
 
         }
 
-        public AS7DataSourceDeployer(Logger log, org.jboss.jca.common.api.metadata.ds.DataSource dataSourceConfig) {
-            super(log);
+        public AS7DataSourceDeployer(org.jboss.jca.common.api.metadata.ds.DataSource dataSourceConfig) {
+            super();
             this.dataSourceConfig = dataSourceConfig;
             this.xaDataSourceConfig = null;
 
@@ -482,6 +483,12 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         @Override
         protected String buildJndiName(String jndiName, Boolean javaContext) {
             return super.buildJndiName(jndiName, javaContext);
+        }
+
+        @Override
+        protected DeployersLogger getLogger() {
+
+            return Logger.getMessageLogger(DeployersLogger.class, AS7DataSourceDeployer.class.getName());
         }
 
     }

@@ -197,9 +197,9 @@ public abstract class AbstractResourceAdapterDeploymentService {
         protected final ClassLoader cl;
         protected final Connector cmd;
 
-        protected AbstractAS7RaDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root,
-                ClassLoader cl, Connector cmd) {
-            super(true, Logger.getLogger(AbstractAS7RaDeployer.class));
+        protected AbstractAS7RaDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root, ClassLoader cl,
+                Connector cmd) {
+            super(true);
             this.serviceTarget = serviceTarget;
             this.url = url;
             this.deploymentName = deploymentName;
@@ -276,8 +276,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
             final AdminObjectService adminObjectService = new AdminObjectService(ao);
 
             final ServiceName adminObjectServiceName = AdminObjectService.SERVICE_NAME_BASE.append(jndi);
-            serviceTarget.addService(adminObjectServiceName, adminObjectService)
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            serviceTarget.addService(adminObjectServiceName, adminObjectService).setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
 
             final AdminObjectReferenceFactoryService referenceFactoryService = new AdminObjectReferenceFactoryService();
             final ServiceName referenceFactoryServiceName = AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(jndi);

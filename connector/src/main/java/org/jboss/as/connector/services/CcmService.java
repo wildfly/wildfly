@@ -39,7 +39,8 @@ public class CcmService implements Service<CachedConnectionManager> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        value = new CachedConnectionManagerImpl(transactionIntegration.getValue().getTransactionManager());
+        value = new CachedConnectionManagerImpl(transactionIntegration.getValue().getTransactionManager(),
+                transactionIntegration.getValue().getTransactionSynchronizationRegistry());
         value.setDebug(debug);
         value.setError(error);
         log.debugf("started CcmService %s", context.getController().getName());

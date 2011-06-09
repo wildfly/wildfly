@@ -39,6 +39,7 @@ import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.common.api.metadata.ra.Connector.Version;
 import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
 import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
+import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -228,6 +229,12 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
             }
 
             return false;
+        }
+
+        @Override
+        protected DeployersLogger getLogger() {
+
+            return Logger.getMessageLogger(DeployersLogger.class, ResourceAdapterActivator.class.getName());
         }
     }
 

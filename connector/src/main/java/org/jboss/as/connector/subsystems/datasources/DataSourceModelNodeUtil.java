@@ -44,6 +44,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONS
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
@@ -134,6 +135,7 @@ class DataSourceModelNodeUtil {
         setStringIfNotNull(dataSourceModel, URL_SELECTOR_STRATEGY_CLASS_NAME, dataSource.getUrlSelectorStrategyClassName());
         setBooleanIfNotNull(dataSourceModel, USE_JAVA_CONTEXT, dataSource.isUseJavaContext());
         setBooleanIfNotNull(dataSourceModel, ENABLED, dataSource.isEnabled());
+        setBooleanIfNotNull(dataSourceModel, JTA, dataSource.isJTA());
 
         CommonPool pool = dataSource.getPool();
         if (pool != null) {
@@ -307,7 +309,7 @@ class DataSourceModelNodeUtil {
         final String connectionUrl = getStringIfSetOrGetDefault(dataSourceNode, CONNECTION_URL, null);
         final String driverClass = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER_CLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
-        final String module = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER, null);
+        final String driver = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER, null);
         final String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
         final String poolName = getStringIfSetOrGetDefault(dataSourceNode, POOLNAME, null);
         final String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
@@ -315,6 +317,7 @@ class DataSourceModelNodeUtil {
                 URL_SELECTOR_STRATEGY_CLASS_NAME, null);
         final boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, false);
         final boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, true);
+        final boolean jta = getBooleanIfSetOrGetDefault(dataSourceNode, JTA, true);
         final Integer maxPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MAX_POOL_SIZE, null);
         final Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, null);
         final boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, false);
@@ -368,9 +371,9 @@ class DataSourceModelNodeUtil {
         final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMinutes, useFastFail,
                 validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
 
-        return new DataSourceImpl(connectionUrl, driverClass, module, transactionIsolation, connectionProperties, timeOut,
+        return new DataSourceImpl(connectionUrl, driverClass, driver, transactionIsolation, connectionProperties, timeOut,
                 security, statement, validation, urlDelimiter, urlSelectorStrategyClassName, newConnectionSql, useJavaContext,
-                poolName, enabled, jndiName, spy, useCcm, pool);
+                poolName, enabled, jndiName, spy, useCcm, jta, pool);
     }
 
     static XaDataSource xaFrom(final ModelNode dataSourceNode) throws ValidateException {

@@ -79,6 +79,8 @@ class Constants {
 
     static final String ENABLED = "enabled";
 
+    static final String JTA = "jta";
+
     static final String JNDINAME = "jndi-name";
 
     static final String URLDELIMITER = "url-delimiter";

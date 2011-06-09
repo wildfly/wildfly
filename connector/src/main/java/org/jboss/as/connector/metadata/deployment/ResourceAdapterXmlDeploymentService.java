@@ -28,6 +28,7 @@ import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.metadata.merge.Merger;
+import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
@@ -43,7 +44,6 @@ import java.net.URL;
 
 /**
  * A ResourceAdapterXmlDeploymentService.
- *
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
@@ -58,7 +58,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     private final String deployment;
 
     public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, ResourceAdapter raxml,
-                                               Module module, final String deployment) {
+            Module module, final String deployment) {
         this.connectorXmlDescriptor = connectorXmlDescriptor;
         this.raxml = raxml;
         this.module = module;
@@ -124,7 +124,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         private final IronJacamar ijmd;
 
         public AS7RaXmlDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root, ClassLoader cl,
-                                Connector cmd, ResourceAdapter ra, IronJacamar ijmd) {
+                Connector cmd, ResourceAdapter ra, IronJacamar ijmd) {
             super(serviceTarget, url, deploymentName, root, cl, cmd);
             this.ra = ra;
             this.ijmd = ijmd;
@@ -145,6 +145,12 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         @Override
         protected boolean checkActivation(Connector cmd, IronJacamar ijmd) {
             return true;
+        }
+
+        @Override
+        protected DeployersLogger getLogger() {
+
+            return Logger.getMessageLogger(DeployersLogger.class, AS7RaXmlDeployer.class.getName());
         }
 
     }

@@ -52,6 +52,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_STRA
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
@@ -293,6 +294,7 @@ public class DataSourcesExtension implements Extension {
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.JNDINAME, JNDINAME);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.POOL_NAME, POOLNAME);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.ENABLED, ENABLED);
+                    writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.JTA, JTA);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.SPY, SPY);
 

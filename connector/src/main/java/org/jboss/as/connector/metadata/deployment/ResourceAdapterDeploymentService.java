@@ -22,7 +22,6 @@
 
 package org.jboss.as.connector.metadata.deployment;
 
-
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.ResourceAdapterService;
@@ -33,6 +32,7 @@ import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.common.api.metadata.ra.Connector.Version;
 import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
 import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
+import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
@@ -232,6 +232,12 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             }
 
             return false;
+        }
+
+        @Override
+        protected DeployersLogger getLogger() {
+
+            return Logger.getMessageLogger(DeployersLogger.class, AS7RaDeployer.class.getName());
         }
     }
 

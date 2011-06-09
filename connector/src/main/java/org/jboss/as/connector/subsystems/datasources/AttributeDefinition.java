@@ -34,8 +34,8 @@ public enum AttributeDefinition {
             ModelType.STRING, true), NEW_CONNECTION_SQL(Constants.NEW_CONNECTION_SQL, ModelType.STRING, false), POOLNAME(
             Constants.POOLNAME, ModelType.STRING, false), URL_DELIMITER(Constants.URL_DELIMITER, ModelType.STRING, false), URL_SELECTOR_STRATEGY_CLASS_NAME(
             Constants.URL_SELECTOR_STRATEGY_CLASS_NAME, ModelType.STRING, false), USE_JAVA_CONTEXT(Constants.USE_JAVA_CONTEXT,
-            ModelType.BOOLEAN, false), ENABLED(Constants.ENABLED, ModelType.STRING, false), MAX_POOL_SIZE(
-            org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE, ModelType.INT, false), MIN_POOL_SIZE(
+            ModelType.BOOLEAN, false), ENABLED(Constants.ENABLED, ModelType.BOOLEAN, false), JTA(Constants.JTA,
+            ModelType.BOOLEAN, false), MAX_POOL_SIZE(org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE, ModelType.INT, false), MIN_POOL_SIZE(
             org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE, ModelType.INT, false), POOL_PREFILL(
             org.jboss.as.connector.pool.Constants.POOL_PREFILL, ModelType.BOOLEAN, false), POOL_USE_STRICT_MIN(
             org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN, ModelType.BOOLEAN, false), FLUSH_STRATEGY(

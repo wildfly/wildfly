@@ -41,7 +41,7 @@ public class XaDataSourceService extends AbstractDataSourceService {
 
     public AS7DataSourceDeployer getDeployer() {
         // this.dataSourceConfig = dataSourceConfig;
-        return new AS7DataSourceDeployer(log, dataSourceConfig.getValue());
+        return new AS7DataSourceDeployer(dataSourceConfig.getValue());
 
     }
 
