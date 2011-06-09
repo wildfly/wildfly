@@ -287,17 +287,6 @@ public class DataSourcesExtension implements Extension {
                     writer.writeStartElement(isXADataSource ? DataSources.Tag.XA_DATASOURCE.getLocalName()
                             : DataSources.Tag.DATASOURCE.getLocalName());
 
-                    if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES)) {
-                        for (Property prop : dataSourceNode.get(CONNECTION_PROPERTIES).asPropertyList()) {
-                            writer.writeStartElement(DataSource.Tag.CONNECTIONPROPERTY.getLocalName());
-                            writer.writeAttribute("name", prop.getName());
-                            writer.writeCharacters(prop.getValue().asString());
-                            writer.writeEndElement();
-
-                        }
-
-                    }
-
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.JNDINAME, JNDINAME);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.POOL_NAME, POOLNAME);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.ENABLED, ENABLED);
