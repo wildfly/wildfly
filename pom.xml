@@ -374,6 +374,7 @@
                                             <exclude>javax.xml.soap:saaj-api</exclude>
                                             <exclude>javax.xml.stream:stax-api</exclude>
                                             <exclude>jboss:jboss-logging-spi</exclude>
+                                            <exclude>jboss:jboss-serialization</exclude>
                                             <exclude>jboss.web:el-api</exclude>
                                             <exclude>jboss.web:jsp-api</exclude>
                                             <exclude>jboss.web:servlet-api</exclude>
@@ -3057,6 +3058,10 @@
                 <artifactId>jboss-ejb3-cache</artifactId>
                 <version>${version.org.jboss.ejb3}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>jboss</groupId>
+                        <artifactId>jboss-serialization</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>org.jboss.aop</groupId>
                         <artifactId>jboss-aop</artifactId>
