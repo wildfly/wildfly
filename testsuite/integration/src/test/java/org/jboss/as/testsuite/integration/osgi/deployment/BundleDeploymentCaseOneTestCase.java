@@ -47,7 +47,7 @@ import org.osgi.framework.BundleContext;
 @RunWith(Arquillian.class)
 public class BundleDeploymentCaseOneTestCase {
 
-    static final String BUNDLE_DEPLOYMENT = "test-bundle-one";
+    static final String BUNDLE_DEPLOYMENT_NAME = "test-bundle-one";
 
     @ArquillianResource
     public Deployer deployer;
@@ -72,7 +72,7 @@ public class BundleDeploymentCaseOneTestCase {
     @Test
     public void testBundleDeployment() throws Exception {
 
-        InputStream input = deployer.getDeployment(BUNDLE_DEPLOYMENT);
+        InputStream input = deployer.getDeployment(BUNDLE_DEPLOYMENT_NAME);
         Bundle bundle = context.installBundle("test-bundle", input);
         try {
             // Assert that the bundle is in state INSTALLED
@@ -91,9 +91,9 @@ public class BundleDeploymentCaseOneTestCase {
         }
     }
 
-    @Deployment(name = BUNDLE_DEPLOYMENT, managed = false, testable = false)
+    @Deployment(name = BUNDLE_DEPLOYMENT_NAME, managed = false, testable = false)
     public static JavaArchive getTestArchive() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_DEPLOYMENT);
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_DEPLOYMENT_NAME);
         archive.addClasses(SimpleActivator.class, SimpleService.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
