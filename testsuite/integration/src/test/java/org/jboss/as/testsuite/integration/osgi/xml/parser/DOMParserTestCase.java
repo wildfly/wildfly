@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.xml.parsers.DocumentBuilder;
@@ -34,18 +35,20 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.xml.XMLParserCapability;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.startlevel.StartLevel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -59,20 +62,26 @@ import org.w3c.dom.Node;
  * @since 21-Jul-2009
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class DOMParserTestCase {
+public class DOMParserTestCase extends OSGiTestSupport {
+
+    @Inject
+    public BundleContext context;
+
     @Inject
     public Bundle bundle;
 
     @Deployment
+    @StartLevelAware(startLevel = 4)
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-xml-parser");
+        archive.addClass(OSGiTestSupport.class);
         archive.addAsResource("osgi/xml/example-xml-parser.xml", "example-xml-parser.xml");
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
+                builder.addImportPackages(StartLevel.class);
                 return builder.openStream();
             }
         });
@@ -81,6 +90,9 @@ public class DOMParserTestCase {
 
     @Test
     public void testDOMParser() throws Exception {
+
+        changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
+
         bundle.start();
 
         DocumentBuilder domBuilder = getDocumentBuilder();
