@@ -161,7 +161,7 @@ class Constants {
 
     static final String RECOVERY_SECURITY_DOMAIN = "recovery-security-domain";
 
-    static final String RECOVERLUGIN_CLASSNAME = "recovery-plugin-properties";
+    static final String RECOVERLUGIN_CLASSNAME = "recovery-plugin-class-name";
 
     static final String RECOVERLUGIN_PROPERTIES = "recovery-plugin-properties";
 

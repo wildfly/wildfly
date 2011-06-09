@@ -49,9 +49,12 @@ public enum AttributeDefinition {
             Constants.QUERYTIMEOUT, ModelType.LONG, false), USETRYLOCK(Constants.USETRYLOCK, ModelType.LONG, false), SETTXQUERYTIMEOUT(
             Constants.SETTXQUERYTIMEOUT, ModelType.BOOLEAN, false), TRANSACTION_ISOLOATION(Constants.TRANSACTION_ISOLOATION,
             ModelType.STRING, false), CHECKVALIDCONNECTIONSQL(Constants.CHECKVALIDCONNECTIONSQL, ModelType.STRING, false), EXCEPTIONSORTERCLASSNAME(
-            Constants.EXCEPTIONSORTERCLASSNAME, ModelType.STRING, false), STALECONNECTIONCHECKERCLASSNAME(
-            Constants.STALECONNECTIONCHECKERCLASSNAME, ModelType.STRING, false), VALIDCONNECTIONCHECKERCLASSNAME(
-            Constants.VALIDCONNECTIONCHECKERCLASSNAME, ModelType.STRING, false), BACKGROUNDVALIDATIONMINUTES(
+            Constants.EXCEPTIONSORTERCLASSNAME, ModelType.STRING, false), EXCEPTIONSORTER_PROPERTIES(
+            Constants.EXCEPTIONSORTER_PROPERTIES, ModelType.OBJECT, false), STALECONNECTIONCHECKERCLASSNAME(
+            Constants.STALECONNECTIONCHECKERCLASSNAME, ModelType.STRING, false), STALECONNECTIONCHECKER_PROPERTIES(
+            Constants.STALECONNECTIONCHECKER_PROPERTIES, ModelType.OBJECT, false), VALIDCONNECTIONCHECKERCLASSNAME(
+            Constants.VALIDCONNECTIONCHECKERCLASSNAME, ModelType.STRING, false), VALIDCONNECTIONCHECKER_PROPERTIES(
+            Constants.VALIDCONNECTIONCHECKER_PROPERTIES, ModelType.OBJECT, false), BACKGROUNDVALIDATIONMINUTES(
             org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES, ModelType.LONG, false), BACKGROUNDVALIDATION(
             org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION, ModelType.BOOLEAN, false), USE_FAST_FAIL(
             org.jboss.as.connector.pool.Constants.USE_FAST_FAIL, ModelType.BOOLEAN, false), VALIDATEONMATCH(
@@ -60,7 +63,12 @@ public enum AttributeDefinition {
             Constants.INTERLIVING, ModelType.BOOLEAN, false), NOTXSEPARATEPOOL(Constants.NOTXSEPARATEPOOL, ModelType.BOOLEAN,
             false), PAD_XID(Constants.PAD_XID, ModelType.BOOLEAN, false), SAME_RM_OVERRIDE(Constants.SAME_RM_OVERRIDE,
             ModelType.BOOLEAN, false), WRAP_XA_DATASOURCE(Constants.WRAP_XA_DATASOURCE, ModelType.BOOLEAN, false), XA_RESOURCE_TIMEOUT(
-            Constants.XA_RESOURCE_TIMEOUT, ModelType.INT, false);
+            Constants.XA_RESOURCE_TIMEOUT, ModelType.INT, false), REAUTHPLUGIN_PROPERTIES(Constants.REAUTHPLUGIN_PROPERTIES,
+            ModelType.OBJECT, false), RECOVERY_USERNAME(Constants.RECOVERY_USERNAME, ModelType.STRING, false), RECOVERY_PASSWORD(
+            Constants.RECOVERY_PASSWORD, ModelType.STRING, false), RECOVERY_SECURITY_DOMAIN(Constants.RECOVERY_SECURITY_DOMAIN,
+            ModelType.STRING, false), RECOVERLUGIN_CLASSNAME(Constants.RECOVERLUGIN_CLASSNAME, ModelType.STRING, false), RECOVERLUGIN_PROPERTIES(
+            Constants.RECOVERLUGIN_PROPERTIES, ModelType.OBJECT, false), NO_RECOVERY(Constants.NO_RECOVERY, ModelType.BOOLEAN,
+            false);
 
     private final String propertyName;
     private final ModelType modelType;
