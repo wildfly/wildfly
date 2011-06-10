@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.spec.ejb3.security;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -64,7 +64,7 @@ public class EJB3SecurityTestCase {
             // TODO: where is 'anonymous' configured?
             assertEquals("anonymous", principal.getName());
         } catch (RuntimeException e) {
-            fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method");
+            fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method (" + e.getMessage() + ")");
         }
     }
 }
