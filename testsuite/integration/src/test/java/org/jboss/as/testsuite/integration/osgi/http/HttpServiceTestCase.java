@@ -21,7 +21,6 @@
  */
 package org.jboss.as.testsuite.integration.osgi.http;
 
-import static org.jboss.osgi.http.HttpServiceCapability.DEFAULT_HTTP_SERVICE_PORT;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -96,32 +95,32 @@ public class HttpServiceTestCase extends OSGiTestSupport {
         changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
 
         bundle.start();
-        String line = getHttpResponse("/servlet?test=plain", 5000);
+        String line = getHttpResponse("/example-http/servlet?test=plain", 5000);
         assertEquals("Hello from Servlet", line);
     }
 
     @Test
     public void testServletInitProps() throws Exception {
         bundle.start();
-        String line = getHttpResponse("/servlet?test=initProp", 5000);
+        String line = getHttpResponse("/example-http/servlet?test=initProp", 5000);
         assertEquals("initProp=SomeValue", line);
     }
 
     @Test
     public void testServletBundleContext() throws Exception {
         bundle.start();
-        String line = getHttpResponse("/servlet?test=context", 5000);
+        String line = getHttpResponse("/example-http/servlet?test=context", 5000);
         assertEquals("example-http", line);
     }
 
     @Test
     public void testResourceAccess() throws Exception {
         bundle.start();
-        String line = getHttpResponse("/file/message.txt", 5000);
+        String line = getHttpResponse("/example-http/file/message.txt", 5000);
         assertEquals("Hello from Resource", line);
     }
 
     private String getHttpResponse(String reqPath, int timeout) throws IOException {
-        return HttpServiceCapability.getHttpResponse("localhost", DEFAULT_HTTP_SERVICE_PORT, reqPath, timeout);
+        return HttpServiceCapability.getHttpResponse("localhost", 8090, reqPath, timeout);
     }
 }
