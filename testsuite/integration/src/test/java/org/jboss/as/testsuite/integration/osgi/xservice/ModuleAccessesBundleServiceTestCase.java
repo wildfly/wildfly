@@ -49,6 +49,7 @@ import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -66,6 +67,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * @since 19-Apr-2011
  */
 @RunWith(Arquillian.class)
+@Ignore("[AS7-858] Cannot load module when applying resolver results")
 public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCase {
 
     private static final String TARGET_BUNDLE_NAME = "example-xservice-target-bundle";
