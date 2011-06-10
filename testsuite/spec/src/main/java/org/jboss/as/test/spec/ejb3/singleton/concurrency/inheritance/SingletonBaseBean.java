@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ejb.singleton.concurrency.inheritance;
+package org.jboss.as.test.spec.ejb3.singleton.concurrency.inheritance;
 
 import javax.ejb.AccessTimeout;
 import javax.ejb.Lock;
