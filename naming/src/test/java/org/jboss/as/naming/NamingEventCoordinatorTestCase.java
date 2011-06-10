@@ -66,7 +66,7 @@ public class NamingEventCoordinatorTestCase {
 
         coordinator.fireEvent(context, new CompositeName("test/path"), null, null, NamingEvent.OBJECT_ADDED, "bind", EventContext.OBJECT_SCOPE);
 
-        objectListener.latch.await(10L, TimeUnit.MILLISECONDS);
+        objectListener.latch.await(1, TimeUnit.SECONDS);
 
         assertEquals(1, objectListener.capturedEvents.size());
         assertTrue(oneLevelListener.capturedEvents.isEmpty());
@@ -86,7 +86,7 @@ public class NamingEventCoordinatorTestCase {
 
         coordinator.fireEvent(context, new CompositeName("test/path"), null, null, NamingEvent.OBJECT_ADDED, "bind", EventContext.SUBTREE_SCOPE);
 
-        subtreeListener.latch.await(10L, TimeUnit.MILLISECONDS);
+        subtreeListener.latch.await(1, TimeUnit.SECONDS);
 
         assertTrue(objectListener.capturedEvents.isEmpty());
         assertTrue(oneLevelListener.capturedEvents.isEmpty());
@@ -106,7 +106,7 @@ public class NamingEventCoordinatorTestCase {
 
         coordinator.fireEvent(context, new CompositeName("test/path"), null, null, NamingEvent.OBJECT_ADDED, "bind", EventContext.ONELEVEL_SCOPE);
 
-        oneLevelListener.latch.await(10L, TimeUnit.MILLISECONDS);
+        oneLevelListener.latch.await(1, TimeUnit.SECONDS);
 
         assertTrue(objectListener.capturedEvents.isEmpty());
         assertTrue(subtreeListener.capturedEvents.isEmpty());
@@ -126,9 +126,9 @@ public class NamingEventCoordinatorTestCase {
 
         coordinator.fireEvent(context, new CompositeName("test/path"), null, null, NamingEvent.OBJECT_ADDED, "bind", EventContext.OBJECT_SCOPE, EventContext.ONELEVEL_SCOPE, EventContext.SUBTREE_SCOPE);
 
-        objectListener.latch.await(10L, TimeUnit.MILLISECONDS);
-        oneLevelListener.latch.await(10L, TimeUnit.MILLISECONDS);
-        subtreeListener.latch.await(10L, TimeUnit.MILLISECONDS);
+        objectListener.latch.await(1, TimeUnit.SECONDS);
+        oneLevelListener.latch.await(1, TimeUnit.SECONDS);
+        subtreeListener.latch.await(1, TimeUnit.SECONDS);
 
         assertEquals(1, objectListener.capturedEvents.size());
         assertEquals(1, subtreeListener.capturedEvents.size());
@@ -151,9 +151,9 @@ public class NamingEventCoordinatorTestCase {
 
         coordinator.fireEvent(context, new CompositeName("foo/bar/baz/boo"), null, null, NamingEvent.OBJECT_ADDED, "bind", EventContext.OBJECT_SCOPE, EventContext.ONELEVEL_SCOPE, EventContext.SUBTREE_SCOPE);
 
-        subtreeListener.latch.await(10L, TimeUnit.MILLISECONDS);
-        subtreeListenerTwo.latch.await(10L, TimeUnit.MILLISECONDS);
-        subtreeListenerThree.latch.await(10L, TimeUnit.MILLISECONDS);
+        subtreeListener.latch.await(1, TimeUnit.SECONDS);
+        subtreeListenerTwo.latch.await(1, TimeUnit.SECONDS);
+        subtreeListenerThree.latch.await(1, TimeUnit.SECONDS);
 
         assertEquals(1, subtreeListener.capturedEvents.size());
         assertEquals(1, subtreeListenerTwo.capturedEvents.size());
