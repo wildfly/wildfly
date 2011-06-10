@@ -37,16 +37,23 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
  */
 public class SimpleHandlers {
 
+    public static final byte SIMPLE_REQUEST = 102;
+    public static final byte REQUEST_WITH_NO_HANDLER = 103;
+    public static final byte REQUEST_WITH_BAD_READ = 104;
+    public static final byte REQUEST_WITH_BAD_WRITE = 105;
+
     public static class Request extends ManagementRequest<Integer>{
         final int sentData;
+        final byte requestCode;
 
-        public Request(int sentData) {
+        public Request(byte requestCode, int sentData) {
+            this.requestCode = requestCode;
             this.sentData = sentData;
         }
 
         @Override
         protected byte getRequestCode() {
-            return 102;
+            return requestCode;
         }
 
         @Override
@@ -65,17 +72,21 @@ public class SimpleHandlers {
 
     public static class OperationHandler implements ManagementOperationHandler {
 
-//        @Override
-//        public Byte getId() {
-//            return 101;
-//        }
-
         @Override
         public ManagementRequestHandler getRequestHandler(byte id) {
-            if (id != 102) {
+            switch (id) {
+            case SIMPLE_REQUEST:
+                return new RequestHandler();
+            case REQUEST_WITH_BAD_READ:
+                return new BadReadRequestHandler();
+            case REQUEST_WITH_BAD_WRITE:
+                return new BadWriteRequestHandler();
+            case REQUEST_WITH_NO_HANDLER:
+                //No handler for this
+            default:
                 return null;
+
             }
-            return new RequestHandler();
         }
     }
 
@@ -84,14 +95,38 @@ public class SimpleHandlers {
 
         @Override
         public void readRequest(DataInput input) throws IOException {
-            System.out.println("Reading request");
             data = input.readInt();
         }
 
         @Override
         public void writeResponse(FlushableDataOutput output) throws IOException {
-            System.out.println("Writing response " + data * 2);
             output.writeInt(data * 2);
         }
     }
+
+    public static class BadReadRequestHandler extends ManagementRequestHandler {
+
+        @Override
+        public void readRequest(DataInput input) throws IOException {
+            throw new IOException("BadReadRequest");
+        }
+
+        @Override
+        public void writeResponse(FlushableDataOutput output) throws IOException {
+        }
+    }
+
+    public static class BadWriteRequestHandler extends ManagementRequestHandler {
+
+        @Override
+        public void readRequest(DataInput input) throws IOException {
+            int data = input.readInt();
+        }
+
+        @Override
+        public void writeResponse(FlushableDataOutput output) throws IOException {
+            throw new IOException("BadWriteRequest");
+        }
+    }
+
 }
