@@ -34,14 +34,15 @@ public class LifecycleInterceptorNoProceed {
     public static boolean preDestroy = false;
 
     @PostConstruct
-    private void postConstruct(InvocationContext ctx) throws Exception{
+    @SuppressWarnings("unused")
+    private void postConstruct(InvocationContext ctx) throws Exception {
         postConstruct = true;
     }
 
     @PreDestroy
+    @SuppressWarnings("unused")
     private void preDestroy(InvocationContext ctx) throws Exception {
         preDestroy = true;
     }
-
 
 }

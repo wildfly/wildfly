@@ -19,34 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.spec.ejb3.interceptor.lifecycle.chains;
+package org.jboss.as.test.spec.ejb3.interceptor.lifecycle.order;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import javax.interceptor.InvocationContext;
 
 /**
  * @author Stuart Douglas
  */
-@Stateless
-@Interceptors(LifecycleInterceptorNoProceed.class)
-public class InterceptedNoProceedSFSB {
+public class LastInterceptor {
 
-    boolean postConstructCalled = false;
+    public static boolean postConstructCalled;
 
-    public void doStuff() {
-
-    }
-
-    /**
-     * This method should not be called, as proceed() is not called from the interceptors post construct method.
-     */
     @PostConstruct
-    public void postContruct() {
+    public void child(InvocationContext ctx) throws Exception {
         postConstructCalled = true;
+
+        if (!InterceptorParent.parentPostConstructCalled) {
+            throw new AssertionError("Parent post construct not called");
+        }
+        if (!InterceptorChild.childPostConstructCalled) {
+            throw new AssertionError("Child post construct not called");
+        }
+        if (!FirstInterceptor.postConstructCalled) {
+            throw new AssertionError("First post construct not called");
+        }
+        if (SFSBParent.parentPostConstructCalled) {
+            throw new AssertionError("SFSB Parent postconstruct called");
+        }
+        if (SFSBChild.childPostConstructCalled) {
+            throw new AssertionError("SFSB Child postconstruct called");
+        }
+
+        ctx.proceed();
     }
 
-    public boolean isPostConstructCalled() {
-        return postConstructCalled;
-    }
 }

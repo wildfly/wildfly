@@ -19,32 +19,44 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle.order;
+package org.jboss.as.test.spec.ejb3.interceptor.lifecycle.order;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Stateful;
-import javax.interceptor.Interceptors;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author Stuart Douglas
  */
-@Stateful
-@Interceptors({FirstInterceptor.class, InterceptorChild.class, LastInterceptor.class})
-public class SFSBChild extends SFSBParent {
+@RunWith(Arquillian.class)
+public class PostConstructOrderTestCase {
 
-    public static boolean childPostConstructCalled = false;
-
-    @PostConstruct
-    public void child() {
-        childPostConstructCalled = true;
-        Assert.assertTrue(SFSBParent.parentPostConstructCalled);
-        Assert.assertTrue(InterceptorParent.parentPostConstructCalled);
-        Assert.assertTrue(InterceptorChild.childPostConstructCalled);
+    @Deployment
+    public static Archive<?> deploy() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "testlocal.war");
+        war.addPackage(FirstInterceptor.class.getPackage());
+        System.out.println(war.toString(true));
+        return war;
     }
 
-    public void doStuff() {
+
+    @Test
+    public void testPostConstructMethodOrder() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        SFSBChild bean = (SFSBChild) ctx.lookup("java:module/" + SFSBChild.class.getSimpleName());
+        bean.doStuff();
+        Assert.assertTrue(SFSBParent.parentPostConstructCalled);
+        Assert.assertTrue(SFSBChild.childPostConstructCalled);
+        Assert.assertTrue(InterceptorParent.parentPostConstructCalled);
+        Assert.assertTrue(InterceptorChild.childPostConstructCalled);
     }
 
 }

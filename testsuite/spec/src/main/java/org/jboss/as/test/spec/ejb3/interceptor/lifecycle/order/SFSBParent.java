@@ -19,29 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle.order;
+package org.jboss.as.test.spec.ejb3.interceptor.lifecycle.order;
 
 import javax.annotation.PostConstruct;
-import javax.interceptor.InvocationContext;
-
-import org.junit.Assert;
 
 /**
  * @author Stuart Douglas
  */
-public class FirstInterceptor {
+public class SFSBParent {
 
-    public static boolean postConstructCalled;
+    public static boolean parentPostConstructCalled = false;
 
     @PostConstruct
-    public void child(InvocationContext ctx) throws Exception{
-        postConstructCalled = true;
-        Assert.assertFalse(InterceptorParent.parentPostConstructCalled);
-        Assert.assertFalse(InterceptorChild.childPostConstructCalled);
-        Assert.assertFalse(LastInterceptor.postConstructCalled);
-        Assert.assertFalse(SFSBParent.parentPostConstructCalled);
-        Assert.assertFalse(SFSBChild.childPostConstructCalled);
-        ctx.proceed();
+    public void parent() {
+        parentPostConstructCalled = true;
+        if (!InterceptorChild.childPostConstructCalled) {
+            throw new AssertionError("Interceptor child postconstruct not called");
+        }
+        if (!InterceptorParent.parentPostConstructCalled) {
+            throw new AssertionError("Interceptor parent postconstruct not called");
+        }
+        if (SFSBChild.childPostConstructCalled) {
+            throw new AssertionError("SFSB child postconstruct called");
+        }
     }
 
 }

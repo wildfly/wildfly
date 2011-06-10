@@ -35,6 +35,7 @@ public class LifecycleInterceptorWithProceed {
     public static boolean preDestroy = false;
 
     @PostConstruct
+    @SuppressWarnings("unused")
     private void postConstruct(InvocationContext ctx) throws Exception {
         postConstruct = true;
         ctx.proceed();
@@ -42,10 +43,10 @@ public class LifecycleInterceptorWithProceed {
     }
 
     @PreDestroy
+    @SuppressWarnings("unused")
     private void preDestroy(InvocationContext ctx) throws Exception {
         preDestroy = true;
         ctx.proceed();
     }
-
 
 }

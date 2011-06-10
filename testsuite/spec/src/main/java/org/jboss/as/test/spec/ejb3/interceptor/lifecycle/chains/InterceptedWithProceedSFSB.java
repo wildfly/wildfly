@@ -25,8 +25,6 @@ import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
 
-import org.junit.Assert;
-
 /**
  * @author Stuart Douglas
  */
@@ -41,14 +39,18 @@ public class InterceptedWithProceedSFSB {
     }
 
     /**
-     * This method should be called, after proceed is called from the interceptor, in the same call stack
-     * as the interceptors post construct method. (See 'Multiple Callback Interceptor Methods for a Life Cycle
-     * Callback Event' in the interceptors specification.
+     * This method should be called, after proceed is called from the interceptor, in the same call stack as the interceptors
+     * post construct method. (See 'Multiple Callback Interceptor Methods for a Life Cycle Callback Event' in the interceptors
+     * specification.
      */
     @PostConstruct
     public void postConstruct() {
-        Assert.assertTrue(LifecycleInterceptorWithProceed.postConstruct);
-        Assert.assertFalse(LifecycleInterceptorWithProceed.postConstructFinished);
+        if (!LifecycleInterceptorWithProceed.postConstruct) {
+            throw new AssertionError("Postconstruct call not interceptored as started");
+        }
+        if (LifecycleInterceptorWithProceed.postConstructFinished) {
+            throw new AssertionError("Postconstruct call intercepted as done before completed");
+        }
         postConstructCalled = true;
     }
 
