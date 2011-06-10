@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ejb.packaging.multimodule;
+package org.jboss.as.test.spec.ejb3.packaging.multimodule;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
