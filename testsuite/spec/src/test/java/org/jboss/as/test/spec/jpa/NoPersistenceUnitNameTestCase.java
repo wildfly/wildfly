@@ -23,8 +23,6 @@
 package org.jboss.as.test.spec.jpa;
 
 import javax.ejb.EJB;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -32,8 +30,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,7 +39,6 @@ import org.junit.runner.RunWith;
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class NoPersistenceUnitNameTestCase {
 
     private static final String ARCHIVE_NAME = "NoPersistenceUnitNameTestCase";
@@ -60,12 +55,6 @@ public class NoPersistenceUnitNameTestCase {
             "  </persistence-unit>" +
             "</persistence>";
 
-    private static InitialContext iniCtx;
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        iniCtx = new InitialContext();
-    }
 
     @Deployment
     public static Archive<?> deploy() {
@@ -77,11 +66,10 @@ public class NoPersistenceUnitNameTestCase {
         );
 
         jar.add(new StringAsset(persistence_xml), "META-INF/persistence.xml");
-        jar.add(new StringAsset(""), "META-INF/MANIFEST.MF");
         return jar;
     }
 
-    @EJB(mappedName = "java:global/test/SFSBNoPuName!org.jboss.as.test.spec.jpa.SFSBNoPuName")
+    @EJB(mappedName = "java:global/" +ARCHIVE_NAME+ "/SFSBNoPuName!org.jboss.as.test.spec.jpa.SFSBNoPuName")
     private SFSBNoPuName sfsb;
 
     /**
