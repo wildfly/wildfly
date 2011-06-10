@@ -185,7 +185,9 @@
                 <module>benchmark</module>
                 <module>spec</module>
                 <module>integration</module>
+                <!--
                 <module>domain</module>
+                -->
             </modules>
         </profile>
 
