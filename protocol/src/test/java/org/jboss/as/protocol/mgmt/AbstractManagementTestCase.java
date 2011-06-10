@@ -21,6 +21,8 @@
 */
 package org.jboss.as.protocol.mgmt;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -60,7 +62,7 @@ public abstract class AbstractManagementTestCase {
         ManagementChannel channel = channels.getServerChannel();
         channels.getClientChannel().startReceiving();
         channel.setOperationHandler(new SimpleHandlers.OperationHandler());
-        SimpleHandlers.Request request = new SimpleHandlers.Request(600);
+        SimpleHandlers.Request request = new SimpleHandlers.Request(SimpleHandlers.SIMPLE_REQUEST, 600);
         Assert.assertEquals(Integer.valueOf(1200), request.executeForResult(channels.getExecutorService(), ManagementClientChannelStrategy.create(channels.getClientChannel())));
     }
 
@@ -69,10 +71,10 @@ public abstract class AbstractManagementTestCase {
         ManagementChannel channel = channels.getServerChannel();
         channels.getClientChannel().startReceiving();
         channel.setOperationHandler(new SimpleHandlers.OperationHandler());
-        SimpleHandlers.Request request = new SimpleHandlers.Request(600);
+        SimpleHandlers.Request request = new SimpleHandlers.Request(SimpleHandlers.SIMPLE_REQUEST, 600);
         Assert.assertEquals(Integer.valueOf(1200), request.executeForResult(channels.getExecutorService(), ManagementClientChannelStrategy.create(channels.getClientChannel())));
 
-        request = new SimpleHandlers.Request(700);
+        request = new SimpleHandlers.Request(SimpleHandlers.SIMPLE_REQUEST, 700);
         Assert.assertEquals(Integer.valueOf(1400), request.executeForResult(channels.getExecutorService(), ManagementClientChannelStrategy.create(channels.getClientChannel())));
     }
 
@@ -81,11 +83,10 @@ public abstract class AbstractManagementTestCase {
         ManagementChannel channel = channels.getServerChannel();
         channels.getClientChannel().startReceiving();
         channel.setOperationHandler(new ConcurrentRequestOperationHandler(3));
-        System.out.println("-----");
 
-        SimpleHandlers.Request request1 = new SimpleHandlers.Request(600);
-        SimpleHandlers.Request request2 = new SimpleHandlers.Request(650);
-        SimpleHandlers.Request request3 = new SimpleHandlers.Request(700);
+        SimpleHandlers.Request request1 = new SimpleHandlers.Request(SimpleHandlers.SIMPLE_REQUEST, 600);
+        SimpleHandlers.Request request2 = new SimpleHandlers.Request(SimpleHandlers.SIMPLE_REQUEST, 650);
+        SimpleHandlers.Request request3 = new SimpleHandlers.Request(SimpleHandlers.SIMPLE_REQUEST, 700);
 
         ManagementClientChannelStrategy strategy =  ManagementClientChannelStrategy.create(channels.getClientChannel());
 
@@ -96,6 +97,64 @@ public abstract class AbstractManagementTestCase {
         Assert.assertEquals(Integer.valueOf(1400), future3.get());
         Assert.assertEquals(Integer.valueOf(1300), future2.get());
         Assert.assertEquals(Integer.valueOf(1200), future1.get());
+    }
+
+    @Test
+    public void testMissingOperationHandler() throws Exception {
+        ManagementChannel channel = channels.getServerChannel();
+        channels.getClientChannel().startReceiving();
+        //Don't set the operation handler here
+        SimpleHandlers.Request request = new SimpleHandlers.Request(SimpleHandlers.SIMPLE_REQUEST, 600);
+        try {
+            request.executeForResult(channels.getExecutorService(), ManagementClientChannelStrategy.create(channels.getClientChannel()));
+            Assert.fail("Should have failed");
+        } catch (ExecutionException expected) {
+            Assert.assertTrue(expected.getCause() instanceof IOException);
+        }
+    }
+
+
+    @Test
+    public void testMissingRequestHandler() throws Exception {
+        //Assert.fail("NYI - hangs");
+        ManagementChannel channel = channels.getServerChannel();
+        channels.getClientChannel().startReceiving();
+        channel.setOperationHandler(new SimpleHandlers.OperationHandler());
+        SimpleHandlers.Request request = new SimpleHandlers.Request(SimpleHandlers.REQUEST_WITH_NO_HANDLER, 600);
+        try {
+            request.executeForResult(channels.getExecutorService(), ManagementClientChannelStrategy.create(channels.getClientChannel()));
+            Assert.fail("Should have failed");
+        } catch (ExecutionException expected) {
+            Assert.assertTrue(expected.getCause() instanceof IOException);
+        }
+    }
+
+    @Test
+    public void testExceptionInRequestHandlerRead() throws Exception {
+        ManagementChannel channel = channels.getServerChannel();
+        channels.getClientChannel().startReceiving();
+        channel.setOperationHandler(new SimpleHandlers.OperationHandler());
+        SimpleHandlers.Request request = new SimpleHandlers.Request(SimpleHandlers.REQUEST_WITH_BAD_READ, 600);
+        try {
+            request.executeForResult(channels.getExecutorService(), ManagementClientChannelStrategy.create(channels.getClientChannel()));
+            Assert.fail("Should have failed");
+        } catch (ExecutionException expected) {
+            Assert.assertTrue(expected.getCause() instanceof IOException);
+        }
+    }
+
+    @Test
+    public void testExceptionInRequestHandlerWrite() throws Exception {
+        ManagementChannel channel = channels.getServerChannel();
+        channels.getClientChannel().startReceiving();
+        channel.setOperationHandler(new SimpleHandlers.OperationHandler());
+        SimpleHandlers.Request request = new SimpleHandlers.Request(SimpleHandlers.REQUEST_WITH_BAD_WRITE, 600);
+        try {
+            request.executeForResult(channels.getExecutorService(), ManagementClientChannelStrategy.create(channels.getClientChannel()));
+            Assert.fail("Should have failed");
+        } catch (ExecutionException expected) {
+            Assert.assertTrue(expected.getCause() instanceof IOException);
+        }
     }
 
     protected abstract RemotingChannelPairSetup createSetup();
