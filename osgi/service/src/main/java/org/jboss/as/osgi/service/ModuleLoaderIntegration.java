@@ -21,6 +21,12 @@
  */
 package org.jboss.as.osgi.service;
 
+import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
+import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
+import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
+
+import java.util.List;
+
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.logging.Logger;
@@ -30,7 +36,6 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
-import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -49,12 +54,6 @@ import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.resolver.XModule;
 import org.jboss.osgi.resolver.XModuleIdentity;
 import org.jboss.osgi.spi.NotImplementedException;
-
-import java.util.List;
-
-import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
 
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
@@ -117,18 +116,12 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     public void addModule(final ModuleSpec moduleSpec) {
         ModuleIdentifier identifier = moduleSpec.getModuleIdentifier();
         log.debugf("Add module spec to loader: %s", identifier);
-        ServiceName serviceName = ServiceModuleLoader.moduleSpecServiceName(identifier);
 
-        //we also need to install the corresponding module information service
-        serviceTarget.addService(ServiceModuleLoader.moduleInformationServiceName(identifier), new ValueService<ModuleSpecification>(new ImmediateValue<ModuleSpecification>(new ModuleSpecification())))
-                .install();
+        ServiceName moduleSpecName = ServiceModuleLoader.moduleSpecServiceName(identifier);
+        serviceTarget.addService(moduleSpecName, new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(moduleSpec))).install();
 
-        ServiceBuilder<ModuleSpec> builder = serviceTarget.addService(serviceName, new AbstractService<ModuleSpec>() {
-            public ModuleSpec getValue() throws IllegalStateException {
-                return moduleSpec;
-            }
-        });
-        builder.install();
+        ServiceName moduleInfoName = ServiceModuleLoader.moduleInformationServiceName(identifier);
+        serviceTarget.addService(moduleInfoName, new ValueService<ModuleSpecification>(new ImmediateValue<ModuleSpecification>(new ModuleSpecification()))).install();
     }
 
     /**
@@ -142,19 +135,10 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
      */
     @Override
     public void addModule(final Module module) {
-        ServiceName serviceName = getModuleServiceName(module.getIdentifier());
-        if (serviceContainer.getService(serviceName) == null) {
+        ServiceName moduleServiceName = getModuleServiceName(module.getIdentifier());
+        if (serviceContainer.getService(moduleServiceName) == null) {
             log.debugf("Add module to loader: %s", module.getIdentifier());
-
-
-            ServiceBuilder<Module> builder = serviceTarget.addService(serviceName, new AbstractService<Module>() {
-                public Module getValue() throws IllegalStateException {
-                    return module;
-                }
-            });
-            builder.install();
-
-
+            serviceTarget.addService(moduleServiceName, new ValueService<Module>(new ImmediateValue<Module>(module))).install();
         }
     }
 

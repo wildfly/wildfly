@@ -75,8 +75,8 @@ public class HttpExampleActivator implements BundleActivator {
         try {
             Properties initParams = new Properties();
             initParams.setProperty("initProp", "SomeValue");
-            httpService.registerServlet("/servlet", new EndpointServlet(context), initParams, null);
-            httpService.registerResources("/file", "/res", null);
+            httpService.registerServlet("/example-http/servlet", new EndpointServlet(context), initParams, null);
+            httpService.registerResources("/example-http/file", "/res", null);
         } catch (Exception ex) {
             throw new RuntimeException("Cannot register context", ex);
         } finally {
@@ -89,8 +89,8 @@ public class HttpExampleActivator implements BundleActivator {
         log.log(LogService.LOG_INFO, "unregisterService: " + context.getBundle());
         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
         try {
-            httpService.unregister("/servlet");
-            httpService.unregister("/file");
+            httpService.unregister("/example-http/servlet");
+            httpService.unregister("/example-http/file");
         } finally {
             // [AS7-903] 3rd party code may leak TCCL
             Thread.currentThread().setContextClassLoader(ctxLoader);

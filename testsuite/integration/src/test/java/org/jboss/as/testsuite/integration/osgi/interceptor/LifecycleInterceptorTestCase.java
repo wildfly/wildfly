@@ -21,7 +21,6 @@
  */
 package org.jboss.as.testsuite.integration.osgi.interceptor;
 
-import static org.jboss.osgi.http.HttpServiceCapability.DEFAULT_HTTP_SERVICE_PORT;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -106,7 +105,7 @@ public class LifecycleInterceptorTestCase extends OSGiTestSupport {
         try {
             deployer.deploy(ENDPOINT_NAME);
             try {
-                String line = getHttpResponse("/servlet", 5000);
+                String line = getHttpResponse("/example-interceptor/servlet", 5000);
                 assertEquals("Hello from Servlet", line);
             } finally {
                 deployer.undeploy(ENDPOINT_NAME);
@@ -154,6 +153,6 @@ public class LifecycleInterceptorTestCase extends OSGiTestSupport {
     }
 
     private String getHttpResponse(String reqPath, int timeout) throws IOException {
-        return HttpServiceCapability.getHttpResponse("localhost", DEFAULT_HTTP_SERVICE_PORT, reqPath, timeout);
+        return HttpServiceCapability.getHttpResponse("localhost", 8090, reqPath, timeout);
     }
 }
