@@ -19,26 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.interceptor.method;
+package org.jboss.as.test.spec.ejb3.interceptor.method;
 
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import javax.annotation.PostConstruct;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
 
 /**
  * @author Stuart Douglas
  */
-@Stateless
-@Interceptors(SecretInterceptor.class)
-public class ClassifiedBean {
+public class SecretInterceptor {
 
-    public String secretMethod() {
-        return "Secret";
+    public static boolean called = false;
+    public static boolean postConstructCalled = false;
+
+    @PostConstruct
+    public void postConstruct(final InvocationContext invocationContext) throws Exception {
+        postConstructCalled = true;
+        invocationContext.proceed();
     }
 
-
-    @Interceptors(TopSecretInterceptor.class)
-    public String topSecretMethod() {
-        return "TopSecret";
+    @AroundInvoke
+    public Object aroundInvoke(final InvocationContext invocationContext) throws Exception {
+        called = true;
+        return invocationContext.proceed();
     }
-
 }
