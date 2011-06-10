@@ -19,17 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.injection.resource.ejblocalref;
+package org.jboss.as.test.spec.injection.resource.ejblocalref;
 
-import javax.ejb.Stateless;
+import javax.ejb.Local;
 
 /**
  * @author Stuart Douglas
  */
-@Stateless
-public class SimpleSLSB implements Hello {
-    @Override
-    public String sayHello() {
-        return "Simple Hello";
-    }
+@Local
+public interface Hello {
+
+    String sayHello();
 }

@@ -19,19 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.injection.resource.ejblocalref;
+package org.jboss.as.test.spec.injection.resource.ejblocalref;
 
-import javax.ejb.Stateless;
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Stuart Douglas
  */
-@Stateless(name = "namedBean")
-public class NamedSLSB implements Hello{
+@WebServlet(name="ejbLocalRef",urlPatterns = {"/ejbLocalRef"})
+public class EjbLocalRefInjectionServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
+    private Hello named;
+
+    private Hello simpleHelloBean;
+
+    public void setSimple(Hello hello) {
+        simpleHelloBean = hello;
+    }
 
     @Override
-    public String sayHello() {
-        return "Named Hello";
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if(req.getParameter("type").equals("named")) {
+            resp.getWriter().append(named.sayHello()).flush();
+        } else {
+            resp.getWriter().append(simpleHelloBean.sayHello());
+        }
+        resp.getWriter().close();
     }
+
 }

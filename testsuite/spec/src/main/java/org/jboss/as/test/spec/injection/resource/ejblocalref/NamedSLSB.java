@@ -19,15 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.injection.resource.ejblocalref;
+package org.jboss.as.test.spec.injection.resource.ejblocalref;
 
-import javax.ejb.Local;
+import javax.ejb.Stateless;
 
 /**
  * @author Stuart Douglas
  */
-@Local
-public interface Hello {
+@Stateless(name = "namedBean")
+public class NamedSLSB implements Hello{
 
-    String sayHello();
+
+    @Override
+    public String sayHello() {
+        return "Named Hello";
+    }
 }
