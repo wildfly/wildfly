@@ -824,6 +824,9 @@
             <maven-resource group="org.jboss.ws" artifact="jbossws-common-tools"/>
         </module-def>
 
+        <module-def name="org.jboss.ws.saaj-impl">
+        </module-def>
+
         <module-def name="org.jboss.ws.tools.wsprovide">
         </module-def>
 

@@ -26,6 +26,7 @@
     <dependencies>
         <module name="javax.activation.api" export="true"/>
         <module name="javax.api"/>
+        <module name="org.jboss.modules"/>
     </dependencies>
 
     <resources>
