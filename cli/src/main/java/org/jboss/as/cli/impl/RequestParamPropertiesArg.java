@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class RequestParamPropertiesArg extends RequestParamArg {
+public class RequestParamPropertiesArg extends RequestParamArgWithValue {
 
 
     public RequestParamPropertiesArg(String paramName,

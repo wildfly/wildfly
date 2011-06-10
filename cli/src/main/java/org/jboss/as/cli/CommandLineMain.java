@@ -43,12 +43,10 @@ import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.batch.impl.DefaultBatchManager;
 import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
 import org.jboss.as.cli.handlers.ConnectHandler;
-import org.jboss.as.cli.handlers.DataSourceAddHandler;
 import org.jboss.as.cli.handlers.JmsCFAddHandler;
 import org.jboss.as.cli.handlers.JmsQueueAddHandler;
 import org.jboss.as.cli.handlers.CreateJmsResourceHandler;
 import org.jboss.as.cli.handlers.JmsTopicAddHandler;
-import org.jboss.as.cli.handlers.DataSourceRemoveHandler;
 import org.jboss.as.cli.handlers.JmsCFRemoveHandler;
 import org.jboss.as.cli.handlers.JmsQueueRemoveHandler;
 import org.jboss.as.cli.handlers.DeleteJmsResourceHandler;
@@ -72,6 +70,10 @@ import org.jboss.as.cli.handlers.batch.BatchListHandler;
 import org.jboss.as.cli.handlers.batch.BatchMoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRemoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRunHandler;
+import org.jboss.as.cli.handlers.jca.DataSourceAddHandler;
+import org.jboss.as.cli.handlers.jca.DataSourceRemoveHandler;
+import org.jboss.as.cli.handlers.jca.XADataSourceAddHandler;
+import org.jboss.as.cli.handlers.jca.XADataSourceRemoveHandler;
 import org.jboss.as.cli.impl.DefaultParsedArguments;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
@@ -128,6 +130,8 @@ public class CommandLineMain {
 
         cmdRegistry.registerHandler(new DataSourceAddHandler(), "add-data-source");
         cmdRegistry.registerHandler(new DataSourceRemoveHandler(), "remove-data-source");
+        cmdRegistry.registerHandler(new XADataSourceAddHandler(), "add-xa-data-source");
+        cmdRegistry.registerHandler(new XADataSourceRemoveHandler(), "remove-xa-data-source");
     }
 
     public static void main(String[] args) throws Exception {

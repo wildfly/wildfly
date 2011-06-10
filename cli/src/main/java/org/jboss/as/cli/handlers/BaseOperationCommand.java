@@ -31,7 +31,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
-import org.jboss.as.cli.impl.RequestParamArg;
+import org.jboss.as.cli.impl.RequestParameterArgument;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelNode;
  */
 public abstract class BaseOperationCommand extends CommandHandlerWithHelp implements OperationCommand {
 
-    private List<RequestParamArg> params = new ArrayList<RequestParamArg>();
+    private List<RequestParameterArgument> params = new ArrayList<RequestParameterArgument>();
 
     public BaseOperationCommand(String command) {
         super(command);
@@ -88,13 +88,13 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
     @Override
     public void addArgument(CommandArgument arg) {
         super.addArgument(arg);
-        if(arg instanceof RequestParamArg) {
-            params.add((RequestParamArg) arg);
+        if(arg instanceof RequestParameterArgument) {
+            params.add((RequestParameterArgument) arg);
         }
     }
 
     protected void setParams(ParsedArguments args, ModelNode request) throws CommandFormatException {
-        for(RequestParamArg arg : params) {
+        for(RequestParameterArgument arg : params) {
             arg.set(args, request);
         }
     }

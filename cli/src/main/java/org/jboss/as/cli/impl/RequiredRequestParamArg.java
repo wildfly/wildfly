@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class RequiredRequestParamArg extends RequestParamArg {
+public class RequiredRequestParamArg extends RequestParamArgWithValue {
 
     public RequiredRequestParamArg(String paramName, CommandHandlerWithArguments handler, CommandLineCompleter valueCompleter) {
         super(paramName, handler, valueCompleter);
