@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ejb.stateful.timeout;
+package org.jboss.as.test.spec.ejb3.stateful.timeout;
 
 import javax.annotation.PreDestroy;
 import javax.ejb.Stateful;
@@ -33,13 +33,13 @@ import java.util.concurrent.TimeUnit;
  */
 @Stateful
 @StatefulTimeout(value = 100, unit = TimeUnit.MILLISECONDS)
-public class AnnotatedBean2 {
+public class AnnotatedBean {
 
     public static volatile boolean preDestroy = false;
 
     @PreDestroy
     public void preDestroy() {
-        this.preDestroy = true;
+        preDestroy = true;
     }
 
     public void doStuff() {
