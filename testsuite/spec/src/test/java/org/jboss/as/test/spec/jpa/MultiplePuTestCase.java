@@ -25,8 +25,6 @@ package org.jboss.as.test.spec.jpa;
 import java.util.Map;
 
 import javax.ejb.EJB;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import junit.framework.Assert;
 
@@ -36,8 +34,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,7 +43,6 @@ import org.junit.runner.RunWith;
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class MultiplePuTestCase {
 
     private static final String ARCHIVE_NAME = "MultiplePuTestCase";
@@ -75,38 +70,25 @@ public class MultiplePuTestCase {
             "  </persistence-unit>" +
             "</persistence>";
 
-    private static InitialContext iniCtx;
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        iniCtx = new InitialContext();
-    }
-
     @Deployment
     public static Archive<?> deploy() {
-
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(MultiplePuTestCase.class,
-            SLSBPU1.class,
-            SLSBPU2.class
-        );
-
+        jar.addClasses(MultiplePuTestCase.class, SLSBPU1.class, SLSBPU2.class);
         jar.add(new StringAsset(persistence_xml), "META-INF/persistence.xml");
-        jar.add(new StringAsset(""), "META-INF/MANIFEST.MF");
         return jar;
     }
 
-    @EJB(mappedName = "java:global/test/SLSBPU1!org.jboss.as.test.spec.jpa.SLSBPU1")
+    @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SLSBPU1!org.jboss.as.test.spec.jpa.SLSBPU1")
     private SLSBPU1 slsbpu1;
 
-    @EJB(mappedName = "java:global/test/SLSBPU2!org.jboss.as.test.spec.jpa.SLSBPU2")
+    @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SLSBPU2!org.jboss.as.test.spec.jpa.SLSBPU2")
     private SLSBPU2 slsbpu2;
 
 
     @Test
     public void testBothPersistenceUnitDefinitions() throws Exception {
-        Map sl1Props = slsbpu1.getEMInfo();
-        Map sl2Props = slsbpu2.getEMInfo();
+        Map<String, Object> sl1Props = slsbpu1.getEMInfo();
+        Map<String, Object> sl2Props = slsbpu2.getEMInfo();
 
         Assert.assertEquals("wrong pu " ,sl1Props.get("PersistenceUnitName"),"pu1");
         Assert.assertEquals("wrong pu ", sl2Props.get("PersistenceUnitName"),"pu2");
