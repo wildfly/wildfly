@@ -29,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.MessageSeverity;
@@ -55,7 +54,6 @@ public class ProxyStepHandler implements NewStepHandler {
 
         OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
 
-        final CountDownLatch completedLatch = new CountDownLatch(1);
         final AtomicReference<NewModelController.OperationTransaction> txRef = new AtomicReference<NewModelController.OperationTransaction>();
         final AtomicReference<ModelNode> preparedResultRef = new AtomicReference<ModelNode>();
         final AtomicReference<ModelNode> finalResultRef = new AtomicReference<ModelNode>();
@@ -75,7 +73,6 @@ public class ProxyStepHandler implements NewStepHandler {
             @Override
             public void operationCompleted(ModelNode response) {
                 finalResultRef.set(response);
-                completedLatch.countDown();
             }
         };
 
