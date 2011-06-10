@@ -23,6 +23,11 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -32,8 +37,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
@@ -54,11 +57,19 @@ public abstract class AbstractDataSourceRemove implements ModelRemoveOperationHa
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
             throws OperationFailedException {
         final ModelNode opAddr = operation.require(OP_ADDR);
-        final String jndiName = PathAddress.pathAddress(opAddr).getLastElement().getValue();
+        final String serviceName = PathAddress.pathAddress(opAddr).getLastElement().getValue();
 
         // Compensating is add
         final ModelNode model = context.getSubModel();
         final ModelNode compensating = Util.getEmptyOperation(ADD, opAddr);
+
+        final String rawJndiName = model.require(JNDINAME).asString();
+        final String jndiName;
+        if (!rawJndiName.startsWith("java:/") && model.hasDefined(USE_JAVA_CONTEXT) && model.get(USE_JAVA_CONTEXT).asBoolean()) {
+            jndiName = "java:/" + rawJndiName;
+        } else {
+            jndiName = rawJndiName;
+        }
 
         if (model.has(CONNECTION_PROPERTIES)) {
             for (ModelNode property : model.get(CONNECTION_PROPERTIES).asList()) {
@@ -84,27 +95,28 @@ public abstract class AbstractDataSourceRemove implements ModelRemoveOperationHa
                     }
 
                     final ServiceName referenceFactoryServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE
-                            .append(jndiName);
+                            .append(serviceName);
                     final ServiceController<?> referenceFactoryController = registry.getService(referenceFactoryServiceName);
                     if (referenceFactoryController != null) {
                         referenceFactoryController.setMode(ServiceController.Mode.REMOVE);
                     }
 
-                    final ServiceName dataSourceConfigServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
+                    final ServiceName dataSourceConfigServiceName = DataSourceConfigService.SERVICE_NAME_BASE
+                            .append(serviceName);
                     final ServiceController<?> dataSourceConfigController = registry.getService(dataSourceConfigServiceName);
                     if (dataSourceConfigController != null) {
                         dataSourceConfigController.setMode(ServiceController.Mode.REMOVE);
                     }
 
                     final ServiceName xaDataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE
-                            .append(jndiName);
+                            .append(serviceName);
                     final ServiceController<?> xaDataSourceConfigController = registry
                             .getService(xaDataSourceConfigServiceName);
                     if (xaDataSourceConfigController != null) {
                         xaDataSourceConfigController.setMode(ServiceController.Mode.REMOVE);
                     }
 
-                    final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+                    final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(serviceName);
                     final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
                     if (dataSourceController != null) {
                         dataSourceController.setMode(ServiceController.Mode.REMOVE);
