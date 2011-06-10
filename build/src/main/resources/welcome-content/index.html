@@ -50,7 +50,7 @@
 <!--hide
       function adminconsole() {
           if(window.location.hostname)
-             window.location = window.location.hostname + ':9990/console';
+             window.location = "http://" + window.location.hostname + ':9990/console';
           else
              window.location = "http://localhost:9990/console";
      }
