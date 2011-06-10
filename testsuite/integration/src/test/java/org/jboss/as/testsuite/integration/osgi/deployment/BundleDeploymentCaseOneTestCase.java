@@ -20,8 +20,10 @@ import java.io.InputStream;
 
 import javax.inject.Inject;
 
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.testsuite.integration.osgi.xservice.bundle.SimpleActivator;
 import org.jboss.as.testsuite.integration.osgi.xservice.bundle.SimpleService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
@@ -29,7 +31,6 @@ import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -44,11 +45,12 @@ import org.osgi.framework.BundleContext;
  * @since 12-Apr-2011
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class BundleDeploymentCaseOneTestCase {
 
-    //@Inject
-    //public DeploymentProvider provider;
+    static final String BUNDLE_DEPLOYMENT_NAME = "test-bundle-one";
+
+    @ArquillianResource
+    public Deployer deployer;
 
     @Inject
     public BundleContext context;
@@ -70,7 +72,7 @@ public class BundleDeploymentCaseOneTestCase {
     @Test
     public void testBundleDeployment() throws Exception {
 
-        InputStream input = null; //provider.getClientDeploymentAsStream("test-bundle-one");
+        InputStream input = deployer.getDeployment(BUNDLE_DEPLOYMENT_NAME);
         Bundle bundle = context.installBundle("test-bundle", input);
         try {
             // Assert that the bundle is in state INSTALLED
@@ -89,9 +91,9 @@ public class BundleDeploymentCaseOneTestCase {
         }
     }
 
-    //@ArchiveProvider
-    public static JavaArchive getTestArchive(String name) {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
+    @Deployment(name = BUNDLE_DEPLOYMENT_NAME, managed = false, testable = false)
+    public static JavaArchive getTestArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_DEPLOYMENT_NAME);
         archive.addClasses(SimpleActivator.class, SimpleService.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {

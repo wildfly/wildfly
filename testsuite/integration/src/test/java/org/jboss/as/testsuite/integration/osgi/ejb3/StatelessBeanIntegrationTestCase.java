@@ -31,18 +31,17 @@ import java.io.InputStream;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.container.ArchiveDeployer;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.testsuite.integration.osgi.xservice.api.Echo;
 import org.jboss.as.testsuite.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.logging.Logger;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -57,14 +56,15 @@ import org.osgi.framework.ServiceReference;
  * @since 13-May-2011
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class StatelessBeanIntegrationTestCase {
+
+    static final String EJB3_DEPLOYMENT_NAME = "ejb3-osgi.jar";
 
     @Inject
     public Bundle bundle;
 
-    @Inject
-    public ArchiveDeployer deployer;
+    @ArquillianResource
+    public Deployer deployer;
 
     @Deployment
     public static JavaArchive createDeployment() {
@@ -76,8 +76,6 @@ public class StatelessBeanIntegrationTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(TargetBundleActivator.class);
-                // [TODO] remove these explicit imports
-                builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
                 builder.addImportPackages(BundleActivator.class, Logger.class);
                 return builder.openStream();
             }
@@ -96,8 +94,7 @@ public class StatelessBeanIntegrationTestCase {
 
     @Test
     public void testStatelessBean() throws Exception {
-        Archive<?> ejbArchive = null; //provider.getClientDeployment("ejb3-osgi.jar");
-        String ejbName = deployer.deploy(ejbArchive);
+        deployer.deploy(EJB3_DEPLOYMENT_NAME);
         try {
             String jndiname = "java:global/ejb3-osgi/SimpleStatelessSessionBean!org.jboss.as.testsuite.integration.osgi.ejb3.SimpleStatelessSessionBean";
             Echo service = (Echo) new InitialContext().lookup(jndiname);
@@ -105,13 +102,13 @@ public class StatelessBeanIntegrationTestCase {
             assertEquals("ejb3-osgi-target", service.echo(BUNDLE_SYMBOLICNAME));
             assertEquals("foo", service.echo("foo"));
         } finally {
-            deployer.undeploy(ejbName);
+            deployer.undeploy(EJB3_DEPLOYMENT_NAME);
         }
     }
 
-    //@ArchiveProvider
-    public static JavaArchive getTestArchive(String name) {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
+    @Deployment(name = EJB3_DEPLOYMENT_NAME, managed = false, testable = false)
+    public static JavaArchive getTestArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, EJB3_DEPLOYMENT_NAME);
         archive.addClass(SimpleStatelessSessionBean.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {

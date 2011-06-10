@@ -933,7 +933,7 @@
         </bundle-def>
 
         <bundle-def name="org.jboss.osgi.webapp">
-            <maven-bundle group="org.jboss.osgi.webapp" artifact="jboss-osgi-webapp"/>
+            <maven-bundle group="org.jboss.osgi.webapp" artifact="jbosgi-webapp"/>
         </bundle-def>
 
         <bundle-def name="org.jboss.osgi.webconsole">
