@@ -66,6 +66,11 @@ public class EJB3SecurityTestCase {
     @EJB(mappedName = "java:global/ejb3security/WhoAmIBean")
     private WhoAmIBean whoAmIBean;
 
+    // 17.2.5 - Programatic Access to Caller's Security Context
+    // Include tests for methods not implemented to pick up if later they are implemented.
+    // 17.2.5.1 - Use of getCallerPrincipal
+    // 17.6.5 - Security Methods on EJBContext
+
     @Test
     public void testAuthenticatedCall() throws Exception {
         // TODO: this is not spec
@@ -104,4 +109,27 @@ public class EJB3SecurityTestCase {
         final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI", "anil", "anil", 10, SECONDS);
         assertEquals("anil", result);
     }
+
+    // 17.2.5.2 - Use of isCallerInRole
+    // 17.2.5.3 - Declaration of Security Roles Referenced from the Bean's Code
+    // 17.3.1 - Security Roles
+    // 17.3.2.1 - Specification of Method Permissions with Metadata Annotation
+    // 17.3.2.2 - Specification of Method Permissions in the Deployment Descriptor
+    // 17.3.2.3 - Unspecified Method Permission
+    // 17.3.3 - Linking Security Role References to Security Roles
+    // 17.3.4 - Specification on Security Identities in the Deployment Descriptor
+    //            (Include permutations for overrides esp where deployment descriptor removes access)
+    // 17.3.4.1 - Run-as
+    // 17.5 EJB Client Responsibilities
+    //      A transactional client can not change principal association within transaction.
+    //      A session bean client must not change the principal association for the duration of the communication.
+    //      If transactional requests within a single transaction arrive from multiple clients all must be associated
+    //        with the same security context.
+
+    // 17.6.3 - Security Mechanisms
+    // 17.6.4 - Passing Principals on EJB Calls
+    // 17.6.6 - Secure Access to Resource Managers
+    // 17.6.7 - Principal Mapping
+    // 17.6.9 - Runtime Security Enforcement
+    // 17.6.10 - Audit Trail
 }
