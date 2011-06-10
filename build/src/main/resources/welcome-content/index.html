@@ -19,9 +19,63 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 <html>
-    <title>Welcome on JBoss Application Server 7</title>
-    <body background="collage_1920x1200.jpg" text="#FFFFFF">
-    	<center><h1>Welcome to JBoss Application Server 7.</h1></center>
-    </body>
+<head>
+ <title>Welcome to JBoss Application Server 7</title>
+  <style type="text/css">
+<!--
+     body {
+         font-family : Verdana, Arial, Helvetica, sans-serif;
+       }
+
+     a {
+        text-decoration: none;
+        color: #5e8a9a;
+      }
+
+     a:hover {
+        text-decoration: underline;
+        color: #8ec6d9;
+      }
+
+     .center {
+        text-align: center
+     }
+
+    -->
+  </style>
+  <script language="JavaScript" type="text/javascript">
+<!--hide
+      function adminconsole() {
+          if(window.location.hostname)
+             window.location = window.location.hostname + ':9990/console';
+          else
+             window.location = "http://localhost:9990/console";
+     }
+   //-->
+  </script>
+</head>
+
+<body>
+  <div class="center">
+    <h1>Welcome to AS 7</h1>
+
+    <p>Your JBoss Application Server 7 is running.</p>
+
+    <p><a href="http://localhost:9990/console" onclick=
+    "javascript:adminconsole();return false;">Administration
+    Console</a></p>
+
+    <p>[<a href="http://www.jboss.org/jbossas">AS 7 Home</a>]
+    [<a href=
+    "http://community.jboss.org/en/jbossas/as7_users?view=all">User
+    Forum</a>] [<a href="https://issues.jboss.org/browse/AS7">Issue
+    Tracker</a>]</p>
+
+    <p><a href="http://jboss.org"><img alt="JBoss Community" src=
+    "jbosscommunity_logo_hori_white.png"></a></p>
+  </div>
+</body>
 </html>
