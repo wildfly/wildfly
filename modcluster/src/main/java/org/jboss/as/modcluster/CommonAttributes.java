@@ -54,4 +54,5 @@ interface CommonAttributes {
     String CUSTOM_LOAD_METRIC = "custom-load-metric";
     String WEIGHT = "weight";
     String CLASS = "class";
+    String PROPERTY = "property";
 }

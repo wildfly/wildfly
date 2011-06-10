@@ -32,18 +32,31 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testStandaloneXml() throws Exception {
-        File file = new File("target/standalone-copy.xml");
+        File file = new File("target/copy.xml");
         if (file.exists()) {
             file.delete();
         }
-        copyFile(getOriginalStandaloneXml(), file);
+        copyFile(getOriginalFile("standalonemodcluster.xml"), file);
         ModelNode originalModel = loadServerModel(file);
         ModelNode reparsedModel = loadServerModel(file);
 
         compare(originalModel, reparsedModel);
     }
 
-    private File getOriginalStandaloneXml() {
+    @Test
+    public void testDynamicLoadProvider() throws Exception {
+        File file = new File("target/copy.xml");
+        if (file.exists()) {
+            file.delete();
+        }
+        copyFile(getOriginalFile("dynamic-load-provider.xml"), file);
+        ModelNode originalModel = loadServerModel(file);
+        ModelNode reparsedModel = loadServerModel(file);
+
+        compare(originalModel, reparsedModel);
+    }
+
+    private File getOriginalFile(String name) {
         File f = new File(".").getAbsoluteFile();
         f = new File(f, "src");
         Assert.assertTrue(f.exists());
@@ -51,7 +64,7 @@ public class ParseAndMarshalModelsTestCase {
         Assert.assertTrue(f.exists());
         f = new File(f, "resources");
         Assert.assertTrue(f.exists());
-        f = new File(f, "standalonemodcluster.xml");
+        f = new File(f, name);
         Assert.assertTrue(f.exists());
         return f;
 }

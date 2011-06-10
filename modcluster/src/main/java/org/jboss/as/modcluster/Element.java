@@ -41,6 +41,7 @@ enum Element {
     SIMPLE_LOAD_PROVIDER(CommonAttributes.SIMPLE_LOAD_PROVIDER),
     LOAD_METRIC(CommonAttributes.LOAD_METRIC),
     CUSTOM_LOAD_METRIC(CommonAttributes.CUSTOM_LOAD_METRIC),
+    PROPERTY(CommonAttributes.PROPERTY),
 
     ;
 

@@ -40,7 +40,6 @@
           <xs:element name="dynamic-load-provider" type="dynamic-load-providerType"/>
         </xs:choice>
       </xs:complexType>
-      <xs:element ref="load-provider" minOccurs="0" maxOccurs="1" type="load-providerType"/>
       <xs:element ref="prop-conf" minOccurs="0" maxOccurs="1"  type="prop-confType"/>
     </xs:sequence>
   </xs:complexType>

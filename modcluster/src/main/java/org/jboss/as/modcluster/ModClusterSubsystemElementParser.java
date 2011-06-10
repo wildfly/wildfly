@@ -4,6 +4,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.parsing.ParseUtils.readProperty;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
@@ -43,6 +44,8 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import org.jboss.dmr.Property;
 
 public class ModClusterSubsystemElementParser implements XMLElementReader<List<ModelNode>>,
 XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
@@ -225,7 +228,7 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
                     unexpectedAttribute(reader, i);
             }
         }
-
+        ParseUtils.requireNoContent(reader);
         return load;
     }
 
@@ -295,6 +298,17 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
                     unexpectedAttribute(reader, i);
             }
         }
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTY:
+                    final Property property = readProperty(reader);
+                    load.set(property);
+                    break;
+                default:
+                    unexpectedElement(reader);
+            }
+        }
         return load;
     }
     static ModelNode parseCustomLoadMetric(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -305,9 +319,6 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-                case TYPE:
-                    load.get(TYPE).set(value);
-                    break;
                 case CAPACITY:
                     load.get(CAPACITY).set(value);
                     break;
@@ -316,8 +327,20 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
                     break;
                 case CLASS:
                     load.get(CLASS).set(value);
+                    break;
                 default:
                     unexpectedAttribute(reader, i);
+            }
+        }
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTY:
+                    final Property property = readProperty(reader);
+                    load.set(property);
+                    break;
+                default:
+                    unexpectedElement(reader);
             }
         }
         return load;
