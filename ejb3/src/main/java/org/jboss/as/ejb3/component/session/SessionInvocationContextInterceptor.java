@@ -35,6 +35,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
 import java.lang.reflect.Method;
+import java.security.Principal;
 import java.util.Map;
 
 /**
@@ -77,6 +78,11 @@ public class SessionInvocationContextInterceptor implements Interceptor {
             super(lifecycleCallback, invokedBusinessInterface, method, parameters);
 
             this.context = context;
+        }
+
+        @Override
+        public Principal getCallerPrincipal() {
+            return ((SessionBeanComponent) getComponent()).getCallerPrincipal();
         }
 
         @Override

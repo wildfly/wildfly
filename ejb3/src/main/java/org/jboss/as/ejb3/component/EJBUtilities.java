@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component;
 
+import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -41,9 +42,21 @@ import javax.transaction.UserTransaction;
 public class EJBUtilities implements Service<EJBUtilities> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "utilities");
 
+    private final InjectedValue<SimpleSecurityManager> securityManagerValue = new InjectedValue<SimpleSecurityManager>();
     private final InjectedValue<TransactionManager> transactionManagerValue = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<UserTransaction> userTransactionValue = new InjectedValue<UserTransaction>();
+
+    public SimpleSecurityManager getSecurityManager() {
+        final SimpleSecurityManager securityManager = securityManagerValue.getOptionalValue();
+        if (securityManager == null)
+            throw new UnsupportedOperationException("Security is not enabled");
+        return securityManager;
+    }
+
+    public Injector<SimpleSecurityManager> getSecurityManagerInjector() {
+        return securityManagerValue;
+    }
 
     public TransactionManager getTransactionManager() {
         return transactionManagerValue.getOptionalValue();
@@ -72,6 +85,10 @@ public class EJBUtilities implements Service<EJBUtilities> {
     @Override
     public EJBUtilities getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    public boolean hasSecurityManager() {
+        return securityManagerValue.getOptionalValue() != null;
     }
 
     @Override
