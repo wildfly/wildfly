@@ -22,39 +22,27 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.from;
-import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
+
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
-import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Operation handler responsible for enabling an existing data-source.
  *
  * @author John Bailey
  */
-<<<<<<< HEAD
 public class DataSourceEnable implements NewStepHandler {
     static final DataSourceEnable LOCAL_INSTANCE = new DataSourceEnable(false);
     static final DataSourceEnable XA_INSTANCE = new DataSourceEnable(true);

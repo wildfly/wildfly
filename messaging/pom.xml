@@ -55,10 +55,11 @@
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
-        </dependency>
+
+	    <dependency>
+	        <groupId>org.jboss.as</groupId>
+	        <artifactId>jboss-as-server</artifactId>
+	    </dependency>
 
         <dependency>
             <groupId>org.hornetq</groupId>
@@ -77,13 +78,18 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-naming</artifactId>
+            <artifactId>jboss-as-connector</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-connector</artifactId>
+            <artifactId>jboss-as-naming</artifactId>
         </dependency>
+
+	    <dependency>
+	        <groupId>org.jboss.as</groupId>
+	        <artifactId>jboss-as-network</artifactId>
+	    </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
