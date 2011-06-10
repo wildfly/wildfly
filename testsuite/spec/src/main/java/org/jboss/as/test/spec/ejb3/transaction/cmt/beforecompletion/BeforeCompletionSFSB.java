@@ -19,20 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.transaction.cmt.mandatory;
+package org.jboss.as.test.spec.ejb3.transaction.cmt.beforecompletion;
 
+import javax.ejb.BeforeCompletion;
 import javax.ejb.Stateful;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 /**
+ *
  * @author Stuart Douglas
  */
 @Stateful
-@TransactionAttribute(TransactionAttributeType.MANDATORY)
-public class MandatorySFSB {
+public class BeforeCompletionSFSB {
 
-    public void doStuff() {
+    @BeforeCompletion
+    public void beforeCompletion() {
+        throw new RuntimeException("failed @BeforeCompletion");
+    }
+
+    public void enlist() {
 
     }
 
