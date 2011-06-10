@@ -53,14 +53,14 @@ public abstract class OSGiTestSupport {
      * Changes the framework start level and waits for the STARTLEVEL_CHANGED event
      * Note, changing the framework start level is an asynchronous operation.
      */
-    protected void changeStartLevel(BundleContext context, int level, long timeout, TimeUnit units) throws InterruptedException, TimeoutException {
-        ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
-        StartLevel startLevel = (StartLevel) context.getService(sref);
+    protected void changeStartLevel(final BundleContext context, final int level, final long timeout, final TimeUnit units) throws InterruptedException, TimeoutException {
+        final ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
+        final StartLevel startLevel = (StartLevel) context.getService(sref);
         if (level != startLevel.getStartLevel()) {
             final CountDownLatch latch = new CountDownLatch(1);
             context.addFrameworkListener(new FrameworkListener() {
                 public void frameworkEvent(FrameworkEvent event) {
-                    if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
+                    if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED && level == startLevel.getStartLevel()) {
                         latch.countDown();
                     }
                 }
