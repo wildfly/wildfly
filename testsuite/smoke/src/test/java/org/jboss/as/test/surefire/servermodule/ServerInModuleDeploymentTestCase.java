@@ -75,7 +75,6 @@ import org.junit.runner.RunWith;
  * filesystem scanner.
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 @RunAsClient
 @RunWith(Arquillian.class)
 public class ServerInModuleDeploymentTestCase  {
