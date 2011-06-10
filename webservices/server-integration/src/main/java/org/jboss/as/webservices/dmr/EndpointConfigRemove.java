@@ -62,10 +62,14 @@ public class EndpointConfigRemove implements ModelRemoveOperationHandler {
                     ServiceController<?> configService = context.getServiceRegistry().getService(WSServices.CONFIG_SERVICE);
                     if (configService != null) {
                         ServerConfig config = (ServerConfig) configService.getValue();
-                        for(EndpointConfig epConfig : config.getEndpointConfigs()) {
+                        EndpointConfig target = null;
+                        for (EndpointConfig epConfig : config.getEndpointConfigs()) {
                             if (epConfig.getConfigName().equals(name)) {
-                                config.getEndpointConfigs().remove(epConfig);
+                                target = epConfig;
                             }
+                        }
+                        if (target != null) {
+                            config.getEndpointConfigs().remove(target);
                         }
                     }
                     resultHandler.handleResultComplete();
