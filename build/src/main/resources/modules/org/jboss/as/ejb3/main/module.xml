@@ -38,6 +38,7 @@
         <module name="org.jboss.as.connector"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.security"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.transactions"/>

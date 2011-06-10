@@ -36,6 +36,7 @@ public class InterceptorOrder {
     public static final class Component {
 
         public static final int INITIAL_INTERCEPTOR = 0x100;
+        public static final int SECURITY_CONTEXT = 0x150;
         public static final int TCCL_INTERCEPTOR = 0x200;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x300;
         public static final int BMT_TRANSACTION_INTERCEPTOR = 0x400;

@@ -34,6 +34,7 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -123,6 +124,13 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         getConfigurators().addFirst(new NamespaceConfigurator());
         getConfigurators().add(new EjbJarConfigurationConfigurator());
+
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.addComponentInterceptor(new SecurityContextInterceptorFactory(), InterceptorOrder.Component.SECURITY_CONTEXT, true);
+            }
+        });
 
         // setup a dependency on the EJBUtilities service
         this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);

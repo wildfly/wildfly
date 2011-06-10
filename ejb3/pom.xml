@@ -74,6 +74,10 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>jboss-as-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jboss-as-server</artifactId>
         </dependency>
         <dependency>
