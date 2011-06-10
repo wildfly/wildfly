@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.spec.ejb3.persistence;
 
-import org.jboss.logging.Logger;
-
 import javax.annotation.PreDestroy;
 import javax.ejb.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
+
+import org.jboss.logging.Logger;
 
 /**
  * User: jpai
@@ -45,6 +45,7 @@ public class SingletonBean {
     }
 
     @PreDestroy
+    @SuppressWarnings("unused") // Called by the container
     private void sleepAndDestroy() throws Exception {
         logger.info("Sleeping for 3 seconds while destroying singleton bean " + this);
         // sleep for a while just to reproduce a race condition with EntityManagerFactory being closed before

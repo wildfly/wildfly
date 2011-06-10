@@ -100,6 +100,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                     cmd.add(opt);
                 }
             }
+            cmd.add("-Xmx512m");
+            cmd.add("-Xms64m");
             cmd.add("-Djboss.home.dir=" + jbossHomeDir);
             cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/standalone/log/boot.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/standalone/configuration/logging.properties");

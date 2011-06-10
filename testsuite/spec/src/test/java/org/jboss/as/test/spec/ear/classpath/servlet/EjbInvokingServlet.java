@@ -38,6 +38,8 @@ import java.io.IOException;
 @WebServlet(urlPatterns = EjbInvokingServlet.URL_PATTERN)
 public class EjbInvokingServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
     public static final String URL_PATTERN = "/ejbinvokingservlet";
 
     public static final String CLASS_IN_WAR_PARAMETER = "classInWar";

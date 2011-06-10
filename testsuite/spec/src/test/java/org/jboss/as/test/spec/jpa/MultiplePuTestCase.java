@@ -72,16 +72,18 @@ public class MultiplePuTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(MultiplePuTestCase.class, SLSBPU1.class, SLSBPU2.class);
-        jar.add(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar")
+                .addClasses(SLSBPU1.class, SLSBPU2.class)
+                .addAsManifestResource(new StringAsset(persistence_xml), "persistence.xml");
+        System.out.println(jar.toString(true));
         return jar;
     }
 
-    @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SLSBPU1!org.jboss.as.test.spec.jpa.SLSBPU1")
+    @EJB(mappedName = "java:global/MultiplePuTestCase/SLSBPU1!org.jboss.as.test.spec.jpa.SLSBPU1")
     private SLSBPU1 slsbpu1;
 
-    @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SLSBPU2!org.jboss.as.test.spec.jpa.SLSBPU2")
+    @EJB(mappedName = "java:global/MultiplePuTestCase/SLSBPU2!org.jboss.as.test.spec.jpa.SLSBPU2")
     private SLSBPU2 slsbpu2;
 
 

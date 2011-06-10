@@ -22,6 +22,22 @@
 
 package org.jboss.as.test.spec.ejb3;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.EJB;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.ejb3.archive.CallTrackerSingletonBean;
@@ -33,21 +49,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.EJB;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * Testcase for testing the basic functionality of a EJB3 singleton session bean.
@@ -137,9 +138,6 @@ public class SingletonBeanTestCase {
      */
     @Test
     public void testLongWritesSingleton() throws Exception {
-
-        // let's invoke a bean method (with WRITE lock semantics) which takes a long time to complete
-        final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 
         // let's now try and invoke on this bean while the previous operation is in progress.
         // we expect a ConcurrentAccessTimeoutException

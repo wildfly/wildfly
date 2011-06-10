@@ -39,13 +39,11 @@ import javax.naming.NamingException;
 public class SimpleSLSB extends Parent {
 
     // injected via the setter
+    @SuppressWarnings("unused")
     private Parent otherBean;
 
     @Resource
     private TimerService timerService;
-
-    @Resource
-    private SessionContext sessionContext;
 
     @Resource(name = "simpleString")
     private String simpleStringFromDeploymentDescriptor;

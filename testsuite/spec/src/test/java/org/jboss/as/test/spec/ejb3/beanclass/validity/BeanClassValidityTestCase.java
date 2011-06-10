@@ -22,15 +22,14 @@
 
 package org.jboss.as.test.spec.ejb3.beanclass.validity;
 
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
 
 /**
  * Tests that deployments containing invalid bean classes (like a @Stateless on a *interface*) doesn't cause deployment
@@ -45,7 +44,7 @@ public class BeanClassValidityTestCase {
     private static final String JAR_NAME = "beanclass-validity-test";
 
     @Deployment
-    public static Archive createDeployment() {
+    public static JavaArchive createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_NAME + ".jar");
         jar.addPackage(StatelessOnAInterface.class.getPackage());
 

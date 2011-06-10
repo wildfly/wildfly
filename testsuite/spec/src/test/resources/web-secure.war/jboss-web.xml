@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<jboss-web>
+  <security-domain>web-tests</security-domain>
+  <security-role>
+    <role-name>gooduser</role-name>
+    <principal-name>superuser</principal-name>
+  </security-role>
+</jboss-web>

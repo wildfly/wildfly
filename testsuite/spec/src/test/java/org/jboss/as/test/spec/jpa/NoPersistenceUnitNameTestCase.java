@@ -55,21 +55,16 @@ public class NoPersistenceUnitNameTestCase {
             "  </persistence-unit>" +
             "</persistence>";
 
-
     @Deployment
     public static Archive<?> deploy() {
 
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(NoPersistenceUnitNameTestCase.class,
-            Employee.class,
-            SFSBNoPuName.class
-        );
-
-        jar.add(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar")
+                .addClasses(Employee.class, SFSBNoPuName.class)
+                .addAsManifestResource(new StringAsset(persistence_xml), "persistence.xml");
         return jar;
     }
 
-    @EJB(mappedName = "java:global/" +ARCHIVE_NAME+ "/SFSBNoPuName!org.jboss.as.test.spec.jpa.SFSBNoPuName")
+    @EJB(mappedName = "java:global/NoPersistenceUnitNameTestCase/SFSBNoPuName!org.jboss.as.test.spec.jpa.SFSBNoPuName")
     private SFSBNoPuName sfsb;
 
     /**
@@ -78,7 +73,6 @@ public class NoPersistenceUnitNameTestCase {
      */
     @Test
     public void testUsingDefaultPersitenceUnit() throws Exception {
-        Exception error = null;
         sfsb.createEmployee("Susan Sells", "1 Main Street", 1);
     }
 

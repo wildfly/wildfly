@@ -35,6 +35,8 @@ import java.rmi.RemoteException;
 @Stateful
 public class SFSBImplementingSessionBean implements SessionBean {
 
+    private static final long serialVersionUID = 1L;
+
     private SessionContext sessionContext;
 
     private SessionContext injectedSessionContext;

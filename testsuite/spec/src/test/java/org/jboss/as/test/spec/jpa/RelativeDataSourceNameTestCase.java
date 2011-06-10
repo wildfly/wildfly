@@ -30,8 +30,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -57,26 +55,21 @@ public class RelativeDataSourceNameTestCase {
             "</properties>" +
             "  </persistence-unit>" +
             "</persistence>";
-
+    
     @Deployment
     public static Archive<?> deploy() {
-
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(RelativeDataSourceNameTestCase.class,
-            Employee.class,
-            SFSB1.class
-        );
-
-        jar.add(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar")
+                .addClasses(Employee.class, SFSB1.class)
+                .addAsManifestResource(new StringAsset(persistence_xml), "persistence.xml");
+        System.out.println(jar.toString(true));
         return jar;
     }
 
-    @EJB(mappedName = "java:global/"+ARCHIVE_NAME+"/SFSB1!org.jboss.as.test.spec.jpa.SFSB1")
+    @EJB(mappedName = "java:global/RelativeDataSourceNameTestCase/SFSB1!org.jboss.as.test.spec.jpa.SFSB1")
     private SFSB1 sfsb1;
 
     @Test
     public void testQueryNonTXTransactionalEntityManagerInvocations() throws Exception {
-        Exception error = null;
         sfsb1.createEmployee("Susan Sells", "1 Main Street", 1);
     }
 

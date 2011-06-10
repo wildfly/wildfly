@@ -32,6 +32,7 @@ public class Child extends Parent {
     static boolean postConstructCalled = false;
 
     @PostConstruct
+    @SuppressWarnings("unused")
     private void postConstruct() {
         postConstructCalled = true;
     }

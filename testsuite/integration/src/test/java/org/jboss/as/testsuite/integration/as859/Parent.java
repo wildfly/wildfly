@@ -30,6 +30,7 @@ public class Parent {
     static boolean postConstructCalled = false;
 
     @PostConstruct
+    @SuppressWarnings("unused")
     private void postConstruct() {
         postConstructCalled = true;
     }

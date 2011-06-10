@@ -22,18 +22,21 @@
 
 package org.jboss.as.test.spec.ear.classpath.servlet;
 
+import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * User: jpai
  */
 @WebServlet(name = "OtherServlet", urlPatterns = ServletInOtherWar.URL_PATTERN)
 public class ServletInOtherWar extends HttpServlet {
+
+    private static final long serialVersionUID = 1L;
 
     public static final String URL_PATTERN = "/otherservlet";
 
@@ -50,7 +53,7 @@ public class ServletInOtherWar extends HttpServlet {
             throw new ServletException(CLASS_IN_OTHER_WAR_PARAMETER + " parameter not set in request");
         }
         try {
-            Class<?> klass = this.getClass().getClassLoader().loadClass(classInOtherWar);
+            this.getClass().getClassLoader().loadClass(classInOtherWar);
             // class from one war wasn't expected to be visible to other war
             resp.getOutputStream().print(FAILURE_MESSAGE);
         } catch (ClassNotFoundException cnfe) {

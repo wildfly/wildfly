@@ -38,6 +38,8 @@ import java.io.IOException;
 @WebServlet(name = "HelloWorldServlet", urlPatterns = HelloWorldServlet.URL_PATTERN)
 public class HelloWorldServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
     public static final String URL_PATTERN = "/helloworld";
 
     public static final String PARAMETER_NAME = "message";
