@@ -173,8 +173,10 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
         synchronized (cache) {
             Entry entry = cache.get(obj.getId());
 
-            if (entry == null)
-                throw new NoSuchEJBException("Could not find Stateful bean: " + obj.getId());
+            if (entry == null) {
+                logger.warn("Could not find stateful bean to release " + obj.getId());
+                return;
+            }
             //this must stay within the synchronized block so the changes are visible to other threads
             entry.lastUsed = System.currentTimeMillis();
             entry.state = State.INACTIVE;
