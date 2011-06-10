@@ -59,11 +59,13 @@ import org.jboss.as.ejb3.deployment.processors.TransactionManagementAnnotationPr
 import org.jboss.as.ejb3.deployment.processors.dd.AssemblyDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.DeploymentDescriptorInterceptorBindingsProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.DeploymentDescriptorMethodProcessor;
+import org.jboss.as.ejb3.deployment.processors.dd.EjbConcurrencyProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.InterceptorClassDeploymentDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.MessageDrivenBeanXmlDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.RemoveMethodDeploymentDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.SessionBeanXmlDescriptorProcessor;
-import org.jboss.as.ejb3.deployment.processors.dd.EjbConcurrencyProcessor;
+import org.jboss.as.security.service.SimpleSecurityManager;
+import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
@@ -106,6 +108,7 @@ class EJB3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
                     final ServiceTarget serviceTarget = context.getServiceTarget();
                     final EJBUtilities utilities = new EJBUtilities();
                     serviceTarget.addService(EJBUtilities.SERVICE_NAME, utilities)
+                            .addDependency(SimpleSecurityManagerService.SERVICE_NAME, SimpleSecurityManager.class, utilities.getSecurityManagerInjector())
                             .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, utilities.getTransactionManagerInjector())
                             .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, utilities.getTransactionSynchronizationRegistryInjector())
                             .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, utilities.getUserTransactionInjector())

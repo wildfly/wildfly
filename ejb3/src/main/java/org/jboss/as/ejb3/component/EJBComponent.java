@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.spi.InvocationContext;
@@ -120,6 +121,10 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
         return null;
     }
 
+    public Principal getCallerPrincipal() {
+        return utilities.getSecurityManager().getCallerPrincipal();
+    }
+
     protected TransactionAttributeType getCurrentTransactionAttribute() {
         final InvocationContext currentInvocationContext = CurrentInvocationContext.get();
         if (currentInvocationContext == null) {
@@ -180,6 +185,10 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
         }
     }
 
+    public SimpleSecurityManager getSecurityManager() {
+        return utilities.getSecurityManager();
+    }
+
     @Override
     public TimerService getTimerService() throws IllegalStateException {
         // TODO: Temporary, till we have a working timerservice integrated
@@ -233,9 +242,14 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
         return isBeanManagedTransaction;
     }
 
+    public boolean isCallerInRole(final String roleName) throws IllegalStateException {
+        return utilities.getSecurityManager().isCallerInRole(roleName);
+    }
+
+    @Deprecated
     @Override
-    public boolean isCallerInRole(Principal callerPrincipal, String roleName) throws IllegalStateException {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.isCallerInRole");
+    public boolean isCallerInRole(final Principal callerPrincipal, final String roleName) throws IllegalStateException {
+        return isCallerInRole(roleName);
     }
 
     @Override

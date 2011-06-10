@@ -23,9 +23,13 @@ package org.jboss.as.test.spec.ejb3.security;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.spec.common.HttpRequest;
+import org.jboss.security.client.SecurityClient;
+import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.util.Base64;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,6 +37,7 @@ import javax.ejb.EJB;
 import java.security.Principal;
 import java.util.logging.Logger;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -48,7 +53,12 @@ public class EJB3SecurityTestCase {
     public static Archive<?> deployment() {
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
-                .addPackage(WhoAmIBean.class.getPackage());
+                .addPackage(WhoAmIBean.class.getPackage())
+                .addPackage(HttpRequest.class.getPackage())
+                .addClass(Base64.class)
+                .addAsResource("security/users.properties", "users.properties")
+                .addAsResource("security/roles.properties", "roles.properties")
+                .addAsWebInfResource("ejb3/security/web.xml", "web.xml");
         log.info(war.toString(true));
         return war;
     }
@@ -57,14 +67,41 @@ public class EJB3SecurityTestCase {
     private WhoAmIBean whoAmIBean;
 
     @Test
-    public void testUnauthenticated() {
+    public void testAuthenticatedCall() throws Exception {
+        // TODO: this is not spec
+        final SecurityClient client = SecurityClientFactory.getSecurityClient();
+        client.setSimple("anil", "anil");
+        client.login();
+        try {
+            try {
+                final Principal principal = whoAmIBean.getCallerPrincipal();
+                assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.", principal);
+                assertEquals("anil", principal.getName());
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method (" + e.getMessage() + ")");
+            }
+        } finally {
+            client.logout();
+        }
+    }
+
+    @Test
+    public void testUnauthenticated() throws Exception {
         try {
             final Principal principal = whoAmIBean.getCallerPrincipal();
             assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.", principal);
             // TODO: where is 'anonymous' configured?
             assertEquals("anonymous", principal.getName());
         } catch (RuntimeException e) {
+            e.printStackTrace();
             fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method (" + e.getMessage() + ")");
         }
+    }
+
+    @Test
+    public void testViaServlet() throws Exception {
+        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI", "anil", "anil", 10, SECONDS);
+        assertEquals("anil", result);
     }
 }
