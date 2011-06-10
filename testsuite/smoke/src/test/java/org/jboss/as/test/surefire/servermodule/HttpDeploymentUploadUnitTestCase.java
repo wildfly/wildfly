@@ -37,13 +37,18 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.NoSuchElementException;
 
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Test the HTTP API upload functionality to ensure that a deployment is successfully
@@ -51,8 +56,9 @@ import org.junit.Test;
  *
  * @author Jonathan Pearlin
  */
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class HttpDeploymentUploadUnitTestCase extends AbstractServerInModuleTestCase {
+@RunAsClient
+@RunWith(Arquillian.class)
+public class HttpDeploymentUploadUnitTestCase {
 
     private static final String BOUNDARY_PARAM = "NeAG1QNIHHOyB5joAS7Rox!!";
 
@@ -65,6 +71,11 @@ public class HttpDeploymentUploadUnitTestCase extends AbstractServerInModuleTest
     private static final String BASIC_URL = "http://localhost:9990/domain-api/";
 
     private static final String UPLOAD_URL = BASIC_URL + "add-content";
+
+    @Deployment(testable = false)
+    public static Archive<?> getDeployment() {
+        return ShrinkWrapUtils.createEmptyJavaArchive("please-the-arquillian-gods.jar");
+    }
 
     @Test
     public void testHttpDeploymentUpload() throws Exception {
@@ -81,8 +92,7 @@ public class HttpDeploymentUploadUnitTestCase extends AbstractServerInModuleTest
 
 
             // Grab the test WAR file and get a stream to its contents to be included in the POST.
-//            final WebArchive archive = ShrinkWrapUtils.createWebArchive(TEST_WAR, SimpleServlet.class.getPackage());
-            final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar", Simple.class.getPackage());
+            final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-http-deployment.sar", Simple.class.getPackage());
             os = new BufferedOutputStream(connection.getOutputStream());
             is = new BufferedInputStream(archive.as(ZipExporter.class).exportAsInputStream());
 
@@ -130,7 +140,7 @@ public class HttpDeploymentUploadUnitTestCase extends AbstractServerInModuleTest
 
         ModelNode op = new ModelNode();
         op.get("operation").set("add");
-        op.get("address").add("deployment", "test-deployment.sar");
+        op.get("address").add("deployment", "test-http-deployment.sar");
         op.get("content").get(0).get("hash").set(hash);
         op.get("enabled").set(true);
 

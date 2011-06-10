@@ -50,6 +50,9 @@ import javax.management.ObjectName;
 
 import junit.framework.Assert;
 
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
@@ -58,19 +61,26 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests deployment to a standalone server, both via the client API and by the
  * filesystem scanner.
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTestCase {
+@RunAsClient
+@RunWith(Arquillian.class)
+public class ServerInModuleDeploymentTestCase  {
+
+    @Deployment(testable = false)
+    public static Archive<?> getDeployment(){
+        return ShrinkWrapUtils.createEmptyJavaArchive("please-the-arquillian-gods.jar");
+    }
 
     @Test
     public void testDeploymentStreamApi() throws Exception {
