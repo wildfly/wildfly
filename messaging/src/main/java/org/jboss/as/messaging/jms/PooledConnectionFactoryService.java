@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -33,10 +33,47 @@ import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.as.txn.TxnServices;
+import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
+import org.jboss.jca.common.api.metadata.common.CommonConnDef;
+import org.jboss.jca.common.api.metadata.common.FlushStrategy;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.metadata.ironjacamar.IronJacamarParser;
-import org.jboss.jca.common.metadata.ra.RaParser;
+import org.jboss.jca.common.api.metadata.ra.AdminObject;
+import org.jboss.jca.common.api.metadata.ra.AuthenticationMechanism;
+import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
+import org.jboss.jca.common.api.metadata.ra.ConnectionDefinition;
+import org.jboss.jca.common.api.metadata.ra.CredentialInterfaceEnum;
+import org.jboss.jca.common.api.metadata.ra.Icon;
+import org.jboss.jca.common.api.metadata.ra.InboundResourceAdapter;
+import org.jboss.jca.common.api.metadata.ra.LocalizedXsdString;
+import org.jboss.jca.common.api.metadata.ra.MessageListener;
+import org.jboss.jca.common.api.metadata.ra.Messageadapter;
+import org.jboss.jca.common.api.metadata.ra.OutboundResourceAdapter;
+import org.jboss.jca.common.api.metadata.ra.RequiredConfigProperty;
+import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
+import org.jboss.jca.common.api.metadata.ra.SecurityPermission;
+import org.jboss.jca.common.api.metadata.ra.XsdString;
+import org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16;
+import org.jboss.jca.common.api.metadata.ra.ra16.Connector16;
+import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.jca.common.metadata.common.CommonConnDefImpl;
+import org.jboss.jca.common.metadata.common.CommonPoolImpl;
+import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
+import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
+import org.jboss.jca.common.metadata.common.CommonValidationImpl;
+import org.jboss.jca.common.metadata.common.CredentialImpl;
+import org.jboss.jca.common.metadata.ironjacamar.IronJacamarImpl;
+import org.jboss.jca.common.metadata.ra.common.AuthenticationMechanismImpl;
+import org.jboss.jca.common.metadata.ra.common.ConnectionDefinitionImpl;
+import org.jboss.jca.common.metadata.ra.common.InboundResourceAdapterImpl;
+import org.jboss.jca.common.metadata.ra.common.MessageAdapterImpl;
+import org.jboss.jca.common.metadata.ra.common.MessageListenerImpl;
+import org.jboss.jca.common.metadata.ra.common.OutboundResourceAdapterImpl;
+import org.jboss.jca.common.metadata.ra.common.ResourceAdapter1516Impl;
+import org.jboss.jca.common.metadata.ra.ra16.Activationspec16Impl;
+import org.jboss.jca.common.metadata.ra.ra16.ConfigProperty16Impl;
+import org.jboss.jca.common.metadata.ra.ra16.Connector16Impl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
@@ -54,147 +91,51 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
+ * A service which translates a pooled connection factory into a resource adapter driven connection pool
+ *
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
+ * @author Jason T. Greene
  *         Date: 5/13/11
  *         Time: 2:21 PM
  */
-public class PooledConnectionFactoryService implements Service<String> {
+public class PooledConnectionFactoryService implements Service<Void> {
 
-        private static final String RAXML_START = "<connector xmlns=\"http://java.sun.com/xml/ns/j2ee\"" +
-            "           xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
-            "           xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee" +
-            "           http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd\"" +
-            "           version=\"1.5\">" +
-            "" +
-            "   <description>HornetQ 2.0 Resource Adapter</description>" +
-            "   <display-name>HornetQ 2.0 Resource Adapter</display-name>" +
-            "" +
-            "   <vendor-name>Red Hat Middleware LLC</vendor-name>" +
-            "   <eis-type>JMS 1.1 Server</eis-type>" +
-            "   <resourceadapter-version>1.0</resourceadapter-version>" +
-            "" +
-            "   <license>" +
-            "      <description>" +
-            "Copyright 2009 Red Hat, Inc." +
-            " Red Hat licenses this file to you under the Apache License, version" +
-            " 2.0 (the \"License\"); you may not use this file except in compliance" +
-            " with the License.  You may obtain a copy of the License at" +
-            "   http://www.apache.org/licenses/LICENSE-2.0" +
-            " Unless required by applicable law or agreed to in writing, software" +
-            " distributed under the License is distributed on an \"AS IS\" BASIS," +
-            " WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or" +
-            " implied.  See the License for the specific language governing" +
-            " permissions and limitations under the License.  " +
-            "      </description>" +
-            "      <license-required>true</license-required>" +
-            "   </license>" +
-            "" +
-            "   <resourceadapter>" +
-            "      <resourceadapter-class>org.hornetq.ra.HornetQResourceAdapter</resourceadapter-class>";
-
-    private static final String CONFIG_PROPERTY_TEMPLATE = "<config-property>"
-                    + "<config-property-name>${NAME}</config-property-name>"
-                    + "<config-property-type>${TYPE}</config-property-type>"
-                    + "<config-property-value>${VALUE}</config-property-value>"
-                    + "</config-property>";
-
-    private static final String OUTBOUND_CONFIG =
-            "     <outbound-resourceadapter>" +
-            "         <connection-definition>" +
-            "            <managedconnectionfactory-class>org.hornetq.ra.HornetQRAManagedConnectionFactory</managedconnectionfactory-class>" +
-            "" +
-            "            <config-property>" +
-            "               <description>The default session type</description>" +
-            "               <config-property-name>SessionDefaultType</config-property-name>" +
-            "               <config-property-type>java.lang.String</config-property-type>" +
-            "               <config-property-value>javax.jms.Queue</config-property-value>" +
-            "            </config-property>" +
-            "            <config-property>" +
-            "               <description>Try to obtain a lock within specified number of seconds; less than or equal to 0 disable this functionality</description>" +
-            "               <config-property-name>UseTryLock</config-property-name>" +
-            "               <config-property-type>java.lang.Integer</config-property-type>" +
-            "               <config-property-value>0</config-property-value>" +
-            "            </config-property>" +
-            "" +
-            "            <connectionfactory-interface>org.hornetq.ra.HornetQRAConnectionFactory</connectionfactory-interface>" +
-            "            <connectionfactory-impl-class>org.hornetq.ra.HornetQRAConnectionFactoryImpl</connectionfactory-impl-class>" +
-            "            <connection-interface>javax.jms.Session</connection-interface>" +
-            "            <connection-impl-class>org.hornetq.ra.HornetQRASession</connection-impl-class>" +
-            "         </connection-definition>" +
-            "         <transaction-support>XATransaction</transaction-support>" +
-            "         <authentication-mechanism>" +
-            "            <authentication-mechanism-type>BasicPassword</authentication-mechanism-type>" +
-            "            <credential-interface>javax.resource.spi.security.PasswordCredential</credential-interface>" +
-            "         </authentication-mechanism>" +
-            "         <reauthentication-support>false</reauthentication-support>" +
-            "      </outbound-resourceadapter>";
-
-    private static final String INBOUND_CONFIG = "<inbound-resourceadapter>" +
-            "         <messageadapter>" +
-            "            <messagelistener>" +
-            "               <messagelistener-type>javax.jms.MessageListener</messagelistener-type>" +
-            "               <activationspec>" +
-            "                  <activationspec-class>org.hornetq.ra.inflow.HornetQActivationSpec</activationspec-class>" +
-            "                  <required-config-property>" +
-            "                      <config-property-name>destination</config-property-name>" +
-            "                  </required-config-property>" +
-            "               </activationspec>" +
-            "            </messagelistener>" +
-            "         </messageadapter>" +
-            "      </inbound-resourceadapter>";
-
-    private String RAXML_END = "   </resourceadapter>" +
-            "</connector>";
-
-    private static final String JACAMAR_XML = "<ironjacamar xmlns=\"http://www.jboss.org/ironjacamar/schema\"" +
-                "             xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\\\"" +
-                "             xsi:schemaLocation=\"http://www.jboss.org/ironjacamar/schema http://www.jboss.org/ironjacamar/schema/ironjacamar_1_0.xsd\\\">" +
-                "    <connection-definitions>" +
-                "        <connection-definition class-name=\"org.hornetq.ra.HornetQRAManagedConnectionFactory\"" +
-                "                               enabled=\"true\" jndi-name=\"${JNDI_NAME}\"" +
-                "                               use-java-context=\"true\" pool-name=\"HornetQConnectionDefinition\">" +
-                "        </connection-definition>" +
-                "    </connection-definitions>" +
-                "  <transaction-support>${transaction-support}</transaction-support>" +
-                "</ironjacamar>";
-
-    private static final String NAME = "${NAME}";
-
-    private static final String TYPE = "${TYPE}";
-
-    private static final String VALUE = "${VALUE}";
-
-    private static final String JNDI_NAME = "${JNDI_NAME}";
-
-    private static final String TX_SUPPORT = "${transaction-support}";
-
+    private static final List<LocalizedXsdString> EMPTY_LOCL = Collections.emptyList();
     private static final String CONNECTOR_CLASSNAME = "ConnectorClassName";
-
     private static final String CONNECTION_PARAMETERS = "ConnectionParameters";
-
+    private static final String HQ_ACTIVIATION = "org.hornetq.ra.inflow.HornetQActivationSpec";
+    private static final String HQ_CONN_DEF = "HornetQConnectionDefinition";
+    private static final String HQ_ADAPTER = "org.hornetq.ra.HornetQResourceAdapter";
+    private static final String RAMANAGED_CONN_FACTORY = "org.hornetq.ra.HornetQRAManagedConnectionFactory";
+    private static final String RA_CONN_FACTORY = "org.hornetq.ra.HornetQRAConnectionFactory";
+    private static final String RA_CONN_FACTORY_IMPL = "org.hornetq.ra.HornetQRAConnectionFactoryImpl";
+    private static final String JMS_SESSION = "javax.jms.Session";
+    private static final String HQ_SESSION = "org.hornetq.ra.HornetQRASession";
+    private static final String BASIC_PASS = "BasicPassword";
+    private static final String JMS_QUEUE = "javax.jms.Queue";
+    private static final String STRING_TYPE = "java.lang.String";
+    private static final String INTEGER_TYPE = "java.lang.Integer";
+    private static final String SESSION_DEFAULT_TYPE = "SessionDefaultType";
+    private static final String TRY_LOCK = "UseTryLock";
+    private static final String JMS_MESSAGE_LISTENER = "javax.jms.MessageListener";
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.hornet");
 
+
     private Injector<Object> transactionManager = new InjectedValue<Object>();
-
     private List<String> connectors;
-
     private List<PooledConnectionFactoryConfigProperties> adapterParams;
-
     private String name;
-
     private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
-
     private InjectedValue<HornetQServer> hornetQService = new InjectedValue<HornetQServer>();
-
     private String jndiName;
-
     private String txSupport;
 
     public PooledConnectionFactoryService(String name, List<String> connectors, List<PooledConnectionFactoryConfigProperties> adapterParams, String jndiName, String txSupport) {
@@ -206,7 +147,7 @@ public class PooledConnectionFactoryService implements Service<String> {
     }
 
 
-    public String getValue() throws IllegalStateException, IllegalArgumentException {
+    public Void getValue() throws IllegalStateException, IllegalArgumentException {
         return null;
     }
 
@@ -225,6 +166,7 @@ public class PooledConnectionFactoryService implements Service<String> {
     private void createService(ServiceTarget serviceTarget) throws Exception {
         InputStream is = null;
         InputStream isIj = null;
+        List<ConfigProperty16> properties = new ArrayList<ConfigProperty16>();
         try {
             StringBuilder connectorClassname = new StringBuilder();
             StringBuilder connectorParams = new StringBuilder();
@@ -249,40 +191,24 @@ public class PooledConnectionFactoryService implements Service<String> {
                 }
             }
 
-            StringBuffer raxml = new StringBuffer(RAXML_START);
-
             if(connectorClassname.length() > 0) {
-                String connectorClassnameConfig = CONFIG_PROPERTY_TEMPLATE;
-                connectorClassnameConfig = connectorClassnameConfig.replace(NAME, CONNECTOR_CLASSNAME);
-                connectorClassnameConfig = connectorClassnameConfig.replace(VALUE, connectorClassname);
-                connectorClassnameConfig = connectorClassnameConfig.replace(TYPE, String.class.getName());
-                raxml.append(connectorClassnameConfig);
+                properties.add(simpleProperty(CONNECTOR_CLASSNAME, STRING_TYPE,  connectorClassname.toString()));
             }
             if(connectorParams.length() > 0) {
-                String connectorParamsConfig = CONFIG_PROPERTY_TEMPLATE;
-                connectorParamsConfig = connectorParamsConfig.replace(NAME,  CONNECTION_PARAMETERS);
-                connectorParamsConfig = connectorParamsConfig.replace(VALUE, connectorParams);
-                connectorParamsConfig = connectorParamsConfig.replace(TYPE, String.class.getName());
-                raxml.append(connectorParamsConfig);
+                properties.add(simpleProperty(CONNECTION_PARAMETERS, STRING_TYPE, connectorParams.toString()));
             }
             for (PooledConnectionFactoryConfigProperties adapterParam : adapterParams) {
-                String config = CONFIG_PROPERTY_TEMPLATE;
-                config = config.replace(NAME, adapterParam.getName());
-                config = config.replace(VALUE, adapterParam.getValue());
-                config = config.replace(TYPE, adapterParam.getType());
-                raxml.append(config);
+                properties.add(simpleProperty(adapterParam.getName(), adapterParam.getType(), adapterParam.getValue()));
             }
 
-            raxml.append(OUTBOUND_CONFIG).append(INBOUND_CONFIG).append(RAXML_END);
-            is = new ByteArrayInputStream(raxml.toString().getBytes("UTF-8"));
-            RaParser raParser = new RaParser();
-            Connector cmd = raParser.parse(is);
-            String jacamarXml = JACAMAR_XML;
-            jacamarXml = jacamarXml.replace(JNDI_NAME, jndiName);
-            jacamarXml = jacamarXml.replace(TX_SUPPORT, txSupport);
-            isIj = new ByteArrayInputStream(jacamarXml.getBytes("UTF-8"));
-            IronJacamarParser ijParser = new IronJacamarParser();
-            IronJacamar ijmd = ijParser.parse(isIj);
+            OutboundResourceAdapter outbound = createOutbound();
+            InboundResourceAdapter inbound = createInbound();
+            ResourceAdapter1516 ra = createResourceAdapter(properties, outbound, inbound);
+            Connector16 cmd = createConnector(ra);
+
+            CommonConnDef common = createConnDef(jndiName);
+            IronJacamar ijmd = createIron(common, txSupport);
+
             ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, ijmd,
                     HornetQResourceAdapter.class.getClassLoader(), name);
 
@@ -315,14 +241,69 @@ public class PooledConnectionFactoryService implements Service<String> {
         }
     }
 
+    private static IronJacamarImpl createIron(CommonConnDef common, String txSupport) {
+        TransactionSupportEnum transactionSupport;
 
-    public void stop(StopContext context) {
+        try {
+            transactionSupport = TransactionSupportEnum.valueOf(txSupport);
+        } catch (RuntimeException e) {
+            transactionSupport = TransactionSupportEnum.LocalTransaction;
+        }
 
+        List<CommonConnDef> definitions = Collections.singletonList(common);
+        return new IronJacamarImpl(transactionSupport, Collections.<String, String>emptyMap(), Collections.<CommonAdminObject>emptyList(), definitions, Collections.<String>emptyList(), null);
     }
 
-//    public Injector<ResourceAdapterDeployment> getActivatorInjector() {
-       // return activator;
-   // }
+    private static CommonConnDef createConnDef(String jndiName) throws ValidateException {
+        CommonPoolImpl pool = new CommonPoolImpl(null, null, false, false, FlushStrategy.FAILING_CONNECTION_ONLY);
+        CommonTimeOutImpl timeOut = new CommonTimeOutImpl(null, null, null, null, null);
+        CommonSecurityImpl security = null;
+        Recovery recovery = new Recovery(new CredentialImpl(null, null, null), null, Boolean.FALSE);
+        CommonValidationImpl validation = new CommonValidationImpl(null, null, false);
+        return new CommonConnDefImpl(Collections.<String, String>emptyMap(), RAMANAGED_CONN_FACTORY, jndiName, HQ_CONN_DEF, true, true, true, pool, timeOut, validation, security, recovery);
+    }
+
+    private static Connector16Impl createConnector(ResourceAdapter1516 ra) {
+        return new Connector16Impl(null, str("Red Hat"), str("JMS 1.1 Server"), str("1.0"), null, ra, Collections.<String>emptyList(), false, EMPTY_LOCL, EMPTY_LOCL, Collections.<Icon>emptyList(), null);
+    }
+
+    private ResourceAdapter1516Impl createResourceAdapter(List<ConfigProperty16> properties, OutboundResourceAdapter outbound, InboundResourceAdapter inbound) {
+        return new ResourceAdapter1516Impl(HQ_ADAPTER, properties, outbound, inbound, Collections.<AdminObject>emptyList(), Collections.<SecurityPermission>emptyList(), null);
+    }
+
+    private InboundResourceAdapter createInbound() {
+        InboundResourceAdapter inbound;
+        List<RequiredConfigProperty> destination = Collections.singletonList(new RequiredConfigProperty(EMPTY_LOCL, str("destination"), null));
+        Activationspec16Impl activation = new Activationspec16Impl(str(HQ_ACTIVIATION), destination, Collections.<ConfigProperty>emptyList(), null);
+        List<MessageListener> messageListeners = Collections.<MessageListener>singletonList(new MessageListenerImpl(str(JMS_MESSAGE_LISTENER), activation, null));
+        Messageadapter message = new MessageAdapterImpl(messageListeners, null);
+
+        return new InboundResourceAdapterImpl(message, null);
+    }
+
+    private static OutboundResourceAdapter createOutbound() {
+        List<ConnectionDefinition> definitions = new ArrayList<ConnectionDefinition>();
+        List<ConfigProperty16> props = new ArrayList<ConfigProperty16>();
+        props.add(simpleProperty(SESSION_DEFAULT_TYPE, STRING_TYPE, JMS_QUEUE));
+        props.add(simpleProperty(TRY_LOCK, INTEGER_TYPE, "0"));
+        definitions.add(new ConnectionDefinitionImpl(str(RAMANAGED_CONN_FACTORY), props, str(RA_CONN_FACTORY), str(RA_CONN_FACTORY_IMPL), str(JMS_SESSION), str(HQ_SESSION), null));
+
+        AuthenticationMechanism basicPassword = new AuthenticationMechanismImpl(Collections.<LocalizedXsdString>emptyList(), str(BASIC_PASS), CredentialInterfaceEnum.PasswordCredential, null);
+        return new OutboundResourceAdapterImpl(definitions, TransactionSupportEnum.XATransaction, Collections.singletonList(basicPassword), false, null);
+    }
+
+    private static XsdString str(String str) {
+        return new XsdString(str, null);
+    }
+
+    private static ConfigProperty16 simpleProperty(String name, String type, String value) {
+        return new ConfigProperty16Impl(EMPTY_LOCL, str(name), str(type), str(value), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, null, null);
+    }
+
+
+    public void stop(StopContext context) {
+        // Service context takes care of this
+    }
 
     public Injector<Object> getTransactionManager() {
         return transactionManager;
