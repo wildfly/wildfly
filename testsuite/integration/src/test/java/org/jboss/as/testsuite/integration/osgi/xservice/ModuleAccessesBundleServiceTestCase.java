@@ -126,7 +126,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
                         }
                     }
                 });
-                startedLatch.await(2000, TimeUnit.MILLISECONDS);
+                startedLatch.await(5, TimeUnit.SECONDS);
             }
             OSGiTestHelper.assertBundleState(Bundle.ACTIVE, targetBundle.getState());
 
