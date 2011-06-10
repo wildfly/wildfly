@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,18 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.localview;
+package org.jboss.as.test.spec.ejb3.localview;
 
-import java.io.Serializable;
-
-import javax.ejb.Stateless;
+import javax.ejb.Local;
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * An ejb local interface
+ *
+ * @author Stuart Douglas
  */
-@Stateless
-public class ImplicitNoInterfaceBean implements Serializable {
-    public void message() {
+@Local
+public interface LocalInterface {
 
-    }
+    void localOperation();
+
 }

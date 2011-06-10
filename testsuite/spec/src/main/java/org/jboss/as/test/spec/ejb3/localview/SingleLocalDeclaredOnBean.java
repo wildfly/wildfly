@@ -19,18 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.localview;
+package org.jboss.as.test.spec.ejb3.localview;
 
 import javax.ejb.Local;
 import javax.ejb.Stateless;
 
 /**
- * This bean class has a two local interfaces, declared on the bean class
+ * This bean class has a single local interface, declared on the bean class
  * @author Stuart Douglas
  */
 @Stateless
-@Local({OtherInterface.class,LocalInterface.class})
-public class TwoLocalsDeclaredOnBean implements OtherInterface, LocalInterface {
+@Local({OtherInterface.class})
+public class SingleLocalDeclaredOnBean  implements OtherInterface, LocalInterface {
     @Override
     public void localOperation() {
     }

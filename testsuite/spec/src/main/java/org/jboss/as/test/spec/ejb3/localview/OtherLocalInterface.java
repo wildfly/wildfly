@@ -19,18 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.localview;
+package org.jboss.as.test.spec.ejb3.localview;
 
 import javax.ejb.Local;
 
 /**
- * An ejb local interface
- *
  * @author Stuart Douglas
  */
 @Local
-public interface LocalInterface {
-
-    void localOperation();
-
+public interface OtherLocalInterface {
+    void otherLocalOperation();
 }

@@ -19,15 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.localview;
+package org.jboss.as.test.spec.ejb3.localview;
+
+import java.io.Serializable;
+
+import javax.ejb.Stateless;
 
 /**
- * Interface that is not used as a local view
+ * Bean that has a single implicit local interface, that also implements Serializable
  *
  * @author Stuart Douglas
  */
-public interface NotViewInterface {
+@Stateless
+public class ImplicitLocalInterfaceBean  implements Serializable, ImplicitLocalInterface {
 
-    void doOtherStuff();
+    private static final long serialVersionUID = 1L;
 
+    @Override
+    public void message() {
+
+    }
 }

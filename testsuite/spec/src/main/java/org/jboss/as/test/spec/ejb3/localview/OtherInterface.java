@@ -19,18 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.localview;
-
-import javax.ejb.Stateless;
+package org.jboss.as.test.spec.ejb3.localview;
 
 /**
- * EJB with a single implicit local interface
- *
  * @author Stuart Douglas
  */
-@Stateless
-public class SimpleImplicitLocalInterfaceBean implements ImplicitLocalInterface {
-    @Override
-    public void message() {
-    }
+public interface OtherInterface {
+
+    void moreStuff();
+
 }

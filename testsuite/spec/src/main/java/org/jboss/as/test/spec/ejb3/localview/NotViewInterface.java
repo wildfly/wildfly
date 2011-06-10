@@ -19,27 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.localview;
-
-import java.io.Serializable;
-
-import javax.ejb.Stateless;
+package org.jboss.as.test.spec.ejb3.localview;
 
 /**
- * Bean with a two local interfaces, declared on the interface
+ * Interface that is not used as a local view
+ *
  * @author Stuart Douglas
  */
-@Stateless
-public class TwoLocalsDeclaredOnInterface implements NotViewInterface, LocalInterface, OtherLocalInterface, Serializable {
-    @Override
-    public void localOperation() {
-    }
+public interface NotViewInterface {
 
-    @Override
-    public void doOtherStuff() {
-    }
+    void doOtherStuff();
 
-    @Override
-    public void otherLocalOperation() {
-    }
 }
