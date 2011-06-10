@@ -19,16 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.injection.ejb;
+package org.jboss.as.test.spec.ejb3.injection.ejbs;
 
-import javax.ejb.Local;
+import javax.ejb.Stateless;
 
 /**
  * @author Stuart Douglas
  */
-@Local
-public interface BeanInterface {
-
-    public String name();
-
+@Stateless(name = "bean")
+public class Bean2 implements BeanInterface {
+    @Override
+    public String name() {
+        return "Bean2";
+    }
 }
