@@ -19,28 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.interceptor.defaultinterceptor;
+package org.jboss.as.test.spec.ejb3.interceptor.defaultinterceptor;
 
-import javax.annotation.PostConstruct;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
+import javax.interceptor.ExcludeDefaultInterceptors;
 
 /**
  * @author Stuart Douglas
  */
-public class DefaultInterceptor {
+@Stateless
+@LocalBean
+@ExcludeDefaultInterceptors
+public class NoDefaultInterceptorsSLSB implements SessionBean {
 
-    @PostConstruct
-    public void postConstruct(final InvocationContext context) throws Exception {
-        ((SessionBean) context.getTarget()).setPostConstructCalled();
+    private boolean postConstructCalled;
+
+    public String message() {
+        return "Hello";
     }
 
-    @AroundInvoke
-    public Object aroundInvoke(final InvocationContext context) throws Exception {
-        if (context.getMethod().getReturnType().equals(String.class)) {
-            return "DefaultInterceptor " + context.proceed().toString();
-        }
-        return context.proceed();
+    @Override
+    public void setPostConstructCalled() {
+        postConstructCalled = true;
     }
 
+    public boolean isPostConstructCalled() {
+        return postConstructCalled;
+    }
 }

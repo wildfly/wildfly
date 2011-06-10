@@ -19,12 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.interceptor.defaultinterceptor;
+package org.jboss.as.test.spec.ejb3.interceptor.defaultinterceptor;
+
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
 
 /**
  * @author Stuart Douglas
  */
-public interface SessionBean {
+@Stateless
+@LocalBean
+public class InterceptedSLSB implements SessionBean {
 
-    public void setPostConstructCalled();
+    private boolean postConstructCalled;
+
+    public String message() {
+        return "Hello";
+    }
+
+    @Override
+    public void setPostConstructCalled() {
+        postConstructCalled = true;
+    }
+
+    public boolean isPostConstructCalled() {
+        return postConstructCalled;
+    }
 }
