@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-testsuite-integration-domain</artifactId>
-    <name>JBoss Application Server: Test Suite: Domain Mode Integration Tests</name>
+    <name>JBoss Application Server Test Suite: Domain Mode Integration Tests</name>
 
    <!--
    Compile-time dependencies upon anything  in the AS7 runtime

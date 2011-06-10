@@ -36,7 +36,7 @@
     <artifactId>jboss-as-testsuite-benchmark</artifactId>
     <version>7.0.0.Beta4-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Test Suite: Benchmark Tests</name>
+    <name>JBoss Application Server Test Suite: Benchmark Tests</name>
 
     <properties>
         <skip.benchmark.tests>false</skip.benchmark.tests>
