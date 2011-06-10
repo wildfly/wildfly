@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<jboss-web>
+  <security-role>
+    <role-name>gooduser</role-name>
+    <principal-name>superuser</principal-name>
+  </security-role>
+</jboss-web>
