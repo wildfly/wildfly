@@ -36,7 +36,7 @@
     <artifactId>jboss-as-testsuite-stress</artifactId>
     <version>7.0.0.Beta4-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Test Suite: Stress Tests</name>
+    <name>JBoss Application Server Test Suite: Stress Tests</name>
 
     <properties>
         <skip.stress.tests>false</skip.stress.tests>
