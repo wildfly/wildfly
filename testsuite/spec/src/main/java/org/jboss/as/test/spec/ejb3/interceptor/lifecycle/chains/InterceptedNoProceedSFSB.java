@@ -19,20 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle.chains;
+package org.jboss.as.test.spec.ejb3.interceptor.lifecycle.chains;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
 
-import org.junit.Assert;
-
 /**
  * @author Stuart Douglas
  */
 @Stateless
-@Interceptors(LifecycleInterceptorWithProceed.class)
-public class InterceptedWithProceedSFSB {
+@Interceptors(LifecycleInterceptorNoProceed.class)
+public class InterceptedNoProceedSFSB {
 
     boolean postConstructCalled = false;
 
@@ -41,14 +39,11 @@ public class InterceptedWithProceedSFSB {
     }
 
     /**
-     * This method should be called, after proceed is called from the interceptor, in the same call stack
-     * as the interceptors post construct method. (See 'Multiple Callback Interceptor Methods for a Life Cycle
-     * Callback Event' in the interceptors specification.
+     * This method should not be called, as proceed() is not called from the interceptors
+     * post construct method.
      */
     @PostConstruct
-    public void postConstruct() {
-        Assert.assertTrue(LifecycleInterceptorWithProceed.postConstruct);
-        Assert.assertFalse(LifecycleInterceptorWithProceed.postConstructFinished);
+    public void postContruct() {
         postConstructCalled = true;
     }
 
