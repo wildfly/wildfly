@@ -1,0 +1,31 @@
+Synopsis:	add-data-source [--profile=<profile_name>] --jndi-name=<jndi_name> --driver-name=<driver_name> --pool-name=<pool_name>
+							--connection-url=<connection_url>
+
+Description:	creates a data source
+
+Arguments:
+
+	profile			- is allowed and required only in the domain mode, specifies the profile
+					in which the data source should be created. 
+
+	jndi-name		- the JNDI name the data source should be bound under.
+	
+	driver-name		- the name of the JDBC driver (as it appears in /subsystem=datasources/jdbc-driver).
+				  
+	pool-name		- the name for the pool.
+	
+	connection-url	- the connection URL.
+	
+[TODO describe the following arguments]
+--allocation-retry-wait-millis=     --allocation-retry=                 --background-validation
+--background-validation-minutes=    --blocking-timeout-wait-millis=     --check-valid-connection-sql=
+--connection-properties=            --disabled                          --exception-sorter-class=
+--flush-strategy=                   --idle-timeout-minutes=             --max-pool-size=
+--min-pool-size=                    --new-connection-sql=               --password=
+--pool-prefill                      --pool-use-strict-min               --prepared-statements-cache-size=
+--query-timeout=                    --reauth-plugin-class-name=         --security-domain=
+--set-tx-query-timeout=             --share-prepared-statements         --spy
+--stale-connection-checker-class=   --track-statements=                 --transaction-isolation=
+--url-delimiter=                    --url-selector-strategy-class=      --use-ccm
+--use-fast-fail                     --use-java-context                  --use-try-lock=
+--username=                         --valid-connection-checker-class=   --validate-on-match
