@@ -24,7 +24,7 @@
 
     <import file="lib.xml"/>
 
-    <property name="output.dir" value="target/jbossas-${jboss.as.release.version}"/>
+    <property name="output.dir" value="target/jboss-as-${jboss.as.release.version}"/>
     <target name="copy-files">
         <copy todir="${output.dir}">
             <fileset dir="src/main/resources">
