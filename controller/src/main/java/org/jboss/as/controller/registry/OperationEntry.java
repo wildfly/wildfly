@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller.registry;
 
+import java.util.EnumSet;
+
+import com.sun.tools.javac.code.Flags;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
@@ -31,21 +34,30 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
  * @author Emanuel Muckenhuber
  */
 public final class OperationEntry {
-
     public enum EntryType {
         PUBLIC, PRIVATE;
+    }
+
+    public enum Flag {
+        READ_ONLY
     }
 
     private final NewStepHandler operationHandler;
     private final DescriptionProvider descriptionProvider;
     private final EntryType type;
+    private final EnumSet<Flag> flags;
     private final boolean inherited;
 
-    protected OperationEntry(final NewStepHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type) {
+    protected OperationEntry(final NewStepHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type, final EnumSet<Flag> flags) {
         this.operationHandler = operationHandler;
         this.descriptionProvider = descriptionProvider;
         this.inherited = inherited;
         this.type = type;
+        this.flags = flags;
+    }
+
+    protected OperationEntry(final NewStepHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type) {
+       this(operationHandler, descriptionProvider, inherited, type, EnumSet.noneOf(Flag.class));
     }
 
     NewStepHandler getOperationHandler() {
@@ -62,6 +74,10 @@ public final class OperationEntry {
 
     public EntryType getType() {
         return type;
+    }
+
+    public EnumSet<Flag> getFlags() {
+        return flags;
     }
 
 }

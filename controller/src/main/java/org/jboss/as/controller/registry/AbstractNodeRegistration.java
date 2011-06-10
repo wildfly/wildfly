@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.registry;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -74,6 +75,10 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
     /** {@inheritDoc} */
     @Override
     public abstract void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType);
+
+    /** {@inheritDoc} */
+    @Override
+    public abstract void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags);
 
     /** {@inheritDoc} */
     @Override

@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.registry;
 
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -133,6 +134,19 @@ public interface ModelNodeRegistration {
      * @throws IllegalArgumentException if either parameter is {@code null}
      */
     void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType);
+
+    /**
+     * Register an operation handler for this model node.
+     *
+     * @param operationName the operation name
+     * @param handler the operation handler
+     * @param descriptionProvider the description provider for this operation
+     * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
+     * @param entryType the operation entry type
+     * @param flags operational modifier flags for this operation (e.g. read-only)
+     * @throws IllegalArgumentException if either parameter is {@code null}
+     */
+    void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags);
 
 
     /**
