@@ -40,17 +40,23 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.config.EndpointConfig;
+import org.jboss.wsf.spi.metadata.config.Feature;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
+
+import javax.xml.namespace.QName;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * OperationHandler to add an endpoint configuration to {@link org.jboss.as.webservices.service.ServerConfigService ServerConfigService}
+ * @author <a href="ema@redhat.com">Jim Ma</a>
+ */
 public class EndpointConfigAdd implements ModelAddOperationHandler {
 
     static final EndpointConfigAdd INSTANCE = new EndpointConfigAdd();
 
-    /** {@inheritDoc} */
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
             throws OperationFailedException {
@@ -62,30 +68,55 @@ public class EndpointConfigAdd implements ModelAddOperationHandler {
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
         compensatingOperation.get(OP).set(REMOVE);
 
-        final ModelNode postHandlers = operation.hasDefined(Constants.POST_HANDLER_CHAINS) ? operation
-                .get(Constants.POST_HANDLER_CHAINS) : new ModelNode();
-        final ModelNode preHandlers = operation.hasDefined(Constants.PRE_HANDLER_CHAINS) ? operation
-                .get(Constants.PRE_HANDLER_CHAINS) : new ModelNode();
-
         final ModelNode subModel = context.getSubModel();
-        subModel.get(Constants.PRE_HANDLER_CHAINS).set(preHandlers);
-        subModel.get(Constants.POST_HANDLER_CHAINS).set(postHandlers);
+        if (operation.hasDefined(Constants.PRE_HANDLER_CHAINS)) {
+            ModelNode preHandlers = operation.get(Constants.PRE_HANDLER_CHAINS);
+            subModel.get(Constants.PRE_HANDLER_CHAINS).set(preHandlers);
+        }
+
+        if (operation.hasDefined(Constants.POST_HANDLER_CHAINS)) {
+            ModelNode postHandlers = operation.get(Constants.POST_HANDLER_CHAINS);
+            subModel.get(Constants.POST_HANDLER_CHAINS).set(postHandlers);
+        }
+
+        if (operation.hasDefined(Constants.PROPERTY)) {
+            ModelNode property = operation.get(Constants.PROPERTY);
+            subModel.get(Constants.PROPERTY).set(property);
+        }
+        if (operation.hasDefined(Constants.FEATURE)) {
+            ModelNode feature = operation.get(Constants.FEATURE);
+            subModel.get(Constants.FEATURE).set(feature);
+        }
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     ServiceController<?> configService = context.getServiceRegistry().getService(WSServices.CONFIG_SERVICE);
-                    if (configService == null) {
-
-                    } else {
+                    if (configService != null) {
                         ServerConfig config = (ServerConfig) configService.getValue();
                         EndpointConfig endpointConfig = new EndpointConfig();
                         endpointConfig.setConfigName(name);
-                        endpointConfig.setPreHandlerChains(buildChainMD(preHandlers));
-                        endpointConfig.setPostHandlerChains(buildChainMD(postHandlers));
+                        if (subModel.hasDefined(Constants.PRE_HANDLER_CHAINS)) {
+                            ModelNode preHandlers =subModel.get(Constants.PRE_HANDLER_CHAINS);
+                            endpointConfig.setPreHandlerChains(buildChainMD(preHandlers));
+                        }
+                        if (subModel.hasDefined(Constants.POST_HANDLER_CHAINS)) {
+                            ModelNode postHandlers =subModel.get(Constants.POST_HANDLER_CHAINS);
+                            endpointConfig.setPostHandlerChains(buildChainMD(postHandlers));
+                        }
+
+                        if (subModel.hasDefined(Constants.PROPERTY)) {
+                            for (String name :subModel.get(Constants.PROPERTY).keys()) {
+                                endpointConfig.setProperty(name, subModel.get(Constants.PROPERTY).get(name).asString());
+                            }
+                        }
+                        if (subModel.hasDefined(Constants.FEATURE)) {
+                            for (String name :subModel.get(Constants.FEATURE).keys()) {
+                                endpointConfig.setFeature(new Feature(name), true);
+                            }
+                        }
                         config.addEndpointConfig(endpointConfig);
                     }
-
                     resultHandler.handleResultComplete();
                 }
             });
@@ -105,18 +136,22 @@ public class EndpointConfigAdd implements ModelAddOperationHandler {
                 if (chainNode.hasDefined(Constants.PROTOCOL_BINDING)) {
                     chainMetaData.setProtocolBindings(chainNode.get(Constants.PROTOCOL_BINDING).asString());
                 }
-                //TODO:handler others
+                if (chainNode.hasDefined(Constants.SERVICE_NAME_PATTERN)) {
+                    chainMetaData.setServiceNamePattern(new QName(chainNode.get(Constants.SERVICE_NAME_PATTERN).asString()));
+                }
+                if (chainNode.hasDefined(Constants.PORT_NAME_PATTERN)) {
+                    chainMetaData.setPortNamePattern(new QName(chainNode.get(Constants.PORT_NAME_PATTERN).asString()));
+                }
                 if (chainNode.hasDefined(Constants.HANDLER)) {
                     for (String key : chainNode.get(Constants.HANDLER).keys()) {
                         UnifiedHandlerMetaData handlerMD = new UnifiedHandlerMetaData();
                         handlerMD.setHandlerName(key);
-                        handlerMD.setHandlerName(chainNode.get(Constants.HANDLER).get(key).asString());
+                        handlerMD.setHandlerClass(chainNode.get(Constants.HANDLER).get(key).asString());
                         chainMetaData.addHandler(handlerMD);
                     }
 
                 }
                 handlerChains.add(chainMetaData);
-
             }
         }
         return handlerChains;

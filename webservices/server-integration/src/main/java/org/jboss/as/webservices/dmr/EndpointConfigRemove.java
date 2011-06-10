@@ -36,7 +36,13 @@ import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.wsf.spi.management.ServerConfig;
+import org.jboss.wsf.spi.metadata.config.EndpointConfig;
 
+/**
+ * OperationHandler to remove the endpoint configuration
+ *
+ * @author <a href="ema@redhat.com">Jim Ma</a>
+ */
 public class EndpointConfigRemove implements ModelRemoveOperationHandler {
 
     static final EndpointConfigRemove INSTANCE = new EndpointConfigRemove();
@@ -54,13 +60,14 @@ public class EndpointConfigRemove implements ModelRemoveOperationHandler {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     ServiceController<?> configService = context.getServiceRegistry().getService(WSServices.CONFIG_SERVICE);
-                    if (configService == null) {
-
-                    } else {
+                    if (configService != null) {
                         ServerConfig config = (ServerConfig) configService.getValue();
-                        config.getEndpointConfigs().remove(name);
+                        for(EndpointConfig epConfig : config.getEndpointConfigs()) {
+                            if (epConfig.getConfigName().equals(name)) {
+                                config.getEndpointConfigs().remove(epConfig);
+                            }
+                        }
                     }
-
                     resultHandler.handleResultComplete();
                 }
             });

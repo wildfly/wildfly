@@ -57,7 +57,6 @@ enum Element {
     HANDLER_NAME(Constants.HANDLER_NAME),
     HANDLER_CLASS(Constants.HANDLER_CLASS);
 
-
     private final String name;
 
     private Element(final String name) {

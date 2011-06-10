@@ -16,11 +16,10 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	targetNamespace="urn:jboss:domain:webservices:1.0" xmlns="urn:jboss:domain:webservices:1.0"
-	xmlns:javaee="http://java.sun.com/xml/ns/javaee" elementFormDefault="qualified"
+	xmlns:jaxwsconfig="urn:jboss:jbossws-jaxws-config:4.0" elementFormDefault="qualified"
 	attributeFormDefault="unqualified" version="1.0">
 	
-    <xs:import namespace="http://java.sun.com/xml/ns/javaee"
-		schemaLocation="http://java.sun.com/xml/ns/javaee/javaee_6.xsd" />
+    <xs:import namespace="urn:jboss:jbossws-jaxws-config:4.0" schemaLocation="jbossws-jaxws-config_4_0.xsd"/>
 	
 	<!-- The webservices subsystem root element -->
 	<xs:element name="subsystem" type="webservices-containerType" />
@@ -67,43 +66,7 @@
 				</xs:annotation>
 			</xs:element>
 			<xs:element minOccurs="0" maxOccurs="unbounded"
-				name="endpoint-config" type="endpointConfigType" />
+				name="endpoint-config" type="jaxwsconfig:endpointConfigType" />
 		</xs:sequence>
 	</xs:complexType>
-
-	<xs:complexType name="endpointConfigType">
-		<xs:complexContent>
-			<xs:extension base="commonConfigType" />
-		</xs:complexContent>
-	</xs:complexType>
-
-	<xs:complexType name="commonConfigType">
-		<xs:sequence>
-			<xs:element name="config-name" type="xs:string" />
-			<xs:element name="pre-handler-chains" type="javaee:handler-chainsType"
-				minOccurs="0" />
-			<xs:element name="post-handler-chains" type="javaee:handler-chainsType"
-				minOccurs="0" />
-			<xs:element name="feature" type="featureType" minOccurs="0"
-				maxOccurs="unbounded" />
-			<xs:element name="property" type="propertyType" minOccurs="0"
-				maxOccurs="unbounded" />
-		</xs:sequence>
-	</xs:complexType>
-
-	<xs:complexType name="featureType">
-		<xs:sequence>
-			<xs:element name="feature-name" type="xs:string" />
-			<xs:element name="feature-data" type="xs:string"
-				minOccurs="0" />
-		</xs:sequence>
-	</xs:complexType>
-
-	<xs:complexType name="propertyType">
-		<xs:sequence>
-			<xs:element name="property-name" type="xs:string" />
-			<xs:element name="property-value" type="xs:string" />
-		</xs:sequence>
-	</xs:complexType>
-
 </xs:schema>

@@ -24,13 +24,10 @@ package org.jboss.as.webservices.dmr;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
@@ -40,6 +37,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CLASS;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONTEXT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_NAME;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
@@ -56,13 +54,13 @@ import static org.jboss.as.webservices.dmr.WSEndpointMetrics.REQUEST_COUNT;
 import static org.jboss.as.webservices.dmr.WSEndpointMetrics.RESPONSE_COUNT;
 import static org.jboss.as.webservices.dmr.WSEndpointMetrics.TOTAL_PROCESSING_TIME;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * Deployment model providers.
@@ -164,6 +162,7 @@ final class WSSubsystemProviders {
             subsystem.get(ATTRIBUTES, WSDL_SECURE_PORT, TYPE).set(ModelType.INT);
             subsystem.get(ATTRIBUTES, WSDL_SECURE_PORT, REQUIRED).set(false);
 
+            subsystem.get(CHILDREN, ENDPOINT_CONFIG, DESCRIPTION).set(bundle.getString("endpoint.config"));
             subsystem.get(CHILDREN, ENDPOINT, DESCRIPTION).set(bundle.getString("endpoint"));
             subsystem.get(CHILDREN, ENDPOINT, REQUIRED).set(false);
 
@@ -280,36 +279,75 @@ final class WSSubsystemProviders {
         static ModelNode getEndpointConfigDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
-            node.get(DESCRIPTION).set(bundle.getString("endpoint-config"));
-            node.get(ATTRIBUTES, Constants.CONFIG_NAME).set(ModelType.STRING);
-            node.get(ATTRIBUTES, Constants.CONFIG_NAME, DESCRIPTION).set(bundle.getString("endpoint-config.name"));
+
+            node.get(DESCRIPTION).set(bundle.getString("endpoint.config"));
+            node.get(HEAD_COMMENT_ALLOWED).set(true);
+            node.get(TAIL_COMMENT_ALLOWED).set(true);
+
+            node.get(ATTRIBUTES, Constants.CONFIG_NAME, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.CONFIG_NAME, DESCRIPTION).set(bundle.getString("endpoint.config.name"));
             node.get(ATTRIBUTES, Constants.CONFIG_NAME, REQUIRED).set(true);
 
             node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, DESCRIPTION).set(bundle.getString("protocol-binding"));
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, DESCRIPTION).set(bundle.getString("protocol.binding"));
             node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, REQUIRED).set(false);
 
+
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PORT_NAME_PATTERN, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PORT_NAME_PATTERN, DESCRIPTION).set(bundle.getString("portname.pattern"));
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PORT_NAME_PATTERN, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.SERVICE_NAME_PATTERN, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.SERVICE_NAME_PATTERN, DESCRIPTION).set(bundle.getString("servicename.pattern"));
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.SERVICE_NAME_PATTERN, REQUIRED).set(false);
+
             node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handle.name"));
-            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(false);
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handler.name"));
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(true);
 
             node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handle.name"));
-            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(false);
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handler.class"));
+            node.get(ATTRIBUTES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(true);
 
 
             node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, DESCRIPTION).set(bundle.getString("protocol-binding"));
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, DESCRIPTION).set(bundle.getString("protocol.binding"));
             node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, REQUIRED).set(false);
 
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PORT_NAME_PATTERN, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PORT_NAME_PATTERN, DESCRIPTION).set(bundle.getString("portname.pattern"));
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PORT_NAME_PATTERN, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.SERVICE_NAME_PATTERN, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.SERVICE_NAME_PATTERN, DESCRIPTION).set(bundle.getString("servicename.pattern"));
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.SERVICE_NAME_PATTERN, REQUIRED).set(false);
+
             node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handle.name"));
-            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(false);
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handler.name"));
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(true);
 
             node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handle.name"));
-            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(false);
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handler.class"));
+            node.get(ATTRIBUTES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(true);
 
+            node.get(ATTRIBUTES, Constants.PROPERTY, Constants.PROPERTY_NAME, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.PROPERTY, Constants.PROPERTY_NAME, DESCRIPTION).set(bundle.getString("property.name"));
+            node.get(ATTRIBUTES, Constants.PROPERTY, Constants.PROPERTY_NAME, REQUIRED).set(true);
+
+            node.get(ATTRIBUTES, Constants.PROPERTY, Constants.PROPERTY_VALUE, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.PROPERTY, Constants.PROPERTY_VALUE, DESCRIPTION).set(bundle.getString("property.value"));
+            node.get(ATTRIBUTES, Constants.PROPERTY, Constants.PROPERTY_VALUE, REQUIRED).set(true);
+
+
+            node.get(ATTRIBUTES, Constants.FEATURE, Constants.FEATURE_NAME, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.FEATURE, Constants.FEATURE_NAME, DESCRIPTION).set(bundle.getString("feature.name"));
+            node.get(ATTRIBUTES, Constants.FEATURE, Constants.FEATURE_NAME, REQUIRED).set(true);
+
+            /* not supported yet
+            node.get(ATTRIBUTES, Constants.FEATURE, Constants.FEATURE_DATA, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, Constants.FEATURE, Constants.FEATURE_DATA, DESCRIPTION).set(bundle.getString("feature.value"));
+            node.get(ATTRIBUTES, Constants.FEATURE, Constants.FEATURE_DATA, REQUIRED).set(true);
+            */
             return node;
         }
 
@@ -318,35 +356,73 @@ final class WSSubsystemProviders {
 
             final ModelNode node = new ModelNode();
             node.get(OPERATION_NAME).set(ADD);
-            node.get(DESCRIPTION).set(bundle.getString("endpoint-config.add"));
-            node.get(REQUEST_PROPERTIES, Constants.CONFIG_NAME).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, Constants.CONFIG_NAME, DESCRIPTION).set(bundle.getString("endpoint-config.name"));
+            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.add"));
+
+            node.get(REQUEST_PROPERTIES, Constants.CONFIG_NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.CONFIG_NAME, DESCRIPTION).set(bundle.getString("endpoint.config.name"));
             node.get(REQUEST_PROPERTIES, Constants.CONFIG_NAME, REQUIRED).set(true);
 
             node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, DESCRIPTION).set(bundle.getString("protocol-binding"));
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, DESCRIPTION).set(bundle.getString("protocol.binding"));
             node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, REQUIRED).set(false);
 
+
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PORT_NAME_PATTERN, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PORT_NAME_PATTERN, DESCRIPTION).set(bundle.getString("portname.pattern"));
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PORT_NAME_PATTERN, REQUIRED).set(false);
+
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.SERVICE_NAME_PATTERN, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.SERVICE_NAME_PATTERN, DESCRIPTION).set(bundle.getString("servicename.pattern"));
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.SERVICE_NAME_PATTERN, REQUIRED).set(false);
+
             node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handle.name"));
-            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(false);
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handler.name"));
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(true);
 
             node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handle.name"));
-            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(false);
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handler.class"));
+            node.get(REQUEST_PROPERTIES, Constants.PRE_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(true);
 
 
             node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, DESCRIPTION).set(bundle.getString("protocol-binding"));
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, DESCRIPTION).set(bundle.getString("protocol.binding"));
             node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PROTOCOL_BINDING, REQUIRED).set(false);
 
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PORT_NAME_PATTERN, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PORT_NAME_PATTERN, DESCRIPTION).set(bundle.getString("portname.pattern"));
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.PORT_NAME_PATTERN, REQUIRED).set(false);
+
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.SERVICE_NAME_PATTERN, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.SERVICE_NAME_PATTERN, DESCRIPTION).set(bundle.getString("servicename.pattern"));
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.SERVICE_NAME_PATTERN, REQUIRED).set(false);
+
             node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handle.name"));
-            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(false);
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, DESCRIPTION).set(bundle.getString("handler.name"));
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_NAME, REQUIRED).set(true);
 
             node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handle.name"));
-            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(false);
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, DESCRIPTION).set(bundle.getString("handler.class"));
+            node.get(REQUEST_PROPERTIES, Constants.POST_HANDLER_CHAINS, Constants.HANDLER_CHAIN, Constants.HANDLER, Constants.HANDLER_CLASS, REQUIRED).set(true);
+
+            node.get(REQUEST_PROPERTIES, Constants.PROPERTY, Constants.PROPERTY_NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.PROPERTY, Constants.PROPERTY_NAME, DESCRIPTION).set(bundle.getString("property.name"));
+            node.get(REQUEST_PROPERTIES, Constants.PROPERTY, Constants.PROPERTY_NAME, REQUIRED).set(true);
+
+            node.get(REQUEST_PROPERTIES, Constants.PROPERTY, Constants.PROPERTY_VALUE, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.PROPERTY, Constants.PROPERTY_VALUE, DESCRIPTION).set(bundle.getString("property.value"));
+            node.get(REQUEST_PROPERTIES, Constants.PROPERTY, Constants.PROPERTY_VALUE, REQUIRED).set(true);
+
+
+            node.get(REQUEST_PROPERTIES, Constants.FEATURE, Constants.FEATURE_NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.FEATURE, Constants.FEATURE_NAME, DESCRIPTION).set(bundle.getString("feature.name"));
+            node.get(REQUEST_PROPERTIES, Constants.FEATURE, Constants.FEATURE_NAME, REQUIRED).set(true);
+
+            /*Not supported
+            node.get(REQUEST_PROPERTIES, Constants.FEATURE, Constants.FEATURE_DATA, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, Constants.FEATURE, Constants.FEATURE_DATA, DESCRIPTION).set(bundle.getString("feature.value"));
+            node.get(REQUEST_PROPERTIES, Constants.FEATURE, Constants.FEATURE_DATA, REQUIRED).set(true);
+            */
+
             return node;
         }
 
@@ -355,9 +431,9 @@ final class WSSubsystemProviders {
             final ModelNode node = new ModelNode();
 
             node.get(OPERATION_NAME).set(REMOVE);
-            node.get(DESCRIPTION).set(bundle.getString("endpoint-config.remove"));
+            node.get(DESCRIPTION).set(bundle.getString("endpoint.config.remove"));
 
-            node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("endpoint-config.name"));
+            node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("endpoint.config.name"));
             node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
             node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
 

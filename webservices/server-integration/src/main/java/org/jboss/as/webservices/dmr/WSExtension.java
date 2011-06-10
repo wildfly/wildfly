@@ -42,6 +42,7 @@ import org.jboss.logging.Logger;
  * @author alessio.soldano@jboss.com
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="ema@redhat.com">Jim Ma</a>
  */
 public final class WSExtension implements Extension {
 
