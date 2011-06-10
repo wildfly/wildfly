@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ejb.stateful.exception;
+package org.jboss.as.test.spec.ejb3.stateful.exception;
 
 import javax.annotation.PreDestroy;
 import javax.ejb.Stateful;
@@ -30,9 +30,9 @@ import javax.ejb.Stateful;
  *
  */
 @Stateful
-public class SFSB1 {
+public class ExceptionSfsb {
 
-    public final static String MESSAGE = "Expected Exception";
+    public static final String MESSAGE = "Expected Exception";
 
     public volatile boolean preDestroy = false;
 

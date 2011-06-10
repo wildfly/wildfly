@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ejb.stateful.exception;
+package org.jboss.as.test.spec.ejb3.stateful.exception;
 
 import javax.ejb.NoSuchEJBException;
 import javax.naming.InitialContext;
@@ -28,7 +28,6 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -55,10 +54,10 @@ public class SystemExceptionTestCase {
     }
 
     @Deployment
-    public static Archive<?> deploy() {
+    public static JavaArchive deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addPackage(SystemExceptionTestCase.class.getPackage());
+        jar.addClass(ExceptionSfsb.class);
         return jar;
     }
 
@@ -74,12 +73,12 @@ public class SystemExceptionTestCase {
     @Test
     public void testSystemExceptionDestroysBean() throws Exception {
 
-        SFSB1 sfsb1 = lookup(SFSB1.class);
+        ExceptionSfsb sfsb1 = lookup(ExceptionSfsb.class);
         Assert.assertFalse(sfsb1.preDestroy);
         try {
             sfsb1.systemException();
         } catch (RuntimeException e) {
-            Assert.assertTrue(e.getMessage().contains(SFSB1.MESSAGE));
+            Assert.assertTrue(e.getMessage().contains(ExceptionSfsb.MESSAGE));
         }
         Assert.assertFalse(sfsb1.preDestroy);
         try {
