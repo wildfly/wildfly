@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.metadata;
 
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
@@ -59,8 +60,10 @@ public final class ContainerMetaDataDeploymentAspect extends AbstractDeploymentA
     public void start(final Deployment dep) {
         if (WSHelper.isJseDeployment(dep)) {
             this.log.debug("Creating JBoss agnostic JSE meta data for deployment: " + dep.getSimpleName());
-            final JSEArchiveMetaData jseMetaData = this.metaDataBuilderJSE.create(dep);
-            dep.addAttachment(JSEArchiveMetaData.class, jseMetaData);
+            if (WSHelper.hasAttachment(dep, JBossWebMetaData.class)) {
+                final JSEArchiveMetaData jseMetaData = this.metaDataBuilderJSE.create(dep);
+                dep.addAttachment(JSEArchiveMetaData.class, jseMetaData);
+            }
         }
         else if (WSHelper.isJaxwsEjbDeployment(dep)) {
             this.log.debug("Creating JBoss agnostic EJB3 meta data for deployment: " + dep.getSimpleName());

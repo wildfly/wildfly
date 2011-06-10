@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -32,8 +32,6 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentException;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -44,7 +42,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.logging.Logger;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
 
@@ -55,15 +52,15 @@ import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
  */
 public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor {
 
-    private static final Logger LOGGER = Logger.getLogger(WSEJBIntegrationProcessor.class);
-
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        final WebServiceDeploymentAdapter wsDeploymentAdapter = new WebServiceDeploymentAdapter();
+        final WebServiceDeployment wsDeploymentAdapter = new WebServiceDeploymentAdapter();
         processAnnotation(unit, ASHelper.WEB_SERVICE_ANNOTATION, wsDeploymentAdapter);
         processAnnotation(unit, ASHelper.WEB_SERVICE_PROVIDER_ANNOTATION, wsDeploymentAdapter);
-        unit.putAttachment(WEBSERVICE_DEPLOYMENT_KEY, wsDeploymentAdapter);
+        if (!wsDeploymentAdapter.getServiceEndpoints().isEmpty()) {
+            unit.putAttachment(WEBSERVICE_DEPLOYMENT_KEY, wsDeploymentAdapter);
+        }
     }
 
     @Override
@@ -71,18 +68,9 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
         // NOOP
     }
 
-   /**
-    * Deploys WebServiceDeployment meta data.
-    *
-    * @param unit deployment unit
-    * @throws DeploymentException exception
-    */
-   public static void internalDeploy(final DeploymentUnit unit) {
-   }
-
-   private static void processAnnotation(final DeploymentUnit unit, final DotName annotation, final WebServiceDeploymentAdapter wsDeploymentAdapter) {
-       final List<AnnotationInstance> webServiceAnnotations = getAnnotations(unit, annotation);
-       final List<WebServiceDeclaration> endpoints = wsDeploymentAdapter.getServiceEndpoints();
+   private static void processAnnotation(final DeploymentUnit unit, final DotName annotation, final WebServiceDeployment wsDeployment) {
+       final List<AnnotationInstance> webServiceAnnotations = ASHelper.getAnnotations(unit, annotation);
+       final List<WebServiceDeclaration> endpoints = wsDeployment.getServiceEndpoints();
        final EEModuleDescription moduleDescription = unit.getAttachment(EE_MODULE_DESCRIPTION);
 
        for (final AnnotationInstance webServiceAnnotation : webServiceAnnotations) {
@@ -113,11 +101,6 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
            }
        }
        return beans;
-   }
-
-   private static List<AnnotationInstance> getAnnotations(final DeploymentUnit unit, final DotName annotation) {
-       final CompositeIndex compositeIndex = ASHelper.getRequiredAttachment(unit, Attachments.COMPOSITE_ANNOTATION_INDEX);
-       return compositeIndex.getAnnotations(annotation);
    }
 
    /**

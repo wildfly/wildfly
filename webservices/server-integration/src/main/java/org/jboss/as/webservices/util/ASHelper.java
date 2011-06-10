@@ -39,6 +39,7 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.deployment.WarMetaData;
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
@@ -48,7 +49,6 @@ import org.jboss.metadata.common.jboss.WebserviceDescriptionsMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
-import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
 
@@ -89,106 +89,6 @@ public final class ASHelper {
      */
     public static boolean isWebServiceDeployment(final DeploymentUnit unit) {
         return ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY) != null;
-    }
-
-    /**
-     * Returns true if unit contains JAXRPC EJB deployment.
-     *
-     * @param unit deployment unit
-     * @return true if JAXRPC EJB deployment, false otherwise
-     */
-    public static boolean isJaxrpcEjbDeployment(final DeploymentUnit unit) {
-        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
-
-        return DeploymentType.JAXRPC_EJB21.equals(deploymentType);
-    }
-
-    /**
-     * Returns true if unit contains JAXRPC JSE deployment.
-     *
-     * @param unit deployment unit
-     * @return true if JAXRPC JSE deployment, false otherwise
-     */
-    public static boolean isJaxrpcJseDeployment(final DeploymentUnit unit) {
-        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
-
-        return DeploymentType.JAXRPC_JSE.equals(deploymentType);
-    }
-
-    /**
-     * Returns true if unit contains JAXWS EJB deployment.
-     *
-     * @param unit deployment unit
-     * @return true if JAXWS EJB deployment, false otherwise
-     */
-    public static boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
-        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
-
-        return DeploymentType.JAXWS_EJB3.equals(deploymentType);
-    }
-
-    /**
-     * Returns true if unit contains JAXWS JSE deployment.
-     *
-     * @param unit deployment unit
-     * @return true if JAXWS JSE deployment, false otherwise
-     */
-    public static boolean isJaxwsJseDeployment(final DeploymentUnit unit) {
-        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
-
-        return DeploymentType.JAXWS_JSE.equals(deploymentType);
-    }
-
-    /**
-     * Returns true if unit contains either JAXWS JSE or JAXRPC JSE deployment.
-     *
-     * @param unit deployment unit
-     * @return true if either JAXWS JSE or JAXRPC JSE deployment, false otherwise.
-     */
-    public static boolean isJseDeployment(final DeploymentUnit unit) {
-        final boolean isJaxwsJse = ASHelper.isJaxwsJseDeployment(unit);
-        final boolean isJaxrpcJse = ASHelper.isJaxrpcJseDeployment(unit);
-
-        return isJaxwsJse || isJaxrpcJse;
-    }
-
-    /**
-     * Returns true if unit contains either JAXWS EJB or JAXRPC EJB deployment.
-     *
-     * @param unit deployment unit
-     * @return true if either JAXWS EJB or JAXRPC EJB deployment, false otherwise
-     */
-    public static boolean isEjbDeployment(final DeploymentUnit unit) {
-        final boolean isJaxwsEjb = ASHelper.isJaxwsEjbDeployment(unit);
-        final boolean isJaxrpcEjb = ASHelper.isJaxrpcEjbDeployment(unit);
-
-        return isJaxwsEjb || isJaxrpcEjb;
-    }
-
-    /**
-     * Returns true if unit contains either JAXWS EJB or JAXWS JSE deployment.
-     *
-     * @param unit deployment unit
-     * @return true if either JAXWS EJB or JAXWS JSE deployment, false otherwise
-     */
-    public static boolean isJaxwsDeployment(final DeploymentUnit unit) {
-        final boolean isJaxwsEjb = ASHelper.isJaxwsEjbDeployment(unit);
-        final boolean isJaxwsJse = ASHelper.isJaxwsJseDeployment(unit);
-
-        return isJaxwsEjb || isJaxwsJse;
-    }
-
-    /**
-     * Returns true if unit contains either JAXRPC EJB or JAXRPC JSE deployment.
-     *
-     * @param unit deployment unit
-     * @return true if either JAXRPC EJB or JAXRPC JSE deployment, false otherwise
-     */
-    public static boolean isJaxrpcDeployment(final DeploymentUnit unit) {
-        final boolean isJaxrpcEjb = ASHelper.isJaxrpcEjbDeployment(unit);
-        final boolean isJaxrpcJse = ASHelper.isJaxrpcJseDeployment(unit);
-
-        return isJaxrpcEjb || isJaxrpcJse;
     }
 
     /**
@@ -390,5 +290,10 @@ public final class ASHelper {
             }
         }
         return result;
+    }
+
+    public static List<AnnotationInstance> getAnnotations(final DeploymentUnit unit, final DotName annotation) {
+       final CompositeIndex compositeIndex = ASHelper.getRequiredAttachment(unit, Attachments.COMPOSITE_ANNOTATION_INDEX);
+       return compositeIndex.getAnnotations(annotation);
     }
 }

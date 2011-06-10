@@ -25,9 +25,12 @@ import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
+import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 
 /**
  * Creates new JAXWS JSE deployment.
@@ -50,20 +53,30 @@ final class DeploymentModelBuilderJAXWS_JSE extends AbstractDeploymentModelBuild
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
+        this.log.debug("Creating JAXWS JSE endpoints meta data model");
         final JBossWebMetaData webMetaData = ASHelper.getJBossWebMetaData(unit);
         if (webMetaData != null) {
             dep.addAttachment(JBossWebMetaData.class, webMetaData);
+            final List<ServletMetaData> servlets = ASHelper.getJaxwsServlets(unit);
+            for (ServletMetaData servlet : servlets) {
+                final String servletName = servlet.getName();
+                this.log.debug("JSE name: " + servletName);
+                final String servletClass = ASHelper.getEndpointName(servlet);
+                this.log.debug("JSE class: " + servletClass);
+
+                this.newHttpEndpoint(servletClass, servletName, dep);
+            }
         }
 
-        this.log.debug("Creating JAXWS JSE endpoints meta data model");
-        final List<ServletMetaData> servlets = ASHelper.getJaxwsServlets(unit);
-        for (ServletMetaData servlet : servlets) {
-            final String servletName = servlet.getName();
-            this.log.debug("JSE name: " + servletName);
-            final String servletClass = ASHelper.getEndpointName(servlet);
-            this.log.debug("JSE class: " + servletClass);
-
-            this.newHttpEndpoint(servletClass, servletName, dep);
+        final JMSEndpointsMetaData jmsEndpointsMD = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
+        if (jmsEndpointsMD != null) {
+            dep.addAttachment(JMSEndpointsMetaData.class, jmsEndpointsMD);
+            for (JMSEndpointMetaData endpoint : jmsEndpointsMD.getEndpointsMetaData()) {
+                if (endpoint.getName() == null) {
+                    endpoint.setName(endpoint.getImplementor());
+                }
+                this.newJMSEndpoint(endpoint.getImplementor(), endpoint.getName(), endpoint.getSoapAddress(), dep);
+            }
         }
     }
 }

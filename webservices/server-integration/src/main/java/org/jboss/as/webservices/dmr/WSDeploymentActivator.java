@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,6 +29,7 @@ import org.jboss.as.webservices.deployers.AspectDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSDependenciesProcessor;
 import org.jboss.as.webservices.deployers.WSDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSEJBIntegrationProcessor;
+import org.jboss.as.webservices.deployers.WSJMSIntegrationProcessor;
 import org.jboss.as.webservices.deployers.WSModelDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSTypeDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WebServiceContextResourceProcessor;
@@ -38,7 +39,6 @@ import org.jboss.ws.common.sort.DeploymentAspectSorter;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 
-import javax.xml.ws.WebServiceContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -58,12 +58,10 @@ final class WSDeploymentActivator {
         int priority = Phase.INSTALL_WAR_METADATA + 10;
 
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEBSERVICES_XML, new WSDescriptorDeploymentProcessor());
-        //updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JMS_WS_XML, new WSJMSDescriptorDeploymentProcessor());
         updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WS, new WSDependenciesProcessor());
         updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_EJB_INTEGRATION, new WSEJBIntegrationProcessor());
+        updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_JMS_INTEGRATION, new WSJMSIntegrationProcessor());
         //updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRPC, new WSJAXRPCDependenciesDeploymentProcessor());
-        //updateContext.addDeploymentProcessor(Phase.INSTALL, priority++, new WSEJBAdapterDeploymentProcessor());
-        // TODO -- ?? updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_LAZY_BINDING_SOURCE_HANDLER, new WebServiceContextDeploymentUnitProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, priority++, new WSTypeDeploymentProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, priority++, new WSModelDeploymentProcessor());
 

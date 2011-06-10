@@ -64,10 +64,12 @@ final class WebMetaDataModifier {
      * @param dep webservice deployment
      */
     void modify(final Deployment dep) {
-        final JBossWebMetaData jbossWebMD = WSHelper.getRequiredAttachment(dep, JBossWebMetaData.class);
+        final JBossWebMetaData jbossWebMD = WSHelper.getOptionalAttachment(dep, JBossWebMetaData.class);
 
-        this.configureEndpoints(dep, jbossWebMD);
-        this.modifyContextRoot(dep, jbossWebMD);
+        if (jbossWebMD != null) {
+            this.configureEndpoints(dep, jbossWebMD);
+            this.modifyContextRoot(dep, jbossWebMD);
+        }
     }
 
     /**

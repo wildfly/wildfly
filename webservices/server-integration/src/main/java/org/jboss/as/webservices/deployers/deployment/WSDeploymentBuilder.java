@@ -46,7 +46,6 @@ public final class WSDeploymentBuilder {
         WSDeploymentBuilder.builders.put(DeploymentType.JAXRPC_JSE, new DeploymentModelBuilderJAXRPC_JSE());
         WSDeploymentBuilder.builders.put(DeploymentType.JAXWS_EJB3, new DeploymentModelBuilderJAXWS_EJB3());
         WSDeploymentBuilder.builders.put(DeploymentType.JAXRPC_EJB21, new DeploymentModelBuilderJAXRPC_EJB21());
-        WSDeploymentBuilder.builders.put(DeploymentType.JAXWS_JMS, new DeploymentModelBuilderJAXWS_JMS());
     }
 
     /**

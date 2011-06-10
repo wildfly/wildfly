@@ -133,7 +133,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
      * @param dep deployment
      * @return WS endpoint
      */
-    protected final Endpoint newJMSEndpoint(final String endpointClass, final String endpointName, final Deployment dep) {
+    protected final Endpoint newJMSEndpoint(final String endpointClass, final String endpointName, final String soapAddress, final Deployment dep) {
         if (endpointName == null) {
             throw new NullPointerException("Null endpoint name");
         }
@@ -143,6 +143,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
         }
 
         final Endpoint endpoint = this.deploymentModelFactory.newJMSEndpoint(endpointClass);
+        endpoint.setAddress(soapAddress);
         endpoint.setShortName(endpointName);
         dep.getService().addEndpoint(endpoint);
 
