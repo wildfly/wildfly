@@ -198,16 +198,14 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                             " of stateful component instance: " + statefulSessionComponentInstance);
                 }
                 statefulSessionComponentInstance.afterCompletion(status == Status.STATUS_COMMITTED);
+                //This must be set to null before the lock is released.
+                transactionKey = null;
                 // tx has completed, so mark the SFSB instance as no longer in use
                 releaseInstance(statefulSessionComponentInstance);
 
             } catch (Throwable t) {
                 throw handleThrowableInTxSync(statefulSessionComponentInstance, t);
-            } finally {
-                // mark that the SFSB instance is no longer associated with the tx
-                transactionKey = null;
             }
-
         }
 
     }
