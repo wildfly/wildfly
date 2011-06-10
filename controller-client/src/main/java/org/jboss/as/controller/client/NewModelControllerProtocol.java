@@ -33,8 +33,6 @@ public interface NewModelControllerProtocol {
     byte OPERATION_FAILED_REQUEST = 0x47;
     byte OPERATION_COMPLETED_REQUEST = 0x48;
     byte OPERATION_PREPARED_REQUEST = 0x49;
-    byte COMMIT_TRANSACTION_REQUEST = 0x4A;
-    byte ROLLBACK_TRANSACTION_REQUEST = 0x4B;
     byte GET_INPUTSTREAM_REQUEST = 0x4C;
 
 
@@ -47,4 +45,7 @@ public interface NewModelControllerProtocol {
     byte PARAM_INPUTSTREAM_INDEX = 0x66;
     byte PARAM_INPUTSTREAM_LENGTH = 0x67;
     byte PARAM_INPUTSTREAM_CONTENTS = 0x68;
+    byte PARAM_PREPARED = 0x69;
+    byte PARAM_COMMIT = 0x70;
+    byte PARAM_ROLLBACK = 0x71;
 }
