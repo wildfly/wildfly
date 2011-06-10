@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ejb.remove;
+package org.jboss.as.test.spec.ejb3.remove;
 
 import javax.ejb.NoSuchEJBException;
 import javax.naming.InitialContext;
@@ -35,10 +35,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.NoSuchEJBException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * @Remove tests
@@ -61,9 +57,10 @@ public class RemoveTestCase {
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(RemoveTestCase.class,
-            SFSB1.class
+        jar.addClasses(
+            RemoveBean.class
         );
+        System.out.println(jar.toString(true));
         return jar;
     }
 
@@ -79,15 +76,14 @@ public class RemoveTestCase {
     @Test
     public void testRemoveDestroysBean() throws Exception {
         try {
-            SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+            RemoveBean sfsb1 = lookup(RemoveBean.class.getSimpleName(), RemoveBean.class);
             sfsb1.done();   // first call is expected to work
             sfsb1.done();   // second call is expected to fail since we are calling a destroyed bean
-            // uncomment the following line after @Remove is implemented
-            // fail("Expecting NoSuchEJBException");
+             Assert.fail("Expecting NoSuchEJBException");
         } catch (NoSuchEJBException expectedException) {
             // good
         }
 
-        Assert.assertTrue(SFSB1.preDestroyCalled);
+        Assert.assertTrue(RemoveBean.preDestroyCalled);
     }
 }

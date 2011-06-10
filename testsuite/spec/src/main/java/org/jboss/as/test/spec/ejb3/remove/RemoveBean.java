@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ejb.remove;
+package org.jboss.as.test.spec.ejb3.remove;
 
 import javax.annotation.PreDestroy;
 import javax.ejb.Remove;
@@ -32,16 +32,16 @@ import javax.ejb.Stateful;
  * @author Scott Marlow
  */
 @Stateful
-public class SFSB1 {
+public class RemoveBean {
 
     public static volatile boolean preDestroyCalled = false;
 
     @PreDestroy
+    @SuppressWarnings("unused")
     private void preDestroy() {
         preDestroyCalled = true;
     }
 
-    // always throws a TransactionRequiredException
     @Remove
     public void done() {
 
