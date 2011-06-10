@@ -27,9 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -55,8 +52,6 @@ import org.jboss.remoting3.CloseHandler;
  */
 public class NewTransactionalModelControllerOperationHandler extends NewAbstractModelControllerOperationHandler {
 
-    private Map<Integer, OperationTransaction> activeTransactions = Collections.synchronizedMap(new HashMap<Integer, NewModelController.OperationTransaction>());
-
     public NewTransactionalModelControllerOperationHandler(final ExecutorService executorService, final NewModelController controller) {
         super(executorService, controller);
     }
@@ -65,10 +60,6 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
     public ManagementRequestHandler getRequestHandler(final byte id) {
         if (id == NewModelControllerProtocol.EXECUTE_REQUEST) {
             return new ExecuteRequestHandler();
-        } else if (id == NewModelControllerProtocol.COMMIT_TRANSACTION_REQUEST) {
-            return new CommitOperationTransactionRequestHandler();
-        } else if (id == NewModelControllerProtocol.ROLLBACK_TRANSACTION_REQUEST) {
-            return new RollbackOperationTransactionRequestHandler();
         }
         return null;
     }
@@ -94,12 +85,6 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
             getContext().getChannel().addCloseHandler(new CloseHandler<Channel>() {
                 @Override
                 public void handleClose(Channel closed) {
-                    synchronized (activeTransactions) {
-                        for (OperationTransaction tx : activeTransactions.values()) {
-                            tx.rollback();
-                        }
-                    }
-                    activeTransactions.clear();
                 }
             });
 
@@ -107,11 +92,12 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
 
         @Override
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
+            final CountDownLatch preparedOrFailedLatch = new CountDownLatch(1);
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
                     final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(getContext(), executionId);
-                    final ProxyOperationControlProxy control = new ProxyOperationControlProxy(getContext(), executionId);
+                    final ProxyOperationControlProxy control = new ProxyOperationControlProxy(getContext(), executionId, preparedOrFailedLatch);
                     final ModelNode result;
                     try {
                         result = controller.execute(
@@ -126,60 +112,19 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                         control.operationFailed(failure);
                         return;
                     }
-                    if (result.hasDefined(OUTCOME) && result.get(OUTCOME).asString().equals(FAILED)) {
+                    if (result.hasDefined(FAILURE_DESCRIPTION)) {
                         control.operationFailed(result);
                     } else {
                         control.operationCompleted(result);
                     }
                 }
             });
-        }
-    }
-
-    /**
-     * Handles incoming {@link NewModelController.OperationTransaction} requests from the remote proxy controller and forwards them to the target
-     * model controller
-     */
-    private abstract class OperationTransactionRequestHandler extends ManagementRequestHandler {
-
-        @Override
-        protected void readRequest(final DataInput input) throws IOException {
-            final int executionId = getContext().getHeader().getExecutionId();
-            OperationTransaction tx = activeTransactions.remove(executionId);
-            if (tx == null) {
-                throw new IOException("No active transaction with id " + executionId);
+            try {
+                preparedOrFailedLatch.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Thread was interrupted waiting for the operation to prepare/fail");
             }
-            handle(tx);
-        }
-
-        @Override
-        protected void writeResponse(final FlushableDataOutput output) throws IOException {
-        }
-
-        protected abstract void handle(OperationTransaction tx);
-    }
-
-    /**
-     * Handles incoming {@link NewModelController.OperationTransaction#commit()} requests from the remote proxy controller and forwards them to the target
-     * model controller
-     */
-    private class CommitOperationTransactionRequestHandler extends OperationTransactionRequestHandler {
-
-        @Override
-        protected void handle(OperationTransaction tx) {
-            tx.commit();
-        }
-    }
-
-    /**
-     * Handles incoming {@link NewModelController.OperationTransaction#rollback} requests from the remote proxy controller and forwards them to the target
-     * model controller
-     */
-    private class RollbackOperationTransactionRequestHandler extends OperationTransactionRequestHandler {
-
-        @Override
-        protected void handle(OperationTransaction tx) {
-            tx.rollback();
         }
     }
 
@@ -189,58 +134,71 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
     private class ProxyOperationControlProxy implements ProxyOperationControl {
         final ManagementRequestContext context;
         final int executionId;
+        final CountDownLatch preparedOrFailedLatch;
 
-        public ProxyOperationControlProxy(final ManagementRequestContext context, final int executionId) {
+        public ProxyOperationControlProxy(final ManagementRequestContext context, final int executionId, final CountDownLatch preparedOrFailedLatch) {
             this.context = context;
             this.executionId = executionId;
+            this.preparedOrFailedLatch = preparedOrFailedLatch;
         }
 
         @Override
         public void operationPrepared(final OperationTransaction transaction, final ModelNode result) {
-            final CountDownLatch completedLatch = new CountDownLatch(1);
-            //Operation prepared should not return until the Tx has been committed or rolled back
-            final OperationTransaction blockingTransaction = new OperationTransaction() {
-
-                @Override
-                public void rollback() {
-                    transaction.rollback();
-                    completedLatch.countDown();
-                }
-
-                @Override
-                public void commit() {
-                    transaction.commit();
-                    completedLatch.countDown();
-                }
-            };
-            activeTransactions.put(executionId, blockingTransaction);
-            new OperationStatusRequest(executionId, result) {
-
-                @Override
-                protected byte getRequestCode() {
-                    return NewModelControllerProtocol.OPERATION_PREPARED_REQUEST;
-                }
-
-            }.execute(executorService, getChannelStrategy(context.getChannel()));
-
             try {
-                completedLatch.await();
-            } catch(InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted while waiting for Tx commit/rollback");
+                new OperationStatusRequest(executionId, result) {
+
+                    @Override
+                    protected byte getRequestCode() {
+                        return NewModelControllerProtocol.OPERATION_PREPARED_REQUEST;
+                    }
+
+                    @Override
+                    protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
+                        super.writeRequest(protocolVersion, output);
+                    }
+
+                    @Override
+                    protected Void readResponse(DataInput input) throws IOException {
+                        //The caller has delegated the operationPrepared() call
+                        ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_PREPARED);
+                        preparedOrFailedLatch.countDown();
+
+                        //Now check if the Tx was committed or rolled back
+                        byte status = input.readByte();
+                        if (status == NewModelControllerProtocol.PARAM_COMMIT) {
+                            transaction.commit();
+                        } else if (status == NewModelControllerProtocol.PARAM_ROLLBACK){
+                            transaction.rollback();
+                        } else {
+                            throw new IllegalArgumentException("Invalid status code " + status);
+                        }
+
+                        return null;
+                    }
+
+                }.executeForResult(executorService, getChannelStrategy(context.getChannel()));
+            } catch (Exception e) {
+                // AutoGenerated
+                throw new RuntimeException(e);
             }
         }
 
         @Override
         public void operationFailed(final ModelNode response) {
-            new OperationStatusRequest(executionId, response) {
+            try {
+                new OperationStatusRequest(executionId, response) {
 
-                @Override
-                protected byte getRequestCode() {
-                    return NewModelControllerProtocol.OPERATION_FAILED_REQUEST;
-                }
+                    @Override
+                    protected byte getRequestCode() {
+                        return NewModelControllerProtocol.OPERATION_FAILED_REQUEST;
+                    }
 
-            }.execute(executorService, getChannelStrategy(context.getChannel()));
+                }.executeForResult(executorService, getChannelStrategy(context.getChannel()));
+            } catch (Exception e) {
+                // AutoGenerated
+                throw new RuntimeException(e);
+            }
+            preparedOrFailedLatch.countDown();
         }
 
         @Override
