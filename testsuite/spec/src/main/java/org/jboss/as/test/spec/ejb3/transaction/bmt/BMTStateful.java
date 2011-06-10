@@ -19,39 +19,53 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.transaction.bmt;
+package org.jboss.as.test.spec.ejb3.transaction.bmt;
 
 import javax.annotation.Resource;
 import javax.ejb.EJBContext;
-import javax.ejb.Singleton;
+import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.transaction.NotSupportedException;
+import javax.transaction.Status;
 import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
 /**
- *
+ * Stateful session bean that uses the same transaction over two method invocations
  *
  * @author Stuart Douglas
  */
-@Singleton
+@Stateful
 @TransactionManagement(TransactionManagementType.BEAN)
-public class BMTSingleton {
+public class BMTStateful {
 
     @Resource
     private EJBContext ejbContext;
 
-    /**
-     * This method leaks a transaction, and should result in a exception
-     */
-    public void leakTransaction(){
+    public void createTransaction() {
         try {
-            ejbContext.getUserTransaction().begin();
-        } catch (NotSupportedException e) {
-            throw new RuntimeException(e);
+            final UserTransaction userTransaction = ejbContext.getUserTransaction();
+            if(Status.STATUS_NO_TRANSACTION!=userTransaction.getStatus()){
+                throw new AssertionError("Status not as expected");
+            }
+            userTransaction.begin();
         } catch (SystemException e) {
+            throw new RuntimeException(e);
+        } catch (NotSupportedException e) {
             throw new RuntimeException(e);
         }
     }
 
+    public void rollbackTransaction() {
+        try {
+            final UserTransaction userTransaction = ejbContext.getUserTransaction();
+            if (Status.STATUS_ACTIVE != userTransaction.getStatus()) {
+                throw new AssertionError("Status not as expected");
+            }
+            userTransaction.rollback();
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -19,51 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.transaction.bmt;
-
-import org.junit.Assert;
+package org.jboss.as.test.spec.ejb3.transaction.bmt;
 
 import javax.annotation.Resource;
 import javax.ejb.EJBContext;
-import javax.ejb.Stateful;
+import javax.ejb.Singleton;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.transaction.NotSupportedException;
-import javax.transaction.Status;
 import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
 
 /**
- * Stateful session bean that uses the same transaction over two method invocations
+ *
  *
  * @author Stuart Douglas
  */
-@Stateful
+@Singleton
 @TransactionManagement(TransactionManagementType.BEAN)
-public class BMTStateful {
+public class BMTSingleton {
 
     @Resource
     private EJBContext ejbContext;
 
-    public void createTransaction() {
+    /**
+     * This method leaks a transaction, and should result in a exception
+     */
+    public void leakTransaction(){
         try {
-            final UserTransaction userTransaction = ejbContext.getUserTransaction();
-            Assert.assertEquals(Status.STATUS_NO_TRANSACTION, userTransaction.getStatus());
-            userTransaction.begin();
-        } catch (SystemException e) {
-            throw new RuntimeException(e);
+            ejbContext.getUserTransaction().begin();
         } catch (NotSupportedException e) {
+            throw new RuntimeException(e);
+        } catch (SystemException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void rollbackTransaction() {
-        try {
-            final UserTransaction userTransaction = ejbContext.getUserTransaction();
-            Assert.assertEquals(Status.STATUS_ACTIVE, userTransaction.getStatus());
-            userTransaction.rollback();
-        } catch (SystemException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
