@@ -25,7 +25,6 @@ package org.jboss.as.testsuite.integration.osgi.xservice;
 import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
-import java.util.jar.JarFile;
 
 import javax.inject.Inject;
 
@@ -44,6 +43,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -67,8 +67,8 @@ import org.osgi.framework.ServiceReference;
 @Ignore("[ARQ-469] ClassCastException: java.lang.String cannot be cast to [B")
 public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCase {
 
-    private static final String TARGET_MODULE_NAME = "example-xservice-target-module";
-    private static final String CLIENT_BUNDLE_NAME = "example-xservice-client-bundle";
+    private static final String TARGET_MODULE_NAME = "example-xservice-bam-target-module";
+    private static final String CLIENT_BUNDLE_NAME = "example-xservice-bam-client-bundle";
 
     @Inject
     public ServiceContainer serviceContainer;
@@ -162,7 +162,13 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         archive.addClasses(Echo.class, EchoService.class, TargetModuleActivator.class);
         String activatorPath = "META-INF/services/" + ServiceActivator.class.getName();
         archive.addAsResource(OSGiTestHelper.getResourceFile("osgi/xservice/target-module/" + activatorPath), activatorPath);
-        archive.setManifest(OSGiTestHelper.getResourceFile("osgi/xservice/target-module/" + JarFile.MANIFEST_NAME));
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                ManifestBuilder builder = ManifestBuilder.newInstance();
+                builder.addManifestHeader("Dependencies", "org.jboss.modules,org.jboss.logging");
+                return builder.openStream();
+            }
+        });
         return archive;
     }
 }
