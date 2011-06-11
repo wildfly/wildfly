@@ -25,10 +25,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -47,15 +44,10 @@ import org.xnio.IoUtils;
  */
 public class ManagementChannel extends ProtocolChannel implements ManagementBatchIdManager {
 
-    private final CountDownLatch completedActiveRequestsLatch = new CountDownLatch(1);
-
     private final RequestReceiver requestReceiver = new RequestReceiver();
     private final ResponseReceiver responseReceiver = new ResponseReceiver();
 
     private volatile ManagementBatchIdManager batchIdManager;
-
-    //GuardedBy(this)
-    private final Set<Integer> outgoingBatches = new HashSet<Integer>();
 
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -111,8 +103,6 @@ public class ManagementChannel extends ProtocolChannel implements ManagementBatc
             batchIdManager = new RemoteBatchIdManager();
         }
         final int batchId = batchIdManager.createBatchId();
-        //System.out.println("--- Start outgoing batch " + batchId);
-        outgoingBatches.add(batchId);
         return batchId;
     }
 
@@ -123,30 +113,7 @@ public class ManagementChannel extends ProtocolChannel implements ManagementBatc
             batchIdManager = new RemoteBatchIdManager();
         }
         batchIdManager.freeBatchId(id);
-        outgoingBatches.remove(id);
-        if ((getClosed() || getWritesShutdown()) && outgoingBatches.size() == 0) {
-            completedActiveRequestsLatch.countDown();
-        }
         //System.out.println("--- End outgoing execution " + executionId);
-    }
-
-    protected void waitUntilClosable() throws InterruptedException {
-        boolean wait = false;
-        synchronized (this) {
-            wait = outgoingBatches.size() > 0;
-        }
-        if (wait) {
-            completedActiveRequestsLatch.await();
-        }
-    }
-
-    synchronized FlushableDataOutputImpl writeMessage(int executionId) throws IOException {
-        if (getClosed() || getWritesShutdown()) {
-            if (!outgoingBatches.contains(executionId)) {
-                throw new IOException("Can't accept new requests in a closed channel");
-            }
-        }
-        return FlushableDataOutputImpl.create(writeMessage());
     }
 
     void throwFormattedException(Exception e) throws IOException {
@@ -165,7 +132,7 @@ public class ManagementChannel extends ProtocolChannel implements ManagementBatc
         private volatile ManagementOperationHandler operationHandler;
 
         private void handleRequest(final ManagementRequestHeader header, final DataInput input) throws IOException {
-            final FlushableDataOutputImpl output = writeMessage(header.getBatchId());
+            final FlushableDataOutputImpl output = FlushableDataOutputImpl.create(writeMessage());
 
             Exception error = null;
             try {
