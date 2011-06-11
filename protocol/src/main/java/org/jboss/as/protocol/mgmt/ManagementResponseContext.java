@@ -19,12 +19,33 @@
 package org.jboss.as.protocol.mgmt;
 
 /**
+ * Contains information relevan to a response being handled on the sending end.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public interface ManagementRequestExecutionCallback {
+public class ManagementResponseContext {
+    final ManagementChannel channel;
+    final ManagementResponseHeader responseHeader;
 
-    void registerOutgoingExecution(int executionId);
-    void completeOutgoingExecution(int executionId);
+    public ManagementResponseContext(ManagementChannel channel, ManagementResponseHeader responseHeader) {
+        this.channel = channel;
+        this.responseHeader = responseHeader;
+    }
+
+    /**
+     * Get the channel
+     * @return the channel
+     */
+    public ManagementChannel getChannel() {
+        return channel;
+    }
+
+    /**
+     * Get the response header
+     * @return the response header
+     */
+    public ManagementResponseHeader getResponse() {
+        return responseHeader;
+    }
 }

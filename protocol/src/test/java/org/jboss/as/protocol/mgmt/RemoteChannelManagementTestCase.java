@@ -21,8 +21,15 @@
 */
 package org.jboss.as.protocol.mgmt;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import junit.framework.Assert;
+
 import org.jboss.as.protocol.mgmt.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.support.RemotingChannelPairSetup;
+import org.jboss.as.protocol.mgmt.support.SimpleHandlers;
+import org.junit.Test;
 
 /**
  *
@@ -36,4 +43,48 @@ public class RemoteChannelManagementTestCase extends AbstractManagementTestCase 
         return new RemoteChannelPairSetup();
     }
 
+    @Test
+    public void testBatchIdManagerNoManager() {
+        ManagementChannel channel = channels.getServerChannel();
+        channels.getClientChannel().startReceiving();
+        channel.setOperationHandler(new SimpleHandlers.OperationHandler());
+
+        try {
+            channel.createBatchId();
+            Assert.fail("Should have given error on no batch manager");
+        } catch (Exception expected) {
+        }
+    }
+
+    @Test
+    public void testBatchIdManager() throws Exception {
+        final CountDownLatch freedLatch = new CountDownLatch(1);
+        final AtomicInteger freedId = new AtomicInteger();
+
+        ManagementChannel channel = channels.getServerChannel();
+        channels.getClientChannel().startReceiving();
+        channel.setOperationHandler(new SimpleHandlers.OperationHandler());
+        channel.setBatchIdManager(new ManagementBatchIdManager() {
+
+            @Override
+            public void freeBatchId(int id) {
+                freedId.set(id);
+                freedLatch.countDown();
+            }
+
+            @Override
+            public int createBatchId() {
+                return 12345;
+            }
+        });
+
+        try {
+            Assert.assertEquals(12345, channels.getClientChannel().createBatchId());
+        } finally {
+            channels.getClientChannel().freeBatchId(12345);
+        }
+
+        freedLatch.await();
+        Assert.assertEquals(12345, freedId.get());
+    }
 }

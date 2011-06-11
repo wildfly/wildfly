@@ -70,12 +70,12 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
      */
     private class ExecuteRequestHandler extends ManagementRequestHandler {
         private ModelNode operation = new ModelNode();
-        private int executionId;
+        private int batchId;
         private int attachmentsLength;
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            executionId = getContext().getHeader().getExecutionId();
+            batchId = getContext().getHeader().getBatchId();
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_OPERATION);
             operation.readExternal(input);
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
@@ -96,15 +96,15 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
-                    final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(getContext(), executionId);
-                    final ProxyOperationControlProxy control = new ProxyOperationControlProxy(getContext(), executionId, preparedOrFailedLatch);
+                    final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(getContext(), batchId);
+                    final ProxyOperationControlProxy control = new ProxyOperationControlProxy(getContext(), batchId, preparedOrFailedLatch);
                     final ModelNode result;
                     try {
                         result = controller.execute(
                                 operation,
                                 messageHandlerProxy,
                                 control,
-                                new OperationAttachmentsProxy(getContext(), executionId, attachmentsLength));
+                                new OperationAttachmentsProxy(getContext(), batchId, attachmentsLength));
                     } catch (Exception e) {
                         final ModelNode failure = new ModelNode();
                         failure.get(OUTCOME).set(FAILED);
@@ -133,19 +133,19 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
      */
     private class ProxyOperationControlProxy implements ProxyOperationControl {
         final ManagementRequestContext context;
-        final int executionId;
+        final int batchId;
         final CountDownLatch preparedOrFailedLatch;
 
-        public ProxyOperationControlProxy(final ManagementRequestContext context, final int executionId, final CountDownLatch preparedOrFailedLatch) {
+        public ProxyOperationControlProxy(final ManagementRequestContext context, final int batchId, final CountDownLatch preparedOrFailedLatch) {
             this.context = context;
-            this.executionId = executionId;
+            this.batchId = batchId;
             this.preparedOrFailedLatch = preparedOrFailedLatch;
         }
 
         @Override
         public void operationPrepared(final OperationTransaction transaction, final ModelNode result) {
             try {
-                new OperationStatusRequest(executionId, result) {
+                new OperationStatusRequest(batchId, result) {
 
                     @Override
                     protected byte getRequestCode() {
@@ -186,7 +186,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
         @Override
         public void operationFailed(final ModelNode response) {
             try {
-                new OperationStatusRequest(executionId, response) {
+                new OperationStatusRequest(batchId, response) {
 
                     @Override
                     protected byte getRequestCode() {
@@ -203,7 +203,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
 
         @Override
         public void operationCompleted(final ModelNode response) {
-            new OperationStatusRequest(executionId, response) {
+            new OperationStatusRequest(batchId, response) {
 
                 @Override
                 protected byte getRequestCode() {
@@ -219,8 +219,8 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
         private abstract class OperationStatusRequest extends ManagementRequest<Void> {
             private final ModelNode response;
 
-            public OperationStatusRequest(final int executionId, final ModelNode response) {
-                super(executionId);
+            public OperationStatusRequest(final int batchId, final ModelNode response) {
+                super(batchId);
                 this.response = response;
             }
             @Override

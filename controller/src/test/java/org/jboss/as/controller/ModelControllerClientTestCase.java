@@ -41,6 +41,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
+import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.dmr.ModelNode;
@@ -92,6 +93,7 @@ public class ModelControllerClientTestCase {
 
         NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
+        serverChannel.setBatchIdManager(ManagementBatchIdManager.DEFAULT);
 
         NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
         try {
@@ -175,6 +177,7 @@ public class ModelControllerClientTestCase {
 
         NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
+        serverChannel.setBatchIdManager(ManagementBatchIdManager.DEFAULT);
 
         NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
         try {
@@ -222,6 +225,7 @@ public class ModelControllerClientTestCase {
 
         NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
+        serverChannel.setBatchIdManager(ManagementBatchIdManager.DEFAULT);
 
         NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
         try {
