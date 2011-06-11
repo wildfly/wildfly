@@ -23,7 +23,6 @@
 package org.jboss.as.testsuite.integration.osgi.xservice;
 
 import java.io.InputStream;
-import java.util.jar.JarFile;
 
 import javax.inject.Inject;
 
@@ -40,6 +39,7 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -57,8 +57,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ModuleAccessesModuleServiceTestCase extends AbstractXServiceTestCase {
 
-    private static final String TARGET_MODULE_NAME = "example-xservice-target-module";
-    private static final String CLIENT_MODULE_NAME = "example-xservice-client-module";
+    private static final String TARGET_MODULE_NAME = "example-xservice-mam-target-module";
+    private static final String CLIENT_MODULE_NAME = "example-xservice-mam-client-module";
 
     @Deployment
     public static JavaArchive createdeployment() {
@@ -120,7 +120,13 @@ public class ModuleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         archive.addClasses(ClientModuleOneActivator.class);
         String activatorPath = "META-INF/services/" + ServiceActivator.class.getName();
         archive.addAsResource(OSGiTestHelper.getResourceFile("osgi/xservice/client-module-one/" + activatorPath), activatorPath);
-        archive.setManifest(OSGiTestHelper.getResourceFile("osgi/xservice/client-module-one/" + JarFile.MANIFEST_NAME));
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                ManifestBuilder builder = ManifestBuilder.newInstance();
+                builder.addManifestHeader("Dependencies", "org.jboss.modules,org.jboss.logging,deployment.example-xservice-mam-target-module");
+                return builder.openStream();
+            }
+        });
         return archive;
     }
 
@@ -130,7 +136,13 @@ public class ModuleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         archive.addClasses(Echo.class, EchoService.class, TargetModuleActivator.class);
         String activatorPath = "META-INF/services/" + ServiceActivator.class.getName();
         archive.addAsResource(OSGiTestHelper.getResourceFile("osgi/xservice/target-module/" + activatorPath), activatorPath);
-        archive.setManifest(OSGiTestHelper.getResourceFile("osgi/xservice/target-module/" + JarFile.MANIFEST_NAME));
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                ManifestBuilder builder = ManifestBuilder.newInstance();
+                builder.addManifestHeader("Dependencies", "org.jboss.modules,org.jboss.logging");
+                return builder.openStream();
+            }
+        });
         return archive;
     }
 }
