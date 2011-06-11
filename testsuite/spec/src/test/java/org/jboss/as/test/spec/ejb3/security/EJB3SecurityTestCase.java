@@ -21,7 +21,19 @@
  */
 package org.jboss.as.test.spec.ejb3.security;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import javax.ejb.EJB;
+import javax.security.auth.login.LoginContext;
+import java.security.Principal;
+import java.util.logging.Logger;
+
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.spec.common.HttpRequest;
 import org.jboss.security.client.SecurityClient;
@@ -30,20 +42,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.ejb.EJB;
-import java.security.Principal;
-import java.util.logging.Logger;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
 public class EJB3SecurityTestCase {
@@ -56,8 +61,8 @@ public class EJB3SecurityTestCase {
                 .addPackage(WhoAmIBean.class.getPackage())
                 .addPackage(HttpRequest.class.getPackage())
                 .addClass(Base64.class)
-                .addAsResource("security/users.properties", "users.properties")
-                .addAsResource("security/roles.properties", "roles.properties")
+                .addAsResource("ejb3/security/users.properties", "users.properties")
+                .addAsResource("ejb3/security/roles.properties", "roles.properties")
                 .addAsWebInfResource("ejb3/security/web.xml", "web.xml");
         log.info(war.toString(true));
         return war;
@@ -66,22 +71,99 @@ public class EJB3SecurityTestCase {
     @EJB(mappedName = "java:global/ejb3security/WhoAmIBean")
     private WhoAmIBean whoAmIBean;
 
-    // 17.2.5 - Programatic Access to Caller's Security Context
-    // Include tests for methods not implemented to pick up if later they are implemented.
-    // 17.2.5.1 - Use of getCallerPrincipal
-    // 17.6.5 - Security Methods on EJBContext
+    @EJB(mappedName = "java:global/ejb3security/EntryBean")
+    private EntryBean entryBean;
+
+    /*
+     *  Authentication Scenarios
+     *
+     *  Client -> Bean
+     *  Client -> Bean -> Bean
+     *  Client -> Bean (Re-auth) -> Bean
+     *  Client -> Servlet -> Bean
+     *  Client -> Servlet -> Bean -> Bean
+     *  Client -> Servlet -> Bean (Re Auth) -> Bean
+     */
+
+    @Test
+    public void testAuthentication() throws Exception {
+        LoginContext lc = getCLMLoginContext("user1", "password1");
+        lc.login();
+        try {
+            String response = entryBean.whoAmI();
+            assertEquals("user1", response);
+        } finally {
+            lc.logout();
+        }
+    }
+
+    @Test
+    public void testAuthentication_BadPwd() throws Exception {
+        LoginContext lc = getCLMLoginContext("user1", "wrong_password");
+        lc.login();
+        try {
+            entryBean.whoAmI();
+            fail("Expected exception due to bad password not thrown.");
+            // TODO - Verify exact exception and spec reference.
+        } catch (Exception ignored) {
+        } finally {
+            lc.logout();
+        }
+    }
+
+
+    @Test
+    public void testAuthentication_TwoBeans() throws Exception {
+        LoginContext lc = getCLMLoginContext("user1", "password1");
+        lc.login();
+        try {
+            String[] response = entryBean.doubleWhoAmI();
+            assertEquals("user1", response[0]);
+            assertEquals("user1", response[1]);
+        } finally {
+            lc.logout();
+        }
+    }
+
+    @Test
+    public void testAuthentication_TwoBeans_ReAuth() throws Exception {
+        LoginContext lc = getCLMLoginContext("user1", "password1");
+        lc.login();
+        try {
+            String[] response = entryBean.doubleWhoAmI("user2", "password2");
+            assertEquals("user1", response[0]);
+            assertEquals("user2", response[1]);
+        } finally {
+            lc.logout();
+        }
+    }
+
+    // TODO - Similar test with first bean @RunAs - does it make sense to also manually switch?
+    @Test
+    public void testAuthentication_TwoBeans_ReAuth_BadPwd() throws Exception {
+        LoginContext lc = getCLMLoginContext("user1", "password1");
+        lc.login();
+        try {
+            entryBean.doubleWhoAmI("user2", "wrong_password");
+            fail("Expected exception due to bad password not thrown.");
+            // TODO - Verify exact exception and spec reference.
+        } catch (Exception ignored) {
+        } finally {
+            lc.logout();
+        }
+    }
 
     @Test
     public void testAuthenticatedCall() throws Exception {
         // TODO: this is not spec
         final SecurityClient client = SecurityClientFactory.getSecurityClient();
-        client.setSimple("anil", "anil");
+        client.setSimple("user1", "password1");
         client.login();
         try {
             try {
                 final Principal principal = whoAmIBean.getCallerPrincipal();
                 assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.", principal);
-                assertEquals("anil", principal.getName());
+                assertEquals("user1", principal.getName());
             } catch (RuntimeException e) {
                 e.printStackTrace();
                 fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method (" + e.getMessage() + ")");
@@ -105,11 +187,40 @@ public class EJB3SecurityTestCase {
     }
 
     @Test
-    public void testViaServlet() throws Exception {
-        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI", "anil", "anil", 10, SECONDS);
-        assertEquals("anil", result);
+    public void testAuthentication_ViaServlet() throws Exception {
+        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=whoAmI", "user1", "password1", 10, SECONDS);
+        assertEquals("user1", result);
     }
 
+    @Test
+    public void testAuthentication_ReAuth_ViaServlet() throws Exception {
+        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=whoAmI&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        assertEquals("user2", result);
+    }
+
+    @Test
+    public void testAuthentication_TwoBeans_ViaServlet() throws Exception {
+        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleWhoAmI", "user1", "password1", 10, SECONDS);
+        assertEquals("user1,user1", result);
+    }
+
+    @Test
+    public void testAuthentication_TwoBeans_ReAuth_ViaServlet() throws Exception {
+        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        assertEquals("user1,user2", result);
+    }
+
+    @Test
+    @Ignore("[AS7-1005] EJBAccessException being swallowed for servlet->bean->bean call where first bean switches user.")
+    public void testAuthentication_TwoBeans_ReAuth__BadPwd_ViaServlet() throws Exception {
+        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=bad_password", "user1", "password1", 10, SECONDS);
+        assertEquals("javax.ejb.EJBAccessException", result);
+    }
+
+    // 17.2.5 - Programatic Access to Caller's Security Context
+    // Include tests for methods not implemented to pick up if later they are implemented.
+    // 17.2.5.1 - Use of getCallerPrincipal
+    // 17.6.5 - Security Methods on EJBContext
     // 17.2.5.2 - Use of isCallerInRole
     // 17.2.5.3 - Declaration of Security Roles Referenced from the Bean's Code
     // 17.3.1 - Security Roles
