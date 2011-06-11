@@ -186,6 +186,9 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (contextType == Type.MANAGEMENT && stage.compareTo(Stage.MODEL) > 0) {
             throw new IllegalArgumentException("Invalid step stage for this context type");
         }
+        if (stage == Stage.DOMAIN && contextType != Type.HOST) {
+            throw new IllegalStateException("Stage " + stage + " is not valid for context type " + contextType);
+        }
         if (stage == Stage.DONE) {
             throw new IllegalArgumentException("Invalid step stage specified");
         }

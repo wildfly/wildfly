@@ -311,6 +311,11 @@ public interface NewOperationContext {
          */
         VERIFY,
         /**
+         * The step performs any actions needed to cause the operation to take effect on the relevant servers
+         * in the domain. Adding a step in this stage is only allowed when the type is {@link Type#HOST}.
+         */
+        DOMAIN,
+        /**
          * The operation has completed execution.
          */
         DONE;
@@ -329,7 +334,8 @@ public interface NewOperationContext {
             switch (this) {
                 case MODEL: return RUNTIME;
                 case RUNTIME: return VERIFY;
-                case VERIFY: return DONE;
+                case VERIFY: return DOMAIN;
+                case DOMAIN: return DONE;
                 case DONE:
                 default: throw new IllegalStateException();
             }
