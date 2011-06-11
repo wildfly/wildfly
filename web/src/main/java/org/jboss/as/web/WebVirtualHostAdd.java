@@ -40,6 +40,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
@@ -121,6 +122,7 @@ class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider
                             context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB.append(name).append("welcome"), welcomeService)
                                     .addDependency(AbstractPathService.pathNameOf(HOME_DIR), String.class, welcomeService.getPathInjector())
                                     .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name), VirtualHost.class, welcomeService.getHostInjector())
+                                    .addDependency(ServiceBuilder.DependencyType.OPTIONAL, HttpManagementService.SERVICE_NAME, HttpManagementService.class, welcomeService.getHttpMSInjector())
                                     .setInitialMode(ServiceController.Mode.ACTIVE)
                                     .install();
                     }

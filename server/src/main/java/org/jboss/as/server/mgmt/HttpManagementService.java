@@ -52,7 +52,8 @@ public class HttpManagementService implements Service<HttpManagementService> {
     private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
     private final InjectedValue<String> tempDirValue = new InjectedValue<String>();
     private final InjectedValue<SecurityRealmService> securityRealmServiceValue = new InjectedValue<SecurityRealmService>();
-
+    private InetSocketAddress bindAddress;
+    private InetSocketAddress secureBindAddress;
     private ManagementHttpServer serverManagement;
 
 
@@ -68,12 +69,10 @@ public class HttpManagementService implements Service<HttpManagementService> {
         final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getValue();
 
         final int port = portValue.getOptionalValue();
-        InetSocketAddress bindAddress = null;
         if (port > 0) {
             bindAddress = new InetSocketAddress(interfaceBinding.getAddress(), port);
         }
         final int securePort = securePortValue.getOptionalValue();
-        InetSocketAddress secureBindAddress = null;
         if (securePort > 0) {
             secureBindAddress = new InetSocketAddress(interfaceBinding.getAddress(), securePort);
         }
@@ -169,4 +168,11 @@ public class HttpManagementService implements Service<HttpManagementService> {
         return securityRealmServiceValue;
     }
 
+    public InetSocketAddress getBindAddress() {
+        return bindAddress;
+    }
+
+    public InetSocketAddress getSecureBindAddress() {
+        return secureBindAddress;
+    }
 }

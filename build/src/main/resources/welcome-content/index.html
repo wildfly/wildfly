@@ -44,18 +44,12 @@
         text-align: center
      }
 
+     .note {
+        font-size: 8pt;
+        color: #aaaaaa;
+    }
     -->
   </style>
-  <script language="JavaScript" type="text/javascript">
-<!--hide
-      function adminconsole() {
-          if(window.location.hostname)
-             window.location = window.location.hostname + ':9990/console';
-          else
-             window.location = "http://localhost:9990/console";
-     }
-   //-->
-  </script>
 </head>
 
 <body>
@@ -64,8 +58,7 @@
 
     <p>Your JBoss Application Server 7 is running.</p>
 
-    <p><a href="http://localhost:9990/console" onclick=
-    "javascript:adminconsole();return false;">Administration
+    <p><a href="/console">Administration
     Console</a></p>
 
     <p>[<a href="http://www.jboss.org/jbossas">AS 7 Home</a>]
@@ -76,6 +69,9 @@
 
     <p><a href="http://jboss.org"><img alt="JBoss Community" src=
     "jbosscommunity_logo_hori_white.png"></a></p>
+    <p class="note">To replace this page set "enable-welcome-root" to
+    false in your server configuration and deploy your own war with /
+    as its context path.</p>
   </div>
 </body>
 </html>
