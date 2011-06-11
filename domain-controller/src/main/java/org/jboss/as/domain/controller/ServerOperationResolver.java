@@ -135,7 +135,7 @@ public class ServerOperationResolver {
         this.localHostName = localHostName;
     }
 
-    Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
+    public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
 
         if (address.size() == 0) {
             return resolveDomainRootOperation(operation, domain, host);

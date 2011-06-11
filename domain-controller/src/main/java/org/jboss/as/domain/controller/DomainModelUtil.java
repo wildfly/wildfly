@@ -129,7 +129,7 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class DomainModelUtil {
+public class DomainModelUtil {
 
     /**
      * Create the base model ready to add the bootstrap configuration from the host.xml
@@ -147,7 +147,7 @@ class DomainModelUtil {
      *
      * @param rootModel - the model to be updated.
      */
-    static void updateCoreModel(final ModelNode rootModel) {
+    public static void updateCoreModel(final ModelNode rootModel) {
         rootModel.get(NAMESPACES).setEmptyList();
         rootModel.get(SCHEMA_LOCATIONS).setEmptyList();
         rootModel.get(EXTENSION);
@@ -161,12 +161,12 @@ class DomainModelUtil {
         rootModel.get(HOST);
     }
 
-    static ExtensionContext initializeMasterDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
+    public static ExtensionContext initializeMasterDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
             final ContentRepository contentRepo, final FileRepository fileRepository, DomainModelImpl model) {
         return initializeDomainRegistry(root, configurationPersister, contentRepo, fileRepository, true, model);
     }
 
-    static ExtensionContext initializeSlaveDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
+    public static ExtensionContext initializeSlaveDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
             final ContentRepository contentRepo, final FileRepository fileRepository, DomainModelImpl model) {
         return initializeDomainRegistry(root, configurationPersister, contentRepo, fileRepository, false, model);
     }
