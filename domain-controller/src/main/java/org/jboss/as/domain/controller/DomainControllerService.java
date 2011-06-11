@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.controller;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -47,6 +48,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -174,7 +176,7 @@ public final class DomainControllerService implements Service<DomainController> 
         }
 
         try {
-            configurationPersister.store(domainModel.getDomainModel());
+            configurationPersister.store(domainModel.getDomainModel(), Collections.singleton(PathAddress.EMPTY_ADDRESS));
         } catch (ConfigurationPersistenceException e) {
             log.error("Could not cache domain model", e);
         }

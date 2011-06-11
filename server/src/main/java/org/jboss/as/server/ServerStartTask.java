@@ -30,7 +30,9 @@ import java.io.ObjectInputValidation;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -76,8 +78,21 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
         configuration.setServerEnvironment(providedEnvironment);
         configuration.setConfigurationPersister(new AbstractConfigurationPersister(new StandaloneXml(configuration.getModuleLoader())) {
+
+            private final PersistenceResource pr = new PersistenceResource() {
+
+                @Override
+                public void commit() {
+                }
+
+                @Override
+                public void rollback() {
+                }
+            };
+
             @Override
-            public void store(final ModelNode model) throws ConfigurationPersistenceException {
+            public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
+                return pr;
             }
 
             @Override

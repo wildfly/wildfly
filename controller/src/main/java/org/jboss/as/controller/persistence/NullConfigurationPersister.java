@@ -24,7 +24,9 @@ package org.jboss.as.controller.persistence;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
 
@@ -45,13 +47,26 @@ public final class NullConfigurationPersister extends AbstractConfigurationPersi
 
     /** {@inheritDoc} */
     @Override
-    public void store(final ModelNode model) {
-        // no op
+    public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) {
+        return NullPersistenceResource.INSTANCE;
     }
 
     /** {@inheritDoc} */
     @Override
     public List<ModelNode> load() {
         return Collections.emptyList();
+    }
+
+    private static class NullPersistenceResource implements ConfigurationPersister.PersistenceResource {
+
+        private static final NullPersistenceResource INSTANCE = new NullPersistenceResource();
+
+        @Override
+        public void commit() {
+        }
+
+        @Override
+        public void rollback() {
+        }
     }
 }

@@ -24,22 +24,28 @@ package org.jboss.as.controller.persistence;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
+import sun.text.normalizer.IntTrie;
 
 /**
  * A configuration persister which uses an XML file for backing storage.
@@ -71,8 +77,8 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
 
     /** {@inheritDoc} */
     @Override
-    public void store(final ModelNode model) throws ConfigurationPersistenceException {
-        store(model, fileName);
+    public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
+        return new FilePersistenceResource(model, fileName, this);
     }
 
     protected void store(final ModelNode model, final File file) throws ConfigurationPersistenceException {

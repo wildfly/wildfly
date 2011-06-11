@@ -41,6 +41,7 @@ import java.util.Deque;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +52,7 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
@@ -86,6 +88,8 @@ final class NewOperationContextImpl implements NewOperationContext {
     private final boolean booting;
     private final OperationAttachments attachments;
     private final ControlledProcessState processState;
+    /** Tracks whether any steps have gotten write access to the model */
+    private final Set<PathAddress> affectsModel;
 
     private boolean respectInterruption = true;
     private PathAddress modelAddress;
@@ -104,8 +108,6 @@ final class NewOperationContextImpl implements NewOperationContext {
     private ModelNode model;
     private ModelNode readOnlyModel;
     private ResultAction resultAction;
-    /** Tracks whether any steps have gotten write access to the model */
-    private boolean affectsModel;
     /** Tracks whether any steps have gotten write access to the runtime */
     private boolean affectsRuntime;
     /** Tracks whether we've detected cancellation */
@@ -140,6 +142,7 @@ final class NewOperationContextImpl implements NewOperationContext {
         for (Stage stage : Stage.values()) {
             steps.put(stage, new ArrayDeque<Step>());
         }
+        affectsModel = new HashSet<PathAddress>(1);
         initiatingThread = Thread.currentThread();
         this.contextFlags = contextFlags;
         serviceTarget = new ContextServiceTarget(modelController);
@@ -278,6 +281,15 @@ final class NewOperationContextImpl implements NewOperationContext {
             }
         } while (currentStage != Stage.DONE);
         final AtomicReference<ResultAction> ref = new AtomicReference<ResultAction>(transactionControl == null ? ResultAction.KEEP : ResultAction.ROLLBACK);
+        // No more steps, verified operation is a success!
+        ConfigurationPersister.PersistenceResource persistenceResource = null;
+        if (isModelAffected() && resultAction != ResultAction.ROLLBACK) try {
+            persistenceResource = modelController.writeModel(model, affectsModel);
+        } catch (ConfigurationPersistenceException e) {
+            response.get(OUTCOME).set(FAILED);
+            response.get(FAILURE_DESCRIPTION).set("Failed to persist configuration change: " + e);
+            return resultAction = ResultAction.ROLLBACK;
+        }
         if (transactionControl != null) {
             transactionControl.operationPrepared(new NewModelController.OperationTransaction() {
                 public void commit() {
@@ -290,14 +302,12 @@ final class NewOperationContextImpl implements NewOperationContext {
             }, response);
         }
         resultAction = ref.get();
-        // No more steps, verified operation is a success!
-        if (isModelAffected() && resultAction == ResultAction.KEEP) try {
-            modelController.writeModel(model);
-        } catch (ConfigurationPersistenceException e) {
-            // TODO this is a sort of tx heuristic; need to deal with this more robustly
-            response.get(OUTCOME).set(FAILED);
-            response.get(FAILURE_DESCRIPTION).set("Failed to persist configuration change: " + e);
-            return resultAction = ResultAction.ROLLBACK;
+        if (persistenceResource != null) {
+            if (resultAction == ResultAction.ROLLBACK) {
+                persistenceResource.rollback();
+            } else {
+                persistenceResource.commit();
+            }
         }
         return resultAction;
     }
@@ -661,12 +671,12 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage != Stage.MODEL) {
             throw new IllegalStateException("Stage MODEL is already complete");
         }
-        if (!affectsModel) {
+        if (affectsModel.size() == 0) {
             takeWriteLock();
-            affectsModel = true;
             model = model.clone();
             readOnlyModel = null;
         }
+        affectsModel.add(address);
         ModelNode model = this.model;
         final Iterator<PathElement> i = address.iterator();
         while (i.hasNext()) {
@@ -705,12 +715,12 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage != Stage.MODEL) {
             throw new IllegalStateException("Stage MODEL is already complete");
         }
-        if (!affectsModel) {
+        if (affectsModel.size() == 0) {
             takeWriteLock();
-            affectsModel = true;
             model = model.clone();
             readOnlyModel = null;
         }
+        affectsModel.add(address);
         ModelNode model = this.model;
         final Iterator<PathElement> i = address.iterator();
         while (i.hasNext()) {
@@ -738,11 +748,11 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage != Stage.MODEL) {
             throw new IllegalStateException("Stage MODEL is already complete");
         }
-        if (!affectsModel) {
+        if (affectsModel.size() == 0) {
             takeWriteLock();
-            affectsModel = true;
             model = model.clone();
         }
+        affectsModel.add(address);
         ModelNode model = this.model;
         final Iterator<PathElement> i = address.iterator();
         while (i.hasNext()) {
@@ -760,7 +770,7 @@ final class NewOperationContextImpl implements NewOperationContext {
     }
 
     public boolean isModelAffected() {
-        return affectsModel;
+        return affectsModel.size() > 0;
     }
 
     public boolean isRuntimeAffected() {

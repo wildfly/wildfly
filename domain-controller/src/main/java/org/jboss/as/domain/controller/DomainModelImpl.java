@@ -142,11 +142,20 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
     private ConfigurationPersister delegatingHostPersister = new ConfigurationPersister() {
 
         @Override
-        public void store(ModelNode model) throws ConfigurationPersistenceException {
+        public PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
             // We'll be given the whole model but we only persist the host part
             if (hostPersister != null) {
-                hostPersister.store(model.get(HOST, localHostName));
+                return hostPersister.store(model.get(HOST, localHostName), affectedAddresses);
             }
+            return new PersistenceResource() {
+                @Override
+                public void commit() {
+                }
+
+                @Override
+                public void rollback() {
+                }
+            };
         }
 
         @Override
@@ -977,8 +986,19 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
             public org.jboss.as.controller.persistence.ConfigurationPersister getConfigurationPersister() {
                 return new ConfigurationPersister() {
                     @Override
-                    public void store(ModelNode model) throws ConfigurationPersistenceException {
+                    public PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
                         hostModelUpdated = true;
+                        return new PersistenceResource() {
+                            @Override
+                            public void commit() {
+                                // TODO this entire class is going to be deleted
+                            }
+
+                            @Override
+                            public void rollback() {
+                                // TODO this entire class is going to be deleted
+                            }
+                        };
                     }
 
                     @Override
@@ -1190,10 +1210,19 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         private ConfigurationPersister delegate;
 
         @Override
-        public void store(ModelNode model) throws ConfigurationPersistenceException {
+        public PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
             if (delegate != null) {
-                delegate.store(model);
+                return delegate.store(model, affectedAddresses);
             }
+            return new PersistenceResource() {
+                @Override
+                public void commit() {
+                }
+
+                @Override
+                public void rollback() {
+                }
+            };
         }
 
         @Override
