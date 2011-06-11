@@ -62,9 +62,7 @@ public class ManagementChannel extends ProtocolChannel implements ManagementRequ
 
     @Override
     protected void doHandle(final Channel channel, final MessageInputStream message) {
-        final SimpleDataInput input = new SimpleDataInput(Marshalling.createByteInput(message)) {
-
-        };
+        final SimpleDataInput input = new SimpleDataInput(Marshalling.createByteInput(message));
         try {
             ManagementProtocolHeader header = ManagementProtocolHeader.parse(input);
             if (header.isRequest()) {
