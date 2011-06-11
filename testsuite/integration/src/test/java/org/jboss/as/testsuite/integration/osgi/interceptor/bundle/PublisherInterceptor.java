@@ -86,7 +86,7 @@ public class PublisherInterceptor extends AbstractLifecycleInterceptor {
             try {
                 HttpService httpService = getHttpService(context, false);
                 if (httpService != null)
-                    httpService.unregister("/servlet");
+                    httpService.unregister("/example-interceptor/servlet");
             } finally {
                 // [AS7-903] 3rd party code may leak TCCL
                 Thread.currentThread().setContextClassLoader(ctxLoader);
