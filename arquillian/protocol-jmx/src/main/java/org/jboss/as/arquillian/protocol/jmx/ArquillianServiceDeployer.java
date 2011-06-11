@@ -117,18 +117,19 @@ public class ArquillianServiceDeployer {
             if (FAILED.equals(result.get(OUTCOME).asString()))
                 throw new IllegalStateException("Management request failed: " + result);
 
+            boolean serviceFound = false;
             List<ModelNode> nodeList = result.get(RESULT).asList();
             for (ModelNode node : nodeList) {
                 if (node.asString().equals(archive.getName())) {
                     log.infof("Found already deployed arquillian service: %s", node);
-                    return true;
+                    serviceFound = true;
+                    break;
                 }
             }
-            return false;
-        } catch (RuntimeException rte) {
-            throw rte;
+            return serviceFound;
         } catch (Exception ex) {
-            throw new IllegalStateException("Cannot determine whether arquillian service is deployed", ex);
+            log.errorf(ex, "Cannot determine whether arquillian service is deployed");
+            return false;
         }
     }
 
@@ -150,17 +151,15 @@ public class ArquillianServiceDeployer {
             log.infof("Undeploying arquillian service  with: %s", operation);
             ModelNode result = getModelControllerClient().execute(OperationBuilder.Factory.create(operation).build());
             if (FAILED.equals(result.get(OUTCOME).asString()))
-                throw new IllegalStateException("Management request failed: " + result);
+                log.errorf("Management request failed: %s", result);
 
-        } catch (RuntimeException rte) {
-            throw rte;
         } catch (Exception ex) {
-            throw new IllegalStateException("Cannot undeploy arquillian service", ex);
+            log.errorf(ex, "Cannot undeploy arquillian service");
         }
     }
 
     private ModelControllerClient getModelControllerClient() throws UnknownHostException {
         // TODO: make configurable via protocol config
-        return ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        return ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999);
     }
 }
