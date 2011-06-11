@@ -47,7 +47,7 @@
   <dependencies>
     <dependency>
       <groupId>org.jboss.as</groupId>
-      <artifactId>jboss-as-arquillian2-common</artifactId>
+      <artifactId>jboss-as-arquillian-common</artifactId>
       <version>${project.version}</version>
     </dependency>
 
