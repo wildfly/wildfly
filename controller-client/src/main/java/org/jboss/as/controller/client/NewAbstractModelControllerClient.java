@@ -33,6 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
@@ -106,41 +107,22 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
     abstract ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException;
 
     private ModelNode executeSynch(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler) {
-        final int batchId;
-        try {
-            batchId = getClientChannelStrategy().getChannel().createBatchId();
-        } catch (Exception e1) {
-            throw new RuntimeException(e1);
-        }
+        final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
 
         try {
             return new ExecuteRequest(batchId, operation, messageHandler, attachments).executeForResult(executor, getClientChannelStrategy());
         } catch (Exception e) {
-            try {
-                getClientChannelStrategy().getChannel().freeBatchId(batchId);
-            } catch (Exception e1) {
-                throw new RuntimeException(e1);
-            }
+            ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
             throw new RuntimeException(e);
         }
     }
 
     private AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler){
-        final int batchId;
-        try {
-            batchId = getClientChannelStrategy().getChannel().createBatchId();
-        } catch (Exception e1) {
-            throw new RuntimeException(e1);
-        }
-
+        final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
         try {
             return new ExecuteRequest(batchId, operation, messageHandler, attachments).execute(executor, getClientChannelStrategy());
         } catch (Exception e) {
-            try {
-                getClientChannelStrategy().getChannel().freeBatchId(batchId);
-            } catch (Exception e1) {
-                throw new RuntimeException(e1);
-            }
+            ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
             throw new RuntimeException(e);
         }
     }
@@ -190,7 +172,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
                 node.readExternal(input);
                 return node;
             } finally {
-                getContext().getChannel().freeBatchId(getBatchId());
+                ManagementBatchIdManager.DEFAULT.freeBatchId(getBatchId());
                 activeRequests.remove(getCurrentRequestId());
             }
         }

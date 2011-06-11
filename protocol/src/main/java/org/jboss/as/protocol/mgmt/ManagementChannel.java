@@ -26,11 +26,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.jboss.as.protocol.ProtocolChannel;
-import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.remoting3.Channel;
@@ -42,14 +39,10 @@ import org.xnio.IoUtils;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ManagementChannel extends ProtocolChannel implements ManagementBatchIdManager {
+public class ManagementChannel extends ProtocolChannel {
 
     private final RequestReceiver requestReceiver = new RequestReceiver();
     private final ResponseReceiver responseReceiver = new ResponseReceiver();
-
-    private volatile ManagementBatchIdManager batchIdManager;
-
-    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     ManagementChannel(String name, Channel channel) {
         super(name, channel);
@@ -57,10 +50,6 @@ public class ManagementChannel extends ProtocolChannel implements ManagementBatc
 
     public void setOperationHandler(final ManagementOperationHandler handler) {
         requestReceiver.setOperationHandler(handler);
-    }
-
-    public void setBatchIdManager(ManagementBatchIdManager batchIdManager) {
-        this.batchIdManager = batchIdManager;
     }
 
     @Override
@@ -93,27 +82,6 @@ public class ManagementChannel extends ProtocolChannel implements ManagementBatc
         } finally {
             IoUtils.safeClose(output);
         }
-    }
-
-
-    @Override
-    public synchronized int createBatchId() {
-        ManagementBatchIdManager batchIdManager = this.batchIdManager;
-        if (batchIdManager == null) {
-            batchIdManager = new RemoteBatchIdManager();
-        }
-        final int batchId = batchIdManager.createBatchId();
-        return batchId;
-    }
-
-    @Override
-    public synchronized void freeBatchId(int id) {
-        ManagementBatchIdManager batchIdManager = this.batchIdManager;
-        if (batchIdManager == null) {
-            batchIdManager = new RemoteBatchIdManager();
-        }
-        batchIdManager.freeBatchId(id);
-        //System.out.println("--- End outgoing execution " + executionId);
     }
 
     void throwFormattedException(Exception e) throws IOException {
@@ -163,19 +131,6 @@ public class ManagementChannel extends ProtocolChannel implements ManagementBatc
 
         private ManagementRequestHandler getRequestHandler(final ManagementRequestHeader header) throws IOException {
             try {
-                switch (header.getOperationId()) {
-                case ManagementProtocol.CREATE_BATCH_ID_REQUEST:
-                    if (batchIdManager == null) {
-                        throw new IOException("No local batch id manager to service remote CREATE_BATCH_ID_REQUEST");
-                    }
-                    return new CreateBatchIdRequestHandler();
-                case ManagementProtocol.FREE_BATCH_ID_REQUEST:
-                    if (batchIdManager == null) {
-                        throw new IOException("No local batch id manager to service remote FREE_BATCH_ID_REQUEST");
-                    }
-                    return new FreeBatchIdRequestHandler();
-                }
-
                 ManagementOperationHandler operationHandler = this.operationHandler;
                 if (operationHandler == null) {
                     throw new IOException("No operation handler set");
@@ -241,76 +196,6 @@ public class ManagementChannel extends ProtocolChannel implements ManagementBatc
             } catch (Exception e) {
                 throwFormattedException(e);
             }
-        }
-    }
-
-    private class RemoteBatchIdManager implements ManagementBatchIdManager {
-
-        @Override
-        public int createBatchId() {
-            try {
-                return new ManagementRequest<Integer>(){
-
-                    @Override
-                    protected byte getRequestCode() {
-                        return ManagementProtocol.CREATE_BATCH_ID_REQUEST;
-                    }
-
-                    @Override
-                    protected Integer readResponse(DataInput input) throws IOException {
-                        ProtocolUtils.expectHeader(input, ManagementProtocol.PARAM_BATCH_ID);
-                        return input.readInt();
-                    }
-                }.executeForResult(executor, ManagementClientChannelStrategy.create(ManagementChannel.this));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        public void freeBatchId(final int id) {
-            try {
-                new ManagementRequest<Void>(id){
-
-                    @Override
-                    protected byte getRequestCode() {
-                        return ManagementProtocol.FREE_BATCH_ID_REQUEST;
-                    }
-
-                    @Override
-                    protected Void readResponse(DataInput input) throws IOException {
-                        return null;
-                    }
-
-                }.executeForResult(executor, ManagementClientChannelStrategy.create(ManagementChannel.this));
-            } catch (Exception ignore) {
-            }
-        }
-    }
-
-    private class CreateBatchIdRequestHandler extends ManagementRequestHandler {
-
-        @Override
-        protected void readRequest(DataInput input) throws IOException {
-        }
-
-        @Override
-        protected void writeResponse(FlushableDataOutput output) throws IOException {
-            output.write(ManagementProtocol.PARAM_BATCH_ID);
-            output.writeInt(batchIdManager.createBatchId());
-        }
-    }
-
-
-    private class FreeBatchIdRequestHandler extends ManagementRequestHandler {
-
-        @Override
-        protected void readRequest(DataInput input) throws IOException {
-            batchIdManager.freeBatchId(getContext().getHeader().getBatchId());
-        }
-
-        @Override
-        protected void writeResponse(FlushableDataOutput output) throws IOException {
         }
     }
 }
