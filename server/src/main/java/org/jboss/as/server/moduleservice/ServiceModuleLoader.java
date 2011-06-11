@@ -112,10 +112,11 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
         }
 
         private void done(ServiceController<? extends ModuleSpec> controller, StartException reason) {
-            latch.countDown();
             startException = reason;
-            if (startException == null)
+            if (startException == null) {
                 moduleSpec = controller.getValue();
+            }
+            latch.countDown();
         }
 
         public ModuleSpec getModuleSpec() throws ModuleLoadException {
