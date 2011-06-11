@@ -83,6 +83,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -100,6 +101,7 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -788,76 +790,6 @@ public class ThreadsSubsystemTestCase {
         return operation;
     }
 
-    class TestController extends BasicModelController {
-
-        protected TestController() {
-            super(model, new ConfigurationPersister() {
-                @Override
-                public void store(ModelNode model) throws ConfigurationPersistenceException {
-                }
-
-                @Override
-                public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
-                }
-
-                @Override
-                public List<ModelNode> load() throws ConfigurationPersistenceException {
-                    return null;
-                }
-
-                @Override
-                public void successfulBoot() throws ConfigurationPersistenceException {
-                }
-
-                @Override
-                public String snapshot() {
-                    return null;
-                }
-
-                @Override
-                public SnapshotInfo listSnapshots() {
-                    return NULL_SNAPSHOT_INFO;
-                }
-
-                @Override
-                public void deleteSnapshot(String name) {
-                }
-            }, new DescriptionProvider() {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(DESCRIPTION).set("The root node of the test management API");
-                    node.get(CHILDREN, PROFILE, DESCRIPTION).set("A list of profiles");
-                    node.get(CHILDREN, PROFILE, MIN_OCCURS).set(1);
-                    node.get(CHILDREN, PROFILE, MODEL_DESCRIPTION);
-                    return node;
-                }
-            });
-
-            getRegistry()
-                    .registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION,
-                            GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION,
-                            CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        protected ModelNodeRegistration getRegistry() {
-            return super.getRegistry();
-        }
-
-        /**
-         * Override to get the actual result from the response.
-         */
-        public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
-            ModelNode rsp = super.execute(OperationBuilder.Factory.create(operation).build());
-            if (FAILED.equals(rsp.get(OUTCOME).asString())) {
-                throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
-            }
-            return rsp.get(RESULT);
-        }
-    }
-
     static class TestNewExtensionContext implements ExtensionContext {
         final ModelNodeRegistration testProfileRegistration;
         ModelNodeRegistration createdRegistration;
@@ -990,8 +922,17 @@ public class ThreadsSubsystemTestCase {
     private class TestConfigurationPersister implements ConfigurationPersister{
 
         @Override
-        public void store(ModelNode model) throws ConfigurationPersistenceException {
-            ThreadsSubsystemTestCase.this.model = model;
+        public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
+            return new PersistenceResource() {
+                @Override
+                public void commit() {
+                    ThreadsSubsystemTestCase.this.model = model;
+                }
+
+                @Override
+                public void rollback() {
+                }
+            };
         }
 
         @Override

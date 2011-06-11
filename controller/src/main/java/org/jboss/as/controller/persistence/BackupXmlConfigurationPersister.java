@@ -23,9 +23,11 @@
 package org.jboss.as.controller.persistence;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -57,10 +59,8 @@ public class BackupXmlConfigurationPersister extends XmlConfigurationPersister {
     }
 
     @Override
-    public void store(final ModelNode model) throws ConfigurationPersistenceException {
-        configurationFile.backup();
-        store(model, configurationFile.getMainFile());
-        configurationFile.fileWritten();
+    public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
+        return new ConfigurationFilePersistenceResource(model, configurationFile, this);
     }
 
     @Override

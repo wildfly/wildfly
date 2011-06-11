@@ -28,16 +28,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.jboss.as.controller.BasicModelController;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
+import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -145,32 +148,7 @@ public class RemotingSubsystemUnitTestCase {
     static class TestController extends BasicModelController {
 
         protected TestController() {
-            super(model, new ConfigurationPersister() {
-                @Override
-                public void store(ModelNode model) throws ConfigurationPersistenceException {
-                }
-                @Override
-                public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
-                }
-                @Override
-                public List<ModelNode> load() throws ConfigurationPersistenceException {
-                    return null;
-                }
-                @Override
-                public void successfulBoot() throws ConfigurationPersistenceException {
-                }
-                @Override
-                public String snapshot() {
-                    return null;
-                }
-                @Override
-                public SnapshotInfo listSnapshots() {
-                    return NULL_SNAPSHOT_INFO;
-                }
-                @Override
-                public void deleteSnapshot(String name) {
-                }
-            }, (DescriptionProvider) null);
+            super(model, new NullConfigurationPersister(), (DescriptionProvider) null);
         }
 
         /** {@inheritDoc} */

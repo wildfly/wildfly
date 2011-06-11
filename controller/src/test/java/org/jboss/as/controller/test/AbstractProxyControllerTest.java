@@ -86,6 +86,7 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
@@ -517,41 +518,6 @@ public abstract class AbstractProxyControllerTest {
     }
 
     protected abstract NewProxyController createProxyController(NewModelController proxiedController, PathAddress proxyNodeAddress);
-
-    private static class NullConfigurationPersister implements ConfigurationPersister{
-
-        @Override
-        public void store(ModelNode model) throws ConfigurationPersistenceException {
-        }
-
-        @Override
-        public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
-        }
-
-        @Override
-        public List<ModelNode> load() throws ConfigurationPersistenceException {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public void successfulBoot() throws ConfigurationPersistenceException {
-        }
-
-        @Override
-        public String snapshot() {
-            return null;
-        }
-
-        @Override
-        public SnapshotInfo listSnapshots() {
-            return NULL_SNAPSHOT_INFO;
-        }
-
-        @Override
-        public void deleteSnapshot(String name) {
-        }
-
-    }
 
     public class MainModelControllerService extends AbstractControllerService {
 

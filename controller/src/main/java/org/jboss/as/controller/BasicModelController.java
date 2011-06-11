@@ -42,24 +42,21 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.concurrent.CancellationException;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -334,7 +331,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
         ConfigurationPersister configurationPersister =  configurationPersisterFactory.getConfigurationPersister();
         if (configurationPersister != null) {
             try {
-                configurationPersister.store(model);
+                configurationPersister.store(model, null);
             } catch (final ConfigurationPersistenceException e) {
                 log.warnf(e, "Failed to persist configuration change: %s", e);
             }
@@ -564,8 +561,19 @@ public class BasicModelController extends AbstractModelController<OperationContr
         /** Instead of persisting, this persister records that model was modified and needs to be persisted when all steps are done. */
         protected final ConfigurationPersister localConfigPersister = new ConfigurationPersister() {
             @Override
-            public void store(ModelNode model) throws ConfigurationPersistenceException {
+            public PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
                 modelUpdated = true;
+                return new PersistenceResource() {
+                    @Override
+                    public void commit() {
+                        // TODO this entire class is going to be deleted
+                    }
+
+                    @Override
+                    public void rollback() {
+                        // TODO this entire class is going to be deleted
+                    }
+                };
             }
 
             @Override

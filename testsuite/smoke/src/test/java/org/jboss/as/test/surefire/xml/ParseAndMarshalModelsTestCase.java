@@ -220,7 +220,7 @@ public class ParseAndMarshalModelsTestCase {
         executeOperations(controller, ops);
 
         ModelNode model = controller.getModel().clone();
-        persister.store(model);
+        persister.store(model, null);
         return model;
     }
 
@@ -239,7 +239,7 @@ public class ParseAndMarshalModelsTestCase {
         ModelNode model = controller.getHostModel();
 
         System.out.println(model);
-        persister.store(model);
+        persister.store(model, null);
         return model;
     }
 
@@ -257,7 +257,7 @@ public class ParseAndMarshalModelsTestCase {
         executeOperations(controller, ops);
 
         ModelNode model = controller.getDomainModel().clone();
-        persister.store(model);
+        persister.store(model, null);
         return model;
     }
 

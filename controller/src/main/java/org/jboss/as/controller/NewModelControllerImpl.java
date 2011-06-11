@@ -35,10 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 
 import java.io.IOException;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,9 +47,7 @@ import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -97,7 +92,7 @@ class NewModelControllerImpl implements NewModelController {
         this.stateMonitor = stateMonitor;
         this.persister = persister;
         this.controllerType = controllerType;
-        this.prepareStep = prepareStep;
+        this.prepareStep = prepareStep == null ? new DefaultPrepareStepHandler() : prepareStep;
         this.processState = processState;
         this.serviceTarget.addListener(ServiceListener.Inheritance.ALL, stateMonitor);
     }
@@ -110,22 +105,12 @@ class NewModelControllerImpl implements NewModelController {
         final EnumSet<NewOperationContextImpl.ContextFlag> contextFlags = rollbackOnFailure ? EnumSet.of(NewOperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL) : EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class);
         NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, contextFlags, handler, attachments, modelReference.get(), control, processState, bootingFlag.getAndSet(false));
         ModelNode response = new ModelNode();
-        if (prepareStep != null) {
-            context.addStep(response, operation, prepareStep, NewOperationContext.Stage.MODEL);
-        }
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String operationName =  operation.require(OP).asString();
-        final NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
-        if(stepHandler != null) {
-            context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
-            RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
-            try {
-                context.completeStep();
-            } finally {
-                RB_ON_RT_FAILURE.set(null);
-            }
-        } else {
-            reportNoHandler(operationName, address, response);
+        context.addStep(response, operation, prepareStep, NewOperationContext.Stage.MODEL);
+        RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
+        try {
+            context.completeStep();
+        } finally {
+            RB_ON_RT_FAILURE.set(null);
         }
         ControlledProcessState.State state = processState.getState();
         switch (state) {
@@ -260,10 +245,22 @@ class NewModelControllerImpl implements NewModelController {
         };
     }
 
-    void writeModel(ModelNode newModel) throws ConfigurationPersistenceException {
+    ConfigurationPersister.PersistenceResource writeModel(final ModelNode newModel, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
         newModel.protect();
-        modelReference.set(newModel);
-        persister.store(newModel);
+        final ConfigurationPersister.PersistenceResource delegate = persister.store(newModel, affectedAddresses);
+        return new ConfigurationPersister.PersistenceResource() {
+
+            @Override
+            public void commit() {
+                modelReference.set(newModel);
+                delegate.commit();
+            }
+
+            @Override
+            public void rollback() {
+                delegate.rollback();
+            }
+        };
     }
 
     void acquireLock(final boolean interruptibly) throws InterruptedException {
@@ -322,5 +319,21 @@ class NewModelControllerImpl implements NewModelController {
 
     void revertRestartRequired(Object stamp) {
         processState.revertRestartRequired(stamp);
+    }
+
+    private class DefaultPrepareStepHandler implements NewStepHandler {
+
+        @Override
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+            final String operationName =  operation.require(OP).asString();
+            final NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
+            if(stepHandler != null) {
+                context.addStep(stepHandler, NewOperationContext.Stage.MODEL);
+            } else {
+                context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, address));
+            }
+            context.completeStep();
+        }
     }
 }

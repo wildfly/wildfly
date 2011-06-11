@@ -63,16 +63,17 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -857,41 +858,5 @@ public class ModelControllerImplUnitTestCase {
         public void operationPrepared(NewModelController.OperationTransaction transaction, ModelNode result) {
             transaction.rollback();
         }
-    }
-
-
-    private static class NullConfigurationPersister implements ConfigurationPersister{
-
-        @Override
-        public void store(ModelNode model) throws ConfigurationPersistenceException {
-        }
-
-        @Override
-        public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
-        }
-
-        @Override
-        public List<ModelNode> load() throws ConfigurationPersistenceException {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public void successfulBoot() throws ConfigurationPersistenceException {
-        }
-
-        @Override
-        public SnapshotInfo listSnapshots() {
-            return NULL_SNAPSHOT_INFO;
-        }
-
-        @Override
-        public String snapshot() {
-            return null;
-        }
-
-        @Override
-        public void deleteSnapshot(String name) {
-        }
-
     }
 }
