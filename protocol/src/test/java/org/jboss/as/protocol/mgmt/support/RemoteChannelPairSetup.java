@@ -109,8 +109,6 @@ public class RemoteChannelPairSetup implements RemotingChannelPairSetup {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("ClIENT " + clientChannel);
-        System.out.println("SERVER " + serverChannel);
     }
 
     public void stopChannels() {

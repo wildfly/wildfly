@@ -93,11 +93,12 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
         @Override
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
             final CountDownLatch preparedOrFailedLatch = new CountDownLatch(1);
+            final CountDownLatch txCompletedLatch = new CountDownLatch(1);
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
                     final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(getContext(), batchId);
-                    final ProxyOperationControlProxy control = new ProxyOperationControlProxy(getContext(), batchId, preparedOrFailedLatch);
+                    final ProxyOperationControlProxy control = new ProxyOperationControlProxy(getContext(), batchId, preparedOrFailedLatch, txCompletedLatch);
                     final ModelNode result;
                     try {
                         result = controller.execute(
@@ -115,6 +116,12 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                     if (result.hasDefined(FAILURE_DESCRIPTION)) {
                         control.operationFailed(result);
                     } else {
+                        try {
+                            txCompletedLatch.await();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                        //System.out.println("--- TxModelControllerOperationHandler: Calling completed for " + operation.get("operation") + ": " + result);
                         control.operationCompleted(result);
                     }
                 }
@@ -135,11 +142,13 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
         final ManagementRequestContext context;
         final int batchId;
         final CountDownLatch preparedOrFailedLatch;
+        final CountDownLatch txCompletedLatch;
 
-        public ProxyOperationControlProxy(final ManagementRequestContext context, final int batchId, final CountDownLatch preparedOrFailedLatch) {
+        public ProxyOperationControlProxy(final ManagementRequestContext context, final int batchId, final CountDownLatch preparedOrFailedLatch, final CountDownLatch txCompletedLatch) {
             this.context = context;
             this.batchId = batchId;
             this.preparedOrFailedLatch = preparedOrFailedLatch;
+            this.txCompletedLatch = txCompletedLatch;
         }
 
         @Override
@@ -167,8 +176,11 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                         byte status = input.readByte();
                         if (status == NewModelControllerProtocol.PARAM_COMMIT) {
                             transaction.commit();
+                            txCompletedLatch.countDown();
+
                         } else if (status == NewModelControllerProtocol.PARAM_ROLLBACK){
                             transaction.rollback();
+                            txCompletedLatch.countDown();
                         } else {
                             throw new IllegalArgumentException("Invalid status code " + status);
                         }

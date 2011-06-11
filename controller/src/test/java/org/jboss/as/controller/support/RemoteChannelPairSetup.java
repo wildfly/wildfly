@@ -133,8 +133,6 @@ public class RemoteChannelPairSetup {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("ClIENT " + clientChannel);
-        System.out.println("SERVER " + serverChannel);
     }
 
     public void stopChannels() throws InterruptedException {

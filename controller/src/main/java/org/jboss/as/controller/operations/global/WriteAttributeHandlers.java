@@ -21,16 +21,13 @@
  */
 package org.jboss.as.controller.operations.global;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ListValidator;

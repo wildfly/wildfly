@@ -93,7 +93,7 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
                 final ManagementChannel channel = channelStrategy.getChannel();
 
                 try {
-                    System.out.println("Executing " + ManagementRequest.this + " " + currentRequestId + "(" + batchId + ") - 0x" + Integer.toHexString(getRequestCode()));
+                    //System.out.println("Executing " + ManagementRequest.this + " " + currentRequestId + "(" + batchId + ") - 0x" + Integer.toHexString(getRequestCode()));
                     //Ends up in writeRequest(ProtocolChannel, FlushableDataOutput)
                     channel.executeRequest(ManagementRequest.this, new DelegatingResponseHandler(channelStrategy));
                 } catch (Exception e) {
@@ -151,6 +151,7 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
 
             T result = null;
             try {
+                ManagementRequest.this.setContext(getContext());
                 result = ManagementRequest.this.readResponse(input);
                 future.done(result);
                 return result;

@@ -65,7 +65,6 @@ public class SimpleHandlers {
         @Override
         public Integer readResponse(DataInput input) throws IOException {
             int i = input.readInt();
-            System.out.println("Reading response " + i);
             return i;
         }
     }
