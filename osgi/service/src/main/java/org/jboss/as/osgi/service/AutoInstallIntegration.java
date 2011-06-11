@@ -88,10 +88,6 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
         builder.install();
     }
 
-    static Map<ServiceName, OSGiModule> createPendingServicesMap() {
-        return new LinkedHashMap<ServiceName, OSGiModule>();
-    }
-
     private AutoInstallIntegration(SubsystemState subsystemState) {
         this.subsystemState = subsystemState;
     }
@@ -100,7 +96,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
     public void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
         log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
-        final Map<ServiceName, OSGiModule> pendingServices = createPendingServicesMap();
+        final Map<ServiceName, OSGiModule> pendingServices = new LinkedHashMap<ServiceName, OSGiModule>();
         try {
             final BundleManagerService bundleManager = injectedBundleManager.getValue();
             final ServiceContainer serviceContainer = context.getController().getServiceContainer();
