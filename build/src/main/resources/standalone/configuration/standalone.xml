@@ -90,7 +90,7 @@
             </console-handler>
 
             <periodic-rotating-file-handler name="FILE">
-                <level name="DEBUG"/>
+                <level name="INFO"/>
                 <formatter>
                     <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </formatter>
@@ -106,16 +106,6 @@
             </logger>
             <logger category="sun.rmi">
                 <level name="WARN"/>
-            </logger>
-            
-            <logger category="org.jboss.as.server.moduleservice">
-                <level name="DEBUG"/>
-            </logger>
-            <logger category="org.jboss.as.osgi">
-                <level name="DEBUG"/>
-            </logger>
-            <logger category="org.jboss.osgi">
-                <level name="DEBUG"/>
             </logger>
 
             <root-logger>
