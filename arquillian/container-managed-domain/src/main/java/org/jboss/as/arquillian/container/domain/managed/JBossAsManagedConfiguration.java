@@ -19,14 +19,14 @@ package org.jboss.as.arquillian.container.domain.managed;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.deployment.Validate;
-import org.jboss.as.arquillian.container.JBossAsCommonConfiguration;
+import org.jboss.as.arquillian.container.CommonContainerConfiguration;
 
 /**
  * JBossAsManagedConfiguration
  *
  * @author Brian Stansberry
  */
-public class JBossAsManagedConfiguration extends JBossAsCommonConfiguration {
+public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
     private String jbossHome = System.getenv("JBOSS_HOME");
 
     private String javaHome = System.getenv("JAVA_HOME");
@@ -37,7 +37,7 @@ public class JBossAsManagedConfiguration extends JBossAsCommonConfiguration {
 
     private boolean outputToConsole = true;
 
-    private String hostControllerManagementAddress = System.getProperty("jboss.test.domain.management.address", "127.0.0.1");;
+    private String hostControllerManagementAddress = System.getProperty("jboss.test.domain.management.address", "127.0.0.1");
 
     private int hostControllerManagementPort = 9999;
 
