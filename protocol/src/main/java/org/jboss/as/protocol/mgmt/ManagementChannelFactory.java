@@ -29,24 +29,19 @@ import org.jboss.remoting3.Channel;
 public class ManagementChannelFactory extends ProtocolChannelFactory <ManagementChannel> {
 
     private final ManagementOperationHandler operationHandler;
-    private final ManagementBatchIdManager batchIdManager;
 
     public ManagementChannelFactory() {
-        this(null, null);
+        this(null);
     }
 
-    public ManagementChannelFactory(ManagementOperationHandler operationHandler, ManagementBatchIdManager batchIdManager) {
+    public ManagementChannelFactory(ManagementOperationHandler operationHandler) {
         this.operationHandler = operationHandler;
-        this.batchIdManager = batchIdManager;
     }
 
     public ManagementChannel create(String name, Channel channel) {
         ManagementChannel createdChannel = new ManagementChannel(name, channel);
         if (operationHandler != null) {
             createdChannel.setOperationHandler(operationHandler);
-        }
-        if (batchIdManager != null) {
-            createdChannel.setBatchIdManager(batchIdManager);
         }
         return createdChannel;
     }

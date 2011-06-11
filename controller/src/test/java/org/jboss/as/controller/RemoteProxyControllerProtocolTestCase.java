@@ -52,7 +52,6 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
 import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
-import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFutureTask;
@@ -456,7 +455,6 @@ public class RemoteProxyControllerProtocolTestCase {
 
         NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
-        serverChannel.setBatchIdManager(ManagementBatchIdManager.DEFAULT);
 
         NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
         clientChannel.setOperationHandler(proxyController);

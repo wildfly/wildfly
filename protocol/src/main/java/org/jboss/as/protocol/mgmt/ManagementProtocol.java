@@ -46,9 +46,4 @@ public interface ManagementProtocol {
     byte RESPONSE_BODY = 0xB;
     byte RESPONSE_ERROR = 0xC;
     byte RESPONSE_END = 0xD;
-
-    byte CREATE_BATCH_ID_REQUEST = 0xF;
-    byte FREE_BATCH_ID_REQUEST = 0x10;
-    byte PARAM_BATCH_ID = 0x11;
-
 }
