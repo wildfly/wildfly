@@ -106,17 +106,41 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
     abstract ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException;
 
     private ModelNode executeSynch(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler) {
+        final int batchId;
         try {
-            return new ExecuteRequest(operation, messageHandler, attachments).executeForResult(executor, getClientChannelStrategy());
+            batchId = getClientChannelStrategy().getChannel().createBatchId();
+        } catch (Exception e1) {
+            throw new RuntimeException(e1);
+        }
+
+        try {
+            return new ExecuteRequest(batchId, operation, messageHandler, attachments).executeForResult(executor, getClientChannelStrategy());
         } catch (Exception e) {
+            try {
+                getClientChannelStrategy().getChannel().freeBatchId(batchId);
+            } catch (Exception e1) {
+                throw new RuntimeException(e1);
+            }
             throw new RuntimeException(e);
         }
     }
 
     private AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler){
+        final int batchId;
         try {
-            return new ExecuteRequest(operation, messageHandler, attachments).execute(executor, getClientChannelStrategy());
+            batchId = getClientChannelStrategy().getChannel().createBatchId();
+        } catch (Exception e1) {
+            throw new RuntimeException(e1);
+        }
+
+        try {
+            return new ExecuteRequest(batchId, operation, messageHandler, attachments).execute(executor, getClientChannelStrategy());
         } catch (Exception e) {
+            try {
+                getClientChannelStrategy().getChannel().freeBatchId(batchId);
+            } catch (Exception e1) {
+                throw new RuntimeException(e1);
+            }
             throw new RuntimeException(e);
         }
     }
@@ -129,8 +153,8 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         private final ExecuteRequestContext executeRequestContext;
         private final ModelNode operation;
 
-        ExecuteRequest(final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
-            super(true);
+        ExecuteRequest(final int batchId, final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
+            super(batchId);
             this.operation = operation;
             executeRequestContext = new ExecuteRequestContext(messageHandler, attachments);
         }
@@ -143,7 +167,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         @Override
         protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
             //TODO Cleanup: this could leak if something goes wrong in the calling code
-            activeRequests.put(getCurrentRequestId(), executeRequestContext);
+            activeRequests.put(getBatchId(), executeRequestContext);
 
             output.write(NewModelControllerProtocol.PARAM_OPERATION);
             operation.writeExternal(output);
@@ -166,6 +190,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
                 node.readExternal(input);
                 return node;
             } finally {
+                getContext().getChannel().freeBatchId(getBatchId());
                 activeRequests.remove(getCurrentRequestId());
             }
         }
@@ -179,15 +204,15 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            int executionId = getContext().getHeader().getExecutionId();
+            int batchId = getContext().getHeader().getBatchId();
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
             MessageSeverity severity = Enum.valueOf(MessageSeverity.class, input.readUTF());
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_MESSAGE);
             String message = input.readUTF();
 
-            ExecuteRequestContext requestContext = activeRequests.get(executionId);
+            ExecuteRequestContext requestContext = activeRequests.get(batchId);
             if (requestContext == null) {
-                throw new IOException("No active request found for " + executionId);
+                throw new IOException("No active request found for " + batchId);
             }
             if (requestContext.getMessageHandler() != null) {
                 requestContext.getMessageHandler().handleReport(severity, message);
@@ -207,13 +232,13 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         InputStream attachmentInput;
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            int executionId = getContext().getHeader().getExecutionId();
+            int batchId = getContext().getHeader().getBatchId();
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
             int index = input.readInt();
 
-            ExecuteRequestContext requestContext = activeRequests.get(executionId);
+            ExecuteRequestContext requestContext = activeRequests.get(batchId);
             if (requestContext == null) {
-                throw new IOException("No active request found for " + executionId);
+                throw new IOException("No active request found for " + batchId);
             }
             InputStream in = requestContext.getAttachments().getInputStreams().get(index);
             attachmentInput = in != null ? new BufferedInputStream(in) : null;

@@ -32,15 +32,23 @@ public interface ManagementProtocol {
     int VERSION = 1; // The current protocol version
 
     byte TYPE = 0x1;
-    byte REQUEST = 0x2;
-    byte RESPONSE = 0x3;
-    byte REQUEST_START = 0x04;
-    byte REQUEST_OPERATION = 0x05;
-    byte REQUEST_BODY = 0x06;
-    byte REQUEST_END = 0x07;
-    byte RESPONSE_START = 0x08;
-    byte RESPONSE_BODY = 0x09;
-    byte RESPONSE_END = 0x10;
+    byte TYPE_REQUEST = 0x2;
+    byte TYPE_RESPONSE = 0x3;
 
+    byte REQUEST_ID = 0x4;
+    byte BATCH_ID = 0x6;
+    byte OPERATION_ID = 0x7;
+    byte REQUEST_BODY = 0x08;
+    byte REQUEST_END = 0x09;
+
+    byte RESPONSE_ID = 0x5;
+    byte RESPONSE_TYPE = 0xA;
+    byte RESPONSE_BODY = 0xB;
+    byte RESPONSE_ERROR = 0xC;
+    byte RESPONSE_END = 0xD;
+
+    byte CREATE_BATCH_ID_REQUEST = 0xF;
+    byte FREE_BATCH_ID_REQUEST = 0x10;
+    byte PARAM_BATCH_ID = 0x11;
 
 }

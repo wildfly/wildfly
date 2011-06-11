@@ -71,11 +71,11 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
      */
     class OperationMessageHandlerProxy implements OperationMessageHandler {
         final ManagementRequestContext context;
-        final int executionId;
+        final int batchId;
 
-        public OperationMessageHandlerProxy(final ManagementRequestContext context, final int executionId) {
+        public OperationMessageHandlerProxy(final ManagementRequestContext context, final int batchId) {
             this.context = context;
-            this.executionId = executionId;
+            this.batchId = batchId;
         }
 
         @Override
@@ -83,7 +83,7 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
             try {
                 //Invoke this synchronously so that the messages appear in the right order on the
                 //remote caller
-                new ManagementRequest<Void>(executionId) {
+                new ManagementRequest<Void>(batchId) {
 
                     @Override
                     protected byte getRequestCode() {
@@ -112,10 +112,10 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
     class OperationAttachmentsProxy implements OperationAttachments {
         final List<InputStream> proxiedStreams;
 
-        OperationAttachmentsProxy(final ManagementRequestContext context, final int executionId, final int size){
+        OperationAttachmentsProxy(final ManagementRequestContext context, final int batchId, final int size){
             proxiedStreams = new ArrayList<InputStream>(size);
             for (int i = 0 ; i < size ; i++) {
-                proxiedStreams.add(new ProxiedInputStream(context, executionId, i));
+                proxiedStreams.add(new ProxiedInputStream(context, batchId, i));
             }
         }
 
@@ -127,14 +127,14 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
 
     private class ProxiedInputStream extends InputStream {
         final ManagementRequestContext context;
-        final int executionId;
+        final int batchId;
         final int index;
         volatile byte[] bytes;
         volatile ByteArrayInputStream delegate;
 
-        public ProxiedInputStream(final ManagementRequestContext context, final int executionId, final int index) {
+        public ProxiedInputStream(final ManagementRequestContext context, final int batchId, final int index) {
             this.context = context;
-            this.executionId = executionId;
+            this.batchId = batchId;
             this.index = index;
         }
 
@@ -161,7 +161,7 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
 
         void initializeBytes() {
             if (bytes == null) {
-                new ManagementRequest<Void>(executionId) {
+                new ManagementRequest<Void>(batchId) {
                     @Override
                     protected byte getRequestCode() {
                         return NewModelControllerProtocol.GET_INPUTSTREAM_REQUEST;

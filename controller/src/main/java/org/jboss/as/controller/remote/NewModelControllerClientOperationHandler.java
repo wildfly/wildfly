@@ -69,12 +69,12 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
      */
     private class ExecuteRequestHandler extends ManagementRequestHandler {
         private ModelNode operation = new ModelNode();
-        private int executionId;
+        private int batchId;
         private int attachmentsLength;
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            executionId = getContext().getHeader().getExecutionId();
+            batchId = getContext().getHeader().getBatchId();
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_OPERATION);
             operation.readExternal(input);
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
@@ -87,9 +87,9 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
             try {
                 result = controller.execute(
                         operation,
-                        new OperationMessageHandlerProxy(getContext(), executionId),
+                        new OperationMessageHandlerProxy(getContext(), batchId),
                         NewModelController.OperationTransactionControl.COMMIT,
-                        new OperationAttachmentsProxy(getContext(), executionId, attachmentsLength));
+                        new OperationAttachmentsProxy(getContext(), batchId, attachmentsLength));
             } catch (Exception e) {
                 e.printStackTrace();
                 final ModelNode failure = new ModelNode();

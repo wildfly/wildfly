@@ -30,5 +30,29 @@ import java.io.IOException;
  * @version $Revision: 1.1 $
  */
 public abstract class ManagementResponseHandler<T> {
+
+    private ManagementResponseContext context;
+
+    /**
+     * Get the response context
+     * @return the context
+     */
+    protected ManagementResponseContext getContext() {
+        return context;
+    }
+
+    /**
+     * Set the response context
+     * @param context the context to set
+     */
+    void setContext(ManagementResponseContext context) {
+        this.context = context;
+    }
+
+    /**
+     * Read the response body
+     *
+     * @param input the input
+     */
     protected abstract T readResponse(DataInput input) throws IOException;
 }

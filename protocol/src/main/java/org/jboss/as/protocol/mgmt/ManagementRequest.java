@@ -28,7 +28,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.protocol.ProtocolChannel;
-import org.jboss.remoting3.Channel;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 
@@ -44,31 +43,22 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
     private static final AtomicInteger requestId = new AtomicInteger();
     private final int currentRequestId = requestId.incrementAndGet();
     private final ManagementFuture<T> future = new ManagementFuture<T>();
-    private final int executionId;
+    private final int batchId;
 
     /**
      * Create a new ManagementRequest that is not part of an 'execution', i.e. this is a standalone request.
      */
     protected ManagementRequest() {
-        this(false);
+        this(0);
     }
 
     /**
-     * Create a new ManagementRequest that is part of an 'execution'.
+     * Create a new ManagementRequest that is part of a batch
      *
      *  @param executionId the id of the 'execution' this request is a part of
      */
-    protected ManagementRequest(int executionId) {
-        this.executionId = executionId;
-    }
-
-    /**
-     * Create a new ManagementRequest
-     *
-     * @param startExecution if {@code false} see {@link #ManagementRequest()}, if {@code true} it starts a new 'execution' with the current request id
-     */
-    protected ManagementRequest(boolean startExecution) {
-        executionId = startExecution ? currentRequestId : 0;
+    protected ManagementRequest(int batchId) {
+        this.batchId = batchId;
     }
 
     /**
@@ -83,8 +73,8 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
         return currentRequestId;
     }
 
-    protected int getExecutionId() {
-        return executionId;
+    protected int getBatchId() {
+        return batchId;
     }
 
     /**
@@ -103,7 +93,7 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
                 final ManagementChannel channel = channelStrategy.getChannel();
 
                 try {
-                    //System.out.println("Executing " + ManagementRequest.this + " " + currentRequestId + "(" + executionId + ") - 0x" + Integer.toHexString(getRequestCode()));
+                    System.out.println("Executing " + ManagementRequest.this + " " + currentRequestId + "(" + batchId + ") - 0x" + Integer.toHexString(getRequestCode()));
                     //Ends up in writeRequest(ProtocolChannel, FlushableDataOutput)
                     channel.executeRequest(ManagementRequest.this, new DelegatingResponseHandler(channelStrategy));
                 } catch (Exception e) {
@@ -117,13 +107,8 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
     }
 
     void writeRequest(ProtocolChannel channel, FlushableDataOutput output) throws IOException {
-        final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, currentRequestId, executionId);
-        managementRequestHeader.write(output);
-
         //Body
-        writeRequestBody(channel, output);
-
-        //End
+        writeRequest(ManagementProtocol.VERSION, output);
         output.writeByte(ManagementProtocol.REQUEST_END);
     }
 
@@ -149,16 +134,6 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
     protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
     }
 
-    private void writeRequestBody(Channel channel, FlushableDataOutput output) throws IOException {
-        output.writeByte(ManagementProtocol.REQUEST_OPERATION);
-        output.writeByte(getRequestCode());
-        output.writeByte(ManagementProtocol.REQUEST_START);
-
-        output.write(ManagementProtocol.REQUEST_BODY);
-        writeRequest(ManagementProtocol.VERSION, output);
-
-    }
-
     private final class DelegatingResponseHandler extends ManagementResponseHandler<T>{
         private final ManagementClientChannelStrategy clientChannelStrategy;
 
@@ -168,6 +143,12 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
 
         @Override
         protected T readResponse(DataInput input) {
+            final String error = getContext().getResponse().getError();
+            if (error != null) {
+                future.failed(new IOException("A problem happened executing on the server: " + error));
+                return null;
+            }
+
             T result = null;
             try {
                 result = ManagementRequest.this.readResponse(input);

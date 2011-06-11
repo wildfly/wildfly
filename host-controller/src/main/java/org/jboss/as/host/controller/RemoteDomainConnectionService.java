@@ -51,6 +51,7 @@ import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
@@ -86,6 +87,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private volatile ManagementChannel channel;
     private volatile ReconnectInfo reconnectInfo;
     private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ManagementBatchIdManager batchIdManager = ManagementBatchIdManager.DEFAULT;
 
     public RemoteDomainConnectionService(final String name, final InetAddress host, final int port, final FileRepository localRepository){
         this.name = name;
@@ -133,7 +135,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             configuration.setUriScheme("remote");
             configuration.setUri(new URI("remote://" + host.getHostAddress() + ":" + port));
             configuration.setExecutor(executor);
-            configuration.setChannelFactory(new ManagementChannelFactory(txOperationHandler));
+            configuration.setChannelFactory(new ManagementChannelFactory(txOperationHandler, batchIdManager));
             client = ProtocolChannelClient.create(configuration);
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -21,6 +21,7 @@
 */
 package org.jboss.as.remoting;
 
+import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
@@ -48,6 +49,7 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
 
     private final InjectedValue<ManagementOperationHandler> operationHandlerValue = new InjectedValue<ManagementOperationHandler>();
+    private final ManagementBatchIdManager batchIdManager = ManagementBatchIdManager.DEFAULT;
 
     private final String channelName;
     private final OptionMap optionMap;
@@ -93,7 +95,7 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
 
     @Override
     public void channelOpened(Channel channel) {
-        final ManagementChannel protocolChannel = new ManagementChannelFactory(operationHandlerValue.getValue()).create(channelName, channel);
+        final ManagementChannel protocolChannel = new ManagementChannelFactory(operationHandlerValue.getValue(), batchIdManager).create(channelName, channel);
         protocolChannel.startReceiving();
         channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override

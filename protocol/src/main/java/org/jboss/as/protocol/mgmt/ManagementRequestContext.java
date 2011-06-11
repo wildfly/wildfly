@@ -19,6 +19,7 @@
 package org.jboss.as.protocol.mgmt;
 
 /**
+ * Contains information relevant to a request being handled on the receiving end
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
@@ -34,10 +35,18 @@ public class ManagementRequestContext {
         this.header = header;
     }
 
+    /**
+     * Get the channel
+     * @return the channel
+     */
     public ManagementChannel getChannel() {
         return channel;
     }
 
+    /**
+     * Get the header
+     * @return the header
+     */
     public ManagementRequestHeader getHeader() {
         return header;
     }

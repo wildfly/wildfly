@@ -39,7 +39,7 @@ public abstract class ManagementRequestHandler {
      *
      * @return the context
      */
-    public ManagementRequestContext getContext() {
+    protected ManagementRequestContext getContext() {
         return context;
     }
 
@@ -48,19 +48,19 @@ public abstract class ManagementRequestHandler {
      *
      * @param context the context to set
      */
-    public void setContext(ManagementRequestContext context) {
+    void setContext(ManagementRequestContext context) {
         this.context = context;
     }
 
     /**
-     * Read the request for this management request
+     * Read the request body for this management request
      *
      * @param input the data input
      */
     protected abstract void readRequest(DataInput input) throws IOException;
 
     /**
-     * Write the response for this management response
+     * Write the response body for this management response
      *
      * @param output the data output
      */

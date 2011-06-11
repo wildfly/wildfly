@@ -84,7 +84,7 @@ abstract class ManagementProtocolHeader {
      * @return true if this header is a request; false if it is a response
      */
     boolean isRequest() {
-        return getType() == ManagementProtocol.REQUEST;
+        return getType() == ManagementProtocol.TYPE_REQUEST;
     }
 
     /**
@@ -113,9 +113,9 @@ abstract class ManagementProtocolHeader {
         expectHeader(input, ManagementProtocol.TYPE);
         byte type = input.readByte();
         switch (type) {
-            case ManagementProtocol.REQUEST:
+            case ManagementProtocol.TYPE_REQUEST:
                 return new ManagementRequestHeader(version, input);
-            case ManagementProtocol.RESPONSE:
+            case ManagementProtocol.TYPE_RESPONSE:
                 return new ManagementResponseHeader(version, input);
             default:
                 throw new IOException("Invalid type: " + type);
