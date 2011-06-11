@@ -75,7 +75,6 @@ public class ConcurrentRequestOperationHandler  implements ManagementOperationHa
 
         @Override
         public void writeResponse(FlushableDataOutput output) throws IOException {
-            System.out.println("Writing response " + data * 2);
             output.writeInt(data * 2);
         }
     }

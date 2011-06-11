@@ -56,9 +56,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -84,8 +82,6 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -243,17 +239,30 @@ public abstract class AbstractProxyControllerTest {
         write.getOperation().get(VALUE).set("NewValue2");
         ModelNode result = mainControllerClient.execute(write);
 
-        //TODO uncomment this
-//        NewOperation read = createOperation(READ_RESOURCE_OPERATION, "hostchild", "hcA", "child", "childA");
-//        read.getOperation().get(RECURSIVE).set(true);
-//        result = proxiedControllerClient.execute(read);
-//        assertEquals("NewValue2", result.get(RESULT, "value").asString());
+        NewOperation read = createOperation(READ_RESOURCE_OPERATION, "hostchild", "hcA", "child", "childA");
+        read.getOperation().get(RECURSIVE).set(true);
+        result = proxiedControllerClient.execute(read);
+        assertEquals("NewValue2", result.get(RESULT, "value").asString());
 
-        NewOperation read = createOperation(READ_RESOURCE_OPERATION, "host", "hostA", "hostchild", "hcA", "child", "childA");
+        read = createOperation(READ_RESOURCE_OPERATION, "host", "hostA", "hostchild", "hcA", "child", "childA");
         read.getOperation().get(RECURSIVE).set(true);
         result = mainControllerClient.execute(read);
         assertEquals("NewValue2", result.get(RESULT, "value").asString());
     }
+
+    @Test
+    public void testWriteAttributeOperationSanity() throws Exception {
+        NewOperation write = createOperation(WRITE_ATTRIBUTE_OPERATION, "hostchild", "hcA", "child", "childA");
+        write.getOperation().get(NAME).set("value");
+        write.getOperation().get(VALUE).set("NewValue2");
+        ModelNode result = proxiedControllerClient.execute(write);
+
+        NewOperation read = createOperation(READ_RESOURCE_OPERATION, "hostchild", "hcA", "child", "childA");
+        read.getOperation().get(RECURSIVE).set(true);
+        result = proxiedControllerClient.execute(read);
+        assertEquals("NewValue2", result.get(RESULT, "value").asString());
+    }
+
 
     @Test
     public void testReadAttributeOperationInChildController() throws Exception {

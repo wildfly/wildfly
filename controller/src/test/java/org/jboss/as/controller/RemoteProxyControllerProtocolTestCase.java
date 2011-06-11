@@ -35,12 +35,13 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import junit.framework.Assert;
 
 import org.jboss.as.controller.NewModelController.OperationTransaction;
 import org.jboss.as.controller.NewProxyController.ProxyOperationControl;
@@ -68,7 +69,6 @@ public class RemoteProxyControllerProtocolTestCase {
     RemoteChannelPairSetup channels;
     @Before
     public void start() throws Exception {
-        System.out.println("---- Test ----");
         channels = new RemoteChannelPairSetup();
         channels.setupRemoting();
         channels.startChannels();
@@ -76,7 +76,6 @@ public class RemoteProxyControllerProtocolTestCase {
 
     @After
     public void stop() throws Exception {
-        System.out.println("Closing channels");
         channels.stopChannels();
         channels.shutdownRemoting();
     }
@@ -123,10 +122,11 @@ public class RemoteProxyControllerProtocolTestCase {
                 },
                 commitControl,
                 null);
+        Assert.assertNotNull(commitControl.tx);
+        commitControl.tx.commit();
         assertEquals("123", controller.getOperation().get("test").asString());
         assertEquals("Test1", messages.take());
         assertEquals("Test2", messages.take());
-        commitControl.latch.await();
     }
 
     @Test
@@ -434,12 +434,12 @@ public class RemoteProxyControllerProtocolTestCase {
                 null,
                 commitControl,
                 attachments);
+        Assert.assertNotNull(commitControl.tx);
+        commitControl.tx.commit();
         assertEquals(3, size.get());
         assertArrays(firstBytes, firstResult.get());
         assertArrays(secondBytes, secondResult.get());
         assertArrays(new byte[0], thirdResult.get());
-        commitControl.latch.await();
-        System.out.println("--------- done");
     }
 
     private void assertArrays(byte[] expected, byte[] actual) {
@@ -479,10 +479,11 @@ public class RemoteProxyControllerProtocolTestCase {
     }
 
     private static class CommitProxyOperationControl implements ProxyOperationControl {
-        CountDownLatch latch = new CountDownLatch(1);
+        OperationTransaction tx;
         @Override
         public void operationPrepared(OperationTransaction transaction, ModelNode result) {
-            transaction.commit();
+            //DO not call commit from here
+            tx = transaction;
         }
 
         @Override
@@ -491,7 +492,6 @@ public class RemoteProxyControllerProtocolTestCase {
 
         @Override
         public void operationCompleted(ModelNode response) {
-            latch.countDown();
         }
 
     }

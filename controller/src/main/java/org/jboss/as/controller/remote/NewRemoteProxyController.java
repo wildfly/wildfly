@@ -346,9 +346,9 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
 
         @Override
         void handle(final int batchId, final ProxyOperationControl control, final ModelNode response) {
-            control.operationFailed(response);
             ExecuteRequestContext context = activeRequests.remove(batchId);
             context.getBatchIdManager().freeBatchId(batchId);
+            control.operationFailed(response);
         }
     }
 
@@ -358,10 +358,11 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
     private class OperationCompletedRequestHandler extends ProxyOperationControlRequestHandler {
 
         @Override
-        void handle(final int bactchId, final ProxyOperationControl control, final ModelNode response) {
+        void handle(final int batchId, final ProxyOperationControl control, final ModelNode response) {
+            ExecuteRequestContext context = activeRequests.remove(batchId);
+            context.getBatchIdManager().freeBatchId(batchId);
             control.operationCompleted(response);
-            ExecuteRequestContext context = activeRequests.remove(bactchId);
-            context.getBatchIdManager().freeBatchId(bactchId);
+            context.setTxCompleted();
         }
     }
 
@@ -376,18 +377,21 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
 
         @Override
         void handle(final int batchId, final ProxyOperationControl control, final ModelNode response)  throws IOException {
+            final ExecuteRequestContext context = activeRequests.get(batchId);
             control.operationPrepared(new OperationTransaction() {
 
                 @Override
                 public void rollback() {
                     status = NewModelControllerProtocol.PARAM_ROLLBACK;
                     completedLatch.countDown();
+                    context.waitForTxCompleted();
                 }
 
                 @Override
                 public void commit() {
                     status = NewModelControllerProtocol.PARAM_COMMIT;
                     completedLatch.countDown();
+                    context.waitForTxCompleted();
                 }
             }, response);
         }
@@ -411,6 +415,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
         final ProxyOperationControl control;
         final OperationAttachments attachments;
         final ManagementBatchIdManager batchIdManager;
+        final CountDownLatch txCompletedLatch = new CountDownLatch(1);
 
         public ExecuteRequestContext(final OperationMessageHandler messageHandler, final ProxyOperationControl control, final OperationAttachments attachments, final ManagementBatchIdManager batchIdManager) {
             this.messageHandler = messageHandler;
@@ -433,6 +438,18 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
 
         public ManagementBatchIdManager getBatchIdManager() {
             return batchIdManager;
+        }
+
+        void waitForTxCompleted() {
+            try {
+                txCompletedLatch.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        void setTxCompleted() {
+            txCompletedLatch.countDown();
         }
     }
 }

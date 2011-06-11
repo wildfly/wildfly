@@ -42,7 +42,6 @@ public class RemoteChannelProxyControllerTestCase extends AbstractProxyControlle
 
     @After
     public void stopChannels() throws Exception{
-        System.out.println("Closing channels");
         channels.stopChannels();
         channels.shutdownRemoting();
     }
