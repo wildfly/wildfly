@@ -21,9 +21,7 @@
  */
 package org.jboss.as.security.service;
 
-import org.jboss.security.SecurityContext;
-import org.jboss.security.SecurityContextAssociation;
-import org.picketbox.factories.SecurityFactory;
+import static java.security.AccessController.doPrivileged;
 
 import javax.security.auth.Subject;
 import java.security.Principal;
@@ -32,17 +30,24 @@ import java.security.acl.Group;
 import java.util.Enumeration;
 import java.util.Set;
 
-import static java.security.AccessController.doPrivileged;
+import org.jboss.security.AuthenticationManager;
+import org.jboss.security.SecurityContext;
+import org.jboss.security.SecurityContextAssociation;
+import org.jboss.security.SecurityContextUtil;
+import org.jboss.security.SubjectInfo;
+import org.jboss.security.identity.Identity;
+import org.jboss.security.identity.plugins.SimpleIdentity;
+import org.picketbox.factories.SecurityFactory;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class SimpleSecurityManager {
     private ThreadLocalStack<SecurityContext> contexts = new ThreadLocalStack<SecurityContext>();
 
     private static PrivilegedAction<SecurityContext> securityContext() {
         return new PrivilegedAction<SecurityContext>() {
-            @Override
             public SecurityContext run() {
                 return SecurityContextAssociation.getSecurityContext();
             }
@@ -58,7 +63,7 @@ public class SimpleSecurityManager {
         */
         Principal principal = securityContext.getIncomingRunAs();
         if (principal == null)
-            principal = securityContext.getUtil().getUserPrincipal();
+            principal = getPrincipal(securityContext.getSubjectInfo().getAuthenticatedSubject());
         if (principal == null)
             throw new IllegalStateException("No principal available");
         return principal;
@@ -95,6 +100,10 @@ public class SimpleSecurityManager {
         return callerPrincipal == null ? principal : callerPrincipal;
     }
 
+    /**
+     * @param roleNames
+     * @return true if the user is in any one of the roles listed
+     */
     public boolean isCallerInRole(final String... roleNames) {
         throw new RuntimeException("NYI");
     }
@@ -107,13 +116,55 @@ public class SimpleSecurityManager {
      * @param runAsPrincipal
      */
     public void push(final String securityDomain, final String runAs, final String runAsPrincipal) {
+        // TODO - Handle a null securityDomain here?
         final SecurityContext previous = SecurityContextAssociation.getSecurityContext();
         contexts.push(previous);
-        SecurityContext sc = SecurityFactory.establishSecurityContext(securityDomain);
+        SecurityContext current = SecurityFactory.establishSecurityContext(securityDomain);
         if (previous != null) {
-            sc.setSubjectInfo(previous.getSubjectInfo());
-            sc.setIncomingRunAs(previous.getOutgoingRunAs());
+            current.setSubjectInfo(previous.getSubjectInfo());
+            current.setIncomingRunAs(previous.getOutgoingRunAs());
         }
+
+        // TODO - Check for incoming RunAsIdentity
+        // TODO - Set unauthenticated identity if no auth to occur
+        boolean authenticated = authenticate(current);
+        if (authenticated == false) {
+            // TODO - Better type needed.
+            throw new RuntimeException("Invalid User");
+        }
+    }
+
+    private boolean authenticate(SecurityContext context) {
+        SecurityContextUtil util = context.getUtil();
+        SubjectInfo subjectInfo = context.getSubjectInfo();
+        Subject subject = new Subject();
+        Principal principal = util.getUserPrincipal();
+        Object credential = util.getCredential();
+
+        boolean authenticated = false;
+        if (principal == null) {
+            Identity unauthenticatedIdentity = getUnauthenticatedIdentity();
+            subjectInfo.addIdentity(unauthenticatedIdentity);
+            subject.getPrincipals().add(unauthenticatedIdentity.asPrincipal());
+            authenticated = true;
+        }
+
+        if (authenticated == false) {
+            AuthenticationManager authenticationManager = context.getAuthenticationManager();
+            authenticated = authenticationManager.isValid(principal, credential, subject);
+        }
+        if (authenticated == true) {
+            subjectInfo.setAuthenticatedSubject(subject);
+        }
+
+        return authenticated;
+    }
+
+    // TODO - Base on configuration.
+    // Also the spec requires a container representation of an unauthenticated identity so providing
+    // at least a default is not optional.
+    private Identity getUnauthenticatedIdentity() {
+      return new SimpleIdentity("anonymous");
     }
 
     /**

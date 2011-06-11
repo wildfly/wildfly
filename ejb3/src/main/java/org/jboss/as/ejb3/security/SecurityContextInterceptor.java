@@ -29,6 +29,8 @@ import java.security.PrivilegedAction;
 
 import static java.security.AccessController.doPrivileged;
 
+import javax.ejb.EJBAccessException;
+
 /**
  * Establish the security context.
  *
@@ -57,9 +59,15 @@ public class SecurityContextInterceptor implements Interceptor {
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
+        // TODO - special cases need to be handled where SecurityContext not established or minimal unauthenticated principal context instead.
         doPrivileged(pushAction);
         try {
             return context.proceed();
+        } catch (Exception e) {
+            // TODO - Remove
+            e.printStackTrace();
+            // Whatever the failure the call can not proceed.
+            throw new EJBAccessException(e.getMessage());
         } finally {
             doPrivileged(popAction);
         }
