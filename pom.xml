@@ -106,7 +106,7 @@
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
         <version.org.hornetq.hornetq-jms>2.2.2.Final</version.org.hornetq.hornetq-jms>
-        <version.org.infinispan>5.0.0.CR2</version.org.infinispan>
+        <version.org.infinispan>5.0.0.CR4_AS7</version.org.infinispan>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.arquillian.core>1.0.0.Beta2</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>1.0.0.Beta2</version.org.jboss.arquillian.osgi>
