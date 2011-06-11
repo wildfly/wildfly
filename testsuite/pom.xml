@@ -146,9 +146,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <!--
-                    <parallel>none</parallel>
-                    -->
+                   <failIfNoTests>false</failIfNoTests>
+                    <!-- parallel>none</parallel -->
                     <systemProperties>
                         <property>
                           <name>jboss.options</name>

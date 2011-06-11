@@ -28,7 +28,6 @@ import static org.junit.Assert.assertNotNull;
 import java.io.InputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.jar.JarFile;
 
 import javax.inject.Inject;
 
@@ -44,6 +43,7 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -68,8 +68,8 @@ import org.osgi.service.packageadmin.PackageAdmin;
 @RunWith(Arquillian.class)
 public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCase {
 
-    private static final String TARGET_BUNDLE_NAME = "example-xservice-target-bundle";
-    private static final String CLIENT_MODULE_NAME = "example-xservice-client-module";
+    private static final String TARGET_BUNDLE_NAME = "example-xservice-mab-target-bundle";
+    private static final String CLIENT_MODULE_NAME = "example-xservice-mab-client-module";
 
     @Deployment
     public static JavaArchive createdeployment() {
@@ -152,7 +152,13 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
         archive.addClasses(ClientModuleTwoActivator.class);
         String activatorPath = "META-INF/services/" + ServiceActivator.class.getName();
         archive.addAsResource(OSGiTestHelper.getResourceFile("osgi/xservice/client-module-two/" + activatorPath), activatorPath);
-        archive.setManifest(OSGiTestHelper.getResourceFile("osgi/xservice/client-module-two/" + JarFile.MANIFEST_NAME));
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                ManifestBuilder builder = ManifestBuilder.newInstance();
+                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.modules,org.jboss.logging,org.jboss.osgi.framework,deployment.example-xservice-mab-target-bundle:0.0.0");
+                return builder.openStream();
+            }
+        });
         return archive;
     }
 
