@@ -41,8 +41,6 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
     private final String name;
     private final Channel channel;
     private boolean start;
-    private final AtomicBoolean closed = new AtomicBoolean();
-    private final AtomicBoolean shutdownWrites = new AtomicBoolean();
     private final AtomicBoolean stopReceiving = new AtomicBoolean();
 
     protected ProtocolChannel(String name, Channel channel) {
@@ -103,14 +101,6 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
      * {@inheritDoc}
      */
     public void writeShutdown() throws IOException {
-        if (!shutdownWrites.compareAndSet(false, true)) {
-            throw new IllegalStateException("Writes already shut down");
-        }
-        try {
-            waitUntilClosable();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
         channel.writeShutdown();
     }
 
@@ -125,14 +115,6 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
      * {@inheritDoc}
      */
     public void close() throws IOException {
-        if (!closed.compareAndSet(false, true)) {
-            throw new IllegalStateException("Channel already closed");
-        }
-        try {
-            waitUntilClosable();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
         channel.close();
     }
 
@@ -160,14 +142,6 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-    }
-
-    protected boolean getClosed() {
-        return closed.get();
-    }
-
-    protected boolean getWritesShutdown() {
-        return shutdownWrites.get();
     }
 
     protected boolean getStopReceiving() {
