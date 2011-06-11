@@ -30,6 +30,7 @@ import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
 import org.jboss.logging.Logger;
+import org.jboss.shrinkwrap.api.Archive;
 
 /**
  * A deployer for the Arquillian JMXProtocol endpoint.
@@ -53,12 +54,14 @@ public class ArquillianServiceDeployer {
 
     private AtomicBoolean serviceArchiveDeployed = new AtomicBoolean();
 
-    public void doServiceDeploy(@Observes BeforeDeploy event) {
+    public synchronized void doServiceDeploy(@Observes BeforeDeploy event) {
         ServiceArchiveHolder archiveHolder = archiveHolderInst.get();
-        if (archiveHolder != null && !serviceArchiveDeployed.get()) {
+        if (archiveHolder != null && serviceArchiveDeployed.get() == false) {
             try {
+                Archive<?> archive = archiveHolder.getArchive();
+                log.infof("Deploy arquillian service: %s", archive);
                 DeployableContainer<?> deployableContainer = containerInst.get().getDeployableContainer();
-                deployableContainer.deploy(archiveHolder.getArchive());
+                deployableContainer.deploy(archive);
                 serviceArchiveDeployed.set(true);
             } catch (Throwable th) {
                 log.error("Cannot deploy arquillian service", th);
@@ -66,12 +69,14 @@ public class ArquillianServiceDeployer {
         }
     }
 
-    public void undeploy(@Observes BeforeStop event) {
-        if (serviceArchiveDeployed.get()) {
+    public synchronized void undeploy(@Observes BeforeStop event) {
+        ServiceArchiveHolder archiveHolder = archiveHolderInst.get();
+        if (archiveHolder != null && serviceArchiveDeployed.get() == true) {
             try {
+                Archive<?> archive = archiveHolder.getArchive();
+                log.infof("Undeploy arquillian service: %s", archive);
                 DeployableContainer<?> deployableContainer = containerInst.get().getDeployableContainer();
-                ServiceArchiveHolder archiveHolder = archiveHolderInst.get();
-                deployableContainer.undeploy(archiveHolder.getArchive());
+                deployableContainer.undeploy(archive);
                 serviceArchiveDeployed.set(false);
             } catch (Throwable th) {
                 log.error("Cannot undeploy arquillian service", th);
