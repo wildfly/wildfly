@@ -75,14 +75,6 @@ public class NewHostControllerBootstrap {
 
         // The first default services are registered before the bootstrap operations are executed.
         final ServiceTarget serviceTarget = serviceContainer;
-        serviceTarget.addListener(ServiceListener.Inheritance.ALL, new AbstractServiceListener<Object>() {
-            @Override
-            public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                if (transition == ServiceController.Transition.STARTING_to_START_FAILED) {
-                    log.errorf(controller.getStartException(), "Service [%s] failed.", controller.getName());
-                }
-            }
-        });
 
         // Install the process controller client
         final ProcessControllerConnectionService processControllerClient = new ProcessControllerConnectionService(environment, authCode);
