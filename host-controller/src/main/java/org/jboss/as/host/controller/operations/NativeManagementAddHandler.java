@@ -36,8 +36,13 @@ import org.jboss.dmr.ModelNode;
  */
 public class NativeManagementAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
-    public static final NativeManagementAddHandler INSTANCE = new NativeManagementAddHandler();
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
+
+    private final LocalHostControllerInfoImpl hostControllerInfo;
+
+    public NativeManagementAddHandler(final LocalHostControllerInfoImpl hostControllerInfo) {
+        this.hostControllerInfo = hostControllerInfo;
+    }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
         final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
@@ -45,6 +50,9 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler implement
 
         model.get(ModelDescriptionConstants.INTERFACE).set(interfaceName);
         model.get(ModelDescriptionConstants.PORT).set(port);
+
+        hostControllerInfo.setNativeManagementInterface(interfaceName);
+        hostControllerInfo.setNativeManagementPort(port);
     }
 
     /**

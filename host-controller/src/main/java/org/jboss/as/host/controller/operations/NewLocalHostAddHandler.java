@@ -21,7 +21,6 @@
  */
 package org.jboss.as.host.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
 import java.util.Locale;
@@ -29,11 +28,9 @@ import java.util.Locale;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.host.controller.DomainModelProxy;
-import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.NewHostModelUtil;
 import org.jboss.dmr.ModelNode;
 
@@ -46,14 +43,14 @@ public class NewLocalHostAddHandler implements NewStepHandler, DescriptionProvid
 
     public static final String OPERATION_NAME = "add-host";
 
-    private final DomainModelProxy domainModelProxy;
+    private final LocalHostControllerInfoImpl hostControllerInfo;
 
-    public static NewLocalHostAddHandler getInstance(final DomainModelProxy domainModelProxy) {
-        return new NewLocalHostAddHandler(domainModelProxy);
+    public static NewLocalHostAddHandler getInstance(final LocalHostControllerInfoImpl hostControllerInfo) {
+        return new NewLocalHostAddHandler(hostControllerInfo);
     }
 
-    private NewLocalHostAddHandler(DomainModelProxy domainModelProxy) {
-        this.domainModelProxy = domainModelProxy;
+    private NewLocalHostAddHandler(final LocalHostControllerInfoImpl hostControllerInfo) {
+        this.hostControllerInfo = hostControllerInfo;
     }
 
     @Override
@@ -73,10 +70,10 @@ public class NewLocalHostAddHandler implements NewStepHandler, DescriptionProvid
         final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         NewHostModelUtil.initCoreModel(model);
 
-        final String hostName = operation.require(NAME).asString();
-        model.get(NAME).set(hostName);
+        final String localHostName = operation.require(NAME).asString();
+        model.get(NAME).set(localHostName);
 
-        domainModelProxy.getDomainModel().setLocalHostName(hostName);
+        hostControllerInfo.setLocalHostName(localHostName);
 
         context.completeStep();
     }

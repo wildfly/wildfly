@@ -67,6 +67,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler implement
                 Services.JBOSS_SERVER_CONTROLLER,
                 NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
                 port,
+                verificationHandler,
                 newControllers);
     }
 

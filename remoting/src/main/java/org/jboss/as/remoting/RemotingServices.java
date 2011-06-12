@@ -27,11 +27,13 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.remote.NewAbstractModelControllerOperationHandlerService;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -128,8 +130,9 @@ public final class RemotingServices {
             final ServiceName modelControllerName,
             final ServiceName networkInterfaceBindingName,
             final int port,
-            List<ServiceController<?>> newControllers) {
-        installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBindingName, port, newControllers);
+            final ServiceVerificationHandler verificationHandler,
+            final List<ServiceController<?>> newControllers) {
+        installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBindingName, port, verificationHandler, newControllers);
     }
 
     /**
@@ -142,6 +145,7 @@ public final class RemotingServices {
      * @param modelControllerName the name of the domain controller
      * @param networkInterfaceBindingName the name of the network interface binding
      * @param port the port
+     * @param verificationHandler
      * @param newControllers list to add the new services to
      */
     public static void installDomainControllerManagementChannelServices(
@@ -150,7 +154,8 @@ public final class RemotingServices {
             final ServiceName modelControllerName,
             final ServiceName networkInterfaceBindingName,
             final int port,
-            List<ServiceController<?>> newControllers) {
+            final ServiceVerificationHandler verificationHandler,
+            final List<ServiceController<?>> newControllers) {
 
         EndpointService endpointService = new EndpointService();
         endpointService.setOptionMap(OptionMap.EMPTY);
@@ -159,10 +164,11 @@ public final class RemotingServices {
         executorInjector.inject(Executors.newCachedThreadPool());
         addController(newControllers, serviceTarget.addService(RemotingServices.ENDPOINT, endpointService)
                 //.addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
+                .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install());
 
-        installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBindingName, port, newControllers);
+        installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBindingName, port, verificationHandler, newControllers);
     }
 
     /**
@@ -171,20 +177,26 @@ public final class RemotingServices {
      * @param serviceTarget the service target to install the services into
      * @param channelName the name of the channel
      * @param operationHandlerName the name of the operation handler to handle request for this channel
+     * @param verificationHandler
      * @param newControllers list to add the new services to
      */
     public static void installChannelOpenListenerService(
             final ServiceTarget serviceTarget,
             final String channelName,
             final ServiceName operationHandlerName,
-            List<ServiceController<?>> newControllers) {
+            final ServiceVerificationHandler verificationHandler,
+            final List<ServiceController<?>> newControllers) {
 
         final ChannelOpenListenerService channelOpenListenerService = new ChannelOpenListenerService(channelName, OptionMap.EMPTY);
-        addController(newControllers, serviceTarget.addService(channelOpenListenerService.getServiceName(), channelOpenListenerService)
+        ServiceBuilder<?> builder = serviceTarget.addService(channelOpenListenerService.getServiceName(), channelOpenListenerService)
             .addDependency(RemotingServices.ENDPOINT, Endpoint.class, channelOpenListenerService.getEndpointInjector())
             .addDependency(operationHandlerName, ManagementOperationHandler.class, channelOpenListenerService.getOperationHandlerInjector())
-            .setInitialMode(Mode.ACTIVE)
-            .install());
+            .setInitialMode(Mode.ACTIVE);
+        if (verificationHandler != null) {
+            builder.addListener(verificationHandler);
+        }
+
+         addController(newControllers, builder.install());
     }
 
     /**
@@ -192,7 +204,7 @@ public final class RemotingServices {
      *
      * @param serviceTarget the service target to install the services into
      * @param channelName the name of the channel
-     * @param operationHandlerName the name of the operation handler to handle request for this channel
+     * @param verificationHandler
      * @param newControllers list to add the new services to
      */
     public static void installChannelServices(
@@ -200,15 +212,17 @@ public final class RemotingServices {
             final NewAbstractModelControllerOperationHandlerService<?> operationHandlerService,
             final ServiceName modelControllerName,
             final String channelName,
-            List<ServiceController<?>> newControllers) {
+            final ServiceVerificationHandler verificationHandler,
+            final List<ServiceController<?>> newControllers) {
 
         final ServiceName operationHandlerName = operationHandlerName(modelControllerName, channelName);
         addController(newControllers, serviceTarget.addService(operationHandlerName, operationHandlerService)
             .addDependency(modelControllerName, NewModelController.class, operationHandlerService.getModelControllerInjector())
+            .addListener(verificationHandler)
             .setInitialMode(Mode.ACTIVE)
             .install());
 
-        installChannelOpenListenerService(serviceTarget, channelName, operationHandlerName, newControllers);
+        installChannelOpenListenerService(serviceTarget, channelName, operationHandlerName, verificationHandler, newControllers);
     }
 
     private static void addController(List<ServiceController<?>> newControllers, ServiceController<?> controller) {
@@ -223,6 +237,7 @@ public final class RemotingServices {
             final ServiceName modelControllerName,
             final ServiceName networkInterfaceBindingName,
             final int port,
+            ServiceVerificationHandler verificationHandler,
             List<ServiceController<?>> newControllers) {
 
         //FIXME get this provider from somewhere
@@ -235,19 +250,22 @@ public final class RemotingServices {
         //TODO replace these options with something better
         connectorService.setOptionMap(OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("DIGEST-MD5")));
         addController(newControllers, serviceTarget.addService(RemotingServices.connectorServiceName("management"), connectorService)
-            .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
-            .addInjection(connectorService.getAuthenticationProviderInjector(), provider)
-            .setInitialMode(Mode.ACTIVE)
-            .install());
+                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
+                .addInjection(connectorService.getAuthenticationProviderInjector(), provider)
+                .addListener(verificationHandler)
+                .setInitialMode(Mode.ACTIVE)
+                .install());
 
         final NetworkBindingStreamServerService streamServerService = new NetworkBindingStreamServerService(port);
         addController(newControllers, serviceTarget.addService(RemotingServices.serverServiceName("management", port), streamServerService)
             .addDependency(RemotingServices.connectorServiceName("management"), ChannelListener.class, streamServerService.getConnectorInjector())
             .addDependency(networkInterfaceBindingName, NetworkInterfaceBinding.class, streamServerService.getInterfaceBindingInjector())
+            .addInjection(connectorService.getAuthenticationProviderInjector(), provider)
+            .addListener(verificationHandler)
                     .setInitialMode(Mode.ACTIVE)
                     .install());
 
-        installChannelServices(serviceTarget, operationHandlerService, modelControllerName, "management", newControllers);
+        installChannelServices(serviceTarget, operationHandlerService, modelControllerName, "management", verificationHandler, newControllers);
     }
 
 }

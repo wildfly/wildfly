@@ -31,6 +31,7 @@ import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.modules.Module;
 
@@ -55,5 +56,10 @@ public class ConfigurationPersisterFactory {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader());
         File file = new File(configDir, "domain.cached-remote.xml");
         return new XmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+    }
+
+    public static ExtensibleConfigurationPersister createTransientDomainXmlConfigurationPersister() {
+        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader());
+        return new NullConfigurationPersister(domainXml);
     }
 }

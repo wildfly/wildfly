@@ -20,31 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.NewModelController;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 
 /**
- * Interface used by a master {@link org.jboss.as.domain.controller.DomainController} to talk to a {@link org.jboss.as.domain.controller.DomainControllerSlave slave domain controller}.
+ * TODO class javadoc.
  *
- * @author Emanuel Muckenhuber
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface NewDomainControllerSlaveClient extends NewProxyController {
+public interface NewHostController extends NewModelController {
 
     /**
-     * Get the identifier for the Host Controller.
+     * Registers a running server in the domain model
      *
-     * @return the host identifier. Cannot be <code>null</code>.
+     * @param serverName the name of the server
+     * @param channel the channel to the running server
      */
-    String getId();
-
+    void registerRunningServer(String serverName, ManagementChannel channel);
 
     /**
-     * Check the host controller client to verify it is still active.
+     * Unregisters a running server from the domain model
      *
-     * @return true if the client is active, false if not.
+     * @param serverName the name of the server
      */
-    boolean isActive();
-
+    void unregisterRunningServer(String serverName);
 }

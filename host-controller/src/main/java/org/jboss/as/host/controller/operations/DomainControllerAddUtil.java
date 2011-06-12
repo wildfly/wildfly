@@ -112,10 +112,10 @@ public class DomainControllerAddUtil {
                 DomainController.SERVICE_NAME,
                 NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork),
                 mgmtPort,
-                controllers);
+                verificationHandler, controllers);
 
         if (!isSlave) {
-            RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(), DomainController.SERVICE_NAME, "domain", controllers);
+            RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(), DomainController.SERVICE_NAME, "domain", verificationHandler, controllers);
         }
         return controllers;
     }

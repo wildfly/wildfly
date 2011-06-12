@@ -23,13 +23,17 @@
 package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * @author Emanuel Muckenhuber
+ * TODO this interface is now a mishmash of not really related stuff.
+ *
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface NewDomainController extends NewModelController {
+public interface NewDomainController {
 
     /**
      * {@link org.jboss.msc.service.ServiceName} under which a DomainController instance should be registered
@@ -38,30 +42,44 @@ public interface NewDomainController extends NewModelController {
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller");
 
     /**
+     * Gets the local host controller info.
+     *
+     * @return the local host info
+     */
+     LocalHostControllerInfo getLocalHostInfo();
+
+    /**
      * Registers a Host Controller with this domain controller.
      *
      * @param hostControllerClient client the domain controller can use to communicate with the Host Controller.
      *
-     * @return a copy of the domain level model
      * @throws IllegalArgumentException if there already exists a host controller with the same id as
-     * <code>hostControllerClient</code>
+     *                                  <code>hostControllerClient</code>
+     * @throws UnsupportedOperationException is the host is not the master domain controller
      */
-    ModelNode addClient(final DomainControllerSlaveClient hostControllerClient);
+    void registerRemoteHost(final NewProxyController hostControllerClient);
 
     /**
-     * Deregisters a previously registered Host Controller.
+     * Unregisters a previously registered Host Controller.
      *
      * @param id the name of the previously
      *           registered Host Controller
      */
-    void removeClient(final String id);
+    void unregisterRemoteHost(final String id);
 
     /**
-     * Get the underlying model.
+     * Registers a running server in the domain model
      *
-     * @return the model
+     * @param serverControllerClient client the controller can use to communicate with the server.
      */
-    ModelNode getDomainModel();
+    void registerRunningServer(final NewProxyController serverControllerClient);
+
+    /**
+     * Unregisters a running server from the domain model
+     *
+     * @param serverName the name of the server
+     */
+    void unregisterRunningServer(String serverName);
 
     /**
      * Get the operations needed to create the given profile.
@@ -78,7 +96,4 @@ public interface NewDomainController extends NewModelController {
      * @return the file repository
      */
     FileRepository getFileRepository();
-
-
-    ModelNode getDomainAndHostModel();
 }

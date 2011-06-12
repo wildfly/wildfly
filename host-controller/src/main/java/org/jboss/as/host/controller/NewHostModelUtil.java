@@ -58,6 +58,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.ExtensionRemoveHandler;
@@ -79,10 +80,10 @@ import org.jboss.as.controller.operations.common.SystemPropertyValueWriteAttribu
 import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.management.operations.ConnectionAddHandler;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
@@ -90,15 +91,24 @@ import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
-import org.jboss.as.host.controller.operations.LocalHostAddHandler;
+import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.NativeManagementAddHandler;
 import org.jboss.as.host.controller.operations.NewLocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.NewLocalHostAddHandler;
 import org.jboss.as.host.controller.operations.NewRemoteDomainControllerAddHandler;
+import org.jboss.as.host.controller.operations.NewServerRestartHandler;
+import org.jboss.as.host.controller.operations.NewServerStartHandler;
+import org.jboss.as.host.controller.operations.NewServerStatusHandler;
+import org.jboss.as.host.controller.operations.NewServerStopHandler;
+import org.jboss.as.host.controller.operations.NewStartServersHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
 import org.jboss.as.host.controller.operations.ServerRemoveHandler;
+import org.jboss.as.host.controller.operations.ServerRestartHandler;
+import org.jboss.as.host.controller.operations.ServerStartHandler;
+import org.jboss.as.host.controller.operations.ServerStatusHandler;
+import org.jboss.as.host.controller.operations.ServerStopHandler;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
@@ -131,12 +141,13 @@ public class NewHostModelUtil {
         root.get(RUNNING_SERVER);
     }
 
-    public static void createHostRegistry(final ModelNodeRegistration root, final DelegatingConfigurationPersister configurationPersister,
-                                          HostControllerEnvironment environment, DomainModelProxy domainModelProxy) {
-
+    public static void createHostRegistry(final ModelNodeRegistration root, final HostControllerConfigurationPersister configurationPersister,
+                                          final HostControllerEnvironment environment, final FileRepository localFileRepository,
+                                          final LocalHostControllerInfoImpl hostControllerInfo,
+                                          final NewServerInventory serverInventory) {
         // Add of the host itself
         ModelNodeRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST), HostDescriptionProviders.HOST_ROOT_PROVIDER);
-        NewLocalHostAddHandler handler = NewLocalHostAddHandler.getInstance(domainModelProxy);
+        NewLocalHostAddHandler handler = NewLocalHostAddHandler.getInstance(hostControllerInfo);
         hostRegistration.registerOperationHandler(NewLocalHostAddHandler.OPERATION_NAME, handler, handler, false, OperationEntry.EntryType.PRIVATE);
 
         // Global operations
@@ -159,6 +170,8 @@ public class NewHostModelUtil {
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
         root.registerReadWriteAttribute(NAME, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
         root.registerReadOnlyAttribute(MASTER, IsMasterHandler.INSTANCE, Storage.RUNTIME);
+        NewStartServersHandler ssh = new NewStartServersHandler(environment, serverInventory);
+        root.registerOperationHandler(NewStartServersHandler.OPERATION_NAME, ssh, ssh, false, OperationEntry.EntryType.PRIVATE);
 
         // System Properties
         ModelNodeRegistration sysProps = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
@@ -178,7 +191,8 @@ public class NewHostModelUtil {
         connection.registerOperationHandler(ConnectionAddHandler.OPERATION_NAME, ConnectionAddHandler.INSTANCE, ConnectionAddHandler.INSTANCE, false);
         // Management API protocols
         ModelNodeRegistration managementNative = root.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
-        managementNative.registerOperationHandler(NativeManagementAddHandler.OPERATION_NAME, NativeManagementAddHandler.INSTANCE, NativeManagementAddHandler.INSTANCE, false);
+        NativeManagementAddHandler nmah = new NativeManagementAddHandler(hostControllerInfo);
+        managementNative.registerOperationHandler(NativeManagementAddHandler.OPERATION_NAME, nmah, nmah, false);
 
         ModelNodeRegistration managementHttp = root.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, HTTP_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
 
@@ -188,12 +202,12 @@ public class NewHostModelUtil {
         // root.registerReadWriteAttribute(ModelDescriptionConstants.MANAGEMENT_INTERFACE, GlobalOperationHandlers.READ_ATTRIBUTE, ManagementSocketAddHandler.INSTANCE);
         //root.registerOperationHandler(ManagementSocketRemoveHandler.OPERATION_NAME, ManagementSocketRemoveHandler.INSTANCE, ManagementSocketRemoveHandler.INSTANCE, false);
 
-        //TODO pass through the correct params
-        NewLocalDomainControllerAddHandler localDcAddHandler = NewLocalDomainControllerAddHandler.getInstance(root, domainModelProxy, environment, configurationPersister.getDomainPersister(), null, null);
+        NewLocalDomainControllerAddHandler localDcAddHandler = NewLocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,
+                environment, configurationPersister, localFileRepository);
         root.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
         root.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
-        //TODO pass through the correct params
-        NewRemoteDomainControllerAddHandler remoteDcAddHandler = NewRemoteDomainControllerAddHandler.getInstance(root, domainModelProxy, environment, configurationPersister.getDomainPersister(), null, null);
+        NewRemoteDomainControllerAddHandler remoteDcAddHandler = NewRemoteDomainControllerAddHandler.getInstance(root, hostControllerInfo,
+                configurationPersister, localFileRepository);
         root.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, remoteDcAddHandler, remoteDcAddHandler, false);
         root.registerOperationHandler(RemoteDomainControllerRemoveHandler.OPERATION_NAME, RemoteDomainControllerRemoveHandler.INSTANCE, RemoteDomainControllerRemoveHandler.INSTANCE, false);
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister.getHostPersister());
@@ -233,6 +247,16 @@ public class NewHostModelUtil {
         servers.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0), Storage.CONFIGURATION);
         servers.registerReadWriteAttribute(PRIORITY, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0), Storage.CONFIGURATION);
         servers.registerReadWriteAttribute(CPU_AFFINITY, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
+
+        // Register server runtime operation handlers
+        servers.registerMetric(NewServerStatusHandler.ATTRIBUTE_NAME, new NewServerStatusHandler(serverInventory));
+        NewServerStartHandler startHandler = new NewServerStartHandler(serverInventory);
+        servers.registerOperationHandler(NewServerStartHandler.OPERATION_NAME, startHandler, startHandler, false);
+        NewServerRestartHandler restartHandler = new NewServerRestartHandler(serverInventory);
+        servers.registerOperationHandler(NewServerRestartHandler.OPERATION_NAME, restartHandler, restartHandler, false);
+        NewServerStopHandler stopHandler = new NewServerStopHandler(serverInventory);
+        servers.registerOperationHandler(NewServerStopHandler.OPERATION_NAME, stopHandler, stopHandler, false);
+
         //server paths
         ModelNodeRegistration serverPaths = servers.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
         serverPaths.registerOperationHandler(PathAddHandler.OPERATION_NAME, PathAddHandler.SPECIFIED_INSTANCE, PathAddHandler.SPECIFIED_INSTANCE, false);
