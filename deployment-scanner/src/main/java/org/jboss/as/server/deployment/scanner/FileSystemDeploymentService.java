@@ -364,7 +364,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     while (!updates.isEmpty()) {
                         ModelNode composite = getCompositeUpdate(updates);
 
-                        final DeploymentTask deploymentTask = new DeploymentTask(NewOperationBuilder.Factory.create(composite).build());
+                        final DeploymentTask deploymentTask = new DeploymentTask(new NewOperationBuilder(composite).build());
                         final Future<ModelNode> futureResults = scheduledExecutor.submit(deploymentTask);
                         final ModelNode results;
                         try {

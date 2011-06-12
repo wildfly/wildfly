@@ -91,7 +91,7 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(plan.isGlobalRollback());
         // FIXME deal with shutdown params
 
-        NewOperationBuilder builder = NewOperationBuilder.Factory.create(op);
+        NewOperationBuilder builder = new NewOperationBuilder(op);
 
         int stream = 0;
         for (DeploymentActionImpl action : plan.getDeploymentActionImpls()) {

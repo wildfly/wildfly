@@ -131,7 +131,7 @@ public class MessagingClientTestCase {
     }
 
     static void applyUpdate(ModelNode update, final NewModelControllerClient client) throws IOException {
-        ModelNode result = client.execute(NewOperationBuilder.Factory.create(update).build());
+        ModelNode result = client.execute(new NewOperationBuilder(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));
