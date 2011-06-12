@@ -22,25 +22,23 @@
 
 package org.jboss.as.domain.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.domain.controller.operations.coordination.DomainOperationContext;
+import org.jboss.as.domain.controller.operations.coordination.DomainRolloutStepHandler;
 import org.jboss.as.domain.controller.operations.coordination.OperationRouting;
 import org.jboss.dmr.ModelNode;
 
@@ -53,10 +51,14 @@ public class OperationCoordinatorStepHandler implements NewStepHandler {
 
     private final LocalHostControllerInfo localHostControllerInfo;
     private final Map<String, NewProxyController> hostProxies;
+    private final OperationSlaveStepHandler localSlaveHandler;
+    private volatile ExecutorService executorService;
 
-    OperationCoordinatorStepHandler(final LocalHostControllerInfo localHostControllerInfo, final Map<String, NewProxyController> hostProxies) {
+    OperationCoordinatorStepHandler(final LocalHostControllerInfo localHostControllerInfo,
+                                    final Map<String, NewProxyController> hostProxies, OperationSlaveStepHandler localSlaveHandler) {
         this.localHostControllerInfo = localHostControllerInfo;
         this.hostProxies = hostProxies;
+        this.localSlaveHandler = localSlaveHandler;
     }
 
     @Override
@@ -89,6 +91,14 @@ public class OperationCoordinatorStepHandler implements NewStepHandler {
 
     }
 
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+
+    private ExecutorService getExecutorService() {
+        return executorService == null ? Executors.newSingleThreadExecutor() : executorService;
+    }
+
     private void routetoMasterDomainController(NewOperationContext context, ModelNode operation) {
         // System.out.println("------ route to master ");
         // Per discussion on 2011/03/07, routing requests from a slave to the
@@ -118,19 +128,45 @@ public class OperationCoordinatorStepHandler implements NewStepHandler {
         context.completeStep();
     }
 
-    private void executeTwoPhaseOperation(NewOperationContext context, ModelNode operation, OperationRouting routing) {
+    private void executeTwoPhaseOperation(NewOperationContext context, ModelNode operation, OperationRouting routing) throws OperationFailedException {
 
-        if (1 == 1) {
-            throw new UnsupportedOperationException();
+        DomainOperationContext overallContext = new DomainOperationContext(localHostControllerInfo);
+
+        // If necessary, execute locally first. This gets all of the Stage.MODEL, Stage.RUNTIME, Stage.VERIFY
+        // steps registered
+        String localHostName = localHostControllerInfo.getLocalHostName();
+        if (routing.isLocalCallNeeded(localHostName)) {
+            ModelNode localResponse = new ModelNode();
+            overallContext.setCoordinatorResult(localResponse);
+            localSlaveHandler.addSteps(context, operation, localResponse, false);
         }
 
-//        1) Create overall tx control
-//        2) if local host affected, add DPSH step for local host
-//        3) if a single other host is affected, add DPSH step for that host
-//        4) if multiple hosts are affected, add a concurrent DPSH step for that host
-//        5) Add a rollout plan assembly step
-//        6) Add DPSH for each server (actually, for each in-series step)
-//        7) Add a result creation step -- this one actually writes the response, triggers failed or succeeded
+        if (localHostControllerInfo.isMasterDomainController()) {
+            // Add steps to invoke on the HC for each relevant slave
+            Set<String> remoteHosts = new HashSet<String>(routing.getHosts());
+            boolean global = remoteHosts.size() == 0;
+            boolean controllerLocked = false;
+            remoteHosts.remove(localHostName);
+            if (!global) {
+                if (remoteHosts.size() == 1) {
+                    // TODO add DPSH step for that host
+                    throw new UnsupportedOperationException();
+                }
+            } else {
+                // Lock the controller to ensure there are no topology changes mid-op. TODO expose a direct method to do this
+                context.getServiceRegistry(true);
+                controllerLocked = true;
+                remoteHosts.addAll(hostProxies.keySet());
+            }
+
+            if (remoteHosts.size() > 0) {
+               // TODO add a concurrent DPSH step for these hosts
+                throw new UnsupportedOperationException();
+            }
+        }
+
+        context.addStep(new DomainRolloutStepHandler(overallContext, getExecutorService()), NewOperationContext.Stage.DOMAIN);
+
         context.completeStep();
     }
 }

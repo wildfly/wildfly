@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewProxyController;
@@ -50,10 +51,11 @@ public class PrepareStepHandler  implements NewStepHandler {
     private final OperationCoordinatorStepHandler coordinatorHandler;
     private final OperationSlaveStepHandler slaveHandler;
 
-    public PrepareStepHandler(final LocalHostControllerInfo localHostControllerInfo, final Map<String, NewProxyController> hostProxies) {
+    public PrepareStepHandler(final LocalHostControllerInfo localHostControllerInfo,
+                              final Map<String, NewProxyController> hostProxies) {
         this.localHostControllerInfo = localHostControllerInfo;
-        this.coordinatorHandler = new OperationCoordinatorStepHandler(localHostControllerInfo, hostProxies);
         this.slaveHandler = new OperationSlaveStepHandler(localHostControllerInfo);
+        this.coordinatorHandler = new OperationCoordinatorStepHandler(localHostControllerInfo, hostProxies, slaveHandler);
     }
 
     @Override
@@ -71,6 +73,10 @@ public class PrepareStepHandler  implements NewStepHandler {
         } else {
             coordinatorHandler.execute(context, operation);
         }
+    }
+
+    public void setExecutorService(final ExecutorService executorService) {
+        coordinatorHandler.setExecutorService(executorService);
     }
 
     private boolean isServerOperation(ModelNode operation) {

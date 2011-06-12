@@ -36,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
@@ -66,6 +67,8 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
@@ -83,17 +86,23 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final FileRepository localFileRepository;
     private final InjectedValue<NewServerInventory> injectedServerInventory = new InjectedValue<NewServerInventory>();
+    private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<ExecutorService>();
     private final Map<String, NewProxyController> hostProxies;
+    private final PrepareStepHandler prepareStepHandler;
     private ModelNodeRegistration modelNodeRegistration;
 
     public static ServiceController<NewModelController> addService(final ServiceTarget serviceTarget,
                                                             final HostControllerEnvironment environment,
                                                             final ControlledProcessState processState) {
         final Map<String, NewProxyController> hostProxies = new ConcurrentHashMap<String, NewProxyController>();
+        final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState);
+        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, hostProxies);
         DomainModelControllerService service = new DomainModelControllerService(environment, processState,
-                new LocalHostControllerInfoImpl(processState), new HostControllerConfigurationPersister(environment), hostProxies);
+                hostControllerInfo, new HostControllerConfigurationPersister(environment),
+                hostProxies, prepareStepHandler);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(ServerInventoryService.SERVICE_NAME, NewServerInventory.class, service.injectedServerInventory)
+                .addDependency(NewHostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.injectedExecutorService)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }
@@ -102,14 +111,16 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final ControlledProcessState processState,
                                          final LocalHostControllerInfoImpl hostControllerInfo,
                                          final HostControllerConfigurationPersister configurationPersister,
-                                         final Map<String, NewProxyController> hostProxies) {
+                                         final Map<String, NewProxyController> hostProxies,
+                                         final PrepareStepHandler prepareStepHandler) {
         super(NewOperationContext.Type.HOST, configurationPersister, processState, DomainDescriptionProviders.ROOT_PROVIDER,
-                new PrepareStepHandler(hostControllerInfo, hostProxies));
+                prepareStepHandler);
         this.configurationPersister = configurationPersister;
         this.environment = environment;
-        this.hostControllerInfo = new LocalHostControllerInfoImpl(processState);
+        this.hostControllerInfo = hostControllerInfo;
         this.localFileRepository = new LocalFileRepository(environment);
         this.hostProxies = hostProxies;
+        this.prepareStepHandler = prepareStepHandler;
     }
 
     @Override
@@ -195,10 +206,17 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.modelNodeRegistration = rootRegistration;
     }
 
+    @Override
+    public void start(StartContext context) throws StartException {
+        prepareStepHandler.setExecutorService(injectedExecutorService.getValue());
+        super.start(context);
+    }
+
     // See superclass start. This method is invoked from a separate non-MSC thread after start. So we can do a fair
     // bit of stuff
     @Override
     protected void boot(final BootContext context) throws ConfigurationPersistenceException {
+
         // TODO add superclass hooks to allow us to completely take over this
         super.boot(context); // This parses the host.xml and invokes all ops
         // See if we need to register with the master.

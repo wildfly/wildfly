@@ -63,12 +63,18 @@ public class OperationSlaveStepHandler implements NewStepHandler {
     @Override
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
+        ModelNode response = new ModelNode();
+        addSteps(context, operation, response, true);
+        context.completeStep();
+    }
+
+    void addSteps(NewOperationContext context, ModelNode operation, ModelNode response, boolean recordResponse) throws OperationFailedException {
+
         ParsedOp parsedOp = parseOperation(operation, 0, context.getModel());
         ModelNode domainOp = parsedOp.getDomainOperation();
 
         // TODO add steps to execute and ServerOperationResolver steps to figure out the domain operations
 
-        context.completeStep();
         throw new UnsupportedOperationException();
     }
 
