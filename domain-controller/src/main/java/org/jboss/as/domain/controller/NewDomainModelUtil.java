@@ -58,11 +58,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
+import java.io.File;
+
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
-import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
 import org.jboss.as.controller.operations.common.ExtensionRemoveHandler;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.JVMHandlers;
@@ -78,6 +79,7 @@ import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.SocketBindingGroupIncludeAddHandler;
 import org.jboss.as.controller.operations.common.SocketBindingGroupIncludeRemoveHandler;
+import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
 import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
@@ -92,17 +94,13 @@ import org.jboss.as.controller.operations.global.WriteAttributeHandlers.ModelTyp
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.ProcessTypeHandler;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
 import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
 import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
-import org.jboss.as.domain.controller.operations.ReadChildrenNamesHandler;
-import org.jboss.as.domain.controller.operations.ReadResourceHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.SocketBindingGroupAddHandler;
@@ -129,18 +127,7 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class DomainModelUtil {
-
-    /**
-     * Create the base model ready to add the bootstrap configuration from the host.xml
-     *
-     * @return the base model.
-     */
-    static ModelNode createBaseModel() {
-        final ModelNode baseModel = new ModelNode();
-        baseModel.get(HOST);
-        return baseModel;
-    }
+public class NewDomainModelUtil {
 
     /**
      * Update the model to hold domain level configuration.
@@ -162,23 +149,25 @@ public class DomainModelUtil {
     }
 
     public static ExtensionContext initializeMasterDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-            final ContentRepository contentRepo, final FileRepository fileRepository, DomainModelImpl model) {
-        return initializeDomainRegistry(root, configurationPersister, contentRepo, fileRepository, true, model);
+                                                                  final File domainDeploymentDir, final FileRepository fileRepository) {
+        return initializeDomainRegistry(root, configurationPersister, domainDeploymentDir, fileRepository, true);
     }
 
     public static ExtensionContext initializeSlaveDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-            final ContentRepository contentRepo, final FileRepository fileRepository, DomainModelImpl model) {
-        return initializeDomainRegistry(root, configurationPersister, contentRepo, fileRepository, false, model);
+                                                                 final FileRepository fileRepository) {
+        return initializeDomainRegistry(root, configurationPersister, null, fileRepository, false);
     }
 
     private static ExtensionContext initializeDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-            final ContentRepository contentRepo, final FileRepository fileRepository, final boolean isMaster, DomainModelImpl model) {
+                                                             final File domainDeploymentDir, final FileRepository fileRepository, final boolean isMaster) {
         // Global operations
 
-        root.registerOperationHandler(READ_RESOURCE_OPERATION, new ReadResourceHandler(model), CommonProviders.READ_RESOURCE_PROVIDER, true);
+        ContentRepository contentRepo = isMaster ? new DomainContentRepository(domainDeploymentDir) : null;
+
+        root.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
         root.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
         root.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
-        root.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, new ReadChildrenNamesHandler(model), CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
+        root.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
         root.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
         root.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, new GlobalOperationHandlers.ReadChildrenResourcesOperationHandler(), CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
         root.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
@@ -192,13 +181,13 @@ public class DomainModelUtil {
         root.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
-        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(isMaster ? contentRepo : null);
+        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(contentRepo);
         root.registerOperationHandler(DeploymentUploadBytesHandler.OPERATION_NAME, dubh, dubh);
-        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(isMaster ? contentRepo : null);
+        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(contentRepo);
         root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh);
-        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(isMaster ? contentRepo : null);
+        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(contentRepo);
         root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush);
-        DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(isMaster ? contentRepo : null);
+        DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(contentRepo);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh);
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister);
         root.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false);
@@ -213,8 +202,8 @@ public class DomainModelUtil {
         ModelNodeRegistration systemProperties = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), DomainDescriptionProviders.SYSTEM_PROPERTY_PROVIDER);
         systemProperties.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, false);
         systemProperties.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
-        systemProperties.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        systemProperties.registerReadWriteAttribute(BOOT_TIME, null, new ModelTypeValidatingHandler(ModelType.BOOLEAN), AttributeAccess.Storage.CONFIGURATION);
+        systemProperties.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, Storage.CONFIGURATION);
+        systemProperties.registerReadWriteAttribute(BOOT_TIME, null, new ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
 
         final ModelNodeRegistration interfaces = root.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.NAMED_INTERFACE_PROVIDER);
         interfaces.registerOperationHandler(ADD, InterfaceAddHandler.NAMED_INSTANCE, InterfaceAddHandler.NAMED_INSTANCE, false);
@@ -232,25 +221,25 @@ public class DomainModelUtil {
         final ModelNodeRegistration socketBindingGroup = root.registerSubModel(PathElement.pathElement(SOCKET_BINDING_GROUP), DomainDescriptionProviders.SOCKET_BINDING_GROUP);
         socketBindingGroup.registerOperationHandler(ADD, SocketBindingGroupAddHandler.INSTANCE, SocketBindingGroupAddHandler.INSTANCE, false);
         socketBindingGroup.registerOperationHandler(REMOVE, SocketBindingGroupRemoveHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false);
-        socketBindingGroup.registerReadWriteAttribute(PORT_OFFSET, null, new IntRangeValidatingHandler(0, 65535, true, true), AttributeAccess.Storage.CONFIGURATION);
-        socketBindingGroup.registerReadWriteAttribute(DEFAULT_INTERFACE, null, new StringLengthValidatingHandler(1, false, true), AttributeAccess.Storage.CONFIGURATION);
-        socketBindingGroup.registerReadWriteAttribute(INCLUDES, null, new ListValidatatingHandler(new StringLengthValidator(1, false), true, 0, Integer.MAX_VALUE), AttributeAccess.Storage.CONFIGURATION);
+        socketBindingGroup.registerReadWriteAttribute(PORT_OFFSET, null, new IntRangeValidatingHandler(0, 65535, true, true), Storage.CONFIGURATION);
+        socketBindingGroup.registerReadWriteAttribute(DEFAULT_INTERFACE, null, new StringLengthValidatingHandler(1, false, true), Storage.CONFIGURATION);
+        socketBindingGroup.registerReadWriteAttribute(INCLUDES, null, new ListValidatatingHandler(new StringLengthValidator(1, false), true, 0, Integer.MAX_VALUE), Storage.CONFIGURATION);
         socketBindingGroup.registerOperationHandler(SocketBindingGroupIncludeAddHandler.OPERATION_NAME, SocketBindingGroupIncludeAddHandler.INSTANCE, SocketBindingGroupIncludeAddHandler.INSTANCE);
         socketBindingGroup.registerOperationHandler(SocketBindingGroupIncludeRemoveHandler.OPERATION_NAME, SocketBindingGroupIncludeRemoveHandler.INSTANCE, SocketBindingGroupIncludeRemoveHandler.INSTANCE);
         final ModelNodeRegistration socketBindings = socketBindingGroup.registerSubModel(PathElement.pathElement(SOCKET_BINDING), DomainDescriptionProviders.SOCKET_BINDING);
         socketBindings.registerOperationHandler(ADD, SocketBindingAddHandler.INSTANCE, SocketBindingAddHandler.INSTANCE, false);
         socketBindings.registerOperationHandler(REMOVE, SocketBindingRemoveHandler.INSTANCE, SocketBindingRemoveHandler.INSTANCE, false);
-        socketBindings.registerReadWriteAttribute(INTERFACE, null, new StringLengthValidatingHandler(1, true, true), AttributeAccess.Storage.CONFIGURATION);
-        socketBindings.registerReadWriteAttribute(PORT, null, new IntRangeValidatingHandler(0, 65535, false, true), AttributeAccess.Storage.CONFIGURATION);
-        socketBindings.registerReadWriteAttribute(FIXED_PORT, null, new ModelTypeValidatingHandler(ModelType.BOOLEAN, true, true), AttributeAccess.Storage.CONFIGURATION);
-        socketBindings.registerReadWriteAttribute(MULTICAST_ADDRESS, null, new InetAddressValidatingHandler(true, true), AttributeAccess.Storage.CONFIGURATION);
-        socketBindings.registerReadWriteAttribute(MULTICAST_PORT, null, new IntRangeValidatingHandler(0, 65535, true, true), AttributeAccess.Storage.CONFIGURATION);
+        socketBindings.registerReadWriteAttribute(INTERFACE, null, new StringLengthValidatingHandler(1, true, true), Storage.CONFIGURATION);
+        socketBindings.registerReadWriteAttribute(PORT, null, new IntRangeValidatingHandler(0, 65535, false, true), Storage.CONFIGURATION);
+        socketBindings.registerReadWriteAttribute(FIXED_PORT, null, new ModelTypeValidatingHandler(ModelType.BOOLEAN, true, true), Storage.CONFIGURATION);
+        socketBindings.registerReadWriteAttribute(MULTICAST_ADDRESS, null, new InetAddressValidatingHandler(true, true), Storage.CONFIGURATION);
+        socketBindings.registerReadWriteAttribute(MULTICAST_PORT, null, new IntRangeValidatingHandler(0, 65535, true, true), Storage.CONFIGURATION);
 
         final ModelNodeRegistration serverGroups = root.registerSubModel(PathElement.pathElement(SERVER_GROUP), DomainDescriptionProviders.SERVER_GROUP);
         serverGroups.registerOperationHandler(ADD, ServerGroupAddHandler.INSTANCE, ServerGroupAddHandler.INSTANCE, false);
         serverGroups.registerOperationHandler(REMOVE, ServerGroupRemoveHandler.INSTANCE, ServerGroupRemoveHandler.INSTANCE, false);
         serverGroups.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, Storage.CONFIGURATION);
-        serverGroups.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
+        serverGroups.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new IntRangeValidatingHandler(1), Storage.CONFIGURATION);
         final ModelNodeRegistration groupVMs = serverGroups.registerSubModel(PathElement.pathElement(JVM), CommonProviders.JVM_PROVIDER);
         JVMHandlers.register(groupVMs);
         ServerGroupDeploymentReplaceHandler sgdrh = new ServerGroupDeploymentReplaceHandler(fileRepository);
@@ -267,12 +256,12 @@ public class DomainModelUtil {
         ModelNodeRegistration serverGroupSystemProperties = serverGroups.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), DomainDescriptionProviders.SERVER_GROUP_SYSTEM_PROPERTY_PROVIDER);
         serverGroupSystemProperties.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, false);
         serverGroupSystemProperties.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
-        serverGroupSystemProperties.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        serverGroupSystemProperties.registerReadWriteAttribute(BOOT_TIME, null, new ModelTypeValidatingHandler(ModelType.BOOLEAN), AttributeAccess.Storage.CONFIGURATION);
+        serverGroupSystemProperties.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, Storage.CONFIGURATION);
+        serverGroupSystemProperties.registerReadWriteAttribute(BOOT_TIME, null, new ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
 
         // Root Deployments
         final ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), DomainDescriptionProviders.DEPLOYMENT_PROVIDER);
-        DeploymentAddHandler dah = new DeploymentAddHandler(isMaster ? contentRepo : null);
+        DeploymentAddHandler dah = new DeploymentAddHandler(contentRepo);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DeploymentRemoveHandler.INSTANCE);
 

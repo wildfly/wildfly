@@ -84,6 +84,8 @@ public abstract class AbstractControllerService implements Service<NewModelContr
                     });
                 } catch (ConfigurationPersistenceException e) {
                     throw new RuntimeException(e);
+                } finally {
+                    processState.setRunning();
                 }
             }
         }, "Controller Boot Thread").start();

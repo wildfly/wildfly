@@ -85,6 +85,10 @@ class ManagedServer implements ModelController {
         return SERVER_PROCESS_NAME_PREFIX + serverName;
     }
 
+    public static String getServerName(String serverProcessName) {
+        return serverProcessName.substring(SERVER_PROCESS_NAME_PREFIX.length());
+    }
+
     private final String serverName;
     private final String serverProcessName;
     private final Object lock = new Object();

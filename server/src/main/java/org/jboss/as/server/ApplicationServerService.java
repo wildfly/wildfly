@@ -158,7 +158,8 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         AbsolutePathService.addService("user.home", System.getProperty("user.home"), serviceTarget);
         AbsolutePathService.addService("java.home", System.getProperty("java.home"), serviceTarget);
 
-        processState.setRunning();
+        // BES 2011/06/11 -- moved this to AbstractControllerService.start()
+//        processState.setRunning();
 
         if (log.isDebugEnabled()) {
             final long nanos = context.getElapsedTime();

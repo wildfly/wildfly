@@ -24,11 +24,13 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 
+import java.io.File;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -40,18 +42,51 @@ import org.jboss.staxmapper.XMLElementWriter;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DelegatingConfigurationPersister implements ExtensibleConfigurationPersister {
+public class HostControllerConfigurationPersister implements ExtensibleConfigurationPersister {
 
-    private final ExtensibleConfigurationPersister domainPersister;
+    private final HostControllerEnvironment environment;
+    private ExtensibleConfigurationPersister domainPersister;
     private final ExtensibleConfigurationPersister hostPersister;
+    private Boolean slave;
 
-    public DelegatingConfigurationPersister(final ExtensibleConfigurationPersister domainPersister,
-                                     final ExtensibleConfigurationPersister hostPersister) {
-        this.domainPersister = domainPersister;
-        this.hostPersister = hostPersister;
+    public HostControllerConfigurationPersister(final HostControllerEnvironment environment) {
+        this.environment = environment;
+        final File configDir = environment.getDomainConfigurationDir();
+        final ConfigurationFile configurationFile = environment.getHostConfigurationFile();
+        this.hostPersister = ConfigurationPersisterFactory.createHostXmlConfigurationPersister(configDir, configurationFile);
+    }
+
+    public void initializeDomainConfigurationPersister(boolean slave) {
+        if (domainPersister != null) {
+            throw new IllegalStateException("Configuration persister for domain model is already initialized");
+        }
+
+        final File configDir = environment.getDomainConfigurationDir();
+        if (slave) {
+            if (environment.isBackupDomainFiles() || environment.isUseCachedDc()) {
+                domainPersister = ConfigurationPersisterFactory.createCachedRemoteDomainXmlConfigurationPersister(configDir);
+            } else {
+                domainPersister = ConfigurationPersisterFactory.createTransientDomainXmlConfigurationPersister();
+            }
+        } else {
+            final ConfigurationFile configurationFile = environment.getDomainConfigurationFile();
+            domainPersister = ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir, configurationFile);
+        }
+
+        this.slave = Boolean.valueOf(slave);
+    }
+
+    public boolean isSlave() {
+        if (slave == null) {
+            throw new IllegalStateException("Must call initializeDomainConfigurationPersister before checking for slave status");
+        }
+        return slave;
     }
 
     public ExtensibleConfigurationPersister getDomainPersister() {
+        if (domainPersister == null) {
+            throw new IllegalStateException("Must call initializeDomainConfigurationPersister before persisting the domain model");
+        }
         return domainPersister;
     }
 
@@ -68,7 +103,7 @@ public class DelegatingConfigurationPersister implements ExtensibleConfiguration
                 hostModel.get(HOST).set(model.get(HOST));
                 delegates[0] = hostPersister.store(hostModel, affectedAddresses);
             } else if (delegates[1] == null && (addr.size() == 0 || !HOST.equals(addr.getElement(0).getKey()))) {
-                delegates[1] = hostPersister.store(model, affectedAddresses);
+                delegates[1] = getDomainPersister().store(model, affectedAddresses);
             }
 
             if (delegates[0] != null && delegates[1] != null) {

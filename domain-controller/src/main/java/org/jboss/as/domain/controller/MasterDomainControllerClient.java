@@ -21,7 +21,7 @@ public interface MasterDomainControllerClient extends ModelController {
     /**
      * Register with the remote domain controller
      *
-     * @param host the name of this host
+     * @param hostName the name of this host
      * @param inetAddress the address on which this host is listening for management requests
      * @param mgmtPort the port on which this host is listening for management requests
      * @param domainController the slave domain controller on this host

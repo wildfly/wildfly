@@ -79,13 +79,12 @@ public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider
     private static final List<String> CONTENT_ADDITION_PARAMETERS = Arrays.asList(INPUT_STREAM_INDEX, BYTES, URL);
 
     private final ContentRepository contentRepository;
-    private final boolean isMaster;
 
     private final ParametersValidator validator = new ParametersValidator();
     private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
     private final ParametersValidator managedContentValidator = new ParametersValidator();
 
-    public DeploymentAddHandler(final ContentRepository contentRepository, final boolean isMaster) {
+    public DeploymentAddHandler(final ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         final ParametersValidator contentValidator = new ParametersValidator();
@@ -109,7 +108,6 @@ public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider
         this.managedContentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
         this.unmanagedContentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN));
         this.unmanagedContentValidator.registerValidator(PATH, new StringLengthValidator(1));
-        this.isMaster = isMaster;
     }
 
     @Override
@@ -137,10 +135,10 @@ public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider
             // If we are the master, validate that we actually have this content. If we're not the master
             // we do not need the content until it's added to a server group we care about, so we defer
             // pulling it until then
-            if (isMaster && !contentRepository.hasContent(hash))
+            if (contentRepository != null && !contentRepository.hasContent(hash))
                 throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
-            if (!isMaster) {
+            if (contentRepository == null) {
                 // This is a slave DC. We can't handle this operation; it should have been fixed up on the master DC
                 throw createFailureException("A slave domain controller cannot accept deployment content uploads");
             }

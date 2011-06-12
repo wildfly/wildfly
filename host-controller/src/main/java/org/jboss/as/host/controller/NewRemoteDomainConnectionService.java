@@ -44,7 +44,6 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.remote.ModelControllerClientToModelControllerAdapter;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
-import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerSlave;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.MasterDomainControllerClient;
@@ -64,13 +63,14 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
- * Establishes the connection from a slave {@link DomainController} to the master {@link DomainController}
+ * Establishes the connection from a slave {@link org.jboss.as.domain.controller.DomainController} to the master {@link org.jboss.as.domain.controller.DomainController}
  *
  * @author Kabir Khan
  */
-public class RemoteDomainConnectionService implements MasterDomainControllerClient, Service<MasterDomainControllerClient>, ClosedCallback {
+public class NewRemoteDomainConnectionService implements MasterDomainControllerClient, Service<MasterDomainControllerClient>, ClosedCallback {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private final InetAddress host;
@@ -88,7 +88,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private volatile ReconnectInfo reconnectInfo;
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    public RemoteDomainConnectionService(final String name, final InetAddress host, final int port, final FileRepository localRepository){
+    public NewRemoteDomainConnectionService(final String name, final InetAddress host, final int port, final FileRepository localRepository){
         this.name = name;
         this.host = host;
         this.port = port;
