@@ -185,7 +185,7 @@ class DomainApiHandler implements ManagementHttpHandler {
 
         try {
             dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
-            response = modelController.execute(NewOperationBuilder.Factory.create(dmr).build());
+            response = modelController.execute(new NewOperationBuilder(dmr).build());
         } catch (Throwable t) {
             log.error("Unexpected error executing model request", t);
 

@@ -78,19 +78,4 @@ public class NewOperationBuilder {
     public NewOperation build() {
         return new NewOperationImpl(operation, inputStreams);
     }
-
-    // TODO remove once we clarify no external folks are using this
-    @Deprecated
-    public static class Factory{
-        /**
-         * Create an operation builder.
-         *
-         * @param operation the operation
-         * @return the operation
-         */
-        @Deprecated
-        public static NewOperationBuilder create(ModelNode operation) {
-            return new NewOperationBuilder(operation);
-        }
-    }
 }
