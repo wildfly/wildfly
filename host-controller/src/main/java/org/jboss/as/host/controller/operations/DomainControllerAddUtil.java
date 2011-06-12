@@ -43,7 +43,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
 import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerService;
@@ -107,13 +106,15 @@ public class DomainControllerAddUtil {
                 .addListener(verificationHandler)
                 .install());
 
+        //Old stuff
+        /*
         RemotingServices.installDomainControllerManagementChannelServices(serviceTarget,
                 new NewModelControllerClientOperationHandlerService(),
                 DomainController.SERVICE_NAME,
                 NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork),
                 mgmtPort,
                 verificationHandler, controllers);
-
+        */
         if (!isSlave) {
             RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(), DomainController.SERVICE_NAME, "domain", verificationHandler, controllers);
         }

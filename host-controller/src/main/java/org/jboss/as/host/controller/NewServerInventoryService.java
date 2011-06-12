@@ -23,7 +23,9 @@
 package org.jboss.as.host.controller;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.Future;
 
+import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.logging.Logger;
@@ -33,6 +35,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.threads.AsyncFutureTask;
 
 /**
  * @author Emanuel Muckenhuber
@@ -42,15 +45,19 @@ class NewServerInventoryService implements Service<NewServerInventory> {
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "server-inventory");
 
-    private final InjectedValue<NetworkInterfaceBinding> iFace = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<NewProcessControllerConnectionService> client = new InjectedValue<NewProcessControllerConnectionService>();
+    private final NetworkInterfaceBinding interfaceBinding;
+    private final NewDomainController domainController;
     private final HostControllerEnvironment environment;
     private final int port;
+    private final FutureServerInventory futureInventory = new FutureServerInventory();
 
     private NewServerInventory serverInventory;
 
-    NewServerInventoryService(final HostControllerEnvironment environment, final int port) {
+    NewServerInventoryService(final NewDomainController domainController, final HostControllerEnvironment environment, final NetworkInterfaceBinding interfaceBinding, final int port) {
+        this.domainController = domainController;
         this.environment = environment;
+        this.interfaceBinding = interfaceBinding;
         this.port = port;
     }
 
@@ -60,15 +67,19 @@ class NewServerInventoryService implements Service<NewServerInventory> {
         log.debug("Starting Host Controller Server Inventory");
         final NewServerInventory serverInventory;
         try {
-            final NetworkInterfaceBinding interfaceBinding = iFace.getValue();
             final ProcessControllerClient client = this.client.getValue().getClient();
             final InetSocketAddress binding = new InetSocketAddress(interfaceBinding.getAddress(), port);
-            serverInventory = new NewServerInventory(environment, binding, client);
+            serverInventory = new NewServerInventoryImpl(domainController, environment, binding, client);
         } catch (Exception e) {
             throw new StartException(e);
         }
         this.serverInventory = serverInventory;
         client.getValue().setServerInventory(serverInventory);
+        futureInventory.setInventory(serverInventory);
+    }
+
+    public Future<NewServerInventory> getInventoryFuture(){
+        return futureInventory;
     }
 
     /** {@inheritDoc} */
@@ -88,11 +99,19 @@ class NewServerInventoryService implements Service<NewServerInventory> {
         return serverInventory;
     }
 
-    InjectedValue<NetworkInterfaceBinding> getInterface() {
-        return iFace;
-    }
-
     InjectedValue<NewProcessControllerConnectionService> getClient() {
         return client;
     }
+
+    private class FutureServerInventory extends AsyncFutureTask<NewServerInventory>{
+
+        protected FutureServerInventory() {
+            super(null);
+        }
+
+        private void setInventory(NewServerInventory inventory) {
+            super.setResult(inventory);
+        }
+    }
+
 }

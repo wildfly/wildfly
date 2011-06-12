@@ -21,31 +21,28 @@
 */
 package org.jboss.as.remoting;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class HostNameStreamServerService extends AbstractStreamServerService {
-    private final String hostName;
-    private final int port;
+public class InjectedNetworkBindingStreamServerService extends AbstractStreamServerService {
 
-    public HostNameStreamServerService(String hostName, int port) {
-        super();
-        this.hostName = hostName;
-        this.port = port;
+    private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
+
+    public InjectedNetworkBindingStreamServerService(int port) {
+        super(port);
+    }
+
+    public InjectedValue<NetworkInterfaceBinding> getInterfaceBindingInjector(){
+        return interfaceBindingValue;
     }
 
     @Override
-    InetSocketAddress getSocketAddress() {
-        try {
-            return new InetSocketAddress(InetAddress.getByName(hostName), port);
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
+    NetworkInterfaceBinding getNetworkInterfaceBinding() {
+        return interfaceBindingValue.getValue();
     }
 }

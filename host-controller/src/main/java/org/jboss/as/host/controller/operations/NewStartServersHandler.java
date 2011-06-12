@@ -72,6 +72,9 @@ public class NewStartServersHandler implements NewStepHandler, DescriptionProvid
         context.addStep(new NewStepHandler() {
             @Override
             public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+
+                System.out.println("--- NewStartServersHandler.execute()");
+
                 // start servers
                 final ModelNode domainModel = context.getModel();
                 final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
@@ -99,6 +102,7 @@ public class NewStartServersHandler implements NewStepHandler, DescriptionProvid
         for(final String serverName : servers.keys()) {
             if(servers.get(serverName, AUTO_START).asBoolean(true)) {
                 try {
+                    System.out.println("Start server " + serverName + " " + serverInventory);
                     serverInventory.startServer(serverName, domainModel);
                 } catch (Exception e) {
                     log.errorf(e, "Failed to start server (%s)", serverName);
@@ -110,7 +114,7 @@ public class NewStartServersHandler implements NewStepHandler, DescriptionProvid
     private void restartedHcStartOrReconnectServers(final ModelNode servers, final ModelNode domainModel){
         Map<String, ProcessInfo> processInfos = serverInventory.determineRunningProcesses();
         for(final String serverName : servers.keys()) {
-            ProcessInfo info = processInfos.get(NewServerInventory.getServerProcessName(serverName));
+            ProcessInfo info = processInfos.get(serverInventory.getServerProcessName(serverName));
             boolean auto = servers.get(serverName, AUTO_START).asBoolean(true);
             if (info == null && auto) {
                 try {

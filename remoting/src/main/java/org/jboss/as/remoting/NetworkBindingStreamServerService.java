@@ -21,10 +21,7 @@
 */
 package org.jboss.as.remoting;
 
-import java.net.InetSocketAddress;
-
 import org.jboss.as.network.NetworkInterfaceBinding;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  *
@@ -33,20 +30,15 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class NetworkBindingStreamServerService extends AbstractStreamServerService {
 
-    private final int port;
+    private final NetworkInterfaceBinding interfaceBinding;
 
-    private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
-
-    public NetworkBindingStreamServerService(int port) {
-        this.port = port;
+    public NetworkBindingStreamServerService(final NetworkInterfaceBinding interfaceBinding, int port) {
+        super(port);
+        this.interfaceBinding = interfaceBinding;
     }
 
     @Override
-    InetSocketAddress getSocketAddress() {
-        return new InetSocketAddress(interfaceBindingValue.getValue().getAddress(), port);
-    }
-
-    public InjectedValue<NetworkInterfaceBinding> getInterfaceBindingInjector(){
-        return interfaceBindingValue;
+    NetworkInterfaceBinding getNetworkInterfaceBinding() {
+        return interfaceBinding;
     }
 }

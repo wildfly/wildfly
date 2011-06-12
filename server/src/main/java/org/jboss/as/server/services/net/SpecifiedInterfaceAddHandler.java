@@ -19,6 +19,7 @@
 package org.jboss.as.server.services.net;
 
 import java.util.List;
+
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
@@ -60,7 +61,7 @@ public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler {
      *
      * @return the interface service
      */
-    Service<NetworkInterfaceBinding> createInterfaceService(String name, ParsedInterfaceCriteria criteria) {
+    public static Service<NetworkInterfaceBinding> createInterfaceService(String name, ParsedInterfaceCriteria criteria) {
         return NetworkInterfaceService.create(name, criteria);
     }
 

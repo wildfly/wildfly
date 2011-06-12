@@ -36,7 +36,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
@@ -46,10 +48,12 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.NewDomainController;
@@ -60,8 +64,9 @@ import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.NewStartServersHandler;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.process.ProcessInfo;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.remoting.RemotingServices;
-import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
@@ -85,11 +90,12 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final HostControllerEnvironment environment;
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final FileRepository localFileRepository;
-    private final InjectedValue<NewServerInventory> injectedServerInventory = new InjectedValue<NewServerInventory>();
     private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<ExecutorService>();
     private final Map<String, NewProxyController> hostProxies;
     private final PrepareStepHandler prepareStepHandler;
     private ModelNodeRegistration modelNodeRegistration;
+
+    private volatile NewServerInventory serverInventory;
 
     public static ServiceController<NewModelController> addService(final ServiceTarget serviceTarget,
                                                             final HostControllerEnvironment environment,
@@ -101,7 +107,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 hostControllerInfo, new HostControllerConfigurationPersister(environment),
                 hostProxies, prepareStepHandler);
         return serviceTarget.addService(SERVICE_NAME, service)
-                .addDependency(ServerInventoryService.SERVICE_NAME, NewServerInventory.class, service.injectedServerInventory)
                 .addDependency(NewHostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.injectedExecutorService)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
@@ -202,7 +207,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     protected void initModel(ModelNodeRegistration rootRegistration) {
         NewHostModelUtil.createHostRegistry(rootRegistration, configurationPersister, environment, localFileRepository,
-                hostControllerInfo, injectedServerInventory.getValue());
+                hostControllerInfo, new DelegatingServerInventory());
         this.modelNodeRegistration = rootRegistration;
     }
 
@@ -234,28 +239,48 @@ public class DomainModelControllerService extends AbstractControllerService impl
             // -- see super.boot(context)
         }
 
+        final NetworkInterfaceBinding interfaceBinding;
+        try {
+            interfaceBinding = hostControllerInfo.getNetworkInterfaceBinding(hostControllerInfo.getNativeManagementInterface());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         ServiceTarget serviceTarget = context.getServiceTarget();
 
-        final ServerInventoryService inventory = new ServerInventoryService(environment, hostControllerInfo.getNativeManagementPort());
+        final NewServerInventoryService inventory = new NewServerInventoryService(this, environment, interfaceBinding, hostControllerInfo.getNativeManagementPort());
         serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
-                .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, inventory.getClient())
-                .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(hostControllerInfo.getNativeManagementInterface()),
-                        NetworkInterfaceBinding.class, inventory.getInterface())
+                .addDependency(NewProcessControllerConnectionService.SERVICE_NAME, NewProcessControllerConnectionService.class, inventory.getClient())
                 .install();
+
 
         // Add the server to host operation handler
         final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
         serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
             .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallbackInjector())
             .install();
-
+        RemotingServices.installDomainControllerManagementChannelServices(serviceTarget,
+                new NewModelControllerClientOperationHandlerService(),
+                DomainModelControllerService.SERVICE_NAME,
+                interfaceBinding,
+                hostControllerInfo.getNativeManagementPort());
         RemotingServices.installChannelOpenListenerService(serviceTarget, "server", ServerToHostOperationHandler.SERVICE_NAME, null, null);
+        if (hostControllerInfo.isMasterDomainController()) {
+            //This should install a service using the transactional model controller service
+            //RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(), DomainModelControllerService.SERVICE_NAME, "domain", null, null);
+        }
+
         // TODO  other services we should start?
 
-
-        // Start the servers
-        injectedServerInventory.getValue().setDomainController(this);
-        startServers();
+        Future<NewServerInventory> future = inventory.getInventoryFuture();
+        try {
+            serverInventory = future.get();
+            startServers();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
 
         // TODO when to call configurationPersister.successful boot? Look into this for standalone as well; may be broken now
     }
@@ -265,14 +290,80 @@ public class DomainModelControllerService extends AbstractControllerService impl
         addr.add(HOST, hostControllerInfo.getLocalHostName());
         ModelNode op = Util.getEmptyOperation(NewStartServersHandler.OPERATION_NAME, addr);
 
-        getValue().execute(op, null, null, null);
+        ModelNode result = getValue().execute(op, null, null, null);
     }
 
 
     @Override
     public void stop(StopContext context) {
         // TODO async
-        injectedServerInventory.getValue().stopServers(-1); // TODO graceful timeout
+        if (serverInventory != null) {
+            serverInventory.stopServers(-1);
+        }
+        serverInventory = null;
         super.stop(context);
+    }
+
+    private class DelegatingServerInventory implements NewServerInventory {
+        public void serverRegistered(String serverName, ManagementChannel channel) {
+            serverInventory.serverRegistered(serverName, channel);
+        }
+
+        public void serverStartFailed(String serverName) {
+            serverInventory.serverStartFailed(serverName);
+        }
+
+        public void serverStopped(String serverName) {
+            serverInventory.serverStopped(serverName);
+        }
+
+        public String getServerProcessName(String serverName) {
+            return serverInventory.getServerProcessName(serverName);
+        }
+
+        public void processInventory(Map<String, ProcessInfo> processInfos) {
+            serverInventory.processInventory(processInfos);
+        }
+
+        public Map<String, ProcessInfo> determineRunningProcesses() {
+            return serverInventory.determineRunningProcesses();
+        }
+
+        public ServerStatus determineServerStatus(String serverName) {
+            return serverInventory.determineServerStatus(serverName);
+        }
+
+        public int hashCode() {
+            return serverInventory.hashCode();
+        }
+
+        public ServerStatus startServer(String serverName, ModelNode domainModel) {
+            return serverInventory.startServer(serverName, domainModel);
+        }
+
+        public void reconnectServer(String serverName, ModelNode domainModel, boolean running) {
+            serverInventory.reconnectServer(serverName, domainModel, running);
+        }
+
+        public ServerStatus restartServer(String serverName, int gracefulTimeout, ModelNode domainModel) {
+            return serverInventory.restartServer(serverName, gracefulTimeout, domainModel);
+        }
+
+        public ServerStatus stopServer(String serverName, int gracefulTimeout) {
+            return serverInventory.stopServer(serverName, gracefulTimeout);
+        }
+
+        public boolean equals(Object obj) {
+            return serverInventory.equals(obj);
+        }
+
+        public String toString() {
+            return serverInventory.toString();
+        }
+
+        @Override
+        public void stopServers(int gracefulTimeout) {
+            serverInventory.stopServers(gracefulTimeout);
+        }
     }
 }

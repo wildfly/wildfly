@@ -96,6 +96,21 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
 
     @Override
     public PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
+
+        if (true) {
+            System.out.println("HostControllerConfigurationPersister temporarily disabled");
+            return new PersistenceResource() {
+
+                @Override
+                public void rollback() {
+                }
+
+                @Override
+                public void commit() {
+                }
+            };
+        }
+
         final PersistenceResource[] delegates = new PersistenceResource[2];
         for (PathAddress addr : affectedAddresses) {
             if (delegates[0] == null && addr.size() > 0 && HOST.equals(addr.getElement(0).getKey())) {
