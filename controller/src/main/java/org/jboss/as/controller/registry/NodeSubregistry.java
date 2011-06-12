@@ -153,6 +153,21 @@ final class NodeSubregistry {
         return childRegistry.getOperationDescription(iterator, operationName);
     }
 
+    Set<OperationEntry.Flag> getOperationFlags(final ListIterator<PathElement> iterator, final String child, final String operationName) {
+        final Map<String, AbstractNodeRegistration> snapshot = childRegistriesUpdater.get(this);
+        final AbstractNodeRegistration childRegistry = snapshot.get(child);
+        if (childRegistry != null) {
+            return childRegistry.getOperationFlags(iterator, operationName);
+        } else {
+            final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");
+            if (wildcardRegistry != null) {
+                return wildcardRegistry.getOperationFlags(iterator, operationName);
+            } else {
+                return null;
+            }
+        }
+    }
+
     DescriptionProvider getModelDescription(final Iterator<PathElement> iterator, final String child) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
         AbstractNodeRegistration childRegistry = snapshot.get(child);

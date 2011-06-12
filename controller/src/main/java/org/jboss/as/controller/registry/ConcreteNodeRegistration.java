@@ -287,6 +287,30 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
+    Set<OperationEntry.Flag> getOperationFlags(ListIterator<PathElement> iterator, String operationName) {
+        if (iterator.hasNext()) {
+            final PathElement next = iterator.next();
+            final NodeSubregistry subregistry = children.get(next.getKey());
+            if (subregistry == null) {
+                return null;
+            }
+            return subregistry.getOperationFlags(iterator, next.getValue(), operationName);
+        } else {
+            final OperationEntry entry = operations.get(operationName);
+            return entry == null ? null : entry.getFlags();
+        }
+    }
+
+    @Override
+    Set<OperationEntry.Flag> getInheritedOperationFlags(String operationName) {
+        final OperationEntry entry = operationsUpdater.get(this, operationName);
+        if (entry != null && entry.isInherited()) {
+            return entry.getFlags();
+        }
+        return null;
+    }
+
+    @Override
     DescriptionProvider getModelDescription(final Iterator<PathElement> iterator) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();

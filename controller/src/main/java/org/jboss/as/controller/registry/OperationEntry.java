@@ -29,7 +29,7 @@ import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
- * Information about a registered {@code OperationHandler}.
+ * Information about a registered {@code NewStepHandler}.
  *
  * @author Emanuel Muckenhuber
  */
@@ -38,8 +38,12 @@ public final class OperationEntry {
         PUBLIC, PRIVATE;
     }
 
+    /** Flags to indicate special characteristics of an operation */
     public enum Flag {
-        READ_ONLY
+        /** Operation only reads, does not modify */
+        READ_ONLY,
+        /** Operation only performs a deployment upload */
+        DEPLOYMENT_UPLOAD
     }
 
     private final NewStepHandler operationHandler;
@@ -60,7 +64,7 @@ public final class OperationEntry {
        this(operationHandler, descriptionProvider, inherited, type, EnumSet.noneOf(Flag.class));
     }
 
-    NewStepHandler getOperationHandler() {
+    public NewStepHandler getOperationHandler() {
         return operationHandler;
     }
 

@@ -34,6 +34,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
@@ -81,13 +83,15 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final FileRepository localFileRepository;
     private final InjectedValue<NewServerInventory> injectedServerInventory = new InjectedValue<NewServerInventory>();
+    private final Map<String, NewProxyController> hostProxies;
     private ModelNodeRegistration modelNodeRegistration;
 
     public static ServiceController<NewModelController> addService(final ServiceTarget serviceTarget,
                                                             final HostControllerEnvironment environment,
                                                             final ControlledProcessState processState) {
+        final Map<String, NewProxyController> hostProxies = new ConcurrentHashMap<String, NewProxyController>();
         DomainModelControllerService service = new DomainModelControllerService(environment, processState,
-                new LocalHostControllerInfoImpl(processState), new HostControllerConfigurationPersister(environment));
+                new LocalHostControllerInfoImpl(processState), new HostControllerConfigurationPersister(environment), hostProxies);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(ServerInventoryService.SERVICE_NAME, NewServerInventory.class, service.injectedServerInventory)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -97,12 +101,15 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private DomainModelControllerService(final HostControllerEnvironment environment,
                                          final ControlledProcessState processState,
                                          final LocalHostControllerInfoImpl hostControllerInfo,
-                                         final HostControllerConfigurationPersister configurationPersister) {
-        super(NewOperationContext.Type.HOST, configurationPersister, processState, DomainDescriptionProviders.ROOT_PROVIDER, new PrepareStepHandler(hostControllerInfo));
+                                         final HostControllerConfigurationPersister configurationPersister,
+                                         final Map<String, NewProxyController> hostProxies) {
+        super(NewOperationContext.Type.HOST, configurationPersister, processState, DomainDescriptionProviders.ROOT_PROVIDER,
+                new PrepareStepHandler(hostControllerInfo, hostProxies));
         this.configurationPersister = configurationPersister;
         this.environment = environment;
         this.hostControllerInfo = new LocalHostControllerInfoImpl(processState);
         this.localFileRepository = new LocalFileRepository(environment);
+        this.hostProxies = hostProxies;
     }
 
     @Override
@@ -122,11 +129,13 @@ public class DomainModelControllerService extends AbstractControllerService impl
             throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
         }
         modelNodeRegistration.registerProxyController(pe, hostControllerClient);
+        hostProxies.put(pe.getValue(), hostControllerClient);
     }
 
     @Override
     public void unregisterRemoteHost(String id) {
         Logger.getLogger("org.jboss.domain").info("Unregistering host " + id);
+        hostProxies.remove(id);
         modelNodeRegistration.unregisterProxyController(PathElement.pathElement(HOST, id));
     }
 

@@ -131,6 +131,16 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
     }
 
     @Override
+    Set<OperationEntry.Flag> getOperationFlags(ListIterator<PathElement> iterator, String operationName) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    Set<OperationEntry.Flag> getInheritedOperationFlags(String operationName) {
+        return Collections.emptySet();
+    }
+
+    @Override
     DescriptionProvider getModelDescription(final Iterator<PathElement> iterator) {
         return null;
     }

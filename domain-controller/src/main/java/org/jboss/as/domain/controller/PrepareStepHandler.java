@@ -28,7 +28,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 
+import java.util.Map;
+
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -47,9 +50,9 @@ public class PrepareStepHandler  implements NewStepHandler {
     private final OperationCoordinatorStepHandler coordinatorHandler;
     private final OperationSlaveStepHandler slaveHandler;
 
-    public PrepareStepHandler(final LocalHostControllerInfo localHostControllerInfo) {
+    public PrepareStepHandler(final LocalHostControllerInfo localHostControllerInfo, final Map<String, NewProxyController> hostProxies) {
         this.localHostControllerInfo = localHostControllerInfo;
-        this.coordinatorHandler = new OperationCoordinatorStepHandler(localHostControllerInfo);
+        this.coordinatorHandler = new OperationCoordinatorStepHandler(localHostControllerInfo, hostProxies);
         this.slaveHandler = new OperationSlaveStepHandler(localHostControllerInfo);
     }
 
@@ -60,6 +63,7 @@ public class PrepareStepHandler  implements NewStepHandler {
             executeDirect(context, operation);
         }
         else if (operation.hasDefined(OPERATION_HEADERS) && operation.get(OPERATION_HEADERS, EXECUTE_FOR_COORDINATOR).asBoolean(false)) {
+            // Coordinator wants us to execute locally and send result including the steps needed for execution on the servers
             slaveHandler.execute(context, operation);
         } else if (isServerOperation(operation)) {
             // Pass direct requests for the server through whether they come from the master or not
