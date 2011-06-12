@@ -22,8 +22,6 @@
 package org.jboss.as.webservices.config;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.management.MBeanServer;
 
@@ -43,8 +41,6 @@ import org.jboss.wsf.spi.metadata.config.EndpointConfig;
 public final class ServerConfigImpl extends AbstractServerConfig implements AbstractServerConfigMBean {
 
     private static final ServerConfigImpl INSTANCE = new ServerConfigImpl();
-
-    private final List<EndpointConfig> endpointConfigs = new ArrayList<EndpointConfig>();
 
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
@@ -101,14 +97,6 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
 
     public InjectedValue<ServerEnvironment> getServerEnvironmentInjector() {
         return injectedServerEnvironment;
-    }
-
-    public void addEndpointConfig(EndpointConfig config) {
-        this.endpointConfigs.add(config);
-    }
-
-    public List<EndpointConfig> getEndpointConfigs() {
-        return this.endpointConfigs;
     }
 
     private ServerEnvironment getServerEnvironment() {
