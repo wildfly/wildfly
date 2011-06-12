@@ -35,13 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.server.services.path.RelativePathService;
