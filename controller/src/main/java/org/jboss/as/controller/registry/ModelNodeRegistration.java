@@ -218,6 +218,18 @@ public interface ModelNodeRegistration {
     DescriptionProvider getOperationDescription(PathAddress address, String operationName);
 
     /**
+     * Get the special characteristic flags for the operation at the given address, or {@code null} if none exist.
+     *
+     * @param address the address, relative to this node
+     * @param operationName the operation name
+     * @return the operation entry flags or {@code null}
+     *
+     * @deprecated may change in AS 7.1
+     */
+    @Deprecated
+    Set<OperationEntry.Flag> getOperationFlags(PathAddress address, String operationName);
+
+    /**
      * Get the names of the attributes for a node
      *
      * @param address the address, relative to this node

@@ -147,6 +147,26 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     abstract DescriptionProvider getOperationDescription(Iterator<PathElement> iterator, String operationName);
 
+    /**
+     * Get a handler at a specific address.
+     *
+     * @param pathAddress the address
+     * @param operationName the operation name
+     * @return the operation handler, or {@code null} if none match
+     */
+    @Override
+    public final Set<OperationEntry.Flag> getOperationFlags(final PathAddress pathAddress, final String operationName) {
+        Set<OperationEntry.Flag> result =  getOperationFlags(pathAddress.iterator(), operationName);
+        if (result == null && parent != null) {
+            result = parent.getParent().getInheritedOperationFlags(operationName);
+        }
+        return result;
+    }
+
+    abstract Set<OperationEntry.Flag> getOperationFlags(ListIterator<PathElement> iterator, String operationName);
+
+    abstract Set<OperationEntry.Flag> getInheritedOperationFlags(String operationName);
+
     /** {@inheritDoc} */
     @Override
     public DescriptionProvider getModelDescription(final PathAddress address) {
