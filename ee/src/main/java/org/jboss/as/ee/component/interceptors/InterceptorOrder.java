@@ -93,14 +93,15 @@ public class InterceptorOrder {
 
     public static final class View {
 
-        public static final int NOT_BUSINESS_METHOD = 0x000;
-        public static final int SESSION_BEAN_EQUALS_HASHCODE = 0x100;
-        public static final int CMT_TRANSACTION_INTERCEPTOR = 0x200;
-        public static final int ASSOCIATING_INTERCEPTOR = 0x300;
-        public static final int JPA_SFSB_INTERCEPTOR = 0x400;
-        public static final int SFSB_REMOVE_INTERCEPTOR = 0x500;
-        public static final int INVOCATION_CONTEXT_INTERCEPTOR = 0x600;
-        public static final int COMPONENT_DISPATCHER = 0x700;
+        public static final int NOT_BUSINESS_METHOD                                     = 0x000;
+        public static final int SESSION_BEAN_EQUALS_HASHCODE                            = 0x100;
+        public static final int CMT_TRANSACTION_INTERCEPTOR                             = 0x200;
+        public static final int ASSOCIATING_INTERCEPTOR                                 = 0x300;
+        public static final int EJB_SECURITY_DENY_ALL_INTERCEPTOR                       = 0x400;
+        public static final int JPA_SFSB_INTERCEPTOR                                    = 0x500;
+        public static final int SFSB_REMOVE_INTERCEPTOR                                 = 0x600;
+        public static final int INVOCATION_CONTEXT_INTERCEPTOR                          = 0x700;
+        public static final int COMPONENT_DISPATCHER                                    = 0x800;
 
 
         private View() {
