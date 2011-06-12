@@ -260,7 +260,6 @@ public final class RemotingServices {
         addController(newControllers, serviceTarget.addService(RemotingServices.serverServiceName("management", port), streamServerService)
             .addDependency(RemotingServices.connectorServiceName("management"), ChannelListener.class, streamServerService.getConnectorInjector())
             .addDependency(networkInterfaceBindingName, NetworkInterfaceBinding.class, streamServerService.getInterfaceBindingInjector())
-            .addInjection(connectorService.getAuthenticationProviderInjector(), provider)
             .addListener(verificationHandler)
                     .setInitialMode(Mode.ACTIVE)
                     .install());
