@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ejb3.component.security.EJBSecurityMetaData;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -70,6 +71,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
     private final boolean isBeanManagedTransaction;
     private static volatile boolean youHaveBeenWarnedEJBTHREE2120 = false;
     private final Map<Class<?>, ApplicationException> applicationExceptions;
+    private final EJBSecurityMetaData securityMetaData;
 
     /**
      * Construct a new instance.
@@ -90,6 +92,9 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
         txAttrs = ejbComponentCreateService.getTxAttrs();
         isBeanManagedTransaction = TransactionManagementType.BEAN.equals(ejbComponentCreateService.getTransactionManagementType());
+
+        // security metadata
+        this.securityMetaData = ejbComponentCreateService.getSecurityMetaData();
     }
 
     @Override
@@ -318,6 +323,10 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
         } catch (SystemException se) {
             log.warn("failed to set rollback only; ignoring", se);
         }
+    }
+
+    public EJBSecurityMetaData getSecurityMetaData() {
+        return this.securityMetaData;
     }
 
     /**

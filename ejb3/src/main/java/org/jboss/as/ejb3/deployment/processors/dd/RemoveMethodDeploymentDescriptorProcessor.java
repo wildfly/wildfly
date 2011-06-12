@@ -45,7 +45,7 @@ import java.lang.reflect.Method;
  */
 public class RemoveMethodDeploymentDescriptorProcessor extends AbstractEjbXmlDescriptorProcessor<SessionBeanMetaData> {
 
-        @Override
+    @Override
     protected Class<SessionBeanMetaData> getMetaDataType() {
         return SessionBeanMetaData.class;
     }
