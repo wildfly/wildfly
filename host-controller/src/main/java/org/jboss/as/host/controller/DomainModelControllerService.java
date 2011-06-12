@@ -33,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -221,22 +220,21 @@ public class DomainModelControllerService extends AbstractControllerService impl
     // bit of stuff
     @Override
     protected void boot(final BootContext context) throws ConfigurationPersistenceException {
-
-        // TODO add superclass hooks to allow us to completely take over this
-        super.boot(context); // This parses the host.xml and invokes all ops
-        // See if we need to register with the master.
-        if (!hostControllerInfo.isMasterDomainController()) {
-            // TODO
-            // 1) register with the master
-            // 2) get back the domain model, somehow store it (perhaps using an op invoked by the DC?)
-            // 3) if 1) fails, check env.isUseCachedDC, if true fall through to that
-        } else {
-            // parse the domain.xml and load the steps
-            ConfigurationPersister domainPersister = configurationPersister.getDomainPersister();
-            List<ModelNode> domainBootOps = domainPersister.load();
-            // TODO
-            // execute ops to populate the domain part of the model
-            // -- see super.boot(context)
+        try {
+            super.boot(configurationPersister.load()); // This parses the host.xml and invokes all ops
+            // See if we need to register with the master.
+            if (!hostControllerInfo.isMasterDomainController()) {
+                // TODO
+                // 1) register with the master
+                // 2) get back the domain model, somehow store it (perhaps using an op invoked by the DC?)
+                // 3) if 1) fails, check env.isUseCachedDC, if true fall through to that
+            } else {
+                // parse the domain.xml and load the steps
+                ConfigurationPersister domainPersister = configurationPersister.getDomainPersister();
+                super.boot(domainPersister.load());
+            }
+        } finally {
+            finishBoot();
         }
 
         final NetworkInterfaceBinding interfaceBinding;

@@ -100,7 +100,7 @@ class NewModelControllerImpl implements NewModelController {
         final ModelNode headers = operation.get(OPERATION_HEADERS);
         final boolean rollbackOnFailure = headers == null || headers.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean(true);
         final EnumSet<NewOperationContextImpl.ContextFlag> contextFlags = rollbackOnFailure ? EnumSet.of(NewOperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL) : EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class);
-        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, contextFlags, handler, attachments, modelReference.get(), control, processState, bootingFlag.getAndSet(false));
+        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, contextFlags, handler, attachments, modelReference.get(), control, processState, bootingFlag.get());
         ModelNode response = new ModelNode();
         context.addStep(response, operation, prepareStep, NewOperationContext.Stage.MODEL);
         RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
@@ -122,7 +122,7 @@ class NewModelControllerImpl implements NewModelController {
     }
 
     void boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control) {
-        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class), handler, null, modelReference.get(), control, processState, bootingFlag.getAndSet(false));
+        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class), handler, null, modelReference.get(), control, processState, bootingFlag.get());
         ModelNode result = context.getResult();
         result.setEmptyList();
         for (ModelNode bootOp : bootList) {
@@ -130,6 +130,10 @@ class NewModelControllerImpl implements NewModelController {
             context.addStep(response, bootOp, new BootStepHandler(bootOp, response), NewOperationContext.Stage.MODEL);
         }
         context.completeStep();
+    }
+
+    void finshBoot() {
+        bootingFlag.set(false);
     }
 
     ModelNodeRegistration getRootRegistration() {
@@ -149,7 +153,6 @@ class NewModelControllerImpl implements NewModelController {
             final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
             final String operationName = operation.require(OP).asString();
             final NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
-            //System.out.println("Handler for " + operation + " " + address + " " + stepHandler);
             if (stepHandler == null) {
                 context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, address));
             } else {

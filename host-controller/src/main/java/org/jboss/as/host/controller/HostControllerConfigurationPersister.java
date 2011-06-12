@@ -98,7 +98,7 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
     public PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
 
         if (true) {
-            System.out.println("HostControllerConfigurationPersister temporarily disabled");
+            System.out.println("==== HostControllerConfigurationPersister temporarily disabled see HCCP.store()");
             return new PersistenceResource() {
 
                 @Override

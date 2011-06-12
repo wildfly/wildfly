@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import java.util.List;
+
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -98,7 +100,17 @@ public abstract class AbstractControllerService implements Service<NewModelContr
      * @throws ConfigurationPersistenceException if the configuration failed to be loaded
      */
     protected void boot(final BootContext context) throws ConfigurationPersistenceException {
-        controller.boot(configurationPersister.load(), OperationMessageHandler.logging, NewModelController.OperationTransactionControl.COMMIT);
+        boot(configurationPersister.load());
+        finishBoot();
+    }
+
+    protected void boot(List<ModelNode> bootOperations) throws ConfigurationPersistenceException {
+        controller.boot(bootOperations, OperationMessageHandler.logging, NewModelController.OperationTransactionControl.COMMIT);
+    }
+
+    protected void finishBoot() throws ConfigurationPersistenceException {
+        controller.finshBoot();
+        configurationPersister.successfulBoot();
     }
 
     public void stop(final StopContext context) {
