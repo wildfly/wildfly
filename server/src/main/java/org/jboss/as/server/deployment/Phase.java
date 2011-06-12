@@ -230,6 +230,9 @@ public enum Phase {
     public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x1900;
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
     public static final int PARSE_REMOVE_METHOD_ANNOTAION               = 0x1902;
+    public static final int PARSE_EJB_DECLARE_ROLES_ANNOTATION          = 0x1903;
+    public static final int PARSE_EJB_RUN_AS_ANNOTATION                 = 0x1904;
+    public static final int PARSE_EJB_DENY_ALL_ANNOTATION               = 0x1905;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1A00;
     public static final int PARSE_EJB_STATEFUL_TIMEOUT_ANNOTATION       = 0x1A01;
@@ -265,6 +268,8 @@ public enum Phase {
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x3300;
     public static final int PARSE_RESOURCE_INJECTION_WEBSERVICE_CONTEXT_ANNOTATION  = 0x3401;
     public static final int PARSE_EJB_DD_INTERCEPTORS                   = 0x3500;
+    public static final int PARSE_EJB_SECURITY_ROLE_REF_DD              = 0x3501;
+    public static final int PARSE_EJB_SECURITY_IDENTITY_DD              = 0x3502;
     public static final int PARSE_EJB_ASSEMBLY_DESC_DD                  = 0x3600;
 
     // should be after all components are known

@@ -31,6 +31,8 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.EJBMethodIdentifier;
+import org.jboss.as.ejb3.component.security.DenyAllViewConfigurator;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -41,6 +43,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
@@ -48,9 +51,14 @@ import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -66,6 +74,25 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private TransactionManagementType transactionManagementType = TransactionManagementType.CONTAINER;
 
     private final Map<MethodIntf, TransactionAttributeType> txPerViewStyle1 = new HashMap<MethodIntf, TransactionAttributeType>();
+
+    /**
+     * The security-domain, if any, for this bean
+     */
+    private String securityDomain;
+
+    /**
+     * The @DeclareRoles (a.k.a security-role-ref) for the bean
+     */
+    private final Set<String> declaredRoles = new HashSet<String>();
+
+    /**
+     * The @RunAs role associated with this bean, if any
+     */
+    private String runAsRole;
+
+    private Map<String, Collection<EJBMethodIdentifier>> denyAllApplicableMethods = new HashMap<String, Collection<EJBMethodIdentifier>>();
+
+    private Collection<String> denyAllApplicableClasses = new HashSet<String>();
 
     /**
      * Stores around invoke methods that are referenced in the DD that cannot be resolved until the module is loaded
@@ -95,7 +122,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     private final Map<String, TransactionAttributeType> txStyle1 = new HashMap<String, TransactionAttributeType>();
     private final Map<String, TransactionAttributeType> txStyle2 = new HashMap<String, TransactionAttributeType>();
-    private final PopulatingMap<String, PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>>> txStyle3 = new PopulatingMap<String, PopulatingMap<String,Map<ArrayKey,TransactionAttributeType>>>() {
+    private final PopulatingMap<String, PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>>> txStyle3 = new PopulatingMap<String, PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>>>() {
         @Override
         PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>> populate() {
             return new PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>>() {
@@ -187,8 +214,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             throw new IllegalArgumentException("both methodIntf and className are set on " + getComponentName());
         if (methodIntf == null) {
             txStyle1.put(className, transactionAttribute);
-        }
-        else
+        } else
             txPerViewStyle1.put(methodIntf, transactionAttribute);
     }
 
@@ -234,25 +260,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return this.getComponentClassName();
     }
 
-
-//    protected void processComponentMethod(ComponentConfiguration configuration, Method componentMethod) throws DeploymentUnitProcessingException {
-//        super.processComponentMethod(configuration, componentMethod);
-//
-//        // TODO: a temporary measure until EJBTHREE-2120 is fully resolved
-//        MethodIntf methodIntf = MethodIntf.BEAN;
-//        processTxAttr((EJBComponentConfiguration) configuration, methodIntf, componentMethod);
-//    }
-//
-//    @Override
-//    protected void processViewMethod(ComponentConfiguration configuration, Class<?> viewClass, Method viewMethod, Method componentMethod) {
-//        super.processViewMethod(configuration, viewClass, viewMethod, componentMethod);
-//
-//        MethodIntf methodIntf = getMethodIntf(viewClass.getName());
-//        processTxAttr((EJBComponentConfiguration) configuration, methodIntf, viewMethod);
-//    }
-
     protected void setupViewInterceptors(ViewDescription view) {
         this.addCurrentInvocationContextFactory(view);
+        this.setupSecurityInterceptors(view);
     }
 
     protected void setupClientViewInterceptors(ViewDescription view) {
@@ -272,6 +282,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * @param view The view for which the interceptor has to be setup
      */
     protected abstract void addCurrentInvocationContextFactory(ViewDescription view);
+
+    protected void setupSecurityInterceptors(final ViewDescription view) {
+        // setup a view configurator which processes @DenyAll/exclude-list methods on a EJB view
+        view.getConfigurators().add(new DenyAllViewConfigurator());
+    }
 
     private void addToStringMethodInterceptor(final ViewDescription view) {
         view.getConfigurators().add(new ViewConfigurator() {
@@ -308,6 +323,68 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public boolean isStateless() {
         return false;
+    }
+
+    public void addDeclaredRoles(String... roles) {
+        this.declaredRoles.addAll(Arrays.asList(roles));
+    }
+
+    public void setDeclaredRoles(Collection<String> roles) {
+        if (roles == null) {
+            throw new IllegalArgumentException("Cannot set security roles to null");
+        }
+        this.declaredRoles.clear();
+        this.declaredRoles.addAll(roles);
+    }
+
+    public Set<String> getDeclaredRoles() {
+        return Collections.unmodifiableSet(this.declaredRoles);
+    }
+
+    public void setRunAs(String role) {
+        this.runAsRole = role;
+    }
+
+    public String getRunAs() {
+        return this.runAsRole;
+    }
+
+    public void setSecurityDomain(String securityDomain) {
+        this.securityDomain = securityDomain;
+    }
+
+    public String getSecurityDomain() {
+        return this.securityDomain;
+    }
+
+    public void applyDenyAllOnAllViewsForClass(final String className) {
+        if (className == null || className.trim().isEmpty()) {
+            throw new IllegalArgumentException("Classname cannot be null or empty: " + className);
+        }
+        this.denyAllApplicableClasses.add(className);
+    }
+
+    public void applyDenyAllOnAllViewsForMethod(final EJBMethodIdentifier ejbMethodIdentifier) {
+        for (final ViewDescription view : this.getViews()) {
+            Collection<EJBMethodIdentifier> denyAllViewMethods = this.denyAllApplicableMethods.get(view.getViewClassName());
+            if (denyAllViewMethods == null) {
+                denyAllViewMethods = new ArrayList<EJBMethodIdentifier>();
+                this.denyAllApplicableMethods.put(view.getViewClassName(), denyAllViewMethods);
+            }
+            denyAllViewMethods.add(ejbMethodIdentifier);
+        }
+    }
+
+    public Collection<EJBMethodIdentifier> getDenyAllMethodsForView(final String viewClassName) {
+        final Collection<EJBMethodIdentifier> denyAllMethods = this.denyAllApplicableMethods.get(viewClassName);
+        if (denyAllMethods != null) {
+            return Collections.unmodifiableCollection(denyAllMethods);
+        }
+        return Collections.emptySet();
+    }
+
+    public boolean isDenyAllApplicableToClass(final String className) {
+        return this.denyAllApplicableClasses.contains(className);
     }
 
     /**
