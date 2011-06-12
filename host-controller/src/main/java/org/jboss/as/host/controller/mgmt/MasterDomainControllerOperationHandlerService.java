@@ -24,8 +24,8 @@ package org.jboss.as.host.controller.mgmt;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandler;
+import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;

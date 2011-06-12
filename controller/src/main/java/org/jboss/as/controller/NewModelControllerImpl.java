@@ -23,12 +23,9 @@
 package org.jboss.as.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
@@ -139,11 +136,6 @@ class NewModelControllerImpl implements NewModelController {
         return rootRegistration;
     }
 
-    private static void reportNoHandler(final String operationName, final PathAddress address, final ModelNode response) {
-        response.get(OUTCOME).set(FAILED);
-        response.get(FAILURE_DESCRIPTION).set(String.format("No handler for operation %s at address %s", operationName, address));
-    }
-
     class BootStepHandler implements NewStepHandler {
         private final ModelNode operation;
         private final ModelNode response;
@@ -157,6 +149,7 @@ class NewModelControllerImpl implements NewModelController {
             final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
             final String operationName = operation.require(OP).asString();
             final NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
+            //System.out.println("Handler for " + operation + " " + address + " " + stepHandler);
             if (stepHandler == null) {
                 context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, address));
             } else {

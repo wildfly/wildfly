@@ -152,23 +152,20 @@ public final class RemotingServices {
             final ServiceTarget serviceTarget,
             final NewModelControllerClientOperationHandlerService operationHandlerService,
             final ServiceName modelControllerName,
-            final ServiceName networkInterfaceBindingName,
-            final int port,
-            final ServiceVerificationHandler verificationHandler,
-            final List<ServiceController<?>> newControllers) {
-
+            final NetworkInterfaceBinding networkInterfaceBinding,
+            final int port) {
         EndpointService endpointService = new EndpointService();
         endpointService.setOptionMap(OptionMap.EMPTY);
         final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
         //TODO inject this from somewhere?
         executorInjector.inject(Executors.newCachedThreadPool());
-        addController(newControllers, serviceTarget.addService(RemotingServices.ENDPOINT, endpointService)
+        serviceTarget.addService(RemotingServices.ENDPOINT, endpointService)
                 //.addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
-                .addListener(verificationHandler)
+                //.addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install());
+                .install();
 
-        installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBindingName, port, verificationHandler, newControllers);
+        installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBinding, port);
     }
 
     /**
@@ -192,11 +189,7 @@ public final class RemotingServices {
             .addDependency(RemotingServices.ENDPOINT, Endpoint.class, channelOpenListenerService.getEndpointInjector())
             .addDependency(operationHandlerName, ManagementOperationHandler.class, channelOpenListenerService.getOperationHandlerInjector())
             .setInitialMode(Mode.ACTIVE);
-        if (verificationHandler != null) {
-            builder.addListener(verificationHandler);
-        }
-
-         addController(newControllers, builder.install());
+         addController(newControllers, verificationHandler, builder);
     }
 
     /**
@@ -216,20 +209,24 @@ public final class RemotingServices {
             final List<ServiceController<?>> newControllers) {
 
         final ServiceName operationHandlerName = operationHandlerName(modelControllerName, channelName);
-        addController(newControllers, serviceTarget.addService(operationHandlerName, operationHandlerService)
+
+        ServiceBuilder<?> builder = serviceTarget.addService(operationHandlerName, operationHandlerService)
             .addDependency(modelControllerName, NewModelController.class, operationHandlerService.getModelControllerInjector())
-            .addListener(verificationHandler)
-            .setInitialMode(Mode.ACTIVE)
-            .install());
+            .setInitialMode(Mode.ACTIVE);
+        addController(newControllers, verificationHandler, builder);
 
         installChannelOpenListenerService(serviceTarget, channelName, operationHandlerName, verificationHandler, newControllers);
     }
 
-    private static void addController(List<ServiceController<?>> newControllers, ServiceController<?> controller) {
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
+    private static void installServices(
+            final ServiceTarget serviceTarget,
+            final NewAbstractModelControllerOperationHandlerService<?> operationHandlerService,
+            final ServiceName modelControllerName,
+            final NetworkInterfaceBinding networkInterfaceBinding,
+            final int port) {
+        installServices(serviceTarget, operationHandlerService, modelControllerName, null, networkInterfaceBinding, port, null, null);
     }
+
 
     private static void installServices(
             final ServiceTarget serviceTarget,
@@ -239,7 +236,18 @@ public final class RemotingServices {
             final int port,
             ServiceVerificationHandler verificationHandler,
             List<ServiceController<?>> newControllers) {
+        installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBindingName, null, port, verificationHandler, newControllers);
+    }
 
+    private static void installServices(
+            final ServiceTarget serviceTarget,
+            final NewAbstractModelControllerOperationHandlerService<?> operationHandlerService,
+            final ServiceName modelControllerName,
+            final ServiceName networkInterfaceBindingName,
+            final NetworkInterfaceBinding networkInterfaceBinding,
+            final int port,
+            ServiceVerificationHandler verificationHandler,
+            List<ServiceController<?>> newControllers) {
         //FIXME get this provider from somewhere
         //There is currently a probable bug in jboss remoting, so the user realm name MUST be the same as
         //the endpoint name.
@@ -249,22 +257,38 @@ public final class RemotingServices {
         final ConnectorService connectorService = new ConnectorService();
         //TODO replace these options with something better
         connectorService.setOptionMap(OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("DIGEST-MD5")));
-        addController(newControllers, serviceTarget.addService(RemotingServices.connectorServiceName("management"), connectorService)
-                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
-                .addInjection(connectorService.getAuthenticationProviderInjector(), provider)
-                .addListener(verificationHandler)
-                .setInitialMode(Mode.ACTIVE)
-                .install());
 
-        final NetworkBindingStreamServerService streamServerService = new NetworkBindingStreamServerService(port);
-        addController(newControllers, serviceTarget.addService(RemotingServices.serverServiceName("management", port), streamServerService)
-            .addDependency(RemotingServices.connectorServiceName("management"), ChannelListener.class, streamServerService.getConnectorInjector())
-            .addDependency(networkInterfaceBindingName, NetworkInterfaceBinding.class, streamServerService.getInterfaceBindingInjector())
-            .addListener(verificationHandler)
-                    .setInitialMode(Mode.ACTIVE)
-                    .install());
+        ServiceBuilder<?> builder = serviceTarget.addService(RemotingServices.connectorServiceName("management"), connectorService)
+            .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
+            .addInjection(connectorService.getAuthenticationProviderInjector(), provider)
+            .setInitialMode(Mode.ACTIVE);
+        addController(newControllers, verificationHandler, builder);
+
+        if(networkInterfaceBindingName != null) {
+            final InjectedNetworkBindingStreamServerService streamServerService = new InjectedNetworkBindingStreamServerService(port);
+            builder = serviceTarget.addService(RemotingServices.serverServiceName("management", port), streamServerService)
+                .addDependency(RemotingServices.connectorServiceName("management"), ChannelListener.class, streamServerService.getConnectorInjector())
+                .addDependency(networkInterfaceBindingName, NetworkInterfaceBinding.class, streamServerService.getInterfaceBindingInjector())
+                .setInitialMode(Mode.ACTIVE);
+            addController(newControllers, verificationHandler, builder);
+        } else {
+            final NetworkBindingStreamServerService streamServerService = new NetworkBindingStreamServerService(networkInterfaceBinding, port);
+            builder = serviceTarget.addService(RemotingServices.serverServiceName("management", port), streamServerService)
+                .addDependency(RemotingServices.connectorServiceName("management"), ChannelListener.class, streamServerService.getConnectorInjector())
+                .setInitialMode(Mode.ACTIVE);
+            addController(newControllers, verificationHandler, builder);
+        }
 
         installChannelServices(serviceTarget, operationHandlerService, modelControllerName, "management", verificationHandler, newControllers);
     }
 
+    private static void addController(List<ServiceController<?>> newControllers, ServiceVerificationHandler verificationHandler, ServiceBuilder<?> builder) {
+        if (verificationHandler != null) {
+            builder.addListener(verificationHandler);
+        }
+        ServiceController<?> controller = builder.install();
+        if (newControllers != null) {
+            newControllers.add(controller);
+        }
+    }
 }

@@ -77,7 +77,7 @@ public class NewHostControllerBootstrap {
         final ServiceTarget serviceTarget = serviceContainer;
 
         // Install the process controller client
-        final ProcessControllerConnectionService processControllerClient = new ProcessControllerConnectionService(environment, authCode);
+        final NewProcessControllerConnectionService processControllerClient = new NewProcessControllerConnectionService(environment, authCode);
         serviceTarget.addService(ProcessControllerConnectionService.SERVICE_NAME, processControllerClient).install();
 
         // Thread Factory and Executor Services

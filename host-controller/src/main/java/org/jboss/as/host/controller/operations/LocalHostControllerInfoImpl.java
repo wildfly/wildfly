@@ -22,8 +22,16 @@
 
 package org.jboss.as.host.controller.operations;
 
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.server.services.net.NetworkInterfaceService;
 
 /**
  * Default implementation of {@link LocalHostControllerInfo}.
@@ -38,6 +46,7 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
     private boolean master;
     private String nativeManagementInterface;
     private int nativeManagementPort;
+    private Map<String, ParsedInterfaceCriteria> parsedInterfaceCriteria = new HashMap<String, ParsedInterfaceCriteria>();
 
     public LocalHostControllerInfoImpl(final ControlledProcessState processState) {
         this.processState = processState;
@@ -66,6 +75,14 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
         return nativeManagementPort;
     }
 
+    public NetworkInterfaceBinding getNetworkInterfaceBinding(String name) throws SocketException, UnknownHostException {
+        ParsedInterfaceCriteria criteria = parsedInterfaceCriteria.get(name);
+        if (criteria == null) {
+            throw new IllegalArgumentException("No interface called " + name);
+        }
+        return NetworkInterfaceService.createBinding(name, criteria);
+    }
+
     void setMasterDomainController(boolean master) {
         this.master = master;
     }
@@ -80,5 +97,9 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
 
     void setNativeManagementPort(int nativeManagementPort) {
         this.nativeManagementPort = nativeManagementPort;
+    }
+
+    void addNetworkInterfaceBinding(String name, ParsedInterfaceCriteria criteria) {
+        parsedInterfaceCriteria.put(name, criteria);
     }
 }

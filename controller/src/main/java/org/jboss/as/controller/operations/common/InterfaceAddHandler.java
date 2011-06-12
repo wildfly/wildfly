@@ -19,18 +19,20 @@
 package org.jboss.as.controller.operations.common;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.List;
 import java.util.Locale;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.dmr.ModelNode;
@@ -74,15 +76,24 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
     }
 
     protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final ModelNode opAddr = operation.get(OP_ADDR);
-        PathAddress address = PathAddress.pathAddress(opAddr);
-        String name = address.getLastElement().getValue();
-        ModelNode criteriaNode = operation.get(CRITERIA);
-        ParsedInterfaceCriteria parsed = ParsedInterfaceCriteria.parse(criteriaNode.clone(), specified);
+        String name = getInterfaceName(operation);
+        ParsedInterfaceCriteria parsed = getCriteria(operation);
         if (parsed.getFailureMessage() != null) {
             throw new OperationFailedException(new ModelNode().set(parsed.getFailureMessage()));
         }
         performRuntime(context, operation, model, verificationHandler, newControllers, name, parsed);
+    }
+
+    protected String getInterfaceName(ModelNode operation) {
+        final ModelNode opAddr = operation.get(OP_ADDR);
+        PathAddress address = PathAddress.pathAddress(opAddr);
+        String name = address.getLastElement().getValue();
+        return name;
+    }
+
+    protected ParsedInterfaceCriteria getCriteria(ModelNode operation) {
+        ModelNode criteriaNode = operation.get(CRITERIA);
+        return ParsedInterfaceCriteria.parse(criteriaNode.clone(), specified);
     }
 
     protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, String name, ParsedInterfaceCriteria criteria) {

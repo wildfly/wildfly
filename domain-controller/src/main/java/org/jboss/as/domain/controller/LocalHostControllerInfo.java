@@ -22,7 +22,11 @@
 
 package org.jboss.as.domain.controller;
 
+import java.net.SocketException;
+import java.net.UnknownHostException;
+
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.network.NetworkInterfaceBinding;
 
 /**
  * Core information about the local host controller.
@@ -67,4 +71,12 @@ public interface LocalHostControllerInfo {
      * @return the state
      */
     ControlledProcessState.State getProcessState();
+
+    /**
+     * Get the network interface by its name
+     *
+     *  @param the binding name
+     *  @return the network interface binding
+     */
+    NetworkInterfaceBinding getNetworkInterfaceBinding(String name) throws SocketException, UnknownHostException;
 }

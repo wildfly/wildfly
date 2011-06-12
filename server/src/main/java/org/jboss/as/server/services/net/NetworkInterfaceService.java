@@ -88,18 +88,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
     public synchronized void start(StartContext arg0) throws StartException {
         log.debug("Starting NetworkInterfaceService\n");
         try {
-            if (anyLocalV4) {
-                this.interfaceBinding = getNetworkInterfaceBinding(IPV4_ANYLOCAL);
-            }
-            else if (anyLocalV6) {
-                this.interfaceBinding = getNetworkInterfaceBinding(IPV6_ANYLOCAL);
-            }
-            else if (anyLocal) {
-                this.interfaceBinding = getNetworkInterfaceBinding(preferIPv4Stack ? IPV4_ANYLOCAL : IPV6_ANYLOCAL);
-            }
-            else {
-                this.interfaceBinding = resolveInterface(criteria);
-            }
+            this.interfaceBinding = createBinding(name, anyLocalV4, anyLocalV6, anyLocal, criteria);
         } catch(Exception e) {
             throw new StartException(e);
         }
@@ -107,6 +96,25 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
             throw new StartException("failed to resolve interface " + name);
         }
         log.debugf("NetworkInterfaceService matched interface binding: %s\n", interfaceBinding);
+    }
+
+    public static NetworkInterfaceBinding createBinding(String name, ParsedInterfaceCriteria criteria)  throws SocketException, UnknownHostException {
+        return createBinding(name, criteria.isAnyLocalV4(), criteria.isAnyLocalV6(), criteria.isAnyLocal(), new OverallInterfaceCriteria(criteria.getCriteria()));
+    }
+
+    static NetworkInterfaceBinding createBinding(final String name, final boolean anyLocalV4, final boolean anyLocalV6, final boolean anyLocal, final InterfaceCriteria criteria) throws SocketException, UnknownHostException{
+        if (anyLocalV4) {
+            return getNetworkInterfaceBinding(IPV4_ANYLOCAL);
+        }
+        else if (anyLocalV6) {
+            return getNetworkInterfaceBinding(IPV6_ANYLOCAL);
+        }
+        else if (anyLocal) {
+            return getNetworkInterfaceBinding(preferIPv4Stack ? IPV4_ANYLOCAL : IPV6_ANYLOCAL);
+        }
+        else {
+            return resolveInterface(criteria);
+        }
     }
 
     public synchronized void stop(StopContext arg0) {

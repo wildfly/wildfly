@@ -39,16 +39,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
-import org.jboss.as.domain.controller.DomainModelImpl;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.DomainModelControllerService;
-import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.NewRemoteDomainConnectionService;
 import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
 import org.jboss.as.remoting.RemotingServices;
-import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -65,7 +61,7 @@ public class NewDomainControllerAddUtil {
                                                                          final ServiceTarget serviceTarget,
                                                                          final boolean isSlave,
                                                                          final ServiceVerificationHandler verificationHandler) {
-
+        //THIS NEVER GETS CALLED
         final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
 
         final String hostName = host.get(NAME).asString();
@@ -86,14 +82,15 @@ public class NewDomainControllerAddUtil {
 //                .addListener(verificationHandler)
 //                .install());
 
-        RemotingServices.installDomainControllerManagementChannelServices(serviceTarget,
-                new NewModelControllerClientOperationHandlerService(),
-                DomainModelControllerService.SERVICE_NAME,
-                NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork),
-                mgmtPort,
-                verificationHandler,
-                controllers);
+//        RemotingServices.installDomainControllerManagementChannelServices(serviceTarget,
+//                new NewModelControllerClientOperationHandlerService(),
+//                DomainModelControllerService.SERVICE_NAME,
+//                NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork),
+//                mgmtPort,
+//                verificationHandler,
+//                controllers);
 
+        //TODO move into bootstrap
         if (!isSlave) {
             RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(), DomainModelControllerService.SERVICE_NAME, "domain", verificationHandler, controllers);
         }

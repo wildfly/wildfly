@@ -24,6 +24,7 @@ package org.jboss.as.remoting;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
+import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -45,11 +46,16 @@ import org.xnio.channels.ConnectedStreamChannel;
  */
 public abstract class AbstractStreamServerService implements Service<AcceptingChannel<? extends ConnectedStreamChannel>>{
 
-    //private final InjectedValue<ChannelListener<AcceptingChannel<ConnectedStreamChannel>>> connectorValue = new InjectedValue<ChannelListener<AcceptingChannel<ConnectedStreamChannel>>>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<ChannelListener> connectorValue = new InjectedValue<ChannelListener>();
 
-    private AcceptingChannel<? extends ConnectedStreamChannel> streamServer;
+    private final int port;
+
+    private volatile AcceptingChannel<? extends ConnectedStreamChannel> streamServer;
+
+    AbstractStreamServerService(final int port) {
+        this.port = port;
+    }
 
     @Override
     public AcceptingChannel<? extends ConnectedStreamChannel> getValue() throws IllegalStateException, IllegalArgumentException {
@@ -78,5 +84,10 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
         IoUtils.safeClose(streamServer);
     }
 
-    abstract InetSocketAddress getSocketAddress();
+    abstract NetworkInterfaceBinding getNetworkInterfaceBinding();
+
+    InetSocketAddress getSocketAddress() {
+        return new InetSocketAddress(getNetworkInterfaceBinding().getAddress(), port);
+    }
+
 }
