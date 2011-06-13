@@ -22,12 +22,6 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import java.util.Locale;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -39,6 +33,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCH
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+
+import java.util.Locale;
+
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -70,7 +72,7 @@ public class ApplyRemoteMasterDomainModelHandler implements NewStepHandler, Desc
             rootModel.get(SYSTEM_PROPERTY).set(domainModel.get(SYSTEM_PROPERTY));
         }
         if (domainModel.hasDefined(PROFILE)) {
-            rootModel.get(PROFILE).set(PROFILE);
+            rootModel.get(PROFILE).set(domainModel.get(PROFILE));
         }
         if (domainModel.hasDefined(INTERFACE)) {
             rootModel.get(INTERFACE).set(domainModel.get(INTERFACE));
