@@ -48,6 +48,11 @@ public class EntryBean {
     public String[] doubleWhoAmI() {
         String localWho = context.getCallerPrincipal().getName();
         String remoteWho = whoAmIBean.getCallerPrincipal().getName();
+        String secondLocalWho = context.getCallerPrincipal().getName();
+        if (secondLocalWho.equals(localWho) == false) {
+            throw new IllegalStateException("Local getCallerPrincipal changed from '" + localWho + "' to '" + secondLocalWho);
+        }
+
         return new String[]{localWho, remoteWho};
     }
 
@@ -61,6 +66,10 @@ public class EntryBean {
             return new String[]{localWho, remoteWho};
         } finally {
             lc.logout();
+            String secondLocalWho = context.getCallerPrincipal().getName();
+            if (secondLocalWho.equals(localWho) == false) {
+                throw new IllegalStateException("Local getCallerPrincipal changed from '" + localWho + "' to '" + secondLocalWho);
+            }
         }
     }
 
@@ -75,16 +84,19 @@ public class EntryBean {
         return new boolean[]{localDoI, remoteDoI};
     }
 
-    public boolean[] doubleDoIHaveRole(String roleName,String username, String password) throws Exception {
+    public boolean[] doubleDoIHaveRole(String roleName, String username, String password) throws Exception {
         boolean localDoI = context.isCallerInRole(roleName);
         LoginContext lc = getCLMLoginContext(username, password);
         lc.login();
         try {
             boolean remoteDoI = whoAmIBean.doIHaveRole(roleName);
-
             return new boolean[]{localDoI, remoteDoI};
         } finally {
             lc.logout();
+            boolean secondLocalDoI = context.isCallerInRole(roleName);
+            if (secondLocalDoI != localDoI) {
+                throw new IllegalStateException("Local call to isCallerInRole for '" + roleName + "' changed from " + localDoI + " to " + secondLocalDoI);
+            }
         }
     }
 
