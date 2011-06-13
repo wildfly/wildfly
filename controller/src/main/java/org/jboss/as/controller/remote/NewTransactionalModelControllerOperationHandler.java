@@ -58,7 +58,8 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
 
     @Override
     public ManagementRequestHandler getRequestHandler(final byte id) {
-        if (id == NewModelControllerProtocol.EXECUTE_REQUEST) {
+        if (id == NewModelControllerProtocol.EXECUTE_TX_REQUEST) {
+            System.out.println("==== Tx Got execute request handler");
             return new ExecuteRequestHandler();
         }
         return null;

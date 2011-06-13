@@ -45,7 +45,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.NewMasterDomainControllerClient;
-import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
+import org.jboss.as.host.controller.mgmt.NewDomainControllerProtocol;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -308,13 +308,13 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
 
         @Override
         protected byte getRequestCode() {
-            return DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST;
+            return NewDomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST;
         }
 
         /** {@inheritDoc} */
         @Override
         protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-            output.write(DomainControllerProtocol.PARAM_HOST_ID);
+            output.write(NewDomainControllerProtocol.PARAM_HOST_ID);
             output.writeUTF(name);
         }
 
@@ -322,7 +322,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         @Override
         protected String readResponse(DataInput input) throws IOException {
             byte status = input.readByte();
-            if (status == DomainControllerProtocol.PARAM_OK) {
+            if (status == NewDomainControllerProtocol.PARAM_OK) {
                 return null;
             } else {
                 return input.readUTF();
@@ -333,13 +333,13 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     private class UnregisterModelControllerRequest extends RegistryRequest<Void> {
         @Override
         protected byte getRequestCode() {
-            return DomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST;
+            return NewDomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST;
         }
 
         /** {@inheritDoc} */
         @Override
         protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-            output.write(DomainControllerProtocol.PARAM_HOST_ID);
+            output.write(NewDomainControllerProtocol.PARAM_HOST_ID);
             output.writeUTF(name);
         }
     }
@@ -357,16 +357,16 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
 
         @Override
         public final byte getRequestCode() {
-            return DomainControllerProtocol.GET_FILE_REQUEST;
+            return NewDomainControllerProtocol.GET_FILE_REQUEST;
         }
 
         @Override
         protected final void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
             super.writeRequest(protocolVersion, output);
             log.debugf("Requesting files for path %s", filePath);
-            output.writeByte(DomainControllerProtocol.PARAM_ROOT_ID);
+            output.writeByte(NewDomainControllerProtocol.PARAM_ROOT_ID);
             output.writeByte(rootId);
-            output.writeByte(DomainControllerProtocol.PARAM_FILE_PATH);
+            output.writeByte(NewDomainControllerProtocol.PARAM_FILE_PATH);
             output.writeUTF(filePath);
         }
 
@@ -374,15 +374,15 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         protected final File readResponse(final DataInput input) throws IOException {
             final File localPath;
             switch (rootId) {
-                case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
+                case NewDomainControllerProtocol.PARAM_ROOT_ID_FILE: {
                     localPath = localFileRepository.getFile(filePath);
                     break;
                 }
-                case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
+                case NewDomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
                     localPath = localFileRepository.getConfigurationFile(filePath);
                     break;
                 }
-                case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
+                case NewDomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
                     byte[] hash = HashUtil.hexStringToByteArray(filePath);
                     localPath = localFileRepository.getDeploymentRoot(hash);
                     break;
@@ -391,7 +391,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
                     localPath = null;
                 }
             }
-            expectHeader(input, DomainControllerProtocol.PARAM_NUM_FILES);
+            expectHeader(input, NewDomainControllerProtocol.PARAM_NUM_FILES);
             int numFiles = input.readInt();
             log.debugf("Received %d files for %s", numFiles, localPath);
             switch (numFiles) {
@@ -406,10 +406,10 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
                 }
                 default: { // Found on DC
                     for (int i = 0; i < numFiles; i++) {
-                        expectHeader(input, DomainControllerProtocol.FILE_START);
-                        expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
+                        expectHeader(input, NewDomainControllerProtocol.FILE_START);
+                        expectHeader(input, NewDomainControllerProtocol.PARAM_FILE_PATH);
                         final String path = input.readUTF();
-                        expectHeader(input, DomainControllerProtocol.PARAM_FILE_SIZE);
+                        expectHeader(input, NewDomainControllerProtocol.PARAM_FILE_SIZE);
                         final long length = input.readLong();
                         log.debugf("Received file [%s] of length %d", path, length);
                         final File file = new File(localPath, path);
@@ -436,7 +436,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
                             throw new IOException("Did not read the entire file. Missing: " + (length - totalRead));
                         }
 
-                        expectHeader(input, DomainControllerProtocol.FILE_END);
+                        expectHeader(input, NewDomainControllerProtocol.FILE_END);
                     }
                 }
             }
@@ -454,24 +454,24 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
 
         @Override
         public final File getFile(String relativePath) {
-            return getFile(relativePath, DomainControllerProtocol.PARAM_ROOT_ID_FILE);
+            return getFile(relativePath, NewDomainControllerProtocol.PARAM_ROOT_ID_FILE);
         }
 
         @Override
         public final File getConfigurationFile(String relativePath) {
-            return getFile(relativePath, DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION);
+            return getFile(relativePath, NewDomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION);
         }
 
         @Override
         public final File[] getDeploymentFiles(byte[] deploymentHash) {
             String hex = deploymentHash == null ? "" : HashUtil.bytesToHexString(deploymentHash);
-            return getFile(hex, DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT).listFiles();
+            return getFile(hex, NewDomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT).listFiles();
         }
 
         @Override
         public File getDeploymentRoot(byte[] deploymentHash) {
             String hex = deploymentHash == null ? "" : HashUtil.bytesToHexString(deploymentHash);
-            return getFile(hex, DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT);
+            return getFile(hex, NewDomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT);
         }
 
         private File getFile(final String relativePath, final byte repoId) {

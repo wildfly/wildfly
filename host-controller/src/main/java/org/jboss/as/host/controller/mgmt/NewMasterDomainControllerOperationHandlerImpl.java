@@ -37,12 +37,15 @@ import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewModelController.OperationTransactionControl;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.remote.NewAbstractModelControllerOperationHandler;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandler;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
+import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry.ProxyCreatedCallback;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.dmr.ModelNode;
 
@@ -52,7 +55,10 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NewMasterDomainControllerOperationHandlerImpl extends NewModelControllerClientOperationHandler {
+public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractModelControllerOperationHandler {
+
+    private final NewModelControllerClientOperationHandler clientHandler;
+    private volatile ManagementOperationHandler proxyHandler;
 
     private final NewDomainController domainController;
     private final UnregisteredHostChannelRegistry registry;
@@ -61,19 +67,37 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewModelContr
         super(executorService, controller);
         this.domainController = domainController;
         this.registry = registry;
+        this.clientHandler = new NewModelControllerClientOperationHandler(executorService, controller);
+        registry.setProxyCreatedCallback(new ProxyCreatedCallback() {
+            @Override
+            public void proxyCreated(ManagementOperationHandler handler) {
+                proxyHandler = handler;
+            }
+        });
     }
 
     @Override
     public ManagementRequestHandler getRequestHandler(byte id) {
+        System.out.println("------ Getting request handler 0x" + Integer.toHexString(id));
+        ManagementRequestHandler handler = clientHandler.getRequestHandler(id);
+        if (handler != null) {
+            return handler;
+        }
+        if (proxyHandler != null) {
+            handler = proxyHandler.getRequestHandler(id);
+            if (handler != null) {
+                return handler;
+            }
+        }
         switch (id) {
-        case DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST:
+        case NewDomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST:
             return new RegisterOperation();
-        case DomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST:
+        case NewDomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST:
             return new UnregisterOperation();
-        case DomainControllerProtocol.GET_FILE_REQUEST:
+        case NewDomainControllerProtocol.GET_FILE_REQUEST:
             return new GetFileOperation();
         }
-        return super.getRequestHandler(id);
+        return null;
     }
 
     private abstract class RegistryOperation extends ManagementRequestHandler {
@@ -111,13 +135,16 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewModelContr
                 op.get(HOST).set(hostId);
                 ModelNode result = controller.execute(op, OperationMessageHandler.logging, OperationTransactionControl.COMMIT, null);
                 if (result.hasDefined(FAILURE_DESCRIPTION)) {
+                    System.out.println("--- tried executing");
                     error = result.get(FAILURE_DESCRIPTION).asString();
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 error = e.getMessage();
             }
 
             if (error != null) {
+                System.out.println("==== Error calling proxy");
                 output.write(DomainControllerProtocol.PARAM_ERROR);
                 output.writeUTF(error);
             } else {

@@ -214,7 +214,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
 
         @Override
         protected byte getRequestCode() {
-            return NewModelControllerProtocol.EXECUTE_REQUEST;
+            return NewModelControllerProtocol.EXECUTE_TX_REQUEST;
         }
 
         @Override
