@@ -54,7 +54,6 @@ public class EntryBean {
     public String[] doubleWhoAmI(String username, String password) throws Exception {
         String localWho = context.getCallerPrincipal().getName();
 
-        // TODO - Logon as specified user.
         LoginContext lc = getCLMLoginContext(username, password);
         lc.login();
         try {
@@ -64,4 +63,29 @@ public class EntryBean {
             lc.logout();
         }
     }
+
+    public boolean doIHaveRole(String roleName) {
+        return context.isCallerInRole(roleName);
+    }
+
+    public boolean[] doubleDoIHaveRole(String roleName) {
+        boolean localDoI = context.isCallerInRole(roleName);
+        boolean remoteDoI = whoAmIBean.doIHaveRole(roleName);
+
+        return new boolean[]{localDoI, remoteDoI};
+    }
+
+    public boolean[] doubleDoIHaveRole(String roleName,String username, String password) throws Exception {
+        boolean localDoI = context.isCallerInRole(roleName);
+        LoginContext lc = getCLMLoginContext(username, password);
+        lc.login();
+        try {
+            boolean remoteDoI = whoAmIBean.doIHaveRole(roleName);
+
+            return new boolean[]{localDoI, remoteDoI};
+        } finally {
+            lc.logout();
+        }
+    }
+
 }

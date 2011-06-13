@@ -27,15 +27,22 @@ import javax.security.auth.Subject;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.acl.Group;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.security.AuthenticationManager;
+import org.jboss.security.AuthorizationManager;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextUtil;
 import org.jboss.security.SubjectInfo;
+import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Identity;
+import org.jboss.security.identity.Role;
+import org.jboss.security.identity.RoleGroup;
 import org.jboss.security.identity.plugins.SimpleIdentity;
 import org.picketbox.factories.SecurityFactory;
 
@@ -105,7 +112,28 @@ public class SimpleSecurityManager {
      * @return true if the user is in any one of the roles listed
      */
     public boolean isCallerInRole(final String... roleNames) {
-        throw new RuntimeException("NYI");
+        final SecurityContext securityContext = doPrivileged(securityContext());
+        if (securityContext == null)
+            throw new IllegalStateException("No security context established");
+
+        AuthorizationManager am = securityContext.getAuthorizationManager();
+        SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(securityContext);
+
+        RoleGroup roleGroup = am.getSubjectRoles(securityContext.getSubjectInfo().getAuthenticatedSubject(), scb);
+        List<Role> roles = roleGroup.getRoles();
+        // TODO - Review most performant way.
+        Set<String> requiredRoles = new HashSet<String>();
+        for (String current : roleNames) {
+            requiredRoles.add(current);
+        }
+        Set<String> actualRoles = new HashSet<String>();
+        for (Role current : roles) {
+            actualRoles.add(current.getRoleName());
+        }
+
+        boolean userNotInRole = Collections.disjoint(requiredRoles, actualRoles);
+
+        return userNotInRole == false;
     }
 
     /**
