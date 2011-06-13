@@ -72,9 +72,6 @@ public class NewStartServersHandler implements NewStepHandler, DescriptionProvid
         context.addStep(new NewStepHandler() {
             @Override
             public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-
-                System.out.println("--- NewStartServersHandler.execute()");
-
                 // start servers
                 final ModelNode domainModel = context.getModel();
                 final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
