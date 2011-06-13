@@ -21,30 +21,46 @@
  */
 package org.jboss.as.webservices.dmr;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.wsf.spi.management.ServerConfig;
+import org.jboss.wsf.spi.metadata.config.EndpointConfig;
 
 /**
  * OperationHandler to remove the endpoint configuration
  *
  * @author <a href="ema@redhat.com">Jim Ma</a>
  */
-public class EndpointConfigRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class EndpointConfigRemove extends AbstractRemoveStepHandler {
 
     static final EndpointConfigRemove INSTANCE = new EndpointConfigRemove();
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
-        final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        context.removeService(EmbeddedCacheManagerService.getServiceName(name));
-    }
+    @Override
+    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
-    }
+        ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
+        if (configService != null) {
 
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final String name = address.getLastElement().getValue();
+
+            ServerConfig config = (ServerConfig) configService.getValue();
+            EndpointConfig target = null;
+            for (EndpointConfig epConfig : config.getEndpointConfigs()) {
+                if (epConfig.getConfigName().equals(name)) {
+                    target = epConfig;
+                }
+            }
+            if (target != null) {
+                config.getEndpointConfigs().remove(target);
+            }
+        }
+    }
 }
