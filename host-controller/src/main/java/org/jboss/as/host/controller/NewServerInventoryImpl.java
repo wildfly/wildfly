@@ -46,6 +46,8 @@ import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
 
 /**
  * Inventory of the managed servers.
@@ -216,13 +218,20 @@ public class NewServerInventoryImpl implements NewServerInventory {
 
     /** {@inheritDoc} */
     @Override
-    public void serverRegistered(String serverName, ManagementChannel channel) {
+    public void serverRegistered(final String serverName, final ManagementChannel channel) {
         try {
             final ManagedServer server = servers.get(serverName);
             if (server == null) {
                 log.errorf("No server called %s available", serverName);
                 return;
             }
+
+            channel.addCloseHandler(new CloseHandler<Channel>() {
+                @Override
+                public void handleClose(Channel closed) {
+                    domainController.unregisterRunningServer(serverName);
+                }
+            });
 
             server.setServerManagementChannel(channel);
             if (!environment.isRestart()){

@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
 import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
@@ -181,7 +181,7 @@ public final class DomainServerMain {
 
         final HostControllerServerClient client = new HostControllerServerClient(serverName);
         serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
-            .addDependency(HostControllerConnectionService.SERVICE_NAME, ProtocolChannel.class, client.getHcChannelInjector())
+            .addDependency(HostControllerConnectionService.SERVICE_NAME, ManagementChannel.class, client.getHcChannelInjector())
             .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewModelController.class, client.getServerControllerInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
