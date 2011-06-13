@@ -57,6 +57,7 @@ import java.util.Set;
  *
  * @author John Bailey
  * @author Stuart Douglas
+ * @author Marius Bogoevici
  */
 public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
@@ -216,7 +217,9 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         createDependencies(phaseContext, specBuilder, userDependencies);
         specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         createDependencies(phaseContext, specBuilder, localDependencies);
-
+        DelegatingClassFileTransformer delegatingClassFileTransformer = new DelegatingClassFileTransformer();
+        specBuilder.setClassFileTransformer(delegatingClassFileTransformer);
+        deploymentUnit.putAttachment(DelegatingClassFileTransformer.ATTACHMENT_KEY, delegatingClassFileTransformer);
         final ModuleSpec moduleSpec = specBuilder.create();
         final ServiceName moduleSpecServiceName = ServiceModuleLoader.moduleSpecServiceName(moduleIdentifier);
         final ValueService<ModuleSpec> moduleSpecService = new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(
