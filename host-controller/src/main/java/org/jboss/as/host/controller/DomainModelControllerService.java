@@ -62,6 +62,7 @@ import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.domain.controller.NewDomainModelUtil;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
+import org.jboss.as.host.controller.NewRemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.mgmt.NewMasterDomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
@@ -93,6 +94,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final HostControllerEnvironment environment;
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final FileRepository localFileRepository;
+    private final RemoteFileRepository remoteFileRepository;
     private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<ExecutorService>();
     private final Map<String, NewProxyController> hostProxies;
     private final PrepareStepHandler prepareStepHandler;
@@ -127,6 +129,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.environment = environment;
         this.hostControllerInfo = hostControllerInfo;
         this.localFileRepository = new LocalFileRepository(environment);
+        this.remoteFileRepository = new RemoteFileRepository(localFileRepository);
         this.hostProxies = hostProxies;
         this.prepareStepHandler = prepareStepHandler;
     }
@@ -210,7 +213,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     protected void initModel(ModelNodeRegistration rootRegistration) {
         NewHostModelUtil.createHostRegistry(rootRegistration, configurationPersister, environment, localFileRepository,
-                hostControllerInfo, new DelegatingServerInventory());
+                hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository);
         this.modelNodeRegistration = rootRegistration;
     }
 
@@ -242,7 +245,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                             hostControllerInfo.getLocalHostName(),
                             InetAddress.getByName(hostControllerInfo.getRemoteDomainControllerHost()),
                             hostControllerInfo.getRemoteDomainControllertPort(),
-                            localFileRepository);
+                            remoteFileRepository);
                 } catch (UnknownHostException e) {
                     throw new RuntimeException(e);
                 }

@@ -87,12 +87,13 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final AtomicBoolean connected = new AtomicBoolean(false);
 
-    public NewRemoteDomainConnectionService(final NewModelController controller, final String name, final InetAddress host, final int port, final FileRepository localRepository){
+    public NewRemoteDomainConnectionService(final NewModelController controller, final String name, final InetAddress host, final int port, final RemoteFileRepository remoteFileRepository){
         this.controller = controller;
         this.name = name;
         this.host = host;
         this.port = port;
-        this.remoteFileRepository = new RemoteFileRepository(localRepository);
+        this.remoteFileRepository = remoteFileRepository;
+        remoteFileRepository.setRemoteFileRepositoryExecutor(remoteFileRepositoryExecutor);
     }
 
     /** {@inheritDoc} */
@@ -438,10 +439,11 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         }
     }
 
-    private class RemoteFileRepository implements FileRepository {
+    static class RemoteFileRepository implements FileRepository {
         private final FileRepository localFileRepository;
+        private volatile RemoteFileRepositoryExecutor remoteFileRepositoryExecutor;
 
-        private RemoteFileRepository(final FileRepository localFileRepository) {
+        RemoteFileRepository(final FileRepository localFileRepository) {
             this.localFileRepository = localFileRepository;
         }
 
@@ -468,11 +470,26 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         }
 
         private File getFile(final String relativePath, final byte repoId) {
+            return remoteFileRepositoryExecutor.getFile(relativePath, repoId, localFileRepository);
+        }
+
+        private void setRemoteFileRepositoryExecutor(RemoteFileRepositoryExecutor remoteFileRepositoryExecutor) {
+            this.remoteFileRepositoryExecutor = remoteFileRepositoryExecutor;
+        }
+    }
+
+    private static interface RemoteFileRepositoryExecutor {
+        File getFile(final String relativePath, final byte repoId, FileRepository localFileRepository);
+    }
+
+    private RemoteFileRepositoryExecutor remoteFileRepositoryExecutor = new RemoteFileRepositoryExecutor() {
+        public File getFile(final String relativePath, final byte repoId, FileRepository localFileRepository) {
             try {
                 return new GetFileRequest(repoId, relativePath, localFileRepository).executeForResult(executor, ManagementClientChannelStrategy.create(channel));
             } catch (Exception e) {
                 throw new RuntimeException("Failed to get file from remote repository", e);
             }
         }
-    }
+    };
+
 }
