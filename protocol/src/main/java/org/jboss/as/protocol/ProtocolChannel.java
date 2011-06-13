@@ -46,9 +46,14 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
     protected ProtocolChannel(String name, Channel channel) {
         this.name = name;
         this.channel = channel;
+        channel.addCloseHandler(new CloseHandler<Channel>() {
+            public void handleClose(Channel closed) {
+                stopReceiving.set(true);
+            }
+        });
     }
 
-    public void startReceiving() {
+    public synchronized void startReceiving() {
         if (!start) {
             start = true;
         } else {
