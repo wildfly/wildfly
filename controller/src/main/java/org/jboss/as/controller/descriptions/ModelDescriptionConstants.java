@@ -71,6 +71,7 @@ public class ModelDescriptionConstants {
     public static final String DISABLE = "disable";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
     public static final String DOMAIN_CONTROLLER = "domain-controller";
+    public static final String DOMAIN_MODEL = "domain-model";
     public static final String DOMAIN_RESULTS = "domain-results";
     public static final String ENABLE = "enable";
     public static final String ENABLED = "enabled";
