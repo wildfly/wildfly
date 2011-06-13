@@ -46,7 +46,7 @@ public class LocalDomainControllerRemoveHandler extends AbstractRemoveStepHandle
         model.get(DOMAIN_CONTROLLER).setEmptyObject();
     }
 
-    protected boolean requiresRuntime() {
+    protected boolean requiresRuntime(NewOperationContext context) {
         return false;
     }
 

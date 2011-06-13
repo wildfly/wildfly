@@ -52,7 +52,7 @@ public class DeploymentScannerSubsystemRemove extends AbstractRemoveStepHandler 
         super.performRemove(context, operation, model);
     }
 
-    protected boolean requiresRuntime() {
+    protected boolean requiresRuntime(NewOperationContext context) {
         return false;
     }
 

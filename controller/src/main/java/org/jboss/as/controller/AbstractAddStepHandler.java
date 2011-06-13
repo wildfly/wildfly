@@ -39,24 +39,22 @@ public abstract class AbstractAddStepHandler implements NewStepHandler {
         final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         populateModel(operation, model);
 
-        if (requiresRuntime()) {
-            if (context.getType() == NewOperationContext.Type.SERVER) {
-                context.addStep(new NewStepHandler() {
-                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-                        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
-                        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        performRuntime(context, operation, model, verificationHandler, controllers);
+        if (requiresRuntime(context)) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                    performRuntime(context, operation, model, verificationHandler, controllers);
 
-                        if(requiresRuntimeVerification()) {
-                            context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
-                        }
-
-                        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                            rollbackRuntime(context, operation, model, controllers);
-                        }
+                    if(requiresRuntimeVerification()) {
+                        context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
                     }
-                }, NewOperationContext.Stage.RUNTIME);
-            }
+
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        rollbackRuntime(context, operation, model, controllers);
+                    }
+                }
+            }, NewOperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }
@@ -76,10 +74,11 @@ public abstract class AbstractAddStepHandler implements NewStepHandler {
      * should be called. This default implementation always returns {@code true}. Subclasses that perform no runtime
      * update could override and return {@code false}.
      *
+     * @param context operation context
      * @return {@code true} if {@code performRuntime} should be invoked; {@code false} otherwise.
      */
-    protected boolean requiresRuntime() {
-        return true;
+    protected boolean requiresRuntime(NewOperationContext context) {
+        return context.getType() == NewOperationContext.Type.SERVER;
     }
 
     /**

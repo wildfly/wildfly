@@ -28,9 +28,6 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.dmr.ModelNode;
@@ -49,7 +46,7 @@ public class ProfileRemoveHandler extends AbstractRemoveStepHandler implements D
         super.performRemove(context, operation, model);
     }
 
-    protected boolean requiresRuntime() {
+    protected boolean requiresRuntime(NewOperationContext context) {
         return false;
     }
 

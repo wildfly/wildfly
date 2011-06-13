@@ -24,6 +24,7 @@ package org.jboss.as.domain.controller.operations;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
@@ -62,7 +63,7 @@ public class ServerGroupAddHandler extends AbstractAddStepHandler implements Des
         model.get(DEPLOYMENT);
     }
 
-    protected boolean requiresRuntime() {
+    protected boolean requiresRuntime(NewOperationContext context) {
         return false;
     }
 

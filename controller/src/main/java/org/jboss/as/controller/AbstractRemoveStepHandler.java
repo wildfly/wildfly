@@ -34,21 +34,17 @@ public abstract class AbstractRemoveStepHandler implements NewStepHandler {
 
         performRemove(context, operation, model);
 
-        if (requiresRuntime()) {
-            if (requiresRuntime()) {
-                if (context.getType() == NewOperationContext.Type.SERVER) {
-                    context.addStep(new NewStepHandler() {
-                        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-                            performRuntime(context, operation, model
-                            );
+        if (requiresRuntime(context)) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    performRuntime(context, operation, model
+                    );
 
-                            if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                                recoverServices(context, operation, model);
-                            }
-                        }
-                    }, NewOperationContext.Stage.RUNTIME);
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        recoverServices(context, operation, model);
+                    }
                 }
-            }
+            }, NewOperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }
@@ -63,8 +59,8 @@ public abstract class AbstractRemoveStepHandler implements NewStepHandler {
     protected void recoverServices(final NewOperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
     }
 
-    protected boolean requiresRuntime() {
-        return true;
+    protected boolean requiresRuntime(NewOperationContext context) {
+        return context.getType() == NewOperationContext.Type.SERVER;
     }
 
 

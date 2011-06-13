@@ -134,7 +134,7 @@ public final class JVMHandlers {
             model.get(JVM_OPTIONS).add(option);
         }
 
-        protected boolean requiresRuntime() {
+        protected boolean requiresRuntime(NewOperationContext context) {
             return false;
         }
 
@@ -166,7 +166,7 @@ public final class JVMHandlers {
             }
         }
 
-        protected boolean requiresRuntime() {
+        protected boolean requiresRuntime(NewOperationContext context) {
             return false;
         }
 

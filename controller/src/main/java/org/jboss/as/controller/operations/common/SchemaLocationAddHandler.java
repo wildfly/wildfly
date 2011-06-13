@@ -20,6 +20,7 @@ package org.jboss.as.controller.operations.common;
 
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
@@ -71,7 +72,7 @@ public class SchemaLocationAddHandler extends AbstractAddStepHandler implements 
         locations.add(loc.getName(), loc.getValue());
     }
 
-    protected boolean requiresRuntime() {
+    protected boolean requiresRuntime(NewOperationContext context) {
         return false;
     }
 

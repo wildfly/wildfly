@@ -71,7 +71,7 @@ public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implement
         super.performRemove(context, operation, model);
     }
 
-    protected boolean requiresRuntime() {
+    protected boolean requiresRuntime(NewOperationContext context) {
         return false;
     }
 
