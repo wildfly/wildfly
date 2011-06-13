@@ -57,7 +57,7 @@ import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.domain.controller.NewDomainModelUtil;
-import org.jboss.as.domain.controller.PrepareStepHandler;
+import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;

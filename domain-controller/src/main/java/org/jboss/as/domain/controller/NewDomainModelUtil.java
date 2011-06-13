@@ -139,8 +139,8 @@ public class NewDomainModelUtil {
     }
 
     public static ExtensionContext initializeMasterDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                                  final File domainDeploymentDir, final FileRepository fileRepository) {
-        return initializeDomainRegistry(root, configurationPersister, domainDeploymentDir, fileRepository, true);
+                                                                  final ContentRepository contentRepository, final FileRepository fileRepository) {
+        return initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true);
     }
 
     public static ExtensionContext initializeSlaveDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
@@ -149,10 +149,8 @@ public class NewDomainModelUtil {
     }
 
     private static ExtensionContext initializeDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                             final File domainDeploymentDir, final FileRepository fileRepository, final boolean isMaster) {
+                                                             final ContentRepository contentRepo, final FileRepository fileRepository, final boolean isMaster) {
         // Global operations
-
-        ContentRepository contentRepo = isMaster ? new DomainContentRepository(domainDeploymentDir) : null;
 
 //        root.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
 //        root.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);

@@ -22,34 +22,23 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicReference;
 
-import com.sun.xml.internal.ws.wsdl.writer.document.Operation;
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -102,120 +91,27 @@ public class DomainSlaveHandler implements NewStepHandler {
 
                 domainOperationContext.addHostControllerResult(entry.getKey(), result);
             }
+
+            context.completeStep();
+
         } finally {
-            if (interrupted) {
-                Thread.currentThread().interrupt();
-            }
-        }
-
-        context.completeStep();
-
-        // Inform the remote hosts whether to commit or roll back their updates
-        boolean rollback = domainOperationContext.isCompleteRollback();
-        for (ProxyTask task : tasks.values()) {
-            NewModelController.OperationTransaction tx = task.getRemoteTransaction();
-            if (tx != null) {
-                if (rollback) {
-                    tx.rollback();
-                } else {
-                    tx.commit();
+            try {
+                // Inform the remote hosts whether to commit or roll back their updates
+                // Do this in parallel
+                // TODO consider blocking until all return?
+                boolean rollback = domainOperationContext.isCompleteRollback();
+                for (ProxyTask task : tasks.values()) {
+                    NewModelController.OperationTransaction tx = task.getRemoteTransaction();
+                    if (tx != null) {
+                        executorService.submit(new ProxyCommitRollbackTask(tx, rollback));
+                    }
+                }
+            } finally {
+                if (interrupted) {
+                    Thread.currentThread().interrupt();
                 }
             }
         }
     }
 
-    private class ProxyTask implements Callable<ModelNode> {
-
-        private final NewProxyController proxyController;
-        private final String host;
-        private final ModelNode operation;
-        private final NewOperationContext context;
-
-        private NewModelController.OperationTransaction remoteTransaction;
-
-        public ProxyTask(String host, ModelNode operation, NewOperationContext context, NewProxyController proxyController) {
-            this.host = host;
-            this.operation = operation;
-            this.context = context;
-            this.proxyController = proxyController;
-        }
-
-        @Override
-        public ModelNode call() throws Exception {
-
-            OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
-
-            final AtomicReference<NewModelController.OperationTransaction> txRef = new AtomicReference<NewModelController.OperationTransaction>();
-            final AtomicReference<ModelNode> preparedResultRef = new AtomicReference<ModelNode>();
-            final AtomicReference<ModelNode> finalResultRef = new AtomicReference<ModelNode>();
-            final NewProxyController.ProxyOperationControl proxyControl = new NewProxyController.ProxyOperationControl() {
-
-                @Override
-                public void operationPrepared(NewModelController.OperationTransaction transaction, ModelNode result) {
-                    txRef.set(transaction);
-                    preparedResultRef.set(result);
-                }
-
-                @Override
-                public void operationFailed(ModelNode response) {
-                    finalResultRef.set(response);
-                }
-
-                @Override
-                public void operationCompleted(ModelNode response) {
-                    finalResultRef.set(response);
-                }
-            };
-
-            proxyController.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
-
-            ModelNode result = finalResultRef.get();
-            if (result != null) {
-                // operation failed before it could commit
-            } else {
-                result = preparedResultRef.get();
-                remoteTransaction = txRef.get();
-            }
-
-            return result;
-        }
-
-
-        NewModelController.OperationTransaction getRemoteTransaction() {
-            return remoteTransaction;
-        }
-    }
-
-
-    private static class DelegatingMessageHandler implements OperationMessageHandler {
-
-        private final NewOperationContext context;
-
-        DelegatingMessageHandler(final NewOperationContext context) {
-            this.context = context;
-        }
-
-        @Override
-        public void handleReport(MessageSeverity severity, String message) {
-            context.report(severity, message);
-        }
-    }
-
-    private static class DelegatingOperationAttachments implements OperationAttachments {
-
-        private final NewOperationContext context;
-        private DelegatingOperationAttachments(final NewOperationContext context) {
-            this.context = context;
-        }
-
-        @Override
-        public List<InputStream> getInputStreams() {
-            int count = context.getAttachmentStreamCount();
-            List<InputStream> result = new ArrayList<InputStream>(count);
-            for (int i = 0; i < count; i++) {
-                result.add(context.getAttachmentStream(count));
-            }
-            return result;
-        }
-    }
 }
