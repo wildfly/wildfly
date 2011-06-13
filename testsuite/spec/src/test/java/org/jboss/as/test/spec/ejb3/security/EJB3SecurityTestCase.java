@@ -24,7 +24,9 @@ package org.jboss.as.test.spec.ejb3.security;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import javax.ejb.EJB;
@@ -81,6 +83,7 @@ public class EJB3SecurityTestCase {
      *  Client -> Bean -> Bean
      *  Client -> Bean (Re-auth) -> Bean
      *  Client -> Servlet -> Bean
+     *  Client -> Servlet (Re-auth) -> Bean
      *  Client -> Servlet -> Bean -> Bean
      *  Client -> Servlet -> Bean (Re Auth) -> Bean
      */
@@ -215,6 +218,107 @@ public class EJB3SecurityTestCase {
     public void testAuthentication_TwoBeans_ReAuth__BadPwd_ViaServlet() throws Exception {
         final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=bad_password", "user1", "password1", 10, SECONDS);
         assertEquals("javax.ejb.EJBAccessException", result);
+    }
+
+    /*
+     *  isCallerInRole Scenarios
+     */
+
+    @Test
+    public void testICIRSingle() throws Exception {
+        LoginContext lc = getCLMLoginContext("user1", "password1");
+        lc.login();
+        try {
+            assertTrue(entryBean.doIHaveRole("Users"));
+            assertTrue(entryBean.doIHaveRole("Role1"));
+            assertFalse(entryBean.doIHaveRole("Role2"));
+        } finally {
+            lc.logout();
+        }
+    }
+
+    @Test
+    public void testICIR_TwoBeans() throws Exception {
+        LoginContext lc = getCLMLoginContext("user1", "password1");
+        lc.login();
+        try {
+            boolean[] response;
+            response = entryBean.doubleDoIHaveRole("Users");
+            assertTrue(response[0]);
+            assertTrue(response[1]);
+
+            response = entryBean.doubleDoIHaveRole("Role1");
+            assertTrue(response[0]);
+            assertTrue(response[1]);
+
+            response = entryBean.doubleDoIHaveRole("Role2");
+            assertFalse(response[0]);
+            assertFalse(response[1]);
+        } finally {
+            lc.logout();
+        }
+    }
+
+    @Test
+    public void testICIR_TwoBeans_ReAuth() throws Exception {
+        LoginContext lc = getCLMLoginContext("user1", "password1");
+        lc.login();
+        try {
+            boolean[] response;
+            response = entryBean.doubleDoIHaveRole("Users", "user2", "password2");
+            assertTrue(response[0]);
+            assertTrue(response[1]);
+
+            response = entryBean.doubleDoIHaveRole("Role1", "user2", "password2");
+            assertTrue(response[0]);
+            assertFalse(response[1]);
+
+            response = entryBean.doubleDoIHaveRole("Role2", "user2", "password2");
+            assertFalse(response[0]);
+            assertTrue(response[1]);
+        } finally {
+            lc.logout();
+        }
+    }
+
+    @Test
+    public void testICIR_ViaServlet() throws Exception {
+        String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Users", "user1", "password1", 10, SECONDS);
+        assertEquals("true", result);
+        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Role1", "user1", "password1", 10, SECONDS);
+        assertEquals("true", result);
+        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Role2", "user1", "password1", 10, SECONDS);
+        assertEquals("false", result);
+    }
+
+    @Test
+    public void testICIR_ReAuth_ViaServlet() throws Exception {
+        String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Users&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        assertEquals("true", result);
+        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Role1&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        assertEquals("false", result);
+        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Role2&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        assertEquals("true", result);
+    }
+
+    @Test
+    public void testICIR_TwoBeans_ViaServlet() throws Exception {
+        String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Users", "user1", "password1", 10, SECONDS);
+        assertEquals("true,true", result);
+        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role1", "user1", "password1", 10, SECONDS);
+        assertEquals("true,true", result);
+        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role2", "user1", "password1", 10, SECONDS);
+        assertEquals("false,false", result);
+    }
+
+    @Test
+    public void testICIR_TwoBeans_ReAuth_ViaServlet() throws Exception {
+        String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Users&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        assertEquals("true,true", result);
+        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role1&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        assertEquals("true,false", result);
+        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role2&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        assertEquals("false,true", result);
     }
 
     // 17.2.5 - Programatic Access to Caller's Security Context

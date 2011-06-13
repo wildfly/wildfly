@@ -55,6 +55,7 @@ public class WhoAmIServlet extends HttpServlet {
         String method = req.getParameter("method");
         String username = req.getParameter("username");
         String password = req.getParameter("password");
+        String role = req.getParameter("role");
 
         if ("whoAmI".equals(method)) {
             LoginContext lc = null;
@@ -90,7 +91,35 @@ public class WhoAmIServlet extends HttpServlet {
                 }
             }
             writer.write(response[0] + "," + response[1]);
-
+        } else if ("doIHaveRole".equals(method)) {
+            LoginContext lc = null;
+            try {
+                if (username != null && password != null) {
+                    lc = getCLMLoginContext(username, password);
+                    lc.login();
+                }
+                try {
+                    writer.write(String.valueOf(bean.doIHaveRole(role)));
+                } finally {
+                    if (lc != null) {
+                        lc.logout();
+                    }
+                }
+            } catch (LoginException le) {
+                throw new IOException("Unexpected failure", le);
+            }
+        } else if ("doubleDoIHaveRole".equals(method)) {
+            try {
+                boolean[] response = null;
+                if (username != null && password != null) {
+                    response = bean.doubleDoIHaveRole(role, username, password);
+                } else {
+                    response = bean.doubleDoIHaveRole(role);
+                }
+                writer.write(String.valueOf(response[0]) + "," + String.valueOf(response[1]));
+            } catch (Exception e) {
+                throw new ServletException("Unexpected Failure", e);
+            }
         } else {
             throw new IllegalArgumentException("Parameter 'method' either missing or invalid method='" + method + "'");
         }
