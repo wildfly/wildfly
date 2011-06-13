@@ -83,13 +83,15 @@ public class ProfileDescribeHandler implements NewStepHandler, DescriptionProvid
         if (profile.hasDefined(SUBSYSTEM)) {
             for (final String subsystemName : profile.get(SUBSYSTEM).keys()) {
                 final ModelNode subsystemRsp = new ModelNode();
-                final ModelNode subsystemAddress = address.append(PathElement.pathElement(SUBSYSTEM, subsystemName)).toModelNode();
+                PathElement pe = PathElement.pathElement(SUBSYSTEM, subsystemName);
+                PathAddress fullAddress = address.append(pe);
+                final ModelNode subsystemAddress = fullAddress.toModelNode();
                 final ModelNode newOp = operation.clone();
                 newOp.get(OP_ADDR).set(subsystemAddress);
-                PathAddress pa = PathAddress.pathAddress(subsystemAddress);
-                NewStepHandler subsysHandler = registry.getOperationHandler(pa, opName);
+                PathAddress relativeAddress = PathAddress.pathAddress(pe);
+                NewStepHandler subsysHandler = registry.getOperationHandler(relativeAddress, opName);
                 if (subsysHandler == null) {
-                    throw new OperationFailedException(new ModelNode().set(String.format("No handler for operation %s at address %s", opName, pa)));
+                    throw new OperationFailedException(new ModelNode().set(String.format("No handler for operation %s at address %s", opName, fullAddress)));
                 }
 
                 // Add steps in the reverse of expected order, as Stage.IMMEDIATE adds to the top of the list
@@ -98,7 +100,7 @@ public class ProfileDescribeHandler implements NewStepHandler, DescriptionProvid
                 context.addStep(new NewStepHandler() {
                     @Override
                     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-                        if (failureRef.get() != null) {
+                        if (failureRef.get() == null) {
                             if (subsystemRsp.hasDefined(FAILURE_DESCRIPTION)) {
                                 failureRef.set(subsystemRsp.get(FAILURE_DESCRIPTION));
                             } else if (subsystemRsp.hasDefined(RESULT)) {

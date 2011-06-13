@@ -233,54 +233,54 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 ConfigurationPersister domainPersister = configurationPersister.getDomainPersister();
                 super.boot(domainPersister.load());
             }
+
+            final NetworkInterfaceBinding interfaceBinding;
+            try {
+                interfaceBinding = hostControllerInfo.getNetworkInterfaceBinding(hostControllerInfo.getNativeManagementInterface());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            ServiceTarget serviceTarget = context.getServiceTarget();
+
+            final NewServerInventoryService inventory = new NewServerInventoryService(this, environment, interfaceBinding, hostControllerInfo.getNativeManagementPort());
+            serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
+                    .addDependency(NewProcessControllerConnectionService.SERVICE_NAME, NewProcessControllerConnectionService.class, inventory.getClient())
+                    .install();
+
+
+            // Add the server to host operation handler
+            final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
+            serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
+                .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallbackInjector())
+                .install();
+            RemotingServices.installDomainControllerManagementChannelServices(serviceTarget,
+                    new NewModelControllerClientOperationHandlerService(),
+                    DomainModelControllerService.SERVICE_NAME,
+                    interfaceBinding,
+                    hostControllerInfo.getNativeManagementPort());
+            RemotingServices.installChannelOpenListenerService(serviceTarget, "server", ServerToHostOperationHandler.SERVICE_NAME, null, null);
+            if (hostControllerInfo.isMasterDomainController()) {
+                //This should install a service using the transactional model controller service
+                //RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(), DomainModelControllerService.SERVICE_NAME, "domain", null, null);
+            }
+
+            // TODO  other services we should start?
+
+            Future<NewServerInventory> future = inventory.getInventoryFuture();
+            try {
+                serverInventory = future.get();
+                startServers();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+
+            // TODO when to call configurationPersister.successful boot? Look into this for standalone as well; may be broken now
         } finally {
             finishBoot();
         }
-
-        final NetworkInterfaceBinding interfaceBinding;
-        try {
-            interfaceBinding = hostControllerInfo.getNetworkInterfaceBinding(hostControllerInfo.getNativeManagementInterface());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        ServiceTarget serviceTarget = context.getServiceTarget();
-
-        final NewServerInventoryService inventory = new NewServerInventoryService(this, environment, interfaceBinding, hostControllerInfo.getNativeManagementPort());
-        serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
-                .addDependency(NewProcessControllerConnectionService.SERVICE_NAME, NewProcessControllerConnectionService.class, inventory.getClient())
-                .install();
-
-
-        // Add the server to host operation handler
-        final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
-        serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
-            .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallbackInjector())
-            .install();
-        RemotingServices.installDomainControllerManagementChannelServices(serviceTarget,
-                new NewModelControllerClientOperationHandlerService(),
-                DomainModelControllerService.SERVICE_NAME,
-                interfaceBinding,
-                hostControllerInfo.getNativeManagementPort());
-        RemotingServices.installChannelOpenListenerService(serviceTarget, "server", ServerToHostOperationHandler.SERVICE_NAME, null, null);
-        if (hostControllerInfo.isMasterDomainController()) {
-            //This should install a service using the transactional model controller service
-            //RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(), DomainModelControllerService.SERVICE_NAME, "domain", null, null);
-        }
-
-        // TODO  other services we should start?
-
-        Future<NewServerInventory> future = inventory.getInventoryFuture();
-        try {
-            serverInventory = future.get();
-            startServers();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-
-        // TODO when to call configurationPersister.successful boot? Look into this for standalone as well; may be broken now
     }
 
     private void startServers() {
@@ -294,10 +294,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public void stop(StopContext context) {
-        // TODO async
-        if (serverInventory != null) {
-            serverInventory.stopServers(-1);
-        }
         serverInventory = null;
         super.stop(context);
     }

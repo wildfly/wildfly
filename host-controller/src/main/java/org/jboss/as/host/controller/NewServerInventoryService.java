@@ -85,6 +85,7 @@ class NewServerInventoryService implements Service<NewServerInventory> {
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(StopContext context) {
+        this.serverInventory.stopServers(-1); // TODO graceful shutdown // TODO async
         this.serverInventory = null;
         client.getValue().setServerInventory(null);
     }
