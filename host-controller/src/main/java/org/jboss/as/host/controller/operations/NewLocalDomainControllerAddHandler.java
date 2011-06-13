@@ -30,7 +30,9 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.domain.controller.NewDomainModelUtil;
+import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
@@ -50,13 +52,17 @@ public class NewLocalDomainControllerAddHandler extends AbstractAddStepHandler i
     private final HostControllerConfigurationPersister overallConfigPersister;
     private final FileRepository fileRepository;
     private final LocalHostControllerInfoImpl hostControllerInfo;
+    private final NewDomainController domainController;
+    private final UnregisteredHostChannelRegistry registry;
 
     public static NewLocalDomainControllerAddHandler getInstance(final ModelNodeRegistration rootRegistration,
                                                                  final LocalHostControllerInfoImpl hostControllerInfo,
                                                                  final HostControllerEnvironment environment,
                                                                  final HostControllerConfigurationPersister overallConfigPersister,
-                                                                 final FileRepository fileRepository) {
-        return new NewLocalDomainControllerAddHandler(rootRegistration, hostControllerInfo, environment, overallConfigPersister, fileRepository);
+                                                                 final FileRepository fileRepository,
+                                                                 final NewDomainController domainController,
+                                                                 final UnregisteredHostChannelRegistry registry) {
+        return new NewLocalDomainControllerAddHandler(rootRegistration, hostControllerInfo, environment, overallConfigPersister, fileRepository, domainController, registry);
     }
 
     /**
@@ -66,12 +72,16 @@ public class NewLocalDomainControllerAddHandler extends AbstractAddStepHandler i
                                        final LocalHostControllerInfoImpl hostControllerInfo,
                                        final HostControllerEnvironment environment,
                                        final HostControllerConfigurationPersister overallConfigPersister,
-                                       final FileRepository fileRepository) {
+                                       final FileRepository fileRepository,
+                                       final NewDomainController domainController,
+                                       final UnregisteredHostChannelRegistry registry) {
         this.environment = environment;
         this.rootRegistration = rootRegistration;
         this.overallConfigPersister = overallConfigPersister;
         this.fileRepository = fileRepository;
         this.hostControllerInfo = hostControllerInfo;
+        this.domainController = domainController;
+        this.registry = registry;
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
@@ -89,7 +99,7 @@ public class NewLocalDomainControllerAddHandler extends AbstractAddStepHandler i
         hostControllerInfo.setContentRepository(contentRepo);
 
         NewDomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
-                contentRepo, fileRepository);
+                contentRepo, fileRepository, domainController, registry);
     }
 
     //Done by DomainModelControllerService

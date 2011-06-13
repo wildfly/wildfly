@@ -35,9 +35,9 @@ public interface DomainControllerProtocol extends ModelControllerClientProtocol{
     byte IS_ACTIVE_REQUEST = 0x57;
 
     byte PARAM_HOST_ID = 0x20;
-    byte PARAM_HOST_CONTROLLER_HOST = 0x21;
-    byte PARAM_HOST_CONTROLLER_PORT = 0x22;
-    byte PARAM_MODEL = 0x23;
+    byte PARAM_OK = 0x21;
+    byte PARAM_ERROR = 0x22;
+    byte PARAM_MODEL = 0x23;//DELETE THIS
     byte PARAM_ROOT_ID = 0x24;
     byte PARAM_FILE_PATH = 0x25;
     byte PARAM_ROOT_ID_FILE = 0x26;

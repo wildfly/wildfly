@@ -46,9 +46,9 @@ import org.jboss.dmr.ModelNode;
  *
  * @author John Bailey
  */
-public class RemoteDomainModelHandler implements NewStepHandler, DescriptionProvider {
+public class ApplyRemoteMasterDomainModelHandler implements NewStepHandler, DescriptionProvider {
     public static final String OPERATION_NAME = "apply-remote-domain-model";
-    public static final RemoteDomainModelHandler INSTANCE = new RemoteDomainModelHandler();
+    public static final ApplyRemoteMasterDomainModelHandler INSTANCE = new ApplyRemoteMasterDomainModelHandler();
 
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode domainModel = operation.get(DOMAIN_MODEL);

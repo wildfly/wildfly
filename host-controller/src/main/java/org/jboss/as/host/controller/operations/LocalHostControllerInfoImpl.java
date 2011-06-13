@@ -94,11 +94,11 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
     }
 
     public String getRemoteDomainControllerHost() {
-        return null;
+        return remoteDcHost;
     }
 
     public int getRemoteDomainControllertPort() {
-        return 0;
+        return remoteDcPort;
     }
 
     void setContentRepository(ContentRepository contentRepository) {
