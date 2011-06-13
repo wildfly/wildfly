@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.domain.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -93,6 +94,7 @@ import org.jboss.as.domain.controller.operations.ProcessTypeHandler;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
 import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
 import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
+import org.jboss.as.domain.controller.operations.RemoteDomainModelHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.SocketBindingGroupAddHandler;
@@ -253,6 +255,10 @@ public class NewDomainModelUtil {
         final ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);
+
+        if(!isMaster) {
+            root.registerOperationHandler(RemoteDomainModelHandler.OPERATION_NAME, RemoteDomainModelHandler.INSTANCE, RemoteDomainModelHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        }
 
         return extensionContext;
     }
