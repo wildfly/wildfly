@@ -76,13 +76,13 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         ModuleDependency dep = new ModuleDependency(moduleLoader, JBOSS_AS_WELD_ID, false, false, false);
         dep.addImportFilter(PathFilters.getMetaInfFilter(), true);
         dep.addExportFilter(PathFilters.getMetaInfFilter(), true);
-        moduleSpecification.addDependency(dep);
+        moduleSpecification.addSystemDependency(dep);
 
     }
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                ModuleIdentifier moduleIdentifier) {
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false));
     }
 
     @Override

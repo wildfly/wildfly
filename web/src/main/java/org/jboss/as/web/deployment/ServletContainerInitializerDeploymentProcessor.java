@@ -99,7 +99,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
             scisMetaData.setHandlesTypes(handlesTypes);
         }
         // Find the SCIs from shared modules
-        for (ModuleDependency dependency : moduleSpecification.getDependencies()) {
+        for (ModuleDependency dependency : moduleSpecification.getSystemDependencies()) {
             ServiceLoader<ServletContainerInitializer> serviceLoader;
             try {
                 Module depModule = loader.loadModule(dependency.getIdentifier());

@@ -57,7 +57,7 @@ public class ServiceActivatorDependencyProcessor implements DeploymentUnitProces
             return;
         final ServicesAttachment servicesAttachments = phaseContext.getDeploymentUnit().getAttachment(Attachments.SERVICES);
         if(servicesAttachments != null && !servicesAttachments.getServiceImplementations(ServiceActivator.class.getName()).isEmpty()) {
-            moduleSpecification.addDependency(MSC_DEP);
+            moduleSpecification.addSystemDependency(MSC_DEP);
         }
     }
 

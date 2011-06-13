@@ -148,7 +148,7 @@ public class SeamProcessor implements DeploymentUnitProcessor {
                 top.putAttachment(ADDED, true); // marked checked and added
                 final ModuleSpecification moduleSpecification = top.getAttachment(Attachments.MODULE_SPECIFICATION);
                 final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                moduleSpecification.addDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false));
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false));
                 moduleSpecification.addResourceLoader(getSeamIntResourceLoader());
                 break;
             }

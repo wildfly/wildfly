@@ -76,9 +76,9 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         // FIXME: still not the best way to do it
         //this must be the first dep listed in the module
         if (Boolean.getBoolean("org.jboss.as.ejb3.EMBEDDED"))
-            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.CLASSPATH, false, false, false));
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.CLASSPATH, false, false, false));
 
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAEE_MODULE_IDENTIFIER, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_MODULE_IDENTIFIER, false, false, false));
 
     }
 

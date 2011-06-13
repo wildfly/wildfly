@@ -50,7 +50,7 @@ public class SecurityDependencyProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, PICKETBOX_ID, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, PICKETBOX_ID, false, true, false));
     }
 
     /** {@inheritDoc} */

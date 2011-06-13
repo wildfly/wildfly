@@ -44,7 +44,7 @@ public class JdkDependenciesProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, SUN_JDK, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SUN_JDK, false, false, false));
     }
 
     @Override

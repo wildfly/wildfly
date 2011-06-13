@@ -32,7 +32,6 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 
@@ -65,20 +64,20 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         // Add module dependencies on Java EE apis
 
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, APACHE_XERCES, false, false, true));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, APACHE_XERCES, false, false, true));
 
         // Add modules for JSF
         ModuleDependency jsf = new ModuleDependency(moduleLoader, JSF_IMPL, false, false, false);
         jsf.addImportFilter(PathFilters.getMetaInfFilter(), true);
-        moduleSpecification.addDependency(jsf);
+        moduleSpecification.addSystemDependency(jsf);
 
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, BEAN_VALIDATION, false, false, true));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, BEAN_VALIDATION, false, false, true));
 
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, true));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, LOG, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, true));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, LOG, false, false, false));
 
     }
 

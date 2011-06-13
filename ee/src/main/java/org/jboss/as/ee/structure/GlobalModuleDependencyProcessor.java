@@ -60,7 +60,7 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
                     slot = "main";
                 }
                 final ModuleIdentifier identifier = ModuleIdentifier.create(name, slot);
-                moduleSpecification.addDependency(new ModuleDependency(Module.getBootModuleLoader(), identifier, false, false, true));
+                moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), identifier, false, false, true));
             }
         }
     }

@@ -46,7 +46,7 @@ import org.jboss.msc.service.StopContext;
  *     InjectedValue<ServerEnvironment> injectedEnvironment = myService.injectedEnvironment;
  *
  *     batchBuilder.addService(MyService.SERVICE_NAME, myService)
- *                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, injectedEnvironment);
+ *                 .addSystemDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, injectedEnvironment);
  * }
  * </pre>
  *

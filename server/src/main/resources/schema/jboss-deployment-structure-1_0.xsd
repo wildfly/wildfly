@@ -122,6 +122,13 @@
                     </documentation>
                 </annotation>
             </xsd:element>
+            <xsd:element name="exclusions" type="exclusionsType" minOccurs="0">
+                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                    <documentation>
+                        Lists the excluded module dependencies.
+                    </documentation>
+                </annotation>
+            </xsd:element>
             <xsd:element name="resources" type="resourcesType" minOccurs="0">
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>
@@ -304,6 +311,45 @@
                     Specifies whether this dependency is optional (defaults to false). An optional dependency will not
                     cause the module to fail to load if not found; however if the module is added later, it will not be
                     retroactively linked into this module's dependency list.
+                </documentation>
+            </annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="exclusionsType">
+        <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+            <documentation>
+                A list of zero or more excluded module dependencies.
+            </documentation>
+        </annotation>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="module" type="moduleExclusionType">
+                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                    <documentation>
+                        A specified module exclusion.
+                    </documentation>
+                </annotation>
+            </xsd:element>
+        </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="moduleExclusionType">
+        <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+            <documentation>
+                A single module dependency exclusion.
+            </documentation>
+        </annotation>
+        <xsd:attribute name="name" type="moduleNameType" use="required">
+            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                <documentation>
+                    The excluded module name (required).
+                </documentation>
+            </annotation>
+        </xsd:attribute>
+        <xsd:attribute name="slot" type="moduleSlotType" use="optional">
+            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                <documentation>
+                    The excluded module version slot (optional).
                 </documentation>
             </annotation>
         </xsd:attribute>

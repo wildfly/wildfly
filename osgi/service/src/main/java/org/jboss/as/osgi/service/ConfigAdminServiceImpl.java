@@ -64,7 +64,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
     public static void addService(final ServiceTarget target, SubsystemState subsystemState) {
         ConfigAdminServiceImpl service = new ConfigAdminServiceImpl(subsystemState);
         ServiceBuilder<?> builder = target.addService(ConfigAdminService.SERVICE_NAME, service);
-        //builder.addDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, service.injectedConfigPersister);
+        //builder.addSystemDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, service.injectedConfigPersister);
         builder.install();
     }
 

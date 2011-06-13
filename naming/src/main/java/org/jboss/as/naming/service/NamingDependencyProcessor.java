@@ -50,7 +50,7 @@ public class NamingDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, NAMING_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, NAMING_ID, false, false, false));
     }
 
     @Override

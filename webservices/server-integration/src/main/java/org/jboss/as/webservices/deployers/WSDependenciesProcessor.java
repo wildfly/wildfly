@@ -50,8 +50,8 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addDependency(new ModuleDependency(moduleLoader, JBOSSWS_API, false, true, true));
-        moduleSpec.addDependency(new ModuleDependency(moduleLoader, JBOSSWS_SPI, false, true, true));
+        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_API, false, true, true));
+        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_SPI, false, true, true));
     }
 
     public void undeploy(final DeploymentUnit context) {

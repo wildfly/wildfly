@@ -139,18 +139,18 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
      */
     private void processTransitiveDependencies(final ModuleSpecification moduleSpecification, final DeploymentPhaseContext phaseContext) {
         final Set<ModuleIdentifier> deps = new HashSet<ModuleIdentifier>();
-        for (ModuleDependency dependency : moduleSpecification.getDependencies()) {
+        for (ModuleDependency dependency : moduleSpecification.getSystemDependencies()) {
             deps.add(dependency.getIdentifier());
         }
 
         for (final ModuleSpecification depInfo : phaseContext.getAttachmentList(Attachments.MODULE_DEPENDENCY_INFORMATION)) {
-            for (ModuleDependency dependency : depInfo.getDependencies()) {
+            for (ModuleDependency dependency : depInfo.getSystemDependencies()) {
                 if (deps.contains(dependency)) {
                     continue;
                 }
                 deps.add(dependency.getIdentifier());
                 if (depInfo.isRequiresTransitiveDependencies()) {
-                    moduleSpecification.addDependency(dependency);
+                    moduleSpecification.addSystemDependency(dependency);
                     if (dependency.getIdentifier().getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
                         processManualTransitiveDependencies(moduleSpecification, phaseContext, deps, dependency.getIdentifier());
                     }
@@ -179,12 +179,12 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
         try {
             ModuleSpecification specification = controller.getValue();
-            for (ModuleDependency dependency : specification.getDependencies()) {
+            for (ModuleDependency dependency : specification.getSystemDependencies()) {
                 if (deps.contains(dependency)) {
                     continue;
                 }
                 deps.add(dependency.getIdentifier());
-                moduleSpecification.addDependency(dependency);
+                moduleSpecification.addSystemDependency(dependency);
                 if (dependency.getIdentifier().getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
                     processManualTransitiveDependencies(moduleSpecification, phaseContext, deps, dependency.getIdentifier());
                 }
@@ -198,7 +198,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                                             final List<ResourceRoot> resourceRoots, final ModuleSpecification moduleSpecification,
                                             final ModuleIdentifier moduleIdentifier) throws DeploymentUnitProcessingException {
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
-        final List<ModuleDependency> dependencies = moduleSpecification.getDependencies();
+        final List<ModuleDependency> dependencies = moduleSpecification.getSystemDependencies();
         final List<ModuleDependency> localDependencies = moduleSpecification.getLocalDependencies();
 
         // add aditional resource loaders first
@@ -210,6 +210,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             addResourceRoot(specBuilder, resourceRoot);
         }
 
+        createDependencies(phaseContext, specBuilder, moduleSpecification.getUserDependencies());
         createDependencies(phaseContext, specBuilder, dependencies);
         specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         createDependencies(phaseContext, specBuilder, localDependencies);

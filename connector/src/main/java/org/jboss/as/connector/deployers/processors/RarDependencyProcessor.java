@@ -51,31 +51,35 @@ public class RarDependencyProcessor implements DeploymentUnitProcessor {
 
     /**
      * Add dependencies for modules required for ra deployments
+     *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
+     *
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(phaseContext.getDeploymentUnit().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY) == null) {
-            return;  // Skip non ra deployments
-        }
+
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_ID, false, false, false));
+
+        if (phaseContext.getDeploymentUnit().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY) == null) {
+            return;  // Skip non ra deployments
+        }
+
         //if a module depends on a rar it also needs a dep on all the rar's dependencies
         moduleSpecification.setRequiresTransitiveDependencies(true);
-
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAX_ID, false, false, false));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JMS_ID, false, false, false));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, LOGGING_ID, false, false, false));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, IRON_JACAMAR_ID, false, false, false));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, IRON_JACAMAR_IMPL_ID, false, true, false));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, SYSTEM_ID, false, false, false));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, NAMING_ID, false, false, false));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, VALIDATION_ID, false, false, false));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, false, false, false));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, COMMON_CORE_ID, false, false, false));
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, RESOURCE_API_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JMS_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, VALIDATION_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, LOGGING_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IRON_JACAMAR_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IRON_JACAMAR_IMPL_ID, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SYSTEM_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, NAMING_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, COMMON_CORE_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, RESOURCE_API_ID, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

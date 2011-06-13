@@ -36,6 +36,8 @@ import org.jboss.modules.ModuleLoader;
 /**
  * Deployment processor which adds the java EE APIs to EE deployments
  *
+ * TODO: This needs to be removed, so that the relevant API's are added by the corresponding sub systems
+ *
  * @author John E. Bailey
  * @author Jason T. Greene
  * @author Stuart Douglas
@@ -56,7 +58,7 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, true));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, true));
     }
 
     public void undeploy(final DeploymentUnit context) {

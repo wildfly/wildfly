@@ -58,8 +58,8 @@ public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
             return; // Skip deployments with out a service xml descriptor
         }
 
-        moduleSpecification.addDependency( new ModuleDependency(Module.getBootModuleLoader(), JBOSS_LOGGING_ID, false, false, false));
-        moduleSpecification.addDependency(new ModuleDependency(Module.getBootModuleLoader(), JBOSS_MODULES_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), JBOSS_LOGGING_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), JBOSS_MODULES_ID, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

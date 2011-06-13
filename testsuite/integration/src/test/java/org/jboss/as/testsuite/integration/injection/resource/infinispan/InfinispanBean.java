@@ -22,16 +22,15 @@
 
 package org.jboss.as.testsuite.integration.injection.resource.infinispan;
 
+import junit.framework.Assert;
+import org.infinispan.Cache;
+import org.infinispan.manager.CacheContainer;
+
 import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-
-import junit.framework.Assert;
-
-import org.infinispan.Cache;
-import org.infinispan.manager.CacheContainer;
 
 /**
  * @author Paul Ferraro
@@ -40,20 +39,21 @@ import org.infinispan.manager.CacheContainer;
 public class InfinispanBean {
     static final String CONTAINER_REF_NAME = "mycontainer";
     private static final String CONTAINER_JNDI_NAME = "java:comp/env/" + CONTAINER_REF_NAME;
-    
+
     private CacheContainer container;
     private Cache<Integer, Object> cache;
-    
+
     @PostConstruct
     public void start() {
         this.cache = this.container.getCache();
+        this.cache.start();
     }
-    
+
     @PreDestroy
     public void stop() {
         this.cache.stop();
     }
-    
+
     public void test() {
         try {
             // Test simple value
@@ -74,7 +74,7 @@ public class InfinispanBean {
         }
 
     }
-    
+
     public static class Bean implements java.io.Serializable
     {
         private static final long serialVersionUID = -7265704761812104791L;

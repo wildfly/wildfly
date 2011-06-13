@@ -88,14 +88,14 @@ public final class ModuleDependencyProcessor implements DeploymentUnitProcessor 
                     dependencyLoader = Module.getBootModuleLoader();
                 }
                 final ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, services);
-                moduleSpecification.addDependency(dependency);
+                moduleSpecification.addUserDependency(dependency);
                 deploymentUnit.addToAttachmentList(Attachments.MANIFEST_DEPENDENCIES, dependency);
             }
         }
         if (deploymentUnit.getParent() != null) {
             // propagate parent manifest dependencies
             final List<ModuleDependency> parentDependencies = deploymentUnit.getParent().getAttachmentList(Attachments.MANIFEST_DEPENDENCIES);
-            moduleSpecification.addDependencies(parentDependencies);
+            moduleSpecification.addSystemDependencies(parentDependencies);
         }
     }
 
