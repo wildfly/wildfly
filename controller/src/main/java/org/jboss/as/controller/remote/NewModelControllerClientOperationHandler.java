@@ -58,7 +58,6 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
     @Override
     public ManagementRequestHandler getRequestHandler(final byte id) {
         if (id == NewModelControllerProtocol.EXECUTE_CLIENT_REQUEST) {
-            System.out.println("Found client execute request handler");
             return new ExecuteRequestHandler();
         }
         return null;
