@@ -31,6 +31,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 
 /**
@@ -47,6 +48,8 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
     private String nativeManagementInterface;
     private int nativeManagementPort;
     private Map<String, ParsedInterfaceCriteria> parsedInterfaceCriteria = new HashMap<String, ParsedInterfaceCriteria>();
+
+    private ContentRepository contentRepository;
 
     public LocalHostControllerInfoImpl(final ControlledProcessState processState) {
         this.processState = processState;
@@ -81,6 +84,14 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
             throw new IllegalArgumentException("No interface called " + name);
         }
         return NetworkInterfaceService.createBinding(name, criteria);
+    }
+
+    public ContentRepository getContentRepository() {
+        return contentRepository;
+    }
+
+    void setContentRepository(ContentRepository contentRepository) {
+        this.contentRepository = contentRepository;
     }
 
     void setMasterDomainController(boolean master) {

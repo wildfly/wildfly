@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.domain.controller.operations.coordination;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -36,6 +36,7 @@ import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.dmr.ModelNode;
 
 /**

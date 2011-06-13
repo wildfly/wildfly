@@ -22,11 +22,20 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
-import java.util.concurrent.ExecutorService;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
+import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -47,15 +56,56 @@ public class DomainRolloutStepHandler implements NewStepHandler {
     @Override
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-        //TODO implement
-//      1) Formulate rollout plan
-//      2) Add a step for each server (actually, for each in-series step)
-        if (1 == 1) {
-            throw new UnsupportedOperationException();
+        final Map<ServerIdentity, ProxyTask> tasks = new HashMap<ServerIdentity, ProxyTask>();
+
+        // 1) Confirm no host failures
+        boolean pushToServers = true;
+        ModelNode ourResult = domainOperationContext.getCoordinatorResult();
+        if (ourResult.has(FAILURE_DESCRIPTION)) {
+            pushToServers = false;
+        } else {
+            for (ModelNode hostResult : domainOperationContext.getHostControllerResults().values()) {
+                if (!operation.hasDefined(OUTCOME) || !SUCCESS.equals(operation.get(OUTCOME))) {
+                    pushToServers = false;
+                    break;
+                }
+            }
         }
 
-        context.addStep(new DomainResultHandler(domainOperationContext), NewOperationContext.Stage.DOMAIN);
+        boolean interrupted = false;
+        try {
+            if (pushToServers) {
+                // 2) Formulate rollout plan
 
-        context.completeStep();
+                // 3) Add a step for each server (actually, for each in-series step)
+
+                final Map<ServerIdentity, Future<ModelNode>> futures = new HashMap<ServerIdentity, Future<ModelNode>>();
+                //TODO implement
+                if (1 == 1) {
+                    throw new UnsupportedOperationException();
+                }
+            }
+            context.completeStep();
+        } finally {
+
+            try {
+                // Inform the remote hosts whether to commit or roll back their updates
+                // Do this in parallel
+                // TODO consider blocking until all return?
+                boolean completeRollback = domainOperationContext.isCompleteRollback();
+                for (Map.Entry<ServerIdentity, ProxyTask> entry : tasks.entrySet()) {
+                    NewModelController.OperationTransaction tx = entry.getValue().getRemoteTransaction();
+                    if (tx != null) {
+                        boolean rollback = completeRollback || domainOperationContext.isServerGroupRollback(entry.getKey().getServerGroupName());
+                        executorService.submit(new ProxyCommitRollbackTask(tx, rollback));
+                    }
+                }
+            } finally {
+                if (interrupted) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+
     }
 }

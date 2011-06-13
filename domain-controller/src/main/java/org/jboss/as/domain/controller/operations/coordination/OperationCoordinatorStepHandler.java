@@ -20,14 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -38,11 +50,12 @@ import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.domain.controller.operations.coordination.DomainOperationContext;
-import org.jboss.as.domain.controller.operations.coordination.DomainRolloutStepHandler;
-import org.jboss.as.domain.controller.operations.coordination.DomainSlaveHandler;
-import org.jboss.as.domain.controller.operations.coordination.OperationRouting;
+import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadUtil;
+import org.jboss.as.domain.controller.operations.deployment.NewDeploymentUploadUtil;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -136,6 +149,8 @@ public class OperationCoordinatorStepHandler implements NewStepHandler {
         DomainOperationContext overallContext = new DomainOperationContext(localHostControllerInfo);
 
         final ModelNode slaveOp = operation.clone();
+        // Hackalicious approach to not streaming content to all the slaves
+        storeDeploymentContent(slaveOp, context);
         slaveOp.get(OPERATION_HEADERS, PrepareStepHandler.EXECUTE_FOR_COORDINATOR).set(true);
         slaveOp.protect();
 
@@ -182,6 +197,66 @@ public class OperationCoordinatorStepHandler implements NewStepHandler {
         // Finally, the step to formulate and execute the 2nd phase rollout plan
         context.addStep(new DomainRolloutStepHandler(overallContext, getExecutorService()), NewOperationContext.Stage.DOMAIN);
 
+        // Always add the step to assemble the final result
+        context.addStep(new DomainResultHandler(overallContext), NewOperationContext.Stage.DOMAIN);
+
         context.completeStep();
     }
+
+    private void storeDeploymentContent(ModelNode opNode, NewOperationContext context) throws OperationFailedException {
+
+        try {
+            // A pretty painful hack. We analyze the operation for operations that include deployment content attachments; if found
+            // we store the content and replace the attachments
+
+            PathAddress address = PathAddress.pathAddress(opNode.get(OP_ADDR));
+            if (address.size() == 0) {
+                String opName = opNode.get(OP).asString();
+                if (DeploymentFullReplaceHandler.OPERATION_NAME.equals(opName) && hasStorableContent(opNode)) {
+                    byte[] hash = NewDeploymentUploadUtil.storeDeploymentContent(context, opNode, localHostControllerInfo.getContentRepository());
+                    opNode.remove(INPUT_STREAM_INDEX);
+                    opNode.get(HASH).set(hash);
+                }
+                else if (COMPOSITE.equals(opName) && opNode.hasDefined(STEPS)){
+                    // Check the steps
+                    for (ModelNode childOp : opNode.get(STEPS).asList()) {
+                        storeDeploymentContent(childOp, context);
+                    }
+                }
+            }
+            else if (address.size() == 1 && DEPLOYMENT.equals(address.getElement(0).getKey())
+                    && ADD.equals(opNode.get(OP).asString()) && hasStorableContent(opNode)) {
+                byte[] hash = NewDeploymentUploadUtil.storeDeploymentContent(context, opNode, localHostControllerInfo.getContentRepository());
+                opNode.remove(INPUT_STREAM_INDEX);
+                opNode.get(HASH).set(hash);
+            }
+        } catch (IOException ioe) {
+            throw new OperationFailedException(new ModelNode().set(String.format("Caught IOException storing deployment content -- %s", ioe)));
+        }
+    }
+
+    private boolean hasStorableContent(ModelNode operation) {
+        if (!operation.hasDefined(CONTENT)) {
+            final ModelNode content = operation.require(CONTENT);
+            for (ModelNode item : content.asList()) {
+                if (hasValidContentAdditionParameterDefined(item)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static final List<String> CONTENT_ADDITION_PARAMETERS = Arrays.asList(INPUT_STREAM_INDEX, BYTES, URL);
+
+
+    private static boolean hasValidContentAdditionParameterDefined(ModelNode item) {
+        for (String s : CONTENT_ADDITION_PARAMETERS) {
+            if (item.hasDefined(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

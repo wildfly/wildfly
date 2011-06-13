@@ -33,10 +33,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.NewDomainModelUtil;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -90,10 +92,15 @@ public class NewLocalDomainControllerAddHandler extends AbstractAddStepHandler i
         hostControllerInfo.setMasterDomainController(true);
         overallConfigPersister.initializeDomainConfigurationPersister(false);
 
-        NewDomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), environment.getDomainDeploymentDir(), fileRepository);
+        ContentRepository contentRepo = new DomainContentRepository(environment.getDomainDeploymentDir());
+        hostControllerInfo.setContentRepository(contentRepo);
+
+        NewDomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
+                contentRepo, fileRepository);
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model,
+                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
         final ServiceTarget serviceTarget = context.getServiceTarget();
         newControllers.addAll(installLocalDomainController(hostModel, serviceTarget, false, verificationHandler));
