@@ -23,12 +23,24 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Locale;
+
+import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeOperationContext;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Paul Ferraro
@@ -41,7 +53,7 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler implements D
     }
 
     protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
-        final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+        final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
         final String name = address.getLastElement().getValue();
         context.removeService(EmbeddedCacheManagerService.getServiceName(name));
     }
@@ -49,5 +61,4 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler implements D
     protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
-
 }
