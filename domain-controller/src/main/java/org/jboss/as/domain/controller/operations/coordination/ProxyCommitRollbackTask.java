@@ -24,7 +24,6 @@ package org.jboss.as.domain.controller.operations.coordination;
 
 import java.util.concurrent.Callable;
 
-import com.sun.xml.internal.txw2.TXW;
 import org.jboss.as.controller.NewModelController;
 
 /**

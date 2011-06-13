@@ -24,7 +24,6 @@ package org.jboss.as.controller.registry;
 
 import java.util.EnumSet;
 
-import com.sun.tools.javac.code.Flags;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
