@@ -65,12 +65,15 @@ import java.util.Set;
  * <ul>
  * <li>Additional dependencies</li>
  * <li>Additional resource roots</li>
+ * <li>{@link java.lang.instrument.ClassFileTransformer}s that will be applied at classloading</li>
  * <li>Child first behaviour</li>
  * </ul>
  * <p/>
  * It also allows for the use to add additional modules, using a syntax similar to that used in module xml files.
  *
  * @author Stuart Douglas
+ * @author Marius Bogoevici
+ *
  */
 public class DeploymentStructureDescriptorParser implements DeploymentUnitProcessor {
 
@@ -81,6 +84,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         private final List<ExtensionListEntry> moduleExtensionDependencies = new ArrayList<ExtensionListEntry>();
         private final List<FilterSpecification> exportFilters = new ArrayList<FilterSpecification>();
         private final List<ModuleIdentifier> exclusions = new ArrayList<ModuleIdentifier>();
+        private final List<String> classFileTransformers = new ArrayList<String>();
 
         public ModuleIdentifier getModuleIdentifier() {
             return moduleIdentifier;
@@ -121,6 +125,11 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         public List<FilterSpecification> getExportFilters() {
             return exportFilters;
         }
+
+        public List<String> getClassFileTransformers() {
+            return classFileTransformers;
+        }
+
     }
 
     private static class ParseResult {
@@ -157,6 +166,8 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         RESOURCE_ROOT,
         PATH,
         FILTER,
+        TRANSFORMERS,
+        TRANSFORMER,
         EXCLUSIONS,
 
         // default unknown element
@@ -183,6 +194,8 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             elementsMap.put(new QName(NAMESPACE, "include-set"), Element.INCLUDE_SET);
             elementsMap.put(new QName(NAMESPACE, "exclude-set"), Element.EXCLUDE_SET);
             elementsMap.put(new QName(NAMESPACE, "filter"), Element.FILTER);
+            elementsMap.put(new QName(NAMESPACE, "transformers"), Element.TRANSFORMERS);
+            elementsMap.put(new QName(NAMESPACE, "transformer"), Element.TRANSFORMER);
             elements = elementsMap;
         }
 
@@ -199,7 +212,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
     }
 
     enum Attribute {
-        NAME, SLOT, EXPORT, SERVICES, PATH, OPTIONAL,
+        NAME, SLOT, EXPORT, SERVICES, PATH, OPTIONAL, CLASS,
 
         // default unknown attribute
         UNKNOWN;
@@ -214,6 +227,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             attributesMap.put(new QName("services"), SERVICES);
             attributesMap.put(new QName("path"), PATH);
             attributesMap.put(new QName("optional"), OPTIONAL);
+            attributesMap.put(new QName("class"), CLASS);
             attributes = attributesMap;
         }
 
@@ -286,6 +300,9 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 for (ResourceRoot additionalResourceRoot : result.rootDeploymentSpecification.getResourceRoots()) {
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
                 }
+                for (String classFileTransformer : result.rootDeploymentSpecification.getClassFileTransformers()) {
+                    moduleSpec.addClassFileTransformer(classFileTransformer);
+                }
             }
             // handle sub deployments
             final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
@@ -309,6 +326,9 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 subModuleSpec.addExclusions(spec.getExclusions());
                 for (ResourceRoot additionalResourceRoot : spec.getResourceRoots()) {
                     subDeployment.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
+                }
+                for (String classFileTransformer : spec.getClassFileTransformers()) {
+                    subModuleSpec.addClassFileTransformer(classFileTransformer);
                 }
             }
 
@@ -665,6 +685,9 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                         case RESOURCES:
                             parseResources(deploymentUnit, reader, moduleSpec);
                             break;
+                        case TRANSFORMERS:
+                            parseTransformers(reader, moduleSpec);
+                            break;
                         case EXCLUSIONS:
                             parseExclusions(reader, moduleSpec);
                             break;
@@ -1003,6 +1026,55 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         // consume remainder of element
         parseNoContent(reader);
     }
+
+    private static void parseTransformers(XMLStreamReader reader, ModuleStructureSpec moduleSpec) throws XMLStreamException {
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case XMLStreamConstants.END_ELEMENT: {
+                    return;
+                }
+                case XMLStreamConstants.START_ELEMENT: {
+                    switch (Element.of(reader.getName())) {
+                        case TRANSFORMER:
+                            parseTransformer(reader, moduleSpec.getClassFileTransformers());
+                            break;
+                        default:
+                            throw unexpectedContent(reader);
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedContent(reader);
+                }
+            }
+        }
+        throw endOfDocument(reader.getLocation());
+    }
+
+    private static void parseTransformer(XMLStreamReader reader, List<String> transformerClassNames) throws XMLStreamException {
+        String className = null;
+        final Set<Attribute> required = EnumSet.of(Attribute.CLASS);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case CLASS:
+                    className = reader.getAttributeValue(i);
+                    break;
+                default:
+                    throw unexpectedContent(reader);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingAttributes(reader.getLocation(), required);
+        }
+        transformerClassNames.add(className);
+
+        // consume remainder of element
+        parseNoContent(reader);
+    }
+
 
     private static void parseNoContent(final XMLStreamReader reader) throws XMLStreamException {
         while (reader.hasNext()) {

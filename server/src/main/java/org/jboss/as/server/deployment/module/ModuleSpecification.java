@@ -37,6 +37,7 @@ import java.util.Set;
  * Information used to build a module.
  *
  * @author Stuart Douglas
+ * @author Marius Bogoevici
  */
 public class ModuleSpecification extends SimpleAttachable {
 
@@ -59,6 +60,7 @@ public class ModuleSpecification extends SimpleAttachable {
     private final List<ModuleDependency> userDependencies = new ArrayList<ModuleDependency>();
 
     private final List<ResourceLoaderSpec> resourceLoaders = new ArrayList<ResourceLoaderSpec>();
+    private final List<String> classFileTransformers = new ArrayList<String>();
 
     private volatile List<ModuleDependency> allDependencies = null;
 
@@ -165,6 +167,14 @@ public class ModuleSpecification extends SimpleAttachable {
 
     public List<ResourceLoaderSpec> getResourceLoaders() {
         return Collections.unmodifiableList(resourceLoaders);
+    }
+
+    public void addClassFileTransformer(String classFileTransformer) {
+        this.classFileTransformers.add(classFileTransformer);
+    }
+
+    public List<String> getClassFileTransformers() {
+        return Collections.unmodifiableList(classFileTransformers);
     }
 
     public boolean isSubDeploymentModulesIsolated() {

@@ -62,6 +62,7 @@ public class ModuleLoadService implements Service<Module> {
         try {
             module = serviceModuleLoader.getValue().loadModule(moduleSpec.getValue().getModuleIdentifier());
             serviceModuleLoader.getValue().relinkModule(module);
+
         } catch (ModuleLoadException e) {
             throw new StartException("Failed to load module: " + moduleSpec.getValue().getModuleIdentifier(), e);
         }
