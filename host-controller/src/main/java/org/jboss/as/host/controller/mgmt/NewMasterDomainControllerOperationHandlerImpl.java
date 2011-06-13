@@ -78,7 +78,6 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
 
     @Override
     public ManagementRequestHandler getRequestHandler(byte id) {
-        System.out.println("------ Getting request handler 0x" + Integer.toHexString(id));
         ManagementRequestHandler handler = clientHandler.getRequestHandler(id);
         if (handler != null) {
             return handler;
@@ -135,7 +134,6 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
                 op.get(HOST).set(hostId);
                 ModelNode result = controller.execute(op, OperationMessageHandler.logging, OperationTransactionControl.COMMIT, null);
                 if (result.hasDefined(FAILURE_DESCRIPTION)) {
-                    System.out.println("--- tried executing");
                     error = result.get(FAILURE_DESCRIPTION).asString();
                 }
             } catch (Exception e) {
@@ -144,7 +142,6 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
             }
 
             if (error != null) {
-                System.out.println("==== Error calling proxy");
                 output.write(DomainControllerProtocol.PARAM_ERROR);
                 output.writeUTF(error);
             } else {
