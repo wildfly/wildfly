@@ -24,6 +24,7 @@ package org.jboss.as.threads;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
@@ -51,7 +52,7 @@ class ThreadsSubsystemAdd extends AbstractAddStepHandler implements DescriptionP
         model.get(UNBOUNDED_QUEUE_THREAD_POOL).setEmptyObject();
     }
 
-    protected boolean requiresRuntime() {
+    protected boolean requiresRuntime(NewOperationContext context) {
         return false;
     }
 

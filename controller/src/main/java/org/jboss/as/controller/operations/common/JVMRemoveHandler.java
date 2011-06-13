@@ -24,6 +24,7 @@ package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.descriptions.common.JVMDescriptions;
@@ -40,7 +41,7 @@ public final class JVMRemoveHandler extends AbstractRemoveStepHandler implements
     public static final JVMRemoveHandler INSTANCE = new JVMRemoveHandler();
 
 
-    protected boolean requiresRuntime() {
+    protected boolean requiresRuntime(NewOperationContext context) {
         return false;
     }
 

@@ -86,7 +86,7 @@ public class SchemaLocationRemoveHandler extends AbstractRemoveStepHandler imple
         }
     }
 
-    protected boolean requiresRuntime() {
+    protected boolean requiresRuntime(NewOperationContext context) {
         return false;
     }
 

@@ -86,7 +86,7 @@ public class NamespaceRemoveHandler extends AbstractRemoveStepHandler implements
         }
     }
 
-    protected boolean requiresRuntime() {
+    protected boolean requiresRuntime(NewOperationContext context) {
         return false;
     }
 

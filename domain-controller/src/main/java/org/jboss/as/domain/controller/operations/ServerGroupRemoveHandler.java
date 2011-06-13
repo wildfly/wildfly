@@ -24,10 +24,8 @@ package org.jboss.as.domain.controller.operations;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -38,7 +36,7 @@ public class ServerGroupRemoveHandler extends AbstractRemoveStepHandler implemen
 
     public static final ServerGroupRemoveHandler INSTANCE = new ServerGroupRemoveHandler();
 
-    protected boolean requiresRuntime() {
+    protected boolean requiresRuntime(NewOperationContext context) {
         return false;
     }
 

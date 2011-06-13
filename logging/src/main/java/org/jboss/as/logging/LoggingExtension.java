@@ -25,6 +25,7 @@ package org.jboss.as.logging;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -141,7 +142,7 @@ public class LoggingExtension implements Extension {
             model.get(CommonAttributes.SIZE_ROTATING_FILE_HANDLER).setEmptyObject();
         }
 
-        protected boolean requiresRuntime() {
+        protected boolean requiresRuntime(NewOperationContext context) {
             return false;
         }
 
