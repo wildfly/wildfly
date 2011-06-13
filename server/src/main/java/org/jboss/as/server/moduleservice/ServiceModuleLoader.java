@@ -78,7 +78,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
 
         @Override
         public void listenerAdded(ServiceController<? extends ModuleSpec> controller) {
-            log.debugf("listenerAdded: %s", controller);
+            log.tracef("listenerAdded: %s", controller);
             State state = controller.getState();
             if (state == State.UP || state == State.START_FAILED) {
                 done(controller, controller.getStartException());
@@ -87,19 +87,19 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
 
         @Override
         public void serviceStarted(ServiceController<? extends ModuleSpec> controller) {
-            log.debugf("serviceStarted: %s", controller);
+            log.tracef("serviceStarted: %s", controller);
             done(controller, null);
         }
 
         @Override
         public void serviceFailed(ServiceController<? extends ModuleSpec> controller, StartException reason) {
-            log.debugf(reason, "serviceFailed: %s", controller);
+            log.tracef(reason, "serviceFailed: %s", controller);
             done(controller, reason);
         }
 
         @Override
         public void serviceStopping(ServiceController<? extends ModuleSpec> controller) {
-            log.debugf("serviceStopping: %s", controller);
+            log.tracef("serviceStopping: %s", controller);
             ModuleSpec moduleSpec = this.moduleSpec;
             try {
                 Module module = loadModule(moduleSpec.getModuleIdentifier());
@@ -125,7 +125,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
             if (startException != null)
                 throw new ModuleLoadException(startException.getCause());
             try {
-                log.debugf("waiting for: %s", identifier);
+                log.tracef("waiting for: %s", identifier);
                 if (latch.await(2000, TimeUnit.MILLISECONDS) == false)
                     throw new ModuleLoadException("Timeout waiting for module service: " + identifier);
             } catch (InterruptedException e) {
