@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 import java.io.InputStream;
@@ -77,7 +78,7 @@ public class ProxyStepHandler implements NewStepHandler {
         };
 
         final ModelNode execute = operation.clone();
-        final PathAddress addr = PathAddress.pathAddress(execute.require(ADDRESS));
+        final PathAddress addr = PathAddress.pathAddress(execute.require(OP_ADDR));
         if (addr.size() > 0) {
             final PathAddress newAddr;
             if (addr.size() == proxyController.getProxyNodeAddress().size()) {
@@ -87,7 +88,7 @@ public class ProxyStepHandler implements NewStepHandler {
             } else {
                 newAddr = addr.subAddress(proxyController.getProxyNodeAddress().size());
             }
-            execute.get(ADDRESS).set(newAddr.toModelNode());
+            execute.get(OP_ADDR).set(newAddr.toModelNode());
         }
 
         proxyController.execute(execute, messageHandler, proxyControl, new DelegatingOperationAttachments(context));

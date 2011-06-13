@@ -45,7 +45,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class PrepareStepHandler  implements NewStepHandler {
 
-    private static final String EXECUTE_FOR_COORDINATOR = "execute-for-coordinator";
+    public static final String EXECUTE_FOR_COORDINATOR = "execute-for-coordinator";
 
     private final LocalHostControllerInfo localHostControllerInfo;
     private final OperationCoordinatorStepHandler coordinatorHandler;
