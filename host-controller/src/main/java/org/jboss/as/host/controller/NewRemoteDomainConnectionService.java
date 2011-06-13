@@ -34,6 +34,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.HashUtil;
@@ -62,6 +63,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.AsyncFuture;
+import org.jboss.threads.AsyncFutureTask;
 
 /**
  * Establishes the connection from a slave {@link org.jboss.as.domain.controller.DomainController} to the master {@link org.jboss.as.domain.controller.DomainController}
@@ -86,6 +88,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     private volatile ManagementChannel channel;
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final AtomicBoolean connected = new AtomicBoolean(false);
+    private final FutureClient futureClient = new FutureClient();
 
     public NewRemoteDomainConnectionService(final NewModelController controller, final String name, final InetAddress host, final int port, final RemoteFileRepository remoteFileRepository){
         this.controller = controller;
@@ -94,6 +97,10 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         this.port = port;
         this.remoteFileRepository = remoteFileRepository;
         remoteFileRepository.setRemoteFileRepositoryExecutor(remoteFileRepositoryExecutor);
+    }
+
+    public Future<NewMasterDomainControllerClient> getMasterDomainControllerClientFuture(){
+        return futureClient;
     }
 
     /** {@inheritDoc} */
@@ -167,10 +174,9 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         }
 
         try {
-            ModelNode node = new RegisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
-            if (!connected.get()) {
-                //TODO update the domain model from the reconnected host
-                //newController.execute();
+            final String error = new RegisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
+            if (error != null) {
+                throw new Exception(error);
             }
         } catch (Exception e) {
             log.warnf("Error retrieving domain model from remote domain controller %s:%d: %s", host.getHostAddress(), port, e.getMessage());
@@ -187,6 +193,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         }
         finally {
             channel.stopReceiving();
+
             channelClient.close();
         }
     }
@@ -235,6 +242,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
+        futureClient.setClient(this);
     }
 
     /** {@inheritDoc} */
@@ -293,7 +301,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         }
     }
 
-    private class RegisterModelControllerRequest extends RegistryRequest<ModelNode> {
+    private class RegisterModelControllerRequest extends RegistryRequest<String> {
 
         RegisterModelControllerRequest() {
         }
@@ -312,16 +320,13 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
 
         /** {@inheritDoc} */
         @Override
-        protected ModelNode readResponse(DataInput input) throws IOException {
-            expectHeader(input, DomainControllerProtocol.PARAM_MODEL);
-            ModelNode node = new ModelNode();
-            node.readExternal(input);
-
-            if (node.hasDefined("protocol-error")){
-                log.error(node.get("protocol-error").asString());
-                log.error("Exiting");
+        protected String readResponse(DataInput input) throws IOException {
+            byte status = input.readByte();
+            if (status == DomainControllerProtocol.PARAM_OK) {
+                return null;
+            } else {
+                return input.readUTF();
             }
-            return node;
         }
     }
 
@@ -491,5 +496,16 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
             }
         }
     };
+
+    private class FutureClient extends AsyncFutureTask<NewMasterDomainControllerClient>{
+
+        protected FutureClient() {
+            super(null);
+        }
+
+        private void setClient(NewMasterDomainControllerClient client) {
+            super.setResult(client);
+        }
+    }
 
 }

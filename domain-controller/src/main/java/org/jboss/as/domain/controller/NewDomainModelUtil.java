@@ -50,7 +50,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import java.io.File;
 import java.util.EnumSet;
 
 import org.jboss.as.controller.ExtensionContext;
@@ -90,11 +89,12 @@ import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
+import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
 import org.jboss.as.domain.controller.operations.ProcessTypeHandler;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
 import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
 import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
-import org.jboss.as.domain.controller.operations.RemoteDomainModelHandler;
+import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.SocketBindingGroupAddHandler;
@@ -143,17 +143,19 @@ public class NewDomainModelUtil {
     }
 
     public static ExtensionContext initializeMasterDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                                  final ContentRepository contentRepository, final FileRepository fileRepository) {
-        return initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true);
+                                                                  final ContentRepository contentRepository, final FileRepository fileRepository,
+                                                                  final NewDomainController domainController, final UnregisteredHostChannelRegistry registry) {
+        return initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true, domainController, registry);
     }
 
     public static ExtensionContext initializeSlaveDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                                  final FileRepository fileRepository) {
-        return initializeDomainRegistry(root, configurationPersister, null, fileRepository, false);
+        return initializeDomainRegistry(root, configurationPersister, null, fileRepository, false, null, null);
     }
 
     private static ExtensionContext initializeDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                             final ContentRepository contentRepo, final FileRepository fileRepository, final boolean isMaster) {
+                                                             final ContentRepository contentRepo, final FileRepository fileRepository, final boolean isMaster,
+                                                             final NewDomainController domainController, final UnregisteredHostChannelRegistry registry) {
 
         EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
         EnumSet<OperationEntry.Flag> deploymentUpload = EnumSet.of(OperationEntry.Flag.DEPLOYMENT_UPLOAD);
@@ -257,8 +259,12 @@ public class NewDomainModelUtil {
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);
 
         if(!isMaster) {
-            root.registerOperationHandler(RemoteDomainModelHandler.OPERATION_NAME, RemoteDomainModelHandler.INSTANCE, RemoteDomainModelHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+            root.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME, ApplyRemoteMasterDomainModelHandler.INSTANCE, ApplyRemoteMasterDomainModelHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        } else {
+            ReadMasterDomainModelHandler rmdmh = new ReadMasterDomainModelHandler(domainController, registry);
+            root.registerOperationHandler(ReadMasterDomainModelHandler.OPERATION_NAME, rmdmh, rmdmh, false, OperationEntry.EntryType.PRIVATE);
         }
+
 
         return extensionContext;
     }

@@ -18,6 +18,10 @@
  */
 package org.jboss.as.host.controller.mgmt;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
@@ -31,13 +35,13 @@ import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.NewModelController.OperationTransactionControl;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandler;
-import org.jboss.as.controller.remote.NewRemoteProxyController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.NewDomainController;
+import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
+import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.dmr.ModelNode;
@@ -51,10 +55,12 @@ import org.jboss.dmr.ModelNode;
 public class NewMasterDomainControllerOperationHandlerImpl extends NewModelControllerClientOperationHandler {
 
     private final NewDomainController domainController;
+    private final UnregisteredHostChannelRegistry registry;
 
-    public NewMasterDomainControllerOperationHandlerImpl(final ExecutorService executorService, final NewModelController controller, final NewDomainController domainController) {
+    public NewMasterDomainControllerOperationHandlerImpl(final ExecutorService executorService, final NewModelController controller, final UnregisteredHostChannelRegistry registry, final NewDomainController domainController) {
         super(executorService, controller);
         this.domainController = domainController;
+        this.registry = registry;
     }
 
     @Override
@@ -94,23 +100,29 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewModelContr
 
         @Override
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
-            ModelNode node;
-                final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostId));
-                final NewRemoteProxyController proxy = NewRemoteProxyController.create(executorService, addr, getContext().getChannel());
-                domainController.registerRemoteHost(proxy);
 
-                //TODO Get domain model back to the remote slave
-//
-//                domainController.registerRemoteHost(RemoteProxyController.create(getContext().getChannel(), executorService, PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostId)));
-//                addClient(new RemoteDomainControllerSlaveClient(hostId, getContext().getChannel()));
-//                node = getController().getDomainModel();
-////            } catch (IllegalArgumentException e){
-////                log.error(e);
-////                node = new ModelNode();
-////                node.get("protocol-error").set(e.getMessage());
-////            }
-//            output.write(DomainControllerProtocol.PARAM_MODEL);
-//            node.writeExternal(output);
+            String error = null;
+            try {
+                registry.registerChannel(hostId, getContext().getChannel());
+
+                ModelNode op = new ModelNode();
+                op.get(OP).set(ReadMasterDomainModelHandler.OPERATION_NAME);
+                op.get(OP_ADDR).setEmptyList();
+                op.get(HOST).set(hostId);
+                ModelNode result = controller.execute(op, OperationMessageHandler.logging, OperationTransactionControl.COMMIT, null);
+                if (result.hasDefined(FAILURE_DESCRIPTION)) {
+                    error = result.get(FAILURE_DESCRIPTION).asString();
+                }
+            } catch (Exception e) {
+                error = e.getMessage();
+            }
+
+            if (error != null) {
+                output.write(DomainControllerProtocol.PARAM_ERROR);
+                output.writeUTF(error);
+            } else {
+                output.write(DomainControllerProtocol.PARAM_OK);
+            }
         }
     }
 

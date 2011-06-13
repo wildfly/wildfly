@@ -85,6 +85,8 @@ import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.domain.controller.NewDomainController;
+import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.management.operations.ConnectionAddHandler;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
 import org.jboss.as.host.controller.NewRemoteDomainConnectionService.RemoteFileRepository;
@@ -142,7 +144,9 @@ public class NewHostModelUtil {
 
     public static void createHostRegistry(final ModelNodeRegistration root, final HostControllerConfigurationPersister configurationPersister,
                                           final HostControllerEnvironment environment, final FileRepository localFileRepository,
-                                          final LocalHostControllerInfoImpl hostControllerInfo, final NewServerInventory serverInventory, final RemoteFileRepository remoteFileRepository) {
+                                          final LocalHostControllerInfoImpl hostControllerInfo, final NewServerInventory serverInventory,
+                                          final RemoteFileRepository remoteFileRepository, final NewDomainController domainController,
+                                          final UnregisteredHostChannelRegistry registry) {
         // Add of the host itself
         ModelNodeRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST), HostDescriptionProviders.HOST_ROOT_PROVIDER);
         NewLocalHostAddHandler handler = NewLocalHostAddHandler.getInstance(hostControllerInfo);
@@ -202,7 +206,7 @@ public class NewHostModelUtil {
         //hostRegistration.registerOperationHandler(ManagementSocketRemoveHandler.OPERATION_NAME, ManagementSocketRemoveHandler.INSTANCE, ManagementSocketRemoveHandler.INSTANCE, false);
 
         NewLocalDomainControllerAddHandler localDcAddHandler = NewLocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,
-                environment, configurationPersister, localFileRepository);
+                environment, configurationPersister, localFileRepository, domainController, registry);
         hostRegistration.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
         hostRegistration.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
         NewRemoteDomainControllerAddHandler remoteDcAddHandler = NewRemoteDomainControllerAddHandler.getInstance(root, hostControllerInfo,

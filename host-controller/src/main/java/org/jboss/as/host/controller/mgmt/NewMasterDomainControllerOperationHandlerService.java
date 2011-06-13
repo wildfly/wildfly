@@ -27,6 +27,7 @@ import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.NewDomainController;
+import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
@@ -42,14 +43,16 @@ public class NewMasterDomainControllerOperationHandlerService extends NewModelCo
     public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(NewModelControllerClientOperationHandlerService.OPERATION_HANDLER_NAME_SUFFIX);
 
     private final NewDomainController domainController;
+    private final UnregisteredHostChannelRegistry registry;
 
-    public NewMasterDomainControllerOperationHandlerService(final NewDomainController domainController) {
+    public NewMasterDomainControllerOperationHandlerService(final NewDomainController domainController, final UnregisteredHostChannelRegistry registry) {
         this.domainController = domainController;
+        this.registry = registry;
     }
 
     @Override
     protected NewMasterDomainControllerOperationHandlerImpl createOperationHandler(NewModelController modelController, ExecutorService executor) {
-        return new NewMasterDomainControllerOperationHandlerImpl(executor, modelController, domainController);
+        return new NewMasterDomainControllerOperationHandlerImpl(executor, modelController, registry, domainController);
     }
 
 }
