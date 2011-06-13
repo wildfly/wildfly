@@ -37,9 +37,8 @@ import java.util.List;
 public class ModuleSpecification extends SimpleAttachable {
 
     private final List<ModuleDependency> dependencies = new ArrayList<ModuleDependency>();
+    private final List<ModuleDependency> localDependencies = new ArrayList<ModuleDependency>();
     private final List<ResourceLoaderSpec> resourceLoaders = new ArrayList<ResourceLoaderSpec>();
-
-    private Boolean childFirst;
 
     /**
      * Flag that is set to true if modules of non private sub deployments should be able to see each other
@@ -57,14 +56,6 @@ public class ModuleSpecification extends SimpleAttachable {
      */
     private boolean requiresTransitiveDependencies;
 
-    public Boolean getChildFirst() {
-        return childFirst;
-    }
-
-    public void setChildFirst(Boolean childFirst) {
-        this.childFirst = childFirst;
-    }
-
     public void addDependency(ModuleDependency dependency) {
         this.dependencies.add(dependency);
     }
@@ -73,8 +64,26 @@ public class ModuleSpecification extends SimpleAttachable {
         this.dependencies.addAll(dependencies);
     }
 
+    public void addLocalDependency(ModuleDependency dependency) {
+        this.localDependencies.add(dependency);
+    }
+
+    public void addLocalDependencies(Collection<ModuleDependency> dependencies) {
+        this.localDependencies.addAll(dependencies);
+    }
+
     public List<ModuleDependency> getDependencies() {
         return Collections.unmodifiableList(dependencies);
+    }
+
+    /**
+     * API dependencies have a higher precedence than normal dependencies, and will
+     * always be used over api classes provided in the deployment.
+     *
+     * @return A list of API dependencies
+     */
+    public List<ModuleDependency> getLocalDependencies() {
+        return Collections.unmodifiableList(localDependencies);
     }
 
     public void addResourceLoader(ResourceLoaderSpec resourceLoader) {

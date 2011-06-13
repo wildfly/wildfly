@@ -199,6 +199,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                                             final ModuleIdentifier moduleIdentifier) throws DeploymentUnitProcessingException {
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
         final List<ModuleDependency> dependencies = moduleSpecification.getDependencies();
+        final List<ModuleDependency> localDependencies = moduleSpecification.getLocalDependencies();
 
         // add aditional resource loaders first
         for (ResourceLoaderSpec resourceLoaderSpec : moduleSpecification.getResourceLoaders()) {
@@ -208,18 +209,24 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         for (ResourceRoot resourceRoot : resourceRoots) {
             addResourceRoot(specBuilder, resourceRoot);
         }
-        final boolean childFirst;
-        if (moduleSpecification.getChildFirst() == null) {
-            childFirst = false;
-        } else {
-            childFirst = moduleSpecification.getChildFirst();
-        }
 
-        if (childFirst) {
-            specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
-        }
-        if (dependencies != null)
-            for (ModuleDependency dependency : dependencies) {
+        createDependencies(phaseContext, specBuilder, dependencies);
+        specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
+        createDependencies(phaseContext, specBuilder, localDependencies);
+
+        final ModuleSpec moduleSpec = specBuilder.create();
+        final ServiceName moduleSpecServiceName = ServiceModuleLoader.moduleSpecServiceName(moduleIdentifier);
+        final ValueService<ModuleSpec> moduleSpecService = new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(
+                moduleSpec));
+        phaseContext.getServiceTarget().addService(moduleSpecServiceName, moduleSpecService).addDependencies(
+                deploymentUnit.getServiceName()).addDependencies(phaseContext.getPhaseServiceName()).setInitialMode(
+                Mode.ON_DEMAND).install();
+        return ModuleLoadService.install(phaseContext.getServiceTarget(), moduleIdentifier, dependencies);
+    }
+
+    private void createDependencies(final DeploymentPhaseContext phaseContext, final ModuleSpec.Builder specBuilder, final List<ModuleDependency> apiDependencies) {
+        if (apiDependencies != null)
+            for (ModuleDependency dependency : apiDependencies) {
                 final List<FilterSpecification> importFilters = dependency.getImportFilters();
                 final List<FilterSpecification> exportFilters = dependency.getExportFilters();
                 final PathFilter importFilter;
@@ -258,17 +265,6 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                             .moduleSpecServiceName(dependency.getIdentifier()));
                 }
             }
-        if (!childFirst) {
-            specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
-        }
-        final ModuleSpec moduleSpec = specBuilder.create();
-        final ServiceName moduleSpecServiceName = ServiceModuleLoader.moduleSpecServiceName(moduleIdentifier);
-        final ValueService<ModuleSpec> moduleSpecService = new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(
-                moduleSpec));
-        phaseContext.getServiceTarget().addService(moduleSpecServiceName, moduleSpecService).addDependencies(
-                deploymentUnit.getServiceName()).addDependencies(phaseContext.getPhaseServiceName()).setInitialMode(
-                Mode.ON_DEMAND).install();
-        return ModuleLoadService.install(phaseContext.getServiceTarget(), moduleIdentifier, dependencies);
     }
 
     private static void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource)

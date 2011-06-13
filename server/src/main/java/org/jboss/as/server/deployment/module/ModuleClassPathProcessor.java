@@ -22,8 +22,6 @@
 
 package org.jboss.as.server.deployment.module;
 
-import java.util.List;
-
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -32,6 +30,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+
+import java.util.List;
 
 /**
  * The processor which adds {@code MANIFEST.MF} {@code Class-Path} entries to the module configuration.
@@ -49,7 +49,7 @@ public final class ModuleClassPathProcessor implements DeploymentUnitProcessor {
         final AttachmentList<ModuleIdentifier> entries = deploymentUnit.getAttachment(Attachments.CLASS_PATH_ENTRIES);
         if (entries != null) {
             for (ModuleIdentifier entry : entries) {
-                moduleSpecification.addDependency(new ModuleDependency(moduleLoader, entry, false, false, true));
+                moduleSpecification.addLocalDependency(new ModuleDependency(moduleLoader, entry, false, false, true));
             }
         }
 
@@ -65,10 +65,10 @@ public final class ModuleClassPathProcessor implements DeploymentUnitProcessor {
                 // this means that a module that references the additional module
                 // gets access to the transitive closure of its call-path entries
                 for (ModuleIdentifier entry : dependencies) {
-                    additionalModule.addDependency(new ModuleDependency(moduleLoader, entry, false, true, true));
+                    additionalModule.addLocalDependency(new ModuleDependency(moduleLoader, entry, false, true, true));
                 }
                 // add a dependency on the top ear itself for good measure
-                additionalModule.addDependency(new ModuleDependency(moduleLoader, deploymentUnit
+                additionalModule.addLocalDependency(new ModuleDependency(moduleLoader, deploymentUnit
                         .getAttachment(Attachments.MODULE_IDENTIFIER), false, false, true));
             }
         }

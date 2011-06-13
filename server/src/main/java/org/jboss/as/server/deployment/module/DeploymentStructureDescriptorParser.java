@@ -77,7 +77,6 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
 
     private static class ModuleStructureSpec {
         private ModuleIdentifier moduleIdentifier;
-        private Boolean childFirst;
         private final List<ModuleDependency> moduleDependencies = new ArrayList<ModuleDependency>();
         private final List<ResourceRoot> resourceRoots = new ArrayList<ResourceRoot>();
         private final List<ExtensionListEntry> moduleExtensionDependencies = new ArrayList<ExtensionListEntry>();
@@ -89,14 +88,6 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
 
         public void setModuleIdentifier(ModuleIdentifier moduleIdentifier) {
             this.moduleIdentifier = moduleIdentifier;
-        }
-
-        public Boolean getChildFirst() {
-            return childFirst;
-        }
-
-        public void setChildFirst(Boolean childFirst) {
-            this.childFirst = childFirst;
         }
 
         public void addModuleDependency(ModuleDependency dependency) {
@@ -163,7 +154,6 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         RESOURCE_ROOT,
         PATH,
         FILTER,
-        CHILD_FIRST,
 
         // default unknown element
         UNKNOWN;
@@ -188,7 +178,6 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             elementsMap.put(new QName(NAMESPACE, "include-set"), Element.INCLUDE_SET);
             elementsMap.put(new QName(NAMESPACE, "exclude-set"), Element.EXCLUDE_SET);
             elementsMap.put(new QName(NAMESPACE, "filter"), Element.FILTER);
-            elementsMap.put(new QName(NAMESPACE, "child-first"), Element.CHILD_FIRST);
             elements = elementsMap;
         }
 
@@ -291,7 +280,6 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 for (ResourceRoot additionalResourceRoot : result.rootDeploymentSpecification.getResourceRoots()) {
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
                 }
-                moduleSpec.setChildFirst(result.rootDeploymentSpecification.getChildFirst());
             }
             // handle sub deployments
             final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
@@ -314,7 +302,6 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 for (ResourceRoot additionalResourceRoot : spec.getResourceRoots()) {
                     subDeployment.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
                 }
-                subModuleSpec.setChildFirst(spec.getChildFirst());
             }
 
             // handle additional modules
@@ -324,7 +311,6 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                         additionalModule.getResourceRoots());
                 additional.addDependencies(additionalModule.getModuleDependencies());
                 deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_MODULES, additional);
-                additional.setChildFirst(additionalModule.getChildFirst());
             }
 
         } catch (IOException e) {
@@ -671,9 +657,6 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                         case RESOURCES:
                             parseResources(deploymentUnit, reader, moduleSpec);
                             break;
-                        case CHILD_FIRST:
-                            parseChildFirst(reader, moduleSpec);
-                            break;
                         default:
                             throw unexpectedContent(reader);
                     }
@@ -685,17 +668,6 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             }
         }
         throw endOfDocument(reader.getLocation());
-    }
-
-    private static void parseChildFirst(XMLStreamReader reader, ModuleStructureSpec moduleSpec) throws XMLStreamException {
-        String value = reader.getElementText();
-        if (value.toLowerCase().equals("true")) {
-            moduleSpec.setChildFirst(true);
-        } else if (value.toLowerCase().equals("false")) {
-            moduleSpec.setChildFirst(false);
-        } else {
-            throw unexpectedContent(reader);
-        }
     }
 
     private static void parseDependencies(final XMLStreamReader reader, final ModuleStructureSpec specBuilder,

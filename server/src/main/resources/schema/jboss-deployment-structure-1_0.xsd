@@ -129,7 +129,6 @@
                     </documentation>
                 </annotation>
             </xsd:element>
-            <xsd:element name="childFirst" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
         </xsd:all>
     </xsd:complexType>
 

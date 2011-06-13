@@ -58,7 +58,7 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
                 // access to ear classes
                 ModuleDependency moduleDependency = new ModuleDependency(moduleLoader, parentModule, false, false, true);
                 moduleDependency.addImportFilter(PathFilters.acceptAll(), true);
-                moduleSpec.addDependency(moduleDependency);
+                moduleSpec.addLocalDependency(moduleDependency);
             }
         }
 
@@ -77,7 +77,7 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
             }
             for (ModuleDependency identifier : accessibleModules) {
                 if (!identifier.equals(moduleIdentifier)) {
-                    moduleSpec.addDependencies(accessibleModules);
+                    moduleSpec.addLocalDependencies(accessibleModules);
                 }
             }
         }

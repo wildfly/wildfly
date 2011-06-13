@@ -93,10 +93,6 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         if (moduleSpecification == null) {
             return;
         }
-        if (moduleSpecification.getChildFirst() == null) {
-            // if this has not been overriden by jboss-structure.xml
-            moduleSpecification.setChildFirst(true);
-        }
         moduleSpecification.setPrivateModule(true);
 
         // other sub deployments should not have access to classes in the war module

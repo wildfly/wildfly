@@ -45,7 +45,7 @@ public class WarChildFirstClassLoadingTestCase {
 
     @Test
     public void testChildFirst() throws ClassNotFoundException {
-        Assert.assertEquals(Stateless.class.getClassLoader(), getClass().getClassLoader());
+        Assert.assertNotSame(Stateless.class.getClassLoader(), getClass().getClassLoader());
     }
 
 }
