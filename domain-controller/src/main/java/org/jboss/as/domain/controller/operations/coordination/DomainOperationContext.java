@@ -22,8 +22,10 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import java.security.PrivilegedActionException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -42,9 +44,16 @@ public class DomainOperationContext {
     private final ModelNode coordinatorResult = new ModelNode();
     private final ConcurrentMap<String, ModelNode> hostControllerResults = new ConcurrentHashMap<String, ModelNode>();
     private final ConcurrentMap<ServerIdentity, ModelNode> serverResults = new ConcurrentHashMap<ServerIdentity, ModelNode>();
+    private final Map<String, Boolean> serverGroupStatuses = new ConcurrentHashMap<String, Boolean>();
+    private boolean completeRollback = true;
+
 
     public DomainOperationContext(final LocalHostControllerInfo localHostInfo) {
         this.localHostInfo = localHostInfo;
+    }
+
+    public LocalHostControllerInfo getLocalHostInfo() {
+        return localHostInfo;
     }
 
     public ModelNode getCoordinatorResult() {
@@ -52,7 +61,7 @@ public class DomainOperationContext {
     }
 
     public void setCoordinatorResult(ModelNode coordinatorResult) {
-        if (!this.coordinatorResult.isDefined()) {
+        if (this.coordinatorResult.isDefined()) {
             throw new IllegalStateException("coordinator result already set");
         } else {
             this.coordinatorResult.set(coordinatorResult);
@@ -79,6 +88,22 @@ public class DomainOperationContext {
         }
     }
 
+    public boolean isCompleteRollback() {
+        return completeRollback;
+    }
+
+    public void setCompleteRollback(boolean completeRollback) {
+        this.completeRollback = completeRollback;
+    }
+
+    public boolean isServerGroupRollback(String serverGroup) {
+        Boolean ok = serverGroupStatuses.get(serverGroup);
+        return ok == null ? true : ok.booleanValue();
+    }
+
+    public void setServerGroupRollback(String serverGroup, boolean rollback) {
+        serverGroupStatuses.put(serverGroup, Boolean.valueOf(rollback));
+    }
 
 
 }

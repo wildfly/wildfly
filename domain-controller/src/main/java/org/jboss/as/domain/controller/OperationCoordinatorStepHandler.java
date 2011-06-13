@@ -23,8 +23,10 @@
 package org.jboss.as.domain.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +41,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.operations.coordination.DomainOperationContext;
 import org.jboss.as.domain.controller.operations.coordination.DomainRolloutStepHandler;
+import org.jboss.as.domain.controller.operations.coordination.DomainSlaveHandler;
 import org.jboss.as.domain.controller.operations.coordination.OperationRouting;
 import org.jboss.dmr.ModelNode;
 
@@ -132,39 +135,51 @@ public class OperationCoordinatorStepHandler implements NewStepHandler {
 
         DomainOperationContext overallContext = new DomainOperationContext(localHostControllerInfo);
 
+        final ModelNode slaveOp = operation.clone();
+        slaveOp.get(OPERATION_HEADERS, PrepareStepHandler.EXECUTE_FOR_COORDINATOR).set(true);
+        slaveOp.protect();
+
         // If necessary, execute locally first. This gets all of the Stage.MODEL, Stage.RUNTIME, Stage.VERIFY
-        // steps registered
+        // steps registered. A failure in those will prevent the rest of the steps below executing
         String localHostName = localHostControllerInfo.getLocalHostName();
         if (routing.isLocalCallNeeded(localHostName)) {
             ModelNode localResponse = new ModelNode();
             overallContext.setCoordinatorResult(localResponse);
-            localSlaveHandler.addSteps(context, operation, localResponse, false);
+            localSlaveHandler.addSteps(context, slaveOp, localResponse, false);
         }
 
         if (localHostControllerInfo.isMasterDomainController()) {
             // Add steps to invoke on the HC for each relevant slave
             Set<String> remoteHosts = new HashSet<String>(routing.getHosts());
             boolean global = remoteHosts.size() == 0;
-            boolean controllerLocked = false;
             remoteHosts.remove(localHostName);
-            if (!global) {
-                if (remoteHosts.size() == 1) {
-                    // TODO add DPSH step for that host
-                    throw new UnsupportedOperationException();
-                }
-            } else {
-                // Lock the controller to ensure there are no topology changes mid-op. TODO expose a direct method to do this
-                context.getServiceRegistry(true);
-                controllerLocked = true;
-                remoteHosts.addAll(hostProxies.keySet());
-            }
 
-            if (remoteHosts.size() > 0) {
-               // TODO add a concurrent DPSH step for these hosts
-                throw new UnsupportedOperationException();
+            if (remoteHosts.size() > 0 || global) {
+                // Lock the controller to ensure there are no topology changes mid-op.
+                // This assumes registering/unregistering a remote proxy will involve an op and hence will block
+                // TODO perhaps expose a direct OperationContext method to do this
+                context.getServiceRegistry(true);
+
+                if (global) {
+                    remoteHosts.addAll(hostProxies.keySet());
+                }
+
+                Map<String, NewProxyController> remoteProxies = new HashMap<String, NewProxyController>();
+                for (String host : remoteHosts) {
+                    NewProxyController proxy = hostProxies.get(host);
+                    if (proxy != null) {
+                        remoteProxies.put(host, proxy);
+                    } else if (!global) {
+                        throw new OperationFailedException(new ModelNode().set(String.format("Operation targets host %s but that host is not registered", host)));
+                    }
+                }
+
+                context.addStep(new ModelNode(), slaveOp, new DomainSlaveHandler(remoteProxies, overallContext, executorService), NewOperationContext.Stage.DOMAIN);
+
             }
         }
 
+        // Finally, the step to formulate and execute the 2nd phase rollout plan
         context.addStep(new DomainRolloutStepHandler(overallContext, getExecutorService()), NewOperationContext.Stage.DOMAIN);
 
         context.completeStep();
