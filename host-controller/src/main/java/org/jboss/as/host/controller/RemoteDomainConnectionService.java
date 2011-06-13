@@ -59,7 +59,6 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.old.Connection.ClosedCallback;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;

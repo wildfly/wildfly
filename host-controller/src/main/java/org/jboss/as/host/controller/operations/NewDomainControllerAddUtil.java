@@ -40,11 +40,6 @@ import java.util.NoSuchElementException;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.MasterDomainControllerClient;
-import org.jboss.as.host.controller.DomainModelControllerService;
-import org.jboss.as.host.controller.NewRemoteDomainConnectionService;
-import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
-import org.jboss.as.remoting.RemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -89,11 +84,11 @@ public class NewDomainControllerAddUtil {
 //                mgmtPort,
 //                verificationHandler,
 //                controllers);
-
-        //TODO move into bootstrap
-        if (!isSlave) {
-            RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(), DomainModelControllerService.SERVICE_NAME, "domain", verificationHandler, controllers);
-        }
+//
+//        //TODO move into bootstrap
+//        if (!isSlave) {
+//            RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(), DomainModelControllerService.SERVICE_NAME, "domain", verificationHandler, controllers);
+//        }
         return controllers;
     }
 
@@ -114,10 +109,11 @@ public class NewDomainControllerAddUtil {
             throw new RuntimeException(e);
         }
         final int port = dc.require(PORT).resolve().asInt();
-        final NewRemoteDomainConnectionService service = new NewRemoteDomainConnectionService(name, addr, port, localFileRepository);
-        return serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+//        final NewRemoteDomainConnectionService service = new NewRemoteDomainConnectionService(name, addr, port, localFileRepository);
+//        return serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
+//                .setInitialMode(ServiceController.Mode.ACTIVE)
+//                .install();
+        return null;
     }
 
 }

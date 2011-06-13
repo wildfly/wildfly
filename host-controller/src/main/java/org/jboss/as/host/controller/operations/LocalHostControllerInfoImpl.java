@@ -51,6 +51,9 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
 
     private ContentRepository contentRepository;
 
+    private String remoteDcHost;
+    private int remoteDcPort;
+
     public LocalHostControllerInfoImpl(final ControlledProcessState processState) {
         this.processState = processState;
     }
@@ -90,6 +93,14 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
         return contentRepository;
     }
 
+    public String getRemoteDomainControllerHost() {
+        return null;
+    }
+
+    public int getRemoteDomainControllertPort() {
+        return 0;
+    }
+
     void setContentRepository(ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
     }
@@ -113,4 +124,13 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
     void addNetworkInterfaceBinding(String name, ParsedInterfaceCriteria criteria) {
         parsedInterfaceCriteria.put(name, criteria);
     }
+
+    void setRemoteDomainControllerHost(String host) {
+        remoteDcHost = host;
+    }
+
+    void setRemoteDomainControllerPort(int port) {
+        remoteDcPort = port;
+    }
+
 }

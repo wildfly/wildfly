@@ -32,21 +32,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URI;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.remote.ModelControllerClientToModelControllerAdapter;
-import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
-import org.jboss.as.domain.controller.DomainControllerSlave;
+import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperation;
+import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.MasterDomainControllerClient;
+import org.jboss.as.domain.controller.NewMasterDomainControllerClient;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -54,25 +51,27 @@ import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
-import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.old.Connection.ClosedCallback;
+import org.jboss.as.remoting.RemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.threads.AsyncFuture;
 
 /**
  * Establishes the connection from a slave {@link org.jboss.as.domain.controller.DomainController} to the master {@link org.jboss.as.domain.controller.DomainController}
  *
  * @author Kabir Khan
  */
-public class NewRemoteDomainConnectionService implements MasterDomainControllerClient, Service<MasterDomainControllerClient>, ClosedCallback {
+public class NewRemoteDomainConnectionService implements NewMasterDomainControllerClient, Service<NewMasterDomainControllerClient>, ClosedCallback {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
+    private final NewModelController controller;
     private final InetAddress host;
     private final int port;
     private final String name;
@@ -80,15 +79,16 @@ public class NewRemoteDomainConnectionService implements MasterDomainControllerC
 
     private volatile ProtocolChannelClient<ManagementChannel> channelClient;
     /** Used to invoke ModelController ops on the master */
-    private volatile ModelController masterProxy;
+    private volatile NewModelControllerClient masterProxy;
     /** Handler for transactional operations */
-    private volatile TransactionalModelControllerOperationHandler txOperationHandler;
+    private volatile NewTransactionalModelControllerOperationHandler txOperationHandler;
     private final AtomicBoolean shutdown = new AtomicBoolean();
     private volatile ManagementChannel channel;
-    private volatile ReconnectInfo reconnectInfo;
     private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final AtomicBoolean connected = new AtomicBoolean(false);
 
-    public NewRemoteDomainConnectionService(final String name, final InetAddress host, final int port, final FileRepository localRepository){
+    public NewRemoteDomainConnectionService(final NewModelController controller, final String name, final InetAddress host, final int port, final FileRepository localRepository){
+        this.controller = controller;
         this.name = name;
         this.host = host;
         this.port = port;
@@ -96,15 +96,14 @@ public class NewRemoteDomainConnectionService implements MasterDomainControllerC
     }
 
     /** {@inheritDoc} */
-    @Override
-    public void register(final String hostName, final InetAddress ourAddress, final int ourPort, final DomainControllerSlave slave) {
+    public void register() {
         // TODO egregious hack. Fix properly as part of AS7-794
         IllegalStateException ise = null;
         boolean connected = false;
         long timeout = System.currentTimeMillis() + 5000;
         while (!connected && System.currentTimeMillis() < timeout) {
             try {
-               connect(hostName, ourAddress, ourPort, slave);
+               connect();
                connected = true;
             }
             catch (IllegalStateException e) {
@@ -122,11 +121,11 @@ public class NewRemoteDomainConnectionService implements MasterDomainControllerC
             throw (ise != null) ? ise : new IllegalStateException("Could not connect to master within 5000 ms");
         }
 
-        reconnectInfo = new ReconnectInfo(hostName, ourAddress, ourPort, slave);
+        this.connected.set(true);
     }
 
-    private synchronized void connect(final String hostName, final InetAddress ourAddress, final int ourPort, final DomainControllerSlave slave) {
-        txOperationHandler = new SlaveDomainControllerOperationHandler(slave);
+    private synchronized void connect() {
+        txOperationHandler = new NewTransactionalModelControllerOperationHandler(executor, controller);
         ProtocolChannelClient<ManagementChannel> client;
         try {
             ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
@@ -143,16 +142,22 @@ public class NewRemoteDomainConnectionService implements MasterDomainControllerC
             client.connect();
             this.channelClient = client;
 
-            if (reconnectInfo != null) {
+            if (connected.get()) {
                 unregister();
             }
 
-            //TODO rename to management
-            ManagementChannel channel = client.openChannel("domain");
+            ManagementChannel channel = client.openChannel(RemotingServices.DOMAIN_CHANNEL);
             this.channel = channel;
+
+            channel.addCloseHandler(new CloseHandler<Channel>() {
+                public void handleClose(Channel closed) {
+                    connectionClosed();
+                }
+            });
+
             channel.startReceiving();
 
-            masterProxy = new ModelControllerClientToModelControllerAdapter(channel, executor);
+            masterProxy = NewModelControllerClient.Factory.create(channel);
         } catch (IOException e) {
             log.warnf("Could not connect to remote domain controller %s:%d", host.getHostAddress(), port);
             //TODO remove this line
@@ -162,9 +167,9 @@ public class NewRemoteDomainConnectionService implements MasterDomainControllerC
 
         try {
             ModelNode node = new RegisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
-            if (reconnectInfo == null) {
+            if (!connected.get()) {
                 //TODO update the domain model from the reconnected host
-                slave.setInitialDomainModel(node);
+                //newController.execute();
             }
         } catch (Exception e) {
             log.warnf("Error retrieving domain model from remote domain controller %s:%d: %s", host.getHostAddress(), port, e.getMessage());
@@ -173,7 +178,6 @@ public class NewRemoteDomainConnectionService implements MasterDomainControllerC
     }
 
     /** {@inheritDoc} */
-    @Override
     public synchronized void unregister() {
         try {
             new UnregisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
@@ -187,20 +191,45 @@ public class NewRemoteDomainConnectionService implements MasterDomainControllerC
     }
 
     /** {@inheritDoc} */
-    @Override
     public synchronized FileRepository getRemoteFileRepository() {
         return remoteFileRepository;
     }
 
     @Override
-    public OperationResult execute(Operation operation, ResultHandler handler) {
-        return masterProxy.execute(operation, handler);
+    public ModelNode execute(ModelNode operation) throws IOException {
+        return execute(operation, OperationMessageHandler.logging);
     }
 
     @Override
-    public ModelNode execute(Operation operation) throws CancellationException {
-        return masterProxy.execute(operation);
+    public ModelNode execute(NewOperation operation) throws IOException {
+        return masterProxy.execute(operation, OperationMessageHandler.logging);
     }
+
+    @Override
+    public ModelNode execute(ModelNode operation, OperationMessageHandler messageHandler) throws IOException {
+        return masterProxy.execute(operation, messageHandler);
+    }
+
+    @Override
+    public ModelNode execute(NewOperation operation, OperationMessageHandler messageHandler) throws IOException {
+        return masterProxy.execute(operation, messageHandler);
+    }
+
+    @Override
+    public AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationMessageHandler messageHandler) {
+        return masterProxy.executeAsync(operation, messageHandler);
+    }
+
+    @Override
+    public AsyncFuture<ModelNode> executeAsync(NewOperation operation, OperationMessageHandler messageHandler) {
+        return masterProxy.executeAsync(operation, messageHandler);
+    }
+
+    @Override
+    public void close() throws IOException {
+        throw new UnsupportedOperationException("Close should be managed by the service");
+    }
+
 
     /** {@inheritDoc} */
     @Override
@@ -214,9 +243,45 @@ public class NewRemoteDomainConnectionService implements MasterDomainControllerC
         channelClient.close();
     }
 
+    @Override
+    public void connectionClosed() {
+
+        if (!connected.get()) {
+            log.error("Null reconnect info, cannot try to reconnect");
+            return;
+        }
+
+        if (!shutdown.get()) {
+            //The remote host went down, try reconnecting
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                    }
+
+                    while (!shutdown.get()) {
+                        log.debug("Attempting reconnection to master...");
+                        try {
+                            connect();
+                            log.info("Connected to master");
+                            break;
+                        } catch (Exception e) {
+                        }
+                        try {
+                            Thread.sleep(3000);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                }
+            }).start();
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
-    public synchronized MasterDomainControllerClient getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized NewMasterDomainControllerClient getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
@@ -409,101 +474,5 @@ public class NewRemoteDomainConnectionService implements MasterDomainControllerC
                 throw new RuntimeException("Failed to get file from remote repository", e);
             }
         }
-    }
-
-    private class SlaveDomainControllerOperationHandler extends TransactionalModelControllerOperationHandler {
-
-        SlaveDomainControllerOperationHandler(final DomainControllerSlave slave) {
-            super(slave);
-        }
-
-        @Override
-        public ManagementRequestHandler getRequestHandler(byte id) {
-
-            if (id == DomainControllerProtocol.IS_ACTIVE_REQUEST) {
-                return new IsActiveOperation();
-            }
-            else {
-                return super.getRequestHandler(id);
-            }
-        }
-    }
-
-    private class IsActiveOperation extends ManagementRequestHandler {
-        @Override
-        protected void readRequest(DataInput input) throws IOException {
-        }
-
-        @Override
-        protected void writeResponse(FlushableDataOutput output) throws IOException {
-        }
-    }
-
-    @Override
-    public void connectionClosed() {
-        if (!shutdown.get()) {
-            //The remote host went down, try reconnecting
-            final ReconnectInfo reconnectInfo = this.reconnectInfo;
-            if (reconnectInfo == null) {
-                log.error("Null reconnect info, cannot try to reconnect");
-                return;
-            }
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(3000);
-                    } catch (InterruptedException e) {
-                    }
-
-                    while (!shutdown.get()) {
-                        log.debug("Attempting reconnection to master...");
-                        try {
-                            connect(reconnectInfo.getHostName(), reconnectInfo.getOurAddress(), reconnectInfo.getOurPort(), reconnectInfo.getSlave());
-                            log.info("Connected to master");
-                            break;
-                        } catch (Exception e) {
-                        }
-                        try {
-                            Thread.sleep(3000);
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                }
-            }).start();
-        }
-    }
-
-    private static class ReconnectInfo {
-        final String hostName;
-        final InetAddress ourAddress;
-        final int ourPort;
-        final DomainControllerSlave slave;
-
-        public ReconnectInfo(String hostName, InetAddress ourAddress, int ourPort, DomainControllerSlave slave) {
-            super();
-            this.hostName = hostName;
-            this.ourAddress = ourAddress;
-            this.ourPort = ourPort;
-            this.slave = slave;
-        }
-
-        public String getHostName() {
-            return hostName;
-        }
-
-        public InetAddress getOurAddress() {
-            return ourAddress;
-        }
-
-        public int getOurPort() {
-            return ourPort;
-        }
-
-        public DomainControllerSlave getSlave() {
-            return slave;
-        }
-
-
     }
 }

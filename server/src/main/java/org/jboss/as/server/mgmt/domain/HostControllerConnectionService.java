@@ -33,6 +33,7 @@ import java.util.concurrent.Executors;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
+import org.jboss.as.remoting.RemotingServices;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -72,7 +73,7 @@ public class HostControllerConnectionService implements Service<ManagementChanne
 
         try {
             client.connect();
-            channel = client.openChannel("server");
+            channel = client.openChannel(RemotingServices.SERVER_CHANNEL);
             channel.startReceiving();
         } catch (IOException e) {
             throw new StartException("Failed to start remote Host Controller connection", e);

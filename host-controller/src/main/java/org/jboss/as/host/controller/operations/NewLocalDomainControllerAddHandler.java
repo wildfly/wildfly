@@ -22,15 +22,10 @@ package org.jboss.as.host.controller.operations;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
-import static org.jboss.as.host.controller.operations.NewDomainControllerAddUtil.installLocalDomainController;
 
-import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainContentRepository;
@@ -40,8 +35,6 @@ import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -99,12 +92,13 @@ public class NewLocalDomainControllerAddHandler extends AbstractAddStepHandler i
                 contentRepo, fileRepository);
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model,
-                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-        newControllers.addAll(installLocalDomainController(hostModel, serviceTarget, false, verificationHandler));
-    }
+    //Done by DomainModelControllerService
+//    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model,
+//                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+//        final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
+//        final ServiceTarget serviceTarget = context.getServiceTarget();
+//        newControllers.addAll(installLocalDomainController(hostModel, serviceTarget, false, verificationHandler));
+//    }
 
     @Override
     public ModelNode getModelDescription(final Locale locale) {

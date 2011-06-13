@@ -33,6 +33,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -55,10 +57,12 @@ import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.domain.controller.NewDomainModelUtil;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
+import org.jboss.as.host.controller.mgmt.NewMasterDomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.NewStartServersHandler;
@@ -220,48 +224,37 @@ public class DomainModelControllerService extends AbstractControllerService impl
     // bit of stuff
     @Override
     protected void boot(final BootContext context) throws ConfigurationPersistenceException {
+        final ServiceTarget serviceTarget = context.getServiceTarget();
         try {
             super.boot(configurationPersister.load()); // This parses the host.xml and invokes all ops
-            // See if we need to register with the master.
+
+            NewServerInventoryService inventory = setupInventoryAndStartRemoting(serviceTarget);
+
             if (!hostControllerInfo.isMasterDomainController()) {
                 // TODO
                 // 1) register with the master
                 // 2) get back the domain model, somehow store it (perhaps using an op invoked by the DC?)
                 // 3) if 1) fails, check env.isUseCachedDC, if true fall through to that
+                NewRemoteDomainConnectionService service;
+                try {
+                    service = new NewRemoteDomainConnectionService(
+                            getValue(),
+                            hostControllerInfo.getLocalHostName(),
+                            InetAddress.getByName(hostControllerInfo.getRemoteDomainControllerHost()),
+                            hostControllerInfo.getRemoteDomainControllertPort(),
+                            localFileRepository);
+                } catch (UnknownHostException e) {
+                    throw new RuntimeException(e);
+                }
+                serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
+                        .setInitialMode(ServiceController.Mode.ACTIVE)
+                        .install();
+
             } else {
                 // parse the domain.xml and load the steps
                 ConfigurationPersister domainPersister = configurationPersister.getDomainPersister();
                 super.boot(domainPersister.load());
-            }
-
-            final NetworkInterfaceBinding interfaceBinding;
-            try {
-                interfaceBinding = hostControllerInfo.getNetworkInterfaceBinding(hostControllerInfo.getNativeManagementInterface());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            ServiceTarget serviceTarget = context.getServiceTarget();
-
-            final NewServerInventoryService inventory = new NewServerInventoryService(this, environment, interfaceBinding, hostControllerInfo.getNativeManagementPort());
-            serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
-                    .addDependency(NewProcessControllerConnectionService.SERVICE_NAME, NewProcessControllerConnectionService.class, inventory.getClient())
-                    .install();
-
-
-            // Add the server to host operation handler
-            final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
-            serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
-                .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallbackInjector())
-                .install();
-            RemotingServices.installDomainControllerManagementChannelServices(serviceTarget,
-                    new NewModelControllerClientOperationHandlerService(),
-                    DomainModelControllerService.SERVICE_NAME,
-                    interfaceBinding,
-                    hostControllerInfo.getNativeManagementPort());
-            RemotingServices.installChannelOpenListenerService(serviceTarget, "server", ServerToHostOperationHandler.SERVICE_NAME, null, null);
-            if (hostControllerInfo.isMasterDomainController()) {
-                //This should install a service using the transactional model controller service
-                //RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(), DomainModelControllerService.SERVICE_NAME, "domain", null, null);
+                RemotingServices.installChannelServices(serviceTarget, new NewMasterDomainControllerOperationHandlerService(this), DomainModelControllerService.SERVICE_NAME, RemotingServices.DOMAIN_CHANNEL, null, null);
             }
 
             // TODO  other services we should start?
@@ -283,12 +276,41 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
     }
 
+    private NewServerInventoryService setupInventoryAndStartRemoting(ServiceTarget serviceTarget) {
+        final NetworkInterfaceBinding interfaceBinding;
+        try {
+            interfaceBinding = hostControllerInfo.getNetworkInterfaceBinding(hostControllerInfo.getNativeManagementInterface());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        final NewServerInventoryService inventory = new NewServerInventoryService(this, environment, interfaceBinding, hostControllerInfo.getNativeManagementPort());
+        serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
+                .addDependency(NewProcessControllerConnectionService.SERVICE_NAME, NewProcessControllerConnectionService.class, inventory.getClient())
+                .install();
+
+
+        // Add the server to host operation handler
+        final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
+        serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
+            .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallbackInjector())
+            .install();
+        RemotingServices.installDomainControllerManagementChannelServices(serviceTarget,
+                new NewModelControllerClientOperationHandlerService(),
+                DomainModelControllerService.SERVICE_NAME,
+                interfaceBinding,
+                hostControllerInfo.getNativeManagementPort());
+        RemotingServices.installChannelOpenListenerService(serviceTarget, RemotingServices.SERVER_CHANNEL, ServerToHostOperationHandler.SERVICE_NAME, null, null);
+        return inventory;
+
+    }
+
     private void startServers() {
         ModelNode addr = new ModelNode();
         addr.add(HOST, hostControllerInfo.getLocalHostName());
         ModelNode op = Util.getEmptyOperation(NewStartServersHandler.OPERATION_NAME, addr);
 
-        ModelNode result = getValue().execute(op, null, null, null);
+        getValue().execute(op, null, null, null);
     }
 
 

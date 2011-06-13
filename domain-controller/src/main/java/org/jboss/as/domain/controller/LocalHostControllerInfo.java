@@ -68,6 +68,18 @@ public interface LocalHostControllerInfo {
     int getNativeManagementPort();
 
     /**
+     *  Gets the host name of the remote domain controller
+     *  @return the host name
+     */
+    String getRemoteDomainControllerHost();
+
+    /**
+     * Gets the port of the remote domain controller
+     * @return the port number
+     */
+    int getRemoteDomainControllertPort();
+
+    /**
      * Get the network interface by its name
      *
      *  @param name the binding name
