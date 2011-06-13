@@ -52,7 +52,8 @@ public class DomainSlaveHandler implements NewStepHandler {
     private final DomainOperationContext domainOperationContext;
     private final Map<String, NewProxyController> hostProxies;
 
-    public DomainSlaveHandler(final Map<String, NewProxyController> hostProxies, final DomainOperationContext domainOperationContext,
+    public DomainSlaveHandler(final Map<String, NewProxyController> hostProxies,
+                              final DomainOperationContext domainOperationContext,
                               final ExecutorService executorService) {
         this.hostProxies = hostProxies;
         this.domainOperationContext = domainOperationContext;

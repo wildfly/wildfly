@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 
@@ -148,6 +149,10 @@ public class OperationCoordinatorStepHandler implements NewStepHandler {
 
         DomainOperationContext overallContext = new DomainOperationContext(localHostControllerInfo);
 
+        // Get a copy of the rollout plan so it doesn't get disrupted by any handlers
+        ModelNode rolloutPlan = operation.hasDefined(OPERATION_HEADERS) && operation.get(OPERATION_HEADERS).has(ROLLOUT_PLAN)
+            ? operation.get(OPERATION_HEADERS).remove(ROLLOUT_PLAN) : new ModelNode();
+
         final ModelNode slaveOp = operation.clone();
         // Hackalicious approach to not streaming content to all the slaves
         storeDeploymentContent(slaveOp, context);
@@ -195,7 +200,7 @@ public class OperationCoordinatorStepHandler implements NewStepHandler {
         }
 
         // Finally, the step to formulate and execute the 2nd phase rollout plan
-        context.addStep(new DomainRolloutStepHandler(overallContext, getExecutorService()), NewOperationContext.Stage.DOMAIN);
+        context.addStep(new DomainRolloutStepHandler(hostProxies, overallContext, rolloutPlan, getExecutorService()), NewOperationContext.Stage.DOMAIN);
 
         // Always add the step to assemble the final result
         context.addStep(new DomainResultHandler(overallContext), NewOperationContext.Stage.DOMAIN);

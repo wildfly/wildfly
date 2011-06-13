@@ -22,90 +22,243 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ACROSS_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.domain.controller.ServerIdentity;
+import org.jboss.as.domain.controller.plan.NewRolloutPlanController;
+import org.jboss.as.domain.controller.plan.NewServerOperationExecutor;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
- * Formulates a rollout plan, adds steps to execute it and to formulate the overall result.
+ * Formulates a rollout plan, invokes the proxies to execute it on the servers.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DomainRolloutStepHandler implements NewStepHandler {
 
     private final DomainOperationContext domainOperationContext;
+    private final Map<String, NewProxyController> hostProxies;
     private final ExecutorService executorService;
+    private final ModelNode providedRolloutPlan;
 
-    public DomainRolloutStepHandler(final DomainOperationContext domainOperationContext, final ExecutorService executorService) {
+    public DomainRolloutStepHandler(final Map<String, NewProxyController> hostProxies,
+                                    final DomainOperationContext domainOperationContext,
+                                    final ModelNode rolloutPlan,
+                                    final ExecutorService executorService) {
+        this.hostProxies = hostProxies;
         this.domainOperationContext = domainOperationContext;
+        this.providedRolloutPlan = rolloutPlan;
         this.executorService = executorService;
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-
-        final Map<ServerIdentity, ProxyTask> tasks = new HashMap<ServerIdentity, ProxyTask>();
+    public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
 
         // 1) Confirm no host failures
-        boolean pushToServers = true;
-        ModelNode ourResult = domainOperationContext.getCoordinatorResult();
-        if (ourResult.has(FAILURE_DESCRIPTION)) {
-            pushToServers = false;
-        } else {
-            for (ModelNode hostResult : domainOperationContext.getHostControllerResults().values()) {
-                if (!operation.hasDefined(OUTCOME) || !SUCCESS.equals(operation.get(OUTCOME))) {
-                    pushToServers = false;
-                    break;
-                }
-            }
-        }
-
-        boolean interrupted = false;
-        try {
-            if (pushToServers) {
-                // 2) Formulate rollout plan
-
-                // 3) Add a step for each server (actually, for each in-series step)
-
-                final Map<ServerIdentity, Future<ModelNode>> futures = new HashMap<ServerIdentity, Future<ModelNode>>();
-                //TODO implement
-                if (1 == 1) {
-                    throw new UnsupportedOperationException();
-                }
-            }
-            context.completeStep();
-        } finally {
-
-            try {
-                // Inform the remote hosts whether to commit or roll back their updates
-                // Do this in parallel
-                // TODO consider blocking until all return?
-                boolean completeRollback = domainOperationContext.isCompleteRollback();
-                for (Map.Entry<ServerIdentity, ProxyTask> entry : tasks.entrySet()) {
-                    NewModelController.OperationTransaction tx = entry.getValue().getRemoteTransaction();
-                    if (tx != null) {
-                        boolean rollback = completeRollback || domainOperationContext.isServerGroupRollback(entry.getKey().getServerGroupName());
-                        executorService.submit(new ProxyCommitRollbackTask(tx, rollback));
+        boolean pushToServers = !domainOperationContext.isCompleteRollback();
+        if (pushToServers) {
+            ModelNode ourResult = domainOperationContext.getCoordinatorResult();
+            if (ourResult.has(FAILURE_DESCRIPTION)) {
+                pushToServers = false;
+                domainOperationContext.setCompleteRollback(true);
+            } else {
+                for (ModelNode hostResult : domainOperationContext.getHostControllerResults().values()) {
+                    if (!hostResult.hasDefined(OUTCOME) || !SUCCESS.equals(hostResult.get(OUTCOME))) {
+                        pushToServers = false;
+                        domainOperationContext.setCompleteRollback(true);
+                        break;
                     }
                 }
-            } finally {
-                if (interrupted) {
-                    Thread.currentThread().interrupt();
-                }
             }
         }
 
+        if (pushToServers) {
+            final Map<ServerIdentity, ProxyTask> tasks = new HashMap<ServerIdentity, ProxyTask>();
+            boolean interrupted = false;
+            try {
+                pushToServers(context, tasks);
+                context.completeStep();
+            } finally {
+
+                try {
+                    // Inform the remote hosts whether to commit or roll back their updates
+                    // Do this in parallel
+                    // TODO consider blocking until all return?
+                    boolean completeRollback = domainOperationContext.isCompleteRollback();
+                    for (Map.Entry<ServerIdentity, ProxyTask> entry : tasks.entrySet()) {
+                        NewModelController.OperationTransaction tx = entry.getValue().getRemoteTransaction();
+                        if (tx != null) {
+                            boolean rollback = completeRollback || domainOperationContext.isServerGroupRollback(entry.getKey().getServerGroupName());
+                            executorService.submit(new ProxyCommitRollbackTask(tx, rollback));
+                        }
+                    }
+                } finally {
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        } else {
+            context.completeStep();
+        }
+    }
+
+    private void pushToServers(final NewOperationContext context, final Map<ServerIdentity, ProxyTask> tasks) throws OperationFailedException {
+        Map<String, ModelNode> hostResults = new HashMap<String, ModelNode>(domainOperationContext.getHostControllerResults());
+        if (domainOperationContext.getCoordinatorResult().isDefined()) {
+            hostResults.put(domainOperationContext.getLocalHostInfo().getLocalHostName(), domainOperationContext.getCoordinatorResult());
+        }
+        Map<String, Map<ServerIdentity, ModelNode>> opsByGroup = getOpsByGroup(hostResults);
+        if (opsByGroup.size() > 0) {
+
+            final ModelNode rolloutPlan = getRolloutPlan(this.providedRolloutPlan, opsByGroup);
+
+            final NewServerOperationExecutor operationExecutor = new NewServerOperationExecutor() {
+                @Override
+                public ModelNode executeServerOperation(ServerIdentity server, ModelNode operation) {
+                    NewProxyController proxy = hostProxies.get(server.getHostName());
+                    ProxyTask task = new ProxyTask(server.getHostName(), operation, context, proxy);
+                    tasks.put(server, task);
+                    try {
+                        return task.call();
+                    } catch (Exception e) {
+                        ModelNode failure = new ModelNode();
+                        failure.get(FAILURE_DESCRIPTION).set(String.format("Caught exception invoking operation %s against address %s on host %s -- %s",
+                                operation.require(OP), PathAddress.pathAddress(operation.get(OP_ADDR)), server.getHostName(), e));
+                        return failure;
+                    }
+                }
+            };
+            NewRolloutPlanController rolloutPlanController = new NewRolloutPlanController(opsByGroup, rolloutPlan, domainOperationContext, operationExecutor, executorService);
+            NewRolloutPlanController.Result result = rolloutPlanController.execute();
+            if (result == NewRolloutPlanController.Result.FAILED) {
+                domainOperationContext.setCompleteRollback(true);
+            }
+        }
+    }
+
+    private Map<String, Map<ServerIdentity, ModelNode>> getOpsByGroup(Map<String, ModelNode> hostResults) {
+        Map<String, Map<ServerIdentity, ModelNode>> result = new HashMap<String, Map<ServerIdentity, ModelNode>>();
+
+        for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
+            ModelNode hostResult = entry.getValue().get(RESULT);
+            if (hostResult.hasDefined(SERVER_OPERATIONS)) {
+                String host = entry.getKey();
+                for (ModelNode item : hostResult.get(SERVER_OPERATIONS).asList()) {
+                    ModelNode op = item.require(OP);
+                    for (Property prop : item.require(SERVERS).asPropertyList()) {
+                        String group = prop.getValue().asString();
+                        Map<ServerIdentity, ModelNode> groupMap = result.get(group);
+                        if (groupMap == null) {
+                            groupMap = new HashMap<ServerIdentity, ModelNode>();
+                            result.put(group, groupMap);
+                        }
+                        groupMap.put(new ServerIdentity(host, group, prop.getName()), op);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private ModelNode getRolloutPlan(ModelNode rolloutPlan, Map<String, Map<ServerIdentity, ModelNode>> opsByGroup) throws OperationFailedException {
+
+        if (rolloutPlan == null || !rolloutPlan.isDefined()) {
+            rolloutPlan = getDefaultRolloutPlan(opsByGroup);
+        }
+        else {
+            // Validate that plan covers all groups
+            Set<String> found = new HashSet<String>();
+            if (rolloutPlan.hasDefined(IN_SERIES)) {
+                for (ModelNode series : rolloutPlan.get(IN_SERIES).asList()) {
+                    if (series.hasDefined(CONCURRENT_GROUPS)) {
+                        for(Property prop : series.get(CONCURRENT_GROUPS).asPropertyList()) {
+                            validateServerGroupPlan(found, prop);
+                        }
+                    }
+                    else if (series.hasDefined(SERVER_GROUP)) {
+                        Property prop = series.get(SERVER_GROUP).asProperty();
+                        validateServerGroupPlan(found, prop);
+                    }
+                    else {
+                        throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. %s is not a valid child of node %s", series, IN_SERIES)));
+                    }
+                }
+            }
+
+            Set<String> groups = new HashSet<String>(opsByGroup.keySet());
+            groups.removeAll(found);
+            if (!groups.isEmpty()) {
+                throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Plan operations affect server groups %s that are not reflected in the rollout plan", groups)));
+            }
+        }
+        return rolloutPlan;
+    }
+
+    private void validateServerGroupPlan(Set<String> found, Property prop) throws OperationFailedException {
+        if (!found.add(prop.getName())) {
+            throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Server group %s appears more than once in the plan.", prop.getName())));
+        }
+        ModelNode plan = prop.getValue();
+        if (plan.hasDefined(MAX_FAILURE_PERCENTAGE)) {
+            if (plan.has(MAX_FAILED_SERVERS)) {
+                plan.remove(MAX_FAILED_SERVERS);
+            }
+            int max = plan.get(MAX_FAILURE_PERCENTAGE).asInt();
+            if (max < 0 || max > 100) {
+                throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Server group %s has a %s value of %s; must be between 0 and 100.", prop.getName(), MAX_FAILURE_PERCENTAGE, max)));
+            }
+        }
+        if (plan.hasDefined(MAX_FAILED_SERVERS)) {
+            int max = plan.get(MAX_FAILED_SERVERS).asInt();
+            if (max < 0) {
+                throw new OperationFailedException(new ModelNode().set(String.format("Invalid rollout plan. Server group %s has a %s value of %s; cannot be less than 0.", prop.getName(), MAX_FAILED_SERVERS, max)));
+            }
+        }
+    }
+
+    private ModelNode getDefaultRolloutPlan(Map<String, Map<ServerIdentity, ModelNode>> opsByGroup) {
+        ModelNode result = new ModelNode();
+        if (opsByGroup.size() > 0) {
+            ModelNode groups = result.get(IN_SERIES).add().get(CONCURRENT_GROUPS);
+
+            ModelNode groupPlan = new ModelNode();
+            groupPlan.get(ROLLING_TO_SERVERS).set(false);
+            groupPlan.get(MAX_FAILED_SERVERS).set(0);
+
+            for (String group : opsByGroup.keySet()) {
+                groups.add(group, groupPlan);
+            }
+            result.get(ROLLBACK_ACROSS_GROUPS).set(true);
+        }
+        return result;
     }
 }
