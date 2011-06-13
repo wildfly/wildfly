@@ -666,7 +666,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                             parseResources(deploymentUnit, reader, moduleSpec);
                             break;
                         case EXCLUSIONS:
-                            parseExclusions(deploymentUnit, reader, moduleSpec);
+                            parseExclusions(reader, moduleSpec);
                             break;
                         default:
                             throw unexpectedContent(reader);
@@ -1045,7 +1045,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
     }
 
 
-    private static void parseExclusions(final DeploymentUnit deploymentUnit, final XMLStreamReader reader, final ModuleStructureSpec specBuilder) throws XMLStreamException {
+    private static void parseExclusions(final XMLStreamReader reader, final ModuleStructureSpec specBuilder) throws XMLStreamException {
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {

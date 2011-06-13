@@ -271,8 +271,17 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
     private static void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource)
             throws DeploymentUnitProcessingException {
         try {
+            if(resource.getExportFilters().isEmpty()) {
             specBuilder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(new VFSResourceLoader(resource
                     .getRootName(), resource.getRoot())));
+            } else {
+                final MultiplePathFilterBuilder filterBuilder = PathFilters.multiplePathFilterBuilder(true);
+                for(FilterSpecification filter : resource.getExportFilters()) {
+                    filterBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
+                }
+                specBuilder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(new VFSResourceLoader(resource
+                    .getRootName(), resource.getRoot()), filterBuilder.create()));
+            }
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root ["
                     + resource.getRootName() + "]", e);
