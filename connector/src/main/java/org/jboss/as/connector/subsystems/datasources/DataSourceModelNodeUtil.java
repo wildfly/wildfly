@@ -144,7 +144,7 @@ class DataSourceModelNodeUtil {
             setBooleanIfNotNull(dataSourceModel, POOL_PREFILL, pool.isPrefill());
             setBooleanIfNotNull(dataSourceModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
             if (pool.getFlushStrategy() != null) {
-                setStringIfNotNull(dataSourceModel, FLUSH_STRATEGY, pool.getFlushStrategy().name());
+                setStringIfNotNull(dataSourceModel, FLUSH_STRATEGY, pool.getFlushStrategy().getName());
             }
         }
         DsSecurity security = dataSource.getSecurity();
@@ -220,7 +220,7 @@ class DataSourceModelNodeUtil {
             setBooleanIfNotNull(xaDataSourceModel, POOL_PREFILL, pool.isPrefill());
             setBooleanIfNotNull(xaDataSourceModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
             if (pool.getFlushStrategy() != null) {
-                setStringIfNotNull(xaDataSourceModel, FLUSH_STRATEGY, pool.getFlushStrategy().name());
+                setStringIfNotNull(xaDataSourceModel, FLUSH_STRATEGY, pool.getFlushStrategy().getName());
             }
             setBooleanIfNotNull(xaDataSourceModel, INTERLIVING, pool.isInterleaving());
             setBooleanIfNotNull(xaDataSourceModel, NOTXSEPARATEPOOL, pool.isNoTxSeparatePool());
@@ -322,7 +322,7 @@ class DataSourceModelNodeUtil {
         final Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, null);
         final boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, false);
         final boolean useStrictMin = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_USE_STRICT_MIN, false);
-        final FlushStrategy flushStrategy = dataSourceNode.hasDefined(FLUSH_STRATEGY) ? FlushStrategy.valueOf(dataSourceNode
+        final FlushStrategy flushStrategy = dataSourceNode.hasDefined(FLUSH_STRATEGY) ? FlushStrategy.forName(dataSourceNode
                 .get(FLUSH_STRATEGY).asString()) : FlushStrategy.FAILING_CONNECTION_ONLY;
 
         final CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy);
@@ -401,7 +401,7 @@ class DataSourceModelNodeUtil {
         final boolean padXid = getBooleanIfSetOrGetDefault(dataSourceNode, PAD_XID, false);
         final boolean isSameRmOverride = getBooleanIfSetOrGetDefault(dataSourceNode, SAME_RM_OVERRIDE, false);
         final boolean wrapXaDataSource = getBooleanIfSetOrGetDefault(dataSourceNode, WRAP_XA_DATASOURCE, false);
-        final FlushStrategy flushStrategy = dataSourceNode.hasDefined(FLUSH_STRATEGY) ? FlushStrategy.valueOf(dataSourceNode
+        final FlushStrategy flushStrategy = dataSourceNode.hasDefined(FLUSH_STRATEGY) ? FlushStrategy.forName(dataSourceNode
                 .get(FLUSH_STRATEGY).asString()) : FlushStrategy.FAILING_CONNECTION_ONLY;
 
         final CommonXaPool xaPool = new CommonXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy,

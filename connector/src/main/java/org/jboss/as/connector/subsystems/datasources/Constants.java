@@ -143,11 +143,11 @@ class Constants {
 
     static final String NEWCONNECTIONSQL = "new-connection-sql";
 
-    static final String EXCEPTIONSORTER_PROPERTIES = "exceptionsorter-properties";
+    static final String EXCEPTIONSORTER_PROPERTIES = "exception-sorter-properties";
 
-    static final String STALECONNECTIONCHECKER_PROPERTIES = "staleconnectionchecker-properties";
+    static final String STALECONNECTIONCHECKER_PROPERTIES = "stale-connection-checker-properties";
 
-    static final String VALIDCONNECTIONCHECKER_PROPERTIES = "validconnectionchecker-properties";
+    static final String VALIDCONNECTIONCHECKER_PROPERTIES = "valid-connection-checker-properties";
 
     static final String DATA_SOURCE = "data-source";
 
