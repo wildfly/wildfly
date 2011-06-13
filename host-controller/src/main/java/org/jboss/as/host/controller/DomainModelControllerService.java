@@ -109,6 +109,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private ModelNodeRegistration modelNodeRegistration;
 
     private final Map<String, ManagementChannel> unregisteredHostChannels = new HashMap<String, ManagementChannel>();
+    private volatile ProxyCreatedCallback proxyCreatedCallback;
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool();
 
     private volatile NewServerInventory serverInventory;
@@ -373,7 +374,15 @@ public class DomainModelControllerService extends AbstractControllerService impl
             throw new IllegalArgumentException("No channel for host " + hostName);
         }
         final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
-        return NewRemoteProxyController.create(proxyExecutor, addr, channel);
+        NewRemoteProxyController proxy = NewRemoteProxyController.create(proxyExecutor, addr, channel);
+        if (proxyCreatedCallback != null) {
+            proxyCreatedCallback.proxyCreated(proxy);
+        }
+        return proxy;
+    }
+
+    public void setProxyCreatedCallback(ProxyCreatedCallback callback) {
+        proxyCreatedCallback = callback;
     }
 
     private class DelegatingServerInventory implements NewServerInventory {

@@ -143,7 +143,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
 
         @Override
         protected byte getRequestCode() {
-            return NewModelControllerProtocol.EXECUTE_REQUEST;
+            return NewModelControllerProtocol.EXECUTE_CLIENT_REQUEST;
         }
 
         @Override

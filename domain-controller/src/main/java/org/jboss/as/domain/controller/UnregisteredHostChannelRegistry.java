@@ -20,6 +20,7 @@ package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 
 /**
  *
@@ -47,5 +48,29 @@ public interface UnregisteredHostChannelRegistry {
      */
     NewProxyController popChannelAndCreateProxy(String hostName);
 
+    /**
+     * Register a callback to be called when {@link UnregisteredHostChannelRegistry#popChannelAndCreateProxy(String)}
+     * has been created
+     *
+     * @param callback the callback
+     */
+    void setProxyCreatedCallback(ProxyCreatedCallback callback);
+
+
+    //TODO Kabir: Ugly but all I have time for now
+    /**
+     * Called when {@link UnregisteredHostChannelRegistry#popChannelAndCreateProxy(String)} creates a proxy
+     * to get hold of the proxies ManagementOperationHandler
+     *
+     * @param handler the handler of the created proxy
+     */
+    interface ProxyCreatedCallback {
+        /**
+         * Gets called with the management operation handler once the proxy has been created
+         *
+         * @param handler the operation handler
+         */
+        void proxyCreated(ManagementOperationHandler handler);
+    }
 
 }

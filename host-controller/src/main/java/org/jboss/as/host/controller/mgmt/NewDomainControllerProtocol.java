@@ -19,34 +19,32 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.controller.client;
+package org.jboss.as.host.controller.mgmt;
+
+import org.jboss.as.controller.client.NewModelControllerProtocol;
+
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public interface NewModelControllerProtocol {
+public interface NewDomainControllerProtocol extends NewModelControllerProtocol{
+    byte REGISTER_HOST_CONTROLLER_REQUEST = 0x51;
+    byte UNREGISTER_HOST_CONTROLLER_REQUEST = 0x53;
+    byte GET_FILE_REQUEST = 0x55;
+    byte IS_ACTIVE_REQUEST = 0x57;
 
-    byte EXECUTE_CLIENT_REQUEST = 0x44;
-    byte EXECUTE_TX_REQUEST = 0x45;
-    byte HANDLE_REPORT_REQUEST = 0x46;
-    byte OPERATION_FAILED_REQUEST = 0x47;
-    byte OPERATION_COMPLETED_REQUEST = 0x48;
-    byte OPERATION_PREPARED_REQUEST = 0x49;
-    byte GET_INPUTSTREAM_REQUEST = 0x4C;
-
-
-    byte PARAM_END = 0x60;
-    byte PARAM_OPERATION = 0x61;
-    byte PARAM_MESSAGE_SEVERITY = 0x62;
-    byte PARAM_MESSAGE = 0x63;
-    byte PARAM_RESPONSE = 0x64;
-    byte PARAM_INPUTSTREAMS_LENGTH = 0x65;
-    byte PARAM_INPUTSTREAM_INDEX = 0x66;
-    byte PARAM_INPUTSTREAM_LENGTH = 0x67;
-    byte PARAM_INPUTSTREAM_CONTENTS = 0x68;
-    byte PARAM_PREPARED = 0x69;
-    byte PARAM_COMMIT = 0x70;
-    byte PARAM_ROLLBACK = 0x71;
+    byte PARAM_HOST_ID = 0x20;
+    byte PARAM_OK = 0x21;
+    byte PARAM_ERROR = 0x22;
+    byte PARAM_ROOT_ID = 0x24;
+    byte PARAM_FILE_PATH = 0x25;
+    byte PARAM_ROOT_ID_FILE = 0x26;
+    byte PARAM_ROOT_ID_CONFIGURATION = 0x27;
+    byte PARAM_ROOT_ID_DEPLOYMENT = 0x28;
+    byte PARAM_NUM_FILES = 0x29;
+    byte FILE_START = 0x30;
+    byte PARAM_FILE_SIZE = 0x31;
+    byte FILE_END = 0x32;
 }
