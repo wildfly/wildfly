@@ -210,8 +210,8 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             addResourceRoot(specBuilder, resourceRoot);
         }
 
-        createDependencies(phaseContext, specBuilder, moduleSpecification.getUserDependencies());
         createDependencies(phaseContext, specBuilder, dependencies);
+        createDependencies(phaseContext, specBuilder, moduleSpecification.getUserDependencies());
         specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         createDependencies(phaseContext, specBuilder, localDependencies);
 
