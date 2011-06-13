@@ -23,16 +23,15 @@
 package org.jboss.as.testsuite.integration.osgi.xservice;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
-import java.util.jar.JarFile;
 
 import javax.inject.Inject;
 
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.container.ArchiveDeployer;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.testsuite.integration.osgi.xservice.api.Echo;
 import org.jboss.as.testsuite.integration.osgi.xservice.bundle.ClientBundleActivator;
 import org.jboss.as.testsuite.integration.osgi.xservice.module.EchoService;
@@ -44,9 +43,9 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -65,11 +64,20 @@ import org.osgi.framework.ServiceReference;
  * @since 14-Oct-2010
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
+@Ignore("[ARQ-469] ClassCastException: java.lang.String cannot be cast to [B")
 public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCase {
 
-    private static final String TARGET_MODULE_NAME = "example-xservice-target-module";
-    private static final String CLIENT_BUNDLE_NAME = "example-xservice-client-bundle";
+    private static final String TARGET_MODULE_NAME = "example-xservice-bam-target-module";
+    private static final String CLIENT_BUNDLE_NAME = "example-xservice-bam-client-bundle";
+
+    @Inject
+    public ServiceContainer serviceContainer;
+
+    @ArquillianResource
+    public Deployer deployer;
+
+    @Inject
+    public BundleContext context;
 
     @Deployment
     public static JavaArchive createdeployment() {
@@ -80,23 +88,12 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                // [TODO] Remove these explicit imports
-                builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
                 builder.addImportPackages(Logger.class, Services.class);
                 return builder.openStream();
             }
         });
         return archive;
     }
-
-    @Inject
-    public ServiceContainer serviceContainer;
-
-    @Inject
-    public ArchiveDeployer archiveDeployer;
-
-    @Inject
-    public BundleContext context;
 
     @Override
     ServiceContainer getServiceContainer() {
@@ -106,20 +103,18 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
     @Test
     public void bundleInvokesModuleService() throws Exception {
         // Deploy the non-OSGi module which contains the target service
-        Archive<?> targetArchive = null; //deploymentProvider.getClientDeployment(TARGET_MODULE_NAME);
-        String targetDeploymentName = archiveDeployer.deploy(targetArchive);
-        assertNotNull("Deployment name not null", targetDeploymentName);
+        deployer.deploy(TARGET_MODULE_NAME);
         try {
             // Check that the target service is up
             ServiceName targetService = ServiceName.parse("jboss.osgi.example.target.service");
             assertServiceState(targetService, State.UP, 5000);
 
             // Register the target module with the OSGi layer
-            Bundle targetBundle = registerModule(ModuleIdentifier.create("deployment." + targetDeploymentName));
+            Bundle targetBundle = registerModule(ModuleIdentifier.create("deployment." + TARGET_MODULE_NAME));
             assertEquals("Bundle INSTALLED", Bundle.INSTALLED, targetBundle.getState());
 
             // Install the client bundle
-            InputStream input = null; //deploymentProvider.getClientDeploymentAsStream(CLIENT_BUNDLE_NAME);
+            InputStream input = deployer.getDeployment(CLIENT_BUNDLE_NAME);
             Bundle clientBundle = context.installBundle(CLIENT_BUNDLE_NAME, input);
             assertEquals("Bundle INSTALLED", Bundle.INSTALLED, clientBundle.getState());
             try {
@@ -139,20 +134,12 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
             }
         } finally {
             // Undeploy the target module
-            archiveDeployer.undeploy(targetDeploymentName);
+            deployer.undeploy(TARGET_MODULE_NAME);
         }
     }
 
-    //@ArchiveProvider
-    public static JavaArchive getTestArchive(String name) throws Exception {
-        if (CLIENT_BUNDLE_NAME.equals(name))
-            return getClientBundleArchive();
-        if (TARGET_MODULE_NAME.equals(name))
-            return getTargetModuleArchive();
-        return null;
-    }
-
-    private static JavaArchive getClientBundleArchive() throws Exception {
+    @Deployment(name = CLIENT_BUNDLE_NAME, managed = false, testable = false)
+    public static JavaArchive getClientBundleArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CLIENT_BUNDLE_NAME);
         archive.addClasses(ClientBundleActivator.class);
         archive.setManifest(new Asset() {
@@ -169,12 +156,19 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         return archive;
     }
 
-    private static JavaArchive getTargetModuleArchive() throws Exception {
+    @Deployment(name = TARGET_MODULE_NAME, managed = false, testable = false)
+    public static JavaArchive getTargetModuleArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, TARGET_MODULE_NAME);
         archive.addClasses(Echo.class, EchoService.class, TargetModuleActivator.class);
         String activatorPath = "META-INF/services/" + ServiceActivator.class.getName();
         archive.addAsResource(OSGiTestHelper.getResourceFile("osgi/xservice/target-module/" + activatorPath), activatorPath);
-        archive.setManifest(OSGiTestHelper.getResourceFile("osgi/xservice/target-module/" + JarFile.MANIFEST_NAME));
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                ManifestBuilder builder = ManifestBuilder.newInstance();
+                builder.addManifestHeader("Dependencies", "org.jboss.modules,org.jboss.logging");
+                return builder.openStream();
+            }
+        });
         return archive;
     }
 }

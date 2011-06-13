@@ -21,8 +21,12 @@
  */
 package org.jboss.as.server.moduleservice;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.Services;
+import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -40,9 +44,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 /**
  * {@link ModuleLoader} that loads module definitions from msc services. Module specs are looked up in msc services that
  * correspond to the module names.
@@ -53,6 +54,9 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class ServiceModuleLoader extends ModuleLoader implements Service<ServiceModuleLoader> {
+
+    // Provide logging
+    private static final Logger log = Logger.getLogger("org.jboss.as.server.moduleservice");
 
     /**
      * Listener class that atomically retrieves the moduleSpec, and automatically removes the Module when the module spec
@@ -74,6 +78,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
 
         @Override
         public void listenerAdded(ServiceController<? extends ModuleSpec> controller) {
+            log.debugf("listenerAdded: %s", controller);
             State state = controller.getState();
             if (state == State.UP || state == State.START_FAILED) {
                 done(controller, controller.getStartException());
@@ -82,16 +87,19 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
 
         @Override
         public void serviceStarted(ServiceController<? extends ModuleSpec> controller) {
+            log.debugf("serviceStarted: %s", controller);
             done(controller, null);
         }
 
         @Override
         public void serviceFailed(ServiceController<? extends ModuleSpec> controller, StartException reason) {
+            log.debugf(reason, "serviceFailed: %s", controller);
             done(controller, reason);
         }
 
         @Override
         public void serviceStopping(ServiceController<? extends ModuleSpec> controller) {
+            log.debugf("serviceStopping: %s", controller);
             ModuleSpec moduleSpec = this.moduleSpec;
             try {
                 Module module = loadModule(moduleSpec.getModuleIdentifier());
@@ -104,10 +112,11 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
         }
 
         private void done(ServiceController<? extends ModuleSpec> controller, StartException reason) {
-            latch.countDown();
             startException = reason;
-            if (startException == null)
+            if (startException == null) {
                 moduleSpec = controller.getValue();
+            }
+            latch.countDown();
         }
 
         public ModuleSpec getModuleSpec() throws ModuleLoadException {
@@ -116,7 +125,8 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
             if (startException != null)
                 throw new ModuleLoadException(startException.getCause());
             try {
-                if (latch.await(1000, TimeUnit.MILLISECONDS) == false)
+                log.debugf("waiting for: %s", identifier);
+                if (latch.await(2000, TimeUnit.MILLISECONDS) == false)
                     throw new ModuleLoadException("Timeout waiting for module service: " + identifier);
             } catch (InterruptedException e) {
                 // ignore

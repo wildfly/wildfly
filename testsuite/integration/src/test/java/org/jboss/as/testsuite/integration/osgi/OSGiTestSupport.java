@@ -21,13 +21,25 @@
  */
 package org.jboss.as.testsuite.integration.osgi;
 
-import java.util.Arrays;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
+
 
 /**
  * OSGi integration test support.
@@ -35,42 +47,75 @@ import org.osgi.service.startlevel.StartLevel;
  * @author thomas.diesler@jboss.com
  * @since 24-May-2011
  */
-public class OSGiTestSupport {
+public abstract class OSGiTestSupport {
 
-    protected void setStartLevel(BundleContext context, int level) {
-        ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
-        StartLevel startLevel = (StartLevel) context.getService(sref);
-        startLevel.setStartLevel(level);
-    }
-
-    protected void setBundleStartLevel(BundleContext context, Bundle bundle, int level) {
-        ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
-        StartLevel startLevel = (StartLevel) context.getService(sref);
-        startLevel.setBundleStartLevel(bundle, level);
+    /**
+     * Changes the framework start level and waits for the STARTLEVEL_CHANGED event
+     * Note, changing the framework start level is an asynchronous operation.
+     */
+    protected void changeStartLevel(final BundleContext context, final int level, final long timeout, final TimeUnit units) throws InterruptedException, TimeoutException {
+        final ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
+        final StartLevel startLevel = (StartLevel) context.getService(sref);
+        if (level != startLevel.getStartLevel()) {
+            final CountDownLatch latch = new CountDownLatch(1);
+            context.addFrameworkListener(new FrameworkListener() {
+                public void frameworkEvent(FrameworkEvent event) {
+                    if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED && level == startLevel.getStartLevel()) {
+                        latch.countDown();
+                    }
+                }
+            });
+            startLevel.setStartLevel(level);
+            if (latch.await(timeout, units) == false)
+                throw new TimeoutException("Timeout changing start level");
+        }
     }
 
     /**
-     * Get an array of bundles for the given symbolic name and version range.
-     * @see PackageAdmin#getBundles(String, String)
+     * Use {@link PackageAdmin#getBundles(String, String)} to find a deployed bundle by
+     * symbolic name and version range
      */
-    protected Bundle[] getBundles(BundleContext context, String symbolicName, String versionRange) {
+    protected Bundle getDeployedBundle(BundleContext context, String symbolicName, String versionRange) {
         ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
-        PackageAdmin padmin = (PackageAdmin) context.getService(sref);
-        Bundle[] bundles = padmin.getBundles(symbolicName, versionRange);
-        return bundles;
+        PackageAdmin packageAdmin = (PackageAdmin) context.getService(sref);
+        Bundle[] bundles = packageAdmin.getBundles(symbolicName, versionRange);
+        assertNotNull("Bundles found", bundles);
+        assertEquals("One bundle found", 1, bundles.length);
+        return bundles[0];
     }
 
-    /**
-     * Get a single bundle for the given symbolic name and version range.
-     * @see PackageAdmin#getBundles(String, String)
-     */
-    protected Bundle getBundle(BundleContext context, String symbolicName, String versionRange) {
-        Bundle[] bundles = getBundles(context, symbolicName, versionRange);
-        if (bundles == null)
-            return null;
-        if (bundles.length != 1)
-            throw new IllegalStateException("Cannot obtain a single bundle, found: " + Arrays.asList(bundles));
+    protected  String getHttpResponse(String host, int port, String reqPath, int timeout) throws IOException
+    {
+       int fraction = 200;
 
-        return bundles[0];
+       String line = null;
+       IOException lastException = null;
+       while (line == null && 0 < (timeout -= fraction))
+       {
+          try
+          {
+             URL url = new URL("http://" + host + ":" + port + reqPath);
+             BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+             line = br.readLine();
+             br.close();
+          }
+          catch (IOException ex)
+          {
+             lastException = ex;
+             try
+             {
+                Thread.sleep(fraction);
+             }
+             catch (InterruptedException ie)
+             {
+                // ignore
+             }
+          }
+       }
+
+       if (line == null && lastException != null)
+          throw lastException;
+
+       return line;
     }
 }

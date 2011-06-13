@@ -47,7 +47,8 @@ public class XSDValidationUnitTestCase {
         validateXsd("jboss_7_0.xsd");
     }
 
-    // @Test
+    @Test
+    @Ignore("[AS7-814] Fix or remove ignored smoke tests")
     public void testJBossConnector() throws Exception {
         validateXsd("jboss-jca.xsd");
     }

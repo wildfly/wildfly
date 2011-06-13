@@ -36,12 +36,13 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
 import org.jboss.as.testsuite.integration.osgi.xservice.bundle.ConfiguredService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -53,6 +54,7 @@ import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.cm.ConfigurationEvent;
 import org.osgi.service.cm.ConfigurationListener;
 import org.osgi.service.cm.ManagedService;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * A test that shows how an OSGi {@link ManagedService} can be configured through the {@link ConfigurationAdmin}.
@@ -61,22 +63,25 @@ import org.osgi.service.cm.ManagedService;
  * @since 11-Dec-2010
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class ConfigurationAdminTestCase {
+public class ConfigurationAdminTestCase extends OSGiTestSupport {
+
+    @Inject
+    public BundleContext context;
 
     @Inject
     public Bundle bundle;
 
     @Deployment
+    @StartLevelAware(startLevel = 3)
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-configadmin");
-        archive.addClasses(ConfiguredService.class);
+        archive.addClasses(OSGiTestSupport.class, ConfiguredService.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(ConfigurationAdmin.class);
+                builder.addImportPackages(StartLevel.class, ConfigurationAdmin.class);
                 return builder.openStream();
             }
         });
@@ -85,6 +90,8 @@ public class ConfigurationAdminTestCase {
 
     @Test
     public void testManagedService() throws Exception {
+
+        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
 
         // Start the test bundle
         bundle.start();

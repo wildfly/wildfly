@@ -21,11 +21,6 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<!--
-  To run a single test in the debugger, run surefire like this and connect your remote debugger to port 5005
-  
-  mvn -Dtest=SimpleBundleTestCase -Dmaven.surefire.debug=true test
--->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">

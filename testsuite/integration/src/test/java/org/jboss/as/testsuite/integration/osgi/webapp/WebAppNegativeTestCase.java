@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
 
 import javax.inject.Inject;
@@ -33,20 +34,21 @@ import javax.servlet.http.HttpServlet;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
 import org.jboss.as.testsuite.integration.osgi.webapp.bundle.EndpointServlet;
 import org.jboss.osgi.deployment.interceptor.LifecycleInterceptorException;
-import org.jboss.osgi.framework.Constants;
-import org.jboss.osgi.http.HttpServiceCapability;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * A test that deployes a WAR bundle that contains no WEB-INF/web.xml
@@ -55,8 +57,7 @@ import org.osgi.framework.BundleException;
  * @since 26-Oct-2009
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class WebAppNegativeTestCase {
+public class WebAppNegativeTestCase extends OSGiTestSupport {
 
     @Inject
     public BundleContext context;
@@ -65,9 +66,10 @@ public class WebAppNegativeTestCase {
     public Bundle bundle;
 
     @Deployment
+    @StartLevelAware(startLevel = 4)
     public static WebArchive createdeployment() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, "example-webapp-negative");
-        archive.addClasses(EndpointServlet.class);
+        archive.addClasses(OSGiTestSupport.class, EndpointServlet.class);
         archive.addAsResource("osgi/webapp/message.txt", "message.txt");
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
         archive.add(new Asset() {
@@ -77,8 +79,8 @@ public class WebAppNegativeTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addManifestHeader(Constants.BUNDLE_CLASSPATH, ".,WEB-INF/classes");
                 builder.addManifestHeader("Web-ContextPath", "example-webapp");
-                builder.addImportPackages(HttpServiceCapability.class, LifecycleInterceptorException.class);
-                builder.addImportPackages(HttpServlet.class, Servlet.class);
+                builder.addImportPackages(LifecycleInterceptorException.class);
+                builder.addImportPackages(StartLevel.class, HttpServlet.class, Servlet.class);
                 return builder.openStream();
             }
         }, JarFile.MANIFEST_NAME);
@@ -87,6 +89,7 @@ public class WebAppNegativeTestCase {
 
     @Test
     public void testServletAccess() throws Exception {
+        changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
         try {
             bundle.start();
             fail("BundleException expected");
