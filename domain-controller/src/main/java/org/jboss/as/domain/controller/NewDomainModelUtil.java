@@ -262,7 +262,7 @@ public class NewDomainModelUtil {
             root.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME, ApplyRemoteMasterDomainModelHandler.INSTANCE, ApplyRemoteMasterDomainModelHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         } else {
             ReadMasterDomainModelHandler rmdmh = new ReadMasterDomainModelHandler(domainController, registry);
-            root.registerOperationHandler(ReadMasterDomainModelHandler.OPERATION_NAME, rmdmh, rmdmh, false, OperationEntry.EntryType.PRIVATE);
+            root.registerOperationHandler(ReadMasterDomainModelHandler.OPERATION_NAME, rmdmh, rmdmh, false, OperationEntry.EntryType.PRIVATE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
         }
 
 

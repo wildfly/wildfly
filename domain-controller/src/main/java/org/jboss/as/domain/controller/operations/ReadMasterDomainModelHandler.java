@@ -38,6 +38,7 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.domain.controller.NewDomainController;
@@ -63,15 +64,14 @@ public class ReadMasterDomainModelHandler implements NewStepHandler, Description
 
 
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        //Lock the model here so
-        context.getServiceRegistry(true);
-        final ModelNode model = context.getModel();
+        //Lock the model here
+        final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         final String hostName = operation.get(HOST).asString();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME);
         op.get(OP_ADDR).setEmptyList();
-        op.get(DOMAIN_MODEL).set(context.getModel());
+        op.get(DOMAIN_MODEL).set(model);
 
         //TODO get this from somewhere
         final NewProxyController proxy = registry.popChannelAndCreateProxy(hostName);
