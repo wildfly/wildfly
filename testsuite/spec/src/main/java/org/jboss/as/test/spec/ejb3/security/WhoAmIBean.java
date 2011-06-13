@@ -37,4 +37,8 @@ public class WhoAmIBean {
     public Principal getCallerPrincipal() {
         return context.getCallerPrincipal();
     }
+
+    public boolean doIHaveRole(String roleName) {
+        return context.isCallerInRole(roleName);
+    }
 }
