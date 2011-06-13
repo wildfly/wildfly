@@ -28,8 +28,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -50,7 +52,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
 
-    private final InjectedValue<ProtocolChannel> hcChannel = new InjectedValue<ProtocolChannel>();
+    private final InjectedValue<ManagementChannel> hcChannel = new InjectedValue<ManagementChannel>();
     private final InjectedValue<NewModelController> controller = new InjectedValue<NewModelController>();
 
     private final String serverName;
@@ -62,17 +64,13 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
-        throw new IllegalStateException("Domain mode is disabled until remoting is integrated");
+        hcChannel.getValue().setOperationHandler(new NewTransactionalModelControllerOperationHandler(executor, controller.getValue()));
 
-        /*final ProtocolChannel hcChannel = this.hcChannel.getValue();
-        hcChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(ModelControllerOperationHandler.Factory.create(controller.getValue()));
         try {
-            new ServerRegisterRequest().executeForResult(executor, ManagementClientChannelStrategy.create(hcChannel));
+            new ServerRegisterRequest().executeForResult(executor, ManagementClientChannelStrategy.create(hcChannel.getValue()));
         } catch (Exception e) {
             throw new StartException("Failed to send registration message to host controller", e);
         }
-        modelControllerOperationHandler = ModelControllerOperationHandler.Factory.create(controller.getValue(), initialMessageHandler);
-        smConnection.setMessageHandler(initialMessageHandler);*/
     }
 
     /** {@inheritDoc} */
@@ -88,7 +86,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return this;
     }
 
-    public Injector<ProtocolChannel> getHcChannelInjector() {
+    public Injector<ManagementChannel> getHcChannelInjector() {
         return hcChannel;
     }
 

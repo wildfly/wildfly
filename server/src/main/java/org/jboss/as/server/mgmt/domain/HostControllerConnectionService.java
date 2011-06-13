@@ -30,7 +30,6 @@ import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
@@ -47,11 +46,11 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author John Bailey
  */
-public class HostControllerConnectionService implements Service<ProtocolChannel> {
+public class HostControllerConnectionService implements Service<ManagementChannel> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "channel");
     private final InjectedValue<InetSocketAddress> hcAddress = new InjectedValue<InetSocketAddress>();
 
-    private volatile ProtocolChannel channel;
+    private volatile ManagementChannel channel;
     private volatile ProtocolChannelClient<ManagementChannel> client;
 
     /** {@inheritDoc} */
@@ -89,7 +88,7 @@ public class HostControllerConnectionService implements Service<ProtocolChannel>
     }
 
     /** {@inheritDoc} */
-    public synchronized ProtocolChannel getValue() throws IllegalStateException {
+    public synchronized ManagementChannel getValue() throws IllegalStateException {
         return channel;
     }
 

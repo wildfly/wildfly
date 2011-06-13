@@ -57,8 +57,8 @@ import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.domain.controller.NewDomainModelUtil;
-import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
+import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.NewStartServersHandler;
@@ -170,7 +170,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     public void unregisterRunningServer(String serverName) {
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerInfo.getLocalHostName()));
         PathElement pe = PathElement.pathElement(RUNNING_SERVER, serverName);
-        Logger.getLogger("org.jboss.host.controller").info("Registering server " + serverName);
+        Logger.getLogger("org.jboss.host.controller").info("Unregistering server " + serverName);
         ModelNodeRegistration hostRegistration = modelNodeRegistration.getSubModel(pa);
         hostRegistration.unregisterProxyController(pe);
     }
