@@ -32,6 +32,7 @@ import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
+import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -41,7 +42,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Operation handler responsible for requests coming in from server processes.
+ * Operation handler responsible for requests coming in from server processes on the host controller.
+ * The server side counterpart is {@link HostControllerServerClient}
  *
  * @author John Bailey
  * @author Emanuel Muckenhuber

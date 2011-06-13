@@ -24,17 +24,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
-import static org.jboss.as.host.controller.operations.NewDomainControllerAddUtil.installLocalDomainController;
-import static org.jboss.as.host.controller.operations.NewDomainControllerAddUtil.installRemoteDomainControllerConnection;
 
-import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -44,8 +38,6 @@ import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.NewDomainModelUtil;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -91,25 +83,30 @@ public class NewRemoteDomainControllerAddHandler extends AbstractAddStepHandler 
         parametersValidator.validate(operation);
         ModelNode dc = model.get(DOMAIN_CONTROLLER);
 
-        dc.get(REMOTE, PORT).set(operation.require(PORT));
-        dc.get(REMOTE, HOST).set(operation.require(HOST));
+        final int port = operation.require(PORT).asInt();
+        final String host = operation.require(HOST).asString();
+        dc.get(REMOTE, PORT).set(port);
+        dc.get(REMOTE, HOST).set(host);
 
         if (dc.has(LOCAL)) {
             dc.remove(LOCAL);
         }
 
         hostControllerInfo.setMasterDomainController(false);
+        hostControllerInfo.setRemoteDomainControllerHost(host);
+        hostControllerInfo.setRemoteDomainControllerPort(port);
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
         NewDomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), fileRepository);
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-        newControllers.add(installRemoteDomainControllerConnection(hostModel, serviceTarget, fileRepository));
-        newControllers.addAll(installLocalDomainController(hostModel, serviceTarget, true, verificationHandler));
-    }
+  //Done by DomainModelControllerService
+//    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+//        final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
+//        final ServiceTarget serviceTarget = context.getServiceTarget();
+//        newControllers.add(installRemoteDomainControllerConnection(hostModel, serviceTarget, fileRepository));
+//        newControllers.addAll(installLocalDomainController(hostModel, serviceTarget, true, verificationHandler));
+//    }
 
     @Override
     public ModelNode getModelDescription(final Locale locale) {

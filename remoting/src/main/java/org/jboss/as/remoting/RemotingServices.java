@@ -70,6 +70,15 @@ public final class RemotingServices {
     /** The base name of the channel open listener services */
     public static final ServiceName CHANNEL = REMOTING.append("channel");
 
+    /** The name of the external management channel */
+    public static final String MANAGEMENT_CHANNEL = "management";
+
+    /** The name of the channel used between slave and master DCs */
+    public static final String DOMAIN_CHANNEL = "domain";
+
+    /** The name of the channel used for Server to HC comms */
+    public static final String SERVER_CHANNEL = "server";
+
     /**
      * Create the service name for a connector
      *
@@ -258,7 +267,7 @@ public final class RemotingServices {
         //TODO replace these options with something better
         connectorService.setOptionMap(OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("DIGEST-MD5")));
 
-        ServiceBuilder<?> builder = serviceTarget.addService(RemotingServices.connectorServiceName("management"), connectorService)
+        ServiceBuilder<?> builder = serviceTarget.addService(RemotingServices.connectorServiceName(MANAGEMENT_CHANNEL), connectorService)
             .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
             .addInjection(connectorService.getAuthenticationProviderInjector(), provider)
             .setInitialMode(Mode.ACTIVE);
@@ -266,20 +275,20 @@ public final class RemotingServices {
 
         if(networkInterfaceBindingName != null) {
             final InjectedNetworkBindingStreamServerService streamServerService = new InjectedNetworkBindingStreamServerService(port);
-            builder = serviceTarget.addService(RemotingServices.serverServiceName("management", port), streamServerService)
-                .addDependency(RemotingServices.connectorServiceName("management"), ChannelListener.class, streamServerService.getConnectorInjector())
+            builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
+                .addDependency(RemotingServices.connectorServiceName(MANAGEMENT_CHANNEL), ChannelListener.class, streamServerService.getConnectorInjector())
                 .addDependency(networkInterfaceBindingName, NetworkInterfaceBinding.class, streamServerService.getInterfaceBindingInjector())
                 .setInitialMode(Mode.ACTIVE);
             addController(newControllers, verificationHandler, builder);
         } else {
             final NetworkBindingStreamServerService streamServerService = new NetworkBindingStreamServerService(networkInterfaceBinding, port);
-            builder = serviceTarget.addService(RemotingServices.serverServiceName("management", port), streamServerService)
-                .addDependency(RemotingServices.connectorServiceName("management"), ChannelListener.class, streamServerService.getConnectorInjector())
+            builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
+                .addDependency(RemotingServices.connectorServiceName(MANAGEMENT_CHANNEL), ChannelListener.class, streamServerService.getConnectorInjector())
                 .setInitialMode(Mode.ACTIVE);
             addController(newControllers, verificationHandler, builder);
         }
 
-        installChannelServices(serviceTarget, operationHandlerService, modelControllerName, "management", verificationHandler, newControllers);
+        installChannelServices(serviceTarget, operationHandlerService, modelControllerName, MANAGEMENT_CHANNEL, verificationHandler, newControllers);
     }
 
     private static void addController(List<ServiceController<?>> newControllers, ServiceVerificationHandler verificationHandler, ServiceBuilder<?> builder) {

@@ -43,6 +43,7 @@ import org.jboss.msc.value.InjectedValue;
 
 /**
  * Client used to interact with the local {@link HostController}.
+ * The HC counterpart is ServerToHostOperationHandler
  *
  * @author John Bailey
  * @author Emanuel Muckenhuber
