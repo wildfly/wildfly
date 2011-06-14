@@ -52,8 +52,13 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
     }
 
     @Override
-    NewStepHandler getHandler(final ListIterator<PathElement> iterator, final String operationName) {
+    NewStepHandler getOperationHandler(final ListIterator<PathElement> iterator, final String operationName, NewStepHandler inherited) {
         return new ProxyStepHandler(proxyController);
+    }
+
+    @Override
+    NewStepHandler getInheritableOperationHandler(String operationName) {
+        return null;
     }
 
     @Override
@@ -126,17 +131,22 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
     }
 
     @Override
-    DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String operationName) {
+    DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String operationName, DescriptionProvider inherited) {
         return null;
     }
 
     @Override
-    Set<OperationEntry.Flag> getOperationFlags(ListIterator<PathElement> iterator, String operationName) {
+    DescriptionProvider getInheritableOperationDescription(String operationName) {
+        return null;
+    }
+
+    @Override
+    Set<OperationEntry.Flag> getOperationFlags(ListIterator<PathElement> iterator, String operationName, Set<OperationEntry.Flag> inherited) {
         return Collections.emptySet();
     }
 
     @Override
-    Set<OperationEntry.Flag> getInheritedOperationFlags(String operationName) {
+    Set<OperationEntry.Flag> getInheritableOperationFlags(String operationName) {
         return Collections.emptySet();
     }
 
@@ -196,10 +206,5 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
         //TODO
         //return proxyController.execute(operation, handler, control, attachments);
         return new ModelNode();
-    }
-
-    @Override
-    NewStepHandler getInheritedHandler(String operationName) {
-        return null;
     }
 }

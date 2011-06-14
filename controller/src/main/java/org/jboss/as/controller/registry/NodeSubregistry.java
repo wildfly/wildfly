@@ -100,15 +100,15 @@ final class NodeSubregistry {
         childRegistriesUpdater.remove(this, elementValue);
     }
 
-    NewStepHandler getHandler(final ListIterator<PathElement> iterator, final String child, final String operationName) {
+    NewStepHandler getOperationHandler(final ListIterator<PathElement> iterator, final String child, final String operationName, NewStepHandler inherited) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistriesUpdater.get(this);
         final AbstractNodeRegistration childRegistry = snapshot.get(child);
         if (childRegistry != null) {
-            return childRegistry.getHandler(iterator, operationName);
+            return childRegistry.getOperationHandler(iterator, operationName, inherited);
         } else {
             final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");
             if (wildcardRegistry != null) {
-                return wildcardRegistry.getHandler(iterator, operationName);
+                return wildcardRegistry.getOperationHandler(iterator, operationName, inherited);
             } else {
                 return null;
             }
@@ -141,27 +141,30 @@ final class NodeSubregistry {
         return parent.getLocationString() + "(" + keyName + " => ";
     }
 
-    DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String child, final String operationName) {
+    DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String child, final String operationName, DescriptionProvider inherited) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
         AbstractNodeRegistration childRegistry = snapshot.get(child);
-        if (childRegistry == null) {
-            childRegistry = snapshot.get("*");
-            if (childRegistry == null) {
-                return null;
-            }
-        }
-        return childRegistry.getOperationDescription(iterator, operationName);
-    }
-
-    Set<OperationEntry.Flag> getOperationFlags(final ListIterator<PathElement> iterator, final String child, final String operationName) {
-        final Map<String, AbstractNodeRegistration> snapshot = childRegistriesUpdater.get(this);
-        final AbstractNodeRegistration childRegistry = snapshot.get(child);
         if (childRegistry != null) {
-            return childRegistry.getOperationFlags(iterator, operationName);
+            return childRegistry.getOperationDescription(iterator, operationName, inherited);
         } else {
             final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");
             if (wildcardRegistry != null) {
-                return wildcardRegistry.getOperationFlags(iterator, operationName);
+                return wildcardRegistry.getOperationDescription(iterator, operationName, inherited);
+            } else {
+                return null;
+            }
+        }
+    }
+
+    Set<OperationEntry.Flag> getOperationFlags(final ListIterator<PathElement> iterator, final String child, final String operationName, Set<OperationEntry.Flag> inherited) {
+        final Map<String, AbstractNodeRegistration> snapshot = childRegistriesUpdater.get(this);
+        final AbstractNodeRegistration childRegistry = snapshot.get(child);
+        if (childRegistry != null) {
+            return childRegistry.getOperationFlags(iterator, operationName, inherited);
+        } else {
+            final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");
+            if (wildcardRegistry != null) {
+                return wildcardRegistry.getOperationFlags(iterator, operationName, inherited);
             } else {
                 return null;
             }
