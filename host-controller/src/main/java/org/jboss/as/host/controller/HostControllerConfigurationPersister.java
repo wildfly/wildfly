@@ -162,7 +162,9 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
     @Override
     public void successfulBoot() throws ConfigurationPersistenceException {
         hostPersister.successfulBoot();
-        domainPersister.successfulBoot();
+        if (domainPersister != null) {
+            domainPersister.successfulBoot();
+        }
     }
 
     @Override

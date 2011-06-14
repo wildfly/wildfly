@@ -34,14 +34,24 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewOperationContext.Stage;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 
 /**
  * Step handler responsible for taking in a domain model and updating the local domain model to match.
@@ -50,7 +60,12 @@ import org.jboss.dmr.ModelNode;
  */
 public class ApplyRemoteMasterDomainModelHandler implements NewStepHandler, DescriptionProvider {
     public static final String OPERATION_NAME = "apply-remote-domain-model";
-    public static final ApplyRemoteMasterDomainModelHandler INSTANCE = new ApplyRemoteMasterDomainModelHandler();
+
+    private final ExtensionContext extensionContext;
+
+    public ApplyRemoteMasterDomainModelHandler(ExtensionContext extensionContext) {
+        this.extensionContext = extensionContext;
+    }
 
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode domainModel = operation.get(DOMAIN_MODEL);
@@ -86,6 +101,32 @@ public class ApplyRemoteMasterDomainModelHandler implements NewStepHandler, Desc
         if (domainModel.hasDefined(SERVER_GROUP)) {
             rootModel.get(SERVER_GROUP).set(domainModel.get(SERVER_GROUP));
         }
+
+        final Set<String> modules = new HashSet<String>();
+        // If we were provided a model, we're a slave and need to initialize all extensions
+        if (rootModel != null && rootModel.hasDefined(EXTENSION)) {
+            for (Property prop : rootModel.get(EXTENSION).asPropertyList()) {
+                try {
+                    final String module = prop.getValue().get(ExtensionDescription.MODULE).asString();
+                    if (modules.contains(module)) {
+                        continue;
+                    }
+                    for (final Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
+                        modules.add(module);
+
+                        context.addStep(new NewStepHandler() {
+                            public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                                extension.initialize(extensionContext);
+                                context.completeStep();
+                            }
+                        }, Stage.IMMEDIATE);
+                    }
+                } catch (ModuleLoadException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
         context.completeStep();
     }
 
