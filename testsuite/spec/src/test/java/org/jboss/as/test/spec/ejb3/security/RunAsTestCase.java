@@ -22,6 +22,7 @@
 package org.jboss.as.test.spec.ejb3.security;
 
 import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -77,6 +78,19 @@ public class RunAsTestCase {
                 .addAsWebInfResource("ejb3/security/web.xml", "web.xml");
         log.info(war.toString(true));
         return war;
+    }
+
+    @Test
+    public void testAuthentication_TwoBeans() throws Exception {
+        LoginContext lc = getCLMLoginContext("user1", "password1");
+        lc.login();
+        try {
+            String[] response = entryBean.doubleWhoAmI();
+            assertEquals("user1", response[0]);
+            assertEquals("user1", response[1]);
+        } finally {
+            lc.logout();
+        }
     }
 
     @Test

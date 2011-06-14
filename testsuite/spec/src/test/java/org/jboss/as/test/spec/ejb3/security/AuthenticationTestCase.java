@@ -117,7 +117,6 @@ public class AuthenticationTestCase {
         }
     }
 
-
     @Test
     public void testAuthentication_TwoBeans() throws Exception {
         LoginContext lc = getCLMLoginContext("user1", "password1");

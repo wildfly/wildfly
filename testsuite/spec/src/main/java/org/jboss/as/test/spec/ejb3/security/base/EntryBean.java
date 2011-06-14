@@ -50,6 +50,7 @@ public abstract class EntryBean {
     public String[] doubleWhoAmI() {
         String localWho = context.getCallerPrincipal().getName();
         String remoteWho = whoAmIBean.getCallerPrincipal().getName();
+        System.out.println("RemoteWho = " + remoteWho);
         String secondLocalWho = context.getCallerPrincipal().getName();
         if (secondLocalWho.equals(localWho) == false) {
             throw new IllegalStateException("Local getCallerPrincipal changed from '" + localWho + "' to '" + secondLocalWho);
