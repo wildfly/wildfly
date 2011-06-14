@@ -148,6 +148,7 @@
                 <configuration>
                    <failIfNoTests>false</failIfNoTests>
                     <!-- parallel>none</parallel -->
+                    <redirectTestOutputToFile>false</redirectTestOutputToFile>
                     <systemProperties>
                         <property>
                           <name>jboss.options</name>

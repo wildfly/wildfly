@@ -207,7 +207,7 @@ class ServerInventory implements ManagedServerLifecycleCallback {
 
     /** {@inheritDoc} */
     @Override
-    public void serverRegistered(String serverName, ManagementChannel channel) {
+    public void serverRegistered(String serverName, ManagementChannel channel, ProxyCreatedCallback callback) {
         try {
             final ManagedServer server = servers.get(serverName);
             if (server == null) {
