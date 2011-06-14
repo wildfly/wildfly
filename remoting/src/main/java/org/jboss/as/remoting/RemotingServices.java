@@ -145,6 +145,26 @@ public final class RemotingServices {
     }
 
     /**
+     * Installs the remoting endpoint service. This is ONLY needed for domain mode,
+     * standalone does it from its standalone.xml
+     *
+     * @param serviceTarget the service target to install the services into
+     */
+    public static void installRemotingEndpoint(ServiceTarget serviceTarget) {
+        EndpointService endpointService = new EndpointService();
+        endpointService.setOptionMap(OptionMap.EMPTY);
+        final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
+        //TODO inject this from somewhere?
+        executorInjector.inject(Executors.newCachedThreadPool());
+        serviceTarget.addService(RemotingServices.ENDPOINT, endpointService)
+                //.addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
+                //.addListener(verificationHandler)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+
+    }
+
+    /**
      * Set up the remoting services for a domain controller instance needed for management.
      * This includes setting up the main endpoint, the stream server listening on the management socket, and the main
      * managemenent channel and associated operation handler.
@@ -163,16 +183,6 @@ public final class RemotingServices {
             final ServiceName modelControllerName,
             final NetworkInterfaceBinding networkInterfaceBinding,
             final int port) {
-        EndpointService endpointService = new EndpointService();
-        endpointService.setOptionMap(OptionMap.EMPTY);
-        final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
-        //TODO inject this from somewhere?
-        executorInjector.inject(Executors.newCachedThreadPool());
-        serviceTarget.addService(RemotingServices.ENDPOINT, endpointService)
-                //.addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
-                //.addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
 
         installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBinding, port);
     }
