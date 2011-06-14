@@ -26,8 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.ConnectException;
-import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +44,6 @@ import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
@@ -94,28 +91,62 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
         return new NewRemoteProxyController(executorService, pathAddress, channel);
     }
 
-    /**
-     * Creates a new remote proxy controller connecting to a remote server
-     *
-     * @param executorService the executor to use for the requests
-     * @param pathAddress the address within the model of the created proxy controller
-     * @param hostName the host name of the remote server
-     * @param port the port of the remote server
-     * @param channelName the channel name
-     * @return the proxy controller
-     * @throws IOException if an error occurred
-     * @throws ConnectException if we could not connect to the remote server
-     */
-    public static NewRemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final String hostName, final int port, String channelName) throws IOException {
+//    These methods are not used currently. Leave them there for now in case something needs to use them
+//    /**
+//     * Creates a new remote proxy controller connecting to a remote server. This creates a new remoting endpoint
+//     *
+//     * @param executorService the executor to use for the requests and for the endpoint
+//     * @param pathAddress the address within the model of the created proxy controller
+//     * @param hostName the host name of the remote server
+//     * @param port the port of the remote server
+//     * @param channelName the channel name
+//     * @return the proxy controller
+//     * @throws IOException if an error occurred
+//     * @throws ConnectException if we could not connect to the remote server
+//     */
+//    public static NewRemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final String hostName, final int port, String channelName) throws IOException {
+//        final ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
+//        try {
+//            configuration.setEndpointName("endpoint");
+//            configuration.setUriScheme("remote");
+//            configuration.setUri(new URI("remote://" + hostName +  ":" + port));
+//            configuration.setExecutor(executorService);
+//            configuration.setChannelFactory(new ManagementChannelFactory());
+//        } catch (URISyntaxException e) {
+//            throw new IOException(e);
+//        }
+//        return createConnection(configuration, executorService, pathAddress, channelName);
+//    }
+//
+//    /**
+//     * Creates a new remote proxy controller connecting to a remote server using an exisiting remoting endpoint
+//     *
+//     * @param executorService the executor to use for the requests
+//     * @param endpoint the remoting endpoing
+//     * @param pathAddress the address within the model of the created proxy controller
+//     * @param hostName the host name of the remote server
+//     * @param port the port of the remote server
+//     * @param channelName the channel name
+//     * @return the proxy controller
+//     * @throws IOException if an error occurred
+//     * @throws ConnectException if we could not connect to the remote server
+//     */
+//    public static NewRemoteProxyController create(final ExecutorService executorService, final Endpoint endpoint, final PathAddress pathAddress, final String hostName, final int port, String channelName) throws IOException {
+//        final ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
+//        try {
+//            configuration.setEndpoint(endpoint);
+//            configuration.setUri(new URI("remote://" + hostName +  ":" + port));
+//            configuration.setChannelFactory(new ManagementChannelFactory());
+//        } catch (URISyntaxException e) {
+//            throw new IOException(e);
+//        }
+//        return createConnection(configuration, executorService, pathAddress, channelName);
+//    }
+
+    private static NewRemoteProxyController createConnection(final ProtocolChannelClient.Configuration<ManagementChannel> config, final ExecutorService executorService, final PathAddress pathAddress, String channelName) throws IOException {
         final ProtocolChannelClient<ManagementChannel> client;
         try {
-            final ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
-            configuration.setEndpointName("endpoint");
-            configuration.setUriScheme("remote");
-            configuration.setUri(new URI("remote://" + hostName +  ":" + port));
-            configuration.setExecutor(executorService);
-            configuration.setChannelFactory(new ManagementChannelFactory());
-            client = ProtocolChannelClient.create(configuration);
+            client = ProtocolChannelClient.create(config);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -131,6 +162,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
         channel.startReceiving();
 
         return new NewRemoteProxyController(executorService, pathAddress, channel);
+
     }
 
     /** {@inheritDoc} */

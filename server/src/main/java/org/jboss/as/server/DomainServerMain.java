@@ -173,11 +173,7 @@ public final class DomainServerMain {
     }
 
     private static void addCommunicationServices(final ServiceTarget serviceTarget, final String serverName, final InetSocketAddress managementSocket) {
-        final HostControllerConnectionService hcConnection = new HostControllerConnectionService();
-        serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, hcConnection)
-            .addInjection(hcConnection.getHcAddressInjector(), managementSocket)
-            .setInitialMode(ServiceController.Mode.ACTIVE)
-            .install();
+        HostControllerConnectionService.install(serviceTarget, managementSocket);
 
         final HostControllerServerClient client = new HostControllerServerClient(serverName);
         serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)

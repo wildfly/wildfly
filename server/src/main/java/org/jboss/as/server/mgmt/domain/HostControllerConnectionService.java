@@ -27,20 +27,20 @@ import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.remoting.RemotingServices;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.remoting3.Endpoint;
 
 /**
  * Service used to connect to the host controller.  Will maintain the connection for the length of the service life.
@@ -49,22 +49,33 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class HostControllerConnectionService implements Service<ManagementChannel> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "channel");
-    private final InjectedValue<InetSocketAddress> hcAddress = new InjectedValue<InetSocketAddress>();
+    private final InjectedValue<InetSocketAddress> hcAddressInjector = new InjectedValue<InetSocketAddress>();
+    private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
 
     private volatile ManagementChannel channel;
     private volatile ProtocolChannelClient<ManagementChannel> client;
+
+
+    private HostControllerConnectionService() {
+    }
+
+    public static void install(ServiceTarget serviceTarget, final InetSocketAddress managementSocket) {
+        final HostControllerConnectionService hcConnection = new HostControllerConnectionService();
+        serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, hcConnection)
+            .addInjection(hcConnection.hcAddressInjector, managementSocket)
+            .addDependency(RemotingServices.ENDPOINT, Endpoint.class, hcConnection.endpointInjector)
+            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .install();
+    }
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
 
         ProtocolChannelClient<ManagementChannel> client;
         try {
-            ExecutorService executorService = Executors.newCachedThreadPool();
             ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
-            configuration.setEndpointName("endpoint");
-            configuration.setUriScheme("remote");
-            configuration.setUri(new URI("remote://" + hcAddress.getValue().getHostName() + ":" + hcAddress.getValue().getPort()));
-            configuration.setExecutor(executorService);
+            configuration.setEndpoint(endpointInjector.getValue());
+            configuration.setUri(new URI("remote://" + hcAddressInjector.getValue().getHostName() + ":" + hcAddressInjector.getValue().getPort()));
             configuration.setChannelFactory(new ManagementChannelFactory());
             client = ProtocolChannelClient.create(configuration);
         } catch (Exception e) {
@@ -91,14 +102,5 @@ public class HostControllerConnectionService implements Service<ManagementChanne
     /** {@inheritDoc} */
     public synchronized ManagementChannel getValue() throws IllegalStateException {
         return channel;
-    }
-
-    /**
-     * Get the host controller address injector.
-     *
-     * @return The injector
-     */
-    public Injector<InetSocketAddress> getHcAddressInjector() {
-        return hcAddress;
     }
 }

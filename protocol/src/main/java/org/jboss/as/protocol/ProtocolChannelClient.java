@@ -27,6 +27,9 @@ import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -58,6 +61,7 @@ import org.xnio.Xnio;
  * @version $Revision: 1.1 $
  */
 public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeable {
+    private final boolean startedEndpoint;
     private final Endpoint endpoint;
     private final URI uri;
     private final ReadChannelThread readChannelThread;
@@ -65,7 +69,13 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
     private final ConnectionChannelThread connectionChannelThread;
     private final ProtocolChannelFactory<T> channelFactory;
     private volatile Connection connection;
-    private volatile T channel;
+    private final Set<T> channels = Collections.synchronizedSet(new HashSet<T>());
+
+    private ProtocolChannelClient(final Endpoint endpoint,
+            final URI uri,
+            final ProtocolChannelFactory<T> channelFactory) {
+        this(false, endpoint, uri, null, null, null, channelFactory);
+    }
 
     private ProtocolChannelClient(final Endpoint endpoint,
             final URI uri,
@@ -73,6 +83,17 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             final WriteChannelThread writeChannelThread,
             final ConnectionChannelThread connectionChannelThread,
             final ProtocolChannelFactory<T> channelFactory) {
+        this(true, endpoint, uri, readChannelThread, writeChannelThread, connectionChannelThread, channelFactory);
+    }
+
+    private ProtocolChannelClient(final boolean startedEndpoint,
+            final Endpoint endpoint,
+            final URI uri,
+            final ReadChannelThread readChannelThread,
+            final WriteChannelThread writeChannelThread,
+            final ConnectionChannelThread connectionChannelThread,
+            final ProtocolChannelFactory<T> channelFactory) {
+        this.startedEndpoint = startedEndpoint;
         this.endpoint = endpoint;
         this.uri = uri;
         this.readChannelThread = readChannelThread;
@@ -87,25 +108,30 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         }
         configuration.validate();
 
-        final Endpoint endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getExecutor(), configuration.getOptionMap());
-        Xnio xnio;
-        try {
-            xnio = XnioUtil.getXnio();
-        } catch (ModuleLoadException e) {
-            throw new RuntimeException(e);
+        final Endpoint endpoint;
+        if (configuration.getEndpoint() != null) {
+            endpoint = configuration.getEndpoint();
+            return new ProtocolChannelClient<T>(endpoint, configuration.getUri(), configuration.getChannelFactory());
+        } else {
+            endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getExecutor(), configuration.getOptionMap());
+            Xnio xnio;
+            try {
+                xnio = XnioUtil.getXnio();
+            } catch (ModuleLoadException e) {
+                throw new RuntimeException(e);
+            }
+            final ReadChannelThread readChannelThread = xnio.createReadChannelThread(configuration.getReadChannelThreadFactory());
+            final WriteChannelThread writeChannelThread = xnio.createWriteChannelThread(configuration.getWriteChannelThreadFactory());
+            final ConnectionChannelThread connectionChannelThread = xnio.createReadChannelThread(configuration.getConnectionChannelThreadFactory());
+
+            final ChannelThreadPool<ReadChannelThread> readPool = ChannelThreadPools.singleton(readChannelThread);
+            final ChannelThreadPool<WriteChannelThread> writePool = ChannelThreadPools.singleton(writeChannelThread);
+            final ChannelThreadPool<ConnectionChannelThread> connectionPool = ChannelThreadPools.singleton(connectionChannelThread);
+            final Pool<ByteBuffer> bufferPool = Buffers.allocatedBufferPool(BufferAllocator.BYTE_BUFFER_ALLOCATOR, 8192);
+
+            endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(xnio, bufferPool, readPool, writePool, connectionPool));
+            return new ProtocolChannelClient<T>(endpoint, configuration.getUri(), readChannelThread, writeChannelThread, connectionChannelThread, configuration.getChannelFactory());
         }
-        final ReadChannelThread readChannelThread = xnio.createReadChannelThread(configuration.getReadChannelThreadFactory());
-        final WriteChannelThread writeChannelThread = xnio.createWriteChannelThread(configuration.getWriteChannelThreadFactory());
-        final ConnectionChannelThread connectionChannelThread = xnio.createReadChannelThread(configuration.getConnectionChannelThreadFactory());
-
-        final ChannelThreadPool<ReadChannelThread> readPool = ChannelThreadPools.singleton(readChannelThread);
-        final ChannelThreadPool<WriteChannelThread> writePool = ChannelThreadPools.singleton(writeChannelThread);
-        final ChannelThreadPool<ConnectionChannelThread> connectionPool = ChannelThreadPools.singleton(connectionChannelThread);
-        final Pool<ByteBuffer> bufferPool = Buffers.allocatedBufferPool(BufferAllocator.BYTE_BUFFER_ALLOCATOR, 8192);
-
-        endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(xnio, bufferPool, readPool, writePool, connectionPool));
-
-        return new ProtocolChannelClient<T>(endpoint, configuration.getUri(), readChannelThread, writeChannelThread, connectionChannelThread, configuration.getChannelFactory());
     }
 
     public Connection connect() throws IOException {
@@ -134,29 +160,36 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             throw new IllegalStateException("Not connected");
         }
         Channel channel = connection.openChannel(channelName, OptionMap.EMPTY).get();
-        this.channel = channelFactory.create(channelName, channel);
-        return this.channel;
+        T wrapped = channelFactory.create(channelName, channel);
+        channels.add(wrapped);
+        return wrapped;
     }
 
     public void close() {
-        if (channel != null) {
-            try {
-                channel.writeShutdown();
-            } catch (IOException ignore) {
+        synchronized (channels) {
+            for (T channel : channels) {
+                try {
+                    channel.writeShutdown();
+                } catch (IOException ignore) {
+                }
+                IoUtils.safeClose(channel);
+                try {
+                    channel.awaitClosed();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
-            IoUtils.safeClose(channel);
-            try {
-                channel.awaitClosed();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            channels.clear();
         }
-        IoUtils.safeClose(connection);
-        IoUtils.safeClose(endpoint);
 
-        readChannelThread.shutdown();
-        writeChannelThread.shutdown();
-        connectionChannelThread.shutdown();
+        IoUtils.safeClose(connection);
+
+        if (startedEndpoint) {
+            IoUtils.safeClose(endpoint);
+            readChannelThread.shutdown();
+            writeChannelThread.shutdown();
+            connectionChannelThread.shutdown();
+        }
     }
 
     public static final class Configuration<T extends ProtocolChannel> {
@@ -182,15 +215,47 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             if (optionMap == null) {
                 throw new IllegalArgumentException("Null option map");
             }
-            if (uriScheme == null) {
-                throw new IllegalArgumentException("Null protocol name");
+            if (uriScheme == null && endpoint == null) {
+                throw new IllegalArgumentException("Null uriScheme name");
+            }
+            if (uriScheme != null && endpoint != null) {
+                throw new IllegalArgumentException("Can't set uriScheme with specified endpoint");
             }
             if (uri == null) {
                 throw new IllegalArgumentException("Null uri");
             }
+            if (endpoint != null){
+                //The below does not work so just hard code it for now
+                if (!uri.getScheme().equals("remote")) {
+                    throw new IllegalArgumentException("Only 'remote' is a valid url");
+                }
+                /*try {
+                    endpoint.getConnectionProviderInterface(uri.getScheme(), ConnectionProviderFactory.class);
+                } catch (UnknownURISchemeException e) {
+                    throw new IllegalArgumentException("No " + uri.getScheme() + " registered in endpoint");
+                }*/
+            } else {
+                if (!uriScheme.equals(uri.getScheme())) {
+                    throw new IllegalArgumentException("Scheme " + uriScheme + " does not match uri " + uri);
+                }
+            }
+            if (endpoint != null && executor != null) {
+                throw new IllegalArgumentException("Don't need an executor when specified endpoint");
+            }
+            if (endpoint == null && executor == null) {
+                throw new IllegalArgumentException("Don't need an executor when specified endpoint");
+            }
             if (channelFactory == null) {
                 throw new IllegalArgumentException("Null channel factory");
             }
+        }
+
+        public Endpoint getEndpoint() {
+            return endpoint;
+        }
+
+        public void setEndpoint(Endpoint endpoint) {
+            this.endpoint = endpoint;
         }
 
         public void setEndpointName(String endpointName) {
