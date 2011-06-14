@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.component.security;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
@@ -64,7 +65,13 @@ public class AuthorizationInterceptor implements Interceptor {
             final Collection<String> allowedRoles = securityMetaData.getAllowedRoles(viewClassName, invokedMethod);
             if (!allowedRoles.isEmpty()) {
                 // call the picketbox API to do authorization check
-                logger.warn("PicketBox integration isn't yet implemented. Authorization check for allowed roles: " + allowedRoles + " isn't functional!");
+                final SimpleSecurityManager securityManager = ejbComponent.getSecurityManager();
+                // TODO - SecurityManager isCallerInRoles is not valid for this call.
+                if (!securityManager._isCallerInRole(allowedRoles.toArray(new String[allowedRoles.size()]))) {
+                    throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " +
+                            ejbComponent.getComponentName() + " is not allowed because caller is *not* in any of the " +
+                            "allowed roles: " + allowedRoles);
+                }
             }
 
         }
