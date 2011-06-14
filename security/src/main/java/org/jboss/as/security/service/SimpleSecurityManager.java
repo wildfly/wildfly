@@ -23,6 +23,8 @@ package org.jboss.as.security.service;
 
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
+import org.jboss.security.RunAs;
+import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextUtil;
@@ -150,7 +152,7 @@ public class SimpleSecurityManager {
      * @param runAsPrincipal
      */
     public void push(final String securityDomain, final String runAs, final String runAsPrincipal) {
-        // TODO - Handle a null securityDomain here?
+        // TODO - Handle a null securityDomain here?  Yes I think so.
         final SecurityContext previous = SecurityContextAssociation.getSecurityContext();
         contexts.push(previous);
         SecurityContext current = SecurityFactory.establishSecurityContext(securityDomain);
@@ -159,12 +161,16 @@ public class SimpleSecurityManager {
             current.setIncomingRunAs(previous.getOutgoingRunAs());
         }
 
-        // TODO - Check for incoming RunAsIdentity
         // TODO - Set unauthenticated identity if no auth to occur
         boolean authenticated = authenticate(current);
         if (authenticated == false) {
             // TODO - Better type needed.
             throw new SecurityException("Invalid User");
+        }
+
+        if (runAs != null) {
+            RunAs runAsIdentity = new RunAsIdentity(runAs, null);
+            current.setOutgoingRunAs(runAsIdentity);
         }
     }
 
