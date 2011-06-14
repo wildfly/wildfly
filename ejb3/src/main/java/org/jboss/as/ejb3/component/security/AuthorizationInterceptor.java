@@ -27,14 +27,21 @@ import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 
 import javax.ejb.EJBAccessException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 /**
  * User: Jaikiran Pai
  */
 public class AuthorizationInterceptor implements Interceptor {
+
+    /**
+     * Logger
+     */
+    private static final Logger logger = Logger.getLogger(AuthorizationInterceptor.class);
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
@@ -45,18 +52,23 @@ public class AuthorizationInterceptor implements Interceptor {
         final ComponentViewInstance viewInstance = context.getPrivateData(ComponentViewInstance.class);
         final Method invokedMethod = context.getMethod();
         final EJBComponent ejbComponent = (EJBComponent) component;
-        if (this.isAccessDenied(ejbComponent, viewInstance, invokedMethod)) {
-            throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " + ejbComponent.getComponentName() + " is not allowed");
+        final EJBSecurityMetaData securityMetaData = ejbComponent.getSecurityMetaData();
+        // TODO: FIXME: Currently WS view invocations don't pass the ComponentViewInstance
+        if (viewInstance != null) {
+            final String viewClassName = viewInstance.getViewClass().getName();
+            // check @DenyAll/exclude-list
+            if (securityMetaData.isMethodAccessDenied(viewClassName, invokedMethod)) {
+                throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " + ejbComponent.getComponentName() + " is not allowed");
+            }
+            // get allowed roles (if any) for this method invocation
+            final Collection<String> allowedRoles = securityMetaData.getAllowedRoles(viewClassName, invokedMethod);
+            if (!allowedRoles.isEmpty()) {
+                // call the picketbox API to do authorization check
+                logger.warn("PicketBox integration isn't yet implemented. Authorization check for allowed roles: " + allowedRoles + " isn't functional!");
+            }
+
         }
         return context.proceed();
     }
 
-    private boolean isAccessDenied(final EJBComponent ejbComponent, final ComponentViewInstance viewInstance, final Method invokedMethod) {
-        final EJBSecurityMetaData securityMetaData = ejbComponent.getSecurityMetaData();
-        // FIXME: Currently WS view invocations don't pass the ComponentViewInstance
-        if (viewInstance == null) {
-            return false;
-        }
-        return securityMetaData.isMethodAccessDenied(viewInstance.getViewClass().getName(), invokedMethod);
-    }
 }

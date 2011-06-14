@@ -53,6 +53,8 @@ public class EJBSecurityMetaData {
 
     private final Map<String, Collection<Method>> accessDeniedMethodsOnView = new HashMap<String, Collection<Method>>();
 
+    private final Map<String, Map<Method, Set<String>>> rolesAllowedForMethodsPerView = new HashMap<String, Map<Method, Set<String>>>();
+
     public EJBSecurityMetaData(final ComponentConfiguration componentConfiguration) {
         if (componentConfiguration.getComponentDescription() instanceof EJBComponentDescription == false) {
             throw new IllegalArgumentException(componentConfiguration.getComponentName() + " is not an EJB component");
@@ -66,6 +68,8 @@ public class EJBSecurityMetaData {
         this.declaredRoles = roles == null ? Collections.<String>emptySet() : Collections.unmodifiableSet(roles);
         // process @DenyAll/exclude-list
         this.processDenyAll(componentConfiguration);
+        // process @RolesAllowed/method-permission
+        this.processRolesAllowed(componentConfiguration);
 
     }
 
@@ -91,10 +95,13 @@ public class EJBSecurityMetaData {
         return this.securityDomain;
     }
 
-    // TODO: Need to revisit this API. This is supposed to be usable from a interceptor for getting the
-    // allowed roles on a method invocation.
     public Set<String> getAllowedRoles(final String viewClassName, final Method method) {
-        return null;
+        final Map<Method, Set<String>> rolesAllowedPerView = this.rolesAllowedForMethodsPerView.get(viewClassName);
+        if (rolesAllowedPerView == null) {
+            return Collections.emptySet();
+        }
+        final Set<String> allowedRoles = rolesAllowedPerView.get(method);
+        return allowedRoles == null ? Collections.<String>emptySet() : allowedRoles;
     }
 
     public boolean isMethodAccessDenied(final String viewClassName, final Method method) {
@@ -127,6 +134,7 @@ public class EJBSecurityMetaData {
                     continue;
                 }
                 // check on class level
+
                 final Class<?> declaringClass = componentMethod.getDeclaringClass();
                 if (ejbComponentDescription.isDenyAllApplicableToClass(viewClassName, declaringClass.getName())) {
                     this.applyDenyAll(viewClassName, componentMethod);
@@ -144,6 +152,51 @@ public class EJBSecurityMetaData {
             this.accessDeniedMethodsOnView.put(viewClassName, accessDeniedMethods);
         }
         accessDeniedMethods.add(componentMethod);
+    }
+
+    private void processRolesAllowed(final ComponentConfiguration componentConfiguration) {
+
+        List<ViewConfiguration> views = componentConfiguration.getViews();
+        if (views == null || views.isEmpty()) {
+            return;
+        }
+        final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
+        for (ViewConfiguration view : views) {
+            final String viewClassName = view.getViewClass().getName();
+            final Method[] viewMethods = view.getProxyFactory().getCachedMethods();
+            for (final Method viewMethod : viewMethods) {
+                // find the component method corresponding to this view method
+                final Method componentMethod = this.findComponentMethod(componentConfiguration, viewMethod);
+                final EJBMethodIdentifier ejbMethodIdentifier = EJBMethodIdentifier.fromMethod(componentMethod);
+                final Collection<String> rolesAllowed = ejbComponentDescription.getRolesAllowed(viewClassName, ejbMethodIdentifier);
+                if (!rolesAllowed.isEmpty()) {
+                    this.addRolesAllowed(viewClassName, componentMethod, rolesAllowed);
+                    continue;
+                }
+                // there were no method level @RolesAllowed, so check on class level
+                final Class<?> declaringClass = componentMethod.getDeclaringClass();
+                final Collection<String> classLevelRolesAllowed = ejbComponentDescription.getRolesAllowedForClass(viewClassName, declaringClass.getName());
+                if (!classLevelRolesAllowed.isEmpty()) {
+                    this.addRolesAllowed(viewClassName, componentMethod, classLevelRolesAllowed);
+                    continue;
+                }
+            }
+        }
+
+    }
+
+    private void addRolesAllowed(final String viewClassName, final Method componentMethod, final Collection<String> roles) {
+        Map<Method, Set<String>> perViewRoles = this.rolesAllowedForMethodsPerView.get(viewClassName);
+        if (perViewRoles == null) {
+            perViewRoles = new HashMap<Method, Set<String>>();
+            this.rolesAllowedForMethodsPerView.put(viewClassName, perViewRoles);
+        }
+        Set<String> rolesAllowedForMethod = perViewRoles.get(componentMethod);
+        if (rolesAllowedForMethod == null) {
+            rolesAllowedForMethod = new HashSet<String>();
+            perViewRoles.put(componentMethod, rolesAllowedForMethod);
+        }
+        rolesAllowedForMethod.addAll(roles);
     }
 
     private Method findComponentMethod(final ComponentConfiguration componentConfiguration, final Method viewMethod) {

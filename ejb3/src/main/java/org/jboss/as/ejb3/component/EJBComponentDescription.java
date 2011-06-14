@@ -89,9 +89,22 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     private String runAsRole;
 
-    private Map<String, Collection<EJBMethodIdentifier>> denyAllApplicableMethods = new HashMap<String, Collection<EJBMethodIdentifier>>();
+    /**
+     * The @DenyAll/exclude-list map of methods. The key is the view class name and the value is a collection of EJB methods
+     * which are marked for @DenyAll/exclude-list
+     */
+    private final Map<String, Collection<EJBMethodIdentifier>> methodLevelDenyAll = new HashMap<String, Collection<EJBMethodIdentifier>>();
 
-    private Map<String, Collection<String>> denyAllApplicableClasses = new HashMap<String, Collection<String>>();
+    /**
+     * The class level @DenyAll/exclude-list map. The key is the view class name and the value is a collection of classes,
+     * in the class hierarchy of the EJB implementation class (ex: EJB implementation class' super class),
+     * which have been marked with @DenyAll.
+     */
+    private final Map<String, Collection<String>> classLevelDenyAll = new HashMap<String, Collection<String>>();
+
+    private final Map<String, Map<EJBMethodIdentifier, Collection<String>>> methodLevelRolesAllowed = new HashMap<String, Map<EJBMethodIdentifier, Collection<String>>>();
+
+    private final Map<String, Map<String, Collection<String>>> classLevelRolesAllowed = new HashMap<String, Map<String, Collection<String>>>();
 
     /**
      * Stores around invoke methods that are referenced in the DD that cannot be resolved until the module is loaded
@@ -367,10 +380,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             throw new IllegalArgumentException("Classname cannot be null or empty: " + className);
         }
         for (final ViewDescription view : this.getViews()) {
-            Collection<String> denyAllClasses = this.denyAllApplicableClasses.get(view.getViewClassName());
+            Collection<String> denyAllClasses = this.classLevelDenyAll.get(view.getViewClassName());
             if (denyAllClasses == null) {
                 denyAllClasses = new HashSet<String>();
-                this.denyAllApplicableClasses.put(view.getViewClassName(), denyAllClasses);
+                this.classLevelDenyAll.put(view.getViewClassName(), denyAllClasses);
             }
             denyAllClasses.add(className);
         }
@@ -378,10 +391,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void applyDenyAllOnAllViewsForMethod(final EJBMethodIdentifier ejbMethodIdentifier) {
         for (final ViewDescription view : this.getViews()) {
-            Collection<EJBMethodIdentifier> denyAllViewMethods = this.denyAllApplicableMethods.get(view.getViewClassName());
+            Collection<EJBMethodIdentifier> denyAllViewMethods = this.methodLevelDenyAll.get(view.getViewClassName());
             if (denyAllViewMethods == null) {
                 denyAllViewMethods = new ArrayList<EJBMethodIdentifier>();
-                this.denyAllApplicableMethods.put(view.getViewClassName(), denyAllViewMethods);
+                this.methodLevelDenyAll.put(view.getViewClassName(), denyAllViewMethods);
             }
             denyAllViewMethods.add(ejbMethodIdentifier);
         }
@@ -399,10 +412,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             if (ejbView.getMethodIntf() != viewType) {
                 continue;
             }
-            Collection<EJBMethodIdentifier> denyAllViewMethods = this.denyAllApplicableMethods.get(view.getViewClassName());
+            Collection<EJBMethodIdentifier> denyAllViewMethods = this.methodLevelDenyAll.get(view.getViewClassName());
             if (denyAllViewMethods == null) {
                 denyAllViewMethods = new ArrayList<EJBMethodIdentifier>();
-                this.denyAllApplicableMethods.put(view.getViewClassName(), denyAllViewMethods);
+                this.methodLevelDenyAll.put(view.getViewClassName(), denyAllViewMethods);
             }
             denyAllViewMethods.add(ejbMethodIdentifier);
         }
@@ -426,17 +439,17 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 continue;
             }
             // now apply the @DenyAll on class level for this view
-            Collection<String> denyAllApplicableClasses = this.denyAllApplicableClasses.get(ejbView.getViewClassName());
+            Collection<String> denyAllApplicableClasses = this.classLevelDenyAll.get(ejbView.getViewClassName());
             if (denyAllApplicableClasses == null) {
                 denyAllApplicableClasses = new HashSet<String>();
-                this.denyAllApplicableClasses.put(ejbView.getViewClassName(), denyAllApplicableClasses);
+                this.classLevelDenyAll.put(ejbView.getViewClassName(), denyAllApplicableClasses);
             }
             denyAllApplicableClasses.add(this.getEJBClassName());
         }
     }
 
     public Collection<EJBMethodIdentifier> getDenyAllMethodsForView(final String viewClassName) {
-        final Collection<EJBMethodIdentifier> denyAllMethods = this.denyAllApplicableMethods.get(viewClassName);
+        final Collection<EJBMethodIdentifier> denyAllMethods = this.methodLevelDenyAll.get(viewClassName);
         if (denyAllMethods != null) {
             return Collections.unmodifiableCollection(denyAllMethods);
         }
@@ -444,11 +457,123 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     public boolean isDenyAllApplicableToClass(final String viewClassName, final String className) {
-        final Collection<String> denyAllApplicableClasses = this.denyAllApplicableClasses.get(viewClassName);
+        final Collection<String> denyAllApplicableClasses = this.classLevelDenyAll.get(viewClassName);
         if (denyAllApplicableClasses == null) {
             return false;
         }
         return denyAllApplicableClasses.contains(className);
+    }
+
+    public void addRolesAllowedOnAllViewsForClass(final String className, final Collection<String> roles) {
+        if (className == null || className.trim().isEmpty()) {
+            throw new IllegalArgumentException("Classname cannot be null or empty: " + className);
+        }
+        for (final ViewDescription view : this.getViews()) {
+            Map<String, Collection<String>> perViewRoles = this.classLevelRolesAllowed.get(view.getViewClassName());
+            if (perViewRoles == null) {
+                perViewRoles = new HashMap<String, Collection<String>>();
+                this.classLevelRolesAllowed.put(view.getViewClassName(), perViewRoles);
+            }
+            Collection<String> perClassRoles = perViewRoles.get(className);
+            if (perClassRoles == null) {
+                perClassRoles = new HashSet<String>();
+                perViewRoles.put(className, perClassRoles);
+            }
+            perClassRoles.addAll(roles);
+        }
+    }
+
+    public void addRolesAllowedForAllMethodsOfAllViews(final Collection<String> roles) {
+        // "All methods" implies a class level @RolesAllowed (a.k.a security-role)
+        this.addRolesAllowedOnAllViewsForClass(this.getEJBClassName(), roles);
+    }
+
+    public void addRolesAllowedOnAllViewsForMethod(final EJBMethodIdentifier ejbMethodIdentifier, final Collection<String> roles) {
+        for (final ViewDescription view : this.getViews()) {
+            Map<EJBMethodIdentifier, Collection<String>> perViewMethodRoles = this.methodLevelRolesAllowed.get(view.getViewClassName());
+            if (perViewMethodRoles == null) {
+                perViewMethodRoles = new HashMap<EJBMethodIdentifier, Collection<String>>();
+                this.methodLevelRolesAllowed.put(view.getViewClassName(), perViewMethodRoles);
+            }
+            Collection<String> perMethodRoles = perViewMethodRoles.get(ejbMethodIdentifier);
+            if (perMethodRoles == null) {
+                perMethodRoles = new HashSet<String>();
+                perViewMethodRoles.put(ejbMethodIdentifier, perMethodRoles);
+            }
+            perMethodRoles.addAll(roles);
+        }
+    }
+
+    public void addRolesAllowedForAllMethodsOnViewType(final MethodIntf viewType, final Collection<String> roles) {
+        // find the right view(s) to apply the @RolesAllowed
+        for (final ViewDescription view : this.getViews()) {
+            // shouldn't really happen
+            if (view instanceof EJBViewDescription == false) {
+                continue;
+            }
+            final EJBViewDescription ejbView = (EJBViewDescription) view;
+            // skip irrelevant views
+            if (ejbView.getMethodIntf() != viewType) {
+                continue;
+            }
+            // now apply the @RolesAllowed on class level for this view
+            Map<String, Collection<String>> perViewRoles = this.classLevelRolesAllowed.get(view.getViewClassName());
+            if (perViewRoles == null) {
+                perViewRoles = new HashMap<String, Collection<String>>();
+                this.classLevelRolesAllowed.put(view.getViewClassName(), perViewRoles);
+            }
+            Collection<String> perClassRoles = perViewRoles.get(view.getViewClassName());
+            if (perClassRoles == null) {
+                perClassRoles = new HashSet<String>();
+                perViewRoles.put(view.getViewClassName(), perClassRoles);
+            }
+            perClassRoles.addAll(roles);
+
+        }
+    }
+
+    public void addRolesAllowedForMethodOnViewType(final MethodIntf viewType, final EJBMethodIdentifier ejbMethodIdentifier, final Collection<String> roles) {
+        // find the right view(s) to apply the @RolesAllowed
+        for (final ViewDescription view : this.getViews()) {
+            // shouldn't really happen
+            if (view instanceof EJBViewDescription == false) {
+                continue;
+            }
+            final EJBViewDescription ejbView = (EJBViewDescription) view;
+            // skip irrelevant views
+            if (ejbView.getMethodIntf() != viewType) {
+                continue;
+            }
+            Map<EJBMethodIdentifier, Collection<String>> perViewMethodRoles = this.methodLevelRolesAllowed.get(view.getViewClassName());
+            if (perViewMethodRoles == null) {
+                perViewMethodRoles = new HashMap<EJBMethodIdentifier, Collection<String>>();
+                this.methodLevelRolesAllowed.put(view.getViewClassName(), perViewMethodRoles);
+            }
+            Collection<String> perMethodRoles = perViewMethodRoles.get(ejbMethodIdentifier);
+            if (perMethodRoles == null) {
+                perMethodRoles = new HashSet<String>();
+                perViewMethodRoles.put(ejbMethodIdentifier, perMethodRoles);
+            }
+            perMethodRoles.addAll(roles);
+        }
+    }
+
+    public Collection<String> getRolesAllowed(final String viewClassName, final EJBMethodIdentifier method) {
+        final Map<EJBMethodIdentifier, Collection<String>> methods = this.methodLevelRolesAllowed.get(viewClassName);
+        if (methods == null || methods.get(method) == null) {
+            return Collections.emptySet();
+        }
+
+        return methods.get(method);
+    }
+
+    public Collection<String> getRolesAllowedForClass(final String viewClassName, final String className) {
+        final Map<String, Collection<String>> perClassRoles = this.classLevelRolesAllowed.get(viewClassName);
+        if (perClassRoles == null || perClassRoles.get(className) == null) {
+            return Collections.emptySet();
+        }
+
+        return perClassRoles.get(className);
     }
 
     /**

@@ -105,5 +105,7 @@ public class EJBSecurityTestCase {
         } catch (EJBAccessException ejbae) {
             // expected
         }
+
+        ddBasedSLSB.onlyTestRoleCanAccess();
     }
 }

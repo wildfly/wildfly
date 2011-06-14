@@ -22,23 +22,26 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ejb3.EJBMethodIdentifier;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
-import org.jboss.jandex.Type;
 
 import javax.annotation.security.RolesAllowed;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 /**
- * User: jpai
+ * Processes {@link RolesAllowed} annotation on EJB component.
+ * <p/>
+ * <p/>
+ * User: Jaikiran Pai
  */
 public class RolesAllowedProcessor extends AbstractAnnotationEJBProcessor<EJBComponentDescription> {
 
@@ -69,9 +72,12 @@ public class RolesAllowedProcessor extends AbstractAnnotationEJBProcessor<EJBCom
                 final AnnotationTarget target = rolesAllowedAnnotation.target();
                 final String[] roles = rolesAllowedAnnotation.value().asStringArray();
                 if (target instanceof ClassInfo) {
-                    // TODO: Add implementation
+                    final String className = ((ClassInfo) target).name().toString();
+                    componentDescription.addRolesAllowedOnAllViewsForClass(className, Arrays.asList(roles));
+
                 } else if (target instanceof MethodInfo) {
-                    // TODO: Add implementation
+                    final EJBMethodIdentifier ejbMethodIdentifier = EJBMethodIdentifier.fromMethodInfo((MethodInfo) target);
+                    componentDescription.addRolesAllowedOnAllViewsForMethod(ejbMethodIdentifier, Arrays.asList(roles));
                 }
             }
             // move to super class
