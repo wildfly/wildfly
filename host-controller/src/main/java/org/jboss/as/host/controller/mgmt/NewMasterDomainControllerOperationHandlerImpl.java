@@ -68,12 +68,6 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
         this.domainController = domainController;
         this.registry = registry;
         this.clientHandler = new NewModelControllerClientOperationHandler(executorService, controller);
-        registry.setProxyCreatedCallback(new ProxyCreatedCallback() {
-            @Override
-            public void proxyCreated(ManagementOperationHandler handler) {
-                proxyHandler = handler;
-            }
-        });
     }
 
     @Override
@@ -126,7 +120,12 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
 
             String error = null;
             try {
-                registry.registerChannel(hostId, getContext().getChannel());
+                registry.registerChannel(hostId, getContext().getChannel(), new ProxyCreatedCallback() {
+                    @Override
+                    public void proxyCreated(ManagementOperationHandler handler) {
+                        proxyHandler = handler;
+                    }
+                });
 
                 ModelNode op = new ModelNode();
                 op.get(OP).set(ReadMasterDomainModelHandler.OPERATION_NAME);

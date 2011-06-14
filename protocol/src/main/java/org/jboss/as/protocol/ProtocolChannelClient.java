@@ -319,6 +319,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         }
 
         public void setExecutor(final Executor readExecutor) {
+            new Exception("===== Setting executor").printStackTrace();
             this.executor = readExecutor;
         }
 
