@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.jboss.as.domain.controller;
+package org.jboss.as.domain.controller.operations.coordination;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
@@ -41,6 +41,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -131,7 +132,7 @@ public class ServerOperationResolver {
 
     private final String localHostName;
 
-    ServerOperationResolver(final String localHostName) {
+    public ServerOperationResolver(final String localHostName) {
         this.localHostName = localHostName;
     }
 

@@ -35,6 +35,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STE
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,9 +77,32 @@ public class OperationSlaveStepHandler implements NewStepHandler {
         ParsedOp parsedOp = parseOperation(operation, 0, context.getModel());
         ModelNode domainOp = parsedOp.getDomainOperation();
 
-        // TODO add steps to execute and ServerOperationResolver steps to figure out the domain operations
+        if (domainOp.isDefined()) {
+            addBasicStep(context, domainOp, response);
+        }
 
-        throw new UnsupportedOperationException();
+        ModelNode resolveOp = Util.getEmptyOperation(ServerOperationsResolverHandler.OPERATION_NAME, new ModelNode());
+        ServerOperationResolver resolver = new ServerOperationResolver(localHostControllerInfo.getLocalHostName());
+        ServerOperationsResolverHandler sorh = new ServerOperationsResolverHandler(localHostControllerInfo.getLocalHostName(), resolver, parsedOp, response, recordResponse);
+        context.addStep(response, resolveOp, sorh, NewOperationContext.Stage.DOMAIN);
+
+        context.completeStep();
+    }
+
+    /**
+     * Directly handles the op in the standard way the default prepare step handler would
+     * @param context the operation execution context
+     * @param operation the operation
+     * @throws OperationFailedException
+     */
+    private void addBasicStep(NewOperationContext context, ModelNode operation, ModelNode response) throws OperationFailedException {
+        final String operationName =  operation.require(OP).asString();
+        final NewStepHandler stepHandler = context.getModelNodeRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
+        if(stepHandler != null) {
+            context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
+        } else {
+            throw new OperationFailedException(new ModelNode().set(String.format("No handler for operation %s at address %s", operationName, PathAddress.pathAddress(operation.get(OP_ADDR)))));
+        }
     }
 
     private String getLocalHostName() {
@@ -136,12 +161,6 @@ public class OperationSlaveStepHandler implements NewStepHandler {
         return result;
     }
 
-    private interface ParsedOp {
-        ModelNode getDomainOperation();
-        ModelNode getFormattedDomainResult(ModelNode resultNode);
-        ModelNode getFormattedDomainCompensatingOp(ModelNode unformatted);
-    }
-
     private class SimpleParsedOp implements ParsedOp {
         private final String domainStep;
         private final ModelNode domainOp;
@@ -176,15 +195,19 @@ public class OperationSlaveStepHandler implements NewStepHandler {
         }
 
         @Override
+        public Map<Set<ServerIdentity>, ModelNode> getServerOps(ServerOperationProvider provider) {
+            Map<Set<ServerIdentity>, ModelNode> result = serverOps;
+            if (serverOps == null) {
+                result = provider.getServerOperations(domainOp, domainOpAddress);
+            }
+            return result;
+        }
+
+        @Override
         public ModelNode getFormattedDomainResult(ModelNode resultNode) {
             ModelNode formatted = new ModelNode();
             formatted.get(domainStep).set(resultNode);
             return formatted;
-        }
-
-        @Override
-        public ModelNode getFormattedDomainCompensatingOp(ModelNode unformatted) {
-            return unformatted;
         }
 
 
@@ -195,95 +218,93 @@ public class OperationSlaveStepHandler implements NewStepHandler {
 
     private class ParsedMultiStepOp implements ParsedOp {
 
-        private final String domainStep;
         private final List<ParsedOp> steps;
 
         private ParsedMultiStepOp(final int index, final List<ParsedOp> steps) {
-            this.domainStep = "step-" + (index + 1);
             this.steps = steps;
         }
 
-//        @Override
-//        public Map<Set<ServerIdentity>, ModelNode> getServerOps(ModelNode domainModel, ModelNode hostModel) {
-//            Map<Set<ServerIdentity>, List<ModelNode>> buildingBlocks = new HashMap<Set<ServerIdentity>, List<ModelNode>>();
-//            for (ParsedOp step : steps) {
-//                Map<Set<ServerIdentity>, ModelNode> stepResult = step.getServerOps(domainModel, hostModel);
-//                if (stepResult.size() == 0) {
-//                    continue;
-//                }
-//                else if (buildingBlocks.size() == 0) {
-//                    for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : stepResult.entrySet()) {
-//                        List<ModelNode> list = new ArrayList<ModelNode>();
-//                        list.add(entry.getValue());
-//                        buildingBlocks.put(entry.getKey(), list);
-//                    }
-//                }
-//                else {
-//                    for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : stepResult.entrySet()) {
-//                        List<ModelNode> existingOp = buildingBlocks.get(entry.getKey());
-//                        if (existingOp != null) {
-//                            existingOp.add(entry.getValue());
-//                        }
-//                        else {
-//                            Set<ServerIdentity> newSet = new HashSet<ServerIdentity>(entry.getKey());
-//                            Set<Set<ServerIdentity>> existingSets = new HashSet<Set<ServerIdentity>>(buildingBlocks.keySet());
-//                            for (Set<ServerIdentity> existing : existingSets) {
-//                                Set<ServerIdentity> copy = new HashSet<ServerIdentity>(existing);
-//                                copy.retainAll(newSet);
-//                                if (copy.size() > 0) {
-//                                    if (copy.size() == existing.size()) {
-//                                        // Just add the new step and store back
-//                                        buildingBlocks.get(existing).add(entry.getValue());
-//                                    }
-//                                    else {
-//                                        // Add the new step to the intersection; store the old set of steps
-//                                        // under a key that includes the remainder
-//                                        List<ModelNode> existingSteps = buildingBlocks.remove(existing);
-//                                        List<ModelNode> newSteps = new ArrayList<ModelNode>(existingSteps);
-//                                        buildingBlocks.put(copy, newSteps);
-//                                        existing.removeAll(copy);
-//                                        buildingBlocks.put(existing, existingSteps);
-//                                    }
-//
-//                                    // no longer track the servers we've stored
-//                                    newSet.removeAll(copy);
-//                                }
-//                            }
-//
-//                            // Any servers not stored above get their own entry
-//                            if (newSet.size() > 0) {
-//                                List<ModelNode> toAdd = new ArrayList<ModelNode>();
-//                                toAdd.add(entry.getValue());
-//                                buildingBlocks.put(newSet, toAdd);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            Map<Set<ServerIdentity>, ModelNode> result = null;
-//            if (buildingBlocks.size() > 0) {
-//                result = new HashMap<Set<ServerIdentity>, ModelNode>();
-//                for (Map.Entry<Set<ServerIdentity>, List<ModelNode>> entry : buildingBlocks.entrySet()) {
-//                    List<ModelNode> ops = entry.getValue();
-//                    if (ops.size() == 1) {
-//                        result.put(entry.getKey(), ops.get(0));
-//                    }
-//                    else {
-//                        ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
-//                        ModelNode steps = composite.get(STEPS);
-//                        for (ModelNode step : entry.getValue()) {
-//                            steps.add(step);
-//                        }
-//                        result.put(entry.getKey(), composite);
-//                    }
-//                }
-//            }
-//            else {
-//                result = Collections.emptyMap();
-//            }
-//            return result;
-//        }
+        @Override
+        public Map<Set<ServerIdentity>, ModelNode> getServerOps(ServerOperationProvider provider) {
+            Map<Set<ServerIdentity>, List<ModelNode>> buildingBlocks = new HashMap<Set<ServerIdentity>, List<ModelNode>>();
+            for (ParsedOp step : steps) {
+                Map<Set<ServerIdentity>, ModelNode> stepResult = step.getServerOps(provider);
+                if (stepResult.size() == 0) {
+                    continue;
+                }
+                else if (buildingBlocks.size() == 0) {
+                    for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : stepResult.entrySet()) {
+                        List<ModelNode> list = new ArrayList<ModelNode>();
+                        list.add(entry.getValue());
+                        buildingBlocks.put(entry.getKey(), list);
+                    }
+                }
+                else {
+                    for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : stepResult.entrySet()) {
+                        List<ModelNode> existingOp = buildingBlocks.get(entry.getKey());
+                        if (existingOp != null) {
+                            existingOp.add(entry.getValue());
+                        }
+                        else {
+                            Set<ServerIdentity> newSet = new HashSet<ServerIdentity>(entry.getKey());
+                            Set<Set<ServerIdentity>> existingSets = new HashSet<Set<ServerIdentity>>(buildingBlocks.keySet());
+                            for (Set<ServerIdentity> existing : existingSets) {
+                                Set<ServerIdentity> copy = new HashSet<ServerIdentity>(existing);
+                                copy.retainAll(newSet);
+                                if (copy.size() > 0) {
+                                    if (copy.size() == existing.size()) {
+                                        // Just add the new step and store back
+                                        buildingBlocks.get(existing).add(entry.getValue());
+                                    }
+                                    else {
+                                        // Add the new step to the intersection; store the old set of steps
+                                        // under a key that includes the remainder
+                                        List<ModelNode> existingSteps = buildingBlocks.remove(existing);
+                                        List<ModelNode> newSteps = new ArrayList<ModelNode>(existingSteps);
+                                        buildingBlocks.put(copy, newSteps);
+                                        existing.removeAll(copy);
+                                        buildingBlocks.put(existing, existingSteps);
+                                    }
+
+                                    // no longer track the servers we've stored
+                                    newSet.removeAll(copy);
+                                }
+                            }
+
+                            // Any servers not stored above get their own entry
+                            if (newSet.size() > 0) {
+                                List<ModelNode> toAdd = new ArrayList<ModelNode>();
+                                toAdd.add(entry.getValue());
+                                buildingBlocks.put(newSet, toAdd);
+                            }
+                        }
+                    }
+                }
+            }
+
+            Map<Set<ServerIdentity>, ModelNode> result = null;
+            if (buildingBlocks.size() > 0) {
+                result = new HashMap<Set<ServerIdentity>, ModelNode>();
+                for (Map.Entry<Set<ServerIdentity>, List<ModelNode>> entry : buildingBlocks.entrySet()) {
+                    List<ModelNode> ops = entry.getValue();
+                    if (ops.size() == 1) {
+                        result.put(entry.getKey(), ops.get(0));
+                    }
+                    else {
+                        ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+                        ModelNode steps = composite.get(STEPS);
+                        for (ModelNode step : entry.getValue()) {
+                            steps.add(step);
+                        }
+                        result.put(entry.getKey(), composite);
+                    }
+                }
+            }
+            else {
+                result = Collections.emptyMap();
+            }
+            return result;
+        }
 
         @Override
         public ModelNode getDomainOperation() {
@@ -323,24 +344,6 @@ public class OperationSlaveStepHandler implements NewStepHandler {
                 }
                 else {
                     formatted.get("step-" + (i+1), OUTCOME).set(IGNORED);
-                }
-            }
-            return formatted;
-        }
-
-        @Override
-        public ModelNode getFormattedDomainCompensatingOp(ModelNode unformatted) {
-            ModelNode formatted = new ModelNode();
-            int resultStep = 0;
-            for (int i = 0; i < steps.size(); i++) {
-                ParsedOp po = steps.get(i);
-                if (po.getDomainOperation() != null) {
-                    String label = "step-" + (++resultStep);
-                    ModelNode stepResultNode = unformatted.get(label);
-                    formatted.get("step-" + (i+1)).set(stepResultNode);
-                }
-                else {
-                    formatted.get("step-" + (i+1)).set(IGNORED);
                 }
             }
             return formatted;
