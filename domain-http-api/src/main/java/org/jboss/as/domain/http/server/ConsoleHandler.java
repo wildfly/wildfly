@@ -22,21 +22,10 @@
 package org.jboss.as.domain.http.server;
 
 
-import static org.jboss.as.domain.http.server.Constants.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static org.jboss.as.domain.http.server.Constants.APPLICATION_JAVASCRIPT;
-import static org.jboss.as.domain.http.server.Constants.APPLICATION_OCTET_STREAM;
-import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
-import static org.jboss.as.domain.http.server.Constants.FOUND;
-import static org.jboss.as.domain.http.server.Constants.GET;
-import static org.jboss.as.domain.http.server.Constants.IMAGE_GIF;
-import static org.jboss.as.domain.http.server.Constants.IMAGE_JPEG;
-import static org.jboss.as.domain.http.server.Constants.IMAGE_PNG;
-import static org.jboss.as.domain.http.server.Constants.LOCATION;
-import static org.jboss.as.domain.http.server.Constants.METHOD_NOT_ALLOWED;
-import static org.jboss.as.domain.http.server.Constants.NOT_FOUND;
-import static org.jboss.as.domain.http.server.Constants.OK;
-import static org.jboss.as.domain.http.server.Constants.TEXT_CSS;
-import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
+import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.com.sun.net.httpserver.Headers;
+import org.jboss.com.sun.net.httpserver.HttpExchange;
+import org.jboss.com.sun.net.httpserver.HttpServer;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -44,13 +33,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.Headers;
-import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpServer;
+import static org.jboss.as.domain.http.server.Constants.*;
 
 /**
  * @author Heiko Braun
@@ -58,11 +54,19 @@ import org.jboss.com.sun.net.httpserver.HttpServer;
  */
 public class ConsoleHandler implements ManagementHttpHandler {
 
-    public static final String CONTEXT = "/console";
+    public  static final String CONTEXT = "/console";
+    private static final String EXPIRES_HEADER = "Expires";
+    private static final String NOCACHE_JS = ".nocache.js";
+    private static final String WILDCARD = "*";
+    private static final String DATEFORMAT_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
+    private static final String GMT = "GMT";
 
     private ClassLoader loader = null;
 
     private static Map<String, String> contentTypeMapping = new ConcurrentHashMap<String, String>();
+
+    private long lastExpiryDate = 0;
+    private String lastExpiryHeader = null;
 
     static {
         contentTypeMapping.put(".js",   APPLICATION_JAVASCRIPT);
@@ -119,19 +123,33 @@ public class ConsoleHandler implements ManagementHttpHandler {
 
         // load resource
         InputStream inputStream = getLoader().getResourceAsStream(resource);
+
         if(inputStream!=null) {
 
             final Headers responseHeaders = http.getResponseHeaders();
             responseHeaders.add(CONTENT_TYPE, resolveContentType(path));
-            responseHeaders.add(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+            responseHeaders.add(ACCESS_CONTROL_ALLOW_ORIGIN, WILDCARD);
+
+
+            boolean skipcache = resource.endsWith(NOCACHE_JS);
+            if(!skipcache){
+                // provide 'Expires' headers for GWT files
+
+                if(System.currentTimeMillis()>lastExpiryDate) {
+                    lastExpiryDate = calculateExpiryDate();
+                    lastExpiryHeader = htmlExpiresDateFormat().format(new Date(lastExpiryDate));
+                }
+
+                responseHeaders.add(EXPIRES_HEADER, lastExpiryHeader);
+            }
+
             http.sendResponseHeaders(OK, 0);
 
+            // nio write
             OutputStream outputStream = http.getResponseBody();
-
-            int nextChar;
-            while ( ( nextChar = inputStream.read() ) != -1  ) {
-                outputStream.write(nextChar);
-            }
+            final ReadableByteChannel inputChannel = Channels.newChannel(inputStream);
+            final WritableByteChannel outputChannel = Channels.newChannel(outputStream);
+            fastChannelCopy(inputChannel, outputChannel);
 
             outputStream.flush();
             safeClose(outputStream);
@@ -141,6 +159,31 @@ public class ConsoleHandler implements ManagementHttpHandler {
             respond404(http);
         }
 
+    }
+
+    private static long calculateExpiryDate() {
+        Calendar cal = Calendar.getInstance();
+        cal.roll(Calendar.MONTH, 1);
+        return cal.getTime().getTime();
+    }
+    public static DateFormat htmlExpiresDateFormat() {
+        DateFormat httpDateFormat = new SimpleDateFormat(DATEFORMAT_FORMAT, Locale.US);
+        httpDateFormat.setTimeZone(TimeZone.getTimeZone(GMT));
+        return httpDateFormat;
+    }
+
+    public static void fastChannelCopy(final ReadableByteChannel src, final WritableByteChannel dest) throws IOException {
+        final ByteBuffer buffer = ByteBuffer.allocateDirect(8 * 1024);
+        while (src.read(buffer) != -1) {
+            buffer.flip();
+            dest.write(buffer);
+            buffer.compact();
+        }
+        buffer.flip();
+
+        while (buffer.hasRemaining()) {
+            dest.write(buffer);
+        }
     }
 
     private void safeClose(Closeable close) {
@@ -170,7 +213,7 @@ public class ConsoleHandler implements ManagementHttpHandler {
 
         final Headers responseHeaders = http.getResponseHeaders();
         responseHeaders.add(CONTENT_TYPE, TEXT_HTML);
-        responseHeaders.add(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+        responseHeaders.add(ACCESS_CONTROL_ALLOW_ORIGIN, WILDCARD);
         http.sendResponseHeaders(NOT_FOUND, 0);
         OutputStream out = http.getResponseBody();
         out.flush();
