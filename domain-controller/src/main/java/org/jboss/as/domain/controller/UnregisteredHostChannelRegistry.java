@@ -34,9 +34,11 @@ public interface UnregisteredHostChannelRegistry {
      *
      * @param hostName the name of the host
      * @param channel the channel
+     * @param callback to be called when {@link UnregisteredHostChannelRegistry#popChannelAndCreateProxy(String)}
+     * is called and creates a proxy
      * @throws IllegalArgumentException if there is already a channel for the hostName
      */
-    void registerChannel(String hostName, ManagementChannel channel);
+    void registerChannel(String hostName, ManagementChannel channel, ProxyCreatedCallback callback);
 
     /**
      * Get and remove a host channel to be registered in the DomainController
@@ -47,14 +49,6 @@ public interface UnregisteredHostChannelRegistry {
      * @throws IllegalArgumentException if there is no channel for the hostName
      */
     NewProxyController popChannelAndCreateProxy(String hostName);
-
-    /**
-     * Register a callback to be called when {@link UnregisteredHostChannelRegistry#popChannelAndCreateProxy(String)}
-     * has been created
-     *
-     * @param callback the callback
-     */
-    void setProxyCreatedCallback(ProxyCreatedCallback callback);
 
 
     //TODO Kabir: Ugly but all I have time for now

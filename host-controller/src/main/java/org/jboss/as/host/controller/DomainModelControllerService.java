@@ -106,7 +106,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private ModelNodeRegistration modelNodeRegistration;
 
     private final Map<String, ManagementChannel> unregisteredHostChannels = new HashMap<String, ManagementChannel>();
-    private volatile ProxyCreatedCallback proxyCreatedCallback;
+    private final Map<String, ProxyCreatedCallback> proxyCreatedCallbacks = new HashMap<String, ProxyCreatedCallback>();
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool();
 
     private volatile NewServerInventory serverInventory;
@@ -343,7 +343,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public synchronized void registerChannel(final String hostName, final ManagementChannel channel) {
+    public synchronized void registerChannel(final String hostName, final ManagementChannel channel, final ProxyCreatedCallback callback) {
         PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
         if (modelNodeRegistration.getProxyController(addr) != null) {
             throw new IllegalArgumentException("There is already a registered server named '" + hostName + "'");
@@ -352,9 +352,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
             throw new IllegalArgumentException("Already have a connection for host " + hostName);
         }
         unregisteredHostChannels.put(hostName, channel);
+        proxyCreatedCallbacks.put(hostName, callback);
         channel.addCloseHandler(new CloseHandler<Channel>() {
             public void handleClose(Channel closed) {
                 unregisteredHostChannels.remove(hostName);
+                proxyCreatedCallbacks.remove(hostName);
             }
         });
     }
@@ -367,14 +369,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
         final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
         NewRemoteProxyController proxy = NewRemoteProxyController.create(proxyExecutor, addr, channel);
-        if (proxyCreatedCallback != null) {
-            proxyCreatedCallback.proxyCreated(proxy);
+        ProxyCreatedCallback callback = proxyCreatedCallbacks.remove(hostName);
+        if (callback != null) {
+            callback.proxyCreated(proxy);
         }
         return proxy;
-    }
-
-    public void setProxyCreatedCallback(ProxyCreatedCallback callback) {
-        proxyCreatedCallback = callback;
     }
 
     private class DelegatingServerInventory implements NewServerInventory {
