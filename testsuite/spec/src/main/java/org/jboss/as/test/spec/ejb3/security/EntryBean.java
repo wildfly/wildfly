@@ -21,13 +21,14 @@
  */
 package org.jboss.as.test.spec.ejb3.security;
 
-import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
-
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
+
+import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
@@ -56,7 +57,7 @@ public class EntryBean {
         return new String[]{localWho, remoteWho};
     }
 
-    public String[] doubleWhoAmI(String username, String password) throws Exception {
+    public String[] doubleWhoAmI(String username, String password) throws LoginException {
         String localWho = context.getCallerPrincipal().getName();
 
         LoginContext lc = getCLMLoginContext(username, password);
