@@ -42,8 +42,6 @@ enum Element {
     LOAD_METRIC(CommonAttributes.LOAD_METRIC),
     CUSTOM_LOAD_METRIC(CommonAttributes.CUSTOM_LOAD_METRIC),
     PROPERTY(CommonAttributes.PROPERTY),
-    KEY_ALIAS(CommonAttributes.KEY_ALIAS),
-
     ;
 
     private final String name;

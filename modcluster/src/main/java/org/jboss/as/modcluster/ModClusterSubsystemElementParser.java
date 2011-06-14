@@ -176,8 +176,15 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
         }
     }
 
-    static void writeSSL(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+    static void writeSSL(XMLExtendedStreamWriter writer, ModelNode sslConfig) throws XMLStreamException {
         writer.writeStartElement(Element.SSL.getLocalName());
+        writeAttribute(writer, Attribute.KEY_ALIAS.getLocalName(), sslConfig);
+        writeAttribute(writer, Attribute.PASSWORD.getLocalName(), sslConfig);
+        writeAttribute(writer, Attribute.CERTIFICATE_KEY_FILE.getLocalName(), sslConfig);
+        writeAttribute(writer, Attribute.CIPHER_SUITE.getLocalName(), sslConfig);
+        writeAttribute(writer, Attribute.PROTOCOL.getLocalName(), sslConfig);
+        writeAttribute(writer, Attribute.CA_CERTIFICATE_FILE.getLocalName(), sslConfig);
+        writeAttribute(writer, Attribute.CA_REVOCATION_URL.getLocalName(), sslConfig);
         writer.writeEndElement();
     }
 
