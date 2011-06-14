@@ -139,7 +139,7 @@
         <version.org.jboss.mod_cluster>1.1.2.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.0.0.CR3</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.0.Beta8</version.org.jboss.msc.jboss-msc>
-        <version.org.jboss.netty>3.2.1.Final</version.org.jboss.netty>
+        <version.org.jboss.netty>3.2.3.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.blueprint>1.0.2</version.org.jboss.osgi.blueprint>
         <version.org.jboss.osgi.deployment>1.0.10</version.org.jboss.osgi.deployment>
         <version.org.jboss.osgi.framework>1.0.0.CR4</version.org.jboss.osgi.framework>
