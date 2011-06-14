@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -55,6 +56,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchServiceTarget;
@@ -75,6 +77,8 @@ import org.jboss.msc.value.Value;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 final class NewOperationContextImpl implements NewOperationContext {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final NewModelControllerImpl modelController;
     private final Type contextType;
@@ -336,6 +340,7 @@ final class NewOperationContextImpl implements NewOperationContext {
                     // Handler threw OFE before calling completeStep(); that's equivalent to
                     // a request that we set the failure description and call completeStep()
                     response.get(FAILURE_DESCRIPTION).set(ofe.getFailureDescription());
+                    log.warnf(ofe, "Operation (%s) failed - address: (%s)", operation.get(OP), operation.get(OP_ADDR));
                     completeStep();
                 }
                 else {
@@ -346,7 +351,7 @@ final class NewOperationContextImpl implements NewOperationContext {
             }
             assert resultAction != null;
         } catch (Throwable t) {
-            t.printStackTrace();
+            log.errorf(t, "Operation (%s) failed - address: (%s)", operation.get(OP), operation.get(OP_ADDR));
             // If this block is entered, then the next step failed
             // The question is, did it fail before or after calling completeStep()?
             if (currentStage != Stage.DONE) {
