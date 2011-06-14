@@ -22,9 +22,7 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 import java.io.InputStream;
@@ -52,7 +50,6 @@ public class ProxyStepHandler implements NewStepHandler {
 
     @Override
     public void execute(NewOperationContext context, ModelNode operation) {
-
         OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
 
         final AtomicReference<NewModelController.OperationTransaction> txRef = new AtomicReference<NewModelController.OperationTransaction>();
@@ -77,21 +74,7 @@ public class ProxyStepHandler implements NewStepHandler {
             }
         };
 
-        final ModelNode execute = operation.clone();
-        final PathAddress addr = PathAddress.pathAddress(execute.require(OP_ADDR));
-        if (addr.size() > 0) {
-            final PathAddress newAddr;
-            if (addr.size() == proxyController.getProxyNodeAddress().size()) {
-                newAddr = PathAddress.EMPTY_ADDRESS;
-            } else if (proxyController.getProxyNodeAddress().size() > addr.size()) {
-                throw new IllegalArgumentException(addr + " does not appear to capture proxy " + proxyController.getProxyNodeAddress());
-            } else {
-                newAddr = addr.subAddress(proxyController.getProxyNodeAddress().size());
-            }
-            execute.get(OP_ADDR).set(newAddr.toModelNode());
-        }
-
-        proxyController.execute(execute, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
+        proxyController.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
         ModelNode finalResult = finalResultRef.get();
         if (finalResult != null) {
             // operation failed before it could commit

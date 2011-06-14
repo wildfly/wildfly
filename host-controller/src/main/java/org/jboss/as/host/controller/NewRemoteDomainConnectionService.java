@@ -268,7 +268,9 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     @Override
     public synchronized void stop(StopContext context) {
         shutdown.set(true);
-        channelClient.close();
+        if (channelClient != null) {
+            channelClient.close();
+        }
     }
 
     @Override

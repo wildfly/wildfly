@@ -456,7 +456,7 @@ public class RemoteProxyControllerProtocolTestCase {
         NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
 
-        NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
+        NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), ProxyOperationAddressTranslator.HOST, channels.getClientChannel());
         clientChannel.setOperationHandler(proxyController);
 
         return proxyController;

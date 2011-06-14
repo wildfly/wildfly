@@ -49,6 +49,7 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -344,7 +345,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             throw new IllegalArgumentException("No channel for host " + hostName);
         }
         final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
-        NewRemoteProxyController proxy = NewRemoteProxyController.create(proxyExecutor, addr, channel);
+        NewRemoteProxyController proxy = NewRemoteProxyController.create(proxyExecutor, addr, ProxyOperationAddressTranslator.HOST, channel);
         ProxyCreatedCallback callback = proxyCreatedCallbacks.remove(hostName);
         if (callback != null) {
             callback.proxyCreated(proxy);

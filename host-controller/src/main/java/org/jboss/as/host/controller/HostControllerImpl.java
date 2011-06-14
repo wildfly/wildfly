@@ -33,6 +33,7 @@ import java.util.concurrent.Executors;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -126,8 +127,9 @@ public class HostControllerImpl implements HostController {
     @Override
     public void registerRunningServer(String serverName, ManagementChannel channel) {
         final PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
+        final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(HOST, name), element);
 
-        final NewProxyController serverController = NewRemoteProxyController.create(Executors.newCachedThreadPool(), PathAddress.pathAddress(PathElement.pathElement(HOST, name), element), channel);
+        final NewProxyController serverController = NewRemoteProxyController.create(Executors.newCachedThreadPool(), addr, ProxyOperationAddressTranslator.SERVER, channel);
         registry.registerProxyController(element, serverController);
         model.get(element.getKey(), element.getValue());
     }
