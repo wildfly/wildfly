@@ -61,6 +61,128 @@ public class CoreManagementResourceRegistrationUnitTestCase {
     }
 
     @Test
+    public void testHandlersOnRootResource() throws Exception {
+
+        rootRegistration.registerOperationHandler("one", TestHandler.ONE, new TestDescriptionProvider("one"));
+        rootRegistration.registerOperationHandler("two", TestHandler.TWO, new TestDescriptionProvider("two"), false,
+                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+
+        NewStepHandler oneHandler = rootRegistration.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
+        assertSame(TestHandler.ONE, oneHandler);
+
+        NewStepHandler twoHandler = rootRegistration.getOperationHandler(PathAddress.EMPTY_ADDRESS, "two");
+        assertSame(TestHandler.TWO, twoHandler);
+    }
+
+    @Test
+    public void testHandlersOnChildResource() throws Exception {
+
+        ModelNodeRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
+        child.registerOperationHandler("one", TestHandler.ONE, new TestDescriptionProvider("one"));
+        child.registerOperationHandler("two", TestHandler.TWO, new TestDescriptionProvider("two"), false,
+                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+
+        NewStepHandler oneHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
+        assertSame(TestHandler.ONE, oneHandler);
+
+        NewStepHandler twoHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "two");
+        assertSame(TestHandler.TWO, twoHandler);
+
+        oneHandler = rootRegistration.getOperationHandler(childAddress, "one");
+        assertSame(TestHandler.ONE, oneHandler);
+
+        twoHandler = rootRegistration.getOperationHandler(childAddress, "two");
+        assertSame(TestHandler.TWO, twoHandler);
+
+        oneHandler = rootRegistration.getOperationHandler(fullChildAddress, "one");
+        assertSame(TestHandler.ONE, oneHandler);
+
+        twoHandler = rootRegistration.getOperationHandler(fullChildAddress, "two");
+        assertSame(TestHandler.TWO, twoHandler);
+
+        oneHandler = rootRegistration.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
+        assertNull(oneHandler);
+
+        twoHandler = rootRegistration.getOperationHandler(PathAddress.EMPTY_ADDRESS, "two");
+        assertNull(twoHandler);
+    }
+
+    @Test
+    public void testHandlerInheritance() throws Exception {
+
+        rootRegistration.registerOperationHandler("one", TestHandler.PARENT, new TestDescriptionProvider("one"), true,
+                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        rootRegistration.registerOperationHandler("two", TestHandler.PARENT, new TestDescriptionProvider("two"), true,
+                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        rootRegistration.registerOperationHandler("three", TestHandler.PARENT, new TestDescriptionProvider("three"), true,
+                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        rootRegistration.registerOperationHandler("four", TestHandler.PARENT, new TestDescriptionProvider("four"), false,
+                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+
+        ModelNodeRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
+        child.registerOperationHandler("one", TestHandler.CHILD, new TestDescriptionProvider("one"), true);
+        child.registerOperationHandler("two", TestHandler.CHILD, new TestDescriptionProvider("two"), true,
+                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
+
+        ModelNodeRegistration grandchild = child.registerSubModel(grandchildElement, new TestDescriptionProvider("grandchild"));
+
+        NewStepHandler oneHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
+        assertSame(TestHandler.CHILD, oneHandler);
+
+        NewStepHandler twoHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "two");
+        assertSame(TestHandler.CHILD, twoHandler);
+
+        NewStepHandler threeHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "three");
+        assertSame(TestHandler.PARENT, threeHandler);
+
+        oneHandler = rootRegistration.getOperationHandler(childAddress, "one");
+        assertSame(TestHandler.CHILD, oneHandler);
+
+        twoHandler = rootRegistration.getOperationHandler(childAddress, "two");
+        assertSame(TestHandler.CHILD, twoHandler);
+
+        threeHandler = child.getOperationHandler(childAddress, "three");
+        assertSame(TestHandler.PARENT, threeHandler);
+
+        NewStepHandler fourHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "four");
+        assertNull(fourHandler);
+
+        fourHandler = rootRegistration.getOperationHandler(childAddress, "four");
+        assertNull(fourHandler);
+
+        // Sanity check
+        fourHandler = rootRegistration.getOperationHandler(PathAddress.EMPTY_ADDRESS, "four");
+        assertSame(TestHandler.PARENT, fourHandler);
+
+        oneHandler = rootRegistration.getOperationHandler(grandchildAddress, "one");
+        assertSame(TestHandler.CHILD, oneHandler);
+
+        oneHandler = rootRegistration.getOperationHandler(fullGrandchildAddress, "one");
+        assertSame(TestHandler.CHILD, oneHandler);
+
+        oneHandler = grandchild.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
+        assertSame(TestHandler.CHILD, oneHandler);
+
+        twoHandler = rootRegistration.getOperationHandler(grandchildAddress, "two");
+        assertSame(TestHandler.CHILD, twoHandler);
+
+        twoHandler = rootRegistration.getOperationHandler(fullGrandchildAddress, "two");
+        assertSame(TestHandler.CHILD, twoHandler);
+
+        twoHandler = grandchild.getOperationHandler(PathAddress.EMPTY_ADDRESS, "two");
+        assertSame(TestHandler.CHILD, twoHandler);
+
+        threeHandler = rootRegistration.getOperationHandler(grandchildAddress, "three");
+        assertSame(TestHandler.PARENT, threeHandler);
+
+        threeHandler = rootRegistration.getOperationHandler(fullGrandchildAddress, "three");
+        assertSame(TestHandler.PARENT, threeHandler);
+
+        threeHandler = grandchild.getOperationHandler(PathAddress.EMPTY_ADDRESS, "three");
+        assertSame(TestHandler.PARENT, threeHandler);
+    }
+
+    @Test
     public void testFlagsOnRootResource() throws Exception {
 
         rootRegistration.registerOperationHandler("one", TestHandler.INSTANCE, new TestDescriptionProvider("one"));
@@ -214,6 +336,15 @@ public class CoreManagementResourceRegistrationUnitTestCase {
     private static class TestHandler implements NewStepHandler {
 
         private static TestHandler INSTANCE = new TestHandler();
+
+        private static TestHandler ONE = new TestHandler();
+        private static TestHandler TWO = new TestHandler();
+        private static TestHandler THREE = new TestHandler();
+        private static TestHandler FOUR = new TestHandler();
+
+        private static TestHandler PARENT = new TestHandler();
+        private static TestHandler CHILD = new TestHandler();
+        private static TestHandler GRANDCHILD = new TestHandler();
 
         @Override
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
