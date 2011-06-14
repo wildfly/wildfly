@@ -21,18 +21,6 @@
  */
 package org.jboss.as.security.service;
 
-import static java.security.AccessController.doPrivileged;
-
-import javax.security.auth.Subject;
-import java.security.Principal;
-import java.security.PrivilegedAction;
-import java.security.acl.Group;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.SecurityContext;
@@ -45,6 +33,18 @@ import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
 import org.jboss.security.identity.plugins.SimpleIdentity;
 import org.picketbox.factories.SecurityFactory;
+
+import javax.security.auth.Subject;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.security.acl.Group;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -158,7 +158,7 @@ public class SimpleSecurityManager {
         boolean authenticated = authenticate(current);
         if (authenticated == false) {
             // TODO - Better type needed.
-            throw new RuntimeException("Invalid User");
+            throw new SecurityException("Invalid User");
         }
     }
 
