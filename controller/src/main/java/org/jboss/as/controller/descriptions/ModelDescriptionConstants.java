@@ -141,6 +141,7 @@ public class ModelDescriptionConstants {
     public static final String OUTCOME = "outcome";
     public static final String PASSWORD = "password";
     public static final String PATH = "path";
+    public static final String PERSISTENT = "persistent";
     public static final String PORT = "port";
     public static final String PORT_OFFSET = "port-offset";
     public static final String PRIORITY = "priority";
