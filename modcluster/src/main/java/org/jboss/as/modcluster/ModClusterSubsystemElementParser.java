@@ -8,31 +8,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.readProperty;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE;
-import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE_SECURITY_KEY;
-import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE_SOCKET;
-import static org.jboss.as.modcluster.CommonAttributes.AUTO_ENABLE_CONTEXTS;
-import static org.jboss.as.modcluster.CommonAttributes.CAPACITY;
-import static org.jboss.as.modcluster.CommonAttributes.CLASS;
-import static org.jboss.as.modcluster.CommonAttributes.CUSTOM_LOAD_METRIC;
-import static org.jboss.as.modcluster.CommonAttributes.DECAY;
-import static org.jboss.as.modcluster.CommonAttributes.DYNAMIC_LOAD_PROVIDER;
-import static org.jboss.as.modcluster.CommonAttributes.EXCLUDED_CONTEXTS;
-import static org.jboss.as.modcluster.CommonAttributes.FACTOR;
-import static org.jboss.as.modcluster.CommonAttributes.HISTORY;
-import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC;
-import static org.jboss.as.modcluster.CommonAttributes.LOAD_PROVIDER;
-import static org.jboss.as.modcluster.CommonAttributes.MOD_CLUSTER_CONFIG;
-import static org.jboss.as.modcluster.CommonAttributes.PROXY_LIST;
-import static org.jboss.as.modcluster.CommonAttributes.PROXY_URL;
-import static org.jboss.as.modcluster.CommonAttributes.SIMPLE_LOAD_PROVIDER;
-import static org.jboss.as.modcluster.CommonAttributes.SOCKET_TIMEOUT;
-import static org.jboss.as.modcluster.CommonAttributes.SSL;
-import static org.jboss.as.modcluster.CommonAttributes.STOP_CONTEXT_TIMEOUT;
-import static org.jboss.as.modcluster.CommonAttributes.TYPE;
-import static org.jboss.as.modcluster.CommonAttributes.WEIGHT;
-import static org.jboss.as.modcluster.CommonAttributes.NAME;
-import static org.jboss.as.modcluster.CommonAttributes.VALUE;
+import static org.jboss.as.modcluster.CommonAttributes.*;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -206,11 +182,41 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
     }
 
     static ModelNode parseSSL(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode conf = new ModelNode();
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            // TODO: Just read it...
+        final ModelNode ssl = new ModelNode();
+        ssl.setEmptyObject();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case KEY_ALIAS:
+                ssl.get(KEY_ALIAS).set(value);
+                break;
+            case PASSWORD:
+                ssl.get(PASSWORD).set(value);
+                break;
+            case CERTIFICATE_KEY_FILE:
+                ssl.get(CERTIFICATE_KEY_FILE).set(value);
+                break;
+            case CIPHER_SUITE:
+                ssl.get(CIPHER_SUITE).set(value);
+                break;
+            case PROTOCOL:
+                ssl.get(PROTOCOL).set(value);
+                break;
+             case CA_CERTIFICATE_FILE:
+                ssl.get(CA_CERTIFICATE_FILE).set(value);
+                break;
+            case CA_REVOCATION_URL:
+                ssl.get(CA_REVOCATION_URL).set(value);
+                break;
+           default:
+                throw unexpectedAttribute(reader, i);
+            }
         }
-        return conf;
+        ParseUtils.requireNoContent(reader);
+        return ssl;
     }
 
     /* Simple Load provider */

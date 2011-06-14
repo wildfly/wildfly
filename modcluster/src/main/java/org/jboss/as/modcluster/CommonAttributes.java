@@ -56,4 +56,12 @@ interface CommonAttributes {
     String CLASS = "class";
     String PROPERTY = "property";
     String VALUE = "value";
+    String KEY_ALIAS = "key-alias";
+    String PASSWORD = "password" ;
+    String CERTIFICATE_KEY_FILE = "certificate-key-file";
+    String CIPHER_SUITE = "cipher-suite";
+    String PROTOCOL = "protocol";
+    String VERIFY_CLIENT = "verify-client";
+    String CA_CERTIFICATE_FILE = "ca-certificate-file";
+    String CA_REVOCATION_URL = "ca-revocation-url";
 }
