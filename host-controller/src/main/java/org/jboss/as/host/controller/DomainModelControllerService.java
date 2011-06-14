@@ -325,6 +325,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
         serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
             .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallbackInjector())
             .install();
+
+        RemotingServices.installRemotingEndpoint(serviceTarget);
+
         RemotingServices.installDomainControllerManagementChannelServices(serviceTarget,
                 new NewModelControllerClientOperationHandlerService(),
                 DomainModelControllerService.SERVICE_NAME,
