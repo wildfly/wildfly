@@ -47,7 +47,13 @@ public class CoreManagementResourceRegistrationUnitTestCase {
 
     private ModelNodeRegistration rootRegistration;
     private final PathElement childElement = PathElement.pathElement("child");
+    private final PathElement fullChildElement = PathElement.pathElement("child", "a");
     private final PathAddress childAddress = PathAddress.pathAddress(childElement);
+    private final PathAddress fullChildAddress = PathAddress.pathAddress(fullChildElement);
+    private final PathElement grandchildElement = PathElement.pathElement("grandchild");
+    private final PathElement fullGrandchildElement = PathElement.pathElement("grandchild", "b");
+    private final PathAddress grandchildAddress = childAddress.append(grandchildElement);
+    private final PathAddress fullGrandchildAddress = childAddress.append(fullGrandchildElement);
 
     @Before
     public void setup() {
@@ -93,6 +99,14 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         twoFlags = rootRegistration.getOperationFlags(childAddress, "two");
         assertNotNull(twoFlags);
         assertEquals(1, twoFlags.size());
+
+        oneFlags = rootRegistration.getOperationFlags(fullChildAddress, "one");
+        assertNotNull(oneFlags);
+        assertEquals(0, oneFlags.size());
+
+        twoFlags = rootRegistration.getOperationFlags(fullChildAddress, "two");
+        assertNotNull(twoFlags);
+        assertEquals(1, twoFlags.size());
     }
 
     @Test
@@ -108,9 +122,11 @@ public class CoreManagementResourceRegistrationUnitTestCase {
                 OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
 
         ModelNodeRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
-        child.registerOperationHandler("one", TestHandler.INSTANCE, new TestDescriptionProvider("one"));
-        child.registerOperationHandler("two", TestHandler.INSTANCE, new TestDescriptionProvider("two"), false,
+        child.registerOperationHandler("one", TestHandler.INSTANCE, new TestDescriptionProvider("one"), true);
+        child.registerOperationHandler("two", TestHandler.INSTANCE, new TestDescriptionProvider("two"), true,
                 OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
+
+        ModelNodeRegistration grandchild = child.registerSubModel(grandchildElement, new TestDescriptionProvider("grandchild"));
 
         Set<OperationEntry.Flag> oneFlags = child.getOperationFlags(PathAddress.EMPTY_ADDRESS, "one");
         assertNotNull(oneFlags);
@@ -151,6 +167,48 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         assertNotNull(fourFlags);
         assertEquals(1, fourFlags.size());
         assertTrue(fourFlags.contains(OperationEntry.Flag.READ_ONLY));
+
+        oneFlags = rootRegistration.getOperationFlags(grandchildAddress, "one");
+        assertNotNull(oneFlags);
+        assertEquals(0, oneFlags.size());
+
+        oneFlags = rootRegistration.getOperationFlags(fullGrandchildAddress, "one");
+        assertNotNull(oneFlags);
+        assertEquals(0, oneFlags.size());
+
+        oneFlags = grandchild.getOperationFlags(PathAddress.EMPTY_ADDRESS, "one");
+        assertNotNull(oneFlags);
+        assertEquals(0, oneFlags.size());
+
+        twoFlags = rootRegistration.getOperationFlags(grandchildAddress, "two");
+        assertNotNull(twoFlags);
+        assertEquals(1, twoFlags.size());
+        assertTrue(twoFlags.contains(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
+
+        twoFlags = rootRegistration.getOperationFlags(fullGrandchildAddress, "two");
+        assertNotNull(twoFlags);
+        assertEquals(1, twoFlags.size());
+        assertTrue(twoFlags.contains(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
+
+        twoFlags = grandchild.getOperationFlags(PathAddress.EMPTY_ADDRESS, "two");
+        assertNotNull(twoFlags);
+        assertEquals(1, twoFlags.size());
+        assertTrue(twoFlags.contains(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
+
+        threeFlags = rootRegistration.getOperationFlags(grandchildAddress, "three");
+        assertNotNull(threeFlags);
+        assertEquals(1, threeFlags.size());
+        assertTrue(threeFlags.contains(OperationEntry.Flag.READ_ONLY));
+
+        threeFlags = rootRegistration.getOperationFlags(fullGrandchildAddress, "three");
+        assertNotNull(threeFlags);
+        assertEquals(1, threeFlags.size());
+        assertTrue(threeFlags.contains(OperationEntry.Flag.READ_ONLY));
+
+        threeFlags = grandchild.getOperationFlags(PathAddress.EMPTY_ADDRESS, "three");
+        assertNotNull(threeFlags);
+        assertEquals(1, threeFlags.size());
+        assertTrue(threeFlags.contains(OperationEntry.Flag.READ_ONLY));
     }
 
     private static class TestHandler implements NewStepHandler {

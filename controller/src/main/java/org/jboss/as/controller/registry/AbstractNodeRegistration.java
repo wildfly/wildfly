@@ -97,24 +97,19 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
      */
     @Override
     public final NewStepHandler getOperationHandler(final PathAddress pathAddress, final String operationName) {
-        NewStepHandler result =  getHandler(pathAddress.iterator(), operationName);
-        if (result == null && parent != null) {
-            result = parent.getParent().getInheritedOperationHandler(operationName);
+        NewStepHandler inheritable = getInheritableOperationHandler(operationName);
+        NewStepHandler result =  getOperationHandler(pathAddress.iterator(), operationName, inheritable);
+        NodeSubregistry ancestorSubregistry = parent;
+        while (result == null && ancestorSubregistry != null) {
+            AbstractNodeRegistration ancestor = ancestorSubregistry.getParent();
+            result = ancestor.getInheritableOperationHandler(operationName);
+            ancestorSubregistry = ancestor.parent;
         }
         return result;
     }
 
-    abstract NewStepHandler getHandler(ListIterator<PathElement> iterator, String operationName);
-
-    private NewStepHandler getInheritedOperationHandler(final String operationName) {
-        NewStepHandler result =  getInheritedHandler(operationName);
-        if (result == null && parent != null) {
-            result = parent.getParent().getInheritedOperationHandler(operationName);
-        }
-        return result;
-    }
-
-    abstract NewStepHandler getInheritedHandler(String operationName);
+    abstract NewStepHandler getOperationHandler(ListIterator<PathElement> iterator, String operationName, NewStepHandler inherited);
+    abstract NewStepHandler getInheritableOperationHandler(String operationName);
 
     @Override
     public AttributeAccess getAttributeAccess(final PathAddress address, final String attributeName) {
@@ -142,10 +137,19 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
     /** {@inheritDoc} */
     @Override
     public DescriptionProvider getOperationDescription(final PathAddress address, final String operationName) {
-        return getOperationDescription(address.iterator(), operationName);
+        DescriptionProvider inheritable = getInheritableOperationDescription(operationName);
+        DescriptionProvider result = getOperationDescription(address.iterator(), operationName, inheritable);
+        NodeSubregistry ancestorSubregistry = parent;
+        while (result == null && ancestorSubregistry != null) {
+            AbstractNodeRegistration ancestor = ancestorSubregistry.getParent();
+            result = ancestor.getInheritableOperationDescription(operationName);
+            ancestorSubregistry = ancestor.parent;
+        }
+        return result;
     }
 
-    abstract DescriptionProvider getOperationDescription(Iterator<PathElement> iterator, String operationName);
+    abstract DescriptionProvider getOperationDescription(Iterator<PathElement> iterator, String operationName, DescriptionProvider inherited);
+    abstract DescriptionProvider getInheritableOperationDescription(String operationName);
 
     /**
      * Get a handler at a specific address.
@@ -156,16 +160,20 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
      */
     @Override
     public final Set<OperationEntry.Flag> getOperationFlags(final PathAddress pathAddress, final String operationName) {
-        Set<OperationEntry.Flag> result =  getOperationFlags(pathAddress.iterator(), operationName);
-        if (result == null && parent != null) {
-            result = parent.getParent().getInheritedOperationFlags(operationName);
+        Set<OperationEntry.Flag> inheritable = getInheritableOperationFlags(operationName);
+        Set<OperationEntry.Flag> result =  getOperationFlags(pathAddress.iterator(), operationName, inheritable);
+        NodeSubregistry ancestorSubregistry = parent;
+        while (result == null && ancestorSubregistry != null) {
+            AbstractNodeRegistration ancestor = ancestorSubregistry.getParent();
+            result = ancestor.getInheritableOperationFlags(operationName);
+            ancestorSubregistry = ancestor.parent;
         }
         return result;
     }
 
-    abstract Set<OperationEntry.Flag> getOperationFlags(ListIterator<PathElement> iterator, String operationName);
+    abstract Set<OperationEntry.Flag> getOperationFlags(ListIterator<PathElement> iterator, String operationName, Set<OperationEntry.Flag> inherited);
 
-    abstract Set<OperationEntry.Flag> getInheritedOperationFlags(String operationName);
+    abstract Set<OperationEntry.Flag> getInheritableOperationFlags(String operationName);
 
     /** {@inheritDoc} */
     @Override

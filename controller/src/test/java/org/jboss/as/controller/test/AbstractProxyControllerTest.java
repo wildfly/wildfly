@@ -306,7 +306,7 @@ public abstract class AbstractProxyControllerTest {
         read = createOperation(READ_OPERATION_DESCRIPTION_OPERATION, HOST, "hostA", "hostchild", "hcA");
         read.getOperation().get(NAME).set(READ_ATTRIBUTE_OPERATION);
         result = mainControllerClient.execute(read);
-        assertFalse(result.get(RESULT).isDefined());
+        checkReadAttributeOperationDescription(result.get(RESULT));
     }
 
     @Test
