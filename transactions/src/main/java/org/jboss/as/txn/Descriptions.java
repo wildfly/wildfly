@@ -60,6 +60,11 @@ public class Descriptions {
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.RECOVERY_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.STATUS_BINDING, ModelDescriptionConstants.MIN_LENGTH).set(1);
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.RECOVERY_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.STATUS_BINDING, ModelDescriptionConstants.REQUIRED).set(true);
 
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.RECOVERY_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.STATUS_BINDING, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("recovery-environment.recovery-listener"));
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.RECOVERY_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.STATUS_BINDING, ModelDescriptionConstants.TYPE).set(ModelType.BOOLEAN);
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.RECOVERY_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.STATUS_BINDING, ModelDescriptionConstants.MIN_LENGTH).set(1);
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.RECOVERY_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.STATUS_BINDING, ModelDescriptionConstants.REQUIRED).set(false);
+
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("coordinator-environment"));
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.REQUIRED).set(false);

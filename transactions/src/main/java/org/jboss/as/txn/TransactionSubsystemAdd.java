@@ -85,6 +85,7 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
         final String varDirPath = operation.get(CORE_ENVIRONMENT).hasDefined(PATH) ? operation.get(CORE_ENVIRONMENT).get(PATH).asString() : "var";
         final String recoveryBindingName = operation.get(RECOVERY_ENVIRONMENT).require(BINDING).asString();
         final String recoveryStatusBindingName = operation.get(RECOVERY_ENVIRONMENT).require(STATUS_BINDING).asString();
+        final boolean recoveryListener = operation.get(RECOVERY_ENVIRONMENT, RECOVERY_LISTENER).asBoolean(false);
         final boolean coordinatorEnableStatistics = operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).asBoolean(false);
         final ModelNode objectStore = operation.get(OBJECT_STORE);
         final String objectStorePathRef = objectStore.hasDefined(RELATIVE_TO) ? objectStore.get(RELATIVE_TO).asString() : "jboss.server.data.dir";
@@ -104,6 +105,7 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
         subModel.get(CORE_ENVIRONMENT, RELATIVE_TO).set(operation.get(CORE_ENVIRONMENT, RELATIVE_TO));
         subModel.get(CORE_ENVIRONMENT, PATH).set(operation.get(CORE_ENVIRONMENT, PATH));
         subModel.get(RECOVERY_ENVIRONMENT, BINDING).set(operation.get(RECOVERY_ENVIRONMENT).require(BINDING));
+        subModel.get(RECOVERY_ENVIRONMENT, STATUS_BINDING).set(operation.get(RECOVERY_ENVIRONMENT, STATUS_BINDING));
         subModel.get(RECOVERY_ENVIRONMENT, STATUS_BINDING).set(operation.get(RECOVERY_ENVIRONMENT, STATUS_BINDING));
         subModel.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).set(operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS));
         subModel.get(COORDINATOR_ENVIRONMENT, DEFAULT_TIMEOUT).set(operation.get(COORDINATOR_ENVIRONMENT, DEFAULT_TIMEOUT));
@@ -162,7 +164,7 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
                         .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
                         .setInitialMode(Mode.ACTIVE).install();
 
-                    final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService();
+                    final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener);
                     target.addService(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, recoveryManagerService)
                         .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, recoveryManagerService.getOrbInjector())
                         .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, recoveryManagerService.getRecoveryBindingInjector())

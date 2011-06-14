@@ -333,6 +333,9 @@ public class TransactionExtension implements Extension {
                     case STATUS_BINDING:
                         env.get(STATUS_BINDING).set(value);
                         break;
+                    case RECOVERY_LISTENER:
+                        env.get(RECOVERY_LISTENER).set(value);
+                        break;
                     default:
                         unexpectedAttribute(reader, i);
                 }
@@ -372,7 +375,9 @@ public class TransactionExtension implements Extension {
                 }
                 if (has(env, STATUS_BINDING)) {
                     writeAttribute(writer, Attribute.STATUS_BINDING, env.get(STATUS_BINDING));
-
+                }
+                if (has(env, RECOVERY_LISTENER)) {
+                    writeAttribute(writer, Attribute.RECOVERY_LISTENER, env.get(RECOVERY_LISTENER));
                 }
                 writer.writeEndElement();
             }
