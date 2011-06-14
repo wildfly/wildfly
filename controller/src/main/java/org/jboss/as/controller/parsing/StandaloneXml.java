@@ -398,7 +398,7 @@ public class StandaloneXml extends CommonXml {
             boolean deploymentWritten = false;
             for (String uniqueName : deploymentNames) {
                 final ModelNode deployment = modelNode.get(uniqueName);
-                if(!deployment.get(PERSISTENT).asBoolean()) {
+                if(deployment.hasDefined(PERSISTENT) && !deployment.get(PERSISTENT).asBoolean()) {
                     continue;
                 }
                 if(!deploymentWritten) {
