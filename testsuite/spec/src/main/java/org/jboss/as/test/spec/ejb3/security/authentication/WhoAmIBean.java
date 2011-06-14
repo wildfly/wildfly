@@ -19,26 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.spec.ejb3.security;
+package org.jboss.as.test.spec.ejb3.security.authentication;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import java.security.Principal;
+
+import org.jboss.as.test.spec.ejb3.security.WhoAmI;
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * Concrete implementation to allow deployment of bean.
+ *
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @Stateless
-public class WhoAmIBean {
-    @Resource
-    private SessionContext context;
-
-    public Principal getCallerPrincipal() {
-        return context.getCallerPrincipal();
-    }
-
-    public boolean doIHaveRole(String roleName) {
-        return context.isCallerInRole(roleName);
-    }
+public class WhoAmIBean extends org.jboss.as.test.spec.ejb3.security.base.WhoAmIBean implements WhoAmI {
 }
