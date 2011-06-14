@@ -96,7 +96,7 @@ public class ComponentDescription {
     private boolean excludeDefaultInterceptors = false;
     private DeploymentDescriptorEnvironment deploymentDescriptorEnvironment;
 
-    private final List<ViewDescription> views = new ArrayList<ViewDescription>();
+    private final Set<ViewDescription> views = new HashSet<ViewDescription>();
 
     // Bindings
     private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
@@ -444,7 +444,7 @@ public class ComponentDescription {
      *
      * @return the list of views
      */
-    public List<ViewDescription> getViews() {
+    public Set<ViewDescription> getViews() {
         return views;
     }
 

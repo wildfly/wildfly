@@ -51,7 +51,7 @@ public class DuplicateViewDefinitionTestCase {
         return archive;
     }
 
-    @EJB
+    @EJB(mappedName = "java:global/ejb3as7-1012/AnnotatedDoNothingBean!org.jboss.as.test.spec.ejb3.common.DoNothing")
     private DoNothing bean;
 
     @Test
