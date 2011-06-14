@@ -147,11 +147,9 @@ public class ConsoleHandler implements ManagementHttpHandler {
 
             // nio write
             OutputStream outputStream = http.getResponseBody();
-            final ReadableByteChannel inputChannel = Channels.newChannel(inputStream);
-            final WritableByteChannel outputChannel = Channels.newChannel(outputStream);
-            fastChannelCopy(inputChannel, outputChannel);
-
+            fastChannelCopy(inputStream, outputStream);
             outputStream.flush();
+
             safeClose(outputStream);
             safeClose(inputStream);
 
@@ -172,21 +170,30 @@ public class ConsoleHandler implements ManagementHttpHandler {
         return httpDateFormat;
     }
 
-    public static void fastChannelCopy(final ReadableByteChannel src, final WritableByteChannel dest) throws IOException {
-        final ByteBuffer buffer = ByteBuffer.allocateDirect(8 * 1024);
-        while (src.read(buffer) != -1) {
-            buffer.flip();
-            dest.write(buffer);
-            buffer.compact();
-        }
-        buffer.flip();
+    public static void fastChannelCopy(final InputStream in, final OutputStream out) throws IOException {
 
-        while (buffer.hasRemaining()) {
-            dest.write(buffer);
+        final ReadableByteChannel src = Channels.newChannel(in);
+        final WritableByteChannel dest = Channels.newChannel(out);
+
+        try {
+            final ByteBuffer buffer = ByteBuffer.allocate(8 * 1024);
+            while (src.read(buffer) != -1) {
+                buffer.flip();
+                dest.write(buffer);
+                buffer.compact();
+            }
+            buffer.flip();
+
+            while (buffer.hasRemaining()) {
+                dest.write(buffer);
+            }
+        } finally {
+            safeClose(src);
+            safeClose(dest);
         }
     }
 
-    private void safeClose(Closeable close) {
+    private static void safeClose(Closeable close) {
         try {
             close.close();
         } catch (Throwable eat) {
