@@ -94,7 +94,6 @@ import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
-import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.NativeManagementAddHandler;
@@ -106,7 +105,6 @@ import org.jboss.as.host.controller.operations.NewServerStartHandler;
 import org.jboss.as.host.controller.operations.NewServerStatusHandler;
 import org.jboss.as.host.controller.operations.NewServerStopHandler;
 import org.jboss.as.host.controller.operations.NewStartServersHandler;
-import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
 import org.jboss.as.host.controller.operations.ServerRemoveHandler;
@@ -207,11 +205,11 @@ public class NewHostModelUtil {
 
         NewLocalDomainControllerAddHandler localDcAddHandler = NewLocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,
                 environment, configurationPersister, localFileRepository, domainController, registry);
-        hostRegistration.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
+        hostRegistration.registerOperationHandler(NewLocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
         hostRegistration.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
         NewRemoteDomainControllerAddHandler remoteDcAddHandler = NewRemoteDomainControllerAddHandler.getInstance(root, hostControllerInfo,
                 configurationPersister, remoteFileRepository);
-        hostRegistration.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, remoteDcAddHandler, remoteDcAddHandler, false);
+        hostRegistration.registerOperationHandler(NewRemoteDomainControllerAddHandler.OPERATION_NAME, remoteDcAddHandler, remoteDcAddHandler, false);
         hostRegistration.registerOperationHandler(RemoteDomainControllerRemoveHandler.OPERATION_NAME, RemoteDomainControllerRemoveHandler.INSTANCE, RemoteDomainControllerRemoveHandler.INSTANCE, false);
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister.getHostPersister());
         hostRegistration.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false);
