@@ -33,7 +33,6 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -43,7 +42,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Sets up JNDI bindings for each of the views exposed by a {@link SessionBeanComponentDescription session bean}
@@ -87,7 +85,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
      * @param deploymentUnit The deployment unit containing the session bean
      */
     private void setupJNDIBindings(SessionBeanComponentDescription sessionBean, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
-        final List<ViewDescription> views = sessionBean.getViews();
+        final Collection<ViewDescription> views = sessionBean.getViews();
         if (views == null || views.isEmpty()) {
             logger.info("No jndi bindings will be created for EJB: " + sessionBean.getEJBName() + " since no views are exposed");
             return;
@@ -137,7 +135,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         // Note that this also applies to java:app and java:module bindings
         // as can be seen by the examples in 4.4.2.1
         if (views.size() == 1) {
-            final EJBViewDescription viewDescription = (EJBViewDescription) views.get(0);
+            final EJBViewDescription viewDescription = (EJBViewDescription) views.iterator().next();
             if (ejbViewDescription.hasJNDIBindings()) {
 
                 // java:global binding
