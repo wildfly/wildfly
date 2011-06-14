@@ -31,9 +31,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.remoting3.Channel;
@@ -120,9 +119,9 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             } catch (ModuleLoadException e) {
                 throw new RuntimeException(e);
             }
-            final ReadChannelThread readChannelThread = xnio.createReadChannelThread(configuration.getReadChannelThreadFactory());
-            final WriteChannelThread writeChannelThread = xnio.createWriteChannelThread(configuration.getWriteChannelThreadFactory());
-            final ConnectionChannelThread connectionChannelThread = xnio.createReadChannelThread(configuration.getConnectionChannelThreadFactory());
+            final ReadChannelThread readChannelThread = xnio.createReadChannelThread(configuration.getGroup(), OptionMap.EMPTY);
+            final WriteChannelThread writeChannelThread = xnio.createWriteChannelThread(configuration.getGroup(), OptionMap.EMPTY);
+            final ConnectionChannelThread connectionChannelThread = xnio.createReadChannelThread(configuration.getGroup(), OptionMap.EMPTY);
 
             final ChannelThreadPool<ReadChannelThread> readPool = ChannelThreadPools.singleton(readChannelThread);
             final ChannelThreadPool<WriteChannelThread> writePool = ChannelThreadPools.singleton(writeChannelThread);
@@ -193,13 +192,12 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
     }
 
     public static final class Configuration<T extends ProtocolChannel> {
+        private static final AtomicInteger COUNTER = new AtomicInteger();
         private Endpoint endpoint;
 
         private String endpointName;
         private OptionMap optionMap = OptionMap.EMPTY;
-        private ThreadFactory readChannelThreadFactory = Executors.defaultThreadFactory();
-        private ThreadFactory writeChannelThreadFactory = Executors.defaultThreadFactory();
-        private ThreadFactory connectionChannelThreadFactory = Executors.defaultThreadFactory();
+        private ThreadGroup group;
         private String uriScheme;
         private URI uri;
         private ProtocolChannelFactory<T> channelFactory;
@@ -262,32 +260,19 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             this.endpointName = endpointName;
         }
 
+        public void setGroup(ThreadGroup group) {
+            this.group = group;
+        }
+
         public String getEndpointName() {
             return endpointName;
         }
 
-        public ThreadFactory getReadChannelThreadFactory() {
-            return readChannelThreadFactory;
-        }
-
-        public void setReadChannelThreadFactory(ThreadFactory readChannelThreadFactory) {
-            this.readChannelThreadFactory = readChannelThreadFactory;
-        }
-
-        public ThreadFactory getWriteChannelThreadFactory() {
-            return writeChannelThreadFactory;
-        }
-
-        public void setWriteChannelThreadFactory(ThreadFactory writeChannelThreadFactory) {
-            this.writeChannelThreadFactory = writeChannelThreadFactory;
-        }
-
-        public ThreadFactory getConnectionChannelThreadFactory() {
-            return connectionChannelThreadFactory;
-        }
-
-        public void setConnectionChannelThreadFactory(ThreadFactory connectionChannelThreadFactory) {
-            this.connectionChannelThreadFactory = connectionChannelThreadFactory;
+        public ThreadGroup getGroup() {
+            if (group == null) {
+                group = new ThreadGroup("Remoting client threads " + COUNTER.incrementAndGet());
+            }
+            return group;
         }
 
         public String getUriScheme() {

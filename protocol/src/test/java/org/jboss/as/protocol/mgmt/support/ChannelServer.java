@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Endpoint;
@@ -86,9 +84,9 @@ public class ChannelServer implements Closeable {
 
         final Endpoint endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getExecutor(), configuration.getOptionMap());
         final Xnio xnio = Xnio.getInstance();
-        final ReadChannelThread readChannelThread = xnio.createReadChannelThread(configuration.getReadChannelThreadFactory());
-        final WriteChannelThread writeChannelThread = xnio.createWriteChannelThread(configuration.getWriteChannelThreadFactory());
-        final ConnectionChannelThread connectionChannelThread = xnio.createReadChannelThread(configuration.getConnectionChannelThreadFactory());
+        final ReadChannelThread readChannelThread = xnio.createReadChannelThread();
+        final WriteChannelThread writeChannelThread = xnio.createWriteChannelThread();
+        final ConnectionChannelThread connectionChannelThread = xnio.createReadChannelThread();
 
         final ChannelThreadPool<ReadChannelThread> readPool = ChannelThreadPools.singleton(readChannelThread);
         final ChannelThreadPool<WriteChannelThread> writePool = ChannelThreadPools.singleton(writeChannelThread);
@@ -146,9 +144,7 @@ public class ChannelServer implements Closeable {
     public static final class Configuration {
         private String endpointName;
         private OptionMap optionMap = OptionMap.EMPTY;
-        private ThreadFactory readChannelThreadFactory = Executors.defaultThreadFactory();
-        private ThreadFactory writeChannelThreadFactory = Executors.defaultThreadFactory();
-        private ThreadFactory connectionChannelThreadFactory = Executors.defaultThreadFactory();
+        private ThreadGroup readChannelThreadFactory;
         private String uriScheme;
         private InetSocketAddress bindAddress;
         private Executor executor;
@@ -162,15 +158,6 @@ public class ChannelServer implements Closeable {
             }
             if (optionMap == null) {
                 throw new IllegalArgumentException("Null option map");
-            }
-            if (readChannelThreadFactory == null) {
-                throw new IllegalArgumentException("Null read channel thread factory");
-            }
-            if (writeChannelThreadFactory == null) {
-                throw new IllegalArgumentException("Null write channel thread factory");
-            }
-            if (connectionChannelThreadFactory == null) {
-                throw new IllegalArgumentException("Null connection channel thread factory");
             }
             if (uriScheme == null) {
                 throw new IllegalArgumentException("Null protocol name");
@@ -186,30 +173,6 @@ public class ChannelServer implements Closeable {
 
         public String getEndpointName() {
             return endpointName;
-        }
-
-        public ThreadFactory getReadChannelThreadFactory() {
-            return readChannelThreadFactory;
-        }
-
-        public void setReadChannelThreadFactory(ThreadFactory readChannelThreadFactory) {
-            this.readChannelThreadFactory = readChannelThreadFactory;
-        }
-
-        public ThreadFactory getWriteChannelThreadFactory() {
-            return writeChannelThreadFactory;
-        }
-
-        public void setWriteChannelThreadFactory(ThreadFactory writeChannelThreadFactory) {
-            this.writeChannelThreadFactory = writeChannelThreadFactory;
-        }
-
-        public ThreadFactory getConnectionChannelThreadFactory() {
-            return connectionChannelThreadFactory;
-        }
-
-        public void setConnectionChannelThreadFactory(ThreadFactory connectionChannelThreadFactory) {
-            this.connectionChannelThreadFactory = connectionChannelThreadFactory;
         }
 
         public String getUriScheme() {

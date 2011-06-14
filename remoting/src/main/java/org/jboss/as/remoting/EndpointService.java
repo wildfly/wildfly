@@ -26,7 +26,6 @@ import static org.xnio.IoUtils.safeClose;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -73,9 +72,9 @@ public final class EndpointService implements Service<Endpoint> {
         try {
             endpoint = Remoting.createEndpoint("endpoint", executor.getValue(), optionMap);
             Xnio xnio = XnioUtil.getXnio();
-            final ReadChannelThread readChannelThread = xnio.createReadChannelThread(Executors.defaultThreadFactory());
-            final WriteChannelThread writeChannelThread = xnio.createWriteChannelThread(Executors.defaultThreadFactory());
-            final ConnectionChannelThread connectionChannelThread = xnio.createReadChannelThread(Executors.defaultThreadFactory());
+            final ReadChannelThread readChannelThread = xnio.createReadChannelThread(new ThreadGroup("Remoting Read Threads"), OptionMap.EMPTY);
+            final WriteChannelThread writeChannelThread = xnio.createWriteChannelThread(new ThreadGroup("Remoting Write Threads"), OptionMap.EMPTY);
+            final ConnectionChannelThread connectionChannelThread = xnio.createReadChannelThread(new ThreadGroup("Remoting Connection Threads"), OptionMap.EMPTY);
 
             final ChannelThreadPool<ReadChannelThread> readPool = ChannelThreadPools.singleton(readChannelThread);
             final ChannelThreadPool<WriteChannelThread> writePool = ChannelThreadPools.singleton(writeChannelThread);
