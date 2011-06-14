@@ -175,7 +175,7 @@ public class DeploymentFullReplaceHandler implements NewStepHandler, Description
         removeContentAdditions(replaceNode.require(CONTENT));
 
         if (start) {
-            DeploymentHandlerUtil.replace(context, runtimeName, name, replacedRuntimeName, contentItem);
+            DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedRuntimeName, contentItem);
         }
         context.completeStep();
     }

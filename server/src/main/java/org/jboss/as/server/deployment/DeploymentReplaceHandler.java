@@ -133,7 +133,7 @@ public class DeploymentReplaceHandler implements NewStepHandler, DescriptionProv
 
         final String runtimeName = deployNode.require(RUNTIME_NAME).asString();
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(deployNode.require(CONTENT));
-        DeploymentHandlerUtil.replace(context, runtimeName, name, replacedName, contents);
+        DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedName, contents);
 
         context.completeStep();
     }
