@@ -195,7 +195,7 @@ public class DeploymentHandlerUtil {
         operationContext.completeStep();
     }
 
-    public static void replace(final NewOperationContext operationContext, final String deploymentUnitName, final String managementName,
+    public static void replace(final NewOperationContext operationContext, final ModelNode originalDeployment, final String deploymentUnitName, final String managementName,
                                final String replacedDeploymentUnitName, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
 
@@ -216,10 +216,9 @@ public class DeploymentHandlerUtil {
                             context.removeService(controller.getName());
                         }
 
-                        final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
-                        final String name = model.require(NAME).asString();
-                        final String runtimeName = model.require(RUNTIME_NAME).asString();
-                        final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
+                        final String name = originalDeployment.require(NAME).asString();
+                        final String runtimeName = originalDeployment.require(RUNTIME_NAME).asString();
+                        final DeploymentHandlerUtil.ContentItem[] contents = getContents(originalDeployment.require(CONTENT));
                         verificationHandler = new ServiceVerificationHandler();
                         doDeploy(context, runtimeName, name, verificationHandler, contents);
                     }
