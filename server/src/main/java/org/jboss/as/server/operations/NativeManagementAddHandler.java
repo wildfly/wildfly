@@ -61,12 +61,11 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler implement
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        RemotingServices.installStandaloneManagementChannelServices(
-                context.getServiceTarget(),
+        RemotingServices.installStandaloneConnectorServices(serviceTarget, NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName), port, verificationHandler, newControllers);
+        RemotingServices.installChannelServices(serviceTarget,
                 new NewModelControllerClientOperationHandlerService(),
                 Services.JBOSS_SERVER_CONTROLLER,
-                NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
-                port,
+                RemotingServices.MANAGEMENT_CHANNEL,
                 verificationHandler,
                 newControllers);
     }

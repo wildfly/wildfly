@@ -36,6 +36,7 @@ import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -55,6 +56,17 @@ public class ServerToHostOperationHandler implements ManagementOperationHandler,
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("management", "server", "to", "host", "controller");
 
     private final InjectedValue<ManagedServerLifecycleCallback> callback = new InjectedValue<ManagedServerLifecycleCallback>();
+
+    private ServerToHostOperationHandler() {
+    }
+
+    public static void install(ServiceTarget serviceTarget, ServiceName serverInventoryName) {
+        final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
+        serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
+            .addDependency(serverInventoryName, ManagedServerLifecycleCallback.class, serverToHost.callback)
+            .install();
+
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -98,11 +110,5 @@ public class ServerToHostOperationHandler implements ManagementOperationHandler,
         @Override
         protected void writeResponse(FlushableDataOutput output) throws IOException {
         }
-
     }
-
-    public InjectedValue<ManagedServerLifecycleCallback> getCallbackInjector() {
-        return callback;
-    }
-
 }

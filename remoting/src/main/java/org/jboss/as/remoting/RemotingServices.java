@@ -122,29 +122,6 @@ public final class RemotingServices {
     }
 
     /**
-     * Set up the remoting services for a standalone instanc needed for management.
-     * This includes setting up the stream server listening on the management socket, and the main
-     * managemenent channel and associated operation handler.
-     *
-     * @param serviceTarget the service target to install the services into
-     * @param operationHandlerService the operation handler service
-     * @param modelControllerName the name of the server controller
-     * @param networkInterfaceBindingName the name of the network interface binding
-     * @param port the port
-     * @param newControllers list to add the new services to
-     */
-    public static void installStandaloneManagementChannelServices(
-            final ServiceTarget serviceTarget,
-            final NewModelControllerClientOperationHandlerService operationHandlerService,
-            final ServiceName modelControllerName,
-            final ServiceName networkInterfaceBindingName,
-            final int port,
-            final ServiceVerificationHandler verificationHandler,
-            final List<ServiceController<?>> newControllers) {
-        installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBindingName, port, verificationHandler, newControllers);
-    }
-
-    /**
      * Installs the remoting endpoint service. This is ONLY needed for domain mode,
      * standalone does it from its standalone.xml
      *
@@ -161,30 +138,36 @@ public final class RemotingServices {
                 //.addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
-
     }
 
     /**
-     * Set up the remoting services for a domain controller instance needed for management.
-     * This includes setting up the main endpoint, the stream server listening on the management socket, and the main
-     * managemenent channel and associated operation handler.
+     * Installs the remoting stream server for a domain instance
      *
      * @param serviceTarget the service target to install the services into
-     * @param operationHandlerService the operation handler service
-     * @param modelControllerName the name of the domain controller
-     * @param networkInterfaceBindingName the name of the network interface binding
+     * @param networkInterfaceBinding the network interface binding
      * @param port the port
-     * @param verificationHandler
-     * @param newControllers list to add the new services to
      */
-    public static void installDomainControllerManagementChannelServices(
-            final ServiceTarget serviceTarget,
-            final NewModelControllerClientOperationHandlerService operationHandlerService,
-            final ServiceName modelControllerName,
+    public static void installDomainConnectorServices(ServiceTarget serviceTarget,
             final NetworkInterfaceBinding networkInterfaceBinding,
             final int port) {
+        installConnectorServices(serviceTarget, null, networkInterfaceBinding, port, null, null);
+    }
 
-        installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBinding, port);
+    /**
+     * Installs the remoting stream server for a standalone instance
+     *
+     * @param serviceTarget the service target to install the services into
+     * @param networkInterfaceBindingName the name of the network interface binding
+     * @param port the port
+     * @param verificationHandler the verification handler
+     * @param newControllers list to add the new services to
+     */
+    public static void installStandaloneConnectorServices(ServiceTarget serviceTarget,
+            final ServiceName networkInterfaceBindingName,
+            final int port,
+            final ServiceVerificationHandler verificationHandler,
+            final List<ServiceController<?>> newControllers) {
+        installConnectorServices(serviceTarget, networkInterfaceBindingName, null, port, verificationHandler, newControllers);
     }
 
     /**
@@ -237,36 +220,22 @@ public final class RemotingServices {
         installChannelOpenListenerService(serviceTarget, channelName, operationHandlerName, verificationHandler, newControllers);
     }
 
-    private static void installServices(
-            final ServiceTarget serviceTarget,
-            final NewAbstractModelControllerOperationHandlerService<?> operationHandlerService,
-            final ServiceName modelControllerName,
-            final NetworkInterfaceBinding networkInterfaceBinding,
-            final int port) {
-        installServices(serviceTarget, operationHandlerService, modelControllerName, null, networkInterfaceBinding, port, null, null);
+    private static void addController(List<ServiceController<?>> newControllers, ServiceVerificationHandler verificationHandler, ServiceBuilder<?> builder) {
+        if (verificationHandler != null) {
+            builder.addListener(verificationHandler);
+        }
+        ServiceController<?> controller = builder.install();
+        if (newControllers != null) {
+            newControllers.add(controller);
+        }
     }
 
-
-    private static void installServices(
-            final ServiceTarget serviceTarget,
-            final NewAbstractModelControllerOperationHandlerService<?> operationHandlerService,
-            final ServiceName modelControllerName,
-            final ServiceName networkInterfaceBindingName,
-            final int port,
-            ServiceVerificationHandler verificationHandler,
-            List<ServiceController<?>> newControllers) {
-        installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBindingName, null, port, verificationHandler, newControllers);
-    }
-
-    private static void installServices(
-            final ServiceTarget serviceTarget,
-            final NewAbstractModelControllerOperationHandlerService<?> operationHandlerService,
-            final ServiceName modelControllerName,
+    private static void installConnectorServices(ServiceTarget serviceTarget,
             final ServiceName networkInterfaceBindingName,
             final NetworkInterfaceBinding networkInterfaceBinding,
             final int port,
-            ServiceVerificationHandler verificationHandler,
-            List<ServiceController<?>> newControllers) {
+            final ServiceVerificationHandler verificationHandler,
+            final List<ServiceController<?>> newControllers) {
         //FIXME get this provider from somewhere
         //There is currently a probable bug in jboss remoting, so the user realm name MUST be the same as
         //the endpoint name.
@@ -296,18 +265,6 @@ public final class RemotingServices {
                 .addDependency(RemotingServices.connectorServiceName(MANAGEMENT_CHANNEL), ChannelListener.class, streamServerService.getConnectorInjector())
                 .setInitialMode(Mode.ACTIVE);
             addController(newControllers, verificationHandler, builder);
-        }
-
-        installChannelServices(serviceTarget, operationHandlerService, modelControllerName, MANAGEMENT_CHANNEL, verificationHandler, newControllers);
-    }
-
-    private static void addController(List<ServiceController<?>> newControllers, ServiceVerificationHandler verificationHandler, ServiceBuilder<?> builder) {
-        if (verificationHandler != null) {
-            builder.addListener(verificationHandler);
-        }
-        ServiceController<?> controller = builder.install();
-        if (newControllers != null) {
-            newControllers.add(controller);
         }
     }
 }
