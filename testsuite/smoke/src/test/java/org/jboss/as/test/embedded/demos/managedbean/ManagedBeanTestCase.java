@@ -22,7 +22,6 @@
 package org.jboss.as.test.embedded.demos.managedbean;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.managedbean.archive.BeanWithSimpleInjected;
@@ -34,7 +33,6 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,7 +42,6 @@ import org.junit.runner.RunWith;
  * @version $Revision: 1.1 $
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-814] Fix or remove ignored smoke tests")
 public class ManagedBeanTestCase {
 
     @Deployment
@@ -72,7 +69,7 @@ public class ManagedBeanTestCase {
         Assert.assertNotNull(bean.getSimple());
         String s = bean.echo("Hello");
         Assert.assertNotNull(s);
-        Assert.assertEquals("#InterceptorBean##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello#CDIBean#CDIBean", s);
+        Assert.assertEquals("#InterceptorBean##InterceptorFromParent##OtherInterceptorBean##BeanParent##BeanWithSimpleInjected#Hello#CDIBean#CDIBean", s);
     }
 
 }
