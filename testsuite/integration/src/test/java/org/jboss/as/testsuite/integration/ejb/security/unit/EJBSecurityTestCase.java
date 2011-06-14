@@ -105,7 +105,11 @@ public class EJBSecurityTestCase {
         } catch (EJBAccessException ejbae) {
             // expected
         }
-
-        ddBasedSLSB.onlyTestRoleCanAccess();
+        try {
+            ddBasedSLSB.onlyTestRoleCanAccess();
+            Assert.fail("Call to onlyTestRoleCanAccess() method was expected to fail");
+        } catch (EJBAccessException ejbae) {
+            // expected since only TestRole can call that method
+        }
     }
 }
