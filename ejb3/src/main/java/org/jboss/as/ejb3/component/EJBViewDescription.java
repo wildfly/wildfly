@@ -54,9 +54,32 @@ public final class EJBViewDescription extends ViewDescription {
         return new EJBViewConfiguration(viewClass, componentConfiguration, getServiceName(), proxyFactory, getMethodIntf());
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        EJBViewDescription that = (EJBViewDescription) o;
+
+        // since the views are added to the component description, that should already be equal
+        if (hasJNDIBindings != that.hasJNDIBindings) return false;
+        if (methodIntf != that.methodIntf) return false;
+        if (!getViewClassName().equals(that.getViewClassName())) return false;
+
+        return true;
+    }
+
     @Override // TODO: what to do in JNDI if multiple views are available for no interface view ?
     public ServiceName getServiceName() {
         return super.getServiceName().append(methodIntf.toString());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = methodIntf.hashCode();
+        result = 31 * result + (hasJNDIBindings ? 1 : 0);
+        result = 31 * result + getViewClassName().hashCode();
+        return result;
     }
 
     public boolean hasJNDIBindings() {
