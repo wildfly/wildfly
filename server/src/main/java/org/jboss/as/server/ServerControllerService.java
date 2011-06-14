@@ -57,6 +57,7 @@ import org.jboss.as.server.deployment.module.ModuleIdentifierProcessor;
 import org.jboss.as.server.deployment.module.ModuleInformationServiceProcessor;
 import org.jboss.as.server.deployment.module.ModuleSpecProcessor;
 import org.jboss.as.server.deployment.module.SubDeploymentDependencyProcessor;
+import org.jboss.as.server.deployment.module.ClassFileTransformerProcessor;
 import org.jboss.as.server.deployment.reflect.InstallReflectionIndexProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
@@ -241,6 +242,7 @@ final class ServerControllerService implements Service<ServerController> {
         deployers.get(Phase.CONFIGURE_MODULE).add(new RegisteredProcessor(Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor()));
         deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_INSTALL_EXTENSION, new ModuleExtensionNameProcessor()));
         deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_REFLECTION_INDEX, new InstallReflectionIndexProcessor()));
+        deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_REFLECTION_INDEX+1, new ClassFileTransformerProcessor()));
         deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor()));
 
         // Ext integration deployers

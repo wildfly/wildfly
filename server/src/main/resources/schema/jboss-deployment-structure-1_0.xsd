@@ -538,5 +538,37 @@
         </xsd:choice>
     </xsd:complexType>
 
+    <xsd:complexType name="transformerSetType">
+        <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+            <documentation>
+                A list of java.lang.instrument.ClassFileTransformer implementations that will be applied at classloading
+            </documentation>
+        </annotation>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="transformer" type="transformerType">
+                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                    <documentation>
+                        The transformer class to include in the set.
+                    </documentation>
+                </annotation>
+            </xsd:element>
+        </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="transformerType">
+        <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+            <documentation>
+                A java.lang.instrument.ClassFileTransformer that will be applied at classloading
+            </documentation>
+        </annotation>
+        <xsd:attribute name="class" type="xsd:string" use="required">
+           <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                <documentation>
+                    The class name of the transformer
+                </documentation>
+            </annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
 </xsd:schema>
 

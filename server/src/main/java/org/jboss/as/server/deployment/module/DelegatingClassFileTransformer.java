@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment.module;
 
+import org.jboss.as.server.deployment.AttachmentKey;
+
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
@@ -34,6 +36,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class DelegatingClassFileTransformer implements ClassFileTransformer {
 
     private final List<ClassFileTransformer> delegateTransformers = new CopyOnWriteArrayList<ClassFileTransformer>();
+
+    public static final AttachmentKey<DelegatingClassFileTransformer> ATTACHMENT_KEY = AttachmentKey.create(DelegatingClassFileTransformer.class);
 
     public DelegatingClassFileTransformer() {
     }
