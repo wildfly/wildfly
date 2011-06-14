@@ -27,13 +27,18 @@ import javax.ejb.Stateless;
 /**
  * User: jpai
  */
-public class DDBasedSLSB {
+public class DDBasedSLSB implements FullAccess {
 
     public void accessDenied() {
         
     }
 
     public void onlyTestRoleCanAccess() {
+        
+    }
+
+    @Override
+    public void doAnything() {
         
     }
 }

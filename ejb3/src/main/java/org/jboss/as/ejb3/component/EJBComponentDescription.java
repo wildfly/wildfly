@@ -32,7 +32,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.EJBMethodIdentifier;
-import org.jboss.as.ejb3.component.security.DenyAllViewConfigurator;
+import org.jboss.as.ejb3.component.security.AuthorizationInterceptor;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -43,7 +43,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
@@ -92,7 +91,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     private Map<String, Collection<EJBMethodIdentifier>> denyAllApplicableMethods = new HashMap<String, Collection<EJBMethodIdentifier>>();
 
-    private Collection<String> denyAllApplicableClasses = new HashSet<String>();
+    private Map<String, Collection<String>> denyAllApplicableClasses = new HashMap<String, Collection<String>>();
 
     /**
      * Stores around invoke methods that are referenced in the DD that cannot be resolved until the module is loaded
@@ -163,6 +162,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
         // setup a current invocation interceptor
         this.addCurrentInvocationContextFactory();
+        // setup security interceptors
+        this.setupSecurityInterceptors();
 
     }
 
@@ -262,7 +263,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     protected void setupViewInterceptors(ViewDescription view) {
         this.addCurrentInvocationContextFactory(view);
-        this.setupSecurityInterceptors(view);
     }
 
     protected void setupClientViewInterceptors(ViewDescription view) {
@@ -283,9 +283,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     protected abstract void addCurrentInvocationContextFactory(ViewDescription view);
 
-    protected void setupSecurityInterceptors(final ViewDescription view) {
-        // setup a view configurator which processes @DenyAll/exclude-list methods on a EJB view
-        view.getConfigurators().add(new DenyAllViewConfigurator());
+    protected void setupSecurityInterceptors() {
+        // setup security interceptor for the component
+        this.getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.addComponentInterceptor(new ImmediateInterceptorFactory(new AuthorizationInterceptor()), InterceptorOrder.Component.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR, true);
+            }
+        });
     }
 
     private void addToStringMethodInterceptor(final ViewDescription view) {
@@ -361,7 +366,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         if (className == null || className.trim().isEmpty()) {
             throw new IllegalArgumentException("Classname cannot be null or empty: " + className);
         }
-        this.denyAllApplicableClasses.add(className);
+        for (final ViewDescription view : this.getViews()) {
+            Collection<String> denyAllClasses = this.denyAllApplicableClasses.get(view.getViewClassName());
+            if (denyAllClasses == null) {
+                denyAllClasses = new HashSet<String>();
+                this.denyAllApplicableClasses.put(view.getViewClassName(), denyAllClasses);
+            }
+            denyAllClasses.add(className);
+        }
     }
 
     public void applyDenyAllOnAllViewsForMethod(final EJBMethodIdentifier ejbMethodIdentifier) {
@@ -375,6 +387,54 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         }
     }
 
+    public void applyDenyAllOnViewTypeForMethod(final MethodIntf viewType, final EJBMethodIdentifier ejbMethodIdentifier) {
+        // find the right view(s) to apply the @DenyAll
+        for (final ViewDescription view : this.getViews()) {
+            // shouldn't really happen
+            if (view instanceof EJBViewDescription == false) {
+                continue;
+            }
+            final EJBViewDescription ejbView = (EJBViewDescription) view;
+            // skip irrelevant views
+            if (ejbView.getMethodIntf() != viewType) {
+                continue;
+            }
+            Collection<EJBMethodIdentifier> denyAllViewMethods = this.denyAllApplicableMethods.get(view.getViewClassName());
+            if (denyAllViewMethods == null) {
+                denyAllViewMethods = new ArrayList<EJBMethodIdentifier>();
+                this.denyAllApplicableMethods.put(view.getViewClassName(), denyAllViewMethods);
+            }
+            denyAllViewMethods.add(ejbMethodIdentifier);
+        }
+    }
+
+    public void applyDenyAllOnAllMethodsOfAllViews() {
+        // "All methods" implies a class level @DenyAll (a.k.a exclude-list)
+        this.applyDenyAllOnAllViewsForClass(this.getEJBClassName());
+    }
+
+    public void applyDenyAllOnAllMethodsOfViewType(final MethodIntf viewType) {
+        // find the right view(s) to apply the @DenyAll
+        for (final ViewDescription view : this.getViews()) {
+            // shouldn't really happen
+            if (view instanceof EJBViewDescription == false) {
+                continue;
+            }
+            final EJBViewDescription ejbView = (EJBViewDescription) view;
+            // skip irrelevant views
+            if (ejbView.getMethodIntf() != viewType) {
+                continue;
+            }
+            // now apply the @DenyAll on class level for this view
+            Collection<String> denyAllApplicableClasses = this.denyAllApplicableClasses.get(ejbView.getViewClassName());
+            if (denyAllApplicableClasses == null) {
+                denyAllApplicableClasses = new HashSet<String>();
+                this.denyAllApplicableClasses.put(ejbView.getViewClassName(), denyAllApplicableClasses);
+            }
+            denyAllApplicableClasses.add(this.getEJBClassName());
+        }
+    }
+
     public Collection<EJBMethodIdentifier> getDenyAllMethodsForView(final String viewClassName) {
         final Collection<EJBMethodIdentifier> denyAllMethods = this.denyAllApplicableMethods.get(viewClassName);
         if (denyAllMethods != null) {
@@ -383,8 +443,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return Collections.emptySet();
     }
 
-    public boolean isDenyAllApplicableToClass(final String className) {
-        return this.denyAllApplicableClasses.contains(className);
+    public boolean isDenyAllApplicableToClass(final String viewClassName, final String className) {
+        final Collection<String> denyAllApplicableClasses = this.denyAllApplicableClasses.get(viewClassName);
+        if (denyAllApplicableClasses == null) {
+            return false;
+        }
+        return denyAllApplicableClasses.contains(className);
     }
 
     /**
