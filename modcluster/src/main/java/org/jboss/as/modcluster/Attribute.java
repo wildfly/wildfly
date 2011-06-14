@@ -57,6 +57,7 @@ enum Attribute {
     TYPE(CommonAttributes.TYPE),
     CLASS(CommonAttributes.CLASS),
     PROPERTY(CommonAttributes.PROPERTY),
+    VALUE(CommonAttributes.VALUE),
     ;
 
     private final String name;

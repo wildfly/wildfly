@@ -55,4 +55,5 @@ interface CommonAttributes {
     String WEIGHT = "weight";
     String CLASS = "class";
     String PROPERTY = "property";
+    String VALUE = "value";
 }

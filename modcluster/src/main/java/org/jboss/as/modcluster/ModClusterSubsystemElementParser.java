@@ -31,7 +31,11 @@ import static org.jboss.as.modcluster.CommonAttributes.SSL;
 import static org.jboss.as.modcluster.CommonAttributes.STOP_CONTEXT_TIMEOUT;
 import static org.jboss.as.modcluster.CommonAttributes.TYPE;
 import static org.jboss.as.modcluster.CommonAttributes.WEIGHT;
+import static org.jboss.as.modcluster.CommonAttributes.NAME;
+import static org.jboss.as.modcluster.CommonAttributes.VALUE;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamConstants;
@@ -48,7 +52,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.dmr.Property;
 
 public class ModClusterSubsystemElementParser implements XMLElementReader<List<ModelNode>>,
-XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
+        XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
 
     /** {@inheritDoc} */
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
@@ -70,7 +74,7 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case MOD_CLUSTER_CONFIG:
-                            final ModelNode config  = parseModClusterConfig(reader);
+                            final ModelNode config = parseModClusterConfig(reader);
                             subsystem.get(MOD_CLUSTER_CONFIG).set(config);
                             break;
                         default: {
@@ -78,7 +82,8 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
                         }
                     }
                     break;
-                } default: {
+                }
+                default: {
                     throw unexpectedElement(reader);
                 }
             }
@@ -88,7 +93,7 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
     /** {@inheritDoc} */
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context)
-    throws XMLStreamException {
+            throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
         ModelNode node = context.getModelNode();
@@ -153,6 +158,7 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
         writeAttribute(writer, STOP_CONTEXT_TIMEOUT, config);
         writeAttribute(writer, SOCKET_TIMEOUT, config);
     }
+
     static void parsePropConf(XMLExtendedStreamReader reader, ModelNode conf) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -198,10 +204,11 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
         writer.writeStartElement(Element.SSL.getLocalName());
         writer.writeEndElement();
     }
+
     static ModelNode parseSSL(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode conf = new ModelNode();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            //TODO: Just read it...
+            // TODO: Just read it...
         }
         return conf;
     }
@@ -209,7 +216,7 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
     /* Simple Load provider */
     static void writeSimpleLoadProvider(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         writer.writeStartElement(Element.SIMPLE_LOAD_PROVIDER.getLocalName());
-        // TODO need something...
+        writeAttribute(writer, FACTOR, config);
         writer.writeEndElement();
     }
 
@@ -235,7 +242,16 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
     /* Dynamic load provider */
     static void writeDynamicLoadProvider(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         writer.writeStartElement(Element.SIMPLE_LOAD_PROVIDER.getLocalName());
-        // TODO need something...
+        writeAttribute(writer, HISTORY, config);
+        writeAttribute(writer, DECAY, config);
+
+        // write the elements.
+        if (config.hasDefined(LOAD_METRIC)) {
+            writeLoadMetric(writer, config.get(LOAD_METRIC));
+        }
+        if (config.hasDefined(CUSTOM_LOAD_METRIC)) {
+            writeCustomLoadMetric(writer, config.get(CUSTOM_LOAD_METRIC));
+        }
         writer.writeEndElement();
     }
 
@@ -276,6 +292,26 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
 
         return load;
     }
+
+    /* Load Metric parsing logic */
+    static void writeLoadMetric(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.LOAD_METRIC.getLocalName());
+        final List<ModelNode> array = config.asList();
+        Iterator<ModelNode> it = array.iterator();
+        while (it.hasNext()) {
+            final ModelNode node = (ModelNode) it.next();
+            writer.writeStartElement(Element.CUSTOM_LOAD_METRIC.getLocalName());
+            writeAttribute(writer, TYPE, node);
+            writeAttribute(writer, WEIGHT, node);
+            writeAttribute(writer, CLASS, node);
+            for (Property property : node.get("property").asPropertyList()) {
+                writeProperty(writer, property);
+            }
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+    }
+
     static ModelNode parseLoadMetric(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode load = new ModelNode();
         final int count = reader.getAttributeCount();
@@ -302,7 +338,7 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case PROPERTY:
-                    final Property property = readProperty(reader);
+                    final Property property = parseProperty(reader);
                     load.set(property);
                     break;
                 default:
@@ -311,6 +347,24 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
         }
         return load;
     }
+
+    /* Custom Load Metric parsing logic */
+    static void writeCustomLoadMetric(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        final List<ModelNode> array = config.asList();
+        Iterator<ModelNode> it = array.iterator();
+        while (it.hasNext()) {
+            final ModelNode node = (ModelNode) it.next();
+            writer.writeStartElement(Element.CUSTOM_LOAD_METRIC.getLocalName());
+            writeAttribute(writer, CAPACITY, node);
+            writeAttribute(writer, WEIGHT, node);
+            writeAttribute(writer, CLASS, node);
+            for (Property property : node.get("property").asPropertyList()) {
+                writeProperty(writer, property);
+            }
+            writer.writeEndElement();
+        }
+    }
+
     static ModelNode parseCustomLoadMetric(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode load = new ModelNode();
         final int count = reader.getAttributeCount();
@@ -336,7 +390,7 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case PROPERTY:
-                    final Property property = readProperty(reader);
+                    final Property property = parseProperty(reader);
                     load.set(property);
                     break;
                 default:
@@ -346,9 +400,38 @@ XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
         return load;
     }
 
-    static void writeAttribute(final XMLExtendedStreamWriter writer, final String name, ModelNode node) throws XMLStreamException {
-        if(node.hasDefined(name)) {
+    static void writeAttribute(final XMLExtendedStreamWriter writer, final String name, ModelNode node)
+            throws XMLStreamException {
+        if (node.hasDefined(name)) {
             writer.writeAttribute(name, node.get(name).asString());
         }
+    }
+
+    /* Property logic */
+    static void writeProperty(final XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
+        writer.writeStartElement(Element.PROPERTY.getLocalName());
+        writer.writeAttribute(NAME, property.getName());
+        writer.writeAttribute(VALUE, property.getValue().toString());
+        writer.writeEndElement();
+    }
+    static Property parseProperty(XMLExtendedStreamReader reader) throws XMLStreamException {
+        String name = null;
+        String value = null;
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            final String localName = reader.getAttributeLocalName(i);
+            if (localName.equals("name")) {
+                name = reader.getAttributeValue(i);
+            } else if (localName.equals("value")) {
+                value = reader.getAttributeValue(i);
+            } else {
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (name == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton("name"));
+        }
+        ParseUtils.requireNoContent(reader);
+        return new Property(name, new ModelNode().set(value == null ? "" : value));
     }
 }
