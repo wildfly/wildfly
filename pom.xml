@@ -68,7 +68,9 @@
         <version.jacorb>2.3.1jboss.patch01-brew</version.jacorb>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
         <version.javax.enterprise.cdi-api>1.0-SP4</version.javax.enterprise.cdi-api>
+        <version.javax.faces.jsf-api.1.2>1.2_13</version.javax.faces.jsf-api.1.2>
         <version.javax.faces.jsf-impl>2.0.4-b09</version.javax.faces.jsf-impl>
+        <version.javax.faces.jsf-impl.1.2>1.2_13</version.javax.faces.jsf-impl.1.2>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail.mail>1.4.4</version.javax.mail.mail>
@@ -2606,6 +2608,18 @@
                         <artifactId>jsr250-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.faces</groupId>
+                <artifactId>jsf-api</artifactId>
+                <version>${version.javax.faces.jsf-api.1.2}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.faces</groupId>
+                <artifactId>jsf-impl</artifactId>
+                <version>${version.javax.faces.jsf-impl.1.2}</version>
             </dependency>
 
             <dependency>

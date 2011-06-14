@@ -22,9 +22,10 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="com.sun.jsf-impl">
+<module xmlns="urn:jboss:module:1.0" name="com.sun.jsf-impl" slot="1.2" >
     <dependencies>
-        <module name="javax.faces.api"/>
+        <!-- Must be first -->
+    	<module name="javax.faces.api" slot="1.2" />
         <module name="javaee.api"/>
         <module name="javax.servlet.jstl.api"/>
     </dependencies>

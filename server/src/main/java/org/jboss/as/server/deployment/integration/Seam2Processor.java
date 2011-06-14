@@ -60,7 +60,7 @@ import java.util.List;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class SeamProcessor implements DeploymentUnitProcessor {
+public class Seam2Processor implements DeploymentUnitProcessor {
 
     public static final String SEAM_PROPERTIES = "seam.properties";
     public static final String SEAM_PROPERTIES_META_INF = "META-INF/" + SEAM_PROPERTIES;
@@ -84,7 +84,7 @@ public class SeamProcessor implements DeploymentUnitProcessor {
     private ServiceTarget serviceTarget; // service target from the service that added this dup
     private ResourceLoaderSpec seamIntResourceLoader;
 
-    public SeamProcessor(ServiceTarget serviceTarget) {
+    public Seam2Processor(ServiceTarget serviceTarget) {
         this.serviceTarget = serviceTarget;
     }
 
