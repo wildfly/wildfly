@@ -47,7 +47,7 @@ import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
 @DeclareRoles("Users")
 public class WhoAmIServlet extends HttpServlet {
     @EJB
-    private EntryBean bean;
+    private Entry bean;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
