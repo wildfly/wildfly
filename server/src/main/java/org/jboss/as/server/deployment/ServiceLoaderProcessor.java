@@ -22,6 +22,12 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.logging.Logger;
+import org.jboss.vfs.VFSUtils;
+import org.jboss.vfs.VirtualFile;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,10 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.logging.Logger;
-import org.jboss.vfs.VFSUtils;
-import org.jboss.vfs.VirtualFile;
 
 /**
  * A processor which creates a service loader index.
@@ -47,7 +49,9 @@ public final class ServiceLoaderProcessor implements DeploymentUnitProcessor {
 
     private static final Pattern VALID_NAME = Pattern.compile("(?:[a-zA-Z0-9_]+\\.)*[a-zA-Z0-9_]+");
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final Map<String, List<String>> foundServices = new HashMap<String, List<String>>();
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -55,11 +59,10 @@ public final class ServiceLoaderProcessor implements DeploymentUnitProcessor {
         if (deploymentRoot != null) {
             processRoot(deploymentRoot, foundServices);
         }
-        final AttachmentList<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        if (resourceRoots != null) {
-            for (ResourceRoot resourceRoot : resourceRoots) {
+        final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
+        for (ResourceRoot resourceRoot : resourceRoots) {
+            if (!SubDeploymentMarker.isSubDeployment(resourceRoot) && ModuleRootMarker.isModuleRoot(resourceRoot))
                 processRoot(resourceRoot, foundServices);
-            }
         }
         deploymentUnit.putAttachment(Attachments.SERVICES, new ServicesAttachment(foundServices));
     }
@@ -89,7 +92,7 @@ public final class ServiceLoaderProcessor implements DeploymentUnitProcessor {
                         if (className.length() == 0) {
                             continue;
                         }
-                        if (! VALID_NAME.matcher(className).matches()) {
+                        if (!VALID_NAME.matcher(className).matches()) {
                             log.warnf("Encountered invalid class name \"%s\" for service type \"%s\"", className, name);
                         }
                         list.add(className);
@@ -103,7 +106,9 @@ public final class ServiceLoaderProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void undeploy(final DeploymentUnit context) {
         context.removeAttachment(Attachments.SERVICES);
     }
