@@ -45,6 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
@@ -134,6 +135,13 @@ public class DeploymentDescription {
             root.get(ATTRIBUTES, ENABLED, TYPE).set(ModelType.BOOLEAN);
             root.get(ATTRIBUTES, ENABLED, DESCRIPTION).set(bundle.getString("deployment.enabled"));
             root.get(ATTRIBUTES, ENABLED, REQUIRED).set(true);
+            if (includeContent) {
+                // includeEnabled && includeContent means this is for a server
+                root.get(ATTRIBUTES, PERSISTENT, TYPE).set(ModelType.BOOLEAN);
+                root.get(ATTRIBUTES, PERSISTENT, DESCRIPTION).set(bundle.getString("deployment.persistent"));
+                root.get(ATTRIBUTES, PERSISTENT, REQUIRED).set(true);
+
+            }
         }
         root.get(OPERATIONS);
         root.get(CHILDREN).setEmptyObject();
