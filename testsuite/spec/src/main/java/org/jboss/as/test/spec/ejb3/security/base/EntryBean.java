@@ -19,25 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.spec.ejb3.security;
+package org.jboss.as.test.spec.ejb3.security.base;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
 import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
 
+import org.jboss.as.test.spec.ejb3.security.Entry;
+import org.jboss.as.test.spec.ejb3.security.WhoAmI;
+
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-@Stateless
-public class EntryBean {
+public abstract class EntryBean {
 
     @EJB
-    private WhoAmIBean whoAmIBean;
+    private WhoAmI whoAmIBean;
 
     @Resource
     private SessionContext context;

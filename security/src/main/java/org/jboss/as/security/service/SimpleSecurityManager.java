@@ -107,11 +107,17 @@ public class SimpleSecurityManager {
         return callerPrincipal == null ? principal : callerPrincipal;
     }
 
+    public boolean isCallerInRole(final String roleName) {
+        return _isCallerInRole(roleName);
+    }
+
     /**
+     * TODO - Need so separate out the role check for isCallerInRole and actual declarative role checks as context slightly different.
+     *
      * @param roleNames
      * @return true if the user is in any one of the roles listed
      */
-    public boolean isCallerInRole(final String... roleNames) {
+    private boolean _isCallerInRole(final String... roleNames) {
         final SecurityContext securityContext = doPrivileged(securityContext());
         if (securityContext == null)
             throw new IllegalStateException("No security context established");

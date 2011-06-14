@@ -21,9 +21,26 @@
  */
 package org.jboss.as.test.spec.ejb3.security;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBAccessException;
+import javax.security.auth.login.LoginContext;
+import java.io.IOException;
+import java.security.Principal;
+import java.util.logging.Logger;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.spec.common.HttpRequest;
+import org.jboss.as.test.spec.ejb3.security.authentication.EntryBean;
+import org.jboss.as.test.spec.ejb3.security.base.WhoAmIBean;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.Archive;
@@ -33,48 +50,13 @@ import org.jboss.util.Base64;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
-import javax.security.auth.login.LoginContext;
-import java.io.IOException;
-import java.security.Principal;
-import java.util.logging.Logger;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-public class EJB3SecurityTestCase {
-    private static final Logger log = Logger.getLogger(EJB3SecurityTestCase.class.getName());
-
-    @Deployment
-    public static Archive<?> deployment() {
-        // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
-                .addPackage(WhoAmIBean.class.getPackage())
-                .addPackage(HttpRequest.class.getPackage())
-                .addClass(Base64.class)
-                .addAsResource("ejb3/security/users.properties", "users.properties")
-                .addAsResource("ejb3/security/roles.properties", "roles.properties")
-                .addAsWebInfResource("ejb3/security/web.xml", "web.xml");
-        log.info(war.toString(true));
-        return war;
-    }
-
-    @EJB(mappedName = "java:global/ejb3security/WhoAmIBean")
-    private WhoAmIBean whoAmIBean;
-
-    @EJB(mappedName = "java:global/ejb3security/EntryBean")
-    private EntryBean entryBean;
+public class AuthenticationTestCase {
+    private static final Logger log = Logger.getLogger(AuthenticationTestCase.class.getName());
 
     /*
      *  Authentication Scenarios
@@ -87,6 +69,28 @@ public class EJB3SecurityTestCase {
      *  Client -> Servlet -> Bean -> Bean
      *  Client -> Servlet -> Bean (Re Auth) -> Bean
      */
+
+    @Deployment
+    public static Archive<?> deployment() {
+        // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
+                .addPackage(WhoAmI.class.getPackage())
+                .addPackage(WhoAmIBean.class.getPackage())
+                .addPackage(EntryBean.class.getPackage())
+                .addPackage(HttpRequest.class.getPackage())
+                .addClass(Base64.class)
+                .addAsResource("ejb3/security/users.properties", "users.properties")
+                .addAsResource("ejb3/security/roles.properties", "roles.properties")
+                .addAsWebInfResource("ejb3/security/web.xml", "web.xml");
+        log.info(war.toString(true));
+        return war;
+    }
+
+    @EJB(mappedName = "java:global/ejb3security/WhoAmIBean")
+    private WhoAmI whoAmIBean;
+
+    @EJB(mappedName = "java:global/ejb3security/EntryBean")
+    private Entry entryBean;
 
     @Test
     public void testAuthentication() throws Exception {
@@ -321,6 +325,15 @@ public class EJB3SecurityTestCase {
         result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role2&username=user2&password=password2", "user1", "password1", 10, SECONDS);
         assertEquals("false,true", result);
     }
+
+    /*
+     * isCallerInRole Scenarios with @RunAs Defined
+     *
+     * EJB 3.1 FR 17.2.5.2 isCallerInRole tests the principal that represents the caller of the enterprise bean,
+     * not the principal that corresponds to the run-as security identity for the bean.
+     */
+
+
 
     // 17.2.5 - Programatic Access to Caller's Security Context
     // Include tests for methods not implemented to pick up if later they are implemented.

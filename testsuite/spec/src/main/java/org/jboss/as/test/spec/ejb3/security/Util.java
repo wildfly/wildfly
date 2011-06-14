@@ -49,7 +49,7 @@ public class Util {
      *
      * @return the configured LoginContext.
      */
-    static LoginContext getCLMLoginContext(final String username, final String password) throws LoginException {
+    public static LoginContext getCLMLoginContext(final String username, final String password) throws LoginException {
         final String configurationName = "Testing";
 
         CallbackHandler cbh = new CallbackHandler() {
@@ -84,6 +84,5 @@ public class Util {
 
         return new LoginContext(configurationName, new Subject(), cbh, config);
     }
-
 
 }
