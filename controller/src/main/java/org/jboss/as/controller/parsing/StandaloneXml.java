@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.parsing;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import org.jboss.as.controller.operations.common.Util;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
@@ -394,9 +395,16 @@ public class StandaloneXml extends CommonXml {
 
         Set<String> deploymentNames = modelNode.keys();
         if (deploymentNames.size() > 0) {
-            writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+            boolean deploymentWritten = false;
             for (String uniqueName : deploymentNames) {
                 final ModelNode deployment = modelNode.get(uniqueName);
+                if(!deployment.get(PERSISTENT).asBoolean()) {
+                    continue;
+                }
+                if(!deploymentWritten) {
+                    writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+                    deploymentWritten = true;
+                }
                 final String runtimeName = deployment.get(RUNTIME_NAME).asString();
                 boolean enabled = deployment.get(ENABLED).asBoolean();
                 writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
@@ -410,9 +418,10 @@ public class StandaloneXml extends CommonXml {
                     writeContentItem(writer, contentItem);
                 }
                 writer.writeEndElement();
-
             }
-            writer.writeEndElement();
+            if(deploymentWritten) {
+                writer.writeEndElement();
+            }
         }
     }
 
