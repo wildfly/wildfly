@@ -23,6 +23,7 @@
 package org.jboss.as.controller.parsing;
 
 import org.jboss.as.controller.operations.common.Util;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
@@ -289,8 +290,7 @@ public class StandaloneXml extends CommonXml {
 
     private void parseServerProfile(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         // Attributes
-        // FIXME The other parser actually allows a name - we just ignore it for now
-        // requireNoAttributes(reader);
+        requireNoAttributes(reader);
 
         // Content
         final Set<String> configuredSubsystemTypes = new HashSet<String>();

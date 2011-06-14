@@ -80,7 +80,7 @@
        <http-interface interface="default" port="9990"/>
     </management-interfaces>
 
-    <profile name="ignore">
+    <profile>
         <subsystem xmlns="urn:jboss:domain:logging:1.0">
             <console-handler name="CONSOLE">
                 <level name="INFO"/>
