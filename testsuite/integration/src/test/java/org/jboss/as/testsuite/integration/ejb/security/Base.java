@@ -27,7 +27,7 @@ import javax.annotation.security.DenyAll;
 /**
  * User: jpai
  */
-public class CommonUnRestrictedOperation implements FullAccess {
+public class Base implements FullAccess {
 
     @Override
     public void doAnything() {
@@ -36,6 +36,11 @@ public class CommonUnRestrictedOperation implements FullAccess {
 
     @DenyAll
     public void restrictedBaseClassMethod() {
+
+    }
+
+    @DenyAll
+    public void overriddenMethod() {
 
     }
 }
