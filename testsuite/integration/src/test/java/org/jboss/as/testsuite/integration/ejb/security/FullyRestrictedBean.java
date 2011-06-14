@@ -22,31 +22,23 @@
 
 package org.jboss.as.testsuite.integration.ejb.security;
 
-import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.DenyAll;
-import javax.ejb.Local;
 import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import javax.ejb.Singleton;
+import javax.ejb.Stateful;
 
 /**
  * User: jpai
  */
-@Stateless
-@DeclareRoles(value = {"Role1", "Role2", "Role3"})
-@Local ({Restriction.class, FullAccess.class})
+@Singleton
+@DenyAll
 @LocalBean
-public class AnnotatedSLSB extends Base implements Restriction, FullAccess {
-
-
-    @Override
-    @DenyAll
-    public void restrictedMethod() {
-        throw new RuntimeException("This method was supposed to be restricted to all!");
-    }
+public class FullyRestrictedBean extends AnnotatedSLSB {
 
     @Override
     public void overriddenMethod() {
-        
+        // the @DenyAll on the class level of this bean should have been applied
+        // and the invocation to this method shouldn't have been allowed
+        throw new RuntimeException("Access to this method shouldn't have been allowed!");
     }
-
 }

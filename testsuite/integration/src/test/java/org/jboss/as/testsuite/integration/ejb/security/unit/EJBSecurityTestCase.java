@@ -27,6 +27,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.ejb.security.AnnotatedSLSB;
 import org.jboss.as.testsuite.integration.ejb.security.DDBasedSLSB;
 import org.jboss.as.testsuite.integration.ejb.security.FullAccess;
+import org.jboss.as.testsuite.integration.ejb.security.FullyRestrictedBean;
 import org.jboss.as.testsuite.integration.ejb.security.Restriction;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -78,6 +79,16 @@ public class EJBSecurityTestCase {
             annotatedBean.restrictedBaseClassMethod();
         } catch (EJBAccessException ejbae) {
             //expected
+        }
+
+        // should be accessible, since the overridden method isn't annotated with @DenyAll
+        annotatedBean.overriddenMethod();
+
+        final FullyRestrictedBean fullyRestrictedBean = (FullyRestrictedBean) ctx.lookup("java:module/" + FullyRestrictedBean.class.getSimpleName() + "!" + FullyRestrictedBean.class.getName());
+        try {
+            fullyRestrictedBean.overriddenMethod();
+        } catch (EJBAccessException ejae) {
+            // expected
         }
 
     }
