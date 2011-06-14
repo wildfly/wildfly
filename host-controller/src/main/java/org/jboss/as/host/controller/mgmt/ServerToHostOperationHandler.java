@@ -56,6 +56,7 @@ public class ServerToHostOperationHandler implements ManagementOperationHandler,
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("management", "server", "to", "host", "controller");
 
     private final InjectedValue<ManagedServerLifecycleCallback> callback = new InjectedValue<ManagedServerLifecycleCallback>();
+    private volatile ManagementOperationHandler proxyOperationHandler;
 
     private ServerToHostOperationHandler() {
     }
@@ -87,14 +88,16 @@ public class ServerToHostOperationHandler implements ManagementOperationHandler,
     }
 
     public ManagementRequestHandler getRequestHandler(final byte id) {
-        switch (id) {
-            case DomainServerProtocol.REGISTER_REQUEST: {
-                return new ServerRegisterCommand();
-            }
-            default: {
-                return null;
+        if (id == DomainServerProtocol.REGISTER_REQUEST) {
+            return new ServerRegisterCommand();
+        }
+        if (proxyOperationHandler != null) {
+            ManagementRequestHandler handler = proxyOperationHandler.getRequestHandler(id);
+            if (handler != null) {
+                return handler;
             }
         }
+        return null;
     }
 
     private class ServerRegisterCommand extends ManagementRequestHandler {
@@ -104,7 +107,12 @@ public class ServerToHostOperationHandler implements ManagementOperationHandler,
             expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
             final String serverName = input.readUTF();
             log.infof("Server [%s] registered using connection [%s]", serverName, getContext().getChannel());
-            ServerToHostOperationHandler.this.callback.getValue().serverRegistered(serverName, getContext().getChannel());
+            ServerToHostOperationHandler.this.callback.getValue().serverRegistered(serverName, getContext().getChannel(), new ManagedServerLifecycleCallback.ProxyCreatedCallback() {
+                @Override
+                public void proxyOperationHandlerCreated(ManagementOperationHandler handler) {
+                    proxyOperationHandler = handler;
+                }
+            });
         }
 
         @Override

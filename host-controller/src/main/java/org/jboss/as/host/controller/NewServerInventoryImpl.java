@@ -43,6 +43,7 @@ import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -218,7 +219,7 @@ public class NewServerInventoryImpl implements NewServerInventory {
 
     /** {@inheritDoc} */
     @Override
-    public void serverRegistered(final String serverName, final ManagementChannel channel) {
+    public void serverRegistered(final String serverName, final ManagementChannel channel, ProxyCreatedCallback callback) {
         try {
             final ManagedServer server = servers.get(serverName);
             if (server == null) {
@@ -242,6 +243,9 @@ public class NewServerInventoryImpl implements NewServerInventory {
             final PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
             final NewProxyController serverController = NewRemoteProxyController.create(Executors.newCachedThreadPool(),
                     PathAddress.pathAddress(PathElement.pathElement(HOST, domainController.getLocalHostInfo().getLocalHostName()), element), channel);
+            if (callback != null && serverController instanceof ManagementOperationHandler) {
+                callback.proxyOperationHandlerCreated((ManagementOperationHandler)serverController);
+            }
             domainController.registerRunningServer(serverController);
 
             server.resetRespawnCount();
