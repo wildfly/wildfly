@@ -38,6 +38,7 @@ import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.HttpEndpoint;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -201,11 +202,13 @@ final class WebMetaDataCreator {
         final List<ServletMappingMetaData> servletMappings = WebMetaDataHelper.getServletMappings(jbossWebMD);
 
         for (final Endpoint ep : dep.getService().getEndpoints()) {
-            final String endpointName = ep.getShortName();
-            final List<String> urlPatterns = WebMetaDataHelper.getUrlPatterns(ep.getURLPattern());
+            if (ep instanceof HttpEndpoint) {
+                final String endpointName = ep.getShortName();
+                final List<String> urlPatterns = WebMetaDataHelper.getUrlPatterns(((HttpEndpoint)ep).getURLPattern());
 
-            this.log.debug("Servlet name: " + endpointName + ", URL patterns: " + urlPatterns);
-            WebMetaDataHelper.newServletMapping(endpointName, urlPatterns, servletMappings);
+                this.log.debug("Servlet name: " + endpointName + ", URL patterns: " + urlPatterns);
+                WebMetaDataHelper.newServletMapping(endpointName, urlPatterns, servletMappings);
+            }
         }
     }
 
@@ -248,7 +251,7 @@ final class WebMetaDataCreator {
                 final String authMethod = ejbMDAccessor.getAuthMethod(ejbEndpoint);
                 final boolean hasAuthMethod = authMethod != null;
 
-                if (hasAuthMethod || hasTransportGuarantee) {
+                if (ejbEndpoint instanceof HttpEndpoint && (hasAuthMethod || hasTransportGuarantee)) {
                     final List<SecurityConstraintMetaData> securityConstraints = WebMetaDataHelper
                             .getSecurityConstraints(jbossWebMD);
 
@@ -260,7 +263,7 @@ final class WebMetaDataCreator {
                     final WebResourceCollectionsMetaData webResourceCollections = WebMetaDataHelper
                             .getWebResourceCollections(securityConstraint);
                     final String endpointName = ejbEndpoint.getShortName();
-                    final String urlPattern = ejbEndpoint.getURLPattern();
+                    final String urlPattern = ((HttpEndpoint)ejbEndpoint).getURLPattern();
                     this.log.debug("Creating web resource collection for endpoint: " + endpointName + ", URL pattern: "
                             + urlPattern);
                     WebMetaDataHelper.newWebResourceCollection(endpointName, urlPattern, secureWsdlAccess,

@@ -33,10 +33,8 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.ws.common.integration.WSConstants;
 import org.jboss.ws.common.integration.WSHelper;
-import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.deployment.ServletClassProvider;
 import org.jboss.wsf.spi.deployment.WSFServlet;
 
 /**
@@ -126,21 +124,7 @@ final class WebMetaDataModifier {
      * @throws IllegalStateException if transport class name is not found in deployment properties map
      */
     private String getTransportClassName(final Deployment dep) {
-        String transportClassName = null;
-        String transportClassProviderName = (String) dep.getProperty(WSConstants.STACK_TRANSPORT_CLASS_PROVIDER);
-        if (transportClassProviderName != null) {
-            try {
-                final ClassLoader cl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
-                ServletClassProvider scp = (ServletClassProvider) (Class.forName(transportClassProviderName, true, cl).newInstance());
-                transportClassName = scp.getServletClassName();
-            } catch (Exception e) {
-                log.warn("Cannot get transport class name from " + WSConstants.STACK_TRANSPORT_CLASS_PROVIDER, e);
-            }
-        }
-
-        if (transportClassName == null) {
-            transportClassName = (String) dep.getProperty(WSConstants.STACK_TRANSPORT_CLASS);
-        }
+        String transportClassName = (String) dep.getProperty(WSConstants.STACK_TRANSPORT_CLASS);
 
         if (transportClassName == null) {
             throw new IllegalStateException("Cannot obtain deployment property : " + WSConstants.STACK_TRANSPORT_CLASS);
