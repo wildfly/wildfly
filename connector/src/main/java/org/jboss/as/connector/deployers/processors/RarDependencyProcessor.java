@@ -36,7 +36,6 @@ import org.jboss.modules.ModuleLoader;
 
 public class RarDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static ModuleIdentifier JAVAX_ID = ModuleIdentifier.create("javax.resource.api");
     private static ModuleIdentifier JMS_ID = ModuleIdentifier.create("javax.jms.api");
     private static ModuleIdentifier LOGGING_ID = ModuleIdentifier.create("org.jboss.logging");
     private static ModuleIdentifier IRON_JACAMAR_ID = ModuleIdentifier.create("org.jboss.ironjacamar.api");
@@ -46,8 +45,6 @@ public class RarDependencyProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier HIBERNATE_VALIDATOR_ID = ModuleIdentifier.create("org.hibernate.validator");
     private static ModuleIdentifier COMMON_CORE_ID = ModuleIdentifier.create("org.jboss.common-core");
     private static ModuleIdentifier RESOURCE_API_ID = ModuleIdentifier.create("javax.resource.api");
-
-    private static ModuleIdentifier SYSTEM_ID = ModuleIdentifier.create("javax.api");
 
     /**
      * Add dependencies for modules required for ra deployments
@@ -62,7 +59,7 @@ public class RarDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_ID, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, RESOURCE_API_ID, false, false, false));
 
         if (phaseContext.getDeploymentUnit().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY) == null) {
             return;  // Skip non ra deployments
@@ -78,7 +75,6 @@ public class RarDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, NAMING_ID, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, COMMON_CORE_ID, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, RESOURCE_API_ID, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

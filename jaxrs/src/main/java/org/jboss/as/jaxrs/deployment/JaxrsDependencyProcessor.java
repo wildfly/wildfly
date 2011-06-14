@@ -54,17 +54,19 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+        addDepdenency(moduleSpecification, moduleLoader, JAXB_API);
+
         if (!JaxrsDeploymentMarker.isJaxrsDeployment(deploymentUnit)) {
             return;
         }
-        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_ATOM);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JAXRS);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JAXB);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JACKSON);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JSAPI);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_MULTIPART);
-        addDepdenency(moduleSpecification, moduleLoader, JAXB_API);
         addDepdenency(moduleSpecification, moduleLoader, ASYNC_HTTP_SERVLET_30);
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {

@@ -81,11 +81,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 /**
  * @author Emanuel Muckenhuber
  */
-class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+class EJB3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
-    static final Ejb3SubsystemAdd INSTANCE = new Ejb3SubsystemAdd();
+    static final EJB3SubsystemAdd INSTANCE = new EJB3SubsystemAdd();
 
-    private Ejb3SubsystemAdd() {
+    private EJB3SubsystemAdd() {
         //
     }
 

@@ -65,7 +65,7 @@ public class EJB3Extension implements Extension {
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(EJB3SubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, Ejb3SubsystemAdd.INSTANCE, EJB3SubsystemProviders.SUBSYSTEM_ADD, false);
+        registration.registerOperationHandler(ADD, EJB3SubsystemAdd.INSTANCE, EJB3SubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(parser);
     }
