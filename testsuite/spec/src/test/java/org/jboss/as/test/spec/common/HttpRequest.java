@@ -43,7 +43,12 @@ import java.util.concurrent.TimeoutException;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class HttpRequest {
-    private static String execute(final Callable<String> task, final long timeout, final TimeUnit unit) throws TimeoutException, ExecutionException {
+    private static interface Callable<V> extends java.util.concurrent.Callable<V> {
+        @Override
+        V call() throws IOException;
+    }
+
+    private static String execute(final Callable<String> task, final long timeout, final TimeUnit unit) throws TimeoutException, IOException {
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         final Future<String> result = executor.submit(task);
         try {
@@ -55,7 +60,8 @@ public class HttpRequest {
             // should not happen
             throw new RuntimeException(e);
         } catch (ExecutionException e) {
-            throw e;
+            // by virtue of the Callable redefinition above I can cast
+            throw (IOException) e.getCause();
         } finally {
             executor.shutdownNow();
             try {
@@ -66,15 +72,15 @@ public class HttpRequest {
         }
     }
 
-    public static String get(final String spec, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
+    public static String get(final String spec, final long timeout, final TimeUnit unit) throws IOException, TimeoutException {
         return get(spec, null, null, timeout, unit);
     }
 
-    public static String get(final String spec, final String username, final String password, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
+    public static String get(final String spec, final String username, final String password, final long timeout, final TimeUnit unit) throws IOException, TimeoutException {
         final URL url = new URL(spec);
         Callable<String> task = new Callable<String>() {
             @Override
-            public String call() throws Exception {
+            public String call() throws IOException {
                 final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 if (username != null) {
                     final String userpassword = username + ":" + password;
@@ -117,11 +123,11 @@ public class HttpRequest {
         }
     }
 
-    public static String put(final String spec, final String message, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
+    public static String put(final String spec, final String message, final long timeout, final TimeUnit unit) throws IOException, TimeoutException {
         final URL url = new URL(spec);
         Callable<String> task = new Callable<String>() {
             @Override
-            public String call() throws Exception {
+            public String call() throws IOException {
                 final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setDoInput(true);
                 conn.setDoOutput(true);

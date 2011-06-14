@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.spec.ejb3.security;
 
-import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
 import javax.annotation.security.DeclareRoles;
 import javax.ejb.EJB;
+import javax.ejb.EJBAccessException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.servlet.ServletException;
@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
 
-import com.sun.tools.corba.se.idl.toJavaPortable.StringGen;
+import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -76,19 +76,18 @@ public class WhoAmIServlet extends HttpServlet {
             }
 
         } else if ("doubleWhoAmI".equals(method)) {
-            String[] response = null;
-            if (username != null && password != null) {
-                try {
+            String[] response;
+            try {
+                if (username != null && password != null) {
                     response = bean.doubleWhoAmI(username, password);
-                } catch (Exception e) {
-                    writer.write(e.getClass().getName());
-                }
-            } else {
-                try {
+                } else {
                     response = bean.doubleWhoAmI();
-                } catch (Exception e) {
-                    throw new ServletException("Unexpected failure", e);
                 }
+            } catch (EJBAccessException e) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.toString());
+                return;
+            } catch (LoginException e) {
+                throw new ServletException("Unexpected failure", e);
             }
             writer.write(response[0] + "," + response[1]);
         } else if ("doIHaveRole".equals(method)) {

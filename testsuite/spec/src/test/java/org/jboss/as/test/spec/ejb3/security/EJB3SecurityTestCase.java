@@ -21,21 +21,7 @@
  */
 package org.jboss.as.test.spec.ejb3.security;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import javax.ejb.EJB;
-import javax.security.auth.login.LoginContext;
-import java.security.Principal;
-import java.util.logging.Logger;
-
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.spec.common.HttpRequest;
 import org.jboss.security.client.SecurityClient;
@@ -44,9 +30,23 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBAccessException;
+import javax.security.auth.login.LoginContext;
+import java.io.IOException;
+import java.security.Principal;
+import java.util.logging.Logger;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -106,9 +106,8 @@ public class EJB3SecurityTestCase {
         lc.login();
         try {
             entryBean.whoAmI();
-            fail("Expected exception due to bad password not thrown.");
-            // TODO - Verify exact exception and spec reference.
-        } catch (Exception ignored) {
+            fail("Expected EJBAccessException due to bad password not thrown. (EJB 3.1 FR 17.6.9)");
+        } catch (EJBAccessException ignored) {
         } finally {
             lc.logout();
         }
@@ -148,9 +147,8 @@ public class EJB3SecurityTestCase {
         lc.login();
         try {
             entryBean.doubleWhoAmI("user2", "wrong_password");
-            fail("Expected exception due to bad password not thrown.");
-            // TODO - Verify exact exception and spec reference.
-        } catch (Exception ignored) {
+            fail("Expected EJBAccessException due to bad password not thrown. (EJB 3.1 FR 17.6.9)");
+        } catch (EJBAccessException ignored) {
         } finally {
             lc.logout();
         }
@@ -214,10 +212,13 @@ public class EJB3SecurityTestCase {
     }
 
     @Test
-    @Ignore("[AS7-1005] EJBAccessException being swallowed for servlet->bean->bean call where first bean switches user.")
     public void testAuthentication_TwoBeans_ReAuth__BadPwd_ViaServlet() throws Exception {
-        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=bad_password", "user1", "password1", 10, SECONDS);
-        assertEquals("javax.ejb.EJBAccessException", result);
+        try {
+            HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=bad_password", "user1", "password1", 10, SECONDS);
+            fail("Expected IOException");
+        } catch (IOException e) {
+            assertTrue(e.getMessage().contains("javax.ejb.EJBAccessException"));
+        }
     }
 
     /*

@@ -25,11 +25,10 @@ import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
+import javax.ejb.EJBAccessException;
 import java.security.PrivilegedAction;
 
 import static java.security.AccessController.doPrivileged;
-
-import javax.ejb.EJBAccessException;
 
 /**
  * Establish the security context.
@@ -44,7 +43,11 @@ public class SecurityContextInterceptor implements Interceptor {
         this.pushAction = new PrivilegedAction<Void>() {
             @Override
             public Void run() {
-                securityManager.push(securityDomain, runAs, runAsPrincipal);
+                try {
+                    securityManager.push(securityDomain, runAs, runAsPrincipal);
+                } catch (SecurityException e) {
+                    throw new EJBAccessException(e.getMessage());
+                }
                 return null;
             }
         };
@@ -63,11 +66,6 @@ public class SecurityContextInterceptor implements Interceptor {
         doPrivileged(pushAction);
         try {
             return context.proceed();
-        } catch (Exception e) {
-            // TODO - Remove
-            e.printStackTrace();
-            // Whatever the failure the call can not proceed.
-            throw new EJBAccessException(e.getMessage());
         } finally {
             doPrivileged(popAction);
         }
