@@ -164,4 +164,32 @@ public class ClassReflectionIndexUtil {
         }
         return methods;
     }
+
+    /**
+     * Finds and returns all methods corresponding to the passed method <code>name</code>.
+     * The passed <code>classReflectionIndex</code> will be used to traverse the class hierarchy while finding the method.
+     * <p/>
+     * Returns empty collection if no such method is found
+     *
+     * @param deploymentReflectionIndex The deployment reflection index
+     * @param classReflectionIndex      The class reflection index which will be used to traverse the class hierarchy to find the method
+     * @param methodName                The name of the method
+     * @return
+     */
+    public static Collection<Method> findAllMethodsByName(final DeploymentReflectionIndex deploymentReflectionIndex, final ClassReflectionIndex classReflectionIndex, final String methodName) {
+        Collection<Method> methods = classReflectionIndex.getAllMethods(methodName);
+        if (!methods.isEmpty()) {
+            return methods;
+        }
+        // find on super class
+        Class<?> superClass = classReflectionIndex.getIndexedClass().getSuperclass();
+        if (superClass != null) {
+            ClassReflectionIndex<?> superClassIndex = deploymentReflectionIndex.getClassIndex(superClass);
+            if (superClassIndex != null) {
+                return findAllMethodsByName(deploymentReflectionIndex, superClassIndex, methodName);
+            }
+
+        }
+        return methods;
+    }
 }

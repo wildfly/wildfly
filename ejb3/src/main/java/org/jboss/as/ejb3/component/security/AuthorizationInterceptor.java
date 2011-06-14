@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.component.security;
 
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -31,11 +32,9 @@ import javax.ejb.EJBAccessException;
 import java.lang.reflect.Method;
 
 /**
- * An {@link Interceptor} which can be used to prevent access to methods on a EJB.
- * <p/>
  * User: Jaikiran Pai
  */
-public class DenyAllInterceptor implements Interceptor {
+public class AuthorizationInterceptor implements Interceptor {
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
@@ -43,8 +42,21 @@ public class DenyAllInterceptor implements Interceptor {
         if (component instanceof EJBComponent == false) {
             throw new IllegalStateException("Unexpected component type: " + component.getClass() + " expected: " + EJBComponent.class);
         }
-        final Method method = context.getMethod();
+        final ComponentViewInstance viewInstance = context.getPrivateData(ComponentViewInstance.class);
+        final Method invokedMethod = context.getMethod();
         final EJBComponent ejbComponent = (EJBComponent) component;
-        throw new EJBAccessException("Invocation on method: " + method + " of bean: " + ejbComponent.getComponentName() + " is not allowed");
+        if (this.isAccessDenied(ejbComponent, viewInstance, invokedMethod)) {
+            throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " + ejbComponent.getComponentName() + " is not allowed");
+        }
+        return context.proceed();
+    }
+
+    private boolean isAccessDenied(final EJBComponent ejbComponent, final ComponentViewInstance viewInstance, final Method invokedMethod) {
+        final EJBSecurityMetaData securityMetaData = ejbComponent.getSecurityMetaData();
+        // FIXME: Currently WS view invocations don't pass the ComponentViewInstance
+        if (viewInstance == null) {
+            return false;
+        }
+        return securityMetaData.isMethodAccessDenied(viewInstance.getViewClass().getName(), invokedMethod);
     }
 }

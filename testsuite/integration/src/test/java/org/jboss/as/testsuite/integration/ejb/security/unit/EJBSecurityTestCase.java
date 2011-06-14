@@ -25,9 +25,11 @@ package org.jboss.as.testsuite.integration.ejb.security.unit;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.ejb.security.AnnotatedSLSB;
+import org.jboss.as.testsuite.integration.ejb.security.DDBasedSLSB;
 import org.jboss.as.testsuite.integration.ejb.security.FullAccess;
 import org.jboss.as.testsuite.integration.ejb.security.Restriction;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,6 +37,7 @@ import org.junit.runner.RunWith;
 import javax.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import java.io.File;
 
 /**
  * User: jpai
@@ -51,7 +54,7 @@ public class EJBSecurityTestCase {
     }
 
     @Test
-    public void testDeclaredRoles() throws Exception {
+    public void testDenyAllAnnotation() throws Exception {
         final Context ctx = new InitialContext();
         final Restriction restrictedBean = (Restriction) ctx.lookup("java:module/" + AnnotatedSLSB.class.getSimpleName() + "!" + Restriction.class.getName());
         try {
@@ -77,5 +80,19 @@ public class EJBSecurityTestCase {
             //expected
         }
 
+    }
+
+    @Test
+    public void testExcludeList() throws Exception {
+        final Context ctx = new InitialContext();
+        final FullAccess fullAccessDDBean = (FullAccess) ctx.lookup("java:module/" + DDBasedSLSB.class.getSimpleName() + "!" + FullAccess.class.getName());
+        fullAccessDDBean.doAnything();
+
+        final DDBasedSLSB ddBasedSLSB = (DDBasedSLSB) ctx.lookup("java:module/" + DDBasedSLSB.class.getSimpleName() + "!" + DDBasedSLSB.class.getName());
+        try {
+            ddBasedSLSB.accessDenied();
+        } catch (EJBAccessException ejbae) {
+            // expected
+        }
     }
 }
