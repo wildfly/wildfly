@@ -80,7 +80,7 @@ public final class OperationEntry {
     }
 
     public EnumSet<Flag> getFlags() {
-        return flags;
+        return flags == null ? EnumSet.noneOf(Flag.class) : flags.clone();
     }
 
 }

@@ -35,9 +35,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_FAILURE_DESCRIPTIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import org.jboss.as.domain.controller.ServerIdentity;
@@ -62,7 +64,11 @@ public class DomainResultHandler implements NewStepHandler {
         boolean shouldContinue = !collectDomainFailure(context, isDomain);
         shouldContinue = shouldContinue && !collectHostFailures(context, isDomain);
         if(shouldContinue){
-            populateServerGroupResults(context, context.getResult());
+            if (domainOperationContext.getServerResults().size() == 0) {
+                context.getResult().set(getSingleHostResult());
+            } else {
+                populateServerGroupResults(context, context.getResult());
+            }
         }
         context.completeStep();
     }
@@ -107,6 +113,24 @@ public class DomainResultHandler implements NewStepHandler {
             return true;
         }
         return false;
+    }
+
+    private ModelNode getSingleHostResult() {
+        ModelNode singleHost = domainOperationContext.getCoordinatorResult();
+        if (singleHost != null
+                && (!singleHost.hasDefined(RESULT) || IGNORED.equals(singleHost.get(RESULT).asString()))) {
+            singleHost = null;
+        }
+        if (singleHost == null) {
+            for (ModelNode node : domainOperationContext.getHostControllerResults().values()) {
+                if (node.hasDefined(RESULT) && !IGNORED.equals(node.get(RESULT).asString())) {
+                    singleHost = node;
+                    break;
+                }
+            }
+        }
+
+        return singleHost == null ? new ModelNode() : singleHost.get(RESULT);
     }
 
     private void populateServerGroupResults(final NewOperationContext context, final ModelNode result) {

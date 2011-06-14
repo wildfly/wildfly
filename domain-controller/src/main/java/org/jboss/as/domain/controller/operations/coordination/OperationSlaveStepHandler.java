@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
@@ -79,6 +80,8 @@ public class OperationSlaveStepHandler implements NewStepHandler {
 
         if (domainOp.isDefined()) {
             addBasicStep(context, domainOp, response);
+        } else {
+            response.get(RESULT).set(IGNORED);
         }
 
         ModelNode resolveOp = Util.getEmptyOperation(ServerOperationsResolverHandler.OPERATION_NAME, new ModelNode());
