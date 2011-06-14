@@ -190,7 +190,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
 
         String scopedPuName = getScopedPuName(deploymentUnit, unitName);
         ServiceName puServiceName = getPuServiceName(scopedPuName);
-        return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, scopedPuName, EntityManagerFactory.class.getName());
+        return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, EntityManagerFactory.class.getName());
     }
 
     private InjectionSource getPersistenceContextBindingSource(

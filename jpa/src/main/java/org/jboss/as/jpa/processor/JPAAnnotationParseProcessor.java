@@ -285,7 +285,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
             return new PersistenceContextInjectionSource(type, properties, puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
         } else {
-            return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
+            return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, injectionTypeName);
         }
     }
 

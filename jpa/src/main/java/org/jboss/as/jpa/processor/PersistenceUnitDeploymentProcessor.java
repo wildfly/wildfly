@@ -23,6 +23,7 @@
 package org.jboss.as.jpa.processor;
 
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jpa.classloader.TempClassLoader;
@@ -34,6 +35,10 @@ import org.jboss.as.jpa.service.PersistenceUnitService;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 import org.jboss.as.jpa.validator.SerializableValidatorFactory;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -55,6 +60,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
 
 import javax.persistence.ValidationMode;
 import javax.sql.DataSource;
@@ -75,6 +81,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
     private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
+    public static final String JNDI_PROPERTY = "jboss.entity.manager.factory.jndi.name";
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         handleWarDeployment(phaseContext);
@@ -92,8 +100,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             PersistenceUnitMetadataHolder holder;
             if (deploymentRoot != null &&
-                (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
-                holder.getPersistenceUnits().size() > 0) {
+                    (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
+                    holder.getPersistenceUnits().size() > 0) {
                 ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
                 puList.add(holder);
                 log.trace("install persistence unit definition for jar " + deploymentRoot.getRootName());
@@ -112,8 +120,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
             // handle persistence.xml definition in the root of the war
             if (deploymentRoot != null &&
-                (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
-                holder.getPersistenceUnits().size() > 0) {
+                    (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
+                    holder.getPersistenceUnits().size() > 0) {
                 // assemble and install the PU service
                 puList.add(holder);
             }
@@ -124,7 +132,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             for (ResourceRoot resourceRoot : resourceRoots) {
                 if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
                     if ((holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null
-                        && holder.getPersistenceUnits().size() > 0) {
+                            && holder.getPersistenceUnits().size() > 0) {
 
                         // assemble and install the PU service
                         puList.add(holder);
@@ -160,8 +168,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
 
             if (deploymentRoot != null &&
-                (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
-                holder.getPersistenceUnits().size() > 0) {
+                    (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
+                    holder.getPersistenceUnits().size() > 0) {
                 // assemble and install the PU service
                 puList.add(holder);
             }
@@ -182,11 +190,12 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     private void addPuService(DeploymentPhaseContext phaseContext, ResourceRoot resourceRoot,
                               ArrayList<PersistenceUnitMetadataHolder> puList
     )
-        throws DeploymentUnitProcessingException {
+            throws DeploymentUnitProcessingException {
 
         if (puList.size() > 0) {
             final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
             final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+            final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 
             if (module == null)
                 throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
@@ -202,27 +211,27 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         PersistenceUnitService service = new PersistenceUnitService(pu, resourceRoot);
                         // TODO:  move this to a standalone service
                         final Injector<TransactionManager> transactionManagerInjector =
-                            new Injector<TransactionManager>() {
-                                public void inject(final TransactionManager value) throws InjectionException {
-                                    TransactionUtil.setTransactionManager(value);
-                                }
+                                new Injector<TransactionManager>() {
+                                    public void inject(final TransactionManager value) throws InjectionException {
+                                        TransactionUtil.setTransactionManager(value);
+                                    }
 
-                                public void uninject() {
-                                    // injector.uninject();
-                                }
-                            };
+                                    public void uninject() {
+                                        // injector.uninject();
+                                    }
+                                };
 
                         final Injector<TransactionSynchronizationRegistry> transactionRegistryInjector =
-                            new Injector<TransactionSynchronizationRegistry>() {
-                                public void inject(final TransactionSynchronizationRegistry value) throws
-                                    InjectionException {
-                                    TransactionUtil.setTransactionSynchronizationRegistry(value);
-                                }
+                                new Injector<TransactionSynchronizationRegistry>() {
+                                    public void inject(final TransactionSynchronizationRegistry value) throws
+                                            InjectionException {
+                                        TransactionUtil.setTransactionSynchronizationRegistry(value);
+                                    }
 
-                                public void uninject() {
-                                    // injector.uninject();
-                                }
-                            };
+                                    public void uninject() {
+                                        // injector.uninject();
+                                    }
+                                };
 
 
                         final HashMap properties = new HashMap();
@@ -252,7 +261,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         if (useDefaultDataSource) {
                             final String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
                             if (defaultJtaDataSource != null &&
-                                defaultJtaDataSource.length() > 0) {
+                                    defaultJtaDataSource.length() > 0) {
                                 builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
                                 log.trace(serviceName + " is using the default data source '" + defaultJtaDataSource + "'");
                             }
@@ -263,11 +272,30 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             builder.addDependencies(providerDependencies);
                         }
 
+                        if (pu.getProperties().containsKey(JNDI_PROPERTY)) {
+                            String jndiName = pu.getProperties().get(JNDI_PROPERTY).toString();
+                            final ServiceName bindingServiceName = ContextNames.serviceNameOfEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jndiName);
+                            final BinderService binderService = new BinderService(jndiName);
+                            serviceTarget.addService(bindingServiceName, binderService)
+                                    .addDependency(ContextNames.serviceNameOfNamingStore(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), jndiName),NamingStore.class,  binderService.getNamingStoreInjector())
+                                    .addDependency(serviceName, PersistenceUnitService.class, new Injector<PersistenceUnitService>() {
+                                        @Override
+                                        public void inject(final PersistenceUnitService value) throws InjectionException {
+                                            binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value.getEntityManagerFactory())));
+                                        }
+
+                                        @Override
+                                        public void uninject() {
+                                            binderService.getNamingStoreInjector().uninject();
+                                        }
+                                    }).install();
+                        }
+
                         builder.addDependency(TransactionManagerService.SERVICE_NAME, new CastingInjector<TransactionManager>(transactionManagerInjector, TransactionManager.class))
-                            .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, new CastingInjector<TransactionSynchronizationRegistry>(transactionRegistryInjector, TransactionSynchronizationRegistry.class))
-                            .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .addInjection(service.getPropertiesInjector(), properties)
-                            .install();
+                                .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, new CastingInjector<TransactionSynchronizationRegistry>(transactionRegistryInjector, TransactionSynchronizationRegistry.class))
+                                .setInitialMode(ServiceController.Mode.ACTIVE)
+                                .addInjection(service.getPropertiesInjector(), properties)
+                                .install();
 
                         log.trace("added PersistenceUnitService for '" + serviceName + "'.  PU is ready for injector action. ");
 
@@ -281,7 +309,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
     private String adjustJndi(String dataSourceName) {
         if (dataSourceName != null &&
-            !dataSourceName.startsWith("java:")) {
+                !dataSourceName.startsWith("java:")) {
             return "java:/" + dataSourceName;
         }
         return dataSourceName;

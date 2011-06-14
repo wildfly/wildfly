@@ -53,9 +53,9 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
     private final PersistenceUnitJndiInjectable injectable;
     private final ServiceName puServiceName;
 
-    public PersistenceUnitInjectionSource(final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String scopedPUName, final String injectionTypeName) {
+    public PersistenceUnitInjectionSource(final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String injectionTypeName) {
 
-        injectable = new PersistenceUnitJndiInjectable(puServiceName, deploymentUnit, scopedPUName, injectionTypeName);
+        injectable = new PersistenceUnitJndiInjectable(puServiceName, deploymentUnit, injectionTypeName);
         this.puServiceName = puServiceName;
     }
 
@@ -82,10 +82,9 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
         private static final String ENTITY_MANAGER_FACTORY_CLASS = "javax.persistence.EntityManagerFactory";
 
         public PersistenceUnitJndiInjectable(
-            final ServiceName puServiceName,
-            final DeploymentUnit deploymentUnit,
-            final String scopedPUName,
-            final String injectionTypeName) {
+                final ServiceName puServiceName,
+                final DeploymentUnit deploymentUnit,
+                final String injectionTypeName) {
 
             this.puServiceName = puServiceName;
             this.deploymentUnit = deploymentUnit;
