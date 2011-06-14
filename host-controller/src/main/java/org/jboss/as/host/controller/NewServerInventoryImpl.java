@@ -37,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
 import org.jboss.as.domain.controller.NewDomainController;
@@ -242,7 +243,9 @@ public class NewServerInventoryImpl implements NewServerInventory {
 
             final PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
             final NewProxyController serverController = NewRemoteProxyController.create(Executors.newCachedThreadPool(),
-                    PathAddress.pathAddress(PathElement.pathElement(HOST, domainController.getLocalHostInfo().getLocalHostName()), element), channel);
+                    PathAddress.pathAddress(PathElement.pathElement(HOST, domainController.getLocalHostInfo().getLocalHostName()), element),
+                    ProxyOperationAddressTranslator.SERVER,
+                    channel);
             if (callback != null && serverController instanceof ManagementOperationHandler) {
                 callback.proxyOperationHandlerCreated((ManagementOperationHandler)serverController);
             }

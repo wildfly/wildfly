@@ -24,6 +24,7 @@ package org.jboss.as.controller.test;
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
 import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
@@ -61,7 +62,7 @@ public class RemoteChannelProxyControllerTestCase extends AbstractProxyControlle
         NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), proxiedController);
         serverChannel.setOperationHandler(operationHandler);
 
-        NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), proxyNodeAddress, channels.getClientChannel());
+        NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), proxyNodeAddress, ProxyOperationAddressTranslator.SERVER, channels.getClientChannel());
         clientChannel.setOperationHandler(proxyController);
 
         return proxyController;

@@ -21,6 +21,8 @@
 */
 package org.jboss.as.controller.remote;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -36,11 +38,11 @@ import java.util.concurrent.ExecutorService;
 import org.jboss.as.controller.NewModelController.OperationTransaction;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.NewModelControllerProtocol;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -64,11 +66,13 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
     private final ManagementChannel channel;
     private final ExecutorService executorService;
     private final Map<Integer, ExecuteRequestContext> activeRequests = Collections.synchronizedMap(new HashMap<Integer, ExecuteRequestContext>());
+    private final ProxyOperationAddressTranslator addressTranslator;
 
-    private NewRemoteProxyController(final ExecutorService executorService, final PathAddress pathAddress, final ManagementChannel channel) {
+    private NewRemoteProxyController(final ExecutorService executorService, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final ManagementChannel channel) {
         this.pathAddress = pathAddress;
         this.channel = channel;
         this.executorService = executorService;
+        this.addressTranslator = addressTranslator;
 
         channel.addCloseHandler(new CloseHandler<Channel>() {
 
@@ -84,11 +88,12 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
      *
      * @param executorService the executor to use for the requests
      * @param pathAddress the address within the model of the created proxy controller
+     * @param addressTranslator the translator to use translating the address for the remote proxy
      * @param channel the channel to use for communication
      * @return the proxy controller
      */
-    public static NewRemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final ManagementChannel channel) {
-        return new NewRemoteProxyController(executorService, pathAddress, channel);
+    public static NewRemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final ManagementChannel channel) {
+        return new NewRemoteProxyController(executorService, pathAddress, addressTranslator, channel);
     }
 
 //    These methods are not used currently. Leave them there for now in case something needs to use them
@@ -142,28 +147,28 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
 //        }
 //        return createConnection(configuration, executorService, pathAddress, channelName);
 //    }
-
-    private static NewRemoteProxyController createConnection(final ProtocolChannelClient.Configuration<ManagementChannel> config, final ExecutorService executorService, final PathAddress pathAddress, String channelName) throws IOException {
-        final ProtocolChannelClient<ManagementChannel> client;
-        try {
-            client = ProtocolChannelClient.create(config);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        client.connect();
-
-        ManagementChannel channel ;
-        try {
-            channel = client.openChannel(channelName);
-        } catch (IOException e) {
-            client.close();
-            throw e;
-        }
-        channel.startReceiving();
-
-        return new NewRemoteProxyController(executorService, pathAddress, channel);
-
-    }
+//
+//    private static NewRemoteProxyController createConnection(final ProtocolChannelClient.Configuration<ManagementChannel> config, final ExecutorService executorService, final PathAddress pathAddress, String channelName) throws IOException {
+//        final ProtocolChannelClient<ManagementChannel> client;
+//        try {
+//            client = ProtocolChannelClient.create(config);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//        client.connect();
+//
+//        ManagementChannel channel ;
+//        try {
+//            channel = client.openChannel(channelName);
+//        } catch (IOException e) {
+//            client.close();
+//            throw e;
+//        }
+//        channel.startReceiving();
+//
+//        return new NewRemoteProxyController(executorService, pathAddress, channel);
+//
+//    }
 
     /** {@inheritDoc} */
     @Override
@@ -195,7 +200,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
         //As per the interface javadoc this method should block until either the operationFailed() or the operationPrepared() methods of the ProxyOperationControl have been called
         ExecuteRequest request = new ExecuteRequest(
             batchId,
-            operation,
+            getOperationForProxy(operation),
             handler,
             new ProxyOperationControl() {
                 @Override
@@ -228,6 +233,17 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
 
     private ManagementClientChannelStrategy getChannelStrategy() {
         return ManagementClientChannelStrategy.create(channel);
+    }
+
+    private ModelNode getOperationForProxy(final ModelNode op) {
+        final PathAddress addr = PathAddress.pathAddress(op.get(OP_ADDR));
+        final PathAddress translated = addressTranslator.translateAddress(addr);
+        if (addr.equals(translated)) {
+            return op;
+        }
+        final ModelNode proxyOp = op.clone();
+        proxyOp.get(OP_ADDR).set(translated.toModelNode());
+        return proxyOp;
     }
 
     /**
@@ -478,4 +494,5 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
             txCompletedLatch.countDown();
         }
     }
+
 }
