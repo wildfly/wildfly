@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.URISyntaxException;
 
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
+import org.jboss.remoting3.Endpoint;
 
 /**
  *
@@ -33,21 +34,36 @@ import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
  * @version $Revision: 1.1 $
  */
 class NewEstablishChannelModelControllerClient extends NewAbstractModelControllerClient {
+    private final Endpoint endpoint;
     private final String hostName;
     private final int port;
 
     public NewEstablishChannelModelControllerClient(final String hostName, int port){
+        this(null, hostName, port);
+    }
+
+    public NewEstablishChannelModelControllerClient(final InetAddress address, int port){
+        this(null, address, port);
+    }
+
+    public NewEstablishChannelModelControllerClient(final Endpoint endpoint, final String hostName, int port){
+        this.endpoint = endpoint;
         this.hostName = hostName;
         this.port = port;
     }
 
-    public NewEstablishChannelModelControllerClient(final InetAddress address, int port){
+    public NewEstablishChannelModelControllerClient(final Endpoint endpoint, final InetAddress address, int port){
+        this.endpoint = endpoint;
         this.hostName = address.getHostName();
         this.port = port;
     }
 
     @Override
     ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException{
-        return ManagementClientChannelStrategy.create(hostName, port, executor, this);
+        if (endpoint == null) {
+            return ManagementClientChannelStrategy.create(hostName, port, executor, this);
+        } else {
+            return ManagementClientChannelStrategy.create(hostName, port, endpoint, this);
+        }
     }
 }

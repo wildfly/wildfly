@@ -28,6 +28,8 @@ import java.net.URISyntaxException;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.ProtocolChannelClient.Configuration;
+import org.jboss.remoting3.Endpoint;
 import org.xnio.IoUtils;
 
 /**
@@ -46,7 +48,11 @@ public abstract class ManagementClientChannelStrategy {
     }
 
     public static ManagementClientChannelStrategy create(String hostName, int port, final ExecutorService executorService, final ManagementOperationHandler handler) throws URISyntaxException, IOException {
-        return new Establishing(hostName, port, executorService, handler);
+        return new EstablishingWithNewEndpoint(hostName, port, executorService, handler);
+    }
+
+    public static ManagementClientChannelStrategy create(String hostName, int port, final Endpoint endpoint, final ManagementOperationHandler handler) throws URISyntaxException, IOException {
+        return new EstablishingWithExistingEndpoint(hostName, port, endpoint, handler);
     }
 
     private static class Existing extends ManagementClientChannelStrategy {
@@ -66,18 +72,17 @@ public abstract class ManagementClientChannelStrategy {
         }
     }
 
-    private static class Establishing extends ManagementClientChannelStrategy {
+    private abstract static class Establishing extends ManagementClientChannelStrategy {
+
         private final String hostName;
         private final int port;
-        private final ExecutorService executorService;
         private final ManagementOperationHandler handler;
         private volatile ProtocolChannelClient<ManagementChannel> client;
         private volatile ManagementChannel channel;
 
-        public Establishing(String hostName, int port, final ExecutorService executorService, final ManagementOperationHandler handler) {
+        public Establishing(String hostName, int port, final ManagementOperationHandler handler) {
             this.hostName = hostName;
             this.port = port;
-            this.executorService = executorService;
             this.handler = handler;
         }
 
@@ -85,10 +90,8 @@ public abstract class ManagementClientChannelStrategy {
         public ManagementChannel getChannel() {
             try {
                 final ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
-                configuration.setEndpointName("endpoint");
-                configuration.setUriScheme("remote");
+                addConfigurationProperties(configuration);
                 configuration.setUri(new URI("remote://" + hostName +  ":" + port));
-                configuration.setExecutor(executorService);
                 configuration.setChannelFactory(new ManagementChannelFactory());
                 client = ProtocolChannelClient.create(configuration);
             } catch (Exception e) {
@@ -121,6 +124,39 @@ public abstract class ManagementClientChannelStrategy {
         public void requestDone() {
             IoUtils.safeClose(channel);
             IoUtils.safeClose(client);
+        }
+
+        abstract void addConfigurationProperties(ProtocolChannelClient.Configuration<ManagementChannel> configuration);
+    }
+
+    private static class EstablishingWithNewEndpoint extends Establishing {
+        private final ExecutorService executorService;
+
+        public EstablishingWithNewEndpoint(String hostName, int port, ExecutorService executorService, ManagementOperationHandler handler) {
+            super(hostName, port, handler);
+            this.executorService = executorService;
+        }
+
+        @Override
+        void addConfigurationProperties(Configuration<ManagementChannel> configuration) {
+            configuration.setUriScheme("remote");
+            configuration.setEndpointName("endpoint");
+            configuration.setExecutor(executorService);
+        }
+
+    }
+
+    private static class EstablishingWithExistingEndpoint extends Establishing {
+        private final Endpoint endpoint;
+
+        public EstablishingWithExistingEndpoint(String hostName, int port, Endpoint endpoint, ManagementOperationHandler handler) {
+            super(hostName, port, handler);
+            this.endpoint = endpoint;
+        }
+
+        @Override
+        void addConfigurationProperties(Configuration<ManagementChannel> configuration) {
+            configuration.setEndpoint(endpoint);
         }
     }
 }

@@ -33,8 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,7 +59,6 @@ import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerSe
 import org.jboss.as.controller.remote.NewRemoteProxyController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.domain.controller.NewDomainModelUtil;
 import org.jboss.as.domain.controller.NewMasterDomainControllerClient;
@@ -252,22 +249,14 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 // 1) register with the master
                 // 2) get back the domain model, somehow store it (perhaps using an op invoked by the DC?)
                 // 3) if 1) fails, check env.isUseCachedDC, if true fall through to that
-                NewRemoteDomainConnectionService service;
-                try {
-                    service = new NewRemoteDomainConnectionService(
-                            getValue(),
-                            hostControllerInfo.getLocalHostName(),
-                            InetAddress.getByName(hostControllerInfo.getRemoteDomainControllerHost()),
-                            hostControllerInfo.getRemoteDomainControllertPort(),
-                            remoteFileRepository);
-                } catch (UnknownHostException e) {
-                    throw new RuntimeException(e);
-                }
-                serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
-                        .setInitialMode(ServiceController.Mode.ACTIVE)
-                        .install();
 
-                Future<NewMasterDomainControllerClient> clientFuture = service.getMasterDomainControllerClientFuture();
+
+                Future<NewMasterDomainControllerClient> clientFuture = NewRemoteDomainConnectionService.install(serviceTarget,
+                        getValue(),
+                        hostControllerInfo.getLocalHostName(),
+                        hostControllerInfo.getRemoteDomainControllerHost(),
+                        hostControllerInfo.getRemoteDomainControllertPort(),
+                        remoteFileRepository);
                 try {
                     NewMasterDomainControllerClient client = clientFuture.get();
                     client.register();

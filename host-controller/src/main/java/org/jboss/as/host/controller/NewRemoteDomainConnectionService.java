@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -57,11 +58,15 @@ import org.jboss.as.remoting.RemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.Endpoint;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 
@@ -89,8 +94,9 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final AtomicBoolean connected = new AtomicBoolean(false);
     private final FutureClient futureClient = new FutureClient();
+    private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
 
-    public NewRemoteDomainConnectionService(final NewModelController controller, final String name, final InetAddress host, final int port, final RemoteFileRepository remoteFileRepository){
+    private NewRemoteDomainConnectionService(final NewModelController controller, final String name, final InetAddress host, final int port, final RemoteFileRepository remoteFileRepository){
         this.controller = controller;
         this.name = name;
         this.host = host;
@@ -99,8 +105,23 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         remoteFileRepository.setRemoteFileRepositoryExecutor(remoteFileRepositoryExecutor);
     }
 
-    public Future<NewMasterDomainControllerClient> getMasterDomainControllerClientFuture(){
-        return futureClient;
+    public static Future<NewMasterDomainControllerClient> install(final ServiceTarget serviceTarget, final NewModelController controller, final String localHostName, final String remoteDcHost, final int remoteDcPort, final RemoteFileRepository remoteFileRepository) {
+        NewRemoteDomainConnectionService service;
+        try {
+            service = new NewRemoteDomainConnectionService(
+                    controller,
+                    localHostName,
+                    InetAddress.getByName(remoteDcHost),
+                    remoteDcPort,
+                    remoteFileRepository);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        serviceTarget.addService(NewMasterDomainControllerClient.SERVICE_NAME, service)
+                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, service.endpointInjector)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+        return service.futureClient;
     }
 
     /** {@inheritDoc} */
@@ -137,10 +158,8 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         ProtocolChannelClient<ManagementChannel> client;
         try {
             ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
-            configuration.setEndpointName("endpoint");
-            configuration.setUriScheme("remote");
+            configuration.setEndpoint(endpointInjector.getValue());
             configuration.setUri(new URI("remote://" + host.getHostAddress() + ":" + port));
-            configuration.setExecutor(executor);
             configuration.setChannelFactory(new ManagementChannelFactory(txOperationHandler));
             client = ProtocolChannelClient.create(configuration);
         } catch (Exception e) {
