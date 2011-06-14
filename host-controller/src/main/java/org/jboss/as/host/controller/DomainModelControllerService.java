@@ -242,14 +242,15 @@ public class DomainModelControllerService extends AbstractControllerService impl
         try {
             super.boot(configurationPersister.load()); // This parses the host.xml and invokes all ops
 
-            NewServerInventoryService inventory = setupInventoryAndStartRemoting(serviceTarget);
+            //Install the server inventory
+            NetworkInterfaceBinding interfaceBinding = getNewtworkInterfaceBinding(hostControllerInfo);
+            Future<NewServerInventory> inventoryFuture = NewServerInventoryService.install(serviceTarget, this, environment, interfaceBinding, hostControllerInfo.getNativeManagementPort());
+
+            //Install the core remoting endpoint and listener
+            RemotingServices.installRemotingEndpoint(serviceTarget);
 
             if (!hostControllerInfo.isMasterDomainController()) {
-                // TODO
-                // 1) register with the master
-                // 2) get back the domain model, somehow store it (perhaps using an op invoked by the DC?)
-                // 3) if 1) fails, check env.isUseCachedDC, if true fall through to that
-
+                serverInventory = getFuture(inventoryFuture);
 
                 Future<NewMasterDomainControllerClient> clientFuture = NewRemoteDomainConnectionService.install(serviceTarget,
                         getValue(),
@@ -257,37 +258,25 @@ public class DomainModelControllerService extends AbstractControllerService impl
                         hostControllerInfo.getRemoteDomainControllerHost(),
                         hostControllerInfo.getRemoteDomainControllertPort(),
                         remoteFileRepository);
-                try {
-                    NewMasterDomainControllerClient client = clientFuture.get();
-                    client.register();
-
-                    //TODO pass the client to whatever it is that routes requests to the master DC
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(e);
-                } catch (ExecutionException e) {
-                    throw new RuntimeException(e);
-                }
+                NewMasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
+                //Registers us with the master and gets down the master copy of the domain model to our DC
+                //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
+                masterDomainControllerClient.register();
 
             } else {
                 // parse the domain.xml and load the steps
                 ConfigurationPersister domainPersister = configurationPersister.getDomainPersister();
                 super.boot(domainPersister.load());
                 RemotingServices.installChannelServices(serviceTarget, new NewMasterDomainControllerOperationHandlerService(this, this), DomainModelControllerService.SERVICE_NAME, RemotingServices.DOMAIN_CHANNEL, null, null);
+                serverInventory = getFuture(inventoryFuture);
             }
 
-            // TODO  other services we should start?
+            RemotingServices.installDomainConnectorServices(serviceTarget, interfaceBinding, hostControllerInfo.getNativeManagementPort());
+            ServerToHostOperationHandler.install(serviceTarget, ServerInventoryService.SERVICE_NAME);
+            RemotingServices.installChannelOpenListenerService(serviceTarget, RemotingServices.SERVER_CHANNEL, ServerToHostOperationHandler.SERVICE_NAME, null, null);
+            RemotingServices.installChannelServices(serviceTarget, new NewModelControllerClientOperationHandlerService(), DomainModelControllerService.SERVICE_NAME, RemotingServices.MANAGEMENT_CHANNEL, null, null);
 
-            Future<NewServerInventory> future = inventory.getInventoryFuture();
-            try {
-                serverInventory = future.get();
-                startServers();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException(e);
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
-            }
+            startServers();
 
             // TODO when to call configurationPersister.successful boot? Look into this for standalone as well; may be broken now
         } finally {
@@ -295,36 +284,23 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
     }
 
-    private NewServerInventoryService setupInventoryAndStartRemoting(ServiceTarget serviceTarget) {
-        final NetworkInterfaceBinding interfaceBinding;
+    private NetworkInterfaceBinding getNewtworkInterfaceBinding(LocalHostControllerInfo info) {
         try {
-            interfaceBinding = hostControllerInfo.getNetworkInterfaceBinding(hostControllerInfo.getNativeManagementInterface());
+            return hostControllerInfo.getNetworkInterfaceBinding(hostControllerInfo.getNativeManagementInterface());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
 
-        final NewServerInventoryService inventory = new NewServerInventoryService(this, environment, interfaceBinding, hostControllerInfo.getNativeManagementPort());
-        serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
-                .addDependency(NewProcessControllerConnectionService.SERVICE_NAME, NewProcessControllerConnectionService.class, inventory.getClient())
-                .install();
-
-
-        // Add the server to host operation handler
-        final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
-        serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
-            .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallbackInjector())
-            .install();
-
-        RemotingServices.installRemotingEndpoint(serviceTarget);
-
-        RemotingServices.installDomainControllerManagementChannelServices(serviceTarget,
-                new NewModelControllerClientOperationHandlerService(),
-                DomainModelControllerService.SERVICE_NAME,
-                interfaceBinding,
-                hostControllerInfo.getNativeManagementPort());
-        RemotingServices.installChannelOpenListenerService(serviceTarget, RemotingServices.SERVER_CHANNEL, ServerToHostOperationHandler.SERVICE_NAME, null, null);
-        return inventory;
-
+    private <T> T getFuture(Future<T> future) {
+        try {
+            return future.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void startServers() {

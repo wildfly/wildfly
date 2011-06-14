@@ -31,6 +31,7 @@ import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -54,11 +55,19 @@ class NewServerInventoryService implements Service<NewServerInventory> {
 
     private NewServerInventory serverInventory;
 
-    NewServerInventoryService(final NewDomainController domainController, final HostControllerEnvironment environment, final NetworkInterfaceBinding interfaceBinding, final int port) {
+    private NewServerInventoryService(final NewDomainController domainController, final HostControllerEnvironment environment, final NetworkInterfaceBinding interfaceBinding, final int port) {
         this.domainController = domainController;
         this.environment = environment;
         this.interfaceBinding = interfaceBinding;
         this.port = port;
+    }
+
+    static Future<NewServerInventory> install(final ServiceTarget serviceTarget, final NewDomainController domainController, final HostControllerEnvironment environment, final NetworkInterfaceBinding interfaceBinding, final int port){
+        final NewServerInventoryService inventory = new NewServerInventoryService(domainController, environment, interfaceBinding, port);
+        serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
+                .addDependency(NewProcessControllerConnectionService.SERVICE_NAME, NewProcessControllerConnectionService.class, inventory.getClient())
+                .install();
+        return inventory.futureInventory;
     }
 
     /** {@inheritDoc} */

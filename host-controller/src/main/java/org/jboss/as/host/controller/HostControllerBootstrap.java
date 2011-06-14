@@ -172,10 +172,10 @@ public class HostControllerBootstrap {
                 .install();
 
         // Add the server to host operation handler
-        final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
-        serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
-            .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallbackInjector())
-            .install();
+//        final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
+//        serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
+//            .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallbackInjector())
+//            .install();
 
         RemotingServices.installChannelOpenListenerService(serviceTarget, "server", ServerToHostOperationHandler.SERVICE_NAME, null, null);
     }
