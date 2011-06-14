@@ -119,7 +119,7 @@ public class SimpleSecurityManager {
      * @param roleNames
      * @return true if the user is in any one of the roles listed
      */
-    private boolean _isCallerInRole(final String... roleNames) {
+    public boolean _isCallerInRole(final String... roleNames) {
         final SecurityContext securityContext = doPrivileged(securityContext());
         if (securityContext == null)
             throw new IllegalStateException("No security context established");
