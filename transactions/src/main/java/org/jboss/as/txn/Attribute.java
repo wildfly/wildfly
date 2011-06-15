@@ -38,6 +38,7 @@ enum Attribute {
     NODE_IDENTIFIER("node-identifier"),
     SOCKET_PROCESS_ID_MAX_PORTS("socket-process-id-max-ports"),
     ENABLE_STATISTICS("enable-statistics"),
+    ENABLE_TSM_STATUS("enable-tsm-status"),
     DEFAULT_TIMEOUT("default-timeout"),
     RECOVERY_LISTENER("recovery-listener"),
     RELATIVE_TO("relative-to"),
