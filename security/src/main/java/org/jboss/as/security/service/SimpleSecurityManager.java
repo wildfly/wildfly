@@ -119,11 +119,22 @@ public class SimpleSecurityManager {
         if (securityContext == null)
             throw new IllegalStateException("No security context established");
 
-        AuthorizationManager am = securityContext.getAuthorizationManager();
-        SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(securityContext);
+        RoleGroup roleGroup = null;
 
-        RoleGroup roleGroup = am.getSubjectRoles(securityContext.getSubjectInfo().getAuthenticatedSubject(), scb);
+        RunAs runAs = securityContext.getIncomingRunAs();
+        if (runAs != null && runAs instanceof RunAsIdentity) {
+            RunAsIdentity runAsIdentity = (RunAsIdentity) runAs;
+            roleGroup = runAsIdentity.getRunAsRolesAsRoleGroup();
+        } else {
+
+            AuthorizationManager am = securityContext.getAuthorizationManager();
+            SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(securityContext);
+
+            roleGroup = am.getSubjectRoles(securityContext.getSubjectInfo().getAuthenticatedSubject(), scb);
+        }
+
         List<Role> roles = roleGroup.getRoles();
+
         // TODO - Review most performant way.
         Set<String> requiredRoles = new HashSet<String>();
         for (String current : roleNames) {
@@ -156,16 +167,25 @@ public class SimpleSecurityManager {
             current.setIncomingRunAs(previous.getOutgoingRunAs());
         }
 
+        RunAs currentRunAs = current.getIncomingRunAs();
+        boolean trusted = currentRunAs != null && currentRunAs instanceof RunAsIdentity;
+
         // TODO - Set unauthenticated identity if no auth to occur
-        boolean authenticated = authenticate(current);
-        if (authenticated == false) {
-            // TODO - Better type needed.
-            throw new SecurityException("Invalid User");
+        if (trusted == false) {
+            // If we have a trusted identity no need for a re-auth.
+            boolean authenticated = authenticate(current);
+            if (authenticated == false) {
+                // TODO - Better type needed.
+                throw new SecurityException("Invalid User");
+            }
         }
 
         if (runAs != null) {
             RunAs runAsIdentity = new RunAsIdentity(runAs, null);
             current.setOutgoingRunAs(runAsIdentity);
+        } else if (previous != null && previous.getOutgoingRunAs() != null) {
+            // Ensure the propagation continues.
+            current.setOutgoingRunAs(previous.getOutgoingRunAs());
         }
     }
 

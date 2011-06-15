@@ -21,6 +21,18 @@
  */
 package org.jboss.as.test.spec.ejb3.security;
 
+import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import javax.ejb.EJB;
+import javax.security.auth.login.LoginContext;
+import java.security.Principal;
+import java.util.logging.Logger;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.spec.common.HttpRequest;
@@ -32,15 +44,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJB;
-import javax.security.auth.login.LoginContext;
-import java.util.logging.Logger;
-
-import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
@@ -97,7 +100,14 @@ public class RunAsTestCase {
         LoginContext lc = getCLMLoginContext("user1", "password1");
         lc.login();
         try {
-            // TODO - Verify direct call to WhoAmIBean fails
+            // TODO - Enable once auth checks are working.
+            /*
+            try {
+                whoAmIBean.getCallerPrincipal();
+                fail("Expected call to whoAmIBean to fail");
+            } catch (Exception expected) {
+            }
+            */
 
             boolean[] response;
             response = entryBean.doubleDoIHaveRole("Users");
@@ -118,7 +128,9 @@ public class RunAsTestCase {
         lc = getCLMLoginContext("user2", "password2");
         lc.login();
         try {
-            // TODO - Verify direct call to WhoAmIBean succeeds
+            // Verify the call now passes.
+            Principal user = whoAmIBean.getCallerPrincipal();
+            assertNotNull(user);
 
             boolean[] response;
             response = entryBean.doubleDoIHaveRole("Users");
