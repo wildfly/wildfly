@@ -74,10 +74,14 @@ public class AuthenticationTestCase {
     public static Archive<?> deployment() {
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
-                .addPackage(WhoAmI.class.getPackage())
                 .addPackage(WhoAmIBean.class.getPackage())
                 .addPackage(EntryBean.class.getPackage())
                 .addPackage(HttpRequest.class.getPackage())
+                .addClass(WhoAmI.class)
+                .addClass(Util.class)
+                .addClass(Entry.class)
+                .addClass(WhoAmIServlet.class)
+                .addClass(AuthenticationTestCase.class)
                 .addClass(Base64.class)
                 .addAsResource("ejb3/security/users.properties", "users.properties")
                 .addAsResource("ejb3/security/roles.properties", "roles.properties")
