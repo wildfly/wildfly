@@ -187,10 +187,12 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
 
     @Override
     ModelNodeRegistration getNodeRegistration(Iterator<PathElement> iterator) {
-        if (!iterator.hasNext()) {
-            return this;
-        }
-        throw new IllegalArgumentException("Can't get child registrations of a proxy");
+        // BES 2011/06/14 I do not see why the IAE makes sense, so...
+//        if (!iterator.hasNext()) {
+//            return this;
+//        }
+//        throw new IllegalArgumentException("Can't get child registrations of a proxy");
+        return this;
     }
 
     /** {@inheritDoc} */
