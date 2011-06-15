@@ -22,13 +22,11 @@
 
 package org.jboss.as.server.deployment.integration;
 
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -54,6 +52,8 @@ import org.jboss.vfs.VirtualFile;
 import java.io.Closeable;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Recognize Seam deployments and add org.jboss.seam.int module to it.
@@ -67,7 +67,7 @@ public class SeamProcessor implements DeploymentUnitProcessor {
     public static final String SEAM_PROPERTIES_WEB_INF = "WEB-INF/classes/" + SEAM_PROPERTIES;
     public static final String SEAM_COMPONENTS = "components.xml";
     public static final String SEAM_COMPONENTS_META_INF = "META-INF/" + SEAM_COMPONENTS;
-    public static final String SEAM_COMPONENTS_WEB_INF = "WEB-INF/classes/META-INF/" + SEAM_COMPONENTS;
+    public static final String SEAM_COMPONENTS_WEB_INF = "WEB-INF/" + SEAM_COMPONENTS;
 
     public static final String[] SEAM_FILES = new String[]{
             SEAM_PROPERTIES,
@@ -80,7 +80,6 @@ public class SeamProcessor implements DeploymentUnitProcessor {
     public static final String SEAM_INT_JAR = "jboss-seam-int.jar";
     public static final ModuleIdentifier EXT_CONTENT_MODULE = ModuleIdentifier.create("org.jboss.integration.ext-content");
     public static final ModuleIdentifier VFS_MODULE = ModuleIdentifier.create("org.jboss.vfs");
-    public static final AttachmentKey<Boolean> ADDED = AttachmentKey.create(Boolean.class);
 
     private ServiceTarget serviceTarget; // service target from the service that added this dup
     private ResourceLoaderSpec seamIntResourceLoader;
@@ -93,7 +92,8 @@ public class SeamProcessor implements DeploymentUnitProcessor {
      * Lookup Seam integration resource loader.
      *
      * @return the Seam integration resource loader
-     * @throws DeploymentUnitProcessingException for any error
+     * @throws DeploymentUnitProcessingException
+     *          for any error
      */
     protected synchronized ResourceLoaderSpec getSeamIntResourceLoader() throws DeploymentUnitProcessingException {
         try {
@@ -106,7 +106,7 @@ public class SeamProcessor implements DeploymentUnitProcessor {
 
                 File file = new File(url.toURI());
                 VirtualFile vf = VFS.getChild(file.toURI());
-                final Closeable mountHandle = VFS.mountZip(vf, vf, TempFileProviderService.provider());
+                final Closeable mountHandle = VFS.mountZip(file, vf, TempFileProviderService.provider());
                 Service<Closeable> mountHandleService = new Service<Closeable>() {
                     public void start(StartContext startContext) throws StartException {
                     }
@@ -133,24 +133,30 @@ public class SeamProcessor implements DeploymentUnitProcessor {
     }
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        DeploymentUnit top = DeploymentUtils.getTopDeploymentUnit(unit);
-        if (top.hasAttachment(ADDED))
+        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if (deploymentUnit.getParent() == null) {
             return;
+        }
 
-        final ResourceRoot mainRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        if (mainRoot == null)
-            return;
+        final List<DeploymentUnit> deploymentUnits = new ArrayList<DeploymentUnit>();
+        deploymentUnits.add(deploymentUnit);
+        deploymentUnits.addAll(deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS));
 
-        VirtualFile root = mainRoot.getRoot();
-        for (String path : SEAM_FILES) {
-            if (root.getChild(path).exists()) {
-                top.putAttachment(ADDED, true); // marked checked and added
-                final ModuleSpecification moduleSpecification = top.getAttachment(Attachments.MODULE_SPECIFICATION);
-                final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false));
-                moduleSpecification.addResourceLoader(getSeamIntResourceLoader());
-                break;
+        for (DeploymentUnit unit : deploymentUnits) {
+
+            final ResourceRoot mainRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            if (mainRoot == null)
+                continue;
+
+            VirtualFile root = mainRoot.getRoot();
+            for (String path : SEAM_FILES) {
+                if (root.getChild(path).exists()) {
+                    final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+                    final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+                    moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false));
+                    moduleSpecification.addResourceLoader(getSeamIntResourceLoader());
+                    return;
+                }
             }
         }
     }
