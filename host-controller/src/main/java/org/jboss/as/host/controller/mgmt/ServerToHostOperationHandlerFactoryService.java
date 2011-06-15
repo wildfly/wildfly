@@ -27,6 +27,7 @@ import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
 import java.io.DataInput;
 import java.io.IOException;
 
+import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
 import org.jboss.as.host.controller.ManagedServerLifecycleCallback;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
@@ -50,20 +51,19 @@ import org.jboss.msc.value.InjectedValue;
  * @author Emanuel Muckenhuber
  * @author Kabir Khan
  */
-public class ServerToHostOperationHandler implements ManagementOperationHandler, Service<ManagementOperationHandler> {
+public class ServerToHostOperationHandlerFactoryService implements ManagementOperationHandlerFactory, Service<ManagementOperationHandlerFactory> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller.mgmt");
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("management", "server", "to", "host", "controller");
 
     private final InjectedValue<ManagedServerLifecycleCallback> callback = new InjectedValue<ManagedServerLifecycleCallback>();
-    private volatile ManagementOperationHandler proxyOperationHandler;
 
-    private ServerToHostOperationHandler() {
+    private ServerToHostOperationHandlerFactoryService() {
     }
 
     public static void install(ServiceTarget serviceTarget, ServiceName serverInventoryName) {
-        final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
-        serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
+        final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService();
+        serviceTarget.addService(ServerToHostOperationHandlerFactoryService.SERVICE_NAME, serverToHost)
             .addDependency(serverInventoryName, ManagedServerLifecycleCallback.class, serverToHost.callback)
             .install();
 
@@ -83,40 +83,49 @@ public class ServerToHostOperationHandler implements ManagementOperationHandler,
 
     /** {@inheritDoc} */
     @Override
-    public ManagementOperationHandler getValue() throws IllegalStateException, IllegalArgumentException {
+    public ManagementOperationHandlerFactory getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
-    public ManagementRequestHandler getRequestHandler(final byte id) {
-        if (id == DomainServerProtocol.REGISTER_REQUEST) {
-            return new ServerRegisterCommand();
-        }
-        if (proxyOperationHandler != null) {
-            ManagementRequestHandler handler = proxyOperationHandler.getRequestHandler(id);
-            if (handler != null) {
-                return handler;
-            }
-        }
-        return null;
+    @Override
+    public ManagementOperationHandler createOperationHandler() {
+        return new ServerToHostOperationHandler();
     }
 
-    private class ServerRegisterCommand extends ManagementRequestHandler {
+    private class ServerToHostOperationHandler implements ManagementOperationHandler {
+        private volatile ManagementOperationHandler proxyOperationHandler;
 
-        @Override
-        public void readRequest(final DataInput input) throws IOException {
-            expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
-            final String serverName = input.readUTF();
-            log.infof("Server [%s] registered using connection [%s]", serverName, getContext().getChannel());
-            ServerToHostOperationHandler.this.callback.getValue().serverRegistered(serverName, getContext().getChannel(), new ManagedServerLifecycleCallback.ProxyCreatedCallback() {
-                @Override
-                public void proxyOperationHandlerCreated(ManagementOperationHandler handler) {
-                    proxyOperationHandler = handler;
+        public ManagementRequestHandler getRequestHandler(final byte id) {
+            if (id == DomainServerProtocol.REGISTER_REQUEST) {
+                return new ServerRegisterCommand();
+            }
+            if (proxyOperationHandler != null) {
+                ManagementRequestHandler handler = proxyOperationHandler.getRequestHandler(id);
+                if (handler != null) {
+                    return handler;
                 }
-            });
+            }
+            return null;
         }
 
-        @Override
-        protected void writeResponse(FlushableDataOutput output) throws IOException {
+        private class ServerRegisterCommand extends ManagementRequestHandler {
+
+            @Override
+            public void readRequest(final DataInput input) throws IOException {
+                expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
+                final String serverName = input.readUTF();
+                log.infof("Server [%s] registered using connection [%s]", serverName, getContext().getChannel());
+                ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverRegistered(serverName, getContext().getChannel(), new ManagedServerLifecycleCallback.ProxyCreatedCallback() {
+                    @Override
+                    public void proxyOperationHandlerCreated(ManagementOperationHandler handler) {
+                        proxyOperationHandler = handler;
+                    }
+                });
+            }
+
+            @Override
+            protected void writeResponse(FlushableDataOutput output) throws IOException {
+            }
         }
     }
 }

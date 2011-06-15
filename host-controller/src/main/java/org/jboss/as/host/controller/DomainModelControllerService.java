@@ -56,7 +56,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
+import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
@@ -68,7 +68,7 @@ import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
 import org.jboss.as.host.controller.NewRemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.mgmt.NewMasterDomainControllerOperationHandlerService;
-import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
+import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.NewStartServersHandler;
 import org.jboss.as.network.NetworkInterfaceBinding;
@@ -273,9 +273,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
             }
 
             RemotingServices.installDomainConnectorServices(serviceTarget, interfaceBinding, hostControllerInfo.getNativeManagementPort());
-            ServerToHostOperationHandler.install(serviceTarget, ServerInventoryService.SERVICE_NAME);
-            RemotingServices.installChannelOpenListenerService(serviceTarget, RemotingServices.SERVER_CHANNEL, ServerToHostOperationHandler.SERVICE_NAME, null, null);
-            RemotingServices.installChannelServices(serviceTarget, new NewModelControllerClientOperationHandlerService(), DomainModelControllerService.SERVICE_NAME, RemotingServices.MANAGEMENT_CHANNEL, null, null);
+            ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME);
+            RemotingServices.installChannelOpenListenerService(serviceTarget, RemotingServices.SERVER_CHANNEL, ServerToHostOperationHandlerFactoryService.SERVICE_NAME, null, null);
+            RemotingServices.installChannelServices(serviceTarget, new NewModelControllerClientOperationHandlerFactoryService(), DomainModelControllerService.SERVICE_NAME, RemotingServices.MANAGEMENT_CHANNEL, null, null);
 
             startServers();
 

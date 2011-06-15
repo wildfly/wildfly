@@ -21,19 +21,17 @@
 */
 package org.jboss.as.controller.remote;
 
-import java.util.concurrent.ExecutorService;
-
-import org.jboss.as.controller.NewModelController;
 
 /**
- * Installs the {@link NewModelControllerClientOperationHandlerService}
+ * Service used to create a new client protocol operation handler per channel
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NewModelControllerClientOperationHandlerService extends NewAbstractModelControllerOperationHandlerService<NewModelControllerClientOperationHandler>{
+public class NewModelControllerClientOperationHandlerFactoryService extends NewAbstractModelControllerOperationHandlerFactoryService<NewModelControllerClientOperationHandler>{
 
-    protected NewModelControllerClientOperationHandler createOperationHandler(NewModelController modelController, ExecutorService executor) {
-        return new NewModelControllerClientOperationHandler(executor, modelController);
+    @Override
+    public NewModelControllerClientOperationHandler createOperationHandler() {
+        return new NewModelControllerClientOperationHandler(getExecutor(), getController());
     }
 }

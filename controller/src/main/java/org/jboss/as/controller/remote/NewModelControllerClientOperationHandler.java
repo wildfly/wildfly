@@ -91,7 +91,6 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
                         NewModelController.OperationTransactionControl.COMMIT,
                         new OperationAttachmentsProxy(getContext(), batchId, attachmentsLength));
             } catch (Exception e) {
-                e.printStackTrace();
                 final ModelNode failure = new ModelNode();
                 failure.get(OUTCOME).set(FAILED);
                 failure.get(FAILURE_DESCRIPTION).set(e.getClass().getName() + ":" + e.getMessage());

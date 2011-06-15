@@ -314,7 +314,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
 
             ExecuteRequestContext requestContext = activeRequests.get(batchId);
             if (requestContext == null) {
-                throw new IOException("No active request found for " + batchId);
+                throw new IOException("No active request found for handling report " + batchId);
             }
             requestContext.getMessageHandler().handleReport(severity, message);
         }
@@ -338,7 +338,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
 
             ExecuteRequestContext requestContext = activeRequests.get(batchId);
             if (requestContext == null) {
-                throw new IOException("No active request found for " + batchId);
+                throw new IOException("No active request found for reading inputstream report " + batchId);
             }
             InputStream in = requestContext.getAttachments().getInputStreams().get(index);
             attachmentInput = in != null ? new BufferedInputStream(in) : null;
@@ -375,7 +375,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
 
             ExecuteRequestContext requestContext = activeRequests.get(batchId);
             if (requestContext == null) {
-                throw new IOException("No active request found for " + batchId);
+                throw new IOException("No active request found for proxy operation control " + batchId);
             }
             handle(batchId, requestContext.getControl(), response);
         }
