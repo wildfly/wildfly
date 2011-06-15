@@ -57,7 +57,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class OperationSlaveStepHandler implements NewStepHandler {
+public class OperationSlaveStepHandler {
 
     private final LocalHostControllerInfo localHostControllerInfo;
 
@@ -65,8 +65,7 @@ public class OperationSlaveStepHandler implements NewStepHandler {
         this.localHostControllerInfo = localHostControllerInfo;
     }
 
-    @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
         ModelNode response = new ModelNode();
         addSteps(context, operation, response, true);

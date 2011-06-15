@@ -46,6 +46,7 @@ public interface ProxyOperationAddressTranslator {
                     return addr;
                 }
                 if (addr.getElement(0).getKey().equals(search)){
+                    System.out.println("Trimming " + search + " from " + addr);
                     return addr.subAddress(1);
                 }
                 return addr;
@@ -54,6 +55,7 @@ public interface ProxyOperationAddressTranslator {
 
         ProxyOperationAddressTranslator HOST = new ProxyOperationAddressTranslator() {
             public PathAddress translateAddress(PathAddress address) {
+                System.out.println("Translating " + address);
                 return address;
             }
         };

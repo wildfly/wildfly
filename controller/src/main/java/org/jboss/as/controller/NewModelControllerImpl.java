@@ -321,6 +321,7 @@ class NewModelControllerImpl implements NewModelController {
 
         @Override
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            System.out.println("Executing " + operation.get(OP) + " " + operation.get(OP_ADDR));
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String operationName =  operation.require(OP).asString();
             final NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
