@@ -21,11 +21,8 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
-import java.util.concurrent.ExecutorService;
-
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.remote.NewAbstractModelControllerOperationHandlerService;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
+import org.jboss.as.controller.remote.NewAbstractModelControllerOperationHandlerFactoryService;
+import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
@@ -38,10 +35,10 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NewMasterDomainControllerOperationHandlerService extends NewAbstractModelControllerOperationHandlerService<NewMasterDomainControllerOperationHandlerImpl> {
+public class NewMasterDomainControllerOperationHandlerService extends NewAbstractModelControllerOperationHandlerFactoryService<NewMasterDomainControllerOperationHandlerImpl> {
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
-    public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(NewModelControllerClientOperationHandlerService.OPERATION_HANDLER_NAME_SUFFIX);
+    public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(NewModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
 
     private final NewDomainController domainController;
     private final UnregisteredHostChannelRegistry registry;
@@ -52,8 +49,8 @@ public class NewMasterDomainControllerOperationHandlerService extends NewAbstrac
     }
 
     @Override
-    protected NewMasterDomainControllerOperationHandlerImpl createOperationHandler(NewModelController modelController, ExecutorService executor) {
-        return new NewMasterDomainControllerOperationHandlerImpl(executor, modelController, registry, domainController);
+    public NewMasterDomainControllerOperationHandlerImpl createOperationHandler() {
+        return new NewMasterDomainControllerOperationHandlerImpl(getExecutor(), getController(), registry, domainController);
     }
 
 }

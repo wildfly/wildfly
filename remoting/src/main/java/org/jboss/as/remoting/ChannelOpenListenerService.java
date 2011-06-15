@@ -21,6 +21,7 @@
 */
 package org.jboss.as.remoting;
 
+import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
@@ -39,6 +40,7 @@ import org.xnio.OptionMap;
 
 
 /**
+ * Service responsible for listening for channel open requests and associating the channel with a {@link ManagementOperationHandler}
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
@@ -47,7 +49,7 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
 
-    private final InjectedValue<ManagementOperationHandler> operationHandlerValue = new InjectedValue<ManagementOperationHandler>();
+    private final InjectedValue<ManagementOperationHandlerFactory> operationHandlerFactoryValue = new InjectedValue<ManagementOperationHandlerFactory>();
 
     private final String channelName;
     private final OptionMap optionMap;
@@ -66,8 +68,8 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
         return endpointValue;
     }
 
-    public InjectedValue<ManagementOperationHandler> getOperationHandlerInjector(){
-        return operationHandlerValue;
+    public InjectedValue<ManagementOperationHandlerFactory> getOperationHandlerInjector(){
+        return operationHandlerFactoryValue;
     }
 
     @Override
@@ -93,7 +95,7 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
 
     @Override
     public void channelOpened(Channel channel) {
-        final ManagementChannel protocolChannel = new ManagementChannelFactory(operationHandlerValue.getValue()).create(channelName, channel);
+        final ManagementChannel protocolChannel = new ManagementChannelFactory(operationHandlerFactoryValue.getValue().createOperationHandler()).create(channelName, channel);
         protocolChannel.startReceiving();
         channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override

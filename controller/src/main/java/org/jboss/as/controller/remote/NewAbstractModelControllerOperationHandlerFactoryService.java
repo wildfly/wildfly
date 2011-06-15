@@ -34,12 +34,12 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Installs the {@link NewAbstractModelControllerOperationHandlerService}
+ * Service used to create operation handlers per incoming channel
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public abstract class NewAbstractModelControllerOperationHandlerService<T extends NewAbstractModelControllerOperationHandler> implements Service<T>{
+public abstract class NewAbstractModelControllerOperationHandlerFactoryService<T extends NewAbstractModelControllerOperationHandler> implements Service<ManagementOperationHandlerFactory>, ManagementOperationHandlerFactory{
 
     protected static final Logger log = Logger.getLogger("org.jboss.server.management");
 
@@ -48,8 +48,6 @@ public abstract class NewAbstractModelControllerOperationHandlerService<T extend
     private final InjectedValue<NewModelController> modelControllerValue = new InjectedValue<NewModelController>();
 
     private volatile ExecutorService executor = Executors.newCachedThreadPool();
-
-    private volatile T handler;
 
     /**
      * Use to inject the model controller that will be the target of the operations
@@ -64,21 +62,24 @@ public abstract class NewAbstractModelControllerOperationHandlerService<T extend
     @Override
     public void start(StartContext context) throws StartException {
         log.debugf("Starting operation handler service %s", context.getController().getName());
-        final NewModelController modelController = modelControllerValue.getValue();
-        this.handler = createOperationHandler(modelController, executor);
     }
 
     /** {@inheritDoc} */
     @Override
     public void stop(StopContext context) {
-        handler = null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public T getValue() throws IllegalStateException {
-        return handler;
+    public ManagementOperationHandlerFactory getValue() throws IllegalStateException {
+        return this;
     }
 
-    protected abstract T createOperationHandler(NewModelController modelController, ExecutorService executor);
+    protected NewModelController getController() {
+        return modelControllerValue.getValue();
+    }
+
+    protected ExecutorService getExecutor() {
+        return executor;
+    }
 }

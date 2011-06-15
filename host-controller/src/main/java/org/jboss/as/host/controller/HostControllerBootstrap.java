@@ -43,7 +43,7 @@ import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainModelImpl;
-import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
+import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
@@ -167,7 +167,7 @@ public class HostControllerBootstrap {
         final HostControllerService hc = new HostControllerService(hostName, hostModelNode, configurationPersister, hostRegistry);
         serviceTarget.addService(HostController.SERVICE_NAME, hc)
                 .addDependency(ServerInventoryService.SERVICE_NAME, ServerInventory.class, hc.getServerInventory())
-                .addDependency(ServerToHostOperationHandler.SERVICE_NAME) // make sure servers can register
+                .addDependency(ServerToHostOperationHandlerFactoryService.SERVICE_NAME) // make sure servers can register
                 .setInitialMode(Mode.ACTIVE)
                 .install();
 
@@ -177,7 +177,7 @@ public class HostControllerBootstrap {
 //            .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallbackInjector())
 //            .install();
 
-        RemotingServices.installChannelOpenListenerService(serviceTarget, "server", ServerToHostOperationHandler.SERVICE_NAME, null, null);
+        RemotingServices.installChannelOpenListenerService(serviceTarget, "server", ServerToHostOperationHandlerFactoryService.SERVICE_NAME, null, null);
     }
 
     /**
