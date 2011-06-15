@@ -66,8 +66,7 @@ public class AuthorizationInterceptor implements Interceptor {
             if (!allowedRoles.isEmpty()) {
                 // call the picketbox API to do authorization check
                 final SimpleSecurityManager securityManager = ejbComponent.getSecurityManager();
-                // TODO - SecurityManager isCallerInRoles is not valid for this call.
-                if (!securityManager._isCallerInRole(allowedRoles.toArray(new String[allowedRoles.size()]))) {
+                if (!securityManager.isCallerInRole(allowedRoles.toArray(new String[allowedRoles.size()]))) {
                     throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " +
                             ejbComponent.getComponentName() + " is not allowed because caller is *not* in any of the " +
                             "allowed roles: " + allowedRoles);
