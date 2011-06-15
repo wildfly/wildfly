@@ -461,7 +461,7 @@ public class DomainLifecycleUtil {
                 public Boolean run() {
                     // this needs a better name
                     String val = System.getProperty("org.jboss.as.writeconsole");
-                    return val != null && "true".equals(val);
+                    return val == null || !"false".equals(val);
                 }
             });
             String line = null;
