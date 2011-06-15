@@ -102,9 +102,9 @@
           <xs:element maxOccurs="1" minOccurs="0" name="acceptors">
               <xs:complexType>
                   <xs:sequence>
-                      <xs:element maxOccurs="unbounded" minOccurs="1" name="netty-acceptor" type="netty-acceptorType" />
-                      <xs:element maxOccurs="unbounded" minOccurs="1" name="in-vm-acceptor" type="inVM-acceptorType" />
-                      <xs:element maxOccurs="unbounded" minOccurs="1" name="acceptor" type="acceptorType" />
+                      <xs:element maxOccurs="unbounded" minOccurs="0" name="netty-acceptor" type="netty-acceptorType" />
+                      <xs:element maxOccurs="unbounded" minOccurs="0" name="in-vm-acceptor" type="inVM-acceptorType" />
+                      <xs:element maxOccurs="unbounded" minOccurs="0" name="acceptor" type="acceptorType" />
                   </xs:sequence>
               </xs:complexType>
           </xs:element>

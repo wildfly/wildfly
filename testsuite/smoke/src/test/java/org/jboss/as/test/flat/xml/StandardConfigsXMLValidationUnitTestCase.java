@@ -32,14 +32,11 @@ import javax.xml.parsers.SAXParserFactory;
 
 import junit.framework.Assert;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
@@ -57,19 +54,16 @@ public class StandardConfigsXMLValidationUnitTestCase {
     }
 
     @Test
-    @Ignore("[AS7-814] Fix or remove ignored smoke tests")
     public void testDomain() throws Exception {
         parseXml("domain/configuration/domain.xml");
     }
 
     @Test
-    @Ignore("[AS7-814] Fix or remove ignored smoke tests")
     public void testStandalone() throws Exception {
         parseXml("standalone/configuration/standalone.xml");
     }
 
-    private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, SAXNotRecognizedException,
-            SAXNotSupportedException, IOException {
+    private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         if (!factory.isNamespaceAware())
             factory.setNamespaceAware(true);

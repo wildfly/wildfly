@@ -33,7 +33,7 @@ public enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    RESOURCEADAPTERS_1_0("urn:jboss:domain:resourceadapters:1.0");
+    RESOURCEADAPTERS_1_0("urn:jboss:domain:resource-adapters:1.0");
 
     /**
      * The current namespace version.

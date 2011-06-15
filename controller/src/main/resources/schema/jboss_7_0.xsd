@@ -750,11 +750,6 @@
                 </xs:any>
             </xs:choice>
         </xs:sequence>
-        <xs:attribute name="name" type="xs:string" use="required">
-            <xs:annotation>
-                <xs:documentation>Name of the profile</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
     <!-- general socket definition -->
