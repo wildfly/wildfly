@@ -45,6 +45,8 @@ import java.util.Set;
  * that belong to components that do not have their own java:comp namespace, and class level bindings declared in
  * namespaces above java:comp.
  *
+ * This processor is also responsible for throwing an exception if any ee component classes have been marked as invalid.
+ *
  * @author Stuart Douglas
  */
 public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
@@ -128,18 +130,21 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     classConfigurations.add(interceptorClass);
                 }
             }
-            processClassConfigurations(phaseContext, applicationDescription, moduleConfiguration, existingBindings, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations);
+            processClassConfigurations(phaseContext, applicationDescription, moduleConfiguration, existingBindings, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations, componentConfiguration.getComponentName());
 
         }
 
     }
 
-    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> existingBindings, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<EEModuleClassConfiguration> classConfigurations) throws DeploymentUnitProcessingException {
+    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> existingBindings, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<EEModuleClassConfiguration> classConfigurations, final String componentName) throws DeploymentUnitProcessingException {
         for (final EEModuleClassConfiguration classConfiguration : classConfigurations) {
             new ClassDescriptionTraversal(classConfiguration, applicationDescription) {
 
                 @Override
                 protected void handle(final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    if (classDescription.isInvalid()) {
+                        throw new DeploymentUnitProcessingException("Component class " + classDescription.getClassName() + " for component " + componentName + " has errors: \n " + classDescription.getInvalidMessage());
+                    }
                     //only process classes once
                     if (handledClasses.contains(classDescription.getClassName())) {
                         return;

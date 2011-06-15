@@ -21,8 +21,15 @@
  */
 package org.jboss.as.testsuite.integration.injection.resource.noncomponent;
 
+import javax.annotation.ManagedBean;
 import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
 import javax.transaction.UserTransaction;
+import javax.xml.ws.WebServiceRef;
 
 /**
  * This class is not a component, and not used as an interceptor, and as such any resources
@@ -40,4 +47,16 @@ public class NonComponentResourceInjection {
      */
     @Resource
     private NonComponentResourceInjectionTestCase randomInjection;
+
+    @PersistenceContext(unitName = "bogus")
+    private EntityManager entityManager;
+
+    @PersistenceUnit(unitName = "bogus")
+    private EntityManagerFactory entityManagerFactory;
+
+    @EJB
+    private NonComponentResourceInjection notReal;
+
+    @WebServiceRef
+    private NonComponentResourceInjection nonExitantWebService;
 }
