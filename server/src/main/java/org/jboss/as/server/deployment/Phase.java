@@ -200,7 +200,8 @@ public enum Phase {
     public static final int PARSE_EE_MODULE_NAME                        = 0x0100;
     public static final int PARSE_EAR_SUBDEPLOYMENTS_ISOLATION_DEFAULT  = 0x0200;
     public static final int PARSE_STRUCTURE_DESCRIPTOR                  = 0x0201;
-    public static final int PARSE_COMPOSITE_ANNOTATION_INDEX            = 0x0300;
+    public static final int PARSE_DEPENDENCIES_MANIFEST                 = 0x0300;
+    public static final int PARSE_COMPOSITE_ANNOTATION_INDEX            = 0x0301;
     public static final int PARSE_EAR_LIB_CLASS_PATH                    = 0x0400;
     public static final int PARSE_ADDITIONAL_MODULES                    = 0x0500;
     public static final int PARSE_CLASS_PATH                            = 0x0600;

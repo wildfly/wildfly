@@ -46,6 +46,7 @@ import org.jboss.as.server.deployment.module.DeploymentStructureDescriptorParser
 import org.jboss.as.server.deployment.module.JdkDependenciesProcessor;
 import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.server.deployment.module.ManifestClassPathProcessor;
+import org.jboss.as.server.deployment.module.ManifestDependencyProcessor;
 import org.jboss.as.server.deployment.module.ManifestExtensionListProcessor;
 import org.jboss.as.server.deployment.module.ManifestExtensionNameProcessor;
 import org.jboss.as.server.deployment.module.ModuleClassPathProcessor;
@@ -223,6 +224,7 @@ final class ServerControllerService implements Service<ServerController> {
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_MODULE_IDENTIFIERS, new ModuleIdentifierProcessor()));
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_ANNOTATION_INDEX, new AnnotationIndexProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_STRUCTURE_DESCRIPTOR, new DeploymentStructureDescriptorParser()));
+        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_DEPENDENCIES_MANIFEST, new ManifestDependencyProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_COMPOSITE_ANNOTATION_INDEX, new CompositeIndexProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_ADDITIONAL_MODULES, new AdditionalModuleProcessor()));
         deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_CLASS_PATH, new ManifestClassPathProcessor()));
