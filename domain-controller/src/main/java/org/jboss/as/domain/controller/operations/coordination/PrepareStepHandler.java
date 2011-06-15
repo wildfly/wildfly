@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 
 import java.util.Map;
@@ -69,6 +70,7 @@ public class PrepareStepHandler  implements NewStepHandler {
             // Coordinator wants us to execute locally and send result including the steps needed for execution on the servers
             slaveHandler.execute(context, operation);
         } else if (isServerOperation(operation)) {
+            System.out.println("Server op");
             // Pass direct requests for the server through whether they come from the master or not
             executeDirect(context, operation);
         } else {
@@ -85,7 +87,7 @@ public class PrepareStepHandler  implements NewStepHandler {
         return addr.size() > 1
                 && HOST.equals(addr.getElement(0).getKey())
                 && localHostControllerInfo.getLocalHostName().equals(addr.getElement(0).getValue())
-                && SERVER.equals(addr.getElement(1).getKey());
+                && RUNNING_SERVER.equals(addr.getElement(1).getKey());
     }
 
     /**
@@ -95,6 +97,7 @@ public class PrepareStepHandler  implements NewStepHandler {
      * @throws OperationFailedException
      */
     private void executeDirect(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        System.out.println("PrepareStepHandler execute direct " + operation);
         final String operationName =  operation.require(OP).asString();
         final NewStepHandler stepHandler = context.getModelNodeRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
         if(stepHandler != null) {

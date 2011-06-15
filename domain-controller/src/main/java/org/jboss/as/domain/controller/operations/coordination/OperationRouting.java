@@ -50,6 +50,8 @@ public class OperationRouting {
 
     public static OperationRouting determineRouting(final ModelNode operation, final LocalHostControllerInfo localHostControllerInfo,
                                                     final ModelNodeRegistration registry) {
+        System.out.println("Finding routing for " + operation.require(OP).asString() + " from " +
+                            operation.get(OP_ADDR));
         OperationRouting routing = null;
 
         String targetHost = null;

@@ -64,7 +64,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class OperationCoordinatorStepHandler implements NewStepHandler {
+public class OperationCoordinatorStepHandler {
 
     private final LocalHostControllerInfo localHostControllerInfo;
     private final Map<String, NewProxyController> hostProxies;
@@ -78,8 +78,7 @@ public class OperationCoordinatorStepHandler implements NewStepHandler {
         this.localSlaveHandler = localSlaveHandler;
     }
 
-    @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
         // Determine routing
         ModelNodeRegistration opRegistry = context.getModelNodeRegistration();
@@ -91,6 +90,7 @@ public class OperationCoordinatorStepHandler implements NewStepHandler {
             routetoMasterDomainController(context, operation);
         }
         else if (routing.getSingleHost() != null && !localHostControllerInfo.getLocalHostName().equals(routing.getSingleHost())) {
+            System.out.println("Remote single host");
             // Possibly a two step operation, but not coordinated by this host. Execute direct and let the remote HC
             // coordinate any two step process (if there is one)
             executeDirect(context, operation);
@@ -135,6 +135,7 @@ public class OperationCoordinatorStepHandler implements NewStepHandler {
      * @throws OperationFailedException
      */
     private void executeDirect(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        System.out.println("Executing direct");
         final String operationName =  operation.require(OP).asString();
         final NewStepHandler stepHandler = context.getModelNodeRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
         if(stepHandler != null) {
@@ -146,6 +147,7 @@ public class OperationCoordinatorStepHandler implements NewStepHandler {
     }
 
     private void executeTwoPhaseOperation(NewOperationContext context, ModelNode operation, OperationRouting routing) throws OperationFailedException {
+        System.out.println("Executing two-phase");
 
         DomainOperationContext overallContext = new DomainOperationContext(localHostControllerInfo);
 
