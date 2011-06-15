@@ -83,8 +83,8 @@ public class NewRemoteDomainControllerAddHandler extends AbstractAddStepHandler 
         parametersValidator.validate(operation);
         ModelNode dc = model.get(DOMAIN_CONTROLLER);
 
-        final int port = operation.require(PORT).asInt();
-        final String host = operation.require(HOST).asString();
+        final ModelNode port = operation.require(PORT);
+        final ModelNode host = operation.require(HOST);
         dc.get(REMOTE, PORT).set(port);
         dc.get(REMOTE, HOST).set(host);
 
@@ -93,8 +93,8 @@ public class NewRemoteDomainControllerAddHandler extends AbstractAddStepHandler 
         }
 
         hostControllerInfo.setMasterDomainController(false);
-        hostControllerInfo.setRemoteDomainControllerHost(host);
-        hostControllerInfo.setRemoteDomainControllerPort(port);
+        hostControllerInfo.setRemoteDomainControllerHost(host.resolve().asString());
+        hostControllerInfo.setRemoteDomainControllerPort(port.resolve().asInt());
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
         NewDomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), fileRepository);
