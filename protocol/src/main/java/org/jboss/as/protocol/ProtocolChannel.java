@@ -139,18 +139,7 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
     }
 
     public void stopReceiving() {
-        if (!stopReceiving.compareAndSet(false, true)) {
-            throw new IllegalStateException("Channel already stopped receiving");
-        }
-        try {
-            waitUntilClosable();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    protected boolean getStopReceiving() {
-        return stopReceiving.get();
+        stopReceiving.set(true);
     }
 
     @Override
@@ -165,9 +154,5 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
         }
     }
 
-    protected void waitUntilClosable() throws InterruptedException {
-    }
-
     protected abstract void doHandle(final Channel channel, final MessageInputStream message);
-
 }
