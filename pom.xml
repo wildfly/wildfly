@@ -93,7 +93,7 @@
         <version.org.apache.httpcomponents>4.1.1</version.org.apache.httpcomponents>
         <version.org.apache.neethi>3.0.0</version.org.apache.neethi>
         <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
-        <version.org.apache.xalan>2.7.1-1.jbossorg</version.org.apache.xalan>
+        <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1</version.org.apache.xerces>
         <version.org.apache.santuario.xmlsec>1.4.4</version.org.apache.santuario.xmlsec>
         <version.org.apache.ws.xmlschema>2.0</version.org.apache.ws.xmlschema>
@@ -390,6 +390,8 @@
                                             <exclude>org.apache.maven.wagon:wagon-file</exclude>
                                             <exclude>org.apache.maven.wagon:wagon-http-lightweight</exclude>
                                             <exclude>org.apache.maven.wagon:wagon-provider-api</exclude>
+                                            <exclude>org.apache.xalan:serializer</exclude>
+                                            <exclude>org.apache.xalan:xalan</exclude>
                                             <exclude>org.hibernate:ejb3-persistence</exclude>
                                             <exclude>org.hibernate.java-persistence:jpa-api</exclude>
                                             <exclude>org.jboss.interceptor:jboss-interceptor-api</exclude>
@@ -426,8 +428,6 @@
                                             <exclude>oro:oro</exclude>
                                             <exclude>sun-jaxb:jaxb-api</exclude>
                                             <exclude>trove:trove</exclude>
-                                            <exclude>xalan:serializer</exclude>
-                                            <exclude>xalan:xalan</exclude>
                                             <exclude>xml-apis:xml-apis</exclude>
                                             <exclude>xml-resolver:xml-resolver</exclude>
                                         </excludes>
@@ -939,10 +939,6 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>xerces</groupId>
                         <artifactId>xercesImpl</artifactId>
                     </exclusion>
@@ -957,10 +953,6 @@
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>xerces</groupId>
@@ -1006,13 +998,13 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.xalan</groupId>
+                <groupId>xalan</groupId>
                 <artifactId>serializer</artifactId>
                 <version>${version.org.apache.xalan}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.apache.xalan</groupId>
+                <groupId>xalan</groupId>
                 <artifactId>xalan</artifactId>
                 <version>${version.org.apache.xalan}</version>
             </dependency>
@@ -1058,14 +1050,6 @@
                         <groupId>org.apache.neethi</groupId>
                         <artifactId>neethi</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1081,14 +1065,6 @@
                     <exclusion>
                         <groupId>org.codehaus.woodstox</groupId>
                         <artifactId>woodstox-core-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1146,14 +1122,6 @@
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1182,14 +1150,6 @@
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-frontend-jaxws</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1201,14 +1161,6 @@
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-transports-local</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1246,14 +1198,6 @@
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-annotation_1.0_spec</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1265,14 +1209,6 @@
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-databinding-jaxb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                </exclusions>
             </dependency>
@@ -1290,14 +1226,6 @@
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-javamail_1.4_spec</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1314,14 +1242,6 @@
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-frontend-simple</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1329,16 +1249,6 @@
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-databinding-jaxb</artifactId>
                 <version>${version.org.apache.cxf}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -1426,14 +1336,6 @@
                          <groupId>xml-resolver</groupId>
                          <artifactId>xml-resolver</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1441,16 +1343,6 @@
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-simple</artifactId>
                 <version>${version.org.apache.cxf}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -1493,14 +1385,6 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1549,14 +1433,6 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-web</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1618,14 +1494,6 @@
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1637,14 +1505,6 @@
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1662,14 +1522,6 @@
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-core</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1677,16 +1529,6 @@
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-addr</artifactId>
                 <version>${version.org.apache.cxf}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -1750,14 +1592,6 @@
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1814,14 +1648,6 @@
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1859,20 +1685,8 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.bouncycastle</groupId>
                         <artifactId>bcprov-jdk15</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1889,14 +1703,6 @@
                     <exclusion>
                         <groupId>wsdl4j</groupId>
                         <artifactId>wsdl4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1989,14 +1795,6 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2098,14 +1896,6 @@
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -2174,14 +1964,6 @@
                          <groupId>wsdl4j</groupId>
                          <artifactId>wsdl4j</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -2225,14 +2007,6 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2290,14 +2064,6 @@
                          <groupId>xml-resolver</groupId>
                          <artifactId>xml-resolver</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -2337,14 +2103,6 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2390,14 +2148,6 @@
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -2437,14 +2187,6 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2489,14 +2231,6 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2657,16 +2391,6 @@
                 <groupId>org.apache.ws.xmlschema</groupId>
                 <artifactId>xmlschema-core</artifactId>
                 <version>${version.org.apache.ws.xmlschema}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -2681,10 +2405,6 @@
                     <exclusion>
                         <groupId>org.opensaml</groupId>
                         <artifactId>opensaml</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3679,14 +3399,6 @@
                 <version>${version.org.jboss.jsfunit.jsfunit}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>serializer</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>xml-apis</groupId>
                         <artifactId>xml-apis</artifactId>
                     </exclusion>
@@ -4216,6 +3928,12 @@
                 <groupId>org.jboss.spec.javax.servlet.jstl</groupId>
                 <artifactId>jboss-jstl-api_1.2_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.xalan</groupId>
+                        <artifactId>xalan</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.spec.javax.transaction</groupId>
