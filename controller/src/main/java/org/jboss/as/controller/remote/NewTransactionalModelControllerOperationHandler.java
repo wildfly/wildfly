@@ -37,6 +37,7 @@ import org.jboss.as.controller.NewProxyController.ProxyOperationControl;
 import org.jboss.as.controller.client.NewModelControllerProtocol;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
@@ -44,6 +45,7 @@ import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.HandleableCloseable.Key;
 
 /**
  *
@@ -70,12 +72,12 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
      */
     private class ExecuteRequestHandler extends ManagementRequestHandler {
         private ModelNode operation = new ModelNode();
-        private int batchId;
         private int attachmentsLength;
+        private ExecuteRequestContext executeRequestContext;
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            batchId = getContext().getHeader().getBatchId();
+            executeRequestContext = new ExecuteRequestContext(getContext());
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_OPERATION);
             operation.readExternal(input);
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
@@ -92,20 +94,18 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
 
         @Override
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
-            final CountDownLatch preparedOrFailedLatch = new CountDownLatch(1);
-            final CountDownLatch txCompletedLatch = new CountDownLatch(1);
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
-                    final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(getContext(), batchId);
-                    final ProxyOperationControlProxy control = new ProxyOperationControlProxy(getContext(), batchId, preparedOrFailedLatch, txCompletedLatch);
+                    final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(getContext(), executeRequestContext.getBatchId());
+                    final ProxyOperationControlProxy control = new ProxyOperationControlProxy(executeRequestContext);
                     final ModelNode result;
                     try {
                         result = controller.execute(
                                 operation,
                                 messageHandlerProxy,
                                 control,
-                                new OperationAttachmentsProxy(getContext(), batchId, attachmentsLength));
+                                new OperationAttachmentsProxy(getContext(), executeRequestContext.getBatchId(), attachmentsLength));
                     } catch (Exception e) {
                         final ModelNode failure = new ModelNode();
                         failure.get(OUTCOME).set(FAILED);
@@ -117,16 +117,17 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                         control.operationFailed(result);
                     } else {
                         try {
-                            txCompletedLatch.await();
+                            executeRequestContext.awaitTxCompleted();
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
+                            executeRequestContext.setError("Error waiting for Tx commit/rollback");
                         }
                         control.operationCompleted(result);
                     }
                 }
             });
             try {
-                preparedOrFailedLatch.await();
+                executeRequestContext.awaitPreparedOrFailed();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IOException("Thread was interrupted waiting for the operation to prepare/fail");
@@ -138,22 +139,16 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
      * A proxy to the proxy operation control proxy on the remote caller
      */
     private class ProxyOperationControlProxy implements ProxyOperationControl {
-        final ManagementRequestContext context;
-        final int batchId;
-        final CountDownLatch preparedOrFailedLatch;
-        final CountDownLatch txCompletedLatch;
+        final ExecuteRequestContext executeRequestContext;
 
-        public ProxyOperationControlProxy(final ManagementRequestContext context, final int batchId, final CountDownLatch preparedOrFailedLatch, final CountDownLatch txCompletedLatch) {
-            this.context = context;
-            this.batchId = batchId;
-            this.preparedOrFailedLatch = preparedOrFailedLatch;
-            this.txCompletedLatch = txCompletedLatch;
+        public ProxyOperationControlProxy(final ExecuteRequestContext executeRequestContext) {
+            this.executeRequestContext = executeRequestContext;
         }
 
         @Override
         public void operationPrepared(final OperationTransaction transaction, final ModelNode result) {
             try {
-                new OperationStatusRequest(batchId, result) {
+                new OperationStatusRequest(executeRequestContext.getBatchId(), result) {
 
                     @Override
                     protected byte getRequestCode() {
@@ -169,17 +164,17 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                     protected Void readResponse(DataInput input) throws IOException {
                         //The caller has delegated the operationPrepared() call
                         ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_PREPARED);
-                        preparedOrFailedLatch.countDown();
+                        executeRequestContext.setPreparedOrFailed();
 
                         //Now check if the Tx was committed or rolled back
                         byte status = input.readByte();
                         if (status == NewModelControllerProtocol.PARAM_COMMIT) {
                             transaction.commit();
-                            txCompletedLatch.countDown();
+                            executeRequestContext.setTxCompleted();
 
                         } else if (status == NewModelControllerProtocol.PARAM_ROLLBACK){
                             transaction.rollback();
-                            txCompletedLatch.countDown();
+                            executeRequestContext.setTxCompleted();
                         } else {
                             throw new IllegalArgumentException("Invalid status code " + status);
                         }
@@ -187,9 +182,9 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                         return null;
                     }
 
-                }.executeForResult(executorService, getChannelStrategy(context.getChannel()));
+                }.executeForResult(executorService, getChannelStrategy(executeRequestContext.getChannel()));
             } catch (Exception e) {
-                // AutoGenerated
+                executeRequestContext.setError(e.getMessage());
                 throw new RuntimeException(e);
             }
         }
@@ -197,31 +192,31 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
         @Override
         public void operationFailed(final ModelNode response) {
             try {
-                new OperationStatusRequest(batchId, response) {
+                new OperationStatusRequest(executeRequestContext.getBatchId(), response) {
 
                     @Override
                     protected byte getRequestCode() {
                         return NewModelControllerProtocol.OPERATION_FAILED_REQUEST;
                     }
 
-                }.executeForResult(executorService, getChannelStrategy(context.getChannel()));
+                }.executeForResult(executorService, getChannelStrategy(executeRequestContext.getChannel()));
             } catch (Exception e) {
-                // AutoGenerated
+                executeRequestContext.setError(e.getMessage());
                 throw new RuntimeException(e);
             }
-            preparedOrFailedLatch.countDown();
+            executeRequestContext.setPreparedOrFailed();
         }
 
         @Override
         public void operationCompleted(final ModelNode response) {
-            new OperationStatusRequest(batchId, response) {
+            new OperationStatusRequest(executeRequestContext.getBatchId(), response) {
 
                 @Override
                 protected byte getRequestCode() {
                     return NewModelControllerProtocol.OPERATION_COMPLETED_REQUEST;
                 }
 
-            }.execute(executorService, getChannelStrategy(context.getChannel()));
+            }.execute(executorService, getChannelStrategy(executeRequestContext.getChannel()));
         }
 
         /**
@@ -245,5 +240,60 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                 return null;
             }
         }
+    }
+
+    private static class ExecuteRequestContext {
+        final ManagementRequestContext managementRequestContext;
+        final CountDownLatch preparedOrFailedLatch = new CountDownLatch(1);
+        final CountDownLatch txCompletedLatch = new CountDownLatch(1);
+        final Key closableKey;
+        volatile String error;
+
+        public ExecuteRequestContext(final ManagementRequestContext managementRequestContext) {
+            this.managementRequestContext = managementRequestContext;
+            closableKey = managementRequestContext.getChannel().addCloseHandler(new CloseHandler<Channel>() {
+                public void handleClose(Channel closed) {
+                    setError("Channel Closed");
+                }
+            });
+        }
+
+        ManagementChannel getChannel() {
+            return managementRequestContext.getChannel();
+        }
+
+        int getBatchId() {
+            return managementRequestContext.getHeader().getBatchId();
+        }
+
+        void awaitPreparedOrFailed() throws InterruptedException {
+            preparedOrFailedLatch.await();
+        }
+
+        void setPreparedOrFailed() {
+            preparedOrFailedLatch.countDown();
+            closableKey.remove();
+        }
+
+        void awaitTxCompleted() throws InterruptedException {
+            txCompletedLatch.await();
+            if (error != null) {
+                throw new RuntimeException(error);
+            }
+        }
+
+        void setTxCompleted() {
+            txCompletedLatch.countDown();
+            if (error != null) {
+                throw new RuntimeException(error);
+            }
+        }
+
+        synchronized void setError(String error) {
+            this.error = error;
+            preparedOrFailedLatch.countDown();
+            txCompletedLatch.countDown();
+        }
+
     }
 }
