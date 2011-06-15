@@ -87,7 +87,7 @@ public class RunAsTestCase {
         try {
             String[] response = entryBean.doubleWhoAmI();
             assertEquals("user1", response[0]);
-            assertEquals("user1", response[1]);
+            assertEquals("anonymous", response[1]);
         } finally {
             lc.logout();
         }
