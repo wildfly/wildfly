@@ -16,6 +16,15 @@
  */
 package org.jboss.as.arquillian.container;
 
+import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
+import org.jboss.arquillian.test.spi.TestClass;
+import org.jboss.logging.Logger;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.container.ManifestContainer;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,15 +34,6 @@ import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-
-import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
-import org.jboss.arquillian.test.spi.TestClass;
-import org.jboss.logging.Logger;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.container.ManifestContainer;
 
 /**
  * An {@link ApplicationArchiveProcessor} for module test deployments.
@@ -47,6 +47,7 @@ public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProc
     private static final Logger log = Logger.getLogger(ModuleApplicationArchiveProcessor.class);
 
     static final List<String> defaultDependencies = new ArrayList<String>();
+
     static {
         defaultDependencies.add("deployment.arquillian-service");
         defaultDependencies.add("org.jboss.modules");
@@ -81,6 +82,9 @@ public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProc
 
         final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
         Attributes attributes = manifest.getMainAttributes();
+        if (attributes.getValue(Attributes.Name.MANIFEST_VERSION.toString()) == null) {
+            attributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");
+        }
         String value = attributes.getValue("Dependencies");
         StringBuffer moduleDeps = new StringBuffer(value != null && value.trim().length() > 0 ? value : "org.jboss.modules");
         for (String dep : defaultDependencies) {
@@ -103,15 +107,15 @@ public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProc
         ArchivePath manifestPath = ArchivePaths.create(JarFile.MANIFEST_NAME);
         appArchive.delete(manifestPath);
         appArchive.add(new Asset() {
-                public InputStream openStream() {
-                    try {
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        manifest.write(baos);
-                        return new ByteArrayInputStream(baos.toByteArray());
-                    } catch (IOException ex) {
-                        throw new IllegalStateException("Cannot write manifest", ex);
+                    public InputStream openStream() {
+                        try {
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            manifest.write(baos);
+                            return new ByteArrayInputStream(baos.toByteArray());
+                        } catch (IOException ex) {
+                            throw new IllegalStateException("Cannot write manifest", ex);
+                        }
                     }
-                }
-            }, manifestPath);
+                }, manifestPath);
     }
 }
