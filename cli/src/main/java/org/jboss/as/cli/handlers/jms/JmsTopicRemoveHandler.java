@@ -107,8 +107,8 @@ public class JmsTopicRemoveHandler extends BatchModeCommandHandler {
 
         final String name = this.name.getValue(ctx.getParsedArguments(), true);
 
-        builder.addNode("subsystem", "jms");
-        builder.addNode("topic", name);
+        builder.addNode("subsystem", "messaging");
+        builder.addNode("jms-topic", name);
         builder.setOperationName("remove");
 
         return builder.buildRequest();

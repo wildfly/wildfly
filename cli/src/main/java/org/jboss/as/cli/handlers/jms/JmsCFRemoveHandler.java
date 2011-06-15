@@ -106,7 +106,7 @@ public class JmsCFRemoveHandler extends BatchModeCommandHandler {
             }
             builder.addNode("profile", profile);
         }
-        builder.addNode("subsystem", "jms");
+        builder.addNode("subsystem", "messaging");
         builder.addNode("connection-factory", name);
         builder.setOperationName("remove");
 

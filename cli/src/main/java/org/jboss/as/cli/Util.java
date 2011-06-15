@@ -389,7 +389,7 @@ public class Util {
             if(profile != null) {
                 builder.addNode("profile", profile);
             }
-            builder.addNode("subsystem", "jms");
+            builder.addNode("subsystem", "messaging");
             builder.operationName("read-children-names");
             builder.addProperty("child-type", type);
             request = builder.buildRequest();

@@ -128,7 +128,7 @@ public class JmsCFAddHandler extends BatchModeCommandHandler {
             builder.addNode("profile",profile);
         }
 
-        builder.addNode("subsystem", "jms");
+        builder.addNode("subsystem", "messaging");
         builder.setOperationName("add");
 
         final String name = this.name.getValue(args, true);

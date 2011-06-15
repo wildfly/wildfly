@@ -101,8 +101,8 @@ public class JmsQueueAddHandler extends BatchModeCommandHandler {
 
         final String name = this.name.getValue(args, true);
 
-        builder.addNode("subsystem", "jms");
-        builder.addNode("queue", name);
+        builder.addNode("subsystem", "messaging");
+        builder.addNode("jms-queue", name);
         builder.setOperationName("add");
 
         ModelNode entriesNode = builder.getModelNode().get("entries");

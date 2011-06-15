@@ -107,8 +107,8 @@ public class JmsQueueRemoveHandler extends BatchModeCommandHandler {
 
         final String name = this.name.getValue(ctx.getParsedArguments(), true);
 
-        builder.addNode("subsystem", "jms");
-        builder.addNode("queue", name);
+        builder.addNode("subsystem", "messaging");
+        builder.addNode("jms-queue", name);
         builder.setOperationName("remove");
 
         return builder.buildRequest();

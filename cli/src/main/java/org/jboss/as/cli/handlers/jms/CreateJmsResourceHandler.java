@@ -132,8 +132,8 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
         if(restype.equals("javax.jms.Queue")) {
 
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-            builder.addNode("subsystem", "jms");
-            builder.addNode("queue", name);
+            builder.addNode("subsystem", "messaging");
+            builder.addNode("jms-queue", name);
             builder.setOperationName("add");
             builder.getModelNode().get("entries").add(jndiName);
 
@@ -146,8 +146,8 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
         } else if(restype.equals("javax.jms.Topic")) {
 
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-            builder.addNode("subsystem", "jms");
-            builder.addNode("topic", name);
+            builder.addNode("subsystem", "messaging");
+            builder.addNode("jms-topic", name);
             builder.setOperationName("add");
             builder.getModelNode().get("entries").add(jndiName);
 
@@ -162,7 +162,7 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
                 restype.equals("javax.jms.QueueConnectionFactory")) {
 
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-            builder.addNode("subsystem", "jms");
+            builder.addNode("subsystem", "messaging");
             builder.addNode("connection-factory", name);
             builder.setOperationName("add");
             builder.getModelNode().get("entries").add(jndiName);

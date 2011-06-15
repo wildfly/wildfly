@@ -75,9 +75,9 @@ public class DeleteJmsResourceHandler extends BatchModeCommandHandler {
         ModelControllerClient client = ctx.getModelControllerClient();
         final String resource;
         if(Util.isTopic(client, jndiName)) {
-            resource = "topic";
+            resource = "jms-topic";
         } else if(Util.isQueue(client, jndiName)) {
-            resource = "queue";
+            resource = "jms-queue";
         } else if(Util.isConnectionFactory(client, jndiName)) {
             resource = "connection-factory";
         } else {
@@ -85,7 +85,7 @@ public class DeleteJmsResourceHandler extends BatchModeCommandHandler {
         }
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-        builder.addNode("subsystem", "jms");
+        builder.addNode("subsystem", "messaging");
         builder.addNode(resource, jndiName);
         builder.setOperationName("remove");
         return builder.buildRequest();

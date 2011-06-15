@@ -93,8 +93,8 @@ public class JmsTopicAddHandler extends BatchModeCommandHandler {
 
         final String name = this.name.getValue(args, true);
 
-        builder.addNode("subsystem", "jms");
-        builder.addNode("topic", name);
+        builder.addNode("subsystem", "messaging");
+        builder.addNode("jms-topic", name);
         builder.setOperationName("add");
 
         ModelNode entriesNode = builder.getModelNode().get("entries");
