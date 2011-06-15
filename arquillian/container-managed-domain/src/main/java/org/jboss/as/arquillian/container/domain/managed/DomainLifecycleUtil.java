@@ -22,6 +22,7 @@ import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -453,7 +454,7 @@ public class DomainLifecycleUtil {
         @Override
         public void run() {
             final InputStream stream = process.getInputStream();
-            final InputStreamReader reader = new InputStreamReader(stream);
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
             final boolean writeOutput = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
 
                 @Override
@@ -463,11 +464,11 @@ public class DomainLifecycleUtil {
                     return val != null && "true".equals(val);
                 }
             });
-            final char[] data = new char[100];
+            String line = null;
             try {
-                for (int read = 0; read != -1; read = reader.read(data)) {
+                while((line = reader.readLine())!=null) {
                     if (writeOutput) {
-                        System.out.print(data);
+                        System.out.println(line);
                     }
                 }
             } catch (IOException e) {
