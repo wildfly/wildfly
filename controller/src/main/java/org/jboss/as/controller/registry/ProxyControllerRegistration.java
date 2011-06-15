@@ -192,6 +192,8 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
 //            return this;
 //        }
 //        throw new IllegalArgumentException("Can't get child registrations of a proxy");
+        while (iterator.hasNext())
+            iterator.next();
         return this;
     }
 
