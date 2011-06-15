@@ -54,6 +54,7 @@ import java.util.EnumSet;
 
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
+import org.jboss.as.controller.NewCompositeOperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.ExtensionRemoveHandler;
@@ -161,6 +162,7 @@ public class NewDomainModelUtil {
         EnumSet<OperationEntry.Flag> deploymentUpload = EnumSet.of(OperationEntry.Flag.DEPLOYMENT_UPLOAD);
 
         // Other root resource operations
+        root.registerOperationHandler(NewCompositeOperationHandler.NAME, NewCompositeOperationHandler.INSTANCE, NewCompositeOperationHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         XmlMarshallingHandler xmh = new XmlMarshallingHandler(configurationPersister);
         root.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, OperationEntry.EntryType.PUBLIC, readOnly);
         root.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
