@@ -30,15 +30,14 @@ import org.jboss.as.testsuite.integration.ejb.security.FullAccess;
 import org.jboss.as.testsuite.integration.ejb.security.FullyRestrictedBean;
 import org.jboss.as.testsuite.integration.ejb.security.Restriction;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import java.io.File;
 
 /**
  * User: jpai
