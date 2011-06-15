@@ -419,7 +419,6 @@ public class StandaloneXml extends CommonXml {
         ModelNode profileNode = context.getModelNode();
 
         writer.writeStartElement(Element.PROFILE.getLocalName());
-        writer.writeAttribute(Attribute.NAME.getLocalName(), profileNode.get(PROFILE_NAME).asString());
         Set<String> subsystemNames = profileNode.get(SUBSYSTEM).keys();
         if (subsystemNames.size() > 0) {
             String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
