@@ -57,6 +57,14 @@ public class RequestParamArgWithValue extends ArgumentWithValue implements Reque
         this.paramName = paramName;
     }
 
+    public RequestParamArgWithValue(String paramName, CommandHandlerWithArguments handler, String fullArgName, CommandLineCompleter completer) {
+        super(handler, completer, fullArgName);
+        if(paramName == null) {
+            throw new IllegalArgumentException("Parameter name is null.");
+        }
+        this.paramName = paramName;
+    }
+
     public void set(ParsedArguments args, ModelNode request) throws CommandFormatException {
         final String value = getValue(args);
         if(value != null) {
@@ -66,5 +74,10 @@ public class RequestParamArgWithValue extends ArgumentWithValue implements Reque
 
     protected static void setValue(ModelNode request, String name, String value) {
         Util.setRequestProperty(request, name, value);
+    }
+
+    @Override
+    public String getPropertyName() {
+        return paramName;
     }
 }

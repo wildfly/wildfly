@@ -19,20 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.impl;
+package org.jboss.as.cli.handlers.jca;
 
-import org.jboss.as.cli.CommandArgument;
-import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.ParsedArguments;
-import org.jboss.dmr.ModelNode;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface RequestParameterArgument extends CommandArgument {
+public class XADataSourceModifyHandler extends BaseDataSourceModifyHandler {
 
-    void set(ParsedArguments args, ModelNode request) throws CommandFormatException;
-
-    String getPropertyName();
+    public XADataSourceModifyHandler() {
+        super("xa-data-source-modify", "xa-data-source");
+    }
 }

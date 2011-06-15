@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelNode;
  */
 public abstract class BaseOperationCommand extends CommandHandlerWithHelp implements OperationCommand {
 
-    private List<RequestParameterArgument> params = new ArrayList<RequestParameterArgument>();
+    protected List<RequestParameterArgument> params = new ArrayList<RequestParameterArgument>();
 
     public BaseOperationCommand(String command) {
         super(command);
@@ -93,9 +93,9 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         }
     }
 
-    protected void setParams(ParsedArguments args, ModelNode request) throws CommandFormatException {
+    protected void setParams(CommandContext ctx, ModelNode request) throws CommandFormatException {
         for(RequestParameterArgument arg : params) {
-            arg.set(args, request);
+            arg.set(ctx.getParsedArguments(), request);
         }
     }
 }

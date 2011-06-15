@@ -47,4 +47,9 @@ public class RequestParamArgWithoutValue extends ArgumentWithoutValue implements
         }
     }
 
+    @Override
+    public String getPropertyName() {
+        return paramName;
+    }
+
 }

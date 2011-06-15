@@ -107,7 +107,7 @@ public class BaseDataSourceAddHandler extends BaseOperationCommand {
         builder.addNode(dsType, jndiName.getValue(args, true));
         builder.setOperationName("add");
 
-        setParams(args, builder.getModelNode());
+        setParams(ctx, builder.getModelNode());
 
         return builder.buildRequest();
     }
