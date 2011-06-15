@@ -22,6 +22,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -203,21 +204,21 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         @Override
         public void run() {
             final InputStream stream = process.getInputStream();
-            final InputStreamReader reader = new InputStreamReader(stream);
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
             final boolean writeOutput = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
 
                 @Override
                 public Boolean run() {
-                    // this needs a better name
+                    // By default, redirect to stdout unless disabled by this property
                     String val = System.getProperty("org.jboss.as.writeconsole");
-                    return val != null && "true".equals(val);
+                    return val == null || !"false".equals(val);
                 }
             });
-            final char[] data = new char[100];
+            String line = null;
             try {
-                for (int read = 0; read != -1; read = reader.read(data)) {
+               while((line = reader.readLine())!=null){
                     if (writeOutput) {
-                        System.out.print(data);
+                        System.out.println(line);
                     }
                 }
             } catch (IOException e) {
