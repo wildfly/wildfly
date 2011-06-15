@@ -39,10 +39,18 @@ import org.jboss.security.auth.spi.DatabaseServerLoginModule;
 import org.jboss.security.auth.spi.IdentityLoginModule;
 import org.jboss.security.auth.spi.LdapExtLoginModule;
 import org.jboss.security.auth.spi.LdapLoginModule;
+import org.jboss.security.auth.spi.LdapUsersLoginModule;
+import org.jboss.security.auth.spi.PropertiesUsersLoginModule;
 import org.jboss.security.auth.spi.RoleMappingLoginModule;
 import org.jboss.security.auth.spi.RunAsLoginModule;
 import org.jboss.security.auth.spi.SimpleServerLoginModule;
+import org.jboss.security.auth.spi.SimpleUsersLoginModule;
 import org.jboss.security.auth.spi.UsersRolesLoginModule;
+import org.jboss.security.mapping.providers.DeploymentRolesMappingProvider;
+import org.jboss.security.mapping.providers.role.DatabaseRolesMappingProvider;
+import org.jboss.security.mapping.providers.role.LdapRolesMappingProvider;
+import org.jboss.security.mapping.providers.role.PropertiesRolesMappingProvider;
+import org.jboss.security.mapping.providers.role.SimpleRolesMappingProvider;
 import org.jboss.security.negotiation.AdvancedADLoginModule;
 import org.jboss.security.negotiation.AdvancedLdapLoginModule;
 import org.jboss.security.negotiation.spnego.SPNEGOLoginModule;
@@ -76,12 +84,33 @@ public interface ModulesMap {
             put("JaasSecurityDomainIdentity", JaasSecurityDomainIdentityLoginModule.class.getName());
             put("PBEIdentity", PBEIdentityLoginModule.class.getName());
             put("SecureIdentity", SecureIdentityLoginModule.class.getName());
+            // Authentication only modules
+            put("PropertiesUsers", PropertiesUsersLoginModule.class.getName());
+            put("SimpleUsers", SimpleUsersLoginModule.class.getName());
+            put("CertificateUsers", BaseCertLoginModule.class.getName()); // duplicated here to maintain name pattern
+            put("DatabaseUsers", DatabaseServerLoginModule.class.getName()); // duplicated here to maintain name pattern
+            put("LdapUsers", LdapUsersLoginModule.class.getName());
             // Negotiation Related Modules
             put("Kerberos", "com.sun.security.auth.module.Krb5LoginModule");
             put("SPNEGO", SPNEGOLoginModule.class.getName());
+            put("SPNEGOUsers", SPNEGOLoginModule.class.getName()); // duplicated here to maintain name pattern
             put("AdvancedLdap", AdvancedLdapLoginModule.class.getName());
             put("AdvancedAdLdap", AdvancedADLoginModule.class.getName());
         }
+    });
+
+    Map<String, String> MAPPING_MAP = Collections.unmodifiableMap(new HashMap<String, String>() {
+
+        private static final long serialVersionUID = 1210873488987888574L;
+
+        {
+            put("PropertiesRoles", PropertiesRolesMappingProvider.class.getName());
+            put("SimpleRoles", SimpleRolesMappingProvider.class.getName());
+            put("DeploymentRoles", DeploymentRolesMappingProvider.class.getName());
+            put("DatabaseRoles", DatabaseRolesMappingProvider.class.getName());
+            put("LdapRoles", LdapRolesMappingProvider.class.getName());
+        }
+
     });
 
 }

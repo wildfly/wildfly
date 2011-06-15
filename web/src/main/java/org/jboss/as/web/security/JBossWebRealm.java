@@ -39,6 +39,7 @@ import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.CacheableManager;
 import org.jboss.security.CertificatePrincipal;
+import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityRolesAssociation;
 import org.jboss.security.SimplePrincipal;
@@ -296,7 +297,7 @@ public class JBossWebRealm extends RealmBase {
                     }
                     if (p instanceof Group) {
                         Group g = Group.class.cast(p);
-                        if (g.getName().equals("CallerPrincipal") && callerPrincipal == null) {
+                        if (g.getName().equals(SecurityConstants.CALLER_PRINCIPAL_GROUP) && callerPrincipal == null) {
                             Enumeration<? extends Principal> e = g.members();
                             if (e.hasMoreElements())
                                 callerPrincipal = e.nextElement();
