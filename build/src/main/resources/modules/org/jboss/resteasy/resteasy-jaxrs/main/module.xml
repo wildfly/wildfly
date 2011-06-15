@@ -35,6 +35,7 @@
         <module name="org.apache.httpcomponents" />
         <module name="org.apache.commons.codec" />
         <module name="org.scannotation.scannotation" />
+        <module name="org.slf4j" />
         <module name="javax.servlet.api"/>
     </dependencies>
 </module>
