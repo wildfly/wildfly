@@ -192,6 +192,9 @@ public class TransactionExtension implements Extension {
                     case ENABLE_STATISTICS:
                         coordinator.get(ENABLE_STATISTICS).set(value);
                         break;
+                    case ENABLE_TSM_STATUS:
+                        coordinator.get(ENABLE_TSM_STATUS).set(value);
+                        break;
                     case DEFAULT_TIMEOUT:
                         coordinator.get(DEFAULT_TIMEOUT).set(value);
                         break;
@@ -386,6 +389,9 @@ public class TransactionExtension implements Extension {
                 final ModelNode env = node.get(COORDINATOR_ENVIRONMENT);
                 if (has(env, ENABLE_STATISTICS)) {
                     writeAttribute(writer, Attribute.ENABLE_STATISTICS, env.get(ENABLE_STATISTICS));
+                }
+                if (has(env, ENABLE_TSM_STATUS)) {
+                    writeAttribute(writer, Attribute.ENABLE_TSM_STATUS, env.get(ENABLE_TSM_STATUS));
                 }
                 if (has(env, DEFAULT_TIMEOUT)) {
                     writeAttribute(writer, Attribute.DEFAULT_TIMEOUT, env.get(DEFAULT_TIMEOUT));
