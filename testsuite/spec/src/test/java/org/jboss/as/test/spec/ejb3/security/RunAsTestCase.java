@@ -21,16 +21,6 @@
  */
 package org.jboss.as.test.spec.ejb3.security;
 
-import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import javax.ejb.EJB;
-import javax.security.auth.login.LoginContext;
-
-import java.util.logging.Logger;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.spec.common.HttpRequest;
@@ -42,6 +32,15 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.ejb.EJB;
+import javax.security.auth.login.LoginContext;
+import java.util.logging.Logger;
+
+import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
@@ -103,15 +102,15 @@ public class RunAsTestCase {
             boolean[] response;
             response = entryBean.doubleDoIHaveRole("Users");
             assertTrue(response[0]);
-            assertTrue(response[1]);
+            assertFalse(response[1]);
 
             response = entryBean.doubleDoIHaveRole("Role1");
             assertTrue(response[0]);
-            assertTrue(response[1]);
+            assertFalse(response[1]);
 
             response = entryBean.doubleDoIHaveRole("Role2");
             assertFalse(response[0]);
-            assertFalse(response[1]);
+            assertTrue(response[1]);
         } finally {
             lc.logout();
         }
@@ -124,7 +123,7 @@ public class RunAsTestCase {
             boolean[] response;
             response = entryBean.doubleDoIHaveRole("Users");
             assertTrue(response[0]);
-            assertTrue(response[1]);
+            assertFalse(response[1]);
 
             response = entryBean.doubleDoIHaveRole("Role1");
             assertFalse(response[0]);
