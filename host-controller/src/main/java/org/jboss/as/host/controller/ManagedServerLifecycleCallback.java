@@ -33,9 +33,9 @@ import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
  */
 public interface ManagedServerLifecycleCallback {
 
-    void serverRegistered(String serverName, ManagementChannel channel, ProxyCreatedCallback callback);
-    void serverStartFailed(String serverName);
-    void serverStopped(String serverName);
+    void serverRegistered(String serverProcessName, ManagementChannel channel, ProxyCreatedCallback callback);
+    void serverStartFailed(String serverProcessName);
+    void serverStopped(String serverProcessName);
     void processInventory(Map<String, ProcessInfo> processInfos);
 
     interface ProxyCreatedCallback {

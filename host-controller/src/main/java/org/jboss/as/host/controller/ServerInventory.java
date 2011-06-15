@@ -207,11 +207,11 @@ class ServerInventory implements ManagedServerLifecycleCallback {
 
     /** {@inheritDoc} */
     @Override
-    public void serverRegistered(String serverName, ManagementChannel channel, ProxyCreatedCallback callback) {
+    public void serverRegistered(String serverProcessName, ManagementChannel channel, ProxyCreatedCallback callback) {
         try {
-            final ManagedServer server = servers.get(serverName);
+            final ManagedServer server = servers.get(serverProcessName);
             if (server == null) {
-                log.errorf("No server called %s available", serverName);
+                log.errorf("No server called %s available", serverProcessName);
                 return;
             }
 
@@ -223,16 +223,16 @@ class ServerInventory implements ManagedServerLifecycleCallback {
             hostController.registerRunningServer(server.getServerName(), server.getServerManagementChannel());
             server.resetRespawnCount();
         } catch (final Exception e) {
-            log.errorf(e, "Could not start server %s", serverName);
+            log.errorf(e, "Could not start server %s", serverProcessName);
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    public void serverStartFailed(String serverName) {
-        final ManagedServer server = servers.get(serverName);
+    public void serverStartFailed(String serverProcessName) {
+        final ManagedServer server = servers.get(serverProcessName);
         if (server == null) {
-            log.errorf("No server called %s exists", serverName);
+            log.errorf("No server called %s exists", serverProcessName);
             return;
         }
         checkState(server, ServerState.STARTING);
@@ -241,10 +241,10 @@ class ServerInventory implements ManagedServerLifecycleCallback {
 
     /** {@inheritDoc} */
     @Override
-    public void serverStopped(String serverName) {
-        final ManagedServer server = servers.get(serverName);
+    public void serverStopped(String serverProcessName) {
+        final ManagedServer server = servers.get(serverProcessName);
         if (server == null) {
-            log.errorf("No server called %s exists for stop", serverName);
+            log.errorf("No server called %s exists for stop", serverProcessName);
             return;
         }
         hostController.unregisterRunningServer(server.getServerName());
@@ -259,10 +259,10 @@ class ServerInventory implements ManagedServerLifecycleCallback {
                 }
                 server.setState(ServerState.MAX_FAILED);
             } catch(IOException e) {
-                log.error("Failed to start server " + serverName, e);
+                log.error("Failed to start server " + serverProcessName, e);
             }
         }
-        servers.remove(serverName);
+        servers.remove(serverProcessName);
     }
 
     private void checkState(final ManagedServer server, final ServerState expected) {
