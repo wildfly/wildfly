@@ -164,7 +164,11 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
         }
     }
 
-    private static class ManagementFuture<T> extends AsyncFutureTask<T>{
+    protected void setError(Exception e) {
+        future.failed(e);
+    }
+
+    static class ManagementFuture<T> extends AsyncFutureTask<T>{
         protected ManagementFuture() {
             super(null);
         }

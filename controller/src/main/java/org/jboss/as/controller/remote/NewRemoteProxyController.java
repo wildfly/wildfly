@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.NewModelController.OperationTransaction;
 import org.jboss.as.controller.NewProxyController;
@@ -62,6 +63,7 @@ import org.jboss.remoting3.CloseHandler;
  */
 public class NewRemoteProxyController implements NewProxyController, ManagementOperationHandler {
 
+    private final AtomicBoolean closed = new AtomicBoolean();
     private final PathAddress pathAddress;
     private final ManagementChannel channel;
     private final ExecutorService executorService;
@@ -78,7 +80,13 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
 
             @Override
             public void handleClose(Channel closed) {
-                activeRequests.clear();
+                NewRemoteProxyController.this.closed.set(true);
+                synchronized (activeRequests) {
+                    for (ExecuteRequestContext context : activeRequests.values()) {
+                        context.setError("Channel closed");
+                    }
+                    activeRequests.clear();
+                }
             }
         });
     }
@@ -95,80 +103,6 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
     public static NewRemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final ManagementChannel channel) {
         return new NewRemoteProxyController(executorService, pathAddress, addressTranslator, channel);
     }
-
-//    These methods are not used currently. Leave them there for now in case something needs to use them
-//    /**
-//     * Creates a new remote proxy controller connecting to a remote server. This creates a new remoting endpoint
-//     *
-//     * @param executorService the executor to use for the requests and for the endpoint
-//     * @param pathAddress the address within the model of the created proxy controller
-//     * @param hostName the host name of the remote server
-//     * @param port the port of the remote server
-//     * @param channelName the channel name
-//     * @return the proxy controller
-//     * @throws IOException if an error occurred
-//     * @throws ConnectException if we could not connect to the remote server
-//     */
-//    public static NewRemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final String hostName, final int port, String channelName) throws IOException {
-//        final ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
-//        try {
-//            configuration.setEndpointName("endpoint");
-//            configuration.setUriScheme("remote");
-//            configuration.setUri(new URI("remote://" + hostName +  ":" + port));
-//            configuration.setExecutor(executorService);
-//            configuration.setChannelFactory(new ManagementChannelFactory());
-//        } catch (URISyntaxException e) {
-//            throw new IOException(e);
-//        }
-//        return createConnection(configuration, executorService, pathAddress, channelName);
-//    }
-//
-//    /**
-//     * Creates a new remote proxy controller connecting to a remote server using an exisiting remoting endpoint
-//     *
-//     * @param executorService the executor to use for the requests
-//     * @param endpoint the remoting endpoing
-//     * @param pathAddress the address within the model of the created proxy controller
-//     * @param hostName the host name of the remote server
-//     * @param port the port of the remote server
-//     * @param channelName the channel name
-//     * @return the proxy controller
-//     * @throws IOException if an error occurred
-//     * @throws ConnectException if we could not connect to the remote server
-//     */
-//    public static NewRemoteProxyController create(final ExecutorService executorService, final Endpoint endpoint, final PathAddress pathAddress, final String hostName, final int port, String channelName) throws IOException {
-//        final ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
-//        try {
-//            configuration.setEndpoint(endpoint);
-//            configuration.setUri(new URI("remote://" + hostName +  ":" + port));
-//            configuration.setChannelFactory(new ManagementChannelFactory());
-//        } catch (URISyntaxException e) {
-//            throw new IOException(e);
-//        }
-//        return createConnection(configuration, executorService, pathAddress, channelName);
-//    }
-//
-//    private static NewRemoteProxyController createConnection(final ProtocolChannelClient.Configuration<ManagementChannel> config, final ExecutorService executorService, final PathAddress pathAddress, String channelName) throws IOException {
-//        final ProtocolChannelClient<ManagementChannel> client;
-//        try {
-//            client = ProtocolChannelClient.create(config);
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//        client.connect();
-//
-//        ManagementChannel channel ;
-//        try {
-//            channel = client.openChannel(channelName);
-//        } catch (IOException e) {
-//            client.close();
-//            throw e;
-//        }
-//        channel.startReceiving();
-//
-//        return new NewRemoteProxyController(executorService, pathAddress, channel);
-//
-//    }
 
     /** {@inheritDoc} */
     @Override
@@ -226,7 +160,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
                 ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
             } catch (Exception ignore) {
             }
-            // AutoGenerated
+            activeRequests.remove(batchId);
             throw new RuntimeException(e);
         }
     }
@@ -257,7 +191,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
         ExecuteRequest(final int batchId, final ModelNode operation, final OperationMessageHandler messageHandler, final ProxyOperationControl control, final OperationAttachments attachments) {
             super(batchId);
             this.operation = operation;
-            executeRequestContext = new ExecuteRequestContext(messageHandler, control, attachments);
+            executeRequestContext = new ExecuteRequestContext(this, messageHandler, control, attachments);
         }
 
         @Override
@@ -295,6 +229,10 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
             //TODO this needs cleaning up once the operation has been executed
             //activeRequests.remove(currentRequestId);
             return null;
+        }
+
+        protected void setError(Exception e) {
+            super.setError(e);
         }
     }
 
@@ -366,6 +304,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
      * Base class for handling {@link ProxyOperationControl} method calls done in the remote target controller
      */
     private abstract class ProxyOperationControlRequestHandler extends ManagementRequestHandler {
+        volatile ExecuteRequestContext requestContext;
         @Override
         protected void readRequest(final DataInput input) throws IOException {
             int batchId = getContext().getHeader().getBatchId();
@@ -373,7 +312,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
             ModelNode response = new ModelNode();
             response.readExternal(input);
 
-            ExecuteRequestContext requestContext = activeRequests.get(batchId);
+            requestContext = activeRequests.get(batchId);
             if (requestContext == null) {
                 throw new IOException("No active request found for proxy operation control " + batchId);
             }
@@ -410,7 +349,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
             ExecuteRequestContext context = activeRequests.remove(batchId);
             ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
             control.operationCompleted(response);
-            context.setTxCompleted();
+            context.setControlCompleted();
         }
     }
 
@@ -420,26 +359,30 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
      */
     private class OperationPreparedRequestHandler extends ProxyOperationControlRequestHandler {
         volatile int status;
-        final CountDownLatch completedLatch = new CountDownLatch(1);
-
 
         @Override
         void handle(final int batchId, final ProxyOperationControl control, final ModelNode response)  throws IOException {
-            final ExecuteRequestContext context = activeRequests.get(batchId);
             control.operationPrepared(new OperationTransaction() {
 
                 @Override
                 public void rollback() {
-                    status = NewModelControllerProtocol.PARAM_ROLLBACK;
-                    completedLatch.countDown();
-                    context.waitForTxCompleted();
+                    done(false);
                 }
 
                 @Override
                 public void commit() {
-                    status = NewModelControllerProtocol.PARAM_COMMIT;
-                    completedLatch.countDown();
-                    context.waitForTxCompleted();
+                    done(true);
+                }
+
+                private void done(boolean commit){
+                    status = commit ? NewModelControllerProtocol.PARAM_COMMIT : NewModelControllerProtocol.PARAM_ROLLBACK;
+                    requestContext.setTxCommittedOrRolledBack();
+                    try {
+                        requestContext.awaitControlCompleted();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("A timeout occurred waiting for the transaction to " + (commit ? "commit" : "rollback"));
+                    }
                 }
             }, response);
         }
@@ -449,7 +392,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
             output.write(NewModelControllerProtocol.PARAM_PREPARED);
             output.flush();
             try {
-                completedLatch.await();
+                requestContext.awaitTxCommittedOrRolledBack();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IOException("Thread was interrupted waiting for Tx commit/rollback");
@@ -459,12 +402,16 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
     }
 
     private static class ExecuteRequestContext {
+        final ExecuteRequest request;
         final OperationMessageHandler messageHandler;
         final ProxyOperationControl control;
         final OperationAttachments attachments;
-        final CountDownLatch txCompletedLatch = new CountDownLatch(1);
+        final CountDownLatch controlCompletedLatch = new CountDownLatch(1);
+        final CountDownLatch txCommittedOrRolledBackLatch = new CountDownLatch(1);
+        volatile String error;
 
-        public ExecuteRequestContext(final OperationMessageHandler messageHandler, final ProxyOperationControl control, final OperationAttachments attachments) {
+        public ExecuteRequestContext(final ExecuteRequest request, final OperationMessageHandler messageHandler, final ProxyOperationControl control, final OperationAttachments attachments) {
+            this.request = request;
             this.messageHandler = messageHandler;
             this.control = control;
             this.attachments = attachments;
@@ -482,16 +429,33 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
             return attachments;
         }
 
-        void waitForTxCompleted() {
-            try {
-                txCompletedLatch.await();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+        void awaitControlCompleted() throws InterruptedException {
+            controlCompletedLatch.await();
+        }
+
+        void setControlCompleted() {
+            controlCompletedLatch.countDown();
+        }
+
+        void awaitTxCommittedOrRolledBack() throws InterruptedException {
+            txCommittedOrRolledBackLatch.await();
+            if (error != null) {
+                throw new RuntimeException(error);
             }
         }
 
-        void setTxCompleted() {
-            txCompletedLatch.countDown();
+        void setTxCommittedOrRolledBack() {
+            txCommittedOrRolledBackLatch.countDown();
+            if (error != null) {
+                throw new RuntimeException(error);
+            }
+        }
+
+        synchronized void setError(String error) {
+            this.error = error;
+            txCommittedOrRolledBackLatch.countDown();
+            controlCompletedLatch.countDown();
+            request.setError(new Exception(error));
         }
     }
 

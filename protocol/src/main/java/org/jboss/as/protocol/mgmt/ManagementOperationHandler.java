@@ -27,6 +27,6 @@ package org.jboss.as.protocol.mgmt;
  * @version $Revision: 1.1 $
  */
 public interface ManagementOperationHandler {
-    //Byte getId();
+
     ManagementRequestHandler getRequestHandler(byte id);
 }

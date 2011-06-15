@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -58,6 +59,7 @@ import org.jboss.threads.AsyncFutureTask;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.xnio.IoUtils;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -440,6 +442,37 @@ public class RemoteProxyControllerProtocolTestCase {
         assertArrays(secondBytes, secondResult.get());
         assertArrays(new byte[0], thirdResult.get());
     }
+
+    @Test
+    public void testClosesBeforePrepare() throws Exception {
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        MockModelController controller = new MockModelController() {
+            @Override
+            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
+                IoUtils.safeClose(channels.getClientChannel());
+                latch.countDown();
+                IoUtils.safeClose(channels.getServerChannel());
+                return new ModelNode();
+            }
+        };
+
+        final NewRemoteProxyController proxyController = setupProxyHandlers(controller);
+
+        ModelNode operation = new ModelNode();
+        operation.get("test").set("123");
+
+        CommitProxyOperationControl commitControl = new CommitProxyOperationControl();
+        try {
+            proxyController.execute(operation,
+                    null,
+                    commitControl,
+                    null);
+            Assert.fail("Should have failed");
+        } catch (Exception expected) {
+        }
+    }
+
 
     private void assertArrays(byte[] expected, byte[] actual) {
         assertEquals(expected.length, actual.length);
