@@ -24,6 +24,8 @@ package org.jboss.as.test.spec.ejb3.security.runas;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 
+import java.security.Principal;
+
 import org.jboss.as.test.spec.ejb3.security.WhoAmI;
 
 /**
@@ -34,4 +36,19 @@ import org.jboss.as.test.spec.ejb3.security.WhoAmI;
 @Stateless
 @RolesAllowed("Role2")
 public class WhoAmIBean extends org.jboss.as.test.spec.ejb3.security.base.WhoAmIBean implements WhoAmI {
+
+    // TODO - Do I really need to override methods and do they really need to be annotated individually.
+
+    @Override
+    @RolesAllowed("Role2")
+    public Principal getCallerPrincipal() {
+        return super.getCallerPrincipal();
+    }
+
+    @Override
+    @RolesAllowed("Role2")
+    public boolean doIHaveRole(String roleName) {
+        return super.doIHaveRole(roleName);
+    }
+
 }
