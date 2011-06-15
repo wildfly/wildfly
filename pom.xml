@@ -50,7 +50,6 @@
         <!-- Build configuration -->
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
-        <maven.min.version>3.0-beta-1</maven.min.version>
 
         <!-- Dependency versions. Please keep alphabetical -->
 
