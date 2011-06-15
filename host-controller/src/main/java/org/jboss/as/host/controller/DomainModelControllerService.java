@@ -354,16 +354,16 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     private class DelegatingServerInventory implements NewServerInventory {
-        public void serverRegistered(String serverName, ManagementChannel channel, ProxyCreatedCallback callback) {
-            serverInventory.serverRegistered(serverName, channel, callback);
+        public void serverRegistered(String serverProcessName, ManagementChannel channel, ProxyCreatedCallback callback) {
+            serverInventory.serverRegistered(serverProcessName, channel, callback);
         }
 
-        public void serverStartFailed(String serverName) {
-            serverInventory.serverStartFailed(serverName);
+        public void serverStartFailed(String serverProcessName) {
+            serverInventory.serverStartFailed(serverProcessName);
         }
 
-        public void serverStopped(String serverName) {
-            serverInventory.serverStopped(serverName);
+        public void serverStopped(String serverProcessName) {
+            serverInventory.serverStopped(serverProcessName);
         }
 
         public String getServerProcessName(String serverName) {

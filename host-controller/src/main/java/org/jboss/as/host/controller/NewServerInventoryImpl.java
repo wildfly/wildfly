@@ -80,6 +80,10 @@ public class NewServerInventoryImpl implements NewServerInventory {
         return ManagedServer.getServerProcessName(serverName);
     }
 
+    public String getProcessServerName(String processName) {
+        return ManagedServer.getServerName(processName);
+    }
+
     public synchronized Map<String, ProcessInfo> determineRunningProcesses(){
         processInventoryLatch = new CountDownLatch(1);
         try {
@@ -220,18 +224,18 @@ public class NewServerInventoryImpl implements NewServerInventory {
 
     /** {@inheritDoc} */
     @Override
-    public void serverRegistered(final String serverName, final ManagementChannel channel, ProxyCreatedCallback callback) {
+    public void serverRegistered(final String serverProcessName, final ManagementChannel channel, ProxyCreatedCallback callback) {
         try {
-            final ManagedServer server = servers.get(serverName);
+            final ManagedServer server = servers.get(serverProcessName);
             if (server == null) {
-                log.errorf("No server called %s available", serverName);
+                log.errorf("No server called %s available", serverProcessName);
                 return;
             }
 
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 @Override
                 public void handleClose(Channel closed) {
-                    domainController.unregisterRunningServer(serverName);
+                    domainController.unregisterRunningServer(serverProcessName);
                 }
             });
 
@@ -241,7 +245,7 @@ public class NewServerInventoryImpl implements NewServerInventory {
             }
             server.setState(ServerState.STARTED);
 
-            final PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
+            final PathElement element = PathElement.pathElement(RUNNING_SERVER, server.getServerName());
             final NewProxyController serverController = NewRemoteProxyController.create(Executors.newCachedThreadPool(),
                     PathAddress.pathAddress(PathElement.pathElement(HOST, domainController.getLocalHostInfo().getLocalHostName()), element),
                     ProxyOperationAddressTranslator.SERVER,
@@ -253,16 +257,16 @@ public class NewServerInventoryImpl implements NewServerInventory {
 
             server.resetRespawnCount();
         } catch (final Exception e) {
-            log.errorf(e, "Could not start server %s", serverName);
+            log.errorf(e, "Could not start server %s", serverProcessName);
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    public void serverStartFailed(String serverName) {
-        final ManagedServer server = servers.get(serverName);
+    public void serverStartFailed(String serverProcessName) {
+        final ManagedServer server = servers.get(serverProcessName);
         if (server == null) {
-            log.errorf("No server called %s exists", serverName);
+            log.errorf("No server called %s exists", serverProcessName);
             return;
         }
         checkState(server, ServerState.STARTING);
@@ -271,10 +275,10 @@ public class NewServerInventoryImpl implements NewServerInventory {
 
     /** {@inheritDoc} */
     @Override
-    public void serverStopped(String serverName) {
-        final ManagedServer server = servers.get(serverName);
+    public void serverStopped(String serverProcessName) {
+        final ManagedServer server = servers.get(serverProcessName);
         if (server == null) {
-            log.errorf("No server called %s exists for stop", serverName);
+            log.errorf("No server called %s exists for stop", serverProcessName);
             return;
         }
         domainController.unregisterRunningServer(server.getServerName());
@@ -289,10 +293,10 @@ public class NewServerInventoryImpl implements NewServerInventory {
                 }
                 server.setState(ServerState.MAX_FAILED);
             } catch(IOException e) {
-                log.error("Failed to start server " + serverName, e);
+                log.error("Failed to start server " + serverProcessName, e);
             }
         }
-        servers.remove(serverName);
+        servers.remove(serverProcessName);
     }
 
     public void stopServers(int gracefulTimeout) {
