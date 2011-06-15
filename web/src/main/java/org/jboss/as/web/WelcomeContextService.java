@@ -81,11 +81,11 @@ class WelcomeContextService implements Service<Context> {
                 context.addWelcomeFile("index.html");
 
                 Wrapper wrapper = context.createWrapper();
-                wrapper.setName("DefaultServlet");
+                wrapper.setName("default");
                 wrapper.setServletClass("org.apache.catalina.servlets.DefaultServlet");
                 context.addChild(wrapper);
 
-                context.addServletMapping("/", "DefaultServlet");
+                context.addServletMapping("/", "default");
                 context.addMimeMapping("html", "text/html");
                 context.addMimeMapping("jpg", "image/jpeg");
 
