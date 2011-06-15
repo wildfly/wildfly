@@ -169,9 +169,6 @@ public class BaseDataSourceModifyHandler extends BaseOperationCommand {
         RequestParamArgWithValue poolUseStrictMin =  new RequestParamArgWithValue("pool-use-strict-min", this, new ValueCompleter("pool-use-strict-min"));
         poolUseStrictMin.addRequiredPreceding(lastRequired);
 
-        RequestParamArgWithValue securityDomain = new RequestParamArgWithValue("security-domain", this, new ValueCompleter("security-domain"));
-        securityDomain.addRequiredPreceding(lastRequired);
-
         RequestParamArgWithValue blockingTimeoutWait =  new RequestParamArgWithValue("blocking-timeout-wait-millis", this, new ValueCompleter("blocking-timeout-wait-millis"));
         blockingTimeoutWait.addRequiredPreceding(lastRequired);
 
@@ -186,9 +183,6 @@ public class BaseDataSourceModifyHandler extends BaseOperationCommand {
 
         RequestParamArgWithValue useFastFail =  new RequestParamArgWithValue("use-fast-fail", this,  new ValueCompleter("use-fast-fail"));
         useFastFail.addRequiredPreceding(lastRequired);
-
-        RequestParamArgWithValue useCCM =  new RequestParamArgWithValue("use-ccm", this, new ValueCompleter("use-ccm"));
-        useCCM.addRequiredPreceding(lastRequired);
     }
 
     public class ValueCompleter extends DefaultCompleter {
