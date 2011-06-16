@@ -29,7 +29,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import java.security.Principal;
 
-import static javax.ejb.TransactionAttributeType.NEVER;
+import static javax.ejb.TransactionAttributeType.SUPPORTS;
 
 /**
  * Concrete implementation to allow deployment of bean.
@@ -39,7 +39,7 @@ import static javax.ejb.TransactionAttributeType.NEVER;
 @Stateless
 @LocalBean
 @RolesAllowed("Role2")
-@TransactionAttribute(NEVER)
+@TransactionAttribute(SUPPORTS)
 public class WhoAmIBean extends org.jboss.as.test.spec.ejb3.security.base.WhoAmIBean implements WhoAmI {
 
     // TODO - Do I really need to override methods and do they really need to be annotated individually.
