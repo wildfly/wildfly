@@ -78,7 +78,7 @@ import org.jboss.logging.Logger;
  */
 class DomainApiHandler implements ManagementHttpHandler {
 
-    private static final String DOMAIN_API_CONTEXT = "/domain-api";
+    private static final String DOMAIN_API_CONTEXT = "/management";
     private static final String UPLOAD_REQUEST = DOMAIN_API_CONTEXT + "/add-content";
 
     private static Pattern MULTIPART_FD_BOUNDARY =  Pattern.compile("^multipart/form-data.*;\\s*boundary=(.*)$");
