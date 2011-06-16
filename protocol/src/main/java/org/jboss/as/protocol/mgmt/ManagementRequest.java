@@ -90,9 +90,9 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
 
             @Override
             public void run() {
-                final ManagementChannel channel = channelStrategy.getChannel();
 
                 try {
+                    final ManagementChannel channel = channelStrategy.getChannel();
                     //System.out.println("Executing " + ManagementRequest.this + " " + currentRequestId + "(" + batchId + ") - 0x" + Integer.toHexString(getRequestCode()));
                     //Ends up in writeRequest(ProtocolChannel, FlushableDataOutput)
                     channel.executeRequest(ManagementRequest.this, new DelegatingResponseHandler(channelStrategy));
