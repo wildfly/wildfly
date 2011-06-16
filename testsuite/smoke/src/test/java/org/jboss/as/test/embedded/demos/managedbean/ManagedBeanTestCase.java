@@ -30,11 +30,14 @@ import org.jboss.as.demos.managedbean.archive.SimpleManagedBean;
 import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.UrlAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.net.URL;
 
 /**
  *
@@ -50,8 +53,12 @@ public class ManagedBeanTestCase {
 
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class,"managedbean-example.jar");
-        jar.addAsManifestResource("archives/managedbean-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");
-        jar.addAsManifestResource("archives/managedbean-example.jar/META-INF/services/org.jboss.msc.service.ServiceActivator", "services/org.jboss.msc.service.ServiceActivator");
+        // AS7-1022: add as UrlAsset to workaround a Shrinkwrap bug
+        final URL manifestURL = ManagedBeanTestCase.class.getClassLoader().getResource("archives/managedbean-example.jar/META-INF/MANIFEST.MF");
+        jar.addAsManifestResource(new UrlAsset(manifestURL), "MANIFEST.MF");
+        // AS7-1022: add as UrlAsset to workaround a Shrinkwrap bug
+        final URL serviceActivatorURL = ManagedBeanTestCase.class.getClassLoader().getResource("archives/managedbean-example.jar/META-INF/services/org.jboss.msc.service.ServiceActivator");
+        jar.addAsManifestResource(new UrlAsset(serviceActivatorURL), "services/org.jboss.msc.service.ServiceActivator");
         jar.addAsManifestResource(EmptyAsset.INSTANCE,"beans.xml");
         jar.addPackage(SimpleManagedBean.class.getPackage());
         jar.addPackage(ManagedBeanTestCase.class.getPackage());
