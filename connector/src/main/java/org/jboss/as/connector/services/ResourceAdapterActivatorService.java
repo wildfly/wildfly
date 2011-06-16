@@ -50,6 +50,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import javax.swing.plaf.basic.BasicTreeUI;
+
 /**
  * A ResourceAdapterDeploymentService.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
@@ -84,8 +86,14 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
             ResourceAdapterActivator activator = new ResourceAdapterActivator(container, new URL(pathname), deploymentName,
                     new File(pathname), cl, cmd, ijmd);
             activator.setConfiguration(getConfig().getValue());
-
-            deploymentMD = activator.doDeploy();
+            // FIXME!!, this should probably be done by IJ and not the service
+            ClassLoader old = Thread.currentThread().getContextClassLoader();
+            try {
+               Thread.currentThread().setContextClassLoader(cl);
+               deploymentMD = activator.doDeploy();
+            } finally {
+               Thread.currentThread().setContextClassLoader(old);
+            }
         } catch (Throwable e) {
             throw new StartException("Failed to activate resource adapter " + deploymentName, e);
         }
