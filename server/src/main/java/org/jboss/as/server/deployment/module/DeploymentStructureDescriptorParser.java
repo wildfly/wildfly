@@ -195,7 +195,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             elementsMap.put(new QName(NAMESPACE, "exclude-set"), Element.EXCLUDE_SET);
             elementsMap.put(new QName(NAMESPACE, "filter"), Element.FILTER);
             elementsMap.put(new QName(NAMESPACE, "transformers"), Element.TRANSFORMERS);
-            elementsMap.put(new QName(NAMESPACE, "transformer"), Element.TRANSFORMER);            
+            elementsMap.put(new QName(NAMESPACE, "transformer"), Element.TRANSFORMER);
             elements = elementsMap;
         }
 

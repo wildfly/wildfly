@@ -44,10 +44,18 @@ public class ClassFileTransformerProcessor implements DeploymentUnitProcessor {
         try {
             DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
             DelegatingClassFileTransformer transformer = deploymentUnit.getAttachment(DelegatingClassFileTransformer.ATTACHMENT_KEY);
-            Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-            ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-            for (String transformerClassName : moduleSpecification.getClassFileTransformers()) {
-                transformer.addTransformer((ClassFileTransformer) module.getClassLoader().loadClass(transformerClassName).newInstance());
+            // some modules do not install a transformer (e.g. OSGi)
+            if (transformer != null) {
+                Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+                ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+                for (String transformerClassName : moduleSpecification.getClassFileTransformers()) {
+                    transformer.addTransformer((ClassFileTransformer) module.getClassLoader().loadClass(transformerClassName).newInstance());
+                }
+                // activate transformer only after all delegate transformers have been added
+                // so that transformers themselves are not instrumented
+                // activate transformer only after all delegate transformers have been added
+                // so that transformers themselves are not instrumented
+                transformer.setActive(true);
             }
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException("Failed to instantiate a ClassFileTransformer: ", e);

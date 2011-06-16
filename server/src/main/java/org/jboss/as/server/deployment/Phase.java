@@ -303,6 +303,7 @@ public enum Phase {
     // POST_MODULE
     public static final int POST_MODULE_INJECTION_ANNOTATION            = 0x0100;
     public static final int POST_MODULE_REFLECTION_INDEX                = 0x0200;
+    public static final int POST_MODULE_TRANSFORMER                     = 0x0201;
     public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
     public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0400;
     public static final int POST_MODULE_EJB_DD_REMOVE_METHOD            = 0x0500;

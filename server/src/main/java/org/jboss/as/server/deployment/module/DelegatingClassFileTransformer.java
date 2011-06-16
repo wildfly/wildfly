@@ -39,6 +39,8 @@ public class DelegatingClassFileTransformer implements ClassFileTransformer {
 
     public static final AttachmentKey<DelegatingClassFileTransformer> ATTACHMENT_KEY = AttachmentKey.create(DelegatingClassFileTransformer.class);
 
+    private volatile boolean active = false;
+
     public DelegatingClassFileTransformer() {
     }
 
@@ -46,13 +48,19 @@ public class DelegatingClassFileTransformer implements ClassFileTransformer {
         delegateTransformers.add(classFileTransformer);
     }
 
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] originalBuffer) throws IllegalClassFormatException {
         byte[] transformedBuffer = originalBuffer;
-        for (ClassFileTransformer transformer : delegateTransformers) {
-            byte[] result = transformer.transform(loader, className, classBeingRedefined, protectionDomain, originalBuffer);
-            if (result != null) {
-                transformedBuffer = result;
+        if (active) {
+            for (ClassFileTransformer transformer : delegateTransformers) {
+                byte[] result = transformer.transform(loader, className, classBeingRedefined, protectionDomain, originalBuffer);
+                if (result != null) {
+                    transformedBuffer = result;
+                }
             }
         }
         return transformedBuffer;
