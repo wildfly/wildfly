@@ -38,8 +38,12 @@ import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementResponseContext;
 import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.HandleableCloseable.Key;
 import org.jboss.threads.AsyncFuture;
 
 
@@ -138,7 +142,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         ExecuteRequest(final int batchId, final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
             super(batchId);
             this.operation = operation;
-            executeRequestContext = new ExecuteRequestContext(messageHandler, attachments);
+            executeRequestContext = new ExecuteRequestContext(this, getContext(), messageHandler, attachments);
         }
 
         @Override
@@ -195,6 +199,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
             } finally {
                 ManagementBatchIdManager.DEFAULT.freeBatchId(getBatchId());
                 activeRequests.remove(getCurrentRequestId());
+                executeRequestContext.done();
                 System.out.println("---- Client finished response " + getBatchId());
             }
         }
@@ -278,10 +283,19 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
     private static class ExecuteRequestContext {
         final OperationMessageHandler messageHandler;
         final OperationAttachments attachments;
+        volatile boolean done;
+        volatile Key closableKey;
 
-        ExecuteRequestContext(final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
+        ExecuteRequestContext(final ExecuteRequest executeRequest, final ManagementResponseContext managementResponseContext, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
             this.messageHandler = messageHandler;
             this.attachments = attachments;
+            closableKey = managementResponseContext.getChannel().addCloseHandler(new CloseHandler<Channel>() {
+                public void handleClose(Channel closed) {
+                    if (!done) {
+                        executeRequest.setError(new Exception("Channel closed"));
+                    }
+                }
+            });
         }
 
         OperationMessageHandler getMessageHandler() {
@@ -290,6 +304,11 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
 
         OperationAttachments getAttachments() {
             return attachments;
+        }
+
+        void done() {
+            closableKey.remove();
+            this.done = true;
         }
     }
 }

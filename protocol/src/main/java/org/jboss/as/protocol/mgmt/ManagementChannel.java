@@ -189,7 +189,7 @@ public class ManagementChannel extends ProtocolChannel {
             if (responseHandler == null) {
                 throw new IOException("No response handler for request " + header.getResponseId());
             }
-            responseHandler.setContext(new ManagementResponseContext(header));
+            responseHandler.setContext(new ManagementResponseContext(header, ManagementChannel.this));
 
             try {
                 responseHandler.readResponse(input);

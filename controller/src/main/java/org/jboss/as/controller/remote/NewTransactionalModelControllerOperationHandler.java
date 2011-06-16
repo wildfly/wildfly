@@ -82,14 +82,6 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
             operation.readExternal(input);
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
             attachmentsLength = input.readInt();
-
-            //TODO make sure this is only added once
-            getContext().getChannel().addCloseHandler(new CloseHandler<Channel>() {
-                @Override
-                public void handleClose(Channel closed) {
-                }
-            });
-
         }
 
         @Override

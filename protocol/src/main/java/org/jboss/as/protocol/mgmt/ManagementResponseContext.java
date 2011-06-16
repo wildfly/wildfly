@@ -26,9 +26,11 @@ package org.jboss.as.protocol.mgmt;
  */
 public class ManagementResponseContext {
     final ManagementResponseHeader responseHeader;
+    final ManagementChannel channel;
 
-    ManagementResponseContext(ManagementResponseHeader responseHeader) {
+    ManagementResponseContext(ManagementResponseHeader responseHeader, ManagementChannel channel) {
         this.responseHeader = responseHeader;
+        this.channel = channel;
     }
 
     /**
@@ -37,5 +39,9 @@ public class ManagementResponseContext {
      */
     public ManagementResponseHeader getResponse() {
         return responseHeader;
+    }
+
+    public ManagementChannel getChannel() {
+        return channel;
     }
 }
