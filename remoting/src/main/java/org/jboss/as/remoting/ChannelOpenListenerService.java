@@ -80,6 +80,7 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
     @Override
     public void start(StartContext context) throws StartException {
         try {
+            System.out.println("--------- Registering channel listener for " + channelName);
             endpointValue.getValue().registerService(channelName, this, optionMap);
         } catch (Exception e) {
             throw new StartException(e);

@@ -148,33 +148,60 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
 
         @Override
         protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-            //TODO Cleanup: this could leak if something goes wrong in the calling code
-            activeRequests.put(getBatchId(), executeRequestContext);
+            try {
+                System.out.println("---- Client executing request " + getBatchId());
+                activeRequests.put(getBatchId(), executeRequestContext);
 
-            output.write(NewModelControllerProtocol.PARAM_OPERATION);
-            operation.writeExternal(output);
-            output.write(NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
-            int inputStreamLength = 0;
-            if (executeRequestContext.getAttachments() != null) {
-                List<InputStream> streams = executeRequestContext.getAttachments().getInputStreams();
-                if (streams != null) {
-                    inputStreamLength = streams.size();
+                output.write(NewModelControllerProtocol.PARAM_OPERATION);
+                operation.writeExternal(output);
+                output.write(NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
+                int inputStreamLength = 0;
+                if (executeRequestContext.getAttachments() != null) {
+                    List<InputStream> streams = executeRequestContext.getAttachments().getInputStreams();
+                    if (streams != null) {
+                        inputStreamLength = streams.size();
+                    }
                 }
+                output.writeInt(inputStreamLength);
+            } catch (Exception e) {
+                super.setError(e);
+                if (e instanceof IOException) {
+                    throw (IOException)e;
+                }
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException)e;
+                }
+                throw new IOException(e);
             }
-            output.writeInt(inputStreamLength);
         }
 
         @Override
         protected ModelNode readResponse(final DataInput input) throws IOException {
+            System.out.println("---- Client getting response " + getBatchId());
             try {
                 ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_RESPONSE);
                 ModelNode node = new ModelNode();
                 node.readExternal(input);
                 return node;
+            } catch (Exception e) {
+                super.setError(e);
+                if (e instanceof IOException) {
+                    throw (IOException)e;
+                }
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException)e;
+                }
+                throw new IOException(e);
             } finally {
                 ManagementBatchIdManager.DEFAULT.freeBatchId(getBatchId());
                 activeRequests.remove(getCurrentRequestId());
+                System.out.println("---- Client finished response " + getBatchId());
             }
+        }
+
+        @Override
+        protected void setError(Exception e) {
+            super.setError(e);
         }
     }
 
@@ -187,6 +214,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         @Override
         protected void readRequest(final DataInput input) throws IOException {
             int batchId = getContext().getHeader().getBatchId();
+            System.out.println("--- Client got report request " +  batchId);
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
             MessageSeverity severity = Enum.valueOf(MessageSeverity.class, input.readUTF());
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_MESSAGE);
@@ -199,6 +227,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
             if (requestContext.getMessageHandler() != null) {
                 requestContext.getMessageHandler().handleReport(severity, message);
             }
+            System.out.println("--- Client handled report request " +  batchId);
         }
 
         @Override
@@ -215,6 +244,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         @Override
         protected void readRequest(final DataInput input) throws IOException {
             int batchId = getContext().getHeader().getBatchId();
+            System.out.println("--- Client got inputstream request " +  batchId);
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
             int index = input.readInt();
 
@@ -241,6 +271,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
             output.writeInt(bytes.length);
             output.write(NewModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
             output.write(bytes);
+            System.out.println("--- Client handled inputstream request " +  getContext().getHeader().getBatchId());
         }
     }
 
@@ -248,16 +279,16 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         final OperationMessageHandler messageHandler;
         final OperationAttachments attachments;
 
-        public ExecuteRequestContext(final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
+        ExecuteRequestContext(final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
             this.messageHandler = messageHandler;
             this.attachments = attachments;
         }
 
-        public OperationMessageHandler getMessageHandler() {
+        OperationMessageHandler getMessageHandler() {
             return messageHandler;
         }
 
-        public OperationAttachments getAttachments() {
+        OperationAttachments getAttachments() {
             return attachments;
         }
     }
