@@ -333,7 +333,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         }
         scopedPuName = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, searchName);
         if (null == scopedPuName) {
-            classDescription.setInvalid("Can't find a deployment unit named " + puName.asString() + " at " + deploymentUnit);
+            classDescription.setInvalid("Can't find a " + (puName!=null?"persistence unit named" + puName:"default persistence unit") + " at " + deploymentUnit);
             return null;
         }
         return scopedPuName;
