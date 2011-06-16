@@ -85,6 +85,10 @@ class ManagedServer implements ModelController {
         return SERVER_PROCESS_NAME_PREFIX + serverName;
     }
 
+    public static boolean isServerProcess(String serverProcessName) {
+        return serverProcessName.startsWith(SERVER_PROCESS_NAME_PREFIX);
+    }
+
     public static String getServerName(String serverProcessName) {
         return serverProcessName.substring(SERVER_PROCESS_NAME_PREFIX.length());
     }

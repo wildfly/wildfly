@@ -304,8 +304,10 @@ public class NewServerInventoryImpl implements NewServerInventory {
     public void stopServers(int gracefulTimeout) {
         Map<String, ProcessInfo> processInfoMap = determineRunningProcesses();
         for (String serverProcessName : processInfoMap.keySet()) {
-            String serverName = ManagedServer.getServerName(serverProcessName);
-            stopServer(serverName, gracefulTimeout);
+            if (ManagedServer.isServerProcess(serverProcessName)) {
+                String serverName = ManagedServer.getServerName(serverProcessName);
+                stopServer(serverName, gracefulTimeout);
+            }
         }
     }
 
