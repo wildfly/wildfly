@@ -21,18 +21,6 @@
  */
 package org.jboss.as.test.spec.ejb3.security;
 
-import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import javax.ejb.EJB;
-import javax.security.auth.login.LoginContext;
-import java.security.Principal;
-import java.util.logging.Logger;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.spec.common.HttpRequest;
@@ -45,6 +33,19 @@ import org.jboss.util.Base64;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.ejb.EJB;
+import javax.ejb.EJBAccessException;
+import javax.security.auth.login.LoginContext;
+import java.security.Principal;
+import java.util.logging.Logger;
+
+import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -53,11 +54,11 @@ public class RunAsTestCase {
 
     private static final Logger log = Logger.getLogger(RunAsTestCase.class.getName());
 
-    @EJB(mappedName = "java:global/ejb3security/WhoAmIBean")
+    @EJB(mappedName = "java:global/ejb3security/WhoAmIBean!org.jboss.as.test.spec.ejb3.security.WhoAmI")
     private WhoAmI whoAmIBean;
 
-    @EJB(mappedName = "java:global/ejb3security/EntryBean")
-    private Entry entryBean;
+    @EJB(mappedName = "java:global/ejb3security/EntryBean!org.jboss.as.test.spec.ejb3.security.runas.EntryBean")
+    private EntryBean entryBean;
 
     /*
      * isCallerInRole Scenarios with @RunAs Defined
@@ -89,7 +90,7 @@ public class RunAsTestCase {
         try {
             String[] response = entryBean.doubleWhoAmI();
             assertEquals("user1", response[0]);
-            assertEquals("anonymous", response[1]);
+            assertEquals("run-as-principal", response[1]);
         } finally {
             lc.logout();
         }
@@ -146,6 +147,16 @@ public class RunAsTestCase {
             assertTrue(response[1]);
         } finally {
             lc.logout();
+        }
+    }
+
+    @Test
+    public void testOnlyRole1() {
+        try {
+            entryBean.callOnlyRole1();
+            fail("Expected EJBAccessException");
+        } catch (EJBAccessException e) {
+            // good
         }
     }
 }

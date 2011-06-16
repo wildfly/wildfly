@@ -21,10 +21,15 @@
  */
 package org.jboss.as.test.spec.ejb3.security.runas;
 
-import javax.annotation.security.RunAs;
-import javax.ejb.Stateless;
-
 import org.jboss.as.test.spec.ejb3.security.Entry;
+
+import javax.annotation.security.RunAs;
+import javax.ejb.EJB;
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+
+import static javax.ejb.TransactionAttributeType.NEVER;
 
 /**
  * Concrete implementation to allow deployment of bean.
@@ -32,6 +37,14 @@ import org.jboss.as.test.spec.ejb3.security.Entry;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @Stateless
+@LocalBean
 @RunAs("Role2")
+@TransactionAttribute(NEVER)
 public class EntryBean extends org.jboss.as.test.spec.ejb3.security.base.EntryBean implements Entry {
+    @EJB
+    private WhoAmIBean whoAmIBean;
+
+    public void callOnlyRole1() {
+        whoAmIBean.onlyRole1();
+    }
 }
