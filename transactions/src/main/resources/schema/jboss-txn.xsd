@@ -56,11 +56,13 @@
                 recovery environment.
                 The "status-socket-binding" attribute is used to reference the correct socket binding to use for the
                 transaction status manager.
+                The "recovery-listener" attribute sets if recovery system should listen on a network socket or not.
             ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="socket-binding" type="xs:string" />
         <xs:attribute name="status-socket-binding" type="xs:string" />
+        <xs:attribute name="recovery-listener" type="xs:boolean" />
     </xs:complexType>
 
     <xs:complexType name="core-environment">
@@ -127,10 +129,14 @@
             <xs:documentation>
             <![CDATA[
                 The coordinator environment configuration.
+                enable-statistics - if recording of transaction statistics is enabled, false otherwise.
+                enable-tsm-status - if the transaction status manager (TSM) service, needed for out of process recovery, should be provided or not.
+                default-timeout - the default transaction lifetime, in seconds.
             ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="enable-statistics" type="xs:boolean" default="false"/>
+        <xs:attribute name="enable-tsm-status" type="xs:boolean" default="true"/>
         <xs:attribute name="default-timeout" type="xs:int" default="300" />
     </xs:complexType>
 

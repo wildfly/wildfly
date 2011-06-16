@@ -60,6 +60,11 @@ public class Descriptions {
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.RECOVERY_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.STATUS_BINDING, ModelDescriptionConstants.MIN_LENGTH).set(1);
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.RECOVERY_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.STATUS_BINDING, ModelDescriptionConstants.REQUIRED).set(true);
 
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.RECOVERY_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.STATUS_BINDING, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("recovery-environment.recovery-listener"));
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.RECOVERY_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.STATUS_BINDING, ModelDescriptionConstants.TYPE).set(ModelType.BOOLEAN);
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.RECOVERY_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.STATUS_BINDING, ModelDescriptionConstants.MIN_LENGTH).set(1);
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.RECOVERY_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.STATUS_BINDING, ModelDescriptionConstants.REQUIRED).set(false);
+
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("coordinator-environment"));
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.REQUIRED).set(false);
@@ -67,6 +72,10 @@ public class Descriptions {
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.ENABLE_STATISTICS, ModelDescriptionConstants.TYPE).set(ModelType.BOOLEAN);
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.ENABLE_STATISTICS, ModelDescriptionConstants.REQUIRED).set(false);
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.ENABLE_STATISTICS, ModelDescriptionConstants.DEFAULT).set(true);
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.ENABLE_TSM_STATUS, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("coordinator-environment.enable-tsm-status"));
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.ENABLE_TSM_STATUS, ModelDescriptionConstants.TYPE).set(ModelType.BOOLEAN);
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.ENABLE_TSM_STATUS, ModelDescriptionConstants.REQUIRED).set(false);
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.ENABLE_TSM_STATUS, ModelDescriptionConstants.DEFAULT).set(true);
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.DEFAULT_TIMEOUT, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("coordinator-environment.default-timeout"));
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.DEFAULT_TIMEOUT, ModelDescriptionConstants.TYPE).set(ModelType.BOOLEAN);
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.COORDINATOR_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, CommonAttributes.DEFAULT_TIMEOUT, ModelDescriptionConstants.REQUIRED).set(false);

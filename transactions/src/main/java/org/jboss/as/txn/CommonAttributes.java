@@ -33,11 +33,14 @@ interface CommonAttributes {
     String COORDINATOR_ENVIRONMENT = "coordinator-environment";
     String DEFAULT_TIMEOUT = "default-timeout";
     String ENABLE_STATISTICS = "enable-statistics";
+    /** transaction status manager (TSM) service, needed for out of process recovery, should be provided or not */
+    String ENABLE_TSM_STATUS = "enable-tsm-status";
     String NODE_IDENTIFIER = "node-identifier";
     String OBJECT_STORE = "object-store";
     /** The com.arjuna.ats.arjuna.utils.Process implementation type */
     String PROCESS_ID = "process-id";
     String RECOVERY_ENVIRONMENT = "recovery-environment";
+    String RECOVERY_LISTENER = "recovery-environment";
     /** The process-id/socket element */
     String SOCKET = "socket";
     /** The process-id/socket attribute for max ports */

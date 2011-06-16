@@ -64,6 +64,11 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
     private final InjectedValue<SocketBinding> statusBindingInjector = new InjectedValue<SocketBinding>();
 
     private RecoveryManagerService recoveryManagerService;
+    private boolean recoveryListener;
+
+    ArjunaRecoveryManagerService(boolean recoveryListener) {
+        this.recoveryListener = recoveryListener;
+    }
 
     public synchronized void start(StartContext context) throws StartException {
         final ORB orb = orbInjector.getValue();
@@ -79,6 +84,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
             final SocketBinding statusBinding = statusBindingInjector.getValue();
             recoveryEnvironmentBean.setTransactionStatusManagerInetAddress(statusBinding.getSocketAddress().getAddress());
             recoveryEnvironmentBean.setTransactionStatusManagerPort(statusBinding.getSocketAddress().getPort());
+            recoveryEnvironmentBean.setRecoveryListener(recoveryListener);
 
             final List<String> recoveryExtensions = new ArrayList<String>();
             recoveryExtensions.add(AtomicActionRecoveryModule.class.getName());
