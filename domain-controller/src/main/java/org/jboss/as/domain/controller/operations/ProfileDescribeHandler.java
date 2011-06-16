@@ -49,6 +49,7 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -76,7 +77,7 @@ public class ProfileDescribeHandler implements NewStepHandler, DescriptionProvid
         final ModelNode profile = context.readModel(PathAddress.EMPTY_ADDRESS);
         result.setEmptyList();
 
-        final ModelNodeRegistration registry = context.getModelNodeRegistration();
+        final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
         final AtomicReference<ModelNode> failureRef = new AtomicReference<ModelNode>();
 
         final ModelNode subsystemResults = new ModelNode().setEmptyList();

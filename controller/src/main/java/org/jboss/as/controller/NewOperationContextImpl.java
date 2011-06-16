@@ -54,6 +54,8 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.registry.DelegatingImmutableModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -94,6 +96,8 @@ final class NewOperationContextImpl implements NewOperationContext {
     private final ControlledProcessState processState;
     /** Tracks whether any steps have gotten write access to the model */
     private final Set<PathAddress> affectsModel;
+    /** Tracks whether any steps have gotten write access to the management resource registration*/
+    private boolean affectsResourceRegistration;
 
     private boolean respectInterruption = true;
     private PathAddress modelAddress;
@@ -504,7 +508,7 @@ final class NewOperationContextImpl implements NewOperationContext {
     }
 
 
-    public ModelNodeRegistration getModelNodeRegistration() {
+    public ModelNodeRegistration getModelNodeRegistrationForUpdate() {
         final PathAddress address = modelAddress;
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
@@ -514,7 +518,22 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage != Stage.MODEL) {
             throw new IllegalStateException("Stage MODEL is already complete");
         }
+        if (!affectsResourceRegistration) {
+            takeWriteLock();
+            affectsResourceRegistration = true;
+        }
         return modelController.getRootRegistration().getSubModel(address);
+    }
+
+
+    public ImmutableModelNodeRegistration getModelNodeRegistration() {
+        final PathAddress address = modelAddress;
+        assert Thread.currentThread() == initiatingThread;
+        Stage currentStage = this.currentStage;
+        if (currentStage == null || currentStage == Stage.DONE) {
+            throw new IllegalStateException("Operation already complete");
+        }
+        return new DelegatingImmutableModelNodeRegistration(modelController.getRootRegistration().getSubModel(address));
     }
 
     public ServiceRegistry getServiceRegistry(final boolean modify) throws UnsupportedOperationException {
@@ -777,12 +796,20 @@ final class NewOperationContextImpl implements NewOperationContext {
         return model;
     }
 
+    public void acquireControllerLock() {
+        takeWriteLock();
+    }
+
     public boolean isModelAffected() {
         return affectsModel.size() > 0;
     }
 
     public boolean isRuntimeAffected() {
         return affectsRuntime;
+    }
+
+    public boolean isResourceRegistryAffected() {
+        return affectsResourceRegistration;
     }
 
     public Stage getCurrentStage() {

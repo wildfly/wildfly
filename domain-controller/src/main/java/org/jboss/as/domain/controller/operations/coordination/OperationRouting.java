@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
@@ -49,7 +50,7 @@ import org.jboss.dmr.ModelNode;
 public class OperationRouting {
 
     public static OperationRouting determineRouting(final ModelNode operation, final LocalHostControllerInfo localHostControllerInfo,
-                                                    final ModelNodeRegistration registry) {
+                                                    final ImmutableModelNodeRegistration registry) {
         System.out.println("Finding routing for " + operation.require(OP).asString() + " from " +
                             operation.get(OP_ADDR));
         OperationRouting routing = null;
@@ -107,7 +108,7 @@ public class OperationRouting {
                     Set<String> allHosts = new HashSet<String>();
                     boolean twoStep = false;
                     for (ModelNode step : operation.get(STEPS).asList()) {
-                        ModelNodeRegistration stepRegistry = registry.getSubModel(PathAddress.pathAddress(step.get(OP_ADDR)));
+                        ImmutableModelNodeRegistration stepRegistry = registry.getSubModel(PathAddress.pathAddress(step.get(OP_ADDR)));
                         OperationRouting stepRouting = determineRouting(step, localHostControllerInfo, stepRegistry);
                         if (stepRouting.isTwoStep()) {
                             twoStep = true;

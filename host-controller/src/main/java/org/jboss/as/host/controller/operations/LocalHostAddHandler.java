@@ -77,7 +77,7 @@ public class LocalHostAddHandler implements NewStepHandler, DescriptionProvider 
         final String hostName = operation.require(NAME).asString();
         model.get(NAME).set(hostName);
 
-        context.getModelNodeRegistration().registerSubModel(PathElement.pathElement(HOST, hostName), registration);
+        context.getModelNodeRegistrationForUpdate().registerSubModel(PathElement.pathElement(HOST, hostName), registration);
 
         if (context.getType() == NewOperationContext.Type.SERVER) {
             context.addStep(new NewStepHandler() {

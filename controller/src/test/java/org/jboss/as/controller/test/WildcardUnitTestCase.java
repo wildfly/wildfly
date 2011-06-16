@@ -47,6 +47,7 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
+import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -129,7 +130,7 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
         /** {@inheritDoc} */
         public void execute(NewOperationContext context, ModelNode operation) {
 
-            final ModelNodeRegistration registry = context.getModelNodeRegistration();
+            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final DescriptionProvider descriptionProvider = registry.getModelDescription(address);
             if(descriptionProvider == null) {
