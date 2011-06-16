@@ -23,6 +23,7 @@
 package org.jboss.as.domain.controller.operations.coordination;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
@@ -44,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewOperationContext;
@@ -66,14 +68,17 @@ public class DomainRolloutStepHandler implements NewStepHandler {
 
     private final DomainOperationContext domainOperationContext;
     private final Map<String, NewProxyController> hostProxies;
+    private final Map<String, NewProxyController> serverProxies;
     private final ExecutorService executorService;
     private final ModelNode providedRolloutPlan;
 
     public DomainRolloutStepHandler(final Map<String, NewProxyController> hostProxies,
+                                    final Map<String, NewProxyController> serverProxies,
                                     final DomainOperationContext domainOperationContext,
                                     final ModelNode rolloutPlan,
                                     final ExecutorService executorService) {
         this.hostProxies = hostProxies;
+        this.serverProxies = serverProxies;
         this.domainOperationContext = domainOperationContext;
         this.providedRolloutPlan = rolloutPlan;
         this.executorService = executorService;
@@ -82,18 +87,23 @@ public class DomainRolloutStepHandler implements NewStepHandler {
     @Override
     public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
 
-        // 1) Confirm no host failures
-        boolean pushToServers = !domainOperationContext.isCompleteRollback();
+        // Clean out any response that leaked in from a MODEL/RUNTIME/VERIFY stage hander,
+        // as from now on any response comes from DomainResultHandler
+        context.getResult().set(new ModelNode());
+
+        // Confirm no host failures
+        boolean pushToServers = !domainOperationContext.hasHostLevelFailures();
         if (pushToServers) {
             ModelNode ourResult = domainOperationContext.getCoordinatorResult();
             if (ourResult.has(FAILURE_DESCRIPTION)) {
-                System.out.println("domain failed");
+                System.out.println("coordinator failed: " + ourResult);
                 pushToServers = false;
                 domainOperationContext.setCompleteRollback(true);
             } else {
+                System.out.println("coordinator succeeded: " + ourResult);
                 for (ModelNode hostResult : domainOperationContext.getHostControllerResults().values()) {
-                    if (!hostResult.hasDefined(OUTCOME) || !SUCCESS.equals(hostResult.get(OUTCOME))) {
-                        System.out.println("host failed");
+                    if (hostResult.has(FAILURE_DESCRIPTION)) {
+                        System.out.println("host failed: " + hostResult);
                         pushToServers = false;
                         domainOperationContext.setCompleteRollback(true);
                         break;
@@ -103,6 +113,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         }  else System.out.println("Complete rollback");
 
         if (pushToServers) {
+            domainOperationContext.setCompleteRollback(false);
             final Map<ServerIdentity, ProxyTask> tasks = new HashMap<ServerIdentity, ProxyTask>();
             try {
                 pushToServers(context, tasks);
@@ -114,11 +125,8 @@ public class DomainRolloutStepHandler implements NewStepHandler {
                 // TODO consider blocking until all return?
                 boolean completeRollback = domainOperationContext.isCompleteRollback();
                 for (Map.Entry<ServerIdentity, ProxyTask> entry : tasks.entrySet()) {
-                    NewModelController.OperationTransaction tx = entry.getValue().getRemoteTransaction();
-                    if (tx != null) {
-                        boolean rollback = completeRollback || domainOperationContext.isServerGroupRollback(entry.getKey().getServerGroupName());
-                        executorService.submit(new ProxyCommitRollbackTask(tx, rollback));
-                    }
+                    boolean rollback = completeRollback || domainOperationContext.isServerGroupRollback(entry.getKey().getServerGroupName());
+                    entry.getValue().finalizeTransaction(!rollback);
                 }
             }
         } else {
@@ -127,9 +135,11 @@ public class DomainRolloutStepHandler implements NewStepHandler {
     }
 
     private void pushToServers(final NewOperationContext context, final Map<ServerIdentity, ProxyTask> tasks) throws OperationFailedException {
+
+        final String localHostName = domainOperationContext.getLocalHostInfo().getLocalHostName();
         Map<String, ModelNode> hostResults = new HashMap<String, ModelNode>(domainOperationContext.getHostControllerResults());
         if (domainOperationContext.getCoordinatorResult().isDefined()) {
-            hostResults.put(domainOperationContext.getLocalHostInfo().getLocalHostName(), domainOperationContext.getCoordinatorResult());
+            hostResults.put(localHostName, domainOperationContext.getCoordinatorResult());
         }
         Map<String, Map<ServerIdentity, ModelNode>> opsByGroup = getOpsByGroup(hostResults);
         if (opsByGroup.size() > 0) {
@@ -140,21 +150,45 @@ public class DomainRolloutStepHandler implements NewStepHandler {
                 @Override
                 public ModelNode executeServerOperation(ServerIdentity server, ModelNode operation) {
                     NewProxyController proxy = hostProxies.get(server.getHostName());
+                    if (proxy == null) {
+                        if (localHostName.equals(server.getHostName())) {
+                            // Use our server proxies
+                            proxy = serverProxies.get(server.getServerName());
+                            if (proxy == null) {
+                                System.out.println("No proxy for " + server);
+                                return null;
+                            }
+                        }
+                    }
+                    // TODO this seems convoluted
                     ProxyTask task = new ProxyTask(server.getHostName(), operation, context, proxy);
                     tasks.put(server, task);
+
+                    boolean interrupted = false;
+                    Future<ModelNode> future = null;
+                    ModelNode result = null;
                     try {
-                        return task.call();
-                    } catch (Exception e) {
-                        ModelNode failure = new ModelNode();
-                        failure.get(FAILURE_DESCRIPTION).set(String.format("Caught exception invoking operation %s against address %s on host %s -- %s",
-                                operation.require(OP), PathAddress.pathAddress(operation.get(OP_ADDR)), server.getHostName(), e));
-                        return failure;
+                        future = executorService.submit(task);
+                        result = task.getResult();
+                    } catch (InterruptedException e) {
+                        interrupted = true;
+                        result = new ModelNode();
+                        result.get(OUTCOME).set(FAILED);
+                        result.get(FAILURE_DESCRIPTION).set(String.format("Interrupted waiting for result from server %s", server));
+                        task.cancel();
+                        future.cancel(true);
+                    } finally {
+                        if (interrupted) {
+                            Thread.currentThread().interrupt();
+                        }
                     }
+                    return result;
                 }
             };
             NewRolloutPlanController rolloutPlanController = new NewRolloutPlanController(opsByGroup, rolloutPlan, domainOperationContext, operationExecutor, executorService);
-            NewRolloutPlanController.Result result = rolloutPlanController.execute();
-            if (result == NewRolloutPlanController.Result.FAILED) {
+            NewRolloutPlanController.Result planResult = rolloutPlanController.execute();
+            System.out.println("Rollout plan result is " + planResult);
+            if (planResult == NewRolloutPlanController.Result.FAILED) {
                 domainOperationContext.setCompleteRollback(true);
             }
         }

@@ -50,9 +50,7 @@ public class NewRolloutPlanController implements ServerUpdateResultHandler {
         FAILED
     }
 
-    private final ModelNode rolloutPlan;
     private final boolean rollbackAcrossGroups;
-    private final ExecutorService executor;
     private final Runnable rootTask;
     private final Map<String, ServerUpdatePolicy> updatePolicies = new HashMap<String, ServerUpdatePolicy>();
     private final boolean shutdown;
@@ -67,8 +65,6 @@ public class NewRolloutPlanController implements ServerUpdateResultHandler {
                                     final NewServerOperationExecutor serverOperationExecutor,
                                     final ExecutorService executor) {
 
-        this.executor = executor;
-        this.rolloutPlan = rolloutPlan;
         this.domainOperationContext = domainOperationContext;
         this.serverOperationExecutor = serverOperationExecutor;
 
@@ -142,6 +138,9 @@ public class NewRolloutPlanController implements ServerUpdateResultHandler {
         for (ServerUpdatePolicy policy : updatePolicies.values()) {
             if (policy.isFailed()) {
                 domainOperationContext.setServerGroupRollback(policy.getServerGroupName(), true);
+                if (rollbackAcrossGroups) {
+                    domainOperationContext.setCompleteRollback(true);
+                }
                 result = (result == null || result == Result.FAILED) ? Result.FAILED : Result.PARTIAL;
             }
             else {
@@ -155,6 +154,7 @@ public class NewRolloutPlanController implements ServerUpdateResultHandler {
 
     @Override
     public void handleServerUpdateResult(ServerIdentity serverId, ModelNode response) {
+        System.out.println("From " + serverId + " received " + response);
         Map<ServerIdentity, ModelNode> groupResults = serverResults.get(serverId.getServerGroupName());
         if (groupResults == null) {
             groupResults = new ConcurrentHashMap<ServerIdentity, ModelNode>();
@@ -175,17 +175,5 @@ public class NewRolloutPlanController implements ServerUpdateResultHandler {
             result = new NewRunningServerUpdateTask(serverOperationExecutor, serverIdentity, serverOp, policy, this);
         }
         return result;
-    }
-
-    private boolean needsRollback(ModelNode serverResult) {
-        String outcome = serverResult.require(OUTCOME).asString();
-        if (CANCELLED.equals(outcome)) {
-            return false;
-        }
-        if (serverResult.hasDefined(ROLLED_BACK) && serverResult.get(ROLLED_BACK).asBoolean()) {
-            return false;
-        }
-        // TODO what about rollback-failure-description? For now we'll just try again
-        return true;
     }
 }

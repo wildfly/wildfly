@@ -44,6 +44,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Assembles the overall result for a domain operation from individual host and server results.
@@ -60,6 +61,10 @@ public class DomainResultHandler implements NewStepHandler {
 
     @Override
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+
+        // Wipe out any result that may have accumulated from previous handlers
+        context.getResult().set(new ModelNode());
+
         final boolean isDomain = isDomainOperation(operation);
         boolean shouldContinue = !collectDomainFailure(context, isDomain);
         shouldContinue = shouldContinue && !collectHostFailures(context, isDomain);
@@ -118,7 +123,9 @@ public class DomainResultHandler implements NewStepHandler {
     private ModelNode getSingleHostResult() {
         ModelNode singleHost = domainOperationContext.getCoordinatorResult();
         if (singleHost != null
-                && (!singleHost.hasDefined(RESULT) || IGNORED.equals(singleHost.get(RESULT).asString()))) {
+                && (!singleHost.hasDefined(RESULT)
+                    || (ModelType.STRING == singleHost.get(RESULT).getType()
+                        && IGNORED.equals(singleHost.get(RESULT).asString())))) {
             singleHost = null;
         }
         if (singleHost == null) {

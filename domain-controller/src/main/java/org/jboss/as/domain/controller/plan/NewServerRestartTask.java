@@ -56,9 +56,10 @@ class NewServerRestartTask extends AbstractServerUpdateTask {
 
         ModelNode restartOp = getRestartOp();
         ModelNode rsp = serverOperationExecutor.executeServerOperation(serverId, restartOp);
-        updatePolicy.recordServerResult(serverId, rsp);
-
-        resultHandler.handleServerUpdateResult(serverId, rsp);
+        if (rsp != null) {
+            updatePolicy.recordServerResult(serverId, rsp);
+            resultHandler.handleServerUpdateResult(serverId, rsp);
+        }
     }
 
     private ModelNode getRestartOp() {

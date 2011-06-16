@@ -103,6 +103,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final RemoteFileRepository remoteFileRepository;
     private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<ExecutorService>();
     private final Map<String, NewProxyController> hostProxies;
+    private final Map<String, NewProxyController> serverProxies;
     private final PrepareStepHandler prepareStepHandler;
     private ModelNodeRegistration modelNodeRegistration;
 
@@ -116,11 +117,12 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                                             final HostControllerEnvironment environment,
                                                             final ControlledProcessState processState) {
         final Map<String, NewProxyController> hostProxies = new ConcurrentHashMap<String, NewProxyController>();
+        final Map<String, NewProxyController> serverProxies = new ConcurrentHashMap<String, NewProxyController>();
         final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState);
-        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, hostProxies);
+        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, hostProxies, serverProxies);
         DomainModelControllerService service = new DomainModelControllerService(environment, processState,
                 hostControllerInfo, new HostControllerConfigurationPersister(environment),
-                hostProxies, prepareStepHandler);
+                hostProxies, serverProxies, prepareStepHandler);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(NewHostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.injectedExecutorService)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -132,6 +134,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final LocalHostControllerInfoImpl hostControllerInfo,
                                          final HostControllerConfigurationPersister configurationPersister,
                                          final Map<String, NewProxyController> hostProxies,
+                                         final Map<String, NewProxyController> serverProxies,
                                          final PrepareStepHandler prepareStepHandler) {
         super(NewOperationContext.Type.HOST, configurationPersister, processState, DomainDescriptionProviders.ROOT_PROVIDER,
                 prepareStepHandler);
@@ -141,6 +144,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.localFileRepository = new LocalFileRepository(environment);
         this.remoteFileRepository = new RemoteFileRepository(localFileRepository);
         this.hostProxies = hostProxies;
+        this.serverProxies = serverProxies;
         this.prepareStepHandler = prepareStepHandler;
     }
 
@@ -183,6 +187,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         Logger.getLogger("org.jboss.host.controller").info("Registering server " + pe.getValue());
         ModelNodeRegistration hostRegistration = modelNodeRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST)));
         hostRegistration.registerProxyController(pe, serverControllerClient);
+        serverProxies.put(pe.getValue(), serverControllerClient);
     }
 
     @Override
@@ -192,6 +197,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         Logger.getLogger("org.jboss.host.controller").info("Unregistering server " + serverName);
         ModelNodeRegistration hostRegistration = modelNodeRegistration.getSubModel(pa);
         hostRegistration.unregisterProxyController(pe);
+        serverProxies.remove(serverName);
     }
 
     @Override
