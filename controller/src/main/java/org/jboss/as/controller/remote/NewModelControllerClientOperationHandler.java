@@ -83,7 +83,6 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
         private int attachmentsLength;
 
         public ExecuteRequestHandler(boolean asynch) {
-            System.out.println("is asynch ");
             this.asynch = asynch;
         }
 
