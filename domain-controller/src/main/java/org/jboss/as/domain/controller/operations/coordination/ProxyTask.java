@@ -60,6 +60,7 @@ class ProxyTask implements Callable<ModelNode> {
     @Override
     public ModelNode call() throws Exception {
 
+        System.out.println("Sending " + operation + " to " + host);
         OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
 
         final AtomicReference<NewModelController.OperationTransaction> txRef = new AtomicReference<NewModelController.OperationTransaction>();

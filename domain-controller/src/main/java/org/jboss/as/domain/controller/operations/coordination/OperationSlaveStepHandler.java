@@ -23,6 +23,7 @@
 package org.jboss.as.domain.controller.operations.coordination;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
@@ -48,6 +49,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
@@ -70,25 +73,33 @@ public class OperationSlaveStepHandler {
         ModelNode response = new ModelNode();
         addSteps(context, operation, response, true);
         context.completeStep();
+
+        if (response.has(RESULT)) {
+            context.getResult().set(response.get(RESULT));
+        }
+        if (response.has(FAILURE_DESCRIPTION)) {
+            context.getFailureDescription().set(response.get(FAILURE_DESCRIPTION));
+        }
     }
 
     void addSteps(NewOperationContext context, ModelNode operation, ModelNode response, boolean recordResponse) throws OperationFailedException {
 
+        final PathAddress originalAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final ImmutableModelNodeRegistration originalRegistration = context.getModelNodeRegistration();
         ParsedOp parsedOp = parseOperation(operation, 0, context.getModel());
         ModelNode domainOp = parsedOp.getDomainOperation();
 
         if (domainOp.isDefined()) {
-            addBasicStep(context, domainOp, response);
+           addBasicStep(context, domainOp, response);
         } else {
             response.get(RESULT).set(IGNORED);
         }
 
         ModelNode resolveOp = Util.getEmptyOperation(ServerOperationsResolverHandler.OPERATION_NAME, new ModelNode());
         ServerOperationResolver resolver = new ServerOperationResolver(localHostControllerInfo.getLocalHostName());
-        ServerOperationsResolverHandler sorh = new ServerOperationsResolverHandler(localHostControllerInfo.getLocalHostName(), resolver, parsedOp, response, recordResponse);
+        ServerOperationsResolverHandler sorh = new ServerOperationsResolverHandler(localHostControllerInfo.getLocalHostName(),
+                resolver, parsedOp, originalAddress, originalRegistration, response, recordResponse);
         context.addStep(response, resolveOp, sorh, NewOperationContext.Stage.DOMAIN);
-
-        context.completeStep();
     }
 
     /**
@@ -115,7 +126,7 @@ public class OperationSlaveStepHandler {
         String targetHost = null;
         String runningServerTarget = null;
         ModelNode runningServerOp = null;
-        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         if (address.size() > 0) {
             PathElement first = address.getElement(0);
             if (HOST.equals(first.getKey())) {

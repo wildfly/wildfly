@@ -62,6 +62,7 @@ class NewRunningServerUpdateTask extends AbstractServerUpdateTask {
         super(serverId, updatePolicy, resultHandler);
         this.serverOperationExecutor = serverOperationExecutor;
         this.serverUpdate = serverUpdate;
+        System.out.println("Task for " + serverId + " to execute " + serverUpdate);
     }
 
     @Override

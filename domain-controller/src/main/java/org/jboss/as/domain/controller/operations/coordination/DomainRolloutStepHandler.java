@@ -87,42 +87,37 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         if (pushToServers) {
             ModelNode ourResult = domainOperationContext.getCoordinatorResult();
             if (ourResult.has(FAILURE_DESCRIPTION)) {
+                System.out.println("domain failed");
                 pushToServers = false;
                 domainOperationContext.setCompleteRollback(true);
             } else {
                 for (ModelNode hostResult : domainOperationContext.getHostControllerResults().values()) {
                     if (!hostResult.hasDefined(OUTCOME) || !SUCCESS.equals(hostResult.get(OUTCOME))) {
+                        System.out.println("host failed");
                         pushToServers = false;
                         domainOperationContext.setCompleteRollback(true);
                         break;
                     }
                 }
             }
-        }
+        }  else System.out.println("Complete rollback");
 
         if (pushToServers) {
             final Map<ServerIdentity, ProxyTask> tasks = new HashMap<ServerIdentity, ProxyTask>();
-            boolean interrupted = false;
             try {
                 pushToServers(context, tasks);
                 context.completeStep();
             } finally {
 
-                try {
-                    // Inform the remote hosts whether to commit or roll back their updates
-                    // Do this in parallel
-                    // TODO consider blocking until all return?
-                    boolean completeRollback = domainOperationContext.isCompleteRollback();
-                    for (Map.Entry<ServerIdentity, ProxyTask> entry : tasks.entrySet()) {
-                        NewModelController.OperationTransaction tx = entry.getValue().getRemoteTransaction();
-                        if (tx != null) {
-                            boolean rollback = completeRollback || domainOperationContext.isServerGroupRollback(entry.getKey().getServerGroupName());
-                            executorService.submit(new ProxyCommitRollbackTask(tx, rollback));
-                        }
-                    }
-                } finally {
-                    if (interrupted) {
-                        Thread.currentThread().interrupt();
+                // Inform the remote hosts whether to commit or roll back their updates
+                // Do this in parallel
+                // TODO consider blocking until all return?
+                boolean completeRollback = domainOperationContext.isCompleteRollback();
+                for (Map.Entry<ServerIdentity, ProxyTask> entry : tasks.entrySet()) {
+                    NewModelController.OperationTransaction tx = entry.getValue().getRemoteTransaction();
+                    if (tx != null) {
+                        boolean rollback = completeRollback || domainOperationContext.isServerGroupRollback(entry.getKey().getServerGroupName());
+                        executorService.submit(new ProxyCommitRollbackTask(tx, rollback));
                     }
                 }
             }
@@ -140,7 +135,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         if (opsByGroup.size() > 0) {
 
             final ModelNode rolloutPlan = getRolloutPlan(this.providedRolloutPlan, opsByGroup);
-
+            System.out.println("Rollout plan is " + rolloutPlan);
             final NewServerOperationExecutor operationExecutor = new NewServerOperationExecutor() {
                 @Override
                 public ModelNode executeServerOperation(ServerIdentity server, ModelNode operation) {
@@ -169,6 +164,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         Map<String, Map<ServerIdentity, ModelNode>> result = new HashMap<String, Map<ServerIdentity, ModelNode>>();
 
         for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
+            System.out.println("Result from host " + entry.getKey() + " is " + entry.getValue());
             ModelNode hostResult = entry.getValue().get(RESULT);
             if (hostResult.hasDefined(SERVER_OPERATIONS)) {
                 String host = entry.getKey();
