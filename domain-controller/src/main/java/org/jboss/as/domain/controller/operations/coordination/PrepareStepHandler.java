@@ -54,10 +54,11 @@ public class PrepareStepHandler  implements NewStepHandler {
     private final OperationSlaveStepHandler slaveHandler;
 
     public PrepareStepHandler(final LocalHostControllerInfo localHostControllerInfo,
-                              final Map<String, NewProxyController> hostProxies) {
+                              final Map<String, NewProxyController> hostProxies,
+                              final Map<String, NewProxyController> serverProxies) {
         this.localHostControllerInfo = localHostControllerInfo;
         this.slaveHandler = new OperationSlaveStepHandler(localHostControllerInfo);
-        this.coordinatorHandler = new OperationCoordinatorStepHandler(localHostControllerInfo, hostProxies, slaveHandler);
+        this.coordinatorHandler = new OperationCoordinatorStepHandler(localHostControllerInfo, hostProxies, serverProxies, slaveHandler);
     }
 
     @Override
@@ -66,7 +67,9 @@ public class PrepareStepHandler  implements NewStepHandler {
         if (context.isBooting()) {
             executeDirect(context, operation);
         }
-        else if (operation.hasDefined(OPERATION_HEADERS) && operation.get(OPERATION_HEADERS, EXECUTE_FOR_COORDINATOR).asBoolean(false)) {
+        else if (operation.hasDefined(OPERATION_HEADERS)
+                && operation.get(OPERATION_HEADERS).hasDefined(EXECUTE_FOR_COORDINATOR)
+                && operation.get(OPERATION_HEADERS).get(EXECUTE_FOR_COORDINATOR).asBoolean()) {
             // Coordinator wants us to execute locally and send result including the steps needed for execution on the servers
             slaveHandler.execute(context, operation);
         } else if (isServerOperation(operation)) {

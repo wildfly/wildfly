@@ -67,13 +67,17 @@ public class OperationCoordinatorStepHandler {
 
     private final LocalHostControllerInfo localHostControllerInfo;
     private final Map<String, NewProxyController> hostProxies;
+    private final Map<String, NewProxyController> serverProxies;
     private final OperationSlaveStepHandler localSlaveHandler;
     private volatile ExecutorService executorService;
 
     OperationCoordinatorStepHandler(final LocalHostControllerInfo localHostControllerInfo,
-                                    final Map<String, NewProxyController> hostProxies, OperationSlaveStepHandler localSlaveHandler) {
+                                    final Map<String, NewProxyController> hostProxies,
+                                    final Map<String, NewProxyController> serverProxies,
+                                    final OperationSlaveStepHandler localSlaveHandler) {
         this.localHostControllerInfo = localHostControllerInfo;
         this.hostProxies = hostProxies;
+        this.serverProxies = serverProxies;
         this.localSlaveHandler = localSlaveHandler;
     }
 
@@ -164,8 +168,7 @@ public class OperationCoordinatorStepHandler {
         // steps registered. A failure in those will prevent the rest of the steps below executing
         String localHostName = localHostControllerInfo.getLocalHostName();
         if (routing.isLocalCallNeeded(localHostName)) {
-            ModelNode localResponse = new ModelNode();
-            overallContext.setCoordinatorResult(localResponse);
+            ModelNode localResponse = overallContext.getCoordinatorResult();
             localSlaveHandler.addSteps(context, slaveOp, localResponse, false);
         }
 
@@ -194,13 +197,13 @@ public class OperationCoordinatorStepHandler {
                     }
                 }
 
-                context.addStep(new ModelNode(), slaveOp, new DomainSlaveHandler(remoteProxies, overallContext, executorService), NewOperationContext.Stage.DOMAIN);
+                context.addStep(slaveOp, new DomainSlaveHandler(remoteProxies, overallContext, executorService), NewOperationContext.Stage.DOMAIN);
 
             }
         }
 
         // Finally, the step to formulate and execute the 2nd phase rollout plan
-        context.addStep(new DomainRolloutStepHandler(hostProxies, overallContext, rolloutPlan, getExecutorService()), NewOperationContext.Stage.DOMAIN);
+        context.addStep(new DomainRolloutStepHandler(hostProxies, serverProxies, overallContext, rolloutPlan, getExecutorService()), NewOperationContext.Stage.DOMAIN);
 
         // Always add the step to assemble the final result
         context.addStep(new DomainResultHandler(overallContext), NewOperationContext.Stage.DOMAIN);

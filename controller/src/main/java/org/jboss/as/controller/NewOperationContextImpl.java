@@ -171,6 +171,10 @@ final class NewOperationContextImpl implements NewOperationContext {
         addStep(response, operation, step, stage);
     }
 
+    public void addStep(final ModelNode operation, final NewStepHandler step, final Stage stage) throws IllegalArgumentException {
+        addStep(response, operation, step, stage);
+    }
+
     public void addStep(final ModelNode response, final ModelNode operation, final NewStepHandler step, final Stage stage) throws IllegalArgumentException {
         assert Thread.currentThread() == initiatingThread;
         if (response == null) {
@@ -302,6 +306,7 @@ final class NewOperationContextImpl implements NewOperationContext {
             return resultAction = ResultAction.ROLLBACK;
         }
         if (transactionControl != null) {
+            System.out.println("Prepared response is " + response);
             transactionControl.operationPrepared(new NewModelController.OperationTransaction() {
                 public void commit() {
                     ref.set(ResultAction.KEEP);

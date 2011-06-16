@@ -14,5 +14,11 @@ import org.jboss.dmr.ModelNode;
  */
 public interface NewServerOperationExecutor {
 
+    /**
+     * Execute an operation against the given server
+     * @param server  the identity of the server
+     * @param operation the operation
+     * @return the result, or {@code null} if the server is unknown
+     */
     ModelNode executeServerOperation(ServerIdentity server, ModelNode operation);
 }

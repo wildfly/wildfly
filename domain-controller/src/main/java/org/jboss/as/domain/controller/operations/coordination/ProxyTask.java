@@ -48,7 +48,9 @@ class ProxyTask implements Callable<ModelNode> {
     private final ModelNode operation;
     private final NewOperationContext context;
 
-    private NewModelController.OperationTransaction remoteTransaction;
+    private final AtomicReference<Boolean> transactionAction = new AtomicReference<Boolean>();
+    private final AtomicReference<ModelNode> proxyResultRef = new AtomicReference<ModelNode>();
+    private boolean cancelRemoteTransaction;
 
     public ProxyTask(String host, ModelNode operation, NewOperationContext context, NewProxyController proxyController) {
         this.host = host;
@@ -87,22 +89,77 @@ class ProxyTask implements Callable<ModelNode> {
 
         proxyController.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
 
+        NewModelController.OperationTransaction remoteTransaction = null;
         ModelNode result = finalResultRef.get();
         if (result != null) {
             // operation failed before it could commit
+            System.out.println("Received final result " + result + " from " + host);
         } else {
             result = preparedResultRef.get();
+            System.out.println("Received prepared result " + result + " from " + host);
             remoteTransaction = txRef.get();
         }
 
-        return result;
+        synchronized (proxyResultRef) {
+            proxyResultRef.set(result);
+            proxyResultRef.notifyAll();
+        }
+
+        if (remoteTransaction != null) {
+            if (cancelRemoteTransaction) {
+                // Controlling thread was cancelled
+                remoteTransaction.rollback();
+            } else {
+                synchronized (transactionAction) {
+                    while (transactionAction.get() == null) {
+                        try {
+                            transactionAction.wait();
+                        }
+                        catch (InterruptedException ie) {
+                            // Treat as cancellation
+                            transactionAction.set(Boolean.FALSE);
+                        }
+                    }
+                    if (transactionAction.get().booleanValue()) {
+                        remoteTransaction.commit();
+                    } else {
+                        remoteTransaction.rollback();
+                    }
+                }
+            }
+        }
+
+        return finalResultRef.get();
     }
 
+    ModelNode getResult() throws InterruptedException {
+        synchronized (proxyResultRef) {
 
-    NewModelController.OperationTransaction getRemoteTransaction() {
-        return remoteTransaction;
+            while (proxyResultRef.get() == null) {
+                try {
+                    proxyResultRef.wait();
+                }
+                catch (InterruptedException ie) {
+                    cancelRemoteTransaction = true;
+                    throw ie;
+                }
+            }
+            return proxyResultRef.get();
+        }
     }
 
+    void finalizeTransaction(boolean commit) {
+        synchronized (transactionAction) {
+            transactionAction.set(Boolean.valueOf(commit));
+            transactionAction.notifyAll();
+        }
+    }
+
+    void cancel() {
+        synchronized (proxyResultRef) {
+            cancelRemoteTransaction = true;
+        }
+    }
 
     private static class DelegatingMessageHandler implements OperationMessageHandler {
 

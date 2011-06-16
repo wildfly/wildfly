@@ -22,10 +22,8 @@
 
 package org.jboss.as.domain.controller.plan;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 
-import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.domain.controller.ServerIdentity;
@@ -52,7 +50,7 @@ class ServerUpdatePolicy {
      * @param parent parent policy
      * @param serverGroupName the name of the server group being updated
      * @param servers servers that are being updated
-     * @param groupPlan plan from which rollback policies can be determined
+     * @param maxFailures maximum number of failed servers before the server group should be rolled back
      */
     ServerUpdatePolicy(final ConcurrentGroupServerUpdatePolicy parent,
                             final String serverGroupName,
@@ -134,7 +132,7 @@ class ServerUpdatePolicy {
             throw new IllegalStateException("Unknown server " + server);
         }
 
-        boolean serverFailed = !response.hasDefined(OUTCOME) || !SUCCESS.equals(response.get(OUTCOME).asString());
+        boolean serverFailed = response.has(FAILURE_DESCRIPTION);
 
         synchronized (this) {
             int previousFailed = failureCount;
@@ -157,7 +155,8 @@ class ServerUpdatePolicy {
     }
 
     /**
-     * Gets whether the {@link #recordServerResult(ServerIdentity, List) recorded results}
+     * Gets whether the
+     * {@link #recordServerResult(org.jboss.as.domain.controller.ServerIdentity, org.jboss.dmr.ModelNode)} recorded results}
      * constitute a failed server group update per this policy.
      *
      * @return <code>true</code> if the server group update is considered to be a failure;

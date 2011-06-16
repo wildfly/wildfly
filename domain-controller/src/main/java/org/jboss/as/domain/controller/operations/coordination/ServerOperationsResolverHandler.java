@@ -26,23 +26,21 @@ package org.jboss.as.domain.controller.operations.coordination;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
- * Adds to the response the server-level operations needed to effect the given domain/host operation on the
+ * Adds to the localResponse the server-level operations needed to effect the given domain/host operation on the
  * servers controlled by this host.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
@@ -56,7 +54,7 @@ public class ServerOperationsResolverHandler implements NewStepHandler {
     private final ParsedOp parsedOp;
     private final PathAddress originalAddress;
     private final ImmutableModelNodeRegistration originalRegistration;
-    private final ModelNode response;
+    private final ModelNode localResponse;
     private final boolean recordResponse;
 
     ServerOperationsResolverHandler(final String localHostName, final ServerOperationResolver resolver, final ParsedOp parsedOp,
@@ -67,15 +65,17 @@ public class ServerOperationsResolverHandler implements NewStepHandler {
         this.parsedOp = parsedOp;
         this.originalAddress = originalAddress;
         this.originalRegistration = originalRegistration;
-        this.response = response;
+        this.localResponse = response;
         this.recordResponse = recordResponse;
     }
 
     @Override
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-        if (!response.has(FAILURE_DESCRIPTION)) {
-            final ModelNode domainModel = context.readModel(PathAddress.EMPTY_ADDRESS);
+        if (localResponse.has(FAILURE_DESCRIPTION)) {
+            context.getFailureDescription().set(localResponse.get(FAILURE_DESCRIPTION));
+        } else {
+            final ModelNode domainModel = context.getModel();
             ParsedOp.ServerOperationProvider provider = new ParsedOp.ServerOperationProvider() {
 
                 @Override
@@ -84,19 +84,22 @@ public class ServerOperationsResolverHandler implements NewStepHandler {
                 }
             };
 
-            Map<Set<ServerIdentity>, ModelNode> serverOps = parsedOp.getServerOps(provider);
-            createOverallResult(serverOps);
-            if (recordResponse) {
-                if (response.has(RESULT)) {
-                    context.getResult().set(response.get(RESULT));
-                }
-                if (response.has(FAILURE_DESCRIPTION)) {
-                    context.getFailureDescription().set(response.get(FAILURE_DESCRIPTION));
-                }
+            ModelNode localResult = localResponse.get(RESULT);
+            localResponse.remove(RESULT);  // We're going to replace it
+            ModelNode responseNode = recordResponse ? context.getResult() : localResponse.get(RESULT);
+            boolean ignored = (ModelType.STRING == localResult.getType() && IGNORED.equals(localResult.asString()));
+            if (ignored) {
+                // Just pass the IGNORED along
+                responseNode.set(localResult);
+            } else {
+                Map<Set<ServerIdentity>, ModelNode> serverOps = parsedOp.getServerOps(provider);
+                createOverallResult(serverOps, localResult, responseNode);
             }
-            System.out.println("ServerOperationResolverHandler response is " + response);
-        } else if (recordResponse) {
-            context.getFailureDescription().set(response.get(FAILURE_DESCRIPTION));
+
+            System.out.println("ServerOperationResolverHandler responseNode is " + responseNode);
+            if (!recordResponse) {
+                System.out.println("ServerOperationResolverHandler localResponse is " + localResponse);
+            }
         }
 
         context.completeStep();
@@ -115,13 +118,11 @@ public class ServerOperationsResolverHandler implements NewStepHandler {
         return result;
     }
 
-    private void createOverallResult(Map<Set<ServerIdentity>, ModelNode> serverOps) {
-        ModelNode resultNode = response.get(RESULT);
+    private void createOverallResult(Map<Set<ServerIdentity>, ModelNode> serverOps, final ModelNode localResult, final ModelNode overallResult) {
 
-        response.get(OUTCOME).set(SUCCESS);
-        ModelNode domainResult = parsedOp.getFormattedDomainResult(resultNode);
-        response.get(RESULT, DOMAIN_RESULTS).set(domainResult);
-        ModelNode serverOpsNode = response.get(RESULT, SERVER_OPERATIONS);
+        ModelNode domainResult = parsedOp.getFormattedDomainResult(localResult);
+        overallResult.get(DOMAIN_RESULTS).set(domainResult);
+        ModelNode serverOpsNode = overallResult.get(SERVER_OPERATIONS);
         for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : serverOps.entrySet()) {
             ModelNode setNode = serverOpsNode.add();
             ModelNode serverNode = setNode.get("servers");

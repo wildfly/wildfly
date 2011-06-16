@@ -72,9 +72,11 @@ class NewRunningServerUpdateTask extends AbstractServerUpdateTask {
         ModelNode op = getServerOp();
         ModelNode rsp =
             serverOperationExecutor.executeServerOperation(serverId, op);
-        updatePolicy.recordServerResult(serverId, rsp);
 
-        resultHandler.handleServerUpdateResult(serverId, rsp);
+        if (rsp != null) {
+            updatePolicy.recordServerResult(serverId, rsp);
+            resultHandler.handleServerUpdateResult(serverId, rsp);
+        }
     }
 
     private ModelNode getServerOp() {

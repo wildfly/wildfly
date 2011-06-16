@@ -74,25 +74,25 @@ public class DomainSlaveHandler implements NewStepHandler {
 
         boolean interrupted = false;
         try {
-            for (Map.Entry<String, Future<ModelNode>> entry : futures.entrySet()) {
+            for (Map.Entry<String, ProxyTask> entry : tasks.entrySet()) {
+                ProxyTask task = entry.getValue();
                 ModelNode result = null;
                 try {
-                    result = entry.getValue().get();
+                    result = entry.getValue().getResult();
                 } catch (InterruptedException e) {
                     result = new ModelNode();
                     result.get(OUTCOME).set(FAILED);
                     result.get(FAILURE_DESCRIPTION).set(String.format("Interrupted waiting for result from host %s", entry.getKey()));
-                } catch (ExecutionException e) {
-                    Throwable cause = e.getCause();
-                    result = new ModelNode();
-                    result.get(OUTCOME).set(FAILED);
-                    result.get(FAILURE_DESCRIPTION).set(String.format("Caught exception executing operation on host %s -- %s",
-                            entry.getKey(), cause == null ? e.toString() : cause.toString()));
+                    interrupted = true;
+                    task.cancel();
+                    futures.get(entry.getKey()).cancel(true);
                 }
 
+                System.out.println("Result for " + entry.getKey() + " is " + result);
                 domainOperationContext.addHostControllerResult(entry.getKey(), result);
             }
 
+            domainOperationContext.setCompleteRollback(domainOperationContext.hasHostLevelFailures());
             context.completeStep();
 
         } finally {
@@ -102,10 +102,7 @@ public class DomainSlaveHandler implements NewStepHandler {
                 // TODO consider blocking until all return?
                 boolean rollback = domainOperationContext.isCompleteRollback();
                 for (ProxyTask task : tasks.values()) {
-                    NewModelController.OperationTransaction tx = task.getRemoteTransaction();
-                    if (tx != null) {
-                        executorService.submit(new ProxyCommitRollbackTask(tx, rollback));
-                    }
+                    task.finalizeTransaction(!rollback);
                 }
             } finally {
                 if (interrupted) {

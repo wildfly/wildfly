@@ -22,10 +22,10 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
-import java.security.PrivilegedActionException;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -58,14 +58,6 @@ public class DomainOperationContext {
 
     public ModelNode getCoordinatorResult() {
         return coordinatorResult;
-    }
-
-    public void setCoordinatorResult(ModelNode coordinatorResult) {
-        if (this.coordinatorResult.isDefined()) {
-            throw new IllegalStateException("coordinator result already set");
-        } else {
-            this.coordinatorResult.set(coordinatorResult);
-        }
     }
 
     public Map<String, ModelNode> getHostControllerResults() {
@@ -106,4 +98,16 @@ public class DomainOperationContext {
     }
 
 
+    public boolean hasHostLevelFailures() {
+        boolean domainFailed = coordinatorResult.isDefined() && coordinatorResult.has(FAILURE_DESCRIPTION);
+        if (domainFailed) {
+            return true;
+        }
+        for (ModelNode hostResult : hostControllerResults.values()) {
+            if (hostResult.has(FAILURE_DESCRIPTION)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
