@@ -22,7 +22,6 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
@@ -37,6 +36,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,7 +50,7 @@ public class EjbJarDescription {
 
     private final Map<String, ApplicationException> applicationExceptions = new ConcurrentHashMap();
 
-    private final Set<String> applicationLevelSecurityRoles = new ConcurrentHashSet<String>();
+    private final Set<String> applicationLevelSecurityRoles = new HashSet<String>();
 
     /**
      * True if this represents EJB's packaged in a war

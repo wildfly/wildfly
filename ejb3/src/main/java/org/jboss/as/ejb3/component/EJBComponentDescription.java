@@ -115,9 +115,24 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private final Map<String, Map<String, Collection<String>>> classLevelRolesAllowed = new HashMap<String, Map<String, Collection<String>>>();
 
     /**
-     * Security role links. The key is the "from" role name and the value is the "to" role name of the link.
+     * Security role links. The key is the "from" role name and the value is a collection of "to" role names of the link.
      */
-    private final Map<String, String> securityRoleLinks = new HashMap<String, String>();
+    private final Map<String, Collection<String>> securityRoleLinks = new HashMap<String, Collection<String>>();
+
+
+    /**
+     * The @PermitAll map of methods. The key is the view class name and the value is a collection of EJB methods
+     * which are marked for @PermitAll
+     */
+    private final Map<String, Collection<EJBMethodIdentifier>> methodLevelPermitAll = new HashMap<String, Collection<EJBMethodIdentifier>>();
+
+    /**
+     * The class level @PermitAll map. The key is the view class name and the value is a collection of classes,
+     * in the class hierarchy of the EJB implementation class (ex: EJB implementation class' super class),
+     * which have been marked with @PermitAll.
+     */
+    private final Map<String, Collection<String>> classLevelPermitAll = new HashMap<String, Collection<String>>();
+
 
     /**
      * Stores around invoke methods that are referenced in the DD that cannot be resolved until the module is loaded
@@ -597,9 +612,59 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             throw new IllegalArgumentException("Cannot link to a null or empty security role: " + toRole);
         }
 
-
+        Collection<String> roleLinks = this.securityRoleLinks.get(fromRole);
+        if (roleLinks == null) {
+            roleLinks = new HashSet<String>();
+            this.securityRoleLinks.put(fromRole, roleLinks);
+        }
+        roleLinks.add(toRole);
     }
-    
+
+    public Map<String, Collection<String>> getSecurityRoleLinks() {
+        return Collections.unmodifiableMap(this.securityRoleLinks);
+    }
+
+    public void applyPermitAllOnAllViewsForClass(final String className) {
+        if (className == null || className.trim().isEmpty()) {
+            throw new IllegalArgumentException("Classname cannot be null or empty: " + className);
+        }
+        for (final ViewDescription view : this.getViews()) {
+            Collection<String> permitAllClasses = this.classLevelPermitAll.get(view.getViewClassName());
+            if (permitAllClasses == null) {
+                permitAllClasses = new HashSet<String>();
+                this.classLevelPermitAll.put(view.getViewClassName(), permitAllClasses);
+            }
+            permitAllClasses.add(className);
+        }
+    }
+
+    public void applyPermitAllOnAllViewsForMethod(final EJBMethodIdentifier ejbMethodIdentifier) {
+        for (final ViewDescription view : this.getViews()) {
+            Collection<EJBMethodIdentifier> permitAllMethods = this.methodLevelPermitAll.get(view.getViewClassName());
+            if (permitAllMethods == null) {
+                permitAllMethods = new ArrayList<EJBMethodIdentifier>();
+                this.methodLevelPermitAll.put(view.getViewClassName(), permitAllMethods);
+            }
+            permitAllMethods.add(ejbMethodIdentifier);
+        }
+    }
+
+    public Collection<EJBMethodIdentifier> getPermitAllMethodsForView(final String viewClassName) {
+        final Collection<EJBMethodIdentifier> permitAllMethods = this.methodLevelPermitAll.get(viewClassName);
+        if (permitAllMethods != null) {
+            return Collections.unmodifiableCollection(permitAllMethods);
+        }
+        return Collections.emptySet();
+    }
+
+    public boolean isPermitAllApplicableToClass(final String viewClassName, final String className) {
+        final Collection<String> permitAllApplicationClasses = this.classLevelPermitAll.get(viewClassName);
+        if (permitAllApplicationClasses == null) {
+            return false;
+        }
+        return permitAllApplicationClasses.contains(className);
+    }
+
     /**
      * A {@link ComponentConfigurator} which picks up {@link EjbJarConfiguration} from the attachment of the deployment
      * unit and sets it to the {@link EJBComponentCreateServiceFactory component create service factory} of the component
