@@ -29,7 +29,7 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 
-import static javax.ejb.TransactionAttributeType.NEVER;
+import static javax.ejb.TransactionAttributeType.SUPPORTS;
 
 /**
  * Concrete implementation to allow deployment of bean.
@@ -39,7 +39,7 @@ import static javax.ejb.TransactionAttributeType.NEVER;
 @Stateless
 @LocalBean
 @RunAs("Role2")
-@TransactionAttribute(NEVER)
+@TransactionAttribute(SUPPORTS)
 public class EntryBean extends org.jboss.as.test.spec.ejb3.security.base.EntryBean implements Entry {
     @EJB
     private WhoAmIBean whoAmIBean;
