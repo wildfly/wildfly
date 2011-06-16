@@ -28,6 +28,7 @@ import org.jboss.as.ejb3.EJBMethodIdentifier;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -126,6 +127,10 @@ public class EJBSecurityMetaData {
             }
             final Method[] viewMethods = view.getProxyFactory().getCachedMethods();
             for (final Method viewMethod : viewMethods) {
+                // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
+                if (!Modifier.isPublic(viewMethod.getModifiers())) {
+                    continue;
+                }
                 // find the component method corresponding to this view method
                 final Method componentMethod = this.findComponentMethod(componentConfiguration, viewMethod);
                 final EJBMethodIdentifier ejbMethodIdentifier = EJBMethodIdentifier.fromMethod(componentMethod);
@@ -165,6 +170,10 @@ public class EJBSecurityMetaData {
             final String viewClassName = view.getViewClass().getName();
             final Method[] viewMethods = view.getProxyFactory().getCachedMethods();
             for (final Method viewMethod : viewMethods) {
+                // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
+                if (!Modifier.isPublic(viewMethod.getModifiers())) {
+                    continue;
+                }
                 // find the component method corresponding to this view method
                 final Method componentMethod = this.findComponentMethod(componentConfiguration, viewMethod);
                 final EJBMethodIdentifier ejbMethodIdentifier = EJBMethodIdentifier.fromMethod(componentMethod);
