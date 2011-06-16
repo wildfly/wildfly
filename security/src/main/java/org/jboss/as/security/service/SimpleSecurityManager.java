@@ -181,7 +181,7 @@ public class SimpleSecurityManager {
         }
 
         if (runAs != null) {
-            RunAs runAsIdentity = new RunAsIdentity(runAs, null);
+            RunAs runAsIdentity = new RunAsIdentity(runAs, runAsPrincipal);
             current.setOutgoingRunAs(runAsIdentity);
         } else if (previous != null && previous.getOutgoingRunAs() != null) {
             // Ensure the propagation continues.
