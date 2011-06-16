@@ -27,6 +27,7 @@ import org.jboss.security.RunAs;
 import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
+import org.jboss.security.SecurityContextFactory;
 import org.jboss.security.SecurityContextUtil;
 import org.jboss.security.SubjectInfo;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
@@ -34,7 +35,6 @@ import org.jboss.security.identity.Identity;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
 import org.jboss.security.identity.plugins.SimpleIdentity;
-import org.picketbox.factories.SecurityFactory;
 
 import javax.security.auth.Subject;
 import java.security.Principal;
@@ -61,6 +61,17 @@ public class SimpleSecurityManager {
                 return SecurityContextAssociation.getSecurityContext();
             }
         };
+    }
+
+    private static SecurityContext establishSecurityContext(final String securityDomain) {
+        // Do not use SecurityFactory.establishSecurityContext, its static init is broken.
+        try {
+            final SecurityContext securityContext = SecurityContextFactory.createSecurityContext(securityDomain);
+            SecurityContextAssociation.setSecurityContext(securityContext);
+            return securityContext;
+        } catch (Exception e) {
+            throw new SecurityException(e);
+        }
     }
 
     public Principal getCallerPrincipal() {
@@ -161,7 +172,7 @@ public class SimpleSecurityManager {
         // TODO - Handle a null securityDomain here?  Yes I think so.
         final SecurityContext previous = SecurityContextAssociation.getSecurityContext();
         contexts.push(previous);
-        SecurityContext current = SecurityFactory.establishSecurityContext(securityDomain);
+        SecurityContext current = establishSecurityContext(securityDomain);
         if (previous != null) {
             current.setSubjectInfo(previous.getSubjectInfo());
             current.setIncomingRunAs(previous.getOutgoingRunAs());
