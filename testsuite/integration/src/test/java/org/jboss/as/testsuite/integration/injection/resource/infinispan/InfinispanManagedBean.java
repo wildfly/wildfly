@@ -40,21 +40,16 @@ import org.infinispan.manager.CacheContainer;
 @ManagedBean("infinispan")
 public class InfinispanManagedBean {
     private static final String CONTAINER_JNDI_NAME = "java:jboss/infinispan/hibernate";
-    
+
     @Resource(lookup = CONTAINER_JNDI_NAME)
     private CacheContainer container;
     private Cache<Integer, Object> cache;
-    
+
     @PostConstruct
     public void start() {
         this.cache = this.container.getCache();
     }
-    
-    @PreDestroy
-    public void stop() {
-        this.cache.stop();
-    }
-    
+
     public void test() {
         try {
             // Test simple value
@@ -75,7 +70,7 @@ public class InfinispanManagedBean {
         }
 
     }
-    
+
     public static class Bean implements java.io.Serializable
     {
         private static final long serialVersionUID = -7265704761812104791L;
