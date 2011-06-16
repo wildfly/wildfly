@@ -68,7 +68,7 @@ public class HttpDeploymentUploadUnitTestCase {
 
     private static final String POST_REQUEST_METHOD = "POST";
 
-    private static final String BASIC_URL = "http://localhost:9990/domain-api/";
+    private static final String BASIC_URL = "http://localhost:9990/management/";
 
     private static final String UPLOAD_URL = BASIC_URL + "add-content";
 
