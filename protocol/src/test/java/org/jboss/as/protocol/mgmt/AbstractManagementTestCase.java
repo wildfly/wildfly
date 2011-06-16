@@ -157,5 +157,28 @@ public abstract class AbstractManagementTestCase {
         }
     }
 
+    @Test
+    public void testExceptionInChannelStrategy() throws Exception {
+        ManagementChannel channel = channels.getServerChannel();
+        channels.getClientChannel().startReceiving();
+        channel.setOperationHandler(new SimpleHandlers.OperationHandler());
+        SimpleHandlers.Request request = new SimpleHandlers.Request(SimpleHandlers.REQUEST_WITH_BAD_WRITE, 600);
+        try {
+            request.executeForResult(channels.getExecutorService(), new ManagementClientChannelStrategy() {
+
+                @Override
+                public void requestDone() {
+                }
+
+                @Override
+                public ManagementChannel getChannel() {
+                    throw new RuntimeException("Can't connect");
+                }
+            });
+            Assert.fail("Should have failed");
+        } catch (ExecutionException expected) {
+        }
+    }
+
     protected abstract RemotingChannelPairSetup createSetup();
 }
