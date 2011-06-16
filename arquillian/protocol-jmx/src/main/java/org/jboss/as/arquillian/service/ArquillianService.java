@@ -22,18 +22,6 @@
 
 package org.jboss.as.arquillian.service;
 
-import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
-
-import java.io.InputStream;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.management.MBeanServer;
-
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.test.spi.TestResult;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
@@ -57,6 +45,17 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.osgi.framework.BundleContext;
 
+import javax.management.MBeanServer;
+import java.io.InputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
+
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.
  *
@@ -76,6 +75,7 @@ public class ArquillianService implements Service<ArquillianService> {
     private ServiceContainer serviceContainer;
     private ServiceTarget serviceTarget;
     private JMXTestRunner jmxTestRunner;
+    AbstractServiceListener<Object> listener;
 
     public static void addService(final ServiceTarget serviceTarget) {
         ArquillianService service = new ArquillianService();
@@ -102,7 +102,7 @@ public class ArquillianService implements Service<ArquillianService> {
         }
 
         final ArquillianService arqService = this;
-        serviceContainer.addListener(new AbstractServiceListener<Object>() {
+        listener = new AbstractServiceListener<Object>() {
 
             @Override
             public void serviceStarted(ServiceController<? extends Object> controller) {
@@ -125,7 +125,8 @@ public class ArquillianService implements Service<ArquillianService> {
             @Override
             public void serviceStopped(ServiceController<? extends Object> controller) {
             }
-        });
+        };
+        serviceContainer.addListener(listener);
     }
 
     public synchronized void stop(StopContext context) {
@@ -136,6 +137,8 @@ public class ArquillianService implements Service<ArquillianService> {
             }
         } catch (Exception ex) {
             log.errorf(ex, "Cannot stop Arquillian Test Runner");
+        } finally {
+            context.getController().getServiceContainer().removeListener(listener);
         }
     }
 
