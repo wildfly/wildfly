@@ -102,9 +102,22 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     private final Map<String, Collection<String>> classLevelDenyAll = new HashMap<String, Collection<String>>();
 
+    /**
+     * Method level roles allowed, per view. The key is the view class name and the value is a Map whose key is the EJB
+     * method identifier and the value is the collection of role names.
+     */
     private final Map<String, Map<EJBMethodIdentifier, Collection<String>>> methodLevelRolesAllowed = new HashMap<String, Map<EJBMethodIdentifier, Collection<String>>>();
 
+    /**
+     * Class level roles allowed, per view. The key is the view class name and the value is a Map whose key is the class
+     * name on which the @RolesAllowed is applied and the value is the collection of role names
+     */
     private final Map<String, Map<String, Collection<String>>> classLevelRolesAllowed = new HashMap<String, Map<String, Collection<String>>>();
+
+    /**
+     * Security role links. The key is the "from" role name and the value is the "to" role name of the link.
+     */
+    private final Map<String, String> securityRoleLinks = new HashMap<String, String>();
 
     /**
      * Stores around invoke methods that are referenced in the DD that cannot be resolved until the module is loaded
@@ -576,6 +589,17 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return perClassRoles.get(className);
     }
 
+    public void linkSecurityRoles(final String fromRole, final String toRole) {
+        if (fromRole == null || fromRole.trim().isEmpty()) {
+            throw new IllegalArgumentException("Cannot link from a null or empty security role: " + fromRole);
+        }
+        if (toRole == null || toRole.trim().isEmpty()) {
+            throw new IllegalArgumentException("Cannot link to a null or empty security role: " + toRole);
+        }
+
+
+    }
+    
     /**
      * A {@link ComponentConfigurator} which picks up {@link EjbJarConfiguration} from the attachment of the deployment
      * unit and sets it to the {@link EJBComponentCreateServiceFactory component create service factory} of the component
