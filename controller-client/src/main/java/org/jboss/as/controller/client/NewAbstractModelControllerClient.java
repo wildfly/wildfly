@@ -28,9 +28,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
@@ -38,12 +41,10 @@ import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
-import org.jboss.as.protocol.mgmt.ManagementResponseContext;
 import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
-import org.jboss.remoting3.HandleableCloseable.Key;
 import org.jboss.threads.AsyncFuture;
 
 
@@ -114,7 +115,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
 
         try {
-            return new ExecuteRequest(batchId, operation, messageHandler, attachments).executeForResult(executor, getClientChannelStrategy());
+            return new ExecuteRequest(batchId, false, operation, messageHandler, attachments).executeForResult(executor, getClientChannelStrategy());
         } catch (Exception e) {
             ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
             throw new RuntimeException(e);
@@ -124,7 +125,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
     private AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler){
         final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
         try {
-            return new ExecuteRequest(batchId, operation, messageHandler, attachments).execute(executor, getClientChannelStrategy());
+            return new DelegatingCancellableAsyncFuture(new ExecuteRequest(batchId, true, operation, messageHandler, attachments).execute(executor, getClientChannelStrategy()), batchId);
         } catch (Exception e) {
             ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
             throw new RuntimeException(e);
@@ -138,16 +139,22 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
 
         private final ExecuteRequestContext executeRequestContext;
         private final ModelNode operation;
+        private final boolean async;
 
-        ExecuteRequest(final int batchId, final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
+        ExecuteRequest(final int batchId, final boolean async, final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
             super(batchId);
             this.operation = operation;
-            executeRequestContext = new ExecuteRequestContext(this, getContext(), messageHandler, attachments);
+            this.async = async;
+            executeRequestContext = new ExecuteRequestContext(this, messageHandler, attachments);
         }
 
         @Override
         protected byte getRequestCode() {
-            return NewModelControllerProtocol.EXECUTE_CLIENT_REQUEST;
+            return async ? NewModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST :NewModelControllerProtocol.EXECUTE_CLIENT_REQUEST;
+        }
+
+        protected CloseHandler<Channel> getRequestCloseHandler(){
+            return executeRequestContext.getRequestCloseHandler();
         }
 
         @Override
@@ -281,21 +288,25 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
     }
 
     private static class ExecuteRequestContext {
+        final ExecuteRequest executeRequest;
         final OperationMessageHandler messageHandler;
         final OperationAttachments attachments;
         volatile boolean done;
-        volatile Key closableKey;
 
-        ExecuteRequestContext(final ExecuteRequest executeRequest, final ManagementResponseContext managementResponseContext, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
+        ExecuteRequestContext(final ExecuteRequest executeRequest, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
+            this.executeRequest = executeRequest;
             this.messageHandler = messageHandler;
             this.attachments = attachments;
-            closableKey = managementResponseContext.getChannel().addCloseHandler(new CloseHandler<Channel>() {
+        }
+
+        CloseHandler<Channel> getRequestCloseHandler(){
+            return new CloseHandler<Channel>() {
                 public void handleClose(Channel closed) {
                     if (!done) {
                         executeRequest.setError(new Exception("Channel closed"));
                     }
                 }
-            });
+            };
         }
 
         OperationMessageHandler getMessageHandler() {
@@ -307,8 +318,114 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         }
 
         void done() {
-            closableKey.remove();
             this.done = true;
+        }
+    }
+
+    private class DelegatingCancellableAsyncFuture implements AsyncFuture<ModelNode>{
+        private final AsyncFuture<ModelNode> delegate;
+        private final int batchId;
+        private volatile boolean isCancelled;
+
+        public DelegatingCancellableAsyncFuture(AsyncFuture<ModelNode> delegate, int batchId) {
+            this.delegate = delegate;
+            this.batchId = batchId;
+        }
+
+        public org.jboss.threads.AsyncFuture.Status await() throws InterruptedException {
+            return delegate.await();
+        }
+
+        public org.jboss.threads.AsyncFuture.Status await(long timeout, TimeUnit unit) throws InterruptedException {
+            return delegate.await(timeout, unit);
+        }
+
+        public ModelNode getUninterruptibly() throws CancellationException, ExecutionException {
+            return delegate.getUninterruptibly();
+        }
+
+        public ModelNode getUninterruptibly(long timeout, TimeUnit unit) throws CancellationException, ExecutionException,
+                TimeoutException {
+            return delegate.getUninterruptibly(timeout, unit);
+        }
+
+        public org.jboss.threads.AsyncFuture.Status awaitUninterruptibly() {
+            return delegate.awaitUninterruptibly();
+        }
+
+        public org.jboss.threads.AsyncFuture.Status awaitUninterruptibly(long timeout, TimeUnit unit) {
+            return delegate.awaitUninterruptibly(timeout, unit);
+        }
+
+        public boolean isDone() {
+            return delegate.isDone();
+        }
+
+        public org.jboss.threads.AsyncFuture.Status getStatus() {
+            return delegate.getStatus();
+        }
+
+        public <A> void addListener(org.jboss.threads.AsyncFuture.Listener<? super ModelNode, A> listener, A attachment) {
+            delegate.addListener(listener, attachment);
+        }
+
+        public ModelNode get() throws InterruptedException, ExecutionException {
+            return delegate.get();
+        }
+
+        public ModelNode get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return delegate.get(timeout, unit);
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return isCancelled;
+        }
+
+        @Override
+        public boolean cancel(boolean interruptionDesired) {
+            if (!activeRequests.containsKey(batchId)) {
+                return false;
+            }
+            try {
+                new CancelAsyncRequest().executeForResult(executor, getClientChannelStrategy());
+                if (isDone()) {
+                    isCancelled = false;
+                }
+                isCancelled = true;
+                return isCancelled;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        @Override
+        public void asyncCancel(boolean interruptionDesired) {
+            try {
+                new CancelAsyncRequest().execute(executor, getClientChannelStrategy());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+
+        private class CancelAsyncRequest extends ManagementRequest<Void>{
+
+            public CancelAsyncRequest() {
+                super(batchId);
+            }
+
+            @Override
+            protected byte getRequestCode() {
+                return NewModelControllerProtocol.CANCEL_ASYNC_REQUEST;
+            }
+
+            @Override
+            protected Void readResponse(DataInput input) throws IOException {
+                isCancelled = true;
+                return null;
+            }
         }
     }
 }

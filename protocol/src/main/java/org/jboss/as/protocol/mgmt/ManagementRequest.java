@@ -28,6 +28,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 
@@ -134,6 +136,15 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
     protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
     }
 
+    /**
+     * Override to register a close handler for the channel that will be removed once the request is done
+     *
+     * @return the close handler
+     */
+    protected CloseHandler<Channel> getRequestCloseHandler() {
+        return null;
+    }
+
     private final class DelegatingResponseHandler extends ManagementResponseHandler<T>{
         private final ManagementClientChannelStrategy clientChannelStrategy;
 
@@ -143,7 +154,7 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
 
         @Override
         protected T readResponse(DataInput input) {
-            final String error = getContext().getResponse().getError();
+            final String error = getResponseContext().getResponse().getError();
             if (error != null) {
                 future.failed(new IOException("A problem happened executing on the server: " + error));
                 return null;
@@ -151,7 +162,7 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
 
             T result = null;
             try {
-                ManagementRequest.this.setContext(getContext());
+                ManagementRequest.this.setResponseContext(getResponseContext());
                 result = ManagementRequest.this.readResponse(input);
                 future.done(result);
                 return result;

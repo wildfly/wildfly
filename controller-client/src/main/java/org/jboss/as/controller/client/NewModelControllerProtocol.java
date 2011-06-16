@@ -28,13 +28,15 @@ package org.jboss.as.controller.client;
  */
 public interface NewModelControllerProtocol {
 
-    byte EXECUTE_CLIENT_REQUEST = 0x44;
-    byte EXECUTE_TX_REQUEST = 0x45;
-    byte HANDLE_REPORT_REQUEST = 0x46;
-    byte OPERATION_FAILED_REQUEST = 0x47;
-    byte OPERATION_COMPLETED_REQUEST = 0x48;
-    byte OPERATION_PREPARED_REQUEST = 0x49;
+    byte EXECUTE_ASYNC_CLIENT_REQUEST = 0x45;
+    byte EXECUTE_CLIENT_REQUEST = 0x46;
+    byte EXECUTE_TX_REQUEST = 0x47;
+    byte HANDLE_REPORT_REQUEST = 0x48;
+    byte OPERATION_FAILED_REQUEST = 0x49;
+    byte OPERATION_COMPLETED_REQUEST = 0x4A;
+    byte OPERATION_PREPARED_REQUEST = 0x4B;
     byte GET_INPUTSTREAM_REQUEST = 0x4C;
+    byte CANCEL_ASYNC_REQUEST = 0x4D;
 
 
     byte PARAM_END = 0x60;
