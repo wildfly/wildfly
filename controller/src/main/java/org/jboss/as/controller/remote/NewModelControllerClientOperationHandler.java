@@ -85,7 +85,7 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
             ModelNode result;
             try {
-                System.out.println("--- Executing client request " +  batchId);
+                System.out.println("--- Executing client request " +  batchId + " on " + getContext().getChannel().getName());
                 result = controller.execute(
                         operation,
                         new OperationMessageHandlerProxy(getContext(), batchId),
