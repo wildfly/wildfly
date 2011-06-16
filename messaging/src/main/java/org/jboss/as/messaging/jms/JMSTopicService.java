@@ -61,21 +61,7 @@ public class JMSTopicService implements Service<Void> {
     public synchronized void start(StartContext context) throws StartException {
         final JMSServerManager jmsManager = jmsServer.getValue();
         try {
-            MockContext.pushBindingTrap();
-            try {
-                jmsManager.createTopic(false, name, jndi);
-            } finally {
-                final ServiceTarget target = context.getChildTarget();
-                final Map<String, Object> bindings = MockContext.popTrappedBindings();
-                for(Map.Entry<String, Object> binding : bindings.entrySet()) {
-                    final BinderService binderService = new BinderService(binding.getKey());
-                    target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(binding.getKey()), binderService)
-                        .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
-                        .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(binding.getValue())))
-                                .setInitialMode(ServiceController.Mode.ACTIVE)
-                                .install();
-                }
-            }
+            jmsManager.createTopic(false, name, jndi);
         } catch (Exception e) {
             throw new StartException("failed to create queue", e);
         }
