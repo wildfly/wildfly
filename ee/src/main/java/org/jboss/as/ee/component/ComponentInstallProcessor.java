@@ -37,10 +37,8 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
@@ -147,22 +145,15 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         }
 
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
-
-            final Map<ServiceName, BindingConfiguration> existingBindings = new HashMap<ServiceName, BindingConfiguration>();
-
-            final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings = new HashMap<ServiceName, BindingConfiguration>();
-
             // The bindings for the component
-            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), existingBindings, deploymentDescriptorBindings);
-            //component level bindings only come from the DD
-            //and override all other bindings
-            deploymentDescriptorBindings.putAll(existingBindings);
+            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations());
+
 
             // The bindings for the component class
             new ClassDescriptionTraversal(configuration.getModuleClassConfiguration(), applicationDescription) {
                 @Override
                 protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), existingBindings, deploymentDescriptorBindings);
+                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations());
                 }
             }.run();
 
@@ -174,7 +165,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     new ClassDescriptionTraversal(interceptorClass, applicationDescription) {
                         @Override
                         protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), existingBindings, deploymentDescriptorBindings);
+                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations());
                         }
                     }.run();
                 }
@@ -185,7 +176,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         startBuilder.install();
     }
 
-    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, final Map<ServiceName, BindingConfiguration> existingBindings, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings) throws DeploymentUnitProcessingException {
+    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings) throws DeploymentUnitProcessingException {
 
         //we only handle java:comp bindings for components that have their own namespace here, the rest are processed by ModuleJndiBindingProcessor
         // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
@@ -196,20 +187,6 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 final String bindingName = bindingConfiguration.getName().startsWith("java:comp") ? bindingConfiguration.getName() : "java:comp/env/" + bindingConfiguration.getName();
                 final BinderService service = new BinderService(bindingName);
                 final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName);
-
-                if (existingBindings.containsKey(serviceName)) {
-                    if (deploymentDescriptorBindings.containsKey(serviceName)) {
-                        continue;
-                    }
-                    final BindingConfiguration existing = existingBindings.get(serviceName);
-                    if (existing.equalTo(bindingConfiguration, phaseContext)) {
-                        continue;
-                    } else {
-                        throw new DeploymentUnitProcessingException("Bindings with the same name at " + bindingConfiguration.getName() + " " + bindingConfiguration + " and " + existing);
-                    }
-                }
-                existingBindings.put(serviceName, bindingConfiguration);
-
                 logger.tracef("Binding %s for %s using service name %s", bindingName, configuration.getComponentClass(), serviceName);
                 ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(serviceName, service);
                 bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
