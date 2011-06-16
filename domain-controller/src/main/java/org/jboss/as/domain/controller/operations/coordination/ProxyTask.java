@@ -132,7 +132,7 @@ class ProxyTask implements Callable<ModelNode> {
         return finalResultRef.get();
     }
 
-    ModelNode getResult() throws InterruptedException {
+    ModelNode getUncommittedResult() throws InterruptedException {
         synchronized (proxyResultRef) {
 
             while (proxyResultRef.get() == null) {

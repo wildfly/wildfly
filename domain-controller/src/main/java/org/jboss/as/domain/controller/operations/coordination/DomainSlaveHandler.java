@@ -27,14 +27,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
@@ -78,7 +74,7 @@ public class DomainSlaveHandler implements NewStepHandler {
                 ProxyTask task = entry.getValue();
                 ModelNode result = null;
                 try {
-                    result = entry.getValue().getResult();
+                    result = entry.getValue().getUncommittedResult();
                 } catch (InterruptedException e) {
                     result = new ModelNode();
                     result.get(OUTCOME).set(FAILED);

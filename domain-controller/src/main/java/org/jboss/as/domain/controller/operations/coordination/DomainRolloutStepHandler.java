@@ -29,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ACROSS_GROUPS;
@@ -37,7 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,14 +43,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.plan.NewRolloutPlanController;
 import org.jboss.as.domain.controller.plan.NewServerOperationExecutor;
@@ -113,6 +108,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         }  else System.out.println("Complete rollback");
 
         if (pushToServers) {
+            // We no longer roll back by default
             domainOperationContext.setCompleteRollback(false);
             final Map<ServerIdentity, ProxyTask> tasks = new HashMap<ServerIdentity, ProxyTask>();
             try {
@@ -169,7 +165,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
                     ModelNode result = null;
                     try {
                         future = executorService.submit(task);
-                        result = task.getResult();
+                        result = task.getUncommittedResult();
                     } catch (InterruptedException e) {
                         interrupted = true;
                         result = new ModelNode();

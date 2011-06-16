@@ -94,11 +94,7 @@ public class OperationSlaveStepHandler {
         ServerOperationResolver resolver = new ServerOperationResolver(localHostControllerInfo.getLocalHostName());
         ServerOperationsResolverHandler sorh = new ServerOperationsResolverHandler(localHostControllerInfo.getLocalHostName(),
                 resolver, parsedOp, originalAddress, originalRegistration, response, recordResponse);
-        if (recordResponse) {
-            context.addStep(sorh, NewOperationContext.Stage.DOMAIN);
-        } else {
-            context.addStep(response, sorh, NewOperationContext.Stage.DOMAIN);
-        }
+        context.addStep(sorh, NewOperationContext.Stage.DOMAIN);
     }
 
     /**
