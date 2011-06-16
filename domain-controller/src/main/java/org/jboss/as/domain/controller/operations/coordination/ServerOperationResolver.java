@@ -138,6 +138,7 @@ public class ServerOperationResolver {
 
     public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
 
+        System.out.println("Resolving " + operation);
         if (address.size() == 0) {
             return resolveDomainRootOperation(operation, domain, host);
         }
