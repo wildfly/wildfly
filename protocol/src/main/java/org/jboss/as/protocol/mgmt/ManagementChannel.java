@@ -31,6 +31,7 @@ import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
 
@@ -74,13 +75,21 @@ public class ManagementChannel extends ProtocolChannel {
     void executeRequest(ManagementRequest<?> request, ManagementResponseHandler<?> responseHandler) throws IOException {
         responseReceiver.registerResponseHandler(request.getCurrentRequestId(), responseHandler);
         FlushableDataOutputImpl output = FlushableDataOutputImpl.create(this.writeMessage());
+        Key closeKey = null;
         try {
+            CloseHandler<Channel> closeHandler = request.getRequestCloseHandler();
+            if (closeHandler != null) {
+                closeKey = addCloseHandler(closeHandler);
+            }
             final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, request.getCurrentRequestId(), request.getBatchId(), request.getRequestCode());
             managementRequestHeader.write(output);
 
             request.writeRequest(this, output);
         } finally {
             IoUtils.safeClose(output);
+            if (closeKey != null) {
+                closeKey.remove();
+            }
         }
     }
 
@@ -189,7 +198,7 @@ public class ManagementChannel extends ProtocolChannel {
             if (responseHandler == null) {
                 throw new IOException("No response handler for request " + header.getResponseId());
             }
-            responseHandler.setContext(new ManagementResponseContext(header, ManagementChannel.this));
+            responseHandler.setResponseContext(new ManagementResponseContext(header, ManagementChannel.this));
 
             try {
                 responseHandler.readResponse(input);

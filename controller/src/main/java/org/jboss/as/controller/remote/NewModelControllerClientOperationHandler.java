@@ -27,6 +27,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
@@ -46,6 +49,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class NewModelControllerClientOperationHandler extends NewAbstractModelControllerOperationHandler {
 
+    private final Map<Integer, Thread> asynchRequests = Collections.synchronizedMap(new HashMap<Integer, Thread>());
+
     /**
      * @param executorService executor to use to execute requests from this operation handler to the initiator
      * @param controller the target controller
@@ -58,7 +63,11 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
     @Override
     public ManagementRequestHandler getRequestHandler(final byte id) {
         if (id == NewModelControllerProtocol.EXECUTE_CLIENT_REQUEST) {
-            return new ExecuteRequestHandler();
+            return new ExecuteRequestHandler(false);
+        } else if (id == NewModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST) {
+            return new ExecuteRequestHandler(true);
+        } else if (id == NewModelControllerProtocol.CANCEL_ASYNC_REQUEST) {
+            return new CancelAsyncRequestHandler();
         }
         return null;
     }
@@ -68,9 +77,15 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
      * requests from the remote proxy controller and forwards them to the target model controller
      */
     private class ExecuteRequestHandler extends ManagementRequestHandler {
+        private final boolean asynch;
         private ModelNode operation = new ModelNode();
         private int batchId;
         private int attachmentsLength;
+
+        public ExecuteRequestHandler(boolean asynch) {
+            System.out.println("is asynch ");
+            this.asynch = asynch;
+        }
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
@@ -83,23 +98,52 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
 
         @Override
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
-            ModelNode result;
             try {
-                System.out.println("--- Executing client request " +  batchId + " on " + getContext().getChannel().getName());
-                result = controller.execute(
-                        operation,
-                        new OperationMessageHandlerProxy(getContext(), batchId),
-                        NewModelController.OperationTransactionControl.COMMIT,
-                        new OperationAttachmentsProxy(getContext(), batchId, attachmentsLength));
-            } catch (Exception e) {
-                final ModelNode failure = new ModelNode();
-                failure.get(OUTCOME).set(FAILED);
-                failure.get(FAILURE_DESCRIPTION).set(e.getClass().getName() + ":" + e.getMessage());
-                result = failure;
+                ModelNode result;
+                try {
+                    System.out.println("--- Executing client request " +  batchId + " on " + getContext().getChannel().getName());
+                    if (asynch) {
+                        //register the cancel handler
+                        asynchRequests.put(batchId, Thread.currentThread());
+                    }
+                    result = controller.execute(
+                            operation,
+                            new OperationMessageHandlerProxy(getContext(), batchId),
+                            NewModelController.OperationTransactionControl.COMMIT,
+                            new OperationAttachmentsProxy(getContext(), batchId, attachmentsLength));
+                } catch (Exception e) {
+                    final ModelNode failure = new ModelNode();
+                    failure.get(OUTCOME).set(FAILED);
+                    failure.get(FAILURE_DESCRIPTION).set(e.getClass().getName() + ":" + e.getMessage());
+                    result = failure;
+                }
+                System.out.println("--- Executed client request " +  batchId + " " + result.get(OUTCOME).asString());
+                output.write(NewModelControllerProtocol.PARAM_RESPONSE);
+                result.writeExternal(output);
+            } finally {
+                if (asynch) {
+                    asynchRequests.remove(batchId);
+                }
             }
-            System.out.println("--- Executed client request " +  batchId + " " + result.get(OUTCOME).asString());
-            output.write(NewModelControllerProtocol.PARAM_RESPONSE);
-            result.writeExternal(output);
+        }
+    }
+
+    private class CancelAsyncRequestHandler extends ManagementRequestHandler {
+        private int batchId;
+        @Override
+        protected void readRequest(DataInput input) throws IOException {
+            batchId = getContext().getHeader().getBatchId();
+        }
+
+        @Override
+        protected void writeResponse(FlushableDataOutput output) throws IOException {
+            Thread t = asynchRequests.get(batchId);
+            if (t != null) {
+                t.interrupt();
+            }
+            else {
+                throw new IOException("No asynch request with batch id " + batchId);
+            }
         }
     }
 }

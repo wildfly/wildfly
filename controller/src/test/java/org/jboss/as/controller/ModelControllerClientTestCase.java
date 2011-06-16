@@ -34,6 +34,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import junit.framework.Assert;
+
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.NewOperationBuilder;
@@ -250,6 +252,62 @@ public class ModelControllerClientTestCase {
         } finally {
             IoUtils.safeClose(client);
         }
+    }
+
+    @Test
+    public void testCancelAsynchronousOperation() throws Exception {
+        ManagementChannel serverChannel = channels.getServerChannel();
+        ManagementChannel clientChannel = channels.getClientChannel();
+        clientChannel.startReceiving();
+
+        final CountDownLatch executeLatch = new CountDownLatch(1);
+        MockModelController controller = new MockModelController() {
+            @Override
+            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
+                this.operation = operation;
+                executeLatch.countDown();
+
+                try {
+                    //Wait for this operation to be cancelled
+                    Thread.sleep(10000000);
+                    ModelNode result = new ModelNode();
+                    result.get("testing").set(operation.get("test"));
+                    return result;
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+
+        NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
+        serverChannel.setOperationHandler(operationHandler);
+
+        NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
+        try {
+            clientChannel.setOperationHandler((ManagementOperationHandler)client);
+
+            ModelNode operation = new ModelNode();
+            operation.get("test").set("123");
+
+            final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
+
+            AsyncFuture<ModelNode> resultFuture = client.executeAsync(operation,
+                    new OperationMessageHandler() {
+
+                        @Override
+                        public void handleReport(MessageSeverity severity, String message) {
+                            if (severity == MessageSeverity.INFO && message.startsWith("Test")) {
+                                messages.add(message);
+                            }
+                        }
+                    });
+            executeLatch.await();
+            Assert.assertTrue(resultFuture.cancel(false));
+        } finally {
+            IoUtils.safeClose(client);
+        }
+
     }
 
     private void assertArrays(byte[] expected, byte[] actual) {

@@ -34,10 +34,14 @@ public abstract class ManagementResponseHandler<T> {
     private ManagementResponseContext context;
 
     /**
-     * Get the response context
+     * Get the response context. This is only available in the readResponse(DataInput) method.
      * @return the context
+     * @throws IllegalStateException if an attempt is made to read it outside of the readResponse(DataInput) method.
      */
-    protected ManagementResponseContext getContext() {
+    protected ManagementResponseContext getResponseContext() {
+        if (context == null) {
+            throw new IllegalArgumentException("Only allowed from within readResponse()");
+        }
         return context;
     }
 
@@ -45,7 +49,7 @@ public abstract class ManagementResponseHandler<T> {
      * Set the response context
      * @param context the context to set
      */
-    void setContext(ManagementResponseContext context) {
+    void setResponseContext(ManagementResponseContext context) {
         this.context = context;
     }
 
