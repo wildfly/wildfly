@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import java.io.InputStream;
 
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -165,11 +166,18 @@ public interface NewOperationContext {
     void runtimeUpdateSkipped();
 
     /**
-     * Get the model node registration.  The registration is relative to the operation address.
+     * Get a read only view of the model node registration.  The registration is relative to the operation address.
      *
      * @return the model node registration
      */
-    ModelNodeRegistration getModelNodeRegistration();
+    ImmutableModelNodeRegistration getModelNodeRegistration();
+
+    /**
+     * Get a mutable view of the model node registration.  The registration is relative to the operation address.
+     *
+     * @return the model node registration
+     */
+    ModelNodeRegistration getModelNodeRegistrationForUpdate();
 
     /**
      * Get the service registry.  If the step is not a runtime operation handler step, an exception will be thrown.  The
@@ -261,11 +269,33 @@ public interface NewOperationContext {
     ModelNode removeModel(PathAddress address) throws UnsupportedOperationException;
 
     /**
+     * Acquire the controlling {@link NewModelController}'s exclusive lock. Holding this lock prevent other operations
+     * from mutating the model, the {@link ModelNodeRegistration management resource registry} or the runtime
+     * service registry until the lock is released. The lock is automatically released when the
+     * {@link NewStepHandler#execute(NewOperationContext, org.jboss.dmr.ModelNode) execute method} of the handler
+     * that invoked this method returns.
+     * <p>
+     * This method should be little used. The model controller's exclusive lock is acquired automatically when any
+     * of the operations in this interface that imply mutating the model, management resource registry or service
+     * registry are invoked. The only use for this method are special situations where an exclusive lock is needed
+     * but none of those methods will be invoked.
+     * </p>
+     */
+    void acquireControllerLock();
+
+    /**
      * Determine whether the model has thus far been affected by this operation.
      *
      * @return {@code true} if the model was affected, {@code false} otherwise
      */
     boolean isModelAffected();
+
+    /**
+     * Determine whether the {@link ModelNodeRegistration management resource registry} has thus far been affected by this operation.
+     *
+     * @return {@code true} if the management resource registry was affected, {@code false} otherwise
+     */
+    boolean isResourceRegistryAffected();
 
     /**
      * Determine whether the runtime container has thus far been affected by this operation.

@@ -34,6 +34,7 @@ import java.util.Map;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -52,7 +53,7 @@ public final class NewCompositeOperationHandler implements NewStepHandler, Descr
     }
 
     public void execute(final NewOperationContext context, final ModelNode operation) {
-        ModelNodeRegistration registry = context.getModelNodeRegistration();
+        ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
         final List<ModelNode> list = operation.get(STEPS).asList();
         ModelNode responseMap = context.getResult().setEmptyObject();
         Map<String, NewStepHandler> stepHandlerMap = new HashMap<String, NewStepHandler>();

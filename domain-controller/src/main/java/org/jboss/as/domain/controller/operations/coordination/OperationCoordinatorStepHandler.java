@@ -51,11 +51,10 @@ import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadUtil;
 import org.jboss.as.domain.controller.operations.deployment.NewDeploymentUploadUtil;
 import org.jboss.dmr.ModelNode;
 
@@ -81,7 +80,7 @@ public class OperationCoordinatorStepHandler {
     void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
         // Determine routing
-        ModelNodeRegistration opRegistry = context.getModelNodeRegistration();
+        ImmutableModelNodeRegistration opRegistry = context.getModelNodeRegistration();
         OperationRouting routing = OperationRouting.determineRouting(operation, localHostControllerInfo, opRegistry);
 
         if (!localHostControllerInfo.isMasterDomainController()
@@ -179,8 +178,7 @@ public class OperationCoordinatorStepHandler {
             if (remoteHosts.size() > 0 || global) {
                 // Lock the controller to ensure there are no topology changes mid-op.
                 // This assumes registering/unregistering a remote proxy will involve an op and hence will block
-                // TODO perhaps expose a direct OperationContext method to do this
-                context.getServiceRegistry(true);
+                context.acquireControllerLock();
 
                 if (global) {
                     remoteHosts.addAll(hostProxies.keySet());
