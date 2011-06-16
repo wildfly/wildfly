@@ -32,6 +32,8 @@ import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
 import org.jboss.metadata.ejb.spec.ApplicationExceptionsMetaData;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
+import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 
 /**
  * Processes the assembly-descriptor section of a ejb-jar.xml of a EJB deployment and updates the {@link EjbJarDescription}
@@ -67,6 +69,21 @@ public class AssemblyDescriptorProcessor implements DeploymentUnitProcessor {
                     // add the application exception to the ejb jar description
                     ejbJarDescription.addApplicationException(exceptionClassName, rollback, inherited);
                 }
+            }
+
+            // process security-role(s)
+            this.processSecurityRoles(assemblyDescriptor.getSecurityRoles(), ejbJarDescription);
+        }
+    }
+
+    private void processSecurityRoles(final SecurityRolesMetaData securityRoles, final EjbJarDescription ejbJarDescription) {
+        if (securityRoles == null || securityRoles.isEmpty()) {
+            return;
+        }
+        for (final SecurityRoleMetaData securityRole : securityRoles) {
+            final String roleName = securityRole.getRoleName();
+            if (roleName != null && !roleName.trim().isEmpty()) {
+                ejbJarDescription.addSecurityRole(roleName);
             }
         }
     }
