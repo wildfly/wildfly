@@ -85,6 +85,7 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
             ModelNode result;
             try {
+                System.out.println("--- Executing client request " +  batchId);
                 result = controller.execute(
                         operation,
                         new OperationMessageHandlerProxy(getContext(), batchId),
@@ -96,6 +97,7 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
                 failure.get(FAILURE_DESCRIPTION).set(e.getClass().getName() + ":" + e.getMessage());
                 result = failure;
             }
+            System.out.println("--- Executed client request " +  batchId + " " + result.get(OUTCOME).asString());
             output.write(NewModelControllerProtocol.PARAM_RESPONSE);
             result.writeExternal(output);
         }

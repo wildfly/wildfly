@@ -123,7 +123,8 @@ public class ManagementChannel extends ProtocolChannel {
                 requestHandler.writeResponse(output);
                 output.writeByte(ManagementProtocol.RESPONSE_END);
             } catch (Exception e) {
-                formatException(e);
+                e.printStackTrace();
+                throwFormattedException(e);
             } finally {
                 IoUtils.safeClose(output);
             }
