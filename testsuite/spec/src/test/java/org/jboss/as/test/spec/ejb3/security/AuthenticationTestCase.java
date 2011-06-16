@@ -51,6 +51,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * Test case to hold the authentication scenarios, these range from calling a servlet which calls
+ * a bean to calling a bean which calls another bean to calling a bean which re-authenticated
+ * before calling another bean.
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
