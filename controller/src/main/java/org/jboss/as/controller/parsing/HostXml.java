@@ -205,16 +205,12 @@ public class HostXml extends CommonXml {
 
         Element element = nextElement(reader);
 
-        if (element == Element.EXTENSIONS) {
-            parseExtensions(reader, address, list);
+        if (element == Element.SYSTEM_PROPERTIES) {
+            parseSystemProperties(reader, address, list, false);
             element = nextElement(reader);
         }
         if (element == Element.PATHS) {
             parsePaths(reader, address, list, true);
-            element = nextElement(reader);
-        }
-        if (element == Element.SYSTEM_PROPERTIES) {
-            parseSystemProperties(reader, address, list, false);
             element = nextElement(reader);
         }
         if (element == Element.MANAGEMENT) {

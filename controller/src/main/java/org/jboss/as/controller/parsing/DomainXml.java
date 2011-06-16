@@ -177,6 +177,10 @@ public class DomainXml extends CommonXml {
             parseExtensions(reader, address, list);
             element = nextElement(reader);
         }
+        if (element == Element.SYSTEM_PROPERTIES) {
+            parseSystemProperties(reader, address, list, false);
+            element = nextElement(reader);
+        }
         if (element == Element.PATHS) {
             parsePaths(reader, address, list, true);
             element = nextElement(reader);
@@ -192,10 +196,6 @@ public class DomainXml extends CommonXml {
         }
         if (element == Element.SOCKET_BINDING_GROUPS) {
             parseDomainSocketBindingGroups(reader, address, list, interfaceNames);
-            element = nextElement(reader);
-        }
-        if (element == Element.SYSTEM_PROPERTIES) {
-            parseSystemProperties(reader, address, list, false);
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
