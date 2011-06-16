@@ -81,7 +81,7 @@ public class DomainResultHandler implements NewStepHandler {
     private boolean collectDomainFailure(NewOperationContext context, final boolean isDomain) {
         final ModelNode coordinator = domainOperationContext.getCoordinatorResult();
         ModelNode domainFailure = null;
-        if (isDomain &&  coordinator != null && coordinator.hasDefined(OUTCOME) && FAILED.equals(coordinator.get(OUTCOME).asString())) {
+        if (isDomain &&  coordinator != null && coordinator.has(FAILURE_DESCRIPTION)) {
             domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
         }
         if (domainFailure != null) {
@@ -95,7 +95,7 @@ public class DomainResultHandler implements NewStepHandler {
         ModelNode hostFailureResults = null;
         for (Map.Entry<String, ModelNode> entry : domainOperationContext.getHostControllerResults().entrySet()) {
             ModelNode hostResult = entry.getValue();
-            if (hostResult.hasDefined(OUTCOME) && FAILED.equals(hostResult.get(OUTCOME).asString())) {
+            if (hostResult.has(FAILURE_DESCRIPTION)) {
                 if (hostFailureResults == null) {
                     hostFailureResults = new ModelNode();
                 }
@@ -105,7 +105,7 @@ public class DomainResultHandler implements NewStepHandler {
         }
 
         final ModelNode coordinator = domainOperationContext.getCoordinatorResult();
-        if (!isDomain && coordinator != null && coordinator.hasDefined(OUTCOME) && FAILED.equals(coordinator.get(OUTCOME).asString())) {
+        if (!isDomain && coordinator != null && coordinator.has(FAILURE_DESCRIPTION)) {
             if (hostFailureResults == null) {
                 hostFailureResults = new ModelNode();
             }
