@@ -157,6 +157,28 @@ public abstract class AbstractManagementTestCase {
         }
     }
 
+
+    @Test
+    public void testExceptionInRequestWrite() throws Exception {
+        ManagementChannel channel = channels.getServerChannel();
+        channels.getClientChannel().startReceiving();
+        channel.setOperationHandler(new SimpleHandlers.OperationHandler());
+        SimpleHandlers.Request request = new SimpleHandlers.Request(SimpleHandlers.SIMPLE_REQUEST, 600) {
+
+            @Override
+            protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
+                throw new RuntimeException("Oh no!!!!");
+            }
+
+        };
+        try {
+            request.executeForResult(channels.getExecutorService(), ManagementClientChannelStrategy.create(channels.getClientChannel()));
+            Assert.fail("Should have failed");
+        } catch (ExecutionException expected) {
+            Assert.assertTrue(expected.getCause() instanceof RuntimeException);
+        }
+    }
+
     @Test
     public void testExceptionInChannelStrategy() throws Exception {
         ManagementChannel channel = channels.getServerChannel();
