@@ -203,6 +203,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 inputFactory.setXMLResolver(NoopXmlResolver.create());
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                 PersistenceUnitMetadataHolder puHolder = PersistenceUnitXmlParser.parse(xmlReader);
+
                 postParseSteps(persistence_xml, puHolder, deploymentUnit, deploymentRoot);
                 listPUHolders.add(puHolder);
             } catch (Exception e) {

@@ -35,6 +35,8 @@ import org.jboss.as.jpa.service.PersistenceUnitService;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 import org.jboss.as.jpa.validator.SerializableValidatorFactory;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -208,7 +210,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                     pu.setClassLoader(classLoader);
                     pu.setTempClassloader(new TempClassLoader(classLoader));
                     try {
-                        PersistenceUnitService service = new PersistenceUnitService(pu, resourceRoot);
+                        final PersistenceUnitService service = new PersistenceUnitService(pu);
                         // TODO:  move this to a standalone service
                         final Injector<TransactionManager> transactionManagerInjector =
                                 new Injector<TransactionManager>() {
@@ -250,12 +252,22 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
 
                         if (jtaDataSource != null) {
-                            builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
-                            useDefaultDataSource = false;
+                            if (jtaDataSource.startsWith("java:")) {
+                                builder.addDependency(ContextNames.serviceNameOfContext(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), jtaDataSource), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
+                                useDefaultDataSource = false;
+                            } else {
+                                builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
+                                useDefaultDataSource = false;
+                            }
                         }
                         if (nonJtaDataSource != null) {
-                            builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<DataSource>(service.getNonJtaDataSourceInjector(), DataSource.class));
-                            useDefaultDataSource = false;
+                            if (nonJtaDataSource.startsWith("java:")) {
+                                builder.addDependency(ContextNames.serviceNameOfContext(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), nonJtaDataSource), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
+                                useDefaultDataSource = false;
+                            } else {
+                                builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<DataSource>(service.getNonJtaDataSourceInjector(), DataSource.class));
+                                useDefaultDataSource = false;
+                            }
                         }
                         // JPA 2.0 8.2.1.5, container provides default JTA datasource
                         if (useDefaultDataSource) {
@@ -274,10 +286,10 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
                         if (pu.getProperties().containsKey(JNDI_PROPERTY)) {
                             String jndiName = pu.getProperties().get(JNDI_PROPERTY).toString();
-                            final ServiceName bindingServiceName = ContextNames.serviceNameOfEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jndiName);
+                            final ServiceName bindingServiceName = ContextNames.serviceNameOfContext(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), jndiName);
                             final BinderService binderService = new BinderService(jndiName);
                             serviceTarget.addService(bindingServiceName, binderService)
-                                    .addDependency(ContextNames.serviceNameOfNamingStore(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), jndiName),NamingStore.class,  binderService.getNamingStoreInjector())
+                                    .addDependency(ContextNames.serviceNameOfNamingStore(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), jndiName), NamingStore.class, binderService.getNamingStoreInjector())
                                     .addDependency(serviceName, PersistenceUnitService.class, new Injector<PersistenceUnitService>() {
                                         @Override
                                         public void inject(final PersistenceUnitService value) throws InjectionException {
@@ -334,4 +346,24 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         return (DeploymentTypeMarker.isType(DeploymentType.WAR, context));
     }
 
+    private static class ManagedReferenceFactoryInjector implements Injector<ManagedReferenceFactory> {
+        private volatile ManagedReference reference;
+        private final Injector<DataSource> dataSourceInjector;
+
+        public ManagedReferenceFactoryInjector(Injector<DataSource> dataSourceInjector) {
+            this.dataSourceInjector = dataSourceInjector;
+        }
+
+        @Override
+        public void inject(final ManagedReferenceFactory value) throws InjectionException {
+            this.reference = value.getReference();
+            dataSourceInjector.inject((DataSource) reference.getInstance());
+        }
+
+        @Override
+        public void uninject() {
+            reference.release();
+            reference = null;
+        }
+    }
 }
