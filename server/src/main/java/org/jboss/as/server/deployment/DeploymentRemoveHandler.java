@@ -21,11 +21,13 @@ package org.jboss.as.server.deployment;
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
@@ -53,7 +55,10 @@ public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implement
         boolean enabled = model.hasDefined(ENABLED) ? model.get(ENABLED).asBoolean() : true;
         if (!enabled) return;
 
-        String deploymentUnitName = model.require(NAME).asString();
+        final ModelNode opAddr = operation.get(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
+        final String deploymentUnitName = model.hasDefined(RUNTIME_NAME) ? model.get(RUNTIME_NAME).asString() : name;
         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
         context.removeService(deploymentUnitServiceName);
         context.removeService(deploymentUnitServiceName.append("contents"));
