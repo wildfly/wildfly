@@ -100,13 +100,16 @@ public class PersistenceContextInjectionSource extends InjectionSource {
         injector.inject(injectable);
     }
 
-    @Override
-    public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
+    public boolean equals(Object other) {
         if (other instanceof PersistenceContextInjectionSource) {
             PersistenceContextInjectionSource source = (PersistenceContextInjectionSource) other;
             return (source.puServiceName.equals(puServiceName));
         }
         return false;
+    }
+
+    public int hashCode() {
+        return puServiceName.hashCode();
     }
 
     private static final class PersistenceContextJndiInjectable implements ManagedReferenceFactory {

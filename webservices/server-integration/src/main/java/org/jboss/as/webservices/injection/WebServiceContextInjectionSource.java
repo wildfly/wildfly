@@ -42,11 +42,6 @@ public class WebServiceContextInjectionSource extends InjectionSource {
         injector.inject(new WebServiceContextManagedReferenceFactory());
     }
 
-    @Override
-    public boolean equalTo(InjectionSource other, DeploymentPhaseContext phaseContext) {
-        return this == other;
-    }
-
     private class WebServiceContextManagedReferenceFactory implements ManagedReferenceFactory {
 
         @Override
@@ -66,5 +61,14 @@ public class WebServiceContextInjectionSource extends InjectionSource {
             // return the WebServiceContext
             return ThreadLocalAwareWebServiceContext.getInstance();
         }
+    }
+
+    // all context injection sources are equal since they are thread locals
+    public boolean equals(Object o) {
+        return o instanceof WebServiceContextInjectionSource;
+    }
+
+    public int hashCode() {
+        return 1;
     }
 }

@@ -44,13 +44,16 @@ public final class ViewBindingInjectionSource extends InjectionSource {
         serviceBuilder.addDependency(serviceName, ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
     }
 
-    @Override
-    public boolean equalTo(final InjectionSource injectionSource, final DeploymentPhaseContext phaseContext) {
+    public boolean equals(final Object injectionSource) {
          return injectionSource instanceof ViewBindingInjectionSource && equalTo((ViewBindingInjectionSource) injectionSource);
     }
 
     private boolean equalTo(final ViewBindingInjectionSource configuration) {
         return configuration != null && serviceName.equals(configuration.serviceName);
+    }
+
+    public int hashCode() {
+        return serviceName.hashCode();
     }
 
 }

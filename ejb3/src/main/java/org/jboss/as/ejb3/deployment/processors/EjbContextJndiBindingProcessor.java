@@ -95,9 +95,12 @@ public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProce
             injector.inject(ejbContextManagedReferenceFactory);
         }
 
-        @Override
-        public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
-            return other == this;
+        public boolean equals(Object o) {
+            return o != null && o.getClass() == this.getClass();
+        }
+
+        public int hashCode() {
+            return 1;
         }
     };
 }

@@ -51,12 +51,15 @@ public final class EnvEntryInjectionSource extends InjectionSource {
         injector.inject(new ValueManagedReferenceFactory(Values.immediateValue(value)));
     }
 
-    @Override
-    public boolean equalTo(final InjectionSource injectionSource, final DeploymentPhaseContext phaseContext) {
+    public boolean equals(final Object injectionSource) {
         return injectionSource instanceof EnvEntryInjectionSource && equalTo((EnvEntryInjectionSource) injectionSource);
     }
 
     private boolean equalTo(final EnvEntryInjectionSource injectionSource) {
         return injectionSource != null && value.equals(injectionSource.value);
+    }
+
+    public int hashCode() {
+        return value.hashCode();
     }
 }

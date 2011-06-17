@@ -212,11 +212,6 @@ public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitPr
             serviceBuilder.addInjection(injector, factory);
         }
 
-        @Override
-        public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
-            return other == this;
-        }
-
         public Object getValue() throws IllegalStateException, IllegalArgumentException {
             // FIXME this is a workaround to class loader issues
             final ClassLoader tccl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();

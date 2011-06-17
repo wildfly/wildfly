@@ -48,14 +48,6 @@ public abstract class InjectionSource {
     public abstract void getResourceValue(ResolutionContext resolutionContext, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException;
 
     /**
-     * Return true if this binding is logically equivalent to the InjectionSource specified by other.
-     *
-     * @param other The other injection source to check equality against
-     * @throws DeploymentUnitProcessingException if an error occurs
-     */
-    public abstract boolean equalTo(InjectionSource other, DeploymentPhaseContext phaseContext);
-
-    /**
      * A resolution context for the injection source.
      */
     public static class ResolutionContext {

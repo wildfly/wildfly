@@ -88,12 +88,16 @@ public final class LookupInjectionSource extends InjectionSource {
     }
 
 
-    public boolean equalTo(InjectionSource configuration, DeploymentPhaseContext context) {
+    public boolean equals(Object configuration) {
         if (configuration instanceof LookupInjectionSource) {
             LookupInjectionSource lookup = (LookupInjectionSource) configuration;
             return lookupName.equals(lookup.lookupName);
         }
         return false;
+    }
+
+    public int hashCode() {
+        return lookupName.hashCode();
     }
 
 }

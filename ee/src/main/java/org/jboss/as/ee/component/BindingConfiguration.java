@@ -72,17 +72,17 @@ public final class BindingConfiguration {
         return source;
     }
 
-    /**
-     * Return true if this binding is logically equivalent to the InjectionSource specified by other.
-     *
-     * @param other The other injection source to check equality against
-     * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException if an error occurs
-     */
-    public boolean equalTo(BindingConfiguration other, DeploymentPhaseContext phaseContext) {
-        if(!name.equals(other.getName())) {
+
+    public boolean equals(Object other) {
+        if (!(other instanceof BindingConfiguration))
             return false;
-        }
-        return source.equalTo(other.getSource(), phaseContext);
+
+        BindingConfiguration config = (BindingConfiguration)other;
+        return name.equals(config.name) && source.equals(config.source);
+    }
+
+    public int hashCode() {
+        return name.hashCode() * 31 + source.hashCode();
     }
 
 }
