@@ -92,6 +92,7 @@ import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
 import org.jboss.as.host.controller.NewRemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
+import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
 import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
@@ -197,7 +198,7 @@ public class NewHostModelUtil {
 
         ModelNodeRegistration managementHttp = hostRegistration.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, HTTP_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
 
-        HttpManagementAddHandler httpAddHandler = HttpManagementAddHandler.getInstance(environment);
+        HttpManagementAddHandler httpAddHandler = HttpManagementAddHandler.getInstance(environment, hostControllerInfo);
         managementHttp.registerOperationHandler(HttpManagementAddHandler.OPERATION_NAME, httpAddHandler, httpAddHandler, false);
 
         // hostRegistration.registerReadWriteAttribute(ModelDescriptionConstants.MANAGEMENT_INTERFACE, GlobalOperationHandlers.READ_ATTRIBUTE, ManagementSocketAddHandler.INSTANCE);
@@ -238,7 +239,8 @@ public class NewHostModelUtil {
         ModelNodeRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
         HostSpecifiedInterfaceAddHandler hsiah = new HostSpecifiedInterfaceAddHandler(hostControllerInfo);
         interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, hsiah, false);
-        interfaces.registerOperationHandler(InterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, SpecifiedInterfaceRemoveHandler.INSTANCE, false);
+        HostSpecifiedInterfaceRemoveHandler sirh = new HostSpecifiedInterfaceRemoveHandler(hostControllerInfo);
+        interfaces.registerOperationHandler(InterfaceRemoveHandler.OPERATION_NAME, sirh, sirh, false);
 
         //server
         ModelNodeRegistration servers = hostRegistration.registerSubModel(PathElement.pathElement(SERVER_CONFIG), HostDescriptionProviders.SERVER_PROVIDER);

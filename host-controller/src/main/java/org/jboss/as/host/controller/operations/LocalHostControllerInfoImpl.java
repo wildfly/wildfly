@@ -53,6 +53,11 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
 
     private String remoteDcHost;
     private int remoteDcPort;
+    private String httpManagementInterface;
+    private int httpManagementPort;
+    private int httpManagementSecurePort;
+    private String nativeManagementSecurityRealm;
+    private String httpManagementSecurityRealm;
 
     public LocalHostControllerInfoImpl(final ControlledProcessState processState) {
         this.processState = processState;
@@ -81,10 +86,35 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
         return nativeManagementPort;
     }
 
+    @Override
+    public String getNativeManagementSecurityRealm() {
+        return nativeManagementSecurityRealm;
+    }
+
+    @Override
+    public String getHttpManagementInterface() {
+        return httpManagementInterface;
+    }
+
+    @Override
+    public int getHttpManagementPort() {
+        return httpManagementPort;
+    }
+
+    @Override
+    public int getHttpManagementSecurePort() {
+        return httpManagementSecurePort;
+    }
+
+    @Override
+    public String getHttpManagementSecurityRealm() {
+        return httpManagementSecurityRealm;
+    }
+
     public NetworkInterfaceBinding getNetworkInterfaceBinding(String name) throws SocketException, UnknownHostException {
         ParsedInterfaceCriteria criteria = parsedInterfaceCriteria.get(name);
         if (criteria == null) {
-            throw new IllegalArgumentException("No interface called " + name);
+            throw new IllegalArgumentException(String.format("No interface named %s exists ", name));
         }
         return NetworkInterfaceService.createBinding(name, criteria);
     }
@@ -121,8 +151,32 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
         this.nativeManagementPort = nativeManagementPort;
     }
 
+    void setNativeManagementSecurityRealm(String nativeManagementSecurityRealm) {
+        this.nativeManagementSecurityRealm = nativeManagementSecurityRealm;
+    }
+
+    void setHttpManagementInterface(String httpManagementInterface) {
+        this.httpManagementInterface = httpManagementInterface;
+    }
+
+    void setHttpManagementPort(int httpManagementPort) {
+        this.httpManagementPort = httpManagementPort;
+    }
+
+    void setHttpManagementSecurePort(int httpManagementSecurePort) {
+        this.httpManagementSecurePort = httpManagementSecurePort;
+    }
+
+    void setHttpManagementSecurityRealm(String httpManagementSecurityRealm) {
+        this.httpManagementSecurityRealm = httpManagementSecurityRealm;
+    }
+
     void addNetworkInterfaceBinding(String name, ParsedInterfaceCriteria criteria) {
         parsedInterfaceCriteria.put(name, criteria);
+    }
+
+    void removeNetworkInterfaceBinding(String name) {
+        parsedInterfaceCriteria.remove(name);
     }
 
     void setRemoteDomainControllerHost(String host) {

@@ -53,6 +53,8 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler implement
 
         hostControllerInfo.setNativeManagementInterface(interfaceName);
         hostControllerInfo.setNativeManagementPort(port);
+
+        // TODO security realm
     }
 
     /**
