@@ -52,7 +52,6 @@ import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
 import org.jboss.as.domain.controller.operations.deployment.NewDeploymentUploadUtil;
@@ -158,6 +157,9 @@ public class OperationCoordinatorStepHandler {
         ModelNode rolloutPlan = operation.hasDefined(OPERATION_HEADERS) && operation.get(OPERATION_HEADERS).has(ROLLOUT_PLAN)
             ? operation.get(OPERATION_HEADERS).remove(ROLLOUT_PLAN) : new ModelNode();
 
+        // A stage that on the way out fixes up the result/failure description. On the way in it does nothing
+        context.addStep(new DomainFinalResultHandler(overallContext), NewOperationContext.Stage.MODEL);
+
         final ModelNode slaveOp = operation.clone();
         // Hackalicious approach to not streaming content to all the slaves
         storeDeploymentContent(slaveOp, context);
@@ -204,9 +206,6 @@ public class OperationCoordinatorStepHandler {
 
         // Finally, the step to formulate and execute the 2nd phase rollout plan
         context.addStep(new DomainRolloutStepHandler(hostProxies, serverProxies, overallContext, rolloutPlan, getExecutorService()), NewOperationContext.Stage.DOMAIN);
-
-        // Always add the step to assemble the final result
-        context.addStep(new DomainResultHandler(overallContext), NewOperationContext.Stage.DOMAIN);
 
         context.completeStep();
     }

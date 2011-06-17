@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_UPDATE_SKIPPED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -213,6 +214,10 @@ final class NewOperationContextImpl implements NewOperationContext {
 
     public ModelNode getFailureDescription() {
         return response.get(FAILURE_DESCRIPTION);
+    }
+
+    public boolean hasFailureDescription() {
+        return response.has(FAILURE_DESCRIPTION);
     }
 
     public ResultAction completeStep() {
@@ -830,7 +835,11 @@ final class NewOperationContextImpl implements NewOperationContext {
     }
 
     public ModelNode getResult() {
-        return response.get("result");
+        return response.get(RESULT);
+    }
+
+    public boolean hasResult() {
+        return response.has(RESULT);
     }
 
     static class Step {

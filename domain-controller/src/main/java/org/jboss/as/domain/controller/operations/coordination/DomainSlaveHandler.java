@@ -22,20 +22,25 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
  * Executes the first phase of a two phase operation on one or more remote, slave host controllers.
@@ -43,6 +48,8 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DomainSlaveHandler implements NewStepHandler {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final ExecutorService executorService;
     private final DomainOperationContext domainOperationContext;
@@ -58,6 +65,14 @@ public class DomainSlaveHandler implements NewStepHandler {
 
     @Override
     public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+
+        if (context.hasFailureDescription()) {
+            // abort
+            context.setRollbackOnly();
+            context.completeStep();
+            return;
+        }
+
         final Map<String, ProxyTask> tasks = new HashMap<String, ProxyTask>();
         final Map<String, Future<ModelNode>> futures = new HashMap<String, Future<ModelNode>>();
 
@@ -88,17 +103,34 @@ public class DomainSlaveHandler implements NewStepHandler {
                 domainOperationContext.addHostControllerResult(entry.getKey(), result);
             }
 
-            domainOperationContext.setCompleteRollback(domainOperationContext.hasHostLevelFailures());
             context.completeStep();
 
         } finally {
             try {
                 // Inform the remote hosts whether to commit or roll back their updates
                 // Do this in parallel
-                // TODO consider blocking until all return?
                 boolean rollback = domainOperationContext.isCompleteRollback();
                 for (ProxyTask task : tasks.values()) {
                     task.finalizeTransaction(!rollback);
+                }
+                final short timeout = 10;
+                for (Map.Entry<String, Future<ModelNode>> entry : futures.entrySet()) {
+                    Future<ModelNode> future = entry.getValue();
+                    try {
+                        ModelNode finalResult = future.isCancelled() ? getCancelledResult() : future.get();
+                        domainOperationContext.addHostControllerResult(entry.getKey(), finalResult);
+                    } catch (InterruptedException e) {
+                        interrupted = true;
+                        log.warnf("Interrupted awaiting final response from host %s", entry.getKey());
+
+                    } catch (ExecutionException e) {
+                        log.warnf(e.getCause(), "Caught exception awaiting final response from host %s",
+                                entry.getKey());
+                    }
+//                    catch (TimeoutException e) {
+//                        log.warnf("Host %s did not respond to %s within [%d] seconds", entry.getKey(), (rollback ? "rollback" : "commit"), timeout);
+//                    }
+
                 }
             } finally {
                 if (interrupted) {
@@ -106,6 +138,12 @@ public class DomainSlaveHandler implements NewStepHandler {
                 }
             }
         }
+    }
+
+    private ModelNode getCancelledResult() {
+        ModelNode cancelled = new ModelNode();
+        cancelled.get(OUTCOME).set(CANCELLED);
+        return cancelled;
     }
 
 }

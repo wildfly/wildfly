@@ -22,26 +22,26 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_FAILURE_DESCRIPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -51,22 +51,23 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DomainResultHandler implements NewStepHandler {
+public class DomainFinalResultHandler implements NewStepHandler {
 
     private final DomainOperationContext domainOperationContext;
 
-    public DomainResultHandler(DomainOperationContext domainOperationContext) {
+    public DomainFinalResultHandler(DomainOperationContext domainOperationContext) {
         this.domainOperationContext = domainOperationContext;
     }
 
     @Override
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-        // Wipe out any result that may have accumulated from previous handlers
-        context.getResult().set(new ModelNode());
+        context.completeStep();
 
+        // On the way out, fix up the response
         final boolean isDomain = isDomainOperation(operation);
         boolean shouldContinue = !collectDomainFailure(context, isDomain);
+        shouldContinue = shouldContinue && !collectContextFailure(context, isDomain);
         shouldContinue = shouldContinue && !collectHostFailures(context, isDomain);
         if(shouldContinue){
             if (domainOperationContext.getServerResults().size() == 0) {
@@ -75,7 +76,6 @@ public class DomainResultHandler implements NewStepHandler {
                 populateServerGroupResults(context, context.getResult());
             }
         }
-        context.completeStep();
     }
 
     private boolean collectDomainFailure(NewOperationContext context, final boolean isDomain) {
@@ -86,6 +86,31 @@ public class DomainResultHandler implements NewStepHandler {
         }
         if (domainFailure != null) {
             context.getFailureDescription().get(DOMAIN_FAILURE_DESCRIPTION).set(domainFailure);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean collectContextFailure(NewOperationContext context, final boolean isDomain) {
+        if (context.hasFailureDescription()) {
+            ModelNode formattedFailure = new ModelNode();
+            if (isDomain) {
+                ModelNode failure = context.getFailureDescription();
+                if (failure.isDefined())
+                    formattedFailure.get(DOMAIN_FAILURE_DESCRIPTION).set(failure);
+                else
+                    formattedFailure.get(DOMAIN_FAILURE_DESCRIPTION).set("Unexplained failure");
+            } else {
+                ModelNode hostFailureProperty = new ModelNode();
+                ModelNode contextFailure = context.getFailureDescription();
+                ModelNode hostFailure = contextFailure.isDefined() ? contextFailure : new ModelNode().set("Unexplained failure");
+                hostFailureProperty.add(domainOperationContext.getLocalHostInfo().getLocalHostName(), hostFailure);
+
+                formattedFailure.get(HOST_FAILURE_DESCRIPTIONS).set(hostFailureProperty);
+            }
+
+            context.getFailureDescription().set(formattedFailure);
+
             return true;
         }
         return false;
