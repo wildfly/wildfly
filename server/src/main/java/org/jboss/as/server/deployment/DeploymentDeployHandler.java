@@ -58,7 +58,10 @@ public class DeploymentDeployHandler implements NewStepHandler, DescriptionProvi
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         model.get(ENABLED).set(true);
-        final String name = model.require(NAME).asString();
+
+        final ModelNode opAddr = operation.get(OP_ADDR);
+        PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
         final String runtimeName = model.require(RUNTIME_NAME).asString();
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
         DeploymentHandlerUtil.deploy(context, runtimeName, name, contents);
