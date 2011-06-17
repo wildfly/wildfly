@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,6 +49,7 @@ import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.asset.UrlAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
@@ -133,7 +135,11 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
         // Add the ServiceActivator
         String serviceActivatorPath = "META-INF/services/" + ServiceActivator.class.getName();
-        archive.addAsResource("arquillian-service/" + serviceActivatorPath, serviceActivatorPath);
+        final URL serviceActivatorURL = this.getClass().getClassLoader().getResource("arquillian-service/" + serviceActivatorPath);
+        if (serviceActivatorURL == null) {
+            throw new RuntimeException("No arquillian-service/" + serviceActivatorPath + " found by classloader: " + this.getClass().getClassLoader());
+        }
+        archive.addAsResource(new UrlAsset(serviceActivatorURL), serviceActivatorPath);
 
         // Add META-INF/jbosgi-xservice.properties which registers the arquillian service with the OSGi layer
         // Generated default imports for OSGi tests are defined in {@link AbstractOSGiApplicationArchiveProcessor}

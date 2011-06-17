@@ -111,12 +111,6 @@
         <dependency>
             <groupId>org.jboss.ejb3</groupId>
             <artifactId>jboss-ejb3-cache</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>trove</groupId>
-                    <artifactId>trove</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -139,7 +133,7 @@
             <artifactId>jboss-ejb3-tx2-impl</artifactId>
         </dependency>
 
-       <dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>

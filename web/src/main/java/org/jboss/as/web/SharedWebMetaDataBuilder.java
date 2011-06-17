@@ -112,7 +112,7 @@ class SharedWebMetaDataBuilder {
             return;
         }
         final ServletMetaData servlet = new ServletMetaData();
-        servlet.setName("DefaultServlet");
+        servlet.setName("default");
         servlet.setLoadOnStartup("" + 1);
         if (resourcesConfig.has(WEBDAV) && resourcesConfig.get(WEBDAV).asBoolean()) {
             servlet.setServletClass("org.apache.catalina.servlets.WebdavServlet");
@@ -149,7 +149,7 @@ class SharedWebMetaDataBuilder {
         }
         servlet.setInitParam(initParams);
         metadata.getServlets().add(servlet);
-        addServletMapping("DefaultServlet", metadata, "/");
+        addServletMapping("default", metadata, "/");
     }
 
 

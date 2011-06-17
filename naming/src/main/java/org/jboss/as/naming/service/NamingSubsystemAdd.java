@@ -36,11 +36,9 @@ import org.jboss.as.naming.InitialContextFactoryService;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingEventCoordinator;
 import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.context.ObjectFactoryBuilder;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
@@ -73,7 +71,6 @@ public class NamingSubsystemAdd implements ModelAddOperationHandler, BootOperati
 
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_NAMING, new NamingDependencyProcessor());
 
                     log.info("Activating Naming Subsystem");
 

@@ -31,11 +31,14 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.server.moduleservice.ModuleLoadService;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.framework.ModuleLoaderProvider;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.testing.ManifestBuilder;
@@ -48,7 +51,7 @@ import org.junit.runner.RunWith;
 
 /**
  * [AS7-858] Cannot load module when applying resolver results
- *
+ * <p/>
  * https://issues.jboss.org/browse/AS7-858
  *
  * @author Thomas.Diesler@jboss.com
@@ -63,24 +66,36 @@ public class AS858TestCase {
     public static Archive<?> deployment() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "as858");
         archive.add(new Asset() {
-            @Override
-            public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.jboss.as.osgi,org.jboss.osgi.framework");
-                return builder.openStream();
-            }}, JarFile.MANIFEST_NAME);
+                    @Override
+                    public InputStream openStream() {
+                        ManifestBuilder builder = ManifestBuilder.newInstance();
+                        builder.addManifestHeader("Dependencies", "org.jboss.as.osgi,org.jboss.osgi.framework");
+                        return builder.openStream();
+                    }
+                }, JarFile.MANIFEST_NAME);
         return archive;
     }
 
     @Test
     public void testModuleLoader() throws NamingException, Exception {
-        ServiceController<?> controller = serviceContainer.getService(Services.MODULE_LOADER_PROVIDER);
-        ModuleLoaderProvider loaderProvider = (ModuleLoaderProvider) controller.getValue();
-
         ModuleIdentifier identifier = ModuleIdentifier.create("deployment.as858.test");
-        ModuleSpec moduleSpec = ModuleSpec.build(identifier).create();
-        loaderProvider.addModule(moduleSpec);
-        Module module = loaderProvider.getModuleLoader().loadModule(identifier);
-        assertEquals(identifier, module.getIdentifier());
+        try {
+            ServiceController<?> controller = serviceContainer.getService(Services.MODULE_LOADER_PROVIDER);
+            ModuleLoaderProvider loaderProvider = (ModuleLoaderProvider) controller.getValue();
+
+            ModuleSpec moduleSpec = ModuleSpec.build(identifier).create();
+            loaderProvider.addModule(moduleSpec);
+            Module module = loaderProvider.getModuleLoader().loadModule(identifier);
+            assertEquals(identifier, module.getIdentifier());
+        } finally {
+            ServiceController<?> controller = serviceContainer.getService(ServiceName.JBOSS.append("module", "spec", "service", identifier.getName(), identifier.getSlot()));
+            if (controller != null) {
+                controller.setMode(ServiceController.Mode.REMOVE);
+            }
+            controller = serviceContainer.getService(ServiceName.JBOSS.append("module", "information", "service", identifier.getName(), identifier.getSlot()));
+            if (controller != null) {
+                controller.setMode(ServiceController.Mode.REMOVE);
+            }
+        }
     }
 }

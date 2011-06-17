@@ -25,6 +25,7 @@ package org.jboss.as.messaging.jms;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.ra.HornetQResourceAdapter;
+import org.infinispan.transaction.lookup.TransactionManagerLookup;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.services.ResourceAdapterActivatorService;
@@ -83,6 +84,7 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -155,7 +157,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     public void start(StartContext context) throws StartException {
         ServiceTarget serviceTarget = context.getChildTarget();
         try {
-            createService(serviceTarget);
+            createService(serviceTarget, context.getController().getServiceContainer());
         }
         catch (Exception e) {
             throw new StartException("failed to create resource adapter", e);
@@ -163,7 +165,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
     }
 
-    private void createService(ServiceTarget serviceTarget) throws Exception {
+    private void createService(ServiceTarget serviceTarget, ServiceContainer container) throws Exception {
         InputStream is = null;
         InputStream isIj = null;
         List<ConfigProperty16> properties = new ArrayList<ConfigProperty16>();
@@ -201,6 +203,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 properties.add(simpleProperty(adapterParam.getName(), adapterParam.getType(), adapterParam.getValue()));
             }
 
+            TransactionManagerLocator.container = container;
+            properties.add(simpleProperty("TransactionManagerLocatorClass", STRING_TYPE, TransactionManagerLocator.class.getName()));
+            properties.add(simpleProperty("TransactionManagerLocatorMethod", STRING_TYPE, "getTransactionManager"));
+
             OutboundResourceAdapter outbound = createOutbound();
             InboundResourceAdapter inbound = createInbound();
             ResourceAdapter1516 ra = createResourceAdapter(properties, outbound, inbound);
@@ -209,8 +215,9 @@ public class PooledConnectionFactoryService implements Service<Void> {
             CommonConnDef common = createConnDef(jndiName);
             IronJacamar ijmd = createIron(common, txSupport);
 
+
             ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, ijmd,
-                    HornetQResourceAdapter.class.getClassLoader(), name);
+                    PooledConnectionFactoryService.class.getClassLoader(), name);
 
             serviceTarget
                     .addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE, activator)

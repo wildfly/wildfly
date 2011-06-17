@@ -23,8 +23,6 @@
 package org.jboss.as.test.spec.jpa;
 
 import javax.ejb.EJB;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -43,7 +41,6 @@ import org.junit.runner.RunWith;
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class RelativeDataSourceNameTestCase {
 
     private static final String ARCHIVE_NAME = "RelativeDataSourceNameTestCase";
@@ -60,13 +57,6 @@ public class RelativeDataSourceNameTestCase {
             "  </persistence-unit>" +
             "</persistence>";
 
-    private static InitialContext iniCtx;
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        iniCtx = new InitialContext();
-    }
-
     @Deployment
     public static Archive<?> deploy() {
 
@@ -77,11 +67,10 @@ public class RelativeDataSourceNameTestCase {
         );
 
         jar.add(new StringAsset(persistence_xml), "META-INF/persistence.xml");
-        jar.add(new StringAsset(""), "META-INF/MANIFEST.MF");
         return jar;
     }
 
-    @EJB(mappedName = "java:global/test/SFSB1!org.jboss.as.test.spec.jpa.SFSB1")
+    @EJB(mappedName = "java:global/"+ARCHIVE_NAME+"/SFSB1!org.jboss.as.test.spec.jpa.SFSB1")
     private SFSB1 sfsb1;
 
     @Test

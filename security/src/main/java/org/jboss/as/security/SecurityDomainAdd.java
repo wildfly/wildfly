@@ -73,6 +73,7 @@ import java.util.Properties;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.Configuration;
+import javax.transaction.TransactionManager;
 
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
@@ -90,8 +91,11 @@ import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.security.service.SecurityManagementService;
+import org.jboss.as.txn.TransactionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.msc.inject.InjectionException;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -115,6 +119,7 @@ import org.jboss.security.config.MappingInfo;
 import org.jboss.security.identitytrust.config.IdentityTrustModuleEntry;
 import org.jboss.security.mapping.MappingType;
 import org.jboss.security.mapping.config.MappingModuleEntry;
+import org.jboss.security.plugins.TransactionManagerLocator;
 
 /**
  * Add a security domain configuration.
@@ -157,12 +162,23 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
                     final SecurityDomainService securityDomainService = new SecurityDomainService(securityDomain,
                             applicationPolicy, jsseSecurityDomain, cacheType);
                     final ServiceTarget target = context.getServiceTarget();
+                    // some login modules may require the TransactionManager
+                    final Injector<TransactionManager> transactionManagerInjector = new Injector<TransactionManager>() {
+                        public void inject(final TransactionManager value) throws InjectionException {
+                            TransactionManagerLocator.setTransactionManager(value);
+                        }
+
+                        public void uninject() {
+                        }
+                    };
                     ServiceBuilder<SecurityDomainContext> builder = target
                             .addService(SecurityDomainService.SERVICE_NAME.append(securityDomain), securityDomainService)
                             .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
                                     securityDomainService.getSecurityManagementInjector())
                             .addDependency(JaasConfigurationService.SERVICE_NAME, Configuration.class,
-                                    securityDomainService.getConfigurationInjector());
+                                    securityDomainService.getConfigurationInjector())
+                            .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class,
+                                    transactionManagerInjector);
 
                     if ("infinispan".equals(cacheType)) {
                         builder.addDependency(EmbeddedCacheManagerService.getServiceName(CACHE_CONTAINER_NAME),
@@ -313,6 +329,8 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
             for (ModelNode module : modules) {
                 MappingInfo mappingInfo = new MappingInfo(securityDomain);
                 String codeName = module.require(CODE).asString();
+                if (ModulesMap.MAPPING_MAP.containsKey(codeName))
+                    codeName = ModulesMap.MAPPING_MAP.get(codeName);
                 if (module.hasDefined(TYPE))
                     mappingType = module.get(TYPE).asString();
                 else

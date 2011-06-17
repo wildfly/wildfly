@@ -239,4 +239,8 @@ public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackH
     public ModelNode getModelNode() {
         return request;
     }
+
+    public static void main(String[] args) throws Exception {
+        System.out.println(ModelNode.fromString("(\"prop\"=>\"val\")").getType());
+    }
 }

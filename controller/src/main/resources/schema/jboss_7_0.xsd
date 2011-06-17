@@ -36,40 +36,39 @@
                 Root element for the master document specifying the core configuration
                 for the servers in a domain. There should be one such master
                 document per domain, available to the host controller that
-                is configured to act as the domain controller. 
+                is configured to act as the domain controller.
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="system-properties" type="properties-with-boottime" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="paths" type="named-pathsType" minOccurs="0" maxOccurs="1" />
                 <xs:element name="profiles" type="profilesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="interfaces" type="named-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="socket-binding-groups" type="socket-binding-groupsType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="system-properties" type="properties-with-boottime" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="deployments" type="domain-deploymentsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="server-groups" type="server-groupsType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-    
+
     <xs:element name="host">
         <xs:annotation>
             <xs:documentation>
-                Root element for a document configuring a host controller and 
+                Root element for a document configuring a host controller and
                 the group of servers under the control of that host controller.
                 The standard usage would be for a domain to have one such host controller
-                on each physical (or virtual) host machine. Emphasis in this 
-                document is on enumerating the servers, configuring items that 
+                on each physical (or virtual) host machine. Emphasis in this
+                document is on enumerating the servers, configuring items that
                 are specific to the host environment (e.g. IP addresses), and
-                on any server-specific configuration settings. 
+                on any server-specific configuration settings.
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
-                <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
                 <xs:element name="system-properties" type="properties-with-boottime" minOccurs="0"/>
+                <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
                 <xs:element name="management" type="managementType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0"/>
                 <xs:element name="domain-controller" type="domain-controllerType"/>
@@ -77,25 +76,25 @@
                 <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
                 <xs:element name="servers" type="serversType" minOccurs="0"/>
             </xs:sequence>
-            <xs:attribute name="name" type="xs:string" use="optional">        
+            <xs:attribute name="name" type="xs:string" use="optional">
                 <xs:annotation>
                     <xs:documentation>
                         The name to use for this host's host controller. Must be
-                        unique across the domain. If not set, defaults to the 
+                        unique across the domain. If not set, defaults to the
                         runtime value of InetAddress.getLocalHost().getHostName().
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    
+
     <xs:element name="server">
         <xs:annotation>
             <xs:documentation>
                 Root element for a document specifying the configuration
                 of a single "standalone" server that does not operate
-                as part of a domain. 
-                
+                as part of a domain.
+
                 Note that this element is distinct from the 'serverType'
                 specified in this schema. The latter type forms part of the
                 configuration of a server that operates as part of a domain.
@@ -104,19 +103,19 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="system-properties" type="properties" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="management" type="managementType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="profile" type="standalone-profileType"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="system-properties" type="properties" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="deployments" type="mapped-deploymentsType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
-            <xs:attribute name="name" type="xs:string" use="optional">        
+            <xs:attribute name="name" type="xs:string" use="optional">
                 <xs:annotation>
                     <xs:documentation>
-                        The name to use for this server. If not set, defaults to 
+                        The name to use for this server. If not set, defaults to
                         the runtime value of InetAddress.getLocalHost().getHostName().
                     </xs:documentation>
                 </xs:annotation>
@@ -398,7 +397,7 @@
                 Configuration of a host's or standalone server's exposed management interface.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="interface" type="xs:string" use="required">        
+        <xs:attribute name="interface" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
                     Network interface on which the host's socket for
@@ -454,34 +453,11 @@
         </xs:choice>
     </xs:complexType>
 
-    <xs:complexType name="domain-controller-localType">
-        <!-- FIXME this is a total ripoff of serverType to make it easy
-            to initially test booting a server by having the DC act as such.
-            We need a proper description of what a DC is
-        -->
-        <xs:all>
-            <xs:element name="priority" type="priorityType" minOccurs="0"/>
-            <xs:element name="cpu-affinity" type="cpu-affinityType" minOccurs="0"/>
-
-            <xs:element name="interface-specs" type="specified-interfacesType" minOccurs="0"/>
-            <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
-
-            <xs:element name="system-properties" type="properties" minOccurs="0"/>
-            <xs:element name="jvm" minOccurs="0" type="jvmType"/>
-        </xs:all>
-        <xs:attribute name="name" type="xs:string" use="optional" default="DomainController"/>
-
-    </xs:complexType>
+    <xs:complexType name="domain-controller-localType" />
 
     <xs:complexType name="domain-controller-remoteType">
-        <!--  TODO need different discovery mechanisms -->
-        <xs:attribute name="location" type="xs:anyURI" use="required"/>
-        <!-- the interface to bind to for outbound connections to the given location -->
-        <xs:attribute name="bind-interface" type="xs:string" use="optional"/>
-        <xs:attribute name="callback-location" type="xs:anyURI" use="required"/>
-        <xs:attribute name="outbound-interface" type="xs:string"/>
-        <xs:attribute name="callback-outbound-interface" type="xs:string"/>
-
+         <xs:attribute name="host" type="xs:anyURI" use="required" />
+         <xs:attribute name="port" type="xs:integer" use="required" />
     </xs:complexType>
 
     <xs:complexType name="serversType">
@@ -493,9 +469,6 @@
     <xs:complexType name="serverType">
         <xs:all>
             <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
-        
-            <xs:element name="priority" type="priorityType" minOccurs="0"/>
-            <xs:element name="cpu-affinity" type="cpu-affinityType" minOccurs="0"/>
 
             <xs:element name="interface-specs" type="specified-interfacesType" minOccurs="0"/>
             <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
@@ -841,7 +814,7 @@
                     any sockets that do not explicitly declare one.
                 </xs:documentation>
             </xs:annotation>
-        </xs:attribute>	
+        </xs:attribute>
 	    <xs:attribute name="port-offset" type="xs:int" use="optional" default="0">
 	        <xs:annotation>
                 <xs:documentation>
@@ -1233,12 +1206,12 @@
                 A list of named filesystem paths. The paths may or may
                 not be fully specified (i.e. include the actual paths.)
             </xs:documentation>
-        </xs:annotation> 
+        </xs:annotation>
         <xs:sequence>
             <xs:element name="path" type="named-pathType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
-    </xs:complexType>   
-   
+    </xs:complexType>
+
     <xs:complexType name="named-pathType">
         <xs:annotation>
             <xs:documentation>
@@ -1337,12 +1310,12 @@
             <xs:documentation>
                 A list of named filesystem paths.
             </xs:documentation>
-        </xs:annotation> 
+        </xs:annotation>
         <xs:sequence>
             <xs:element name="path" type="specified-pathType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
-    </xs:complexType>   
-   
+    </xs:complexType>
+
     <xs:complexType name="specified-pathType">
         <xs:annotation>
             <xs:documentation>
@@ -1381,13 +1354,13 @@
 
                 If this value is already absolute, then the value is directly
                 used.  Otherwise the runtime pathname is resolved in a
-                system-dependent way.  On UNIX systems, a relative pathname is 
-                made absolute by resolving it against the current user directory.  
+                system-dependent way.  On UNIX systems, a relative pathname is
+                made absolute by resolving it against the current user directory.
                 On Microsoft Windows systems, a relative pathname is made absolute
                 by resolving it against the current directory of the drive named by the
                 pathname, if any; if not, it is resolved against the current user
                 directory.
-                
+
                 Note relative path declarations have to use '/' as file separator.
                 </xs:documentation>
             </xs:annotation>
@@ -1402,21 +1375,21 @@
                 <xs:documentation>
                 The name of another previously named path, or of one of the
                 standard paths provided by the system. If 'relative-to' is
-                provided, the value of the 'path' attribute is treated as 
+                provided, the value of the 'path' attribute is treated as
                 relative to the path specified by this attribute. The standard
                 paths provided by the system include:
-            
+
                 jboss.home.dir - the root directory of the JBoss AS distribution
                 user.home - user's home directory
                 user.dir - user's current working directory
-                java.home - java installation directory                
+                java.home - java installation directory
                 jboss.server.base.dir - root directory for an individual server
-                                        instance               
+                                        instance
                 jboss.server.data.dir - directory the server will use for persistent
-                                        data file storage                
-                jboss.server.log.dir - directory the server will use for 
-                                       log file storage                
-                jboss.server.temp.dir - directory the server will use for 
+                                        data file storage
+                jboss.server.log.dir - directory the server will use for
+                                       log file storage
+                jboss.server.temp.dir - directory the server will use for
                                        temporary file storage
                 jboss.domain.servers.dir - directory under which a host controller
                                            will create the working area for

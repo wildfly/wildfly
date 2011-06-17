@@ -297,6 +297,7 @@ public class DataSourcesExtension implements Extension {
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.JTA, JTA);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.SPY, SPY);
+                    writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.USE_CCM, USE_CCM);
 
                     if (!isXADataSource) {
                         writeElementIfHas(writer, dataSourceNode, DataSource.Tag.CONNECTIONURL, CONNECTION_URL);
@@ -337,7 +338,7 @@ public class DataSourcesExtension implements Extension {
                                 URL_SELECTOR_STRATEGY_CLASS_NAME);
                     }
                     boolean poolRequired = hasAnyOf(dataSourceNode, MIN_POOL_SIZE, MAX_POOL_SIZE, POOL_PREFILL,
-                            POOL_USE_STRICT_MIN);
+                            POOL_USE_STRICT_MIN, FLUSH_STRATEGY);
                     if (isXADataSource) {
                         poolRequired = poolRequired
                                 || hasAnyOf(dataSourceNode, SAME_RM_OVERRIDE, INTERLIVING, NOTXSEPARATEPOOL, PAD_XID,
@@ -353,9 +354,9 @@ public class DataSourcesExtension implements Extension {
                         writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.FLUSH_STRATEGY, FLUSH_STRATEGY);
 
                         if (isXADataSource) {
-                            writeElementIfHas(writer, dataSourceNode, CommonXaPool.Tag.ISSAMERMOVERRIDEVALUE, SAME_RM_OVERRIDE);
                             writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.ISSAMERMOVERRIDEVALUE,
                                     SAME_RM_OVERRIDE);
+                            writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.INTERLEAVING, INTERLIVING);
                             writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.NO_TX_SEPARATE_POOLS,
                                     NOTXSEPARATEPOOL);
                             writeElementIfHas(writer, dataSourceNode, CommonXaPool.Tag.PAD_XID, PAD_XID);
@@ -363,7 +364,8 @@ public class DataSourcesExtension implements Extension {
                         }
                         writer.writeEndElement();
                     }
-                    boolean securityRequired = hasAnyOf(dataSourceNode, USERNAME, PASSWORD);
+                    boolean securityRequired = hasAnyOf(dataSourceNode, USERNAME, PASSWORD, SECURITY_DOMAIN,
+                            REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
                     if (securityRequired) {
                         writer.writeStartElement(DataSource.Tag.SECURITY.getLocalName());
                         writeElementIfHas(writer, dataSourceNode, DsSecurity.Tag.USERNAME, USERNAME);
@@ -371,8 +373,11 @@ public class DataSourcesExtension implements Extension {
                         writeElementIfHas(writer, dataSourceNode, DsSecurity.Tag.SECURITY_DOMAIN, SECURITY_DOMAIN);
 
                         if (dataSourceNode.hasDefined(REAUTHPLUGIN_CLASSNAME)) {
-                            writeElementIfHas(writer, dataSourceNode, DsSecurity.Tag.REAUTH_PLUGIN.getLocalName(),
-                                    REAUTHPLUGIN_CLASSNAME);
+                            writer.writeStartElement(DsSecurity.Tag.REAUTH_PLUGIN.getLocalName());
+                            writer.writeAttribute(
+                                    org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
+                                    dataSourceNode.get(REAUTHPLUGIN_CLASSNAME).asString());
+
                             if (dataSourceNode.hasDefined(REAUTHPLUGIN_PROPERTIES)) {
                                 for (Property connectionProperty : dataSourceNode.get(REAUTHPLUGIN_PROPERTIES).asPropertyList()) {
                                     writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
@@ -381,12 +386,13 @@ public class DataSourcesExtension implements Extension {
                                                     .getLocalName());
                                 }
                             }
+                            writer.writeEndElement();
                         }
                         writer.writeEndElement();
                     }
 
                     boolean recoveryRequired = hasAnyOf(dataSourceNode, RECOVERY_USERNAME, RECOVERY_PASSWORD,
-                            RECOVERY_SECURITY_DOMAIN, RECOVERLUGIN_CLASSNAME, NO_RECOVERY);
+                            RECOVERY_SECURITY_DOMAIN, RECOVERLUGIN_CLASSNAME, NO_RECOVERY, RECOVERLUGIN_PROPERTIES);
                     if (recoveryRequired) {
                         writer.writeStartElement(XaDataSource.Tag.RECOVERY.getLocalName());
                         writeAttributeIfHas(writer, dataSourceNode, Recovery.Attribute.NO_RECOVERY, NO_RECOVERY);
@@ -399,8 +405,10 @@ public class DataSourcesExtension implements Extension {
                             writer.writeEndElement();
                         }
                         if (hasAnyOf(dataSourceNode, RECOVERLUGIN_CLASSNAME)) {
-                            writeElementIfHas(writer, dataSourceNode, Recovery.Tag.RECOVER_PLUGIN.getLocalName(),
-                                    RECOVERLUGIN_CLASSNAME);
+                            writer.writeStartElement(Recovery.Tag.RECOVER_PLUGIN.getLocalName());
+                            writer.writeAttribute(
+                                    org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
+                                    dataSourceNode.get(RECOVERLUGIN_CLASSNAME).asString());
                             if (dataSourceNode.hasDefined(RECOVERLUGIN_PROPERTIES)) {
                                 for (Property connectionProperty : dataSourceNode.get(RECOVERLUGIN_PROPERTIES).asPropertyList()) {
                                     writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
@@ -409,25 +417,34 @@ public class DataSourcesExtension implements Extension {
                                                     .getLocalName());
                                 }
                             }
+                            writer.writeEndElement();
 
                         }
                         writer.writeEndElement();
                     }
 
                     boolean validationRequired = hasAnyOf(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
-                            CHECKVALIDCONNECTIONSQL, VALIDATEONMATCH, BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMINUTES,
-                            USE_FAST_FAIL, STALECONNECTIONCHECKERCLASSNAME, EXCEPTIONSORTERCLASSNAME);
+                            VALIDCONNECTIONCHECKER_PROPERTIES, CHECKVALIDCONNECTIONSQL, VALIDATEONMATCH, BACKGROUNDVALIDATION,
+                            BACKGROUNDVALIDATIONMINUTES, USE_FAST_FAIL, STALECONNECTIONCHECKERCLASSNAME,
+                            STALECONNECTIONCHECKER_PROPERTIES, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
                     if (validationRequired) {
                         writer.writeStartElement(DataSource.Tag.VALIDATION.getLocalName());
-                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.VALIDCONNECTIONCHECKER,
-                                VALIDCONNECTIONCHECKERCLASSNAME);
-                        if (dataSourceNode.hasDefined(VALIDCONNECTIONCHECKER_PROPERTIES)) {
-                            for (Property connectionProperty : dataSourceNode.get(VALIDCONNECTIONCHECKER_PROPERTIES)
-                                    .asPropertyList()) {
-                                writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                        .getValue().asString(),
-                                        org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName());
+                        if (dataSourceNode.hasDefined(VALIDCONNECTIONCHECKERCLASSNAME)) {
+                            writer.writeStartElement(Validation.Tag.VALIDCONNECTIONCHECKER.getLocalName());
+                            writer.writeAttribute(
+                                    org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
+                                    dataSourceNode.get(VALIDCONNECTIONCHECKERCLASSNAME).asString());
+
+                            if (dataSourceNode.hasDefined(VALIDCONNECTIONCHECKER_PROPERTIES)) {
+                                for (Property connectionProperty : dataSourceNode.get(VALIDCONNECTIONCHECKER_PROPERTIES)
+                                        .asPropertyList()) {
+                                    writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
+                                            .getValue().asString(),
+                                            org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
+                                                    .getLocalName());
+                                }
                             }
+                            writer.writeEndElement();
                         }
                         writeElementIfHas(writer, dataSourceNode, Validation.Tag.CHECKVALIDCONNECTIONSQL,
                                 CHECKVALIDCONNECTIONSQL);
@@ -436,23 +453,39 @@ public class DataSourcesExtension implements Extension {
                         writeElementIfHas(writer, dataSourceNode, Validation.Tag.BACKGROUNDVALIDATIONMINUTES,
                                 BACKGROUNDVALIDATIONMINUTES);
                         writeElementIfHas(writer, dataSourceNode, Validation.Tag.USEFASTFAIL, USE_FAST_FAIL);
-                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.STALECONNECTIONCHECKER,
-                                STALECONNECTIONCHECKERCLASSNAME);
-                        if (dataSourceNode.hasDefined(STALECONNECTIONCHECKER_PROPERTIES)) {
-                            for (Property connectionProperty : dataSourceNode.get(STALECONNECTIONCHECKER_PROPERTIES)
-                                    .asPropertyList()) {
-                                writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                        .getValue().asString(),
-                                        org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName());
+                        if (dataSourceNode.hasDefined(STALECONNECTIONCHECKERCLASSNAME)) {
+                            writer.writeStartElement(Validation.Tag.STALECONNECTIONCHECKER.getLocalName());
+                            writer.writeAttribute(
+                                    org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
+                                    dataSourceNode.get(STALECONNECTIONCHECKERCLASSNAME).asString());
+
+                            if (dataSourceNode.hasDefined(STALECONNECTIONCHECKER_PROPERTIES)) {
+
+                                for (Property connectionProperty : dataSourceNode.get(STALECONNECTIONCHECKER_PROPERTIES)
+                                        .asPropertyList()) {
+                                    writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
+                                            .getValue().asString(),
+                                            org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
+                                                    .getLocalName());
+                                }
                             }
+                            writer.writeEndElement();
                         }
-                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.EXCEPTIONSORTER, EXCEPTIONSORTERCLASSNAME);
-                        if (dataSourceNode.hasDefined(EXCEPTIONSORTER_PROPERTIES)) {
-                            for (Property connectionProperty : dataSourceNode.get(EXCEPTIONSORTER_PROPERTIES).asPropertyList()) {
-                                writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                        .getValue().asString(),
-                                        org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName());
+                        if (dataSourceNode.hasDefined(EXCEPTIONSORTERCLASSNAME)) {
+                            writer.writeStartElement(Validation.Tag.EXCEPTIONSORTER.getLocalName());
+                            writer.writeAttribute(
+                                    org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
+                                    dataSourceNode.get(EXCEPTIONSORTERCLASSNAME).asString());
+                            if (dataSourceNode.hasDefined(EXCEPTIONSORTER_PROPERTIES)) {
+                                for (Property connectionProperty : dataSourceNode.get(EXCEPTIONSORTER_PROPERTIES)
+                                        .asPropertyList()) {
+                                    writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
+                                            .getValue().asString(),
+                                            org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
+                                                    .getLocalName());
+                                }
                             }
+                            writer.writeEndElement();
                         }
                         writer.writeEndElement();
                     }
@@ -460,6 +493,7 @@ public class DataSourcesExtension implements Extension {
                             SETTXQUERYTIMEOUT, QUERYTIMEOUT, USETRYLOCK, ALLOCATION_RETRY, ALLOCATION_RETRY_WAIT_MILLIS,
                             XA_RESOURCE_TIMEOUT);
                     if (timeoutRequired) {
+                        writer.writeStartElement(DataSource.Tag.TIMEOUT.getLocalName());
                         writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.BLOCKINGTIMEOUTMILLIS,
                                 BLOCKING_TIMEOUT_WAIT_MILLIS);
                         writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.IDLETIMEOUTMINUTES, IDLETIMEOUTMINUTES);
@@ -470,6 +504,7 @@ public class DataSourcesExtension implements Extension {
                         writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.ALLOCATIONRETRYWAITMILLIS,
                                 ALLOCATION_RETRY_WAIT_MILLIS);
                         writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.XARESOURCETIMEOUT, XA_RESOURCE_TIMEOUT);
+                        writer.writeEndElement();
                     }
                     boolean statementRequired = hasAnyOf(dataSourceNode, TRACKSTATEMENTS, PREPAREDSTATEMENTSCACHESIZE,
                             SHAREPREPAREDSTATEMENTS);
@@ -784,3 +819,4 @@ public class DataSourcesExtension implements Extension {
     }
 
 }
+

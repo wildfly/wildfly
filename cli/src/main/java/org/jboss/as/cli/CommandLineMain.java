@@ -43,14 +43,6 @@ import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.batch.impl.DefaultBatchManager;
 import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
 import org.jboss.as.cli.handlers.ConnectHandler;
-import org.jboss.as.cli.handlers.CreateJmsCFHandler;
-import org.jboss.as.cli.handlers.CreateJmsQueueHandler;
-import org.jboss.as.cli.handlers.CreateJmsResourceHandler;
-import org.jboss.as.cli.handlers.CreateJmsTopicHandler;
-import org.jboss.as.cli.handlers.DeleteJmsCFHandler;
-import org.jboss.as.cli.handlers.DeleteJmsQueueHandler;
-import org.jboss.as.cli.handlers.DeleteJmsResourceHandler;
-import org.jboss.as.cli.handlers.DeleteJmsTopicHandler;
 import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
@@ -70,6 +62,21 @@ import org.jboss.as.cli.handlers.batch.BatchListHandler;
 import org.jboss.as.cli.handlers.batch.BatchMoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRemoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRunHandler;
+import org.jboss.as.cli.handlers.jca.DataSourceAddHandler;
+import org.jboss.as.cli.handlers.jca.DataSourceModifyHandler;
+import org.jboss.as.cli.handlers.jca.DataSourceRemoveHandler;
+import org.jboss.as.cli.handlers.jca.SimpleDataSourceOperationHandler;
+import org.jboss.as.cli.handlers.jca.XADataSourceAddHandler;
+import org.jboss.as.cli.handlers.jca.XADataSourceModifyHandler;
+import org.jboss.as.cli.handlers.jca.XADataSourceRemoveHandler;
+import org.jboss.as.cli.handlers.jms.CreateJmsResourceHandler;
+import org.jboss.as.cli.handlers.jms.DeleteJmsResourceHandler;
+import org.jboss.as.cli.handlers.jms.JmsCFAddHandler;
+import org.jboss.as.cli.handlers.jms.JmsCFRemoveHandler;
+import org.jboss.as.cli.handlers.jms.JmsQueueAddHandler;
+import org.jboss.as.cli.handlers.jms.JmsQueueRemoveHandler;
+import org.jboss.as.cli.handlers.jms.JmsTopicAddHandler;
+import org.jboss.as.cli.handlers.jms.JmsTopicRemoveHandler;
 import org.jboss.as.cli.impl.DefaultParsedArguments;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
@@ -103,12 +110,12 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new UndeployHandler(), "undeploy");
         cmdRegistry.registerHandler(new PrintWorkingNodeHandler(), "pwd", "pwn");
 
-        cmdRegistry.registerHandler(new CreateJmsQueueHandler(), "create-jms-queue");
-        cmdRegistry.registerHandler(new DeleteJmsQueueHandler(), "delete-jms-queue");
-        cmdRegistry.registerHandler(new CreateJmsTopicHandler(), "create-jms-topic");
-        cmdRegistry.registerHandler(new DeleteJmsTopicHandler(), "delete-jms-topic");
-        cmdRegistry.registerHandler(new CreateJmsCFHandler(), "create-jms-cf");
-        cmdRegistry.registerHandler(new DeleteJmsCFHandler(), "delete-jms-cf");
+        cmdRegistry.registerHandler(new JmsQueueAddHandler(), "add-jms-queue");
+        cmdRegistry.registerHandler(new JmsQueueRemoveHandler(), "remove-jms-queue");
+        cmdRegistry.registerHandler(new JmsTopicAddHandler(), "add-jms-topic");
+        cmdRegistry.registerHandler(new JmsTopicRemoveHandler(), "remove-jms-topic");
+        cmdRegistry.registerHandler(new JmsCFAddHandler(), "add-jms-cf");
+        cmdRegistry.registerHandler(new JmsCFRemoveHandler(), "remove-jms-cf");
         cmdRegistry.registerHandler(new CreateJmsResourceHandler(), false, "create-jms-resource");
         cmdRegistry.registerHandler(new DeleteJmsResourceHandler(), false, "delete-jms-resource");
 
@@ -122,7 +129,15 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new BatchMoveLineHandler(), "move-batch-line");
         cmdRegistry.registerHandler(new BatchEditLineHandler(), "edit-batch-line");
 
-        cmdRegistry.registerHandler(VersionHandler.INSTANCE, "version");
+        cmdRegistry.registerHandler(new VersionHandler(), "version");
+
+        cmdRegistry.registerHandler(new DataSourceAddHandler(), "add-data-source");
+        cmdRegistry.registerHandler(new DataSourceModifyHandler(), "modify-data-source");
+        cmdRegistry.registerHandler(new DataSourceRemoveHandler(), "remove-data-source");
+        //cmdRegistry.registerHandler(new SimpleDataSourceOperationHandler("data-source"), "data-source");
+        cmdRegistry.registerHandler(new XADataSourceAddHandler(), "add-xa-data-source");
+        cmdRegistry.registerHandler(new XADataSourceRemoveHandler(), "remove-xa-data-source");
+        cmdRegistry.registerHandler(new XADataSourceModifyHandler(), "modify-xa-data-source");
     }
 
     public static void main(String[] args) throws Exception {

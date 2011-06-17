@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment.module;
 
+import com.google.inject.internal.util.Iterables;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -47,6 +48,8 @@ import org.jboss.msc.value.ImmediateValue;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -200,6 +203,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
         final List<ModuleDependency> dependencies = moduleSpecification.getSystemDependencies();
         final List<ModuleDependency> localDependencies = moduleSpecification.getLocalDependencies();
+        final List<ModuleDependency> userDependencies = moduleSpecification.getUserDependencies();
 
         // add aditional resource loaders first
         for (ResourceLoaderSpec resourceLoaderSpec : moduleSpecification.getResourceLoaders()) {
@@ -211,7 +215,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
 
         createDependencies(phaseContext, specBuilder, dependencies);
-        createDependencies(phaseContext, specBuilder, moduleSpecification.getUserDependencies());
+        createDependencies(phaseContext, specBuilder, userDependencies);
         specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         createDependencies(phaseContext, specBuilder, localDependencies);
 
@@ -222,7 +226,12 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         phaseContext.getServiceTarget().addService(moduleSpecServiceName, moduleSpecService).addDependencies(
                 deploymentUnit.getServiceName()).addDependencies(phaseContext.getPhaseServiceName()).setInitialMode(
                 Mode.ON_DEMAND).install();
-        return ModuleLoadService.install(phaseContext.getServiceTarget(), moduleIdentifier, dependencies);
+
+        final List<ModuleDependency> allDependencies = new ArrayList<ModuleDependency>();
+        allDependencies.addAll(dependencies);
+        allDependencies.addAll(localDependencies);
+        allDependencies.addAll(userDependencies);
+        return ModuleLoadService.install(phaseContext.getServiceTarget(), moduleIdentifier, allDependencies);
     }
 
     private void createDependencies(final DeploymentPhaseContext phaseContext, final ModuleSpec.Builder specBuilder, final List<ModuleDependency> apiDependencies) {

@@ -68,11 +68,7 @@ public class JMSService implements Service<JMSServerManager> {
 
     public synchronized void start(StartContext context) throws StartException {
         try {
-            final JMSServerManager jmsServer = new JMSServerManagerImpl(hornetQServer.getValue());
-
-            // TODO: This is a temp solution; see HORNETQ-650 for more info
-            final Name emptyName = new CompositeName("");
-            jmsServer.setContext(new MockContext((NamingContext)namingStore.getValue().lookup(emptyName), emptyName));
+            final JMSServerManager jmsServer = new JMSServerManagerImpl(hornetQServer.getValue(), new AS7BindingRegistry(context.getController().getServiceContainer()));
 
             try {
                 // FIXME - we also need the TCCL here in case the JMSServerManager starts the HornetQServer

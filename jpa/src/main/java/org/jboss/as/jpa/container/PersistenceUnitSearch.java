@@ -57,10 +57,10 @@ public class PersistenceUnitSearch {
             return pu.getScopedPersistenceUnitName();
         } else {
             String name = findPersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
-            if (name == null)
-                throw new IllegalArgumentException("Can't find a persistence unit named '" + persistenceUnitName + "' in " + deploymentUnit);
             if (traceEnabled) {
-                log.trace("pu search found " + name);
+                if(name != null) {
+                    log.trace("pu search found " + name);
+                }
             }
             return name;
         }

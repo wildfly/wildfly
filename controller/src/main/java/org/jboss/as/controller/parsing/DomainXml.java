@@ -101,6 +101,9 @@ public class DomainXml extends CommonXml {
         if (modelNode.hasDefined(EXTENSION)) {
             writeExtensions(writer, modelNode.get(EXTENSION));
         }
+        if(modelNode.hasDefined(SYSTEM_PROPERTY)) {
+            writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
+        }
         if(modelNode.hasDefined(PATH)) {
             writePaths(writer, modelNode.get(PATH));
         }
@@ -120,9 +123,6 @@ public class DomainXml extends CommonXml {
                 writeSocketBindingGroup(writer, property.getValue(), false);
             }
             writer.writeEndElement();
-        }
-        if(modelNode.hasDefined(SYSTEM_PROPERTY)) {
-            writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
         }
         if(modelNode.hasDefined(DEPLOYMENT)) {
             writeDomainDeployments(writer, modelNode.get(DEPLOYMENT));
@@ -177,6 +177,10 @@ public class DomainXml extends CommonXml {
             parseExtensions(reader, address, list);
             element = nextElement(reader);
         }
+        if (element == Element.SYSTEM_PROPERTIES) {
+            parseSystemProperties(reader, address, list, false);
+            element = nextElement(reader);
+        }
         if (element == Element.PATHS) {
             parsePaths(reader, address, list, true);
             element = nextElement(reader);
@@ -192,10 +196,6 @@ public class DomainXml extends CommonXml {
         }
         if (element == Element.SOCKET_BINDING_GROUPS) {
             parseDomainSocketBindingGroups(reader, address, list, interfaceNames);
-            element = nextElement(reader);
-        }
-        if (element == Element.SYSTEM_PROPERTIES) {
-            parseSystemProperties(reader, address, list, false);
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {

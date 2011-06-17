@@ -168,29 +168,31 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         final DotName injectionTypeDotName = declaredTypeDotName == null || declaredTypeDotName.toString().equals(Object.class.getName()) ? fieldInfo.type().name() : declaredTypeDotName;
 
         final String injectionType = injectionTypeDotName.toString();
-        final InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, injectionType);
-        final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
-        // add the binding configuration to the class description
-        eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
-                    DeploymentUnitProcessingException {
-                configuration.getBindingConfigurations().add(bindingConfiguration);
-            }
-        });
+        final InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, injectionType, eeModuleClassDescription);
+        if (bindingSource != null) {
+            final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
+            // add the binding configuration to the class description
+            eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
+                        DeploymentUnitProcessingException {
+                    configuration.getBindingConfigurations().add(bindingConfiguration);
+                }
+            });
 
-        // setup the injection target
-        final InjectionTarget injectionTarget = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, fieldInfo.type().name().toString());
-        // source is always local ENC jndi
-        final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
-        final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
-        eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
-                    DeploymentUnitProcessingException {
-                configuration.getInjectionConfigurations().add(injectionConfiguration);
-            }
-        });
+            // setup the injection target
+            final InjectionTarget injectionTarget = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, fieldInfo.type().name().toString());
+            // source is always local ENC jndi
+            final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
+            final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
+            eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
+                        DeploymentUnitProcessingException {
+                    configuration.getInjectionConfigurations().add(injectionConfiguration);
+                }
+            });
+        }
     }
 
     private void processMethod(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, final MethodInfo methodInfo,
@@ -199,7 +201,8 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
-            throw new IllegalArgumentException("injection target is invalid.  Only setter methods are allowed: " + methodInfo);
+            eeModuleClassDescription.setInvalid("injection target is invalid.  Only setter methods are allowed: " + methodInfo);
+            return;
         }
 
         final String contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
@@ -213,30 +216,32 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         }
 
         final String injectionType = methodInfo.args()[0].name().toString();
-        final InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, injectionType);
-        final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
-        // setup the binding configuration in the class description
-        eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
-                    DeploymentUnitProcessingException {
-                configuration.getBindingConfigurations().add(bindingConfiguration);
-            }
-        });
+        final InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, injectionType, eeModuleClassDescription);
+        if (bindingSource != null) {
+            final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
+            // setup the binding configuration in the class description
+            eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
+                        DeploymentUnitProcessingException {
+                    configuration.getBindingConfigurations().add(bindingConfiguration);
+                }
+            });
 
-        // setup the injection configuration
-        final InjectionTarget injectionTarget = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.args()[0].name().toString());
-        // source is always local ENC jndi name
-        final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
-        final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
+            // setup the injection configuration
+            final InjectionTarget injectionTarget = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.args()[0].name().toString());
+            // source is always local ENC jndi name
+            final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
+            final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
 
-        eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
-                    DeploymentUnitProcessingException {
-                configuration.getInjectionConfigurations().add(injectionConfiguration);
-            }
-        });
+            eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
+                        DeploymentUnitProcessingException {
+                    configuration.getInjectionConfigurations().add(injectionConfiguration);
+                }
+            });
+        }
     }
 
     private void processClass(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, final ClassInfo classInfo,
@@ -249,22 +254,27 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         }
         final String name = nameValue.asString();
         String type = getClassLevelInjectionType(annotation);
-        InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, type);
-        final BindingConfiguration bindingConfiguration = new BindingConfiguration(name, bindingSource);
-        // setup the binding configuration in the class description
-        eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
-                    DeploymentUnitProcessingException {
-                configuration.getBindingConfigurations().add(bindingConfiguration);
-            }
-        });
+        InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, type, eeModuleClassDescription);
+        if (bindingSource != null) {
+            final BindingConfiguration bindingConfiguration = new BindingConfiguration(name, bindingSource);
+            // setup the binding configuration in the class description
+            eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
+                        DeploymentUnitProcessingException {
+                    configuration.getBindingConfigurations().add(bindingConfiguration);
+                }
+            });
+        }
     }
 
-    private InjectionSource getBindingSource(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, String injectionTypeName)
+    private InjectionSource getBindingSource(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, String injectionTypeName, final EEModuleClassDescription classDescription)
             throws DeploymentUnitProcessingException {
 
-        String scopedPuName = getScopedPuName(deploymentUnit, annotation);
+        String scopedPuName = getScopedPuName(deploymentUnit, annotation, classDescription);
+        if (scopedPuName == null) {
+            return null;
+        }
         ServiceName puServiceName = getPuServiceName(scopedPuName);
         if (isPersistenceContext(annotation)) {
             AnnotationValue pcType = annotation.value("type");
@@ -285,7 +295,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
             return new PersistenceContextInjectionSource(type, properties, puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
         } else {
-            return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
+            return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, injectionTypeName);
         }
     }
 
@@ -311,7 +321,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         return isPC ? ENTITY_MANAGER_CLASS : ENTITY_MANAGERFACTORY_CLASS;
     }
 
-    private String getScopedPuName(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation)
+    private String getScopedPuName(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, EEModuleClassDescription classDescription)
             throws DeploymentUnitProcessingException {
 
         final AnnotationValue puName = annotation.value("unitName");
@@ -323,7 +333,8 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         }
         scopedPuName = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, searchName);
         if (null == scopedPuName) {
-            throw new DeploymentUnitProcessingException("Can't find a deployment unit named " + puName.asString() + " at " + deploymentUnit);
+            classDescription.setInvalid("Can't find a deployment unit named " + puName.asString() + " at " + deploymentUnit);
+            return null;
         }
         return scopedPuName;
     }

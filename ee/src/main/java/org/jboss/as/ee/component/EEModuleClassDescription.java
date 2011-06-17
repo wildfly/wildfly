@@ -52,6 +52,8 @@ public final class EEModuleClassDescription {
     private MethodIdentifier postConstructMethod;
     private MethodIdentifier preDestroyMethod;
     private MethodIdentifier aroundInvokeMethod;
+    private boolean invalid;
+    private StringBuilder invalidMessageBuilder;
 
     public EEModuleClassDescription(final String className) {
         this.className = className;
@@ -150,5 +152,26 @@ public final class EEModuleClassDescription {
         private static <T> ConstructedValue<T> createConstructedValue(final Constructor<T> constructor) {
             return new ConstructedValue<T>(constructor, Collections.<Value<?>>emptyList());
         }
+    }
+
+    public void setInvalid(String message) {
+        if(!invalid) {
+            invalid = true;
+            invalidMessageBuilder = new StringBuilder();
+        } else {
+            invalidMessageBuilder.append('\n');
+        }
+        invalidMessageBuilder.append(message);
+    }
+
+    public boolean isInvalid() {
+        return invalid;
+    }
+
+    public String getInvalidMessage() {
+        if(invalidMessageBuilder == null) {
+            return "";
+        }
+        return invalidMessageBuilder.toString();
     }
 }

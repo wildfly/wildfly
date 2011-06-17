@@ -132,7 +132,25 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             config.setAdvertise(true);
         }
         if (httpdconf.hasDefined(CommonAttributes.SSL)) {
-            // TODO: Add SSL logic.
+            // Add SSL configuration.
+            config.setSsl(true);
+            final ModelNode ssl = httpdconf.get(CommonAttributes.SSL);
+            if (ssl.has(CommonAttributes.KEY_ALIAS))
+                config.setSslKeyAlias(ssl.get(CommonAttributes.KEY_ALIAS).asString());
+            if (ssl.has(CommonAttributes.PASSWORD)) {
+                config.setSslTrustStorePassword(ssl.get(CommonAttributes.PASSWORD).asString());
+                config.setSslKeyStorePassword(ssl.get(CommonAttributes.PASSWORD).asString());
+            }
+            if (ssl.has(CommonAttributes.CERTIFICATE_KEY_FILE))
+                config.setSslKeyStore(ssl.get(CommonAttributes.CERTIFICATE_KEY_FILE).asString());
+            if (ssl.has(CommonAttributes.CIPHER_SUITE))
+                config.setSslCiphers(ssl.get(CommonAttributes.CIPHER_SUITE).asString());
+            if (ssl.has(CommonAttributes.PROTOCOL))
+                config.setSslKeyAlias(ssl.get(CommonAttributes.PROTOCOL).asString());
+            if (ssl.has(CommonAttributes.CA_CERTIFICATE_FILE))
+                config.setSslTrustStore(ssl.get(CommonAttributes.CA_CERTIFICATE_FILE).asString());
+            if (ssl.has(CommonAttributes.CA_REVOCATION_URL))
+                config.setSslCrlFile(ssl.get(CommonAttributes.CA_REVOCATION_URL).asString());
         }
         if (httpdconf.hasDefined(CommonAttributes.ADVERTISE))
             config.setAdvertise(httpdconf.get(CommonAttributes.ADVERTISE).asBoolean());

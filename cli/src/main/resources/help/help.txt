@@ -2,9 +2,7 @@ Supported commands:
 
  cn (or cd)				- change the current node path to the argument;
  connect				- connect to the specified host and port;
- create-jms-queue		- create a jms queue;
  deploy					- deploy an application;
- delete-jms-queue		- delete a jms queue;
  help (or h)			- print this message;
  history				- print or disable/enable/clear the history expansion.
  ls						- list the contents of the node path;
@@ -13,6 +11,21 @@ Supported commands:
  undeploy				- undeploy an application;
  version				- prints the version and environment information.
 
+ add-jms-queue			- creates a new JMS queue
+ remove-jms-queue		- removes an existing JMS queue
+ add-jms-topic			- creates a new JMS topic
+ remove-jms-topic		- removes an existing JMS topic
+ add-jms-cf				- creates a new JMS connection factory
+ remove-jms-cf			- removes an existing JMS connection factory
+ 
+ add-data-source		- creates a new data source
+ remove-data-source		- removes an existing data source
+ modify-data-source		- modifies the configuration of an existing data source
+ add-xa-data-source		- creates a new XA data source
+ remove-xa-data-source	- removes an existing XA data source
+ modify-xa-data-source	- modifies the configuration of an existing XA data source
+ 
+ 
 For a more detailed description of a specific command, execute the command with '--help' as the argument.
 
 Tab-completion is supported for the commands, just press the tab key to start.

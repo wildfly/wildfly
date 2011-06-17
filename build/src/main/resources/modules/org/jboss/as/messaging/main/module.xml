@@ -30,6 +30,7 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="javax.transaction.api"/>
         <module name="org.hornetq"/>
         <module name="org.hornetq.ra"/>
         <module name="org.jboss.as.transactions"/>

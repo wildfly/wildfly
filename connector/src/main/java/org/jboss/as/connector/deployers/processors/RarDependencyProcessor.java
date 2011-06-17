@@ -40,10 +40,8 @@ public class RarDependencyProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier LOGGING_ID = ModuleIdentifier.create("org.jboss.logging");
     private static ModuleIdentifier IRON_JACAMAR_ID = ModuleIdentifier.create("org.jboss.ironjacamar.api");
     private static ModuleIdentifier IRON_JACAMAR_IMPL_ID = ModuleIdentifier.create("org.jboss.ironjacamar.impl");
-    private static ModuleIdentifier NAMING_ID = ModuleIdentifier.create("org.jboss.as.naming");
     private static ModuleIdentifier VALIDATION_ID = ModuleIdentifier.create("javax.validation.api");
     private static ModuleIdentifier HIBERNATE_VALIDATOR_ID = ModuleIdentifier.create("org.hibernate.validator");
-    private static ModuleIdentifier COMMON_CORE_ID = ModuleIdentifier.create("org.jboss.common-core");
     private static ModuleIdentifier RESOURCE_API_ID = ModuleIdentifier.create("javax.resource.api");
 
     /**
@@ -72,9 +70,7 @@ public class RarDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, LOGGING_ID, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IRON_JACAMAR_ID, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IRON_JACAMAR_IMPL_ID, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, NAMING_ID, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, COMMON_CORE_ID, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {

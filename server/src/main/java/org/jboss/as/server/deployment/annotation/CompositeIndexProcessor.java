@@ -30,7 +30,12 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.moduleservice.ModuleIndexBuilder;
 import org.jboss.jandex.Index;
+import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,15 +43,37 @@ import java.util.List;
 /**
  * Processor responsible for creating and attaching a {@link CompositeIndex} for a deployment.
  *
+ * This must run after the {@link org.jboss.as.server.deployment.module.ManifestDependencyProcessor}
+ *
  * @author John Bailey
+ * @author Stuart Douglas
  */
 public class CompositeIndexProcessor implements DeploymentUnitProcessor {
+
+    private static final Logger log = Logger.getLogger(CompositeIndexProcessor.class);
+
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         final Boolean computeCompositeIndex = deploymentUnit.getAttachment(Attachments.COMPUTE_COMPOSITE_ANNOTATION_INDEX);
         if(computeCompositeIndex != null && !computeCompositeIndex) {
             return;
+        }
+
+        final List<ModuleIdentifier> additionalModuleIndexes = deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES);
+        final List<CompositeIndex> additionalIndexes = new ArrayList<CompositeIndex>();
+        for(ModuleIdentifier moduleIdentifier : additionalModuleIndexes) {
+            try {
+                Module module = Module.getBootModuleLoader().loadModule(moduleIdentifier);
+                final CompositeIndex additionalIndex = ModuleIndexBuilder.buildCompositeIndex(module);
+                if(additionalIndex != null) {
+                    additionalIndexes.add(additionalIndex);
+                }else {
+                    log.errorf("Module %s will not have it's annotations processed as no %s file was found in the deployment. Please generate this file using the Jandex ant task.", module.getIdentifier(), ModuleIndexBuilder.INDEX_LOCATION);
+                }
+            } catch (ModuleLoadException e) {
+                throw new DeploymentUnitProcessingException(e);
+            }
         }
 
         final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();

@@ -389,9 +389,36 @@ public class Util {
             if(profile != null) {
                 builder.addNode("profile", profile);
             }
-            builder.addNode("subsystem", "jms");
+            builder.addNode("subsystem", "messaging");
             builder.operationName("read-children-names");
             builder.addProperty("child-type", type);
+            request = builder.buildRequest();
+        } catch (OperationFormatException e) {
+            throw new IllegalStateException("Failed to build operation", e);
+        }
+
+        try {
+            ModelNode outcome = client.execute(request);
+            if (isSuccess(outcome)) {
+                return getList(outcome);
+            }
+        } catch (Exception e) {
+        }
+
+        return Collections.emptyList();
+    }
+
+    public static List<String> getDatasources(ModelControllerClient client, String profile, String dsType) {
+
+        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+        final ModelNode request;
+        try {
+            if(profile != null) {
+                builder.addNode("profile", profile);
+            }
+            builder.addNode("subsystem", "datasources");
+            builder.operationName("read-children-names");
+            builder.addProperty("child-type", dsType);
             request = builder.buildRequest();
         } catch (OperationFormatException e) {
             throw new IllegalStateException("Failed to build operation", e);
@@ -488,5 +515,20 @@ public class Util {
                 }
             }
         }
+    }
+
+    public static void setRequestProperty(ModelNode request, String name, String value) {
+        if(name == null || name.trim().isEmpty())
+            throw new IllegalArgumentException("The argument name is not specified: '" + name + "'");
+        if(value == null || value.trim().isEmpty())
+            throw new IllegalArgumentException("The argument value is not specified: '" + value + "'");
+        ModelNode toSet = null;
+        try {
+            toSet = ModelNode.fromString(value);
+        } catch (Exception e) {
+            // just use the string
+            toSet = new ModelNode().set(value);
+        }
+        request.get(name).set(toSet);
     }
 }

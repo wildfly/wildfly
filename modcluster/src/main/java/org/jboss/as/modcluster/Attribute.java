@@ -56,6 +56,15 @@ enum Attribute {
     WEIGHT(CommonAttributes.WEIGHT),
     TYPE(CommonAttributes.TYPE),
     CLASS(CommonAttributes.CLASS),
+    PROPERTY(CommonAttributes.PROPERTY),
+    VALUE(CommonAttributes.VALUE),
+    KEY_ALIAS(CommonAttributes.KEY_ALIAS),
+    PASSWORD(CommonAttributes.PASSWORD),
+    CERTIFICATE_KEY_FILE(CommonAttributes.CERTIFICATE_KEY_FILE),
+    CIPHER_SUITE(CommonAttributes.CIPHER_SUITE),
+    PROTOCOL(CommonAttributes.PROTOCOL),
+    CA_CERTIFICATE_FILE(CommonAttributes.CA_CERTIFICATE_FILE),
+    CA_REVOCATION_URL(CommonAttributes.CA_REVOCATION_URL),
     ;
 
     private final String name;

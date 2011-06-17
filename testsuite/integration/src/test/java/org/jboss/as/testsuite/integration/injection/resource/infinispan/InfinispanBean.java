@@ -28,7 +28,6 @@ import org.infinispan.manager.CacheContainer;
 
 import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -45,13 +44,8 @@ public class InfinispanBean {
 
     @PostConstruct
     public void start() {
+        this.container.start();
         this.cache = this.container.getCache();
-        this.cache.start();
-    }
-
-    @PreDestroy
-    public void stop() {
-        this.cache.stop();
     }
 
     public void test() {

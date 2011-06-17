@@ -40,10 +40,11 @@ public enum AttributeDefinition {
             org.jboss.as.connector.pool.Constants.POOL_PREFILL, ModelType.BOOLEAN, false), POOL_USE_STRICT_MIN(
             org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN, ModelType.BOOLEAN, false), FLUSH_STRATEGY(
             Constants.FLUSH_STRATEGY, ModelType.STRING, false), USERNAME(Constants.USERNAME, ModelType.STRING, false), PASSWORD(
-            Constants.PASSWORD, ModelType.STRING, false), PREPAREDSTATEMENTSCACHESIZE(Constants.PREPAREDSTATEMENTSCACHESIZE,
-            ModelType.LONG, false), SHAREPREPAREDSTATEMENTS(Constants.SHAREPREPAREDSTATEMENTS, ModelType.BOOLEAN, false), TRACKSTATEMENTS(
-            Constants.TRACKSTATEMENTS, ModelType.STRING, false), ALLOCATION_RETRY(Constants.ALLOCATION_RETRY, ModelType.INT,
-            false), ALLOCATION_RETRY_WAIT_MILLIS(Constants.ALLOCATION_RETRY_WAIT_MILLIS, ModelType.LONG, false), BLOCKING_TIMEOUT_WAIT_MILLIS(
+            Constants.PASSWORD, ModelType.STRING, false), SECURITY_DOMAIN(Constants.SECURITY_DOMAIN, ModelType.STRING, false), PREPAREDSTATEMENTSCACHESIZE(
+            Constants.PREPAREDSTATEMENTSCACHESIZE, ModelType.LONG, false), SHAREPREPAREDSTATEMENTS(
+            Constants.SHAREPREPAREDSTATEMENTS, ModelType.BOOLEAN, false), TRACKSTATEMENTS(Constants.TRACKSTATEMENTS,
+            ModelType.STRING, false), ALLOCATION_RETRY(Constants.ALLOCATION_RETRY, ModelType.INT, false), ALLOCATION_RETRY_WAIT_MILLIS(
+            Constants.ALLOCATION_RETRY_WAIT_MILLIS, ModelType.LONG, false), BLOCKING_TIMEOUT_WAIT_MILLIS(
             org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS, ModelType.LONG, false), IDLETIMEOUTMINUTES(
             org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES, ModelType.LONG, false), QUERYTIMEOUT(
             Constants.QUERYTIMEOUT, ModelType.LONG, false), USETRYLOCK(Constants.USETRYLOCK, ModelType.LONG, false), SETTXQUERYTIMEOUT(
@@ -63,10 +64,11 @@ public enum AttributeDefinition {
             Constants.INTERLIVING, ModelType.BOOLEAN, false), NOTXSEPARATEPOOL(Constants.NOTXSEPARATEPOOL, ModelType.BOOLEAN,
             false), PAD_XID(Constants.PAD_XID, ModelType.BOOLEAN, false), SAME_RM_OVERRIDE(Constants.SAME_RM_OVERRIDE,
             ModelType.BOOLEAN, false), WRAP_XA_DATASOURCE(Constants.WRAP_XA_DATASOURCE, ModelType.BOOLEAN, false), XA_RESOURCE_TIMEOUT(
-            Constants.XA_RESOURCE_TIMEOUT, ModelType.INT, false), REAUTHPLUGIN_PROPERTIES(Constants.REAUTHPLUGIN_PROPERTIES,
-            ModelType.OBJECT, false), RECOVERY_USERNAME(Constants.RECOVERY_USERNAME, ModelType.STRING, false), RECOVERY_PASSWORD(
-            Constants.RECOVERY_PASSWORD, ModelType.STRING, false), RECOVERY_SECURITY_DOMAIN(Constants.RECOVERY_SECURITY_DOMAIN,
-            ModelType.STRING, false), RECOVERLUGIN_CLASSNAME(Constants.RECOVERLUGIN_CLASSNAME, ModelType.STRING, false), RECOVERLUGIN_PROPERTIES(
+            Constants.XA_RESOURCE_TIMEOUT, ModelType.INT, false), REAUTHPLUGIN_CLASSNAME(Constants.REAUTHPLUGIN_CLASSNAME,
+            ModelType.STRING, false), REAUTHPLUGIN_PROPERTIES(Constants.REAUTHPLUGIN_PROPERTIES, ModelType.OBJECT, false), RECOVERY_USERNAME(
+            Constants.RECOVERY_USERNAME, ModelType.STRING, false), RECOVERY_PASSWORD(Constants.RECOVERY_PASSWORD,
+            ModelType.STRING, false), RECOVERY_SECURITY_DOMAIN(Constants.RECOVERY_SECURITY_DOMAIN, ModelType.STRING, false), RECOVERLUGIN_CLASSNAME(
+            Constants.RECOVERLUGIN_CLASSNAME, ModelType.STRING, false), RECOVERLUGIN_PROPERTIES(
             Constants.RECOVERLUGIN_PROPERTIES, ModelType.OBJECT, false), NO_RECOVERY(Constants.NO_RECOVERY, ModelType.BOOLEAN,
             false);
 

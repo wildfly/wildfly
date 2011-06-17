@@ -180,6 +180,9 @@ public final class Attachments {
      */
     public static final AttachmentKey<AttachmentList<AdditionalModuleSpecification>> ADDITIONAL_MODULES = AttachmentKey.createList(AdditionalModuleSpecification.class);
 
+    public static final AttachmentKey<AttachmentList<ModuleIdentifier>> ADDITIONAL_ANNOTATION_INDEXES = AttachmentKey.createList(ModuleIdentifier.class);
+
+
     //
     // VALIDATE
     //

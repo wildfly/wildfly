@@ -221,13 +221,14 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         } else if (!isResourceRefType) {
             final EEResourceReferenceProcessor resourceReferenceProcessor = EEResourceReferenceProcessorRegistry.getResourceReferenceProcessor(injectionType);
             if (resourceReferenceProcessor == null) {
-                throw new DeploymentUnitProcessingException("Can't handle @Resource for ENC name: " + localContextName +
-                        " since it's missing a \"lookup\" (or \"mappedName\") value and isn't of any known type");
+                logger.warnf("Can't handle @Resource for ENC name: %s on class %s since it's missing a \"lookup\" (or \"mappedName\") value and isn't of any known type", localContextName, classDescription.getClassName());
+                return;
             }
             valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource(phaseContext, eeModuleDescription, classDescription, injectionType, localContextName, targetDescription);
             if (valueSource == null) {
-                throw new DeploymentUnitProcessingException("Could not find binding source for @Resource, for ENC name: " + localContextName +
-                        " of type: " + injectionType + " from resource reference processor: " + resourceReferenceProcessor);
+                logger.warnf("Could not find binding source for @Resource, for ENC name: %s on class %s " +
+                        " of type: %s from resource reference processor: %s", localContextName, classDescription.getClassName(), injectionType, resourceReferenceProcessor);
+                return;
             }
         }
 

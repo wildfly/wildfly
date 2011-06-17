@@ -42,7 +42,7 @@ public class OperationRequestCompleter implements CommandLineCompleter, Completo
 
     public static final OperationRequestCompleter INSTANCE = new OperationRequestCompleter(null);
 
-    private static final EscapeSelector ESCAPE_SELECTOR = new EscapeSelector() {
+    public static final EscapeSelector ESCAPE_SELECTOR = new EscapeSelector() {
         @Override
         public boolean isEscape(char ch) {
             return ch == ':' || ch == '/' || ch == '=' || ch == ' ' || ch == '"' || ch == '\\';

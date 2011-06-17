@@ -200,7 +200,8 @@ public enum Phase {
     public static final int PARSE_EE_MODULE_NAME                        = 0x0100;
     public static final int PARSE_EAR_SUBDEPLOYMENTS_ISOLATION_DEFAULT  = 0x0200;
     public static final int PARSE_STRUCTURE_DESCRIPTOR                  = 0x0201;
-    public static final int PARSE_COMPOSITE_ANNOTATION_INDEX            = 0x0300;
+    public static final int PARSE_DEPENDENCIES_MANIFEST                 = 0x0300;
+    public static final int PARSE_COMPOSITE_ANNOTATION_INDEX            = 0x0301;
     public static final int PARSE_EAR_LIB_CLASS_PATH                    = 0x0400;
     public static final int PARSE_ADDITIONAL_MODULES                    = 0x0500;
     public static final int PARSE_CLASS_PATH                            = 0x0600;
@@ -327,7 +328,6 @@ public enum Phase {
     public static final int POST_MODULE_DATASOURCE_REF                  = 0x1700;
     public static final int POST_MODULE_WS_JMS_INTEGRATION              = 0x1800;
 
-
     // INSTALL
     public static final int INSTALL_JAXRS_SCANNING                      = 0x0200;
     public static final int INSTALL_APP_CONTEXT                         = 0x0300;
@@ -335,7 +335,11 @@ public enum Phase {
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
     public static final int INSTALL_OSGI_DEPLOYMENT                     = 0x0600;
     public static final int INSTALL_OSGI_MODULE                         = 0x0650;
-    public static final int INSTALL_WAR_METADATA                        = 0x0700; //this needs to be removed, however WSDeploymentActivator still uses it
+    public static final int INSTALL_WS_DEPLOYMENT_TYPE_DETECTOR         = 0x0700;
+    public static final int INSTALL_WS_UNIVERSAL_META_DATA_MODEL        = 0x0701;
+    public static final int INSTALL_WS_DEPLOYMENT_ASPECTS               = 0x0710;
+    // IMPORTANT: WS integration installs deployment aspects dynamically
+    // so consider INSTALL 0x0710 - 0x07FF reserved for WS subsystem!
     public static final int INSTALL_RA_DEPLOYMENT                       = 0x0800;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;
     public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x0A00;

@@ -21,13 +21,12 @@
  */
 package org.jboss.as.cli.handlers;
 
-import org.jboss.as.cli.OperationCommand;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public abstract class BatchModeCommandHandler extends CommandHandlerWithHelp implements OperationCommand {
+public abstract class BatchModeCommandHandler extends BaseOperationCommand {
 
     public BatchModeCommandHandler(String command, boolean connectionRequired) {
         super(command, connectionRequired);

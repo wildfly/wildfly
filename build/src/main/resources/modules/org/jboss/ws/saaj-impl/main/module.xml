@@ -29,7 +29,7 @@
     </resources>
 
     <dependencies>
-        <module name="com.sun.xml.messaging.saaj" services="import">
+        <module name="com.sun.xml.messaging.saaj" services="import"/>
     </dependencies>
 
 </module>

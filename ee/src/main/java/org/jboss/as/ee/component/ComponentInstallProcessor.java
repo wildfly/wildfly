@@ -198,7 +198,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName);
 
                 if (existingBindings.containsKey(serviceName)) {
-                    if(deploymentDescriptorBindings.containsKey(serviceName)) {
+                    if (deploymentDescriptorBindings.containsKey(serviceName)) {
                         continue;
                     }
                     final BindingConfiguration existing = existingBindings.get(serviceName);
