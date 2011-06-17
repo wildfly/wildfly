@@ -158,7 +158,7 @@ public class JdbcDriverAdd implements ModelAddOperationHandler {
                     InstalledDriver driverMetadata = new InstalledDriver(driverName, moduleId, driver.getClass().getName(),
                             xaDataSourceClassName, majorVer, minorVer, compliant);
                     DriverService driverService = new DriverService(driverMetadata, driver);
-                    target.addService(ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll(".", "_")), driverService)
+                    target.addService(ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_")), driverService)
                             .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                                     driverService.getDriverRegistryServiceInjector())
                             .setInitialMode(ServiceController.Mode.ACTIVE).install();

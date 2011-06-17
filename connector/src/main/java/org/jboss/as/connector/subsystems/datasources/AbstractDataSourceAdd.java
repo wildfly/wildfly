@@ -113,10 +113,10 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
 
                     startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, jndiName, serviceTarget, operation);
 
-                     ModelNode node = operation.require(DATASOURCE_DRIVER);
+                    ModelNode node = operation.require(DATASOURCE_DRIVER);
                     final String driverName = node.asString();
                     final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver",
-                            driverName.replaceAll(".", "_"));
+                            driverName.replaceAll("\\.", "_"));
                     if (driverServiceName != null) {
                         dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,
                                 dataSourceService.getDriverInjector());
