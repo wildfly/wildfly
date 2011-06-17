@@ -75,5 +75,6 @@ public class JacORBSubsystemDescribe implements NewStepHandler {
             }
         }
         result.add(subsystemAdd);
+        context.completeStep();
     }
 }
