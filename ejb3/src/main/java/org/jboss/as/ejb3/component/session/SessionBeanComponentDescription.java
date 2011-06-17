@@ -129,6 +129,8 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                                            final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
         addDependency(SessionBeanComponent.ASYNC_EXECUTOR_SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
+        // setSessionContext() method invocation interceptor
+        this.addSetSessionContextMethodInvocationInterceptor();
     }
 
     /**
@@ -181,7 +183,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     private void assertNoRemoteView(final String viewClassName) {
         EJBViewDescription ejbView = null;
-        for (final ViewDescription view: getViews()) {
+        for (final ViewDescription view : getViews()) {
             ejbView = (EJBViewDescription) view;
             if (viewClassName.equals(ejbView.getViewClassName()) && ejbView.getMethodIntf() == MethodIntf.REMOTE) {
                 throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
@@ -192,7 +194,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     private void assertNoLocalView(final String viewClassName) {
         EJBViewDescription ejbView = null;
-        for (final ViewDescription view: getViews()) {
+        for (final ViewDescription view : getViews()) {
             ejbView = (EJBViewDescription) view;
             if (viewClassName.equals(ejbView.getViewClassName()) && ejbView.getMethodIntf() == MethodIntf.LOCAL) {
                 throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
@@ -221,7 +223,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      * Sets the {@link javax.ejb.LockType} applicable for the bean.
      *
      * @param className The class that has the annotation
-     * @param locktype The lock type applicable for the bean
+     * @param locktype  The lock type applicable for the bean
      */
     public void setBeanLevelLockType(String className, LockType locktype) {
         this.beanLevelLockType.put(className, locktype);
@@ -368,8 +370,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         // let super do it's job first
         super.setupViewInterceptors(view);
 
-        // current invocation
-
         // tx management interceptor(s)
         addTxManagementInterceptorForView(view);
 
@@ -400,15 +400,25 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         this.getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                if (SessionBean.class.isAssignableFrom(configuration.getComponentClass())) {
-
-                    configuration.addPostConstructInterceptor(SessionBeanSessionContextInjectionInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.RESOURCE_INJECTION_INTERCEPTORS);
-                }
                 configuration.addPostConstructInterceptor(SessionInvocationContextInterceptor.LIFECYCLE_FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SESSION_CONTEXT_INTERCEPTOR);
                 configuration.addPreDestroyInterceptor(SessionInvocationContextInterceptor.LIFECYCLE_FACTORY, InterceptorOrder.ComponentPreDestroy.EJB_SESSION_CONTEXT_INTERCEPTOR);
             }
         });
     }
+
+    private void addSetSessionContextMethodInvocationInterceptor() {
+        // add the setSessionContext(SessionContext) method invocation interceptor for session bean implementing the javax.ejb.SessionContext
+        // interface
+        this.getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                if (SessionBean.class.isAssignableFrom(configuration.getComponentClass())) {
+                    configuration.addPostConstructInterceptor(SessionBeanSetSessionContextMethodInvocationInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SET_SESSION_CONTEXT_METHOD_INVOCATION_INTERCEPTOR);
+                }
+            }
+        });
+    }
+
 
     @Override
     protected void addCurrentInvocationContextFactory(ViewDescription view) {
