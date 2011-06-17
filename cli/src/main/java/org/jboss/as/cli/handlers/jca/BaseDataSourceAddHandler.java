@@ -254,17 +254,17 @@ public class BaseDataSourceAddHandler extends BaseOperationCommand {
 
         RequestParamArgWithValue exceptionSorterClass =  new RequestParamArgWithValue("exception-sorter-class-name", this, "--exception-sorter-class");
         exceptionSorterClass.addRequiredPreceding(lastRequired);
-        RequestParamArgWithValue exceptionSorterProps =  new RequestParamPropertiesArg("exceptionsorter-properties", this, "--exception-sorter-properties");
+        RequestParamArgWithValue exceptionSorterProps =  new RequestParamPropertiesArg("exception-sorter-properties", this);
         exceptionSorterProps.addRequiredPreceding(exceptionSorterClass);
 
         RequestParamArgWithValue staleConnectionCheckerClass =  new RequestParamArgWithValue("stale-connection-checker-class-name", this, "--stale-connection-checker-class");
         staleConnectionCheckerClass.addRequiredPreceding(lastRequired);
-        RequestParamArgWithValue staleConnectionCheckerProps =  new RequestParamPropertiesArg("staleconnectionchecker-properties", this, "--stale-connection-checker-properties");
+        RequestParamArgWithValue staleConnectionCheckerProps =  new RequestParamPropertiesArg("stale-connection-checker-properties", this);
         staleConnectionCheckerProps.addRequiredPreceding(staleConnectionCheckerClass);
 
         RequestParamArgWithValue validConnectionCheckerClass =  new RequestParamArgWithValue("valid-connection-checker-class-name", this, "--valid-connection-checker-class");
         validConnectionCheckerClass.addRequiredPreceding(lastRequired);
-        RequestParamArgWithValue validConnectionCheckerProps =  new RequestParamPropertiesArg("validconnectionchecker-properties", this, "--valid-connection-checker-properties");
+        RequestParamArgWithValue validConnectionCheckerProps =  new RequestParamPropertiesArg("valid-connection-checker-properties", this);
         validConnectionCheckerProps.addRequiredPreceding(validConnectionCheckerClass);
 
         RequestParamArgWithoutValue backgroundValidation =  new RequestParamArgWithoutValue("background-validation", this);
