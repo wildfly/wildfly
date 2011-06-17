@@ -47,16 +47,6 @@ public class TimerServiceBindingSource extends InjectionSource {
         injector.inject(TIMER_SERVICE_MANAGED_REFERENCE_FACTORY_INSTANCE);
     }
 
-    @Override
-    public boolean equalTo(InjectionSource other, DeploymentPhaseContext phaseContext) {
-        if (other == null) {
-            return false;
-        }
-        // we consider two injection sources to be equal if they are both TimerServiceBindingSource
-        return other.getClass().equals(TimerServiceBindingSource.class);
-    }
-
-
     /**
      * {@link ManagedReferenceFactory} for returning a {@link ManagedReference} to a {@link javax.ejb.TimerService}
      */
@@ -90,5 +80,15 @@ public class TimerServiceBindingSource extends InjectionSource {
             }
             return ejbComponent.getTimerService();
         }
+    }
+
+
+    // All Timer bindings are equivalent since they just use a thread local context
+    public boolean equals(Object o) {
+        return o instanceof TimerServiceBindingSource;
+    }
+
+    public int hashCode() {
+        return 1;
     }
 }

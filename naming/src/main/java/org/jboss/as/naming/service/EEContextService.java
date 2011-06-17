@@ -30,6 +30,8 @@ import org.jboss.as.naming.context.NamespaceObjectFactory;
 import org.jboss.as.naming.util.NameParser;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;

@@ -35,6 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
 import java.util.Set;
 
@@ -48,6 +49,7 @@ import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 public class EjbInjectionSource extends InjectionSource {
     private final String beanName;
     private final String typeName;
+    private volatile ServiceName resolvedViewName;
 
     public EjbInjectionSource(final String beanName, final String typeName) {
         this.beanName = beanName;
@@ -68,7 +70,9 @@ public class EjbInjectionSource extends InjectionSource {
             throw new DeploymentUnitProcessingException("More than 1 component found for type '" + typeName + "' and bean name " + beanName);
         }
         ViewDescription description = componentsForViewName.iterator().next();
-        serviceBuilder.addDependency(description.getServiceName(), ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
+        ServiceName serviceName = description.getServiceName();
+        resolvedViewName = serviceName;
+        serviceBuilder.addDependency(serviceName, ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
 
     }
 
@@ -85,21 +89,25 @@ public class EjbInjectionSource extends InjectionSource {
         return componentsForViewName;
     }
 
-    @Override
-    public boolean equalTo(final InjectionSource injectionSource, final DeploymentPhaseContext phaseContext) {
-        return injectionSource instanceof EjbInjectionSource && equals((EjbInjectionSource) injectionSource, phaseContext);
-    }
-
-    private boolean equals(final EjbInjectionSource configuration, final DeploymentPhaseContext phaseContext) {
-        if(this == configuration) {
+    public boolean equals(Object o) {
+        if (this == o)
             return true;
-        }
-        final Set<ViewDescription> theseViews = getViews(phaseContext);
-        final Set<ViewDescription> otherViews = configuration.getViews(phaseContext);
-        //return true if they resolve to the same set of views
-        //it does not matter if the resolution is correct at this point
-        //as an error will occur later
-        return otherViews.equals(theseViews);
+
+        if (!(o instanceof EjbInjectionSource))
+            return false;
+
+        EjbInjectionSource other = (EjbInjectionSource)o;
+        return eq(beanName, other.beanName) && eq(typeName, other.typeName) && eq(resolvedViewName, other.resolvedViewName);
     }
 
+    public int hashCode() {
+        int result = beanName != null ? beanName.hashCode() : 0;
+        result = 31 * result + (typeName != null ? typeName.hashCode() : 0);
+        result = 31 * result + (resolvedViewName != null ? resolvedViewName.hashCode() : 0);
+        return result;
+    }
+
+    private static boolean eq(Object a, Object b) {
+        return a == b || (a != null && a.equals(b));
+    }
 }

@@ -58,7 +58,7 @@ public final class FixedInjectionSource extends InjectionSource {
     }
 
     @Override
-    public boolean equalTo(final InjectionSource obj, final DeploymentPhaseContext phaseContext) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -71,5 +71,9 @@ public final class FixedInjectionSource extends InjectionSource {
 
     private boolean equalTo(final FixedInjectionSource configuration) {
         return configuration != null && value.equals(configuration.value);
+    }
+
+    public int hashCode() {
+        return value.hashCode();
     }
 }

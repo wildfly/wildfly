@@ -112,12 +112,6 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         injector.inject(new ValueManagedReferenceFactory(Values.immediateValue(object)));
     }
 
-    @Override
-    public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
-        //cannot be shared
-        return other == this;
-    }
-
     private void setProperties(DeploymentReflectionIndex deploymentReflectionIndex, ClassReflectionIndex<?> classIndex, Object object) {
         setProperty(deploymentReflectionIndex, classIndex, object, DESCRIPTION_PROP, description);
         setProperty(deploymentReflectionIndex, classIndex, object, URL_PROP, url);

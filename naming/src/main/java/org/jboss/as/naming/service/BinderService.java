@@ -22,12 +22,14 @@
 
 package org.jboss.as.naming.service;
 
+import org.jboss.as.controller.ControllerResource;
 import org.jboss.as.naming.ManagedReferenceObjectFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.util.NameParser;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -47,19 +49,46 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     private final InjectedValue<NamingStore> namingStoreValue = new InjectedValue<NamingStore>();
     private final String name;
     private final InjectedValue<ManagedReferenceFactory> managedReferenceFactory = new InjectedValue<ManagedReferenceFactory>();
+    private final Object source;
+    private short refcnt = 0;
+    private ServiceController<?> controller;
 
     /**
      * Construct new instance.
      *
      * @param name  The JNDI name to use for binding. May be either an absolute or relative name
      */
-    public BinderService(final String name) {
+    public BinderService(final String name, Object source) {
         if(name.startsWith("java:")) {
             //this is an absolute reference
             this.name = name.substring(name.indexOf('/') + 1);
         } else {
             this.name = name;
         }
+        this.source = source;
+    }
+
+    public BinderService(final String name) {
+        this(name, null);
+    }
+
+    public Object getSource() {
+        return source;
+    }
+
+    public synchronized void acquire() {
+        if (controller == null)
+            throw new IllegalStateException("Service is not started, can't be aquired");
+
+        refcnt++;
+    }
+
+    public synchronized void release() {
+        if (controller == null)
+            throw new IllegalStateException("Service was never started, can't be released");
+
+        if (--refcnt <= 0)
+            controller.setMode(ServiceController.Mode.REMOVE);
     }
 
     /**
@@ -71,7 +100,9 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     public synchronized void start(StartContext context) throws StartException {
         final NamingStore namingStore = namingStoreValue.getValue();
         try {
-            final Reference reference = ManagedReferenceObjectFactory.createReference(context.getController().getName());
+            ServiceController<?> controller = context.getController();
+            this.controller = controller;
+            final Reference reference = ManagedReferenceObjectFactory.createReference(controller.getName());
             final Name name = NameParser.INSTANCE.parse(this.name);
             namingStore.bind(name, reference);
         } catch (NamingException e) {
