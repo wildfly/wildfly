@@ -4997,6 +4997,12 @@
 
             <dependency>
                 <groupId>org.picketbox</groupId>
+                <artifactId>picketbox-commons</artifactId>
+                <version>${version.org.picketbox.picketbox-commons}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketbox</groupId>
                 <artifactId>picketbox-infinispan</artifactId>
                 <version>${version.org.picketbox}</version>
                 <exclusions>
@@ -5019,12 +5025,6 @@
                 </exclusions>
             </dependency>
             
-            <dependency>
-                <groupId>org.picketbox</groupId>
-                <artifactId>picketbox-commons</artifactId>
-                <version>${version.org.picketbox.picketbox-commons}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.scannotation</groupId>
                 <artifactId>scannotation</artifactId>
