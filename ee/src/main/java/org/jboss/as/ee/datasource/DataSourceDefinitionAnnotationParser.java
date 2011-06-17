@@ -168,7 +168,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
 
     private boolean asBool(final AnnotationInstance annotation, String property) {
         AnnotationValue value = annotation.value(property);
-        return value == null ? false : value.asBoolean();
+        return value == null ? true : value.asBoolean();
     }
 
     private String[] asArray(final AnnotationInstance annotation, String property) {

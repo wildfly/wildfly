@@ -19,12 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.injection.datasourcedefinition;
+package org.jboss.as.testsuite.integration.datasourcedefinition;
 
 import javax.annotation.Resource;
 import javax.annotation.sql.DataSourceDefinition;
 import javax.ejb.Stateless;
 import javax.sql.DataSource;
+import javax.sql.XADataSource;
+import java.sql.SQLException;
 
 /**
  * @author Stuart Douglas
@@ -33,7 +35,7 @@ import javax.sql.DataSource;
         name = "java:app/DataSource",
         user = "sa",
         password = "sa",
-        className= "org.h2.jdbcx.JdbcDataSource",
+        className = "org.h2.jdbcx.JdbcDataSource",
         url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
 )
 @Stateless
@@ -41,6 +43,19 @@ public class DataSourceBean {
 
     @Resource(lookup = "java:app/DataSource")
     private DataSource dataSource;
+
+    public void createTable() throws SQLException {
+        dataSource.getConnection().createStatement().execute("create table if not exists coffee(id int not null);");
+    }
+
+    public void insert1RolledBack() throws SQLException {
+        dataSource.getConnection().createStatement().execute("insert into coffee values (1)");
+        throw new RuntimeException("roll back");
+    }
+
+    public void insert2() throws SQLException {
+        dataSource.getConnection().createStatement().execute("insert into coffee values (2)");
+    }
 
     public DataSource getDataSource() {
         return dataSource;

@@ -22,13 +22,13 @@
 
 package org.jboss.as.txn;
 
-import javax.transaction.TransactionManager;
-
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+
+import javax.transaction.TransactionManager;
 
 /**
  * Service responsible for getting the {@link TransactionManager}.

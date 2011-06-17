@@ -19,16 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.injection.datasourcedefinition;
+package org.jboss.as.testsuite.integration.datasourcedefinition;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.testsuite.integration.ejb.injection.ejb.InjectingBean;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,7 +39,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Tests that @Ejb injection works when two beans have the same name in different modules.
+ * Tests that @DataSourceDefinition works, and that the datasource is automatically enlisted in the transaction
  *
  * @author Stuart Douglas
  */
@@ -55,6 +55,12 @@ public class DataSourceDefinitionTestCase {
 
     }
 
+    @BeforeClass
+    public static void createTables() throws NamingException, SQLException {
+        InitialContext ctx = new InitialContext();
+        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+        bean.createTable();
+    }
 
     @Test
     public void testDataSourceDefinition() throws NamingException, SQLException {
@@ -65,6 +71,28 @@ public class DataSourceDefinitionTestCase {
         junit.framework.Assert.assertTrue(result.next());
     }
 
+    @Test
+    public void testTransactionEnlistment() throws NamingException, SQLException {
+        InitialContext ctx = new InitialContext();
+        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+        try {
+            bean.insert1RolledBack();
+            Assert.fail("expect exception");
+        } catch (RuntimeException expected) {
+        }
+        DataSource ds = bean.getDataSource();
+        ResultSet result = ds.getConnection().createStatement().executeQuery("select id from coffee where id=1;");
+        Assert.assertFalse(result.next());
+    }
 
+    @Test
+    public void testTransactionEnlistment2() throws NamingException, SQLException {
+        InitialContext ctx = new InitialContext();
+        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+        bean.insert2();
+        DataSource ds = bean.getDataSource();
+        ResultSet result = ds.getConnection().createStatement().executeQuery("select id from coffee where id=2;");
+        Assert.assertTrue(result.next());
+    }
 
 }

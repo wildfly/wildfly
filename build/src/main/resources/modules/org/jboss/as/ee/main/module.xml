@@ -31,6 +31,7 @@
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.interceptor.api"/>
+        <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
         <module name="javax.xml.ws.api"/>
         <module name="org.hibernate.validator"/>
