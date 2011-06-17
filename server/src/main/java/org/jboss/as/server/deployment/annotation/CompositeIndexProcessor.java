@@ -61,13 +61,13 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
         }
 
         final List<ModuleIdentifier> additionalModuleIndexes = deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES);
-        final List<CompositeIndex> additionalIndexes = new ArrayList<CompositeIndex>();
+        final List<Index> indexes = new ArrayList<Index>();
         for(ModuleIdentifier moduleIdentifier : additionalModuleIndexes) {
             try {
                 Module module = Module.getBootModuleLoader().loadModule(moduleIdentifier);
                 final CompositeIndex additionalIndex = ModuleIndexBuilder.buildCompositeIndex(module);
                 if(additionalIndex != null) {
-                    additionalIndexes.add(additionalIndex);
+                    indexes.addAll(additionalIndex.indexes);
                 }else {
                     log.errorf("Module %s will not have it's annotations processed as no %s file was found in the deployment. Please generate this file using the Jandex ant task.", module.getIdentifier(), ModuleIndexBuilder.INDEX_LOCATION);
                 }
@@ -94,7 +94,6 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
         if(ModuleRootMarker.isModuleRoot(deploymentRoot)) {
             allResourceRoots.add(deploymentRoot);
         }
-        List<Index> indexes = new ArrayList<Index>(allResourceRoots.size());
         for (ResourceRoot resourceRoot : allResourceRoots) {
             Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
             if (index != null) {
