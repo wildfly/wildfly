@@ -53,7 +53,8 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
     private static final Logger logger = Logger.getLogger(DirectDataSourceInjectionSource.class);
 
     public static final String USER_PROP = "user";
-    public static final String URL_PROP = "URL";
+    public static final String URL_PROP = "url";
+    public static final String UPPERCASE_USER_PROP = "URL";
     public static final String TRANSACTIONAL_PROP = "transactional";
     public static final String SERVER_NAME_PROP = "serverName";
     public static final String PROPERTIES_PROP = "properties";
@@ -127,6 +128,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
     private void setProperties(DeploymentReflectionIndex deploymentReflectionIndex, ClassReflectionIndex<?> classIndex, Object object) {
         setProperty(deploymentReflectionIndex, classIndex, object, DESCRIPTION_PROP, description);
         setProperty(deploymentReflectionIndex, classIndex, object, URL_PROP, url);
+        setProperty(deploymentReflectionIndex, classIndex, object, UPPERCASE_USER_PROP, url);
         setProperty(deploymentReflectionIndex, classIndex, object, DATABASE_NAME_PROP, databaseName);
         setProperty(deploymentReflectionIndex, classIndex, object, SERVER_NAME_PROP, serverName);
         setProperty(deploymentReflectionIndex, classIndex, object, PORT_NUMBER_PROP, Integer.valueOf(portNumber));
