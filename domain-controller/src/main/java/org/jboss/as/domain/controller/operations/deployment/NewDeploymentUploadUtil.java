@@ -4,6 +4,7 @@
 package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 
@@ -34,21 +35,28 @@ public class NewDeploymentUploadUtil {
     }
 
     private static InputStream getContents(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        if(! operation.hasDefined(CONTENT)) {
+            createFailureException("invalid content declaration");
+        }
+        return getInputStream(context, operation.require(CONTENT).get(0));
+    }
+
+    private static InputStream getInputStream(NewOperationContext context, ModelNode content) throws OperationFailedException {
         InputStream in = null;
         String message = "";
-        if (operation.hasDefined(INPUT_STREAM_INDEX)) {
-            int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
+        if (content.hasDefined(INPUT_STREAM_INDEX)) {
+            int streamIndex = content.get(INPUT_STREAM_INDEX).asInt();
             if (streamIndex > context.getAttachmentStreamCount() - 1) {
                 message = String.format("Invalid %s [%d], the maximum index is [%d]",  INPUT_STREAM_INDEX, streamIndex, (context.getAttachmentStreamCount() - 1));
                 throw createFailureException(message);
             }
             message = "Null stream at index " + streamIndex;
             in = context.getAttachmentStream(streamIndex);
-        } else if (operation.hasDefined(BYTES)) {
-            in = new ByteArrayInputStream(operation.get(BYTES).asBytes());
+        } else if (content.hasDefined(BYTES)) {
+            in = new ByteArrayInputStream(content.get(BYTES).asBytes());
             message = "Invalid byte stream.";
-        } else if (operation.hasDefined(URL)) {
-            final String urlSpec = operation.get(URL).asString();
+        } else if (content.hasDefined(URL)) {
+            final String urlSpec = content.get(URL).asString();
             try {
                 message = "Invalid url stream.";
                 in = new URL(urlSpec).openStream();
