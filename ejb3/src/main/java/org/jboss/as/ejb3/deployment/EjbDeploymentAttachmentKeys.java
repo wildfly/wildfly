@@ -22,7 +22,9 @@
 
 package org.jboss.as.ejb3.deployment;
 
+import org.jboss.as.ejb3.deployment.processors.EjbInjectionSource;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
 /**
@@ -42,6 +44,8 @@ public class EjbDeploymentAttachmentKeys {
     public static final AttachmentKey<EjbJarDescription> EJB_JAR_DESCRIPTION = AttachmentKey.create(EjbJarDescription.class);
 
     public static final AttachmentKey<EjbJarConfiguration> EJB_JAR_CONFIGURATION = AttachmentKey.create(EjbJarConfiguration.class);
+
+    public static final AttachmentKey<AttachmentList<EjbInjectionSource>> EJB_INJECTIONS = AttachmentKey.createList(EjbInjectionSource.class);
 
 }
 

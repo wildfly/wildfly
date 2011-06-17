@@ -28,8 +28,8 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.LookupInjectionSource;
-import org.jboss.as.ee.component.ViewBindingInjectionSource;
 import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -90,15 +90,20 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                     throw new DeploymentUnitProcessingException("Could not determine type of ejb-local-ref " + name + " for component " + componentDescription);
                 }
                 final BindingConfiguration bindingConfiguration;
+                EjbInjectionSource ejbInjectionSource = null;
+
                 if (!isEmpty(lookup)) {
                     bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                 } else if (!isEmpty(ejbName)) {
                     //TODO: implement cross deployment references
                     final ServiceName beanServiceName = deploymentUnit.getServiceName()
                             .append("component").append(ejbName).append("VIEW").append(localInterfaceType.getName()).append(MethodIntf.LOCAL.toString());
-                    bindingConfiguration = new BindingConfiguration(name, new ViewBindingInjectionSource(beanServiceName));
+                    bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(ejbName, localInterfaceType.getName()));
                 } else {
-                    throw new RuntimeException("Support for ejb-local-ref without lookup or ejb-link isn't yet implemented");
+                    bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(localInterfaceType.getName()));
+                }
+                if(ejbInjectionSource != null) {
+                    deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.EJB_INJECTIONS, ejbInjectionSource);
                 }
                 bindingDescriptions.add(bindingConfiguration);
             }

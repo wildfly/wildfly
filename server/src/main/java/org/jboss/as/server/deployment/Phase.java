@@ -337,6 +337,7 @@ public enum Phase {
     public static final int POST_MODULE_PERSISTENCE_REF                 = 0x1600;
     public static final int POST_MODULE_DATASOURCE_REF                  = 0x1700;
     public static final int POST_MODULE_WS_JMS_INTEGRATION              = 0x1800;
+    public static final int POST_MODULE_RESOLVE_EJB_INJECTIONS          = 0x1900;
 
     // INSTALL
     public static final int INSTALL_JAXRS_SCANNING                      = 0x0200;

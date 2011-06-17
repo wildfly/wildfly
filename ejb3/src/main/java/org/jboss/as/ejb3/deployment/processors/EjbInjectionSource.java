@@ -50,6 +50,7 @@ public class EjbInjectionSource extends InjectionSource {
     private final String beanName;
     private final String typeName;
     private volatile ServiceName resolvedViewName;
+    private volatile String error = null;
 
     public EjbInjectionSource(final String beanName, final String typeName) {
         this.beanName = beanName;
@@ -62,18 +63,27 @@ public class EjbInjectionSource extends InjectionSource {
     }
 
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+        if(error != null) {
+            throw new DeploymentUnitProcessingException(error);
+        }
+        serviceBuilder.addDependency(resolvedViewName, ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
+
+    }
+
+    public void resolve(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final Set<ViewDescription> componentsForViewName = getViews(phaseContext);
+        //we cannot be sure that this injection will actually be used, so we wait until getResourceValue is called to throw an exception
         if (componentsForViewName.isEmpty()) {
-            throw new DeploymentUnitProcessingException("No component found for type '" + typeName + "' with name " + beanName);
+            error = "No component found for type '" + typeName + "' with name " + beanName;
+            return;
         }
         if (componentsForViewName.size() > 1) {
-            throw new DeploymentUnitProcessingException("More than 1 component found for type '" + typeName + "' and bean name " + beanName);
+            error = "More than 1 component found for type '" + typeName + "' and bean name " + beanName;
+            return;
         }
         ViewDescription description = componentsForViewName.iterator().next();
         ServiceName serviceName = description.getServiceName();
         resolvedViewName = serviceName;
-        serviceBuilder.addDependency(serviceName, ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
-
     }
 
     private Set<ViewDescription> getViews(final DeploymentPhaseContext phaseContext) {
@@ -95,16 +105,20 @@ public class EjbInjectionSource extends InjectionSource {
 
         if (!(o instanceof EjbInjectionSource))
             return false;
+        if(error != null) {
+            //we can't do a real equals comparison in this case, so throw the original error
+            throw new RuntimeException(error);
+        }
+        if(resolvedViewName == null) {
+            throw new RuntimeException("Error equals() cannot be called before resolve()");
+        }
 
-        EjbInjectionSource other = (EjbInjectionSource)o;
-        return eq(beanName, other.beanName) && eq(typeName, other.typeName) && eq(resolvedViewName, other.resolvedViewName);
+        EjbInjectionSource other = (EjbInjectionSource) o;
+        return eq(typeName, other.typeName) && eq(resolvedViewName, other.resolvedViewName);
     }
 
     public int hashCode() {
-        int result = beanName != null ? beanName.hashCode() : 0;
-        result = 31 * result + (typeName != null ? typeName.hashCode() : 0);
-        result = 31 * result + (resolvedViewName != null ? resolvedViewName.hashCode() : 0);
-        return result;
+        return typeName.hashCode();
     }
 
     private static boolean eq(Object a, Object b) {
