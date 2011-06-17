@@ -80,6 +80,11 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-clustering</artifactId>
         </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-transactions</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.security</groupId>
@@ -99,6 +104,11 @@
         <dependency>
           <groupId>org.picketbox</groupId>
           <artifactId>picketbox-infinispan</artifactId>
+        </dependency>
+        
+        <dependency>
+          <groupId>org.picketbox</groupId>
+          <artifactId>picketbox-commons</artifactId>
         </dependency>
 
     </dependencies>

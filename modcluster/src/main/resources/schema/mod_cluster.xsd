@@ -40,7 +40,6 @@
           <xs:element name="dynamic-load-provider" type="dynamic-load-providerType"/>
         </xs:choice>
       </xs:complexType>
-      <xs:element ref="load-provider" minOccurs="0" maxOccurs="1" type="load-providerType"/>
       <xs:element ref="prop-conf" minOccurs="0" maxOccurs="1"  type="prop-confType"/>
     </xs:sequence>
   </xs:complexType>
@@ -65,6 +64,80 @@
     <xs:attribute name="stop-context-timeout" default="10" />
     <xs:attribute name="socket-timeout" />
   </xs:complexType>
+
+  <!-- general SSL definitions -->
+  <xs:complexType name="sslType">
+    <xs:annotation>
+      <xs:documentation>
+        Configuration information for one SSL configuration.
+        sslCertificateEncodingAlgorithm (default value only)
+        sslKeyStoreType/sslTrustStoreType (JKS: default value only)
+        sslKeyStoreProvider/sslTrustStoreProvider (only default value).
+        sslTrustAlgorithm (only default value).
+        sslTrustMaxCertLength (5: default value only)
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="key-alias" default="jboss">
+      <xs:annotation>
+        <xs:documentation>sslKeyAlias The alias of the key holding the client certificates in the key store.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password">
+      <xs:annotation>
+        <xs:documentation>
+          sslKeyStorePassword/sslTrustStorePassword Password granting access to the key store and trust store.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="certificate-key-file" default="${user.home}/.keystore">
+      <xs:annotation>
+        <xs:documentation>
+          sslKeyStore: That is the keystore name here.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="cipher-suite" default="ALL">
+      <xs:annotation>
+        <xs:documentation>
+          sslCiphers: comma separated list of encryption ciphers the configuration is allowed to use, that MUST NOT be
+          the JVM default in of JSSE as contains weak ciphers.
+          that is SSLCipherSuite when using OpenSSL (APR).
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="protocol" default="ALL" type="SSlProtocolType">
+      <xs:annotation>
+        <xs:documentation>
+          sslProtocol: Overrides the default SSL socket protocol.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    </xs:attribute>
+    <xs:attribute name="ca-certificate-file">
+      <xs:annotation>
+        <xs:documentation>
+          sslTrustStore location of the file containing the trust store.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ca-revocation-url">
+      <xs:annotation>
+        <xs:documentation>
+          sslCrlFile A file or URL to get the revocation list.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  
+  <xs:simpleType name="SSlProtocolType">
+    <xs:restriction base="xs:token">
+        <xs:enumeration value="SSLv2"/>
+        <xs:enumeration value="SSLv3"/>
+        <xs:enumeration value="TLSv1"/>
+        <xs:enumeration value="SSLv2+SSLv3"/>
+        <xs:enumeration value="ALL"/>
+    </xs:restriction>
+  </xs:simpleType>
   
   <!-- <simple-load-provider load="1"/> -->
   <xs:complexType name="simple-load-providerType">

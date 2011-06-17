@@ -42,17 +42,17 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
     public void addArgument(CommandArgument arg) {
         if(arg.getIndex() > -1) {
             maxArgumentIndex = arg.getIndex() > maxArgumentIndex ? arg.getIndex() : maxArgumentIndex;
-        } else {
-            if(arg.getFullName() == null) {
-                throw new IllegalArgumentException("Full name can't be null");
-            }
-            if(argumentNames.isEmpty()) {
-                argumentNames = new HashSet<String>();
-            }
-            argumentNames.add(arg.getFullName());
-            if(arg.getShortName() != null) {
-                argumentNames.add(arg.getShortName());
-            }
+        }
+
+        if(arg.getFullName() == null) {
+            throw new IllegalArgumentException("Full name can't be null");
+        }
+        if(argumentNames.isEmpty()) {
+            argumentNames = new HashSet<String>();
+        }
+        argumentNames.add(arg.getFullName());
+        if(arg.getShortName() != null) {
+            argumentNames.add(arg.getShortName());
         }
         argCompleter.addArgument(arg);
     }

@@ -65,6 +65,11 @@
         <extension module="org.jboss.as.webservices" />
     </extensions>
 
+    <system-properties>
+        <!-- IPv4 is not required, but setting this helps avoid unintended use of IPv6 -->
+        <property name="java.net.preferIPv4Stack" value="true"/>
+    </system-properties>
+
     <profiles>
 
         <profile name="default">
@@ -374,11 +379,6 @@
             <socket-binding name="messaging-throughput" port="5455"/>
          </socket-binding-group>
     </socket-binding-groups>
-
-    <system-properties>
-        <!-- IPv4 is not required, but setting this helps avoid unintended use of IPv6 -->
-        <property name="java.net.preferIPv4Stack" value="true"/>
-    </system-properties>
 
     <server-groups>
         <server-group name="main-server-group" profile="default">

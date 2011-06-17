@@ -50,9 +50,9 @@ public class ArgumentValueState extends DefaultParsingState {
                 }
             }});
         putHandler(' ', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        enterState('[', new DefaultStateWithEndCharacter("BRACKETS", ']', true, true, enterStateHandlers));
-        enterState('(', new DefaultStateWithEndCharacter("PARENTHESIS", ')', true, true, enterStateHandlers));
-        enterState('{', new DefaultStateWithEndCharacter("BRACES", '}', true, true, enterStateHandlers));
+        enterState('[', new DefaultStateWithEndCharacter("BRACKETS", ']', false, true, enterStateHandlers));
+        enterState('(', new DefaultStateWithEndCharacter("PARENTHESIS", ')', false, true, enterStateHandlers));
+        enterState('{', new DefaultStateWithEndCharacter("BRACES", '}', false, true, enterStateHandlers));
         if(!Util.isWindows()) {
             // on windows we don't escape, this would mess up file system paths for example.
             enterState('\\', EscapeCharacterState.INSTANCE);

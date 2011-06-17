@@ -70,6 +70,11 @@
         <extension module="org.jboss.as.weld" />
     </extensions>
 
+    <system-properties>
+        <property name="foo" value="bar"/>
+        <property name="key" value="value"/>
+    </system-properties>
+
     <paths>
        <path name="absolute" path="tmp"/>
        <path name="relative" path="relative" relative-to="absolute"/>
@@ -492,10 +497,5 @@
            <socket-binding name="jgroups-tcp-fd" port="57600"/>
            <socket-binding name="jgroups-mping" port="0" multicast-address="230.0.0.4" multicast-port="45700"/>
         </socket-binding-group>
-
-    <system-properties>
-        <property name="foo" value="bar"/>
-        <property name="key" value="value"/>
-    </system-properties>
 </server>
 
