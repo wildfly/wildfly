@@ -29,7 +29,6 @@ import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.OperationCommand;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.RequestParameterArgument;
 import org.jboss.as.controller.client.ModelControllerClient;

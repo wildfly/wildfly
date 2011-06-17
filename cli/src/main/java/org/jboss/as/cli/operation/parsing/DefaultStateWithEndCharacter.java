@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli.operation.parsing;
 
+import org.jboss.as.cli.CommandFormatException;
+
 /**
  *
  * @author Alexey Loubyansky
@@ -41,9 +43,18 @@ public class DefaultStateWithEndCharacter extends DefaultParsingState {
         this(id, leaveStateChar, endRequired, enterLeaveContent, new DefaultCharacterHandlerMap());
     }
 
-    public DefaultStateWithEndCharacter(String id, char leaveStateChar, boolean endRequired, boolean enterLeaveContent, CharacterHandlerMap enterStateHandlers) {
+    public DefaultStateWithEndCharacter(String id, final char leaveStateChar, boolean endRequired, boolean enterLeaveContent, CharacterHandlerMap enterStateHandlers) {
         super(id, enterLeaveContent, enterStateHandlers);
         this.leaveStateChar = leaveStateChar;
+        if(enterLeaveContent) {
+            setLeaveHandler(new CharacterHandler() {
+                @Override
+                public void handle(ParsingContext ctx) throws CommandFormatException {
+                    if(ctx.getCharacter() == leaveStateChar) {
+                        GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER.handle(ctx);
+                    }
+                }});
+        }
         if(endRequired) {
            this.setEndContentHandler(new ErrorCharacterHandler(("Closing '" + leaveStateChar + "' is missing.")));
         }
