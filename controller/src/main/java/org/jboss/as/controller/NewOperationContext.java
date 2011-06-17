@@ -100,6 +100,13 @@ public interface NewOperationContext {
     ModelNode getResult();
 
     /**
+     * Returns whether {@link #getResult()} has been invoked.
+     *
+     * @return {@code true} if {@link #getResult()} has been invoked
+     */
+    boolean hasResult();
+
+    /**
      * Complete a step, returning the overall operation result.  The step handler calling this operation should append
      * its result status to the operation result before calling this method.  The return value should be checked
      * to determine whether the operation step should be rolled back.
@@ -114,6 +121,13 @@ public interface NewOperationContext {
      * @return the failure description
      */
     ModelNode getFailureDescription();
+
+    /**
+     * Returns whether {@link #getFailureDescription()} has been invoked.
+     *
+     * @return {@code true} if {@link #getFailureDescription()} has been invoked
+     */
+    boolean hasFailureDescription();
 
     /**
      * Get the operation context type.  This can be used to determine whether an operation is executing on a

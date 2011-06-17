@@ -46,7 +46,8 @@ public class DomainOperationContext {
     private final ConcurrentMap<ServerIdentity, ModelNode> serverResults = new ConcurrentHashMap<ServerIdentity, ModelNode>();
     private final Map<String, Boolean> serverGroupStatuses = new ConcurrentHashMap<String, Boolean>();
     private boolean completeRollback = true;
-
+    private boolean executedOnLocalHost = false;
+    private boolean executedOnAllHosts = false;
 
     public DomainOperationContext(final LocalHostControllerInfo localHostInfo) {
         this.localHostInfo = localHostInfo;
@@ -65,9 +66,7 @@ public class DomainOperationContext {
     }
 
     public void addHostControllerResult(String hostId, ModelNode hostResult) {
-        if (hostControllerResults.putIfAbsent(hostId, hostResult) != null) {
-            throw new IllegalStateException(String.format("Result for host %s already set", hostId));
-        }
+        hostControllerResults.put(hostId, hostResult);
     }
 
     public Map<ServerIdentity, ModelNode> getServerResults() {
@@ -75,9 +74,7 @@ public class DomainOperationContext {
     }
 
     public void addServerResult(ServerIdentity serverId, ModelNode serverResult) {
-        if (serverResults.putIfAbsent(serverId, serverResult) != null) {
-            throw new IllegalStateException(String.format("Result for server %s already set", serverId));
-        }
+        serverResults.put(serverId, serverResult);
     }
 
     public boolean isCompleteRollback() {

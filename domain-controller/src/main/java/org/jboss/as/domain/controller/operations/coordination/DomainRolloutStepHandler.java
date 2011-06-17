@@ -22,13 +22,18 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_FAILURE_DESCRIPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ACROSS_GROUPS;
@@ -41,6 +46,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -48,11 +54,13 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.plan.NewRolloutPlanController;
 import org.jboss.as.domain.controller.plan.NewServerOperationExecutor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 
 /**
  * Formulates a rollout plan, invokes the proxies to execute it on the servers.
@@ -60,6 +68,8 @@ import org.jboss.dmr.Property;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DomainRolloutStepHandler implements NewStepHandler {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final DomainOperationContext domainOperationContext;
     private final Map<String, NewProxyController> hostProxies;
@@ -82,9 +92,12 @@ public class DomainRolloutStepHandler implements NewStepHandler {
     @Override
     public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
 
-        // Clean out any response that leaked in from a MODEL/RUNTIME/VERIFY stage hander,
-        // as from now on any response comes from DomainResultHandler
-        context.getResult().set(new ModelNode());
+        if (context.hasFailureDescription()) {
+            // abort
+            context.setRollbackOnly();
+            context.completeStep();
+            return;
+        }
 
         // Confirm no host failures
         boolean pushToServers = !domainOperationContext.hasHostLevelFailures();
@@ -105,32 +118,65 @@ public class DomainRolloutStepHandler implements NewStepHandler {
                     }
                 }
             }
-        }  else System.out.println("Complete rollback");
+        }
 
         if (pushToServers) {
             // We no longer roll back by default
             domainOperationContext.setCompleteRollback(false);
+
             final Map<ServerIdentity, ProxyTask> tasks = new HashMap<ServerIdentity, ProxyTask>();
+            final Map<ServerIdentity, Future<ModelNode>> futures = new HashMap<ServerIdentity, Future<ModelNode>>();
             try {
-                pushToServers(context, tasks);
+                pushToServers(context, tasks, futures);
                 context.completeStep();
             } finally {
 
                 // Inform the remote hosts whether to commit or roll back their updates
-                // Do this in parallel
-                // TODO consider blocking until all return?
+                // Do them all before reading results so the commits/rollbacks can be executed in parallel
                 boolean completeRollback = domainOperationContext.isCompleteRollback();
                 for (Map.Entry<ServerIdentity, ProxyTask> entry : tasks.entrySet()) {
                     boolean rollback = completeRollback || domainOperationContext.isServerGroupRollback(entry.getKey().getServerGroupName());
                     entry.getValue().finalizeTransaction(!rollback);
                 }
+                // Now read the final values. This ensures the operations are committed on the remote servers
+                // before we expose the servers to further requests
+                boolean interrupted = false;
+                try {
+                    for (Map.Entry<ServerIdentity, Future<ModelNode>> entry : futures.entrySet()) {
+                        Future<ModelNode> future = entry.getValue();
+                        try {
+                            ModelNode finalResult = future.isCancelled() ? getCancelledResult() : future.get();
+                            domainOperationContext.addServerResult(entry.getKey(), finalResult);
+                        } catch (InterruptedException e) {
+                            interrupted = true;
+                            log.warnf("Interrupted awaiting final response from server %s on host %s", entry.getKey().getServerName(), entry.getKey().getHostName());
+
+                        } catch (ExecutionException e) {
+                            log.warnf(e.getCause(), "Caught exception awaiting final response from server %s on host %s",
+                                    entry.getKey().getServerName(), entry.getKey().getHostName());
+                        }
+                    }
+                } finally {
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
         } else {
+            // There were failures on hosts, so gather them up and report them
+            reportHostFailures(context, operation);
             context.completeStep();
         }
     }
 
-    private void pushToServers(final NewOperationContext context, final Map<ServerIdentity, ProxyTask> tasks) throws OperationFailedException {
+    private ModelNode getCancelledResult() {
+        ModelNode cancelled = new ModelNode();
+        cancelled.get(OUTCOME).set(CANCELLED);
+        return cancelled;
+    }
+
+    private void pushToServers(final NewOperationContext context, final Map<ServerIdentity, ProxyTask> tasks,
+                               final Map<ServerIdentity, Future<ModelNode>> futures) throws OperationFailedException {
 
         final String localHostName = domainOperationContext.getLocalHostInfo().getLocalHostName();
         Map<String, ModelNode> hostResults = new HashMap<String, ModelNode>(domainOperationContext.getHostControllerResults());
@@ -156,7 +202,9 @@ public class DomainRolloutStepHandler implements NewStepHandler {
                             }
                         }
                     }
-                    // TODO this seems convoluted
+                    // TODO this seems a bitconvoluted. It's already an executor service thread calling this method
+                    // But now we use another thread to actually make the invocation, so the first can read
+                    // the result and decide how it fits in the overall rollout plan
                     ProxyTask task = new ProxyTask(server.getHostName(), operation, context, proxy);
                     tasks.put(server, task);
 
@@ -166,6 +214,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
                     try {
                         future = executorService.submit(task);
                         result = task.getUncommittedResult();
+                        futures.put(server, future);
                     } catch (InterruptedException e) {
                         interrupted = true;
                         result = new ModelNode();
@@ -286,5 +335,60 @@ public class DomainRolloutStepHandler implements NewStepHandler {
             result.get(ROLLBACK_ACROSS_GROUPS).set(true);
         }
         return result;
+    }
+
+    private void reportHostFailures(final NewOperationContext context, final ModelNode operation) {
+
+        final boolean isDomain = isDomainOperation(operation);
+        if (!collectDomainFailure(context, isDomain)) {
+            collectHostFailures(context, isDomain);
+        }
+    }
+
+    private boolean collectDomainFailure(NewOperationContext context, final boolean isDomain) {
+        final ModelNode coordinator = domainOperationContext.getCoordinatorResult();
+        ModelNode domainFailure = null;
+        if (isDomain &&  coordinator != null && coordinator.has(FAILURE_DESCRIPTION)) {
+            domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+        }
+        if (domainFailure != null) {
+            context.getFailureDescription().get(DOMAIN_FAILURE_DESCRIPTION).set(domainFailure);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean collectHostFailures(final NewOperationContext context, final boolean isDomain) {
+        ModelNode hostFailureResults = null;
+        for (Map.Entry<String, ModelNode> entry : domainOperationContext.getHostControllerResults().entrySet()) {
+            ModelNode hostResult = entry.getValue();
+            if (hostResult.has(FAILURE_DESCRIPTION)) {
+                if (hostFailureResults == null) {
+                    hostFailureResults = new ModelNode();
+                }
+                final ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+                hostFailureResults.add(entry.getKey(), desc);
+            }
+        }
+
+        final ModelNode coordinator = domainOperationContext.getCoordinatorResult();
+        if (!isDomain && coordinator != null && coordinator.has(FAILURE_DESCRIPTION)) {
+            if (hostFailureResults == null) {
+                hostFailureResults = new ModelNode();
+            }
+            final ModelNode desc = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+            hostFailureResults.add(domainOperationContext.getLocalHostInfo().getLocalHostName(), desc);
+        }
+
+        if (hostFailureResults != null) {
+            context.getFailureDescription().get(HOST_FAILURE_DESCRIPTIONS).set(hostFailureResults);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isDomainOperation(final ModelNode operation) {
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        return address.size() == 0 || !address.getElement(0).getKey().equals(HOST);
     }
 }

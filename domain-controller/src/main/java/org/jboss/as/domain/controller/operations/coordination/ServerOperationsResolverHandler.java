@@ -72,9 +72,16 @@ public class ServerOperationsResolverHandler implements NewStepHandler {
     @Override
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-        if (localResponse.has(FAILURE_DESCRIPTION)) {
-            context.getFailureDescription().set(localResponse.get(FAILURE_DESCRIPTION));
+        // Read out what was added by any MODEL/RUNTIME/VERIFY handlers and publish it to the overall context
+        if (context.hasResult()) {
+            localResponse.get(RESULT).set(context.getResult());
+        }
+        if (context.hasFailureDescription()) {
+            localResponse.get(FAILURE_DESCRIPTION).set(context.getFailureDescription());
+            // We do not allow failures on the host controllers
+            context.setRollbackOnly();
         } else {
+
             final ModelNode domainModel = context.getModel();
             ParsedOp.ServerOperationProvider provider = new ParsedOp.ServerOperationProvider() {
 
@@ -87,8 +94,7 @@ public class ServerOperationsResolverHandler implements NewStepHandler {
             ModelNode localResult = localResponse.get(RESULT);
             localResponse.remove(RESULT);  // We're going to replace it
             ModelNode responseNode = recordResponse ? context.getResult() : localResponse.get(RESULT);
-            boolean ignored = (ModelType.STRING == localResult.getType() && IGNORED.equals(localResult.asString()));
-            if (ignored) {
+            if (ModelType.STRING == localResult.getType() && IGNORED.equals(localResult.asString())) {
                 // Just pass the IGNORED along
                 responseNode.set(localResult);
             } else {

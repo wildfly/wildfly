@@ -49,7 +49,7 @@ class ProxyTask implements Callable<ModelNode> {
     private final NewOperationContext context;
 
     private final AtomicReference<Boolean> transactionAction = new AtomicReference<Boolean>();
-    private final AtomicReference<ModelNode> proxyResultRef = new AtomicReference<ModelNode>();
+    private final AtomicReference<ModelNode> uncommittedResultRef = new AtomicReference<ModelNode>();
     private boolean cancelRemoteTransaction;
 
     public ProxyTask(String host, ModelNode operation, NewOperationContext context, NewProxyController proxyController) {
@@ -100,9 +100,9 @@ class ProxyTask implements Callable<ModelNode> {
             remoteTransaction = txRef.get();
         }
 
-        synchronized (proxyResultRef) {
-            proxyResultRef.set(result);
-            proxyResultRef.notifyAll();
+        synchronized (uncommittedResultRef) {
+            uncommittedResultRef.set(result);
+            uncommittedResultRef.notifyAll();
         }
 
         if (remoteTransaction != null) {
@@ -133,18 +133,18 @@ class ProxyTask implements Callable<ModelNode> {
     }
 
     ModelNode getUncommittedResult() throws InterruptedException {
-        synchronized (proxyResultRef) {
+        synchronized (uncommittedResultRef) {
 
-            while (proxyResultRef.get() == null) {
+            while (uncommittedResultRef.get() == null) {
                 try {
-                    proxyResultRef.wait();
+                    uncommittedResultRef.wait();
                 }
                 catch (InterruptedException ie) {
                     cancelRemoteTransaction = true;
                     throw ie;
                 }
             }
-            return proxyResultRef.get();
+            return uncommittedResultRef.get();
         }
     }
 
@@ -156,7 +156,7 @@ class ProxyTask implements Callable<ModelNode> {
     }
 
     void cancel() {
-        synchronized (proxyResultRef) {
+        synchronized (uncommittedResultRef) {
             cancelRemoteTransaction = true;
         }
     }
