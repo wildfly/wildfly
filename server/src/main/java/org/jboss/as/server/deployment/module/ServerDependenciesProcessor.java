@@ -31,7 +31,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
- * DUP thats adds dependencies on JDK classes
+ * DUP thats adds dependencies that are availible to all deployments
  *
  * @author Stuart Douglas
  */
@@ -39,6 +39,7 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
 
     private static ModuleIdentifier SUN_JDK = ModuleIdentifier.create("sun.jdk");
     private static ModuleIdentifier JAVAX_API = ModuleIdentifier.create("javax.api");
+    private static ModuleIdentifier JBOSS_LOGGING = ModuleIdentifier.create("org.jboss.logging");
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -47,6 +48,7 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SUN_JDK, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_API, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_LOGGING, false, false, false));
     }
 
     @Override

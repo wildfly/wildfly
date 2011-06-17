@@ -40,7 +40,6 @@ import org.jboss.modules.ModuleIdentifier;
  */
 public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static ModuleIdentifier JBOSS_LOGGING_ID = ModuleIdentifier.create("org.jboss.logging");
     private static ModuleIdentifier JBOSS_MODULES_ID = ModuleIdentifier.create("org.jboss.modules");
 
     /**
@@ -58,7 +57,6 @@ public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
             return; // Skip deployments with out a service xml descriptor
         }
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), JBOSS_LOGGING_ID, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), JBOSS_MODULES_ID, false, false, false));
     }
 

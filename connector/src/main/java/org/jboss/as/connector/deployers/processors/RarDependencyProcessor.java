@@ -37,7 +37,6 @@ import org.jboss.modules.ModuleLoader;
 public class RarDependencyProcessor implements DeploymentUnitProcessor {
 
     private static ModuleIdentifier JMS_ID = ModuleIdentifier.create("javax.jms.api");
-    private static ModuleIdentifier LOGGING_ID = ModuleIdentifier.create("org.jboss.logging");
     private static ModuleIdentifier IRON_JACAMAR_ID = ModuleIdentifier.create("org.jboss.ironjacamar.api");
     private static ModuleIdentifier IRON_JACAMAR_IMPL_ID = ModuleIdentifier.create("org.jboss.ironjacamar.impl");
     private static ModuleIdentifier VALIDATION_ID = ModuleIdentifier.create("javax.validation.api");
@@ -67,7 +66,6 @@ public class RarDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.setRequiresTransitiveDependencies(true);
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JMS_ID, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, VALIDATION_ID, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, LOGGING_ID, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IRON_JACAMAR_ID, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IRON_JACAMAR_IMPL_ID, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, false, false, false));
