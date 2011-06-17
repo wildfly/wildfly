@@ -22,23 +22,27 @@
 
 package org.jboss.as.jacorb;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import static org.jboss.as.jacorb.JacORBElement.INITIALIZERS_CONFIG;
+import static org.jboss.as.jacorb.JacORBElement.INTEROP_CONFIG;
+import static org.jboss.as.jacorb.JacORBElement.ORB_CONFIG;
+import static org.jboss.as.jacorb.JacORBElement.POA_CONFIG;
+import static org.jboss.as.jacorb.JacORBElement.PROPERTY_CONFIG;
+import static org.jboss.as.jacorb.JacORBElement.SECURITY_CONFIG;
+
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Properties;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.jacorb.service.CorbaNamingService;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.as.jacorb.service.CorbaPOAService;
-import org.jboss.as.server.BootOperationContext;
-import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -49,17 +53,6 @@ import org.omg.CORBA.ORB;
 import org.omg.PortableServer.IdAssignmentPolicyValue;
 import org.omg.PortableServer.LifespanPolicyValue;
 import org.omg.PortableServer.POA;
-
-import java.util.EnumSet;
-import java.util.Properties;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.jacorb.JacORBElement.INITIALIZERS_CONFIG;
-import static org.jboss.as.jacorb.JacORBElement.INTEROP_CONFIG;
-import static org.jboss.as.jacorb.JacORBElement.ORB_CONFIG;
-import static org.jboss.as.jacorb.JacORBElement.POA_CONFIG;
-import static org.jboss.as.jacorb.JacORBElement.PROPERTY_CONFIG;
-import static org.jboss.as.jacorb.JacORBElement.SECURITY_CONFIG;
 
 
 /**
@@ -76,7 +69,7 @@ import static org.jboss.as.jacorb.JacORBElement.SECURITY_CONFIG;
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-public class JacORBSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+public class JacORBSubsystemAdd extends AbstractAddStepHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
 
@@ -106,8 +99,7 @@ public class JacORBSubsystemAdd implements ModelAddOperationHandler, BootOperati
     }
 
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation,
-                                   final ResultHandler resultHandler) throws OperationFailedException {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
         // validate the operation.
         this.jacorbConfigValidator.validate(operation);
@@ -116,80 +108,73 @@ public class JacORBSubsystemAdd implements ModelAddOperationHandler, BootOperati
         for (JacORBElement configElement : JacORBElement.getRootElements()) {
             String configElementName = configElement.getLocalName();
             if (operation.hasDefined(configElementName)) {
-                context.getSubModel().get(configElementName).set(operation.get(configElementName));
+                model.get(configElementName).set(operation.get(configElementName));
             }
         }
+    }
 
-        if (context instanceof BootOperationContext) {
+    @Override
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model,
+                                  ServiceVerificationHandler verificationHandler,
+                                  List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-            // create the runtime task that will install all JacORB services.
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    log.info("Activating JacORB Subsystem");
+        log.info("Activating JacORB Subsystem");
 
-                    // get the list of ORB initializers.
-                    EnumSet<ORBInitializer> initializers = getORBInitializers(operation);
+        // get the list of ORB initializers.
+        EnumSet<ORBInitializer> initializers = getORBInitializers(operation);
 
-                    // get the configured ORB properties.
-                    Properties props = new Properties();
-                    getConfigurationProperties(operation, props);
+        // get the configured ORB properties.
+        Properties props = new Properties();
+        getConfigurationProperties(operation, props);
 
-                    // create the service that initializes and starts the CORBA ORB.
-                    CorbaORBService orbService = new CorbaORBService(initializers, props);
-                    final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(
-                            CorbaORBService.SERVICE_NAME, orbService);
-                    // inject the socket bindings that specify the JacORB IIOP and IIOP/SSL ports.
-                    builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(JACORB_SOCKET_BINDING), SocketBinding.class,
-                            orbService.getJacORBSocketBindingInjector());
-                    builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(JACORB_SSL_SOCKET_BINDING), SocketBinding.class,
-                            orbService.getJacORBSSLSocketBindingInjector());
-                    // set the initial mode and install the service.
-                    builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        // create the service that initializes and starts the CORBA ORB.
+        CorbaORBService orbService = new CorbaORBService(initializers, props);
+        final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(
+                CorbaORBService.SERVICE_NAME, orbService);
+        // inject the socket bindings that specify the JacORB IIOP and IIOP/SSL ports.
+        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(JACORB_SOCKET_BINDING), SocketBinding.class,
+                orbService.getJacORBSocketBindingInjector());
+        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(JACORB_SSL_SOCKET_BINDING), SocketBinding.class,
+                orbService.getJacORBSSLSocketBindingInjector());
+        builder.addListener(verificationHandler);
+        // set the initial mode and install the service.
+        newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
 
-                    // create the service the initializes the Root POA.
-                    CorbaPOAService rootPOAService = new CorbaPOAService("RootPOA", "poa");
-                    context.getServiceTarget().addService(CorbaPOAService.SERVICE_NAME.append("rootpoa"), rootPOAService).
-                            addDependency(CorbaORBService.SERVICE_NAME, ORB.class, rootPOAService.getORBInjector()).
-                            setInitialMode(ServiceController.Mode.ACTIVE).install();
+        // create the service the initializes the Root POA.
+        CorbaPOAService rootPOAService = new CorbaPOAService("RootPOA", "poa");
+        newControllers.add(context.getServiceTarget().addService(CorbaPOAService.SERVICE_NAME.append("rootpoa"), rootPOAService).
+                addDependency(CorbaORBService.SERVICE_NAME, ORB.class, rootPOAService.getORBInjector()).
+                addListener(verificationHandler).
+                setInitialMode(ServiceController.Mode.ACTIVE).install());
 
-                    // create the service the initializes the interface repository POA.
-                    CorbaPOAService irPOAService = new CorbaPOAService("IRPOA", "irpoa", IdAssignmentPolicyValue.USER_ID,
-                            null, null, LifespanPolicyValue.PERSISTENT, null, null, null);
-                    context.getServiceTarget().addService(CorbaPOAService.SERVICE_NAME.append("irpoa"), irPOAService).
-                            addDependency(CorbaPOAService.SERVICE_NAME.append("rootpoa"), POA.class,
-                                    irPOAService.getParentPOAInjector()).
-                            setInitialMode(ServiceController.Mode.ACTIVE).install();
+        // create the service the initializes the interface repository POA.
+        CorbaPOAService irPOAService = new CorbaPOAService("IRPOA", "irpoa", IdAssignmentPolicyValue.USER_ID,
+                null, null, LifespanPolicyValue.PERSISTENT, null, null, null);
+        newControllers.add(context.getServiceTarget().addService(CorbaPOAService.SERVICE_NAME.append("irpoa"), irPOAService).
+                addDependency(CorbaPOAService.SERVICE_NAME.append("rootpoa"), POA.class,
+                        irPOAService.getParentPOAInjector()).
+                addListener(verificationHandler).
+                setInitialMode(ServiceController.Mode.ACTIVE).install());
 
-                    // create the service that initializes the naming service POA.
-                    CorbaPOAService namingPOAService = new CorbaPOAService("NamingPOA", null, IdAssignmentPolicyValue.USER_ID,
-                            null, null, LifespanPolicyValue.PERSISTENT, null, null, null);
-                    context.getServiceTarget().addService(CorbaPOAService.SERVICE_NAME.append("namingpoa"), namingPOAService).
-                            addDependency(CorbaPOAService.SERVICE_NAME.append("rootpoa"), POA.class,
-                                    namingPOAService.getParentPOAInjector()).
-                            setInitialMode(ServiceController.Mode.ACTIVE).install();
+        // create the service that initializes the naming service POA.
+        CorbaPOAService namingPOAService = new CorbaPOAService("NamingPOA", null, IdAssignmentPolicyValue.USER_ID,
+                null, null, LifespanPolicyValue.PERSISTENT, null, null, null);
+        newControllers.add(context.getServiceTarget().addService(CorbaPOAService.SERVICE_NAME.append("namingpoa"), namingPOAService).
+                addDependency(CorbaPOAService.SERVICE_NAME.append("rootpoa"), POA.class,
+                        namingPOAService.getParentPOAInjector()).
+                addListener(verificationHandler).
+                setInitialMode(ServiceController.Mode.ACTIVE).install());
 
-                    // create the CORBA naming service.
-                    CorbaNamingService namingService = new CorbaNamingService();
-                    context.getServiceTarget().addService(CorbaNamingService.SERVICE_NAME, namingService).
-                            addDependency(CorbaORBService.SERVICE_NAME, ORB.class, namingService.getORBInjector()).
-                            addDependency(CorbaPOAService.SERVICE_NAME.append("rootpoa"), POA.class,
-                                    namingService.getRootPOAInjector()).
-                            addDependency(CorbaPOAService.SERVICE_NAME.append("namingpoa"), POA.class,
-                                    namingService.getNamingPOAInjector()).
-                            setInitialMode(ServiceController.Mode.ACTIVE).install();
-
-                    resultHandler.handleResultComplete();
-                }
-            });
-
-        } else {
-            resultHandler.handleResultComplete();
-        }
-
-        // create the compensating operation.
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
-        return new BasicOperationResult(compensatingOperation);
+        // create the CORBA naming service.
+        CorbaNamingService namingService = new CorbaNamingService();
+        newControllers.add(context.getServiceTarget().addService(CorbaNamingService.SERVICE_NAME, namingService).
+                addDependency(CorbaORBService.SERVICE_NAME, ORB.class, namingService.getORBInjector()).
+                addDependency(CorbaPOAService.SERVICE_NAME.append("rootpoa"), POA.class,
+                        namingService.getRootPOAInjector()).
+                addDependency(CorbaPOAService.SERVICE_NAME.append("namingpoa"), POA.class,
+                        namingService.getNamingPOAInjector()).
+                addListener(verificationHandler).
+                setInitialMode(ServiceController.Mode.ACTIVE).install());
     }
 
     /**
