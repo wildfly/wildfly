@@ -32,10 +32,10 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.EJBMethodIdentifier;
-import org.jboss.as.ejb3.component.security.AuthorizationInterceptor;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
 import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -106,13 +106,13 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * Method level roles allowed, per view. The key is the view class name and the value is a Map whose key is the EJB
      * method identifier and the value is the collection of role names.
      */
-    private final Map<String, Map<EJBMethodIdentifier, Collection<String>>> methodLevelRolesAllowed = new HashMap<String, Map<EJBMethodIdentifier, Collection<String>>>();
+    private final Map<String, Map<EJBMethodIdentifier, Set<String>>> methodLevelRolesAllowed = new HashMap<String, Map<EJBMethodIdentifier, Set<String>>>();
 
     /**
      * Class level roles allowed, per view. The key is the view class name and the value is a Map whose key is the class
      * name on which the @RolesAllowed is applied and the value is the collection of role names
      */
-    private final Map<String, Map<String, Collection<String>>> classLevelRolesAllowed = new HashMap<String, Map<String, Collection<String>>>();
+    private final Map<String, Map<String, Set<String>>> classLevelRolesAllowed = new HashMap<String, Map<String, Set<String>>>();
 
     /**
      * Security role links. The key is the "from" role name and the value is a collection of "to" role names of the link.
@@ -192,19 +192,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         getConfigurators().addFirst(new NamespaceConfigurator());
         getConfigurators().add(new EjbJarConfigurationConfigurator());
 
-        getConfigurators().add(new ComponentConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addComponentInterceptor(new SecurityContextInterceptorFactory(), InterceptorOrder.Component.SECURITY_CONTEXT, true);
-            }
-        });
-
         // setup a dependency on the EJBUtilities service
         this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
         // setup a current invocation interceptor
         this.addCurrentInvocationContextFactory();
-        // setup security interceptors
-        this.setupSecurityInterceptors();
 
     }
 
@@ -304,6 +295,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     protected void setupViewInterceptors(ViewDescription view) {
         this.addCurrentInvocationContextFactory(view);
+        this.setupSecurityInterceptors(view);
     }
 
     protected void setupClientViewInterceptors(ViewDescription view) {
@@ -324,14 +316,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     protected abstract void addCurrentInvocationContextFactory(ViewDescription view);
 
-    protected void setupSecurityInterceptors() {
+    protected void setupSecurityInterceptors(final ViewDescription view) {
         // setup security interceptor for the component
-        this.getConfigurators().add(new ComponentConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addComponentInterceptor(new ImmediateInterceptorFactory(new AuthorizationInterceptor()), InterceptorOrder.Component.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR, true);
-            }
-        });
+        view.getConfigurators().add(new EJBSecurityViewConfigurator());
     }
 
     private void addToStringMethodInterceptor(final ViewDescription view) {
@@ -497,12 +484,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             throw new IllegalArgumentException("Classname cannot be null or empty: " + className);
         }
         for (final ViewDescription view : this.getViews()) {
-            Map<String, Collection<String>> perViewRoles = this.classLevelRolesAllowed.get(view.getViewClassName());
+            Map<String, Set<String>> perViewRoles = this.classLevelRolesAllowed.get(view.getViewClassName());
             if (perViewRoles == null) {
-                perViewRoles = new HashMap<String, Collection<String>>();
+                perViewRoles = new HashMap<String, Set<String>>();
                 this.classLevelRolesAllowed.put(view.getViewClassName(), perViewRoles);
             }
-            Collection<String> perClassRoles = perViewRoles.get(className);
+            Set<String> perClassRoles = perViewRoles.get(className);
             if (perClassRoles == null) {
                 perClassRoles = new HashSet<String>();
                 perViewRoles.put(className, perClassRoles);
@@ -518,12 +505,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void addRolesAllowedOnAllViewsForMethod(final EJBMethodIdentifier ejbMethodIdentifier, final Collection<String> roles) {
         for (final ViewDescription view : this.getViews()) {
-            Map<EJBMethodIdentifier, Collection<String>> perViewMethodRoles = this.methodLevelRolesAllowed.get(view.getViewClassName());
+            Map<EJBMethodIdentifier, Set<String>> perViewMethodRoles = this.methodLevelRolesAllowed.get(view.getViewClassName());
             if (perViewMethodRoles == null) {
-                perViewMethodRoles = new HashMap<EJBMethodIdentifier, Collection<String>>();
+                perViewMethodRoles = new HashMap<EJBMethodIdentifier, Set<String>>();
                 this.methodLevelRolesAllowed.put(view.getViewClassName(), perViewMethodRoles);
             }
-            Collection<String> perMethodRoles = perViewMethodRoles.get(ejbMethodIdentifier);
+            Set<String> perMethodRoles = perViewMethodRoles.get(ejbMethodIdentifier);
             if (perMethodRoles == null) {
                 perMethodRoles = new HashSet<String>();
                 perViewMethodRoles.put(ejbMethodIdentifier, perMethodRoles);
@@ -545,12 +532,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 continue;
             }
             // now apply the @RolesAllowed on class level for this view
-            Map<String, Collection<String>> perViewRoles = this.classLevelRolesAllowed.get(view.getViewClassName());
+            Map<String, Set<String>> perViewRoles = this.classLevelRolesAllowed.get(view.getViewClassName());
             if (perViewRoles == null) {
-                perViewRoles = new HashMap<String, Collection<String>>();
+                perViewRoles = new HashMap<String, Set<String>>();
                 this.classLevelRolesAllowed.put(view.getViewClassName(), perViewRoles);
             }
-            Collection<String> perClassRoles = perViewRoles.get(view.getViewClassName());
+            Set<String> perClassRoles = perViewRoles.get(view.getViewClassName());
             if (perClassRoles == null) {
                 perClassRoles = new HashSet<String>();
                 perViewRoles.put(view.getViewClassName(), perClassRoles);
@@ -572,12 +559,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             if (ejbView.getMethodIntf() != viewType) {
                 continue;
             }
-            Map<EJBMethodIdentifier, Collection<String>> perViewMethodRoles = this.methodLevelRolesAllowed.get(view.getViewClassName());
+            Map<EJBMethodIdentifier, Set<String>> perViewMethodRoles = this.methodLevelRolesAllowed.get(view.getViewClassName());
             if (perViewMethodRoles == null) {
-                perViewMethodRoles = new HashMap<EJBMethodIdentifier, Collection<String>>();
+                perViewMethodRoles = new HashMap<EJBMethodIdentifier, Set<String>>();
                 this.methodLevelRolesAllowed.put(view.getViewClassName(), perViewMethodRoles);
             }
-            Collection<String> perMethodRoles = perViewMethodRoles.get(ejbMethodIdentifier);
+            Set<String> perMethodRoles = perViewMethodRoles.get(ejbMethodIdentifier);
             if (perMethodRoles == null) {
                 perMethodRoles = new HashSet<String>();
                 perViewMethodRoles.put(ejbMethodIdentifier, perMethodRoles);
@@ -586,8 +573,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         }
     }
 
-    public Collection<String> getRolesAllowed(final String viewClassName, final EJBMethodIdentifier method) {
-        final Map<EJBMethodIdentifier, Collection<String>> methods = this.methodLevelRolesAllowed.get(viewClassName);
+    public Set<String> getRolesAllowed(final String viewClassName, final EJBMethodIdentifier method) {
+        final Map<EJBMethodIdentifier, Set<String>> methods = this.methodLevelRolesAllowed.get(viewClassName);
         if (methods == null || methods.get(method) == null) {
             return Collections.emptySet();
         }
@@ -595,8 +582,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return methods.get(method);
     }
 
-    public Collection<String> getRolesAllowedForClass(final String viewClassName, final String className) {
-        final Map<String, Collection<String>> perClassRoles = this.classLevelRolesAllowed.get(viewClassName);
+    public Set<String> getRolesAllowedForClass(final String viewClassName, final String className) {
+        final Map<String, Set<String>> perClassRoles = this.classLevelRolesAllowed.get(viewClassName);
         if (perClassRoles == null || perClassRoles.get(className) == null) {
             return Collections.emptySet();
         }
