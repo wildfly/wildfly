@@ -25,6 +25,7 @@ package org.jboss.as.controller.persistence;
 import java.util.List;
 import java.util.Set;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.namespace.QName;
 
 import org.jboss.as.controller.PathAddress;
@@ -40,6 +41,7 @@ import org.jboss.staxmapper.XMLElementWriter;
 public class BackupXmlConfigurationPersister extends XmlConfigurationPersister {
 
     ConfigurationFile configurationFile;
+    private final AtomicBoolean successfulBoot = new AtomicBoolean();
     /**
      * Construct a new instance.
      *
@@ -55,11 +57,22 @@ public class BackupXmlConfigurationPersister extends XmlConfigurationPersister {
 
     @Override
     public void successfulBoot() throws ConfigurationPersistenceException {
-        configurationFile.successfulBoot();
+        if(successfulBoot.compareAndSet(false, true)) {
+            configurationFile.successfulBoot();
+        }
     }
 
     @Override
     public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
+        if(!successfulBoot.get()) {
+            return new PersistenceResource() {
+                public void commit() {
+                }
+
+                public void rollback() {
+                }
+            };
+        }
         return new ConfigurationFilePersistenceResource(model, configurationFile, this);
     }
 
