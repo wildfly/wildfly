@@ -3838,6 +3838,12 @@
 
             <dependency>
                 <groupId>org.jboss.osgi.resolver</groupId>
+                <artifactId>jbosgi-resolver-metadata</artifactId>
+                <version>${version.org.jboss.osgi.resolver}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.osgi.resolver</groupId>
                 <artifactId>jbosgi-resolver-spi</artifactId>
                 <version>${version.org.jboss.osgi.resolver}</version>
             </dependency>
