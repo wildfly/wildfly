@@ -22,7 +22,7 @@
 package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ejb3.component.security.EJBSecurityMetaData;
+import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.server.deployment.DeploymentUnit;

@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.security;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.security.EJBSecurityMetaData;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;

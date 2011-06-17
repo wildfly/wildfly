@@ -26,7 +26,7 @@ import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ejb3.component.security.EJBSecurityMetaData;
+import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.msc.service.ServiceName;
 
