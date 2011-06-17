@@ -25,6 +25,8 @@ import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
@@ -158,12 +160,11 @@ public class DeploymentFullReplaceHandler implements NewStepHandler, Description
             throw createFailureException("No deployment with name %s found", name);
         }
 
-        ModelNode deployNode = new ModelNode();
+        final PathAddress address = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name));
+        final ModelNode deployNode = context.readModelForUpdate(address);
         deployNode.get(NAME).set(name);
         deployNode.get(RUNTIME_NAME).set(runtimeName);
         deployNode.get(CONTENT).set(content);
-
-        deployments.get(name).set(deployNode);
 
         if (rootModel.hasDefined(SERVER_GROUP)) {
             for (Property server : rootModel.get(SERVER_GROUP).asPropertyList()) {
@@ -175,7 +176,7 @@ public class DeploymentFullReplaceHandler implements NewStepHandler, Description
             }
         }
         // the content repo will already have these, note that content should not be empty
-        removeContentAdditions(replaceNode.require(CONTENT));
+        removeContentAdditions(deployNode.require(CONTENT));
 
         context.completeStep();
     }
