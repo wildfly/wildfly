@@ -24,8 +24,7 @@ package org.jboss.as.demos.description.runner;
 
 import java.net.InetAddress;
 
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -39,10 +38,10 @@ public class ExampleRunner {
      * @param args
      */
     public static void main(String[] args) throws Exception {
-        ModelControllerClient client = null;
+        NewModelControllerClient client = null;
         try {
             System.out.println("Connecting");
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
             System.out.println("Connected");
 
             System.out.println("Dumping resource tree\n");
@@ -51,7 +50,7 @@ public class ExampleRunner {
             request.get("address").setEmptyList();
             // request.get("address").set("subsystem", "threads");
             request.get("recursive").set(true);
-            ModelNode r = client.execute(OperationBuilder.Factory.create(request).build());
+            ModelNode r = client.execute(request);
             System.out.println(r);
 
             System.out.println("Dumping resource description tree\n");
@@ -60,7 +59,7 @@ public class ExampleRunner {
             request.get("address").setEmptyList();
             request.get("operations").set(true);
             request.get("recursive").set(true);
-            r = client.execute(OperationBuilder.Factory.create(request).build());
+            r = client.execute(request);
             System.out.println(r);
 
         } finally {

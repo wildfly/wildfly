@@ -46,7 +46,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -71,7 +71,7 @@ public class ExampleRunner {
     }
 
     public static void main(String[] args) throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             new ExampleRunner().run(client);
         } finally {
@@ -79,7 +79,7 @@ public class ExampleRunner {
         }
     }
 
-    protected void run(ModelControllerClient client) throws Exception {
+    protected void run(NewModelControllerClient client) throws Exception {
         // Create a new socket binding
         final ModelNode bindingResult = createSocketBinding(client);
         checkSuccess(bindingResult);
@@ -140,7 +140,7 @@ public class ExampleRunner {
         }
     }
 
-    ModelNode createSocketBinding(final ModelControllerClient client) throws Exception {
+    ModelNode createSocketBinding(final NewModelControllerClient client) throws Exception {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).set(SB_ADDR);
@@ -150,7 +150,7 @@ public class ExampleRunner {
         return client.execute(operation);
     }
 
-    ModelNode createWebConnector(final ModelControllerClient client) throws Exception {
+    ModelNode createWebConnector(final NewModelControllerClient client) throws Exception {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).set(WC_ADDR);

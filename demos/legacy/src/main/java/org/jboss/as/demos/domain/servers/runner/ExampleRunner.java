@@ -21,6 +21,20 @@
  */
 package org.jboss.as.demos.domain.servers.runner;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -28,11 +42,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * Demonstration of basic aspects of administering servers via the domain management API.
@@ -46,7 +58,7 @@ public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
 
-        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
+        final NewModelControllerClient client = NewModelControllerClient.Factory.create("localhost", 9999);
         try {
 
             final ModelNode hostNamesOp = new ModelNode();
@@ -144,7 +156,7 @@ public class ExampleRunner {
     }
 
 
-    static ModelNode runServerOperation(final ModelControllerClient client, final ModelNode address, final String opName) throws Exception {
+    static ModelNode runServerOperation(final NewModelControllerClient client, final ModelNode address, final String opName) throws Exception {
         final ModelNode stopOperation = new ModelNode();
         stopOperation.get(OP).set(opName);
         stopOperation.get(OP_ADDR).set(address);
