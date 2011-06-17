@@ -37,13 +37,14 @@ import java.util.List;
  * Perform scoped search for persistence unit name
  *
  * @author Scott Marlow (forked from Carlo de Wolf code).
+ *
  */
 public class PersistenceUnitSearch {
     private static final Logger log = Logger.getLogger("org.jboss.jpa");
     // cache the trace enabled flag
     private static final boolean traceEnabled = log.isTraceEnabled();
 
-    public static String resolvePersistenceUnitSupplier(DeploymentUnit deploymentUnit, String persistenceUnitName) {
+    public static PersistenceUnitMetadata resolvePersistenceUnitSupplier(DeploymentUnit deploymentUnit, String persistenceUnitName) {
         if (traceEnabled) {
             log.tracef("pu search for name '%s' inside of %s", persistenceUnitName, deploymentUnit.getName());
         }
@@ -54,9 +55,9 @@ public class PersistenceUnitSearch {
             if (traceEnabled) {
                 log.trace("pu search found " + pu.getScopedPersistenceUnitName());
             }
-            return pu.getScopedPersistenceUnitName();
+            return pu;
         } else {
-            String name = findPersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
+            PersistenceUnitMetadata name = findPersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
             if (traceEnabled) {
                 if(name != null) {
                     log.trace("pu search found " + name);
@@ -66,15 +67,15 @@ public class PersistenceUnitSearch {
         }
     }
 
-    private static String findPersistenceUnitSupplier(DeploymentUnit deploymentUnit, String persistenceUnitName) {
-        String name = findWithinModule(deploymentUnit, persistenceUnitName, true);
+    private static PersistenceUnitMetadata findPersistenceUnitSupplier(DeploymentUnit deploymentUnit, String persistenceUnitName) {
+        PersistenceUnitMetadata name = findWithinModule(deploymentUnit, persistenceUnitName, true);
         if (name == null)
             name = findWithinApplication(getTopLevel(deploymentUnit), persistenceUnitName);
         return name;
     }
 
-    private static String findWithinApplication(DeploymentUnit unit, String persistenceUnitName) {
-        String name = findWithinModule(unit, persistenceUnitName, false);
+    private static PersistenceUnitMetadata findWithinApplication(DeploymentUnit unit, String persistenceUnitName) {
+        PersistenceUnitMetadata name = findWithinModule(unit, persistenceUnitName, false);
         if (name != null)
             return name;
 
@@ -89,8 +90,8 @@ public class PersistenceUnitSearch {
         return null;
     }
 
-    private static String findWithinApplication(ResourceRoot moduleResourceRoot, String persistenceUnitName) {
-        String name = findWithinModule(moduleResourceRoot, persistenceUnitName, false);
+    private static PersistenceUnitMetadata findWithinApplication(ResourceRoot moduleResourceRoot, String persistenceUnitName) {
+        PersistenceUnitMetadata name = findWithinModule(moduleResourceRoot, persistenceUnitName, false);
         if (name != null)
             return name;
 
@@ -106,7 +107,7 @@ public class PersistenceUnitSearch {
     }
 
 
-    private static String findWithinModule(ResourceRoot moduleResourceRoot, String persistenceUnitName, boolean allowScoped) {
+    private static PersistenceUnitMetadata findWithinModule(ResourceRoot moduleResourceRoot, String persistenceUnitName, boolean allowScoped) {
 
 
         if (!allowScoped && isScoped(moduleResourceRoot))
@@ -125,7 +126,7 @@ public class PersistenceUnitSearch {
                 if (traceEnabled) {
                     log.tracef("findWithinModule matched '%s' against pu '%s'", persistenceUnitName,persistenceUnit.getPersistenceUnitName());
                 }
-                return persistenceUnit.getScopedPersistenceUnitName();
+                return persistenceUnit;
             }
         }
         return null;
@@ -135,7 +136,7 @@ public class PersistenceUnitSearch {
      * When finding the default persistence unit, the first persistence unit encountered is returned.
      * TODO: Maybe the name of unscoped persistence units should be changed, so only one can be deployed anyway.
      */
-    private static String findWithinModule(DeploymentUnit unit, String persistenceUnitName, boolean allowScoped) {
+    private static PersistenceUnitMetadata findWithinModule(DeploymentUnit unit, String persistenceUnitName, boolean allowScoped) {
         if (!allowScoped && isScoped(unit))
             return null;
 
@@ -152,7 +153,7 @@ public class PersistenceUnitSearch {
                 if (traceEnabled) {
                     log.tracef("findWithinModule matched '%s' against pu '%s'", persistenceUnitName,persistenceUnit.getPersistenceUnitName());
                 }
-                return persistenceUnit.getScopedPersistenceUnitName();
+                return persistenceUnit;
              }
         }
         return null;

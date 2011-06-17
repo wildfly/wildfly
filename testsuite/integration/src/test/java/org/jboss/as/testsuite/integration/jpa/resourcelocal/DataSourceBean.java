@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.injection.datasourcedefinition;
+package org.jboss.as.testsuite.integration.jpa.resourcelocal;
 
 import javax.annotation.Resource;
 import javax.annotation.sql.DataSourceDefinition;
@@ -33,8 +33,9 @@ import javax.sql.DataSource;
         name = "java:app/DataSource",
         user = "sa",
         password = "sa",
-        className= "org.h2.jdbcx.JdbcDataSource",
-        url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
+        className = "org.h2.jdbcx.JdbcDataSource",
+        url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
+        transactional = false
 )
 @Stateless
 public class DataSourceBean {

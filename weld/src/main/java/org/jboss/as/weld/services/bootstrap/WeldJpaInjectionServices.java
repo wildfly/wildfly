@@ -21,6 +21,7 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.service.PersistenceUnitService;
@@ -86,11 +87,11 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
     }
 
     private String getScopedPUName(final DeploymentUnit deploymentUnit, String persistenceUnitName) {
-        String scopedPuName;
-        scopedPuName = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
-        if (null == scopedPuName) {
+        PersistenceUnitMetadata scopedPu;
+        scopedPu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
+        if (null == scopedPu) {
             throw new RuntimeException("Can't find a deployment unit named " +persistenceUnitName+ " at " + deploymentUnit);
         }
-        return scopedPuName;
+        return scopedPu.getScopedPersistenceUnitName();
     }
 }
