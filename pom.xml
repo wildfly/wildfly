@@ -413,6 +413,9 @@
                                             <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
                                             <exclude>org.jboss.spec.javax.resource:jboss-connector-api_1.5_spec</exclude>
                                             <exclude>org.opensaml:opensaml</exclude>
+                                            <exclude>org.ops4j.base</exclude>
+                                            <exclude>org.ops4j.pax.swissbox</exclude>
+                                            <exclude>org.ops4j.pax.web</exclude>
                                             <exclude>org.slf4j:slf4j-nop</exclude>
                                             <exclude>org.slf4j:slf4j-jdk14</exclude>
                                             <exclude>org.slf4j:slf4j-log4j12</exclude>
@@ -3723,6 +3726,12 @@
                 <groupId>org.jboss.osgi.http</groupId>
                 <artifactId>jboss-osgi-http</artifactId>
                 <version>${version.org.jboss.osgi.http}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.ops4j.pax.web</groupId>
+                        <artifactId>pax-web-jetty-bundle</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3816,6 +3825,14 @@
                     <exclusion>
                         <groupId>javax.servlet</groupId>
                         <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.ops4j.pax.web</groupId>
+                        <artifactId>pax-web-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.ops4j.pax.web</groupId>
+                        <artifactId>pax-web-extender-war</artifactId>
                     </exclusion>
                 </exclusions>
                 <version>${version.org.jboss.osgi.webapp}</version>
