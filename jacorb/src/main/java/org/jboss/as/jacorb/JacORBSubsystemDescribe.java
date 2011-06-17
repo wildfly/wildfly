@@ -24,6 +24,8 @@ package org.jboss.as.jacorb;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
@@ -43,7 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-public class JacORBSubsystemDescribe implements ModelQueryOperationHandler {
+public class JacORBSubsystemDescribe implements NewStepHandler {
 
     static final JacORBSubsystemDescribe INSTANCE = new JacORBSubsystemDescribe();
 
@@ -56,11 +58,11 @@ public class JacORBSubsystemDescribe implements ModelQueryOperationHandler {
     }
 
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public void execute(final NewOperationContext context, final ModelNode operation) {
         final ModelNode result = new ModelNode();
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR))
                 .getLastElement());
-        final ModelNode subModel = context.getSubModel();
+        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 
         final ModelNode subsystemAdd = new ModelNode();
         subsystemAdd.get(OP).set(ADD);
@@ -73,9 +75,5 @@ public class JacORBSubsystemDescribe implements ModelQueryOperationHandler {
             }
         }
         result.add(subsystemAdd);
-
-        resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult();
     }
 }
