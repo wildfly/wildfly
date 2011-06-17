@@ -21,6 +21,7 @@ package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -48,5 +49,12 @@ public class InterfaceRemoveHandler extends AbstractRemoveStepHandler implements
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return InterfaceDescription.getInterfaceRemoveOperation(locale);
+    }
+
+    protected String getInterfaceName(ModelNode operation) {
+        final ModelNode opAddr = operation.require(OP_ADDR);
+        PathAddress address = PathAddress.pathAddress(opAddr);
+        String name = address.getLastElement().getValue();
+        return name;
     }
 }

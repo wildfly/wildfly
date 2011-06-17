@@ -41,7 +41,7 @@ public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler {
 
     public static SpecifiedInterfaceAddHandler INSTANCE = new SpecifiedInterfaceAddHandler();
 
-    private SpecifiedInterfaceAddHandler() {
+    protected SpecifiedInterfaceAddHandler() {
         super(true);
     }
 

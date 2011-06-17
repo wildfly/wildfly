@@ -36,9 +36,11 @@ public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
 
     public static SpecifiedInterfaceRemoveHandler INSTANCE = new SpecifiedInterfaceRemoveHandler();
 
+    protected SpecifiedInterfaceRemoveHandler() {
+    }
+
     protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String name = address.getLastElement().getValue();
+        String name = getInterfaceName(operation);
         context.removeService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
     }
 

@@ -23,6 +23,7 @@ import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
+import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -30,17 +31,27 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
+public class HostSpecifiedInterfaceRemoveHandler extends SpecifiedInterfaceRemoveHandler {
 
-    public static SpecifiedInterfaceRemoveHandler INSTANCE = new SpecifiedInterfaceRemoveHandler();
+    private final LocalHostControllerInfoImpl localHostControllerInfo;
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String name = address.getLastElement().getValue();
-        context.removeService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
+    public HostSpecifiedInterfaceRemoveHandler(final LocalHostControllerInfoImpl localHostControllerInfo) {
+        this.localHostControllerInfo = localHostControllerInfo;
     }
 
+    @Override
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+        super.performRuntime(context, operation, model);
+        localHostControllerInfo.removeNetworkInterfaceBinding(getInterfaceName(operation));
+    }
+
+    @Override
     protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
         // TODO: Re-Add Services
+    }
+
+    @Override
+    protected boolean requiresRuntime(NewOperationContext context) {
+        return true;
     }
 }

@@ -60,13 +60,15 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler implements 
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
     private final HostControllerEnvironment environment;
+    private final LocalHostControllerInfoImpl hostControllerInfo;
 
-    private HttpManagementAddHandler(final HostControllerEnvironment environment) {
+    private HttpManagementAddHandler(final HostControllerEnvironment environment, final LocalHostControllerInfoImpl hostControllerInfo) {
         this.environment = environment;
+        this.hostControllerInfo = hostControllerInfo;
     }
 
-    public static HttpManagementAddHandler getInstance(HostControllerEnvironment environment) {
-        return new HttpManagementAddHandler(environment);
+    public static HttpManagementAddHandler getInstance(HostControllerEnvironment environment, final LocalHostControllerInfoImpl hostControllerInfo) {
+        return new HttpManagementAddHandler(environment, hostControllerInfo);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
@@ -85,36 +87,11 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler implements 
         if (securityRealm != null) {
             model.get(ModelDescriptionConstants.SECURITY_REALM).set(securityRealm);
         }
-    }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
-        final int port = getIntValue(operation, ModelDescriptionConstants.PORT);
-        final int securePort = getIntValue(operation, ModelDescriptionConstants.SECURE_PORT);
-        final String securityRealm = operation.hasDefined(SECURITY_REALM) ? operation.get(SECURITY_REALM).asString() : null;
-
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-
-        Logger.getLogger("org.jboss.as").infof("creating http management service using network interface (%s) port (%s) securePort (%s)", interfaceName, port, securePort);
-
-        final HttpManagementService service = new HttpManagementService();
-        ServiceBuilder builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
-                .addDependency(
-                        NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
-                        NetworkInterfaceBinding.class, service.getInterfaceInjector())
-                .addDependency(DomainController.SERVICE_NAME, NewModelController.class, service.getModelControllerInjector())
-                .addInjection(service.getTempDirInjector(), environment.getDomainTempDir().getAbsolutePath())
-                .addInjection(service.getPortInjector(), port)
-                .addInjection(service.getSecurePortInjector(), securePort)
-                .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext())));
-
-        if (securityRealm != null) {
-            builder.addDependency(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), SecurityRealmService.class, service.getSecurityRealmInjector());
-        }
-        builder.addListener(verificationHandler);
-        newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .install());
-
+        hostControllerInfo.setHttpManagementInterface(interfaceName);
+        hostControllerInfo.setHttpManagementPort(port);
+        hostControllerInfo.setHttpManagementSecurePort(securePort);
+        hostControllerInfo.setHttpManagementSecurityRealm(securityRealm);
     }
 
     /**

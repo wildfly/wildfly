@@ -68,6 +68,39 @@ public interface LocalHostControllerInfo {
     int getNativeManagementPort();
 
     /**
+     * Gets the name of the security realm to use for for native management requests.
+     *
+     * @return the logical interface name
+     */
+    String getNativeManagementSecurityRealm();
+
+    /**
+     * Gets the name of the interface on which the host listens for HTTP management requests.
+     *
+     * @return the logical interface name
+     */
+    String getHttpManagementInterface();
+
+    /**
+     * Gets the name of the port on which the host listens for HTTP management requests.
+     * @return  the port number
+     */
+    int getHttpManagementPort();
+
+    /**
+     * Gets the name of the port on which the host listens for HTTPS management requests.
+     * @return  the port number
+     */
+    int getHttpManagementSecurePort();
+
+    /**
+     * Gets the name of the security realm to use for for HTTP management requests.
+     *
+     * @return the logical interface name
+     */
+    String getHttpManagementSecurityRealm();
+
+    /**
      *  Gets the host name of the remote domain controller
      *  @return the host name
      */
