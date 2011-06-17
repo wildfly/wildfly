@@ -24,8 +24,7 @@ package org.jboss.as.demos.xmlconfig.runner;
 
 import java.net.InetAddress;
 
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -39,17 +38,17 @@ public class ExampleRunner {
      * @param args
      */
     public static void main(String[] args) throws Exception {
-        ModelControllerClient client = null;
+        NewModelControllerClient client = null;
         try {
             System.out.println("Connecting");
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
             System.out.println("Connected");
 
             System.out.println("Dumping config as xml\n");
             ModelNode request = new ModelNode();
             request.get("operation").set("read-config-as-xml");
             request.get("address").setEmptyList();
-            ModelNode r = client.execute(OperationBuilder.Factory.create(request).build());
+            ModelNode r = client.execute(request);
             System.out.println(r.get("result").asString());
 
         } finally {

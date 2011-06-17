@@ -32,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -41,8 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.io.IOException;
 import java.net.InetAddress;
 
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -53,7 +51,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ExampleRunner {
     public static void main(String[] args) throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             new ExampleRunner().run(client);
         } finally {
@@ -61,7 +59,7 @@ public class ExampleRunner {
         }
     }
 
-    protected void run(ModelControllerClient client) throws Exception {
+    protected void run(NewModelControllerClient client) throws Exception {
         // system properties
         runSysProperties(client);
         // paths
@@ -70,7 +68,7 @@ public class ExampleRunner {
         runInterface(client);
     }
 
-    void runSysProperties(final ModelControllerClient client) throws Exception {
+    void runSysProperties(final NewModelControllerClient client) throws Exception {
         final ModelNode address = new ModelNode();
         address.add(HOST, "local");
         address.add(SYSTEM_PROPERTY, "test-property");
@@ -87,7 +85,7 @@ public class ExampleRunner {
         runOperationAndRollback(operation, reversing, client);
     }
 
-    void runPaths(final ModelControllerClient client) throws Exception {
+    void runPaths(final NewModelControllerClient client) throws Exception {
         final ModelNode address = new ModelNode();
         address.add(HOST, "local");
         address.add(PATH, "temp");
@@ -105,7 +103,7 @@ public class ExampleRunner {
         runOperationAndRollback(operation, reversing, client);
     }
 
-    void runInterface(final ModelControllerClient client) throws IOException {
+    void runInterface(final NewModelControllerClient client) throws IOException {
         final ModelNode address = new ModelNode();
         address.add(HOST, "local");
         address.add(INTERFACE, "new");
@@ -123,7 +121,7 @@ public class ExampleRunner {
         runOperationAndRollback(operation, reversing, client);
     }
 
-    void runOperationAndRollback(final ModelNode operation, final ModelNode reversing, final ModelControllerClient client) throws IOException {
+    void runOperationAndRollback(final ModelNode operation, final ModelNode reversing, final NewModelControllerClient client) throws IOException {
 
         System.out.println("Executing operation:\n" + operation);
         final ModelNode result = client.execute(operation);

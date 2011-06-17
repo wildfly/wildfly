@@ -34,8 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.war.archive.SimpleServlet;
 import org.jboss.dmr.ModelNode;
@@ -47,7 +46,7 @@ public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
         DeploymentUtils utils = null;
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             utils = new DeploymentUtils();
             utils.addWarDeployment("war-example.war", true, SimpleServlet.class.getPackage());
@@ -86,7 +85,7 @@ public class ExampleRunner {
 
     }
 
-    static void createTestConnector(final ModelControllerClient client) throws OperationFailedException, IOException {
+    static void createTestConnector(final NewModelControllerClient client) throws OperationFailedException, IOException {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
         op.get("operation").set("add");
@@ -111,7 +110,7 @@ public class ExampleRunner {
         applyUpdates(updates, client);
     }
 
-    static void removeTestConnector(final ModelControllerClient client) throws OperationFailedException, IOException {
+    static void removeTestConnector(final NewModelControllerClient client) throws OperationFailedException, IOException {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
@@ -130,15 +129,15 @@ public class ExampleRunner {
         applyUpdates(updates, client);
     }
 
-    static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws OperationFailedException, IOException  {
+    static void applyUpdates(final List<ModelNode> updates, final NewModelControllerClient client) throws OperationFailedException, IOException  {
         // TODO consider creating a composite operation
         for(ModelNode update : updates) {
             applyUpdate(update, client);
         }
     }
 
-    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws OperationFailedException, IOException {
-        ModelNode result = client.execute(OperationBuilder.Factory.create(update).build());
+    static void applyUpdate(ModelNode update, final NewModelControllerClient client) throws OperationFailedException, IOException {
+        ModelNode result = client.execute(update);
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));
