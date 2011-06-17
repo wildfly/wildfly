@@ -21,6 +21,10 @@ package org.jboss.as.server.deployment;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
@@ -154,41 +158,19 @@ public class DeploymentHandlerUtil {
         if (operationContext.getType() == NewOperationContext.Type.SERVER) {
             operationContext.addStep(new NewStepHandler() {
                 public void execute(final NewOperationContext context, ModelNode operation) throws OperationFailedException {
-                    final String deploymentUnitName = operationContext.readModel(PathAddress.EMPTY_ADDRESS).require(NAME).asString();
-                    final ServiceController<?> deploymentController = context.getServiceRegistry(false).getService(Services.deploymentUnitName(deploymentUnitName));
-                    if (deploymentController != null) {
-                        deploymentController.addListener(new AbstractServiceListener<Object>() {
-                            @Override
-                            public void listenerAdded(ServiceController<?> controller) {
-                                if (! controller.compareAndSetMode(ServiceController.Mode.ACTIVE, ServiceController.Mode.NEVER)) {
-                                    controller.removeListener(this);
-                                }
-                            }
+                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+                    context.removeService(deploymentUnitServiceName);
+                    context.removeService(deploymentUnitServiceName.append("contents"));
 
-                            public void serviceStopping(ServiceController<?> controller) {
-                                controller.removeListener(this);
-                                final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                                deploymentController.addListener(verificationHandler);
-                                controller.compareAndSetMode(ServiceController.Mode.NEVER, ServiceController.Mode.ACTIVE);
-
-                                context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
-
-                                if(operationContext.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                                    // HMMM
-                                }
-                            }
-                        });
-                    } else {
-                        ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, contents);
-                        context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
-
-                        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                            for (ServiceController<?> controller : controllers) {
-                                context.removeService(controller.getName());
-                            }
+                    context.addStep(new NewStepHandler() {
+                        @Override
+                        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                            ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                            doDeploy(context, deploymentUnitName, managementName, verificationHandler, contents);
+                            context.completeStep();
                         }
-                    }
+                    }, NewOperationContext.Stage.IMMEDIATE);
+                    context.completeStep();
                 }
             }, NewOperationContext.Stage.RUNTIME);
         }
