@@ -34,6 +34,7 @@ import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
 
@@ -47,10 +48,12 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
     private final HostControllerEnvironment environment;
     private ExtensibleConfigurationPersister domainPersister;
     private final ExtensibleConfigurationPersister hostPersister;
+    private final LocalHostControllerInfo hostControllerInfo;
     private Boolean slave;
 
-    public HostControllerConfigurationPersister(final HostControllerEnvironment environment) {
+    public HostControllerConfigurationPersister(final HostControllerEnvironment environment, LocalHostControllerInfo localHostControllerInfo) {
         this.environment = environment;
+        this.hostControllerInfo = localHostControllerInfo;
         final File configDir = environment.getDomainConfigurationDir();
         final ConfigurationFile configurationFile = environment.getHostConfigurationFile();
         this.hostPersister = ConfigurationPersisterFactory.createHostXmlConfigurationPersister(configDir, configurationFile);
@@ -96,26 +99,11 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
 
     @Override
     public PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
-
-        if (true) {
-            System.out.println("==== HostControllerConfigurationPersister temporarily disabled see HCCP.store()");
-            return new PersistenceResource() {
-
-                @Override
-                public void rollback() {
-                }
-
-                @Override
-                public void commit() {
-                }
-            };
-        }
-
         final PersistenceResource[] delegates = new PersistenceResource[2];
         for (PathAddress addr : affectedAddresses) {
-            if (delegates[0] == null && addr.size() > 0 && HOST.equals(addr.getElement(0).getKey())) {
+            if (delegates[0] == null && addr.size() > 0 && HOST.equals(addr.getElement(0).getKey()) && addr.getElement(0).getValue().equals(hostControllerInfo.getLocalHostName())) {
                 ModelNode hostModel = new ModelNode();
-                hostModel.get(HOST).set(model.get(HOST));
+                hostModel.set(model.get(HOST, hostControllerInfo.getLocalHostName()));
                 delegates[0] = hostPersister.store(hostModel, affectedAddresses);
             } else if (delegates[1] == null && (addr.size() == 0 || !HOST.equals(addr.getElement(0).getKey()))) {
                 delegates[1] = getDomainPersister().store(model, affectedAddresses);

@@ -129,7 +129,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState);
         final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, hostProxies, serverProxies);
         DomainModelControllerService service = new DomainModelControllerService(environment, processState,
-                hostControllerInfo, new HostControllerConfigurationPersister(environment),
+                hostControllerInfo, new HostControllerConfigurationPersister(environment, hostControllerInfo),
                 hostProxies, serverProxies, prepareStepHandler);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(NewHostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.injectedExecutorService)
