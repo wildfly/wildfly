@@ -37,7 +37,7 @@ import org.jboss.as.cli.impl.RequestParamArgWithValue;
 import org.jboss.as.cli.impl.RequestParameterArgument;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -191,7 +191,7 @@ public class BaseDataSourceModifyHandler extends BaseOperationCommand {
             super(new CandidatesProvider() {
                 @Override
                 public List<String> getAllCandidates(CommandContext ctx) {
-                    ModelControllerClient client = ctx.getModelControllerClient();
+                    NewModelControllerClient client = ctx.getModelControllerClient();
                     if(client == null) {
                         return Collections.emptyList();
                     }
