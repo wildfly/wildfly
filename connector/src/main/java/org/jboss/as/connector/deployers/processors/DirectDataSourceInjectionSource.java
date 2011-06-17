@@ -37,6 +37,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.value.Values;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 /**
@@ -52,7 +53,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
     private static final Logger logger = Logger.getLogger(DirectDataSourceInjectionSource.class);
 
     public static final String USER_PROP = "user";
-    public static final String URL_PROP = "url";
+    public static final String URL_PROP = "URL";
     public static final String TRANSACTIONAL_PROP = "transactional";
     public static final String SERVER_NAME_PROP = "serverName";
     public static final String PROPERTIES_PROP = "properties";
@@ -103,7 +104,11 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         try {
             Class<?> clazz = module.getClassLoader().loadClass(className);
             classIndex = deploymentReflectionIndex.getClassIndex(clazz);
-            object = classIndex.getConstructor(NO_CLASSES).newInstance();
+            Constructor<?> ctor = classIndex.getConstructor(NO_CLASSES);
+            if(ctor == null) {
+                throw new DeploymentUnitProcessingException("Could not found no-arg constructor for @DataSourceDefinition class " + className);
+            }
+            object = ctor.newInstance();
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
         }
