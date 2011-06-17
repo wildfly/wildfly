@@ -187,7 +187,7 @@ class ProxyTask implements Callable<ModelNode> {
             int count = context.getAttachmentStreamCount();
             List<InputStream> result = new ArrayList<InputStream>(count);
             for (int i = 0; i < count; i++) {
-                result.add(context.getAttachmentStream(count));
+                result.add(context.getAttachmentStream(i));
             }
             return result;
         }

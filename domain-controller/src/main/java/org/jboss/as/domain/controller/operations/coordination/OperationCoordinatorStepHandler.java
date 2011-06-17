@@ -221,8 +221,8 @@ public class OperationCoordinatorStepHandler {
                 String opName = opNode.get(OP).asString();
                 if (DeploymentFullReplaceHandler.OPERATION_NAME.equals(opName) && hasStorableContent(opNode)) {
                     byte[] hash = NewDeploymentUploadUtil.storeDeploymentContent(context, opNode, localHostControllerInfo.getContentRepository());
-                    opNode.remove(INPUT_STREAM_INDEX);
-                    opNode.get(HASH).set(hash);
+                    opNode.get(CONTENT).get(0).remove(INPUT_STREAM_INDEX);
+                    opNode.get(CONTENT).get(0).get(HASH).set(hash);
                 }
                 else if (COMPOSITE.equals(opName) && opNode.hasDefined(STEPS)){
                     // Check the steps
@@ -234,8 +234,8 @@ public class OperationCoordinatorStepHandler {
             else if (address.size() == 1 && DEPLOYMENT.equals(address.getElement(0).getKey())
                     && ADD.equals(opNode.get(OP).asString()) && hasStorableContent(opNode)) {
                 byte[] hash = NewDeploymentUploadUtil.storeDeploymentContent(context, opNode, localHostControllerInfo.getContentRepository());
-                opNode.remove(INPUT_STREAM_INDEX);
-                opNode.get(HASH).set(hash);
+                    opNode.get(CONTENT).get(0).remove(INPUT_STREAM_INDEX);
+                    opNode.get(CONTENT).get(0).get(HASH).set(hash);
             }
         } catch (IOException ioe) {
             throw new OperationFailedException(new ModelNode().set(String.format("Caught IOException storing deployment content -- %s", ioe)));
@@ -243,7 +243,7 @@ public class OperationCoordinatorStepHandler {
     }
 
     private boolean hasStorableContent(ModelNode operation) {
-        if (!operation.hasDefined(CONTENT)) {
+        if (operation.hasDefined(CONTENT)) {
             final ModelNode content = operation.require(CONTENT);
             for (ModelNode item : content.asList()) {
                 if (hasValidContentAdditionParameterDefined(item)) {
