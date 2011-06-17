@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.deployers.processors;
+package org.jboss.as.ee.datasource;
 
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -105,16 +105,17 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
             Class<?> clazz = module.getClassLoader().loadClass(className);
             classIndex = deploymentReflectionIndex.getClassIndex(clazz);
             Constructor<?> ctor = classIndex.getConstructor(NO_CLASSES);
-            if(ctor == null) {
+            if (ctor == null) {
                 throw new DeploymentUnitProcessingException("Could not found no-arg constructor for @DataSourceDefinition class " + className);
             }
             object = ctor.newInstance();
+
+            setProperties(deploymentReflectionIndex, classIndex, object);
+
+            injector.inject(new ValueManagedReferenceFactory(Values.immediateValue(object)));
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
         }
-
-        setProperties(deploymentReflectionIndex, classIndex, object);
-        injector.inject(new ValueManagedReferenceFactory(Values.immediateValue(object)));
     }
 
     @Override

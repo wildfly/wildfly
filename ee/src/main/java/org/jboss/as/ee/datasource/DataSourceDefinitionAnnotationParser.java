@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.deployers.processors;
+package org.jboss.as.ee.datasource;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
@@ -45,26 +45,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.DATABASE_NAME_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.DESCRIPTION_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.INITIAL_POOL_SIZE_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.ISOLATION_LEVEL_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.LOGIN_TIMEOUT_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.MAX_IDLE_TIME_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.MAX_POOL_SIZE_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.MAX_STATEMENTS_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.MIN_POOL_SIZE_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.PASSWORD_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.PORT_NUMBER_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.PROPERTIES_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.SERVER_NAME_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.TRANSACTIONAL_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.URL_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.USER_PROP;
-
 /**
  * Deployment processor responsible for processing {@link DataSourceDefinition} and {@link DataSourceDefinitions}
- * and creating {@link BindingConfiguration}s out of them
+ * and creating {@link org.jboss.as.ee.component.BindingConfiguration}s out of them
  *
  * @author John Bailey
  * @author Jason T. Greene
@@ -151,22 +134,22 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
         final String type = classValue.asString();
         final DirectDataSourceInjectionSource directDataSourceInjectionSource = new DirectDataSourceInjectionSource();
         directDataSourceInjectionSource.setClassName(type);
-        directDataSourceInjectionSource.setDatabaseName(asString(datasourceAnnotation, DATABASE_NAME_PROP));
-        directDataSourceInjectionSource.setDescription(asString(datasourceAnnotation, DESCRIPTION_PROP));
-        directDataSourceInjectionSource.setInitialPoolSize(asInt(datasourceAnnotation, INITIAL_POOL_SIZE_PROP));
-        directDataSourceInjectionSource.setIsolationLevel(asInt(datasourceAnnotation, ISOLATION_LEVEL_PROP));
-        directDataSourceInjectionSource.setLoginTimeout(asInt(datasourceAnnotation, LOGIN_TIMEOUT_PROP));
-        directDataSourceInjectionSource.setMaxIdleTime(asInt(datasourceAnnotation, MAX_IDLE_TIME_PROP));
-        directDataSourceInjectionSource.setMaxStatements(asInt(datasourceAnnotation, MAX_STATEMENTS_PROP));
-        directDataSourceInjectionSource.setMaxPoolSize(asInt(datasourceAnnotation, MAX_POOL_SIZE_PROP));
-        directDataSourceInjectionSource.setMinPoolSize(asInt(datasourceAnnotation, MIN_POOL_SIZE_PROP));
-        directDataSourceInjectionSource.setPassword(asString(datasourceAnnotation, PASSWORD_PROP));
-        directDataSourceInjectionSource.setPortNumber(asInt(datasourceAnnotation, PORT_NUMBER_PROP));
-        directDataSourceInjectionSource.setProperties(asArray(datasourceAnnotation, PROPERTIES_PROP));
-        directDataSourceInjectionSource.setServerName(asString(datasourceAnnotation, SERVER_NAME_PROP));
-        directDataSourceInjectionSource.setTransactional(asBool(datasourceAnnotation, TRANSACTIONAL_PROP));
-        directDataSourceInjectionSource.setUrl(asString(datasourceAnnotation, URL_PROP));
-        directDataSourceInjectionSource.setUser(asString(datasourceAnnotation, USER_PROP));
+        directDataSourceInjectionSource.setDatabaseName(asString(datasourceAnnotation, DirectDataSourceInjectionSource.DATABASE_NAME_PROP));
+        directDataSourceInjectionSource.setDescription(asString(datasourceAnnotation, DirectDataSourceInjectionSource.DESCRIPTION_PROP));
+        directDataSourceInjectionSource.setInitialPoolSize(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.INITIAL_POOL_SIZE_PROP));
+        directDataSourceInjectionSource.setIsolationLevel(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.ISOLATION_LEVEL_PROP));
+        directDataSourceInjectionSource.setLoginTimeout(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.LOGIN_TIMEOUT_PROP));
+        directDataSourceInjectionSource.setMaxIdleTime(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.MAX_IDLE_TIME_PROP));
+        directDataSourceInjectionSource.setMaxStatements(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.MAX_STATEMENTS_PROP));
+        directDataSourceInjectionSource.setMaxPoolSize(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.MAX_POOL_SIZE_PROP));
+        directDataSourceInjectionSource.setMinPoolSize(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.MIN_POOL_SIZE_PROP));
+        directDataSourceInjectionSource.setPassword(asString(datasourceAnnotation, DirectDataSourceInjectionSource.PASSWORD_PROP));
+        directDataSourceInjectionSource.setPortNumber(asInt(datasourceAnnotation, DirectDataSourceInjectionSource.PORT_NUMBER_PROP));
+        directDataSourceInjectionSource.setProperties(asArray(datasourceAnnotation, DirectDataSourceInjectionSource.PROPERTIES_PROP));
+        directDataSourceInjectionSource.setServerName(asString(datasourceAnnotation, DirectDataSourceInjectionSource.SERVER_NAME_PROP));
+        directDataSourceInjectionSource.setTransactional(asBool(datasourceAnnotation, DirectDataSourceInjectionSource.TRANSACTIONAL_PROP));
+        directDataSourceInjectionSource.setUrl(asString(datasourceAnnotation, DirectDataSourceInjectionSource.URL_PROP));
+        directDataSourceInjectionSource.setUser(asString(datasourceAnnotation, DirectDataSourceInjectionSource.USER_PROP));
 
 
         final BindingConfiguration bindingDescription = new BindingConfiguration(name, directDataSourceInjectionSource);

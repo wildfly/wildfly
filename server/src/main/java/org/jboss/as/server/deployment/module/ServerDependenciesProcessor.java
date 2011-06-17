@@ -35,7 +35,7 @@ import org.jboss.modules.ModuleLoader;
  *
  * @author Stuart Douglas
  */
-public class JdkDependenciesProcessor implements DeploymentUnitProcessor {
+public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
 
     private static ModuleIdentifier SUN_JDK = ModuleIdentifier.create("sun.jdk");
     private static ModuleIdentifier JAVAX_API = ModuleIdentifier.create("javax.api");

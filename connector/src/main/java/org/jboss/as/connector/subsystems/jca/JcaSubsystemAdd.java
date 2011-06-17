@@ -23,29 +23,9 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_ENABLED;
-import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
-import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
-import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION_ENABLED;
-import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_DEBUG;
-import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_ERROR;
-import static org.jboss.as.connector.subsystems.jca.Constants.LONG_RUNNING_THREADS;
-import static org.jboss.as.connector.subsystems.jca.Constants.SHORT_RUNNING_THREADS;
-import static org.jboss.as.connector.subsystems.jca.Constants.THREAD_POOL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.concurrent.Executor;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.bootstrap.DefaultBootStrapContextService;
 import org.jboss.as.connector.deployers.RaDeploymentActivator;
-import org.jboss.as.connector.deployers.processors.DataSourceDefinitionAnnotationParser;
-import org.jboss.as.connector.deployers.processors.DataSourceDefinitionDeploymentDescriptorParser;
 import org.jboss.as.connector.registry.DriverRegistryService;
 import org.jboss.as.connector.services.CcmService;
 import org.jboss.as.connector.transactionintegration.TransactionIntegrationService;
@@ -61,7 +41,6 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -74,6 +53,13 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.XAResourceRecoveryRegistry;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import java.util.concurrent.Executor;
+
+import static org.jboss.as.connector.subsystems.jca.Constants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 
 /**
@@ -124,15 +110,6 @@ class JcaSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
 
         if (context instanceof BootOperationContext) {
             final BootOperationContext bootContext = BootOperationContext.class.cast(context);
-            // Add the deployer which processes EE @DataSourceDefinition and
-            // @DataSourceDefinitions
-            // TODO: The DataSourceDefinitionDeployer should perhaps belong to
-            // EE subsystem
-            bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION_ANNOTATION,
-                    new DataSourceDefinitionAnnotationParser());
-            bootContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_DATASOURCE_REF,
-                    new DataSourceDefinitionDeploymentDescriptorParser());
-
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
