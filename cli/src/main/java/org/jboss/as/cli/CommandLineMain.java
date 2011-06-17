@@ -134,7 +134,7 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new DataSourceAddHandler(), "add-data-source");
         cmdRegistry.registerHandler(new DataSourceModifyHandler(), "modify-data-source");
         cmdRegistry.registerHandler(new DataSourceRemoveHandler(), "remove-data-source");
-        cmdRegistry.registerHandler(new SimpleDataSourceOperationHandler("data-source"), "data-source");
+        //cmdRegistry.registerHandler(new SimpleDataSourceOperationHandler("data-source"), "data-source");
         cmdRegistry.registerHandler(new XADataSourceAddHandler(), "add-xa-data-source");
         cmdRegistry.registerHandler(new XADataSourceRemoveHandler(), "remove-xa-data-source");
         cmdRegistry.registerHandler(new XADataSourceModifyHandler(), "modify-xa-data-source");
