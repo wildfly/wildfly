@@ -45,8 +45,7 @@ import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -113,7 +112,7 @@ public class ArquillianServiceDeployer {
             final ModelNode operation = new ModelNode();
             operation.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
             operation.get(CHILD_TYPE).set(DEPLOYMENT);
-            ModelNode result = getModelControllerClient().execute(OperationBuilder.Factory.create(operation).build());
+            ModelNode result = getModelControllerClient().execute(operation);
             if (FAILED.equals(result.get(OUTCOME).asString()))
                 throw new IllegalStateException("Management request failed: " + result);
 
@@ -149,7 +148,7 @@ public class ArquillianServiceDeployer {
             steps.add(removeNode);
 
             log.infof("Undeploying arquillian service  with: %s", operation);
-            ModelNode result = getModelControllerClient().execute(OperationBuilder.Factory.create(operation).build());
+            ModelNode result = getModelControllerClient().execute(operation);
             if (FAILED.equals(result.get(OUTCOME).asString()))
                 log.errorf("Management request failed: %s", result);
 
@@ -158,8 +157,8 @@ public class ArquillianServiceDeployer {
         }
     }
 
-    private ModelControllerClient getModelControllerClient() throws UnknownHostException {
+    private NewModelControllerClient getModelControllerClient() throws UnknownHostException {
         // TODO: make configurable via protocol config
-        return ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999);
+        return NewModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999);
     }
 }
