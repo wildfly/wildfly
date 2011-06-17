@@ -183,7 +183,8 @@ public class DomainFinalResultHandler implements NewStepHandler {
         for (String groupName : groupNames) {
             final ModelNode groupNode = new ModelNode();
             if (domainOperationContext.isServerGroupRollback(groupName)) {
-                groupNode.get(ROLLED_BACK).set(true);
+                // TODO revisit if we should report this for the whole group, since the result might not be accurate
+                // groupNode.get(ROLLED_BACK).set(true);
             } else {
                 serverGroupSuccess = true;
             }
@@ -191,7 +192,7 @@ public class DomainFinalResultHandler implements NewStepHandler {
                 final ModelNode serverNode = new ModelNode();
                 serverNode.get(HOST).set(hostServer.hostName);
                 serverNode.get(RESPONSE).set(hostServer.result);
-                groupNode.add(hostServer.serverName, serverNode);
+                groupNode.get(hostServer.serverName).set(serverNode);
             }
             result.get(SERVER_GROUPS).add(groupName, groupNode);
         }
