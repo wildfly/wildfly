@@ -3104,6 +3104,10 @@
                         <artifactId>jboss-logging-spi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>trove</groupId>
+                        <artifactId>trove</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>xml-apis</groupId>
                         <artifactId>xml-apis</artifactId>
                     </exclusion>
@@ -3116,6 +3120,23 @@
                 <version>${version.org.jboss.ejb3}</version>
             </dependency>
 
+            <!-- TODO: this is not the final API -->
+            <dependency>
+                <groupId>org.jboss.ejb3</groupId>
+                <artifactId>jboss-ejb3-ext-api</artifactId>
+                <version>1.1.1</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.javaee</groupId>
+                        <artifactId>jboss-ejb-api</artifactId>
+                    </exclusion>                
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>org.jboss.ejb3.concurrency</groupId>
                 <artifactId>jboss-ejb3-concurrency-impl</artifactId>
@@ -3126,6 +3147,36 @@
                         <artifactId>jboss-logging-spi</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.concurrency</groupId>
+                <artifactId>jboss-ejb3-concurrency-spi</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.context</groupId>
+                <artifactId>jboss-ejb3-context-base</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.context</groupId>
+                <artifactId>jboss-ejb3-context-spi</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.effigy</groupId>
+                <artifactId>jboss-ejb3-effigy-api</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.effigy</groupId>
+                <artifactId>jboss-ejb3-effigy-common</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
             </dependency>
 
             <dependency>
@@ -3145,6 +3196,13 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.tx2</groupId>
+                <artifactId>jboss-ejb3-tx2-spi</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+            </dependency>
+
 			<dependency>
                 <groupId>org.jboss.integration</groupId>
                 <artifactId>jboss-jca-spi</artifactId>

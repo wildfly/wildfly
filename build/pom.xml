@@ -782,12 +782,47 @@
 
         <dependency>
             <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-cache</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3</groupId>
             <artifactId>jboss-ejb3-core-pool</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-ext-api</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ejb3.concurrency</groupId>
             <artifactId>jboss-ejb3-concurrency-impl</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3.concurrency</groupId>
+            <artifactId>jboss-ejb3-concurrency-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3.context</groupId>
+            <artifactId>jboss-ejb3-context-base</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3.context</groupId>
+            <artifactId>jboss-ejb3-context-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3.effigy</groupId>
+            <artifactId>jboss-ejb3-effigy-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3.effigy</groupId>
+            <artifactId>jboss-ejb3-effigy-common</artifactId>
         </dependency>
 
         <dependency>
@@ -798,6 +833,11 @@
         <dependency>
             <groupId>org.jboss.ejb3.tx2</groupId>
             <artifactId>jboss-ejb3-tx2-impl</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3.tx2</groupId>
+            <artifactId>jboss-ejb3-tx2-spi</artifactId>
         </dependency>
 
         <dependency>
