@@ -25,8 +25,22 @@
       xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd"
       name="local">
 
+    <management>
+        <security-realms>
+            <security-realm name="TestRealm">
+                <authentication>
+                    <users>
+                        <user username="TestUser">
+                            <password>TestUserPassword</password>
+                        </user>
+                    </users>
+                </authentication>
+            </security-realm>
+        </security-realms>
+    </management>
+
     <management-interfaces>
-       <native-interface interface="management" port="9999"/>
+       <native-interface interface="management" port="9999" security-realm="TestRealm" />
        <http-interface interface="management" port="9990"/>
     </management-interfaces>
 
