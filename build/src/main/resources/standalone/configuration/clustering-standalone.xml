@@ -262,13 +262,13 @@
                 <!-- bundles started in startlevel 1 -->
                 <module identifier="org.apache.felix.log" startlevel="1"/>
                 <module identifier="org.jboss.osgi.logging" startlevel="1"/>
+                <module identifier="org.apache.felix.configadmin" startlevel="1"/>
+                <module identifier="org.jboss.as.osgi.configadmin" startlevel="1"/>
                 <!-- bundles started in startlevel 2 -->
                 <module identifier="org.apache.aries.jmx" startlevel="2"/>
-                <module identifier="org.apache.felix.configadmin" startlevel="2"/>
                 <module identifier="org.apache.felix.eventadmin" startlevel="2"/>
                 <module identifier="org.apache.felix.metatype" startlevel="2"/>
                 <module identifier="org.apache.felix.webconsole" startlevel="2"/>
-                <module identifier="org.jboss.as.osgi.configadmin" startlevel="2"/>
                 <module identifier="org.jboss.osgi.jmx" startlevel="2"/>
                 <module identifier="org.jboss.osgi.http" startlevel="2"/>
                 <!-- bundles started in startlevel 3 -->
