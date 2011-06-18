@@ -40,7 +40,7 @@ interface CommonAttributes {
     /** The com.arjuna.ats.arjuna.utils.Process implementation type */
     String PROCESS_ID = "process-id";
     String RECOVERY_ENVIRONMENT = "recovery-environment";
-    String RECOVERY_LISTENER = "recovery-environment";
+    String RECOVERY_LISTENER = "recovery-listener";
     /** The process-id/socket element */
     String SOCKET = "socket";
     /** The process-id/socket attribute for max ports */
