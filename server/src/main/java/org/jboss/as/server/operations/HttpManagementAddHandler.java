@@ -22,6 +22,9 @@
 
 package org.jboss.as.server.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURE_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 
 import java.security.AccessController;
@@ -54,6 +57,7 @@ import org.jboss.threads.JBossThreadFactory;
  * A handler that activates the HTTP management API.
  *
  * @author Jason T. Greene
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class HttpManagementAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
@@ -61,20 +65,15 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler implements 
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
     protected void populateModel(ModelNode operation, ModelNode model) {
-        final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
-        final int port = getIntValue(operation, ModelDescriptionConstants.PORT);
-        final int securePort = getIntValue(operation, ModelDescriptionConstants.SECURE_PORT);
-        final String securityRealm = operation.hasDefined(SECURITY_REALM) ? operation.get(SECURITY_REALM).asString() : null;
-
-        model.get(ModelDescriptionConstants.INTERFACE).set(interfaceName);
-        if (port > -1) {
-            model.get(ModelDescriptionConstants.PORT).set(port);
+        model.get(INTERFACE).set(operation.require(INTERFACE).asString());
+        if (operation.hasDefined(PORT)) {
+            model.get(ModelDescriptionConstants.PORT).set(operation.require(PORT).asInt());
         }
-        if (securePort > -1) {
-            model.get(ModelDescriptionConstants.SECURE_PORT).set(securePort);
+        if (operation.hasDefined(SECURE_PORT)) {
+            model.get(ModelDescriptionConstants.SECURE_PORT).set(operation.require(SECURE_PORT).asInt());
         }
-        if (securityRealm != null) {
-            model.get(ModelDescriptionConstants.SECURITY_REALM).set(securityRealm);
+        if (operation.hasDefined(SECURITY_REALM)) {
+            model.get(ModelDescriptionConstants.SECURITY_REALM).set(operation.get(SECURITY_REALM).asString());
         }
     }
 
@@ -118,7 +117,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler implements 
     }
 
     private int getIntValue(ModelNode source, String name) {
-        if (source.has(name)) {
+        if (source.hasDefined(name)) {
             return source.require(name).asInt();
         }
         return -1;

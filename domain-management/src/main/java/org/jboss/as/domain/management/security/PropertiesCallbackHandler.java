@@ -52,7 +52,8 @@ import org.jboss.msc.value.InjectedValue;
 public class PropertiesCallbackHandler implements Service<PropertiesCallbackHandler>, DomainCallbackHandler {
 
     public static final String SERVICE_SUFFIX = "properties";
-    private static final Class[] supportedCallbacks = {RealmCallback.class, NameCallback.class, PasswordCallback.class};
+    private static final Class[] supportedCallbacks = {AuthorizeCallback.class, RealmCallback.class,
+                                                       NameCallback.class, PasswordCallback.class};
 
     private final String realm;
     private final String path;
@@ -138,17 +139,16 @@ public class PropertiesCallbackHandler implements Service<PropertiesCallbackHand
             }
         }
 
-        if (userFound == false) {
-            throw new UserNotFoundException(userName);
-        }
-
         // Second Pass - Now iterate the Callback(s) requiring a response.
         for (Callback current : toRespondTo) {
             if (current instanceof AuthorizeCallback) {
                 AuthorizeCallback authorizeCallback = (AuthorizeCallback) current;
                 // Don't support impersonating another identity
-                authorizeCallback.setAuthorized(authorizeCallback.getAuthenticationID().equals(authorizeCallback.getAuthorizedID()));
+                authorizeCallback.setAuthorized(authorizeCallback.getAuthenticationID().equals(authorizeCallback.getAuthorizationID()));
             } else if (current instanceof PasswordCallback) {
+                if (userFound == false) {
+                    throw new UserNotFoundException(userName);
+                }
                 String password = users.get(userName).toString();
                 ((PasswordCallback) current).setPassword(password.toCharArray());
             }

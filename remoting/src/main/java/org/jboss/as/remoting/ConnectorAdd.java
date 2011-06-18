@@ -103,7 +103,6 @@ public class ConnectorAdd extends AbstractAddStepHandler implements DescriptionP
 //        } catch (ServiceRegistryException e) {
 //            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
 //        }
-
     }
 
     static OptionMap createOptionMap(final ModelNode parameters) {
@@ -145,7 +144,6 @@ public class ConnectorAdd extends AbstractAddStepHandler implements DescriptionP
         return set;
     }
 
-    @Override
     public ModelNode getModelDescription(Locale locale) {
         return RemotingSubsystemProviders.CONNECTOR_ADD.getModelDescription(locale);
     }

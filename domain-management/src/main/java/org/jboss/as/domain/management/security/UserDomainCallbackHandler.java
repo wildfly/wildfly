@@ -49,7 +49,8 @@ import org.jboss.msc.service.StopContext;
 public class UserDomainCallbackHandler implements Service<UserDomainCallbackHandler>, DomainCallbackHandler {
 
     public static final String SERVICE_SUFFIX = "users";
-    private static final Class[] supportedCallbacks = {RealmCallback.class, NameCallback.class, PasswordCallback.class};
+    private static final Class[] supportedCallbacks = {AuthorizeCallback.class, RealmCallback.class,
+                                                       NameCallback.class, PasswordCallback.class};
 
     private final String realm;
 
@@ -116,17 +117,16 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
             }
         }
 
-        if (user == null) {
-            throw new UserNotFoundException(userName);
-        }
-
         // Second Pass - Now iterate the Callback(s) requiring a response.
         for (Callback current : toRespondTo) {
             if (current instanceof AuthorizeCallback) {
                 AuthorizeCallback authorizeCallback = (AuthorizeCallback) current;
                 // Don't support impersonating another identity
-                authorizeCallback.setAuthorized(authorizeCallback.getAuthenticationID().equals(authorizeCallback.getAuthorizedID()));
+                authorizeCallback.setAuthorized(authorizeCallback.getAuthenticationID().equals(authorizeCallback.getAuthorizationID()));
             } else if (current instanceof PasswordCallback) {
+                if (user == null) {
+                    throw new UserNotFoundException(userName);
+                }
                 String password = user.require(PASSWORD).asString();
                 ((PasswordCallback) current).setPassword(password.toCharArray());
             }

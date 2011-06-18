@@ -898,11 +898,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case NATIVE_INTERFACE: {
-                            parseNativeManagementSocket(reader, address, list);
+                            parseNativeManagementInterface(reader, address, list);
                             break;
                         }
                         case HTTP_INTERFACE: {
-                            parseHttpManagementSocket(reader, address, list);
+                            parseHttpManagementInterface(reader, address, list);
                             break;
                         }
                         default: {
@@ -1047,7 +1047,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         return properties;
     }
 
-    protected void parseHttpManagementSocket(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    protected void parseHttpManagementInterface(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         // Handle attributes
         String interfaceName = null;
         int port = -1;
@@ -1129,11 +1129,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         reader.discardRemainder();
     }
 
-    private void parseNativeManagementSocket(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    private void parseNativeManagementInterface(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         // Handle attributes
         String interfaceName = null;
         int port = 0;
-        int maxThreads = -1;
+        String securityRealm = null;
+
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
@@ -1155,13 +1156,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         }
                         break;
                     }
-                    case MAX_THREADS: {
-                        maxThreads = Integer.parseInt(value);
-                        if (maxThreads < 1) {
-                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
-                                    "' value " + maxThreads + " -- must be greater than 0",
-                                    reader.getLocation());
-                        }
+                    case SECURITY_REALM: {
+                        securityRealm = value;
                         break;
                     }
                     default:
@@ -1176,6 +1172,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final ModelNode mgmtSocket = new ModelNode();
         mgmtSocket.get(INTERFACE).set(interfaceName);
         mgmtSocket.get(PORT).set(port);
+        if (securityRealm != null) {
+            mgmtSocket.get(SECURITY_REALM).set(securityRealm);
+        }
         mgmtSocket.get(OP).set(ADD);
         ModelNode operationAddress = address.clone();
         operationAddress.add(MANAGEMENT_INTERFACE, NATIVE_INTERFACE);

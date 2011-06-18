@@ -108,7 +108,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         //the endpoint name.
         //Connection connection = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray()).get();
 
-        IoFuture<Connection> future = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray());
+        IoFuture<Connection> future = endpoint.connect(uri, OptionMap.EMPTY, "TestUser", endpoint.getName(), "TestUserPassword".toCharArray());
         Status status = future.await(connectTimeout, TimeUnit.MILLISECONDS);
         if (status == Status.WAITING) {
             future.cancel();

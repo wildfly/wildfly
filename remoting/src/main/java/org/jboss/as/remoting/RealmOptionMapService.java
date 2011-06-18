@@ -19,15 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.http.server.security;
+package org.jboss.as.remoting;
 
-import javax.security.auth.callback.CallbackHandler;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.xnio.OptionMap;
 
 /**
- * Each server side authenticator will implement this interface to make itself
- * available as a CallbackHandler.
+ * A service to create the OptionMap based on the security realm capabilities.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface SecurityRealmAuthenticator extends CallbackHandler {
+public class RealmOptionMapService implements Service<OptionMap> {
+
+    private final InjectedValue<RealmAuthenticationProvider> realmAuthenticationProviderInjectedValue = new InjectedValue<RealmAuthenticationProvider>();
+
+    public void start(StartContext startContext) throws StartException {
+    }
+
+    public void stop(StopContext stopContext) {
+    }
+
+    public OptionMap getValue() throws IllegalStateException, IllegalArgumentException {
+        return realmAuthenticationProviderInjectedValue.getValue().getSaslOptionMap();
+    }
+
+    public InjectedValue<RealmAuthenticationProvider> getRealmAuthenticationProviderInjectedValue() {
+        return realmAuthenticationProviderInjectedValue;
+    }
 }
