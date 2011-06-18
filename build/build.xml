@@ -340,8 +340,8 @@
         </module-def>
 
         <module-def name="org.apache.xalan">
-            <maven-resource group="org.apache.xalan" artifact="serializer"/>
-            <maven-resource group="org.apache.xalan" artifact="xalan"/>
+            <maven-resource group="xalan" artifact="serializer"/>
+            <maven-resource group="xalan" artifact="xalan"/>
         </module-def>
 
         <module-def name="org.apache.xerces">
