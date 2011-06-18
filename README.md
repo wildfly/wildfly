@@ -53,15 +53,17 @@ Running the Testsuite
 The testsuite module contains several submodules including the following:
 
 * "smoke" -- core tests that should be run as part of every build of the AS. Failures here will fail the build.
-* "integration" -- the full integration testsuite. Should be run with no failures before any major commits.
+* "api" -- tests of features that involve end user use of the public JBoss AS 7 API. Should be run with no failures before any major commits.
+* "cluster" -- tests of the AS 7 HA clustering features. Should be run with no failures before any major commits.
+* "domain" -- tests of the domain management features. Should be run with no failures before any major commits.
+* "integration" -- tests of an AS 7 standalone server's internals. Should be run with no failures before any major commits.
+* "spec" -- tests of features that only involve end user use of the Java EE 6 spec APIs. Should be run with no failures before any major commits.
 * "benchmark" -- tests used to compare performance against other releases or previous builds
 * "stress" -- tests of the server's ability to perform properly while under stress 
 
 To run the basic testsuite including smoke tests from the root directory, run the build script "./build.sh" or "build.bat":
 
 For basic smoke tests, simply: "./build.sh test"
-
-For integration tests: "./build.sh test -Pintegration-tests"
 
 For benchmark tests: "./build.sh test -Pbenchmark-tests"
 
