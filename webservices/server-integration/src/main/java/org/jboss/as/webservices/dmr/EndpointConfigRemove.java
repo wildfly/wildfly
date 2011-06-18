@@ -23,8 +23,10 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
@@ -43,41 +45,29 @@ import org.jboss.wsf.spi.metadata.config.EndpointConfig;
  *
  * @author <a href="ema@redhat.com">Jim Ma</a>
  */
-public class EndpointConfigRemove implements ModelRemoveOperationHandler {
+public class EndpointConfigRemove extends AbstractRemoveStepHandler {
 
     static final EndpointConfigRemove INSTANCE = new EndpointConfigRemove();
 
-    /** {@inheritDoc} */
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    @Override
+    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        final ModelNode opAddr = operation.require(OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
-        final String name = address.getLastElement().getValue();
-        final ModelNode subModel = context.getSubModel();
-        subModel.clear();
+        ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
+        if (configService != null) {
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ServiceController<?> configService = context.getServiceRegistry().getService(WSServices.CONFIG_SERVICE);
-                    if (configService != null) {
-                        ServerConfig config = (ServerConfig) configService.getValue();
-                        EndpointConfig target = null;
-                        for (EndpointConfig epConfig : config.getEndpointConfigs()) {
-                            if (epConfig.getConfigName().equals(name)) {
-                                target = epConfig;
-                            }
-                        }
-                        if (target != null) {
-                            config.getEndpointConfigs().remove(target);
-                        }
-                    }
-                    resultHandler.handleResultComplete();
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final String name = address.getLastElement().getValue();
+
+            ServerConfig config = (ServerConfig) configService.getValue();
+            EndpointConfig target = null;
+            for (EndpointConfig epConfig : config.getEndpointConfigs()) {
+                if (epConfig.getConfigName().equals(name)) {
+                    target = epConfig;
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }
+            if (target != null) {
+                config.getEndpointConfigs().remove(target);
+            }
         }
-        return new BasicOperationResult();
     }
 }
