@@ -21,12 +21,6 @@
  */
 package org.jboss.as.osgi.service;
 
-import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
-
-import java.util.List;
-
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.logging.Logger;
@@ -54,6 +48,13 @@ import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.resolver.XModule;
 import org.jboss.osgi.resolver.XModuleIdentity;
 import org.jboss.osgi.spi.NotImplementedException;
+
+import java.util.List;
+
+import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
+import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
+import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
+import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_INFORMATION_SERVICE_PREFIX;
 
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
@@ -159,7 +160,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
             log.debugf("Remove module fom loader: %s", serviceName);
             controller.setMode(Mode.REMOVE);
         }
-        controller = serviceContainer.getService(ServiceModuleLoader.moduleInformationServiceName(identifier));
+        controller = serviceContainer.getService(getModuleInformationServiceName(identifier));
         if (controller != null) {
             controller.setMode(Mode.REMOVE);
         }
@@ -215,6 +216,10 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
 
     private ServiceName getModuleServiceName(ModuleIdentifier identifier) {
         return MODULE_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
+    }
+
+    private ServiceName getModuleInformationServiceName(ModuleIdentifier identifier) {
+        return MODULE_INFORMATION_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }
 
     @Override

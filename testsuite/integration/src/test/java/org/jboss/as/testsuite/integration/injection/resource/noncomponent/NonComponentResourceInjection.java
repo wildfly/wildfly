@@ -51,8 +51,14 @@ public class NonComponentResourceInjection {
     @PersistenceContext(unitName = "bogus")
     private EntityManager entityManager;
 
+    @PersistenceContext
+    private EntityManager entityManagerDefault;
+
     @PersistenceUnit(unitName = "bogus")
     private EntityManagerFactory entityManagerFactory;
+
+    @PersistenceUnit
+    private EntityManagerFactory entityManagerFactoryDefault;
 
     @EJB
     private NonComponentResourceInjection notReal;

@@ -29,6 +29,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.ws.common.management.AbstractServerConfig;
 import org.jboss.ws.common.management.AbstractServerConfigMBean;
+import org.jboss.wsf.spi.metadata.config.EndpointConfig;
 
 /**
  * AS specific ServerConfig.
@@ -105,5 +106,7 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
     public static ServerConfigImpl getInstance() {
         return INSTANCE;
     }
+
+
 
 }

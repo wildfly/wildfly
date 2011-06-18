@@ -351,6 +351,10 @@ public class StandaloneXml extends CommonXml {
             writeExtensions(writer, modelNode.get(EXTENSION));
         }
 
+        if (modelNode.hasDefined(SYSTEM_PROPERTY)) {
+            writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, true);
+        }
+
         if(modelNode.hasDefined(PATH)) {
             writePaths(writer, modelNode.get(PATH));
         }
@@ -360,7 +364,9 @@ public class StandaloneXml extends CommonXml {
         if (modelNode.hasDefined(MANAGEMENT_INTERFACE)) {
             writeManagementInterfaces(writer, modelNode.get(MANAGEMENT_INTERFACE));
         }
+
         writeServerProfile(writer, context);
+
         if (modelNode.hasDefined(INTERFACE)) {
             writeInterfaces(writer, modelNode.get(INTERFACE));
         }
@@ -373,10 +379,6 @@ public class StandaloneXml extends CommonXml {
             for (String group : groups) {
                 writeSocketBindingGroup(writer, modelNode.get(SOCKET_BINDING_GROUP, group), true);
             }
-        }
-
-        if (modelNode.hasDefined(SYSTEM_PROPERTY)) {
-            writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, true);
         }
 
         if (modelNode.hasDefined(DEPLOYMENT)) {

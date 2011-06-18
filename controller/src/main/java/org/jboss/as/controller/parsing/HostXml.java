@@ -104,15 +104,13 @@ public class HostXml extends CommonXml {
         writer.writeDefaultNamespace(Namespace.CURRENT.getUriString());
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
-        if (modelNode.hasDefined(EXTENSION)) {
-            writeExtensions(writer, modelNode.get(EXTENSION));
-        }
-        if (modelNode.hasDefined(PATH)) {
-            writePaths(writer, modelNode.get(PATH));
-        }
 
         if (modelNode.hasDefined(SYSTEM_PROPERTY)) {
             writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
+        }
+
+        if (modelNode.hasDefined(PATH)) {
+            writePaths(writer, modelNode.get(PATH));
         }
 
         writeManagement(writer, modelNode.get(MANAGEMENT));

@@ -33,7 +33,11 @@ enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    WEBSERVICES_1_0("urn:jboss:domain:webservices:1.0");
+    WEBSERVICES_1_0("urn:jboss:domain:webservices:1.0"),
+
+    JAVAEE("http://java.sun.com/xml/ns/javaee"),
+
+    JAXWSCONFIG("urn:jboss:jbossws-jaxws-config:4.0");
 
     /**
      * The current namespace version.

@@ -29,6 +29,7 @@ import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.LookupInjectionSource;
+import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
@@ -47,6 +48,7 @@ import org.jboss.msc.service.ServiceName;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
+import javax.persistence.spi.PersistenceUnitTransactionType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -188,7 +190,8 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
         final String unitName)
         throws DeploymentUnitProcessingException {
 
-        String scopedPuName = getScopedPuName(deploymentUnit, unitName);
+        PersistenceUnitMetadata pu = getPersistenceUnit(deploymentUnit, unitName);
+        String scopedPuName = pu.getScopedPersistenceUnitName();
         ServiceName puServiceName = getPuServiceName(scopedPuName);
         return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, EntityManagerFactory.class.getName());
     }
@@ -197,21 +200,23 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
         final DeploymentUnit deploymentUnit,
         final String unitName, PersistenceContextType type, Map properties)
         throws DeploymentUnitProcessingException {
-
-        String scopedPuName = getScopedPuName(deploymentUnit, unitName);
+        PersistenceUnitMetadata pu = getPersistenceUnit(deploymentUnit, unitName);
+        if(pu.getTransactionType() == PersistenceUnitTransactionType.RESOURCE_LOCAL) {
+            throw new DeploymentUnitProcessingException("Cannot inject RESOURCE_LOCAL entity manager " + unitName + " using " + "<persistence-context-ref>");
+        }
+        String scopedPuName = pu.getScopedPersistenceUnitName();
         ServiceName puServiceName = getPuServiceName(scopedPuName);
         return new PersistenceContextInjectionSource(type, properties, puServiceName, deploymentUnit, scopedPuName, EntityManager.class.getName());
     }
 
-    private String getScopedPuName(final DeploymentUnit deploymentUnit, final String puName)
+    private PersistenceUnitMetadata getPersistenceUnit(final DeploymentUnit deploymentUnit, final String puName)
         throws DeploymentUnitProcessingException {
 
-        String scopedPuName;
-        scopedPuName = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, puName);
-        if (null == scopedPuName) {
+        PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, puName);
+        if (null == pu) {
             throw new DeploymentUnitProcessingException("Can't find a deployment unit named " + puName + " at " + deploymentUnit);
         }
-        return scopedPuName;
+        return pu;
     }
 
     private ServiceName getPuServiceName(String scopedPuName)

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.deployers.processors;
+package org.jboss.as.ee.datasource;
 
 import org.jboss.as.ee.component.AbstractDeploymentDescriptorBindingsProcessor;
 import org.jboss.as.ee.component.BindingConfiguration;

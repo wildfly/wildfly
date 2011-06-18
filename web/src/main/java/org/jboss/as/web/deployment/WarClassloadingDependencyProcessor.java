@@ -49,7 +49,6 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
     private static final ModuleIdentifier BEAN_VALIDATION = ModuleIdentifier.create("org.hibernate.validator");
 
     private static final ModuleIdentifier JBOSS_WEB = ModuleIdentifier.create("org.jboss.as.web");
-    private static final ModuleIdentifier LOG = ModuleIdentifier.create("org.jboss.logging");
 
     static {
         Module.registerURLStreamHandlerFactoryModule(Module.forClass(WarClassloadingDependencyProcessor.class));
@@ -77,7 +76,6 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, true));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, LOG, false, false, false));
 
     }
 

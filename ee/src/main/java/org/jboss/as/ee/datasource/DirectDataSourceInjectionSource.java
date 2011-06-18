@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.deployers.processors;
+package org.jboss.as.ee.datasource;
 
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -31,12 +31,18 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Values;
 
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 /**
@@ -51,8 +57,13 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
 
     private static final Logger logger = Logger.getLogger(DirectDataSourceInjectionSource.class);
 
+    public static final ServiceName JBOSS_TXN = ServiceName.JBOSS.append("txn");
+    public static final ServiceName JBOSS_TXN_TRANSACTION_MANAGER = JBOSS_TXN.append("TransactionManager");
+    public static final ServiceName JBOSS_TXN_SYNCHRONIZATION_REGISTRY = JBOSS_TXN.append("TransactionSynchronizationRegistry");
+
     public static final String USER_PROP = "user";
     public static final String URL_PROP = "url";
+    public static final String UPPERCASE_USER_PROP = "URL";
     public static final String TRANSACTIONAL_PROP = "transactional";
     public static final String SERVER_NAME_PROP = "serverName";
     public static final String PROPERTIES_PROP = "properties";
@@ -81,7 +92,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
     private int loginTimeout = -1;
 
     private int isolationLevel = -1;
-    private boolean transactional;
+    private boolean transactional = true;
 
     private int initialPoolSize = -1;
     private int maxIdleTime = -1;
@@ -98,18 +109,42 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         final Module module = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final DeploymentReflectionIndex deploymentReflectionIndex = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 
+
         Object object;
         ClassReflectionIndex<?> classIndex;
         try {
             Class<?> clazz = module.getClassLoader().loadClass(className);
             classIndex = deploymentReflectionIndex.getClassIndex(clazz);
-            object = classIndex.getConstructor(NO_CLASSES).newInstance();
+            Constructor<?> ctor = classIndex.getConstructor(NO_CLASSES);
+            if (ctor == null) {
+                throw new DeploymentUnitProcessingException("Could not found no-arg constructor for @DataSourceDefinition class " + className);
+            }
+            object = ctor.newInstance();
+
+            setProperties(deploymentReflectionIndex, classIndex, object);
+
+
+            if (transactional) {
+
+                final ServiceController<?> syncController = phaseContext.getServiceRegistry().getService(JBOSS_TXN_SYNCHRONIZATION_REGISTRY);
+                final ServiceController<?> managerController = phaseContext.getServiceRegistry().getService(JBOSS_TXN_TRANSACTION_MANAGER);
+                if (syncController == null || managerController == null) {
+                    logger.warn("Transactional datasource " + className + " will not be enlisted in the transaction as the transaction subsystem is not available");
+                } else {
+                    try {
+                        TransactionSynchronizationRegistry transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) syncController.getValue();
+                        TransactionManager transactionManager = (TransactionManager)managerController.getValue();
+                        ProxyFactory<?> proxyFactory = new ProxyFactory(clazz);
+                        object = proxyFactory.newInstance(new DataSourceTransactionProxyHandler(object, transactionManager, transactionSynchronizationRegistry));
+                    } catch (Exception e) {
+                        logger.warn("Transactional datasource " + className + " could not be proxied and will not be enlisted in transactions automatically", e);
+                    }
+                }
+            }
+            injector.inject(new ValueManagedReferenceFactory(Values.immediateValue(object)));
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
         }
-
-        setProperties(deploymentReflectionIndex, classIndex, object);
-        injector.inject(new ValueManagedReferenceFactory(Values.immediateValue(object)));
     }
 
     @Override
@@ -121,6 +156,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
     private void setProperties(DeploymentReflectionIndex deploymentReflectionIndex, ClassReflectionIndex<?> classIndex, Object object) {
         setProperty(deploymentReflectionIndex, classIndex, object, DESCRIPTION_PROP, description);
         setProperty(deploymentReflectionIndex, classIndex, object, URL_PROP, url);
+        setProperty(deploymentReflectionIndex, classIndex, object, UPPERCASE_USER_PROP, url);
         setProperty(deploymentReflectionIndex, classIndex, object, DATABASE_NAME_PROP, databaseName);
         setProperty(deploymentReflectionIndex, classIndex, object, SERVER_NAME_PROP, serverName);
         setProperty(deploymentReflectionIndex, classIndex, object, PORT_NUMBER_PROP, Integer.valueOf(portNumber));

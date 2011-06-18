@@ -25,7 +25,6 @@ package org.jboss.as.jpa.service;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
-import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -39,8 +38,6 @@ import javax.persistence.PersistenceException;
 import javax.persistence.spi.PersistenceProvider;
 import javax.persistence.spi.PersistenceProviderResolverHolder;
 import javax.sql.DataSource;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Map;
 
@@ -64,7 +61,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
     private EntityManagerFactory entityManagerFactory;
     private PersistenceUnitMetadata pu;
 
-    public PersistenceUnitService(PersistenceUnitMetadata pu, ResourceRoot resourceRoot) {
+    public PersistenceUnitService(PersistenceUnitMetadata pu) {
         this.pu = pu;
     }
 

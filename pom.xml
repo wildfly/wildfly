@@ -105,7 +105,7 @@
         <version.org.hibernate.commons.annotations>3.2.0.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
-        <version.org.hornetq.hornetq-jms>2.2.2.Final</version.org.hornetq.hornetq-jms>
+        <version.org.hornetq.hornetq-jms>2.2.5.Final</version.org.hornetq.hornetq-jms>
         <version.org.infinispan>5.0.0.CR4_AS7</version.org.infinispan>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.arquillian.core>1.0.0.Beta2</version.org.jboss.arquillian.core>
@@ -384,6 +384,7 @@
                                             <exclude>jboss.web:jsp-api</exclude>
                                             <exclude>jboss.web:servlet-api</exclude>
                                             <exclude>net.sf.kxml:kxml2</exclude>
+                                            <exclude>org.apache.aries.jmx:org.apache.aries.jmx.api</exclude>
                                             <exclude>org.apache.maven:maven-aether-provider</exclude>
                                             <exclude>org.apache.maven:maven-settings-builder</exclude>
                                             <exclude>org.apache.maven.wagon:wagon-file</exclude>
@@ -412,6 +413,9 @@
                                             <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
                                             <exclude>org.jboss.spec.javax.resource:jboss-connector-api_1.5_spec</exclude>
                                             <exclude>org.opensaml:opensaml</exclude>
+                                            <exclude>org.ops4j.base</exclude>
+                                            <exclude>org.ops4j.pax.swissbox</exclude>
+                                            <exclude>org.ops4j.pax.web</exclude>
                                             <exclude>org.slf4j:slf4j-nop</exclude>
                                             <exclude>org.slf4j:slf4j-jdk14</exclude>
                                             <exclude>org.slf4j:slf4j-log4j12</exclude>
@@ -3100,6 +3104,10 @@
                         <artifactId>jboss-logging-spi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>trove</groupId>
+                        <artifactId>trove</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>xml-apis</groupId>
                         <artifactId>xml-apis</artifactId>
                     </exclusion>
@@ -3112,6 +3120,23 @@
                 <version>${version.org.jboss.ejb3}</version>
             </dependency>
 
+            <!-- TODO: this is not the final API -->
+            <dependency>
+                <groupId>org.jboss.ejb3</groupId>
+                <artifactId>jboss-ejb3-ext-api</artifactId>
+                <version>1.1.1</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.javaee</groupId>
+                        <artifactId>jboss-ejb-api</artifactId>
+                    </exclusion>                
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>org.jboss.ejb3.concurrency</groupId>
                 <artifactId>jboss-ejb3-concurrency-impl</artifactId>
@@ -3122,6 +3147,36 @@
                         <artifactId>jboss-logging-spi</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.concurrency</groupId>
+                <artifactId>jboss-ejb3-concurrency-spi</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.context</groupId>
+                <artifactId>jboss-ejb3-context-base</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.context</groupId>
+                <artifactId>jboss-ejb3-context-spi</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.effigy</groupId>
+                <artifactId>jboss-ejb3-effigy-api</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.effigy</groupId>
+                <artifactId>jboss-ejb3-effigy-common</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
             </dependency>
 
             <dependency>
@@ -3141,6 +3196,13 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3.tx2</groupId>
+                <artifactId>jboss-ejb3-tx2-spi</artifactId>
+                <version>${version.org.jboss.ejb3}</version>
+            </dependency>
+
 			<dependency>
                 <groupId>org.jboss.integration</groupId>
                 <artifactId>jboss-jca-spi</artifactId>
@@ -3722,6 +3784,12 @@
                 <groupId>org.jboss.osgi.http</groupId>
                 <artifactId>jboss-osgi-http</artifactId>
                 <version>${version.org.jboss.osgi.http}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.ops4j.pax.web</groupId>
+                        <artifactId>pax-web-jetty-bundle</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3770,6 +3838,12 @@
 
             <dependency>
                 <groupId>org.jboss.osgi.resolver</groupId>
+                <artifactId>jbosgi-resolver-metadata</artifactId>
+                <version>${version.org.jboss.osgi.resolver}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.osgi.resolver</groupId>
                 <artifactId>jbosgi-resolver-spi</artifactId>
                 <version>${version.org.jboss.osgi.resolver}</version>
             </dependency>
@@ -3779,6 +3853,10 @@
                 <artifactId>jbosgi-spi</artifactId>
                 <version>${version.org.jboss.osgi.spi}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.osgi.jmx</groupId>
+                        <artifactId>jboss-osgi-jmx-api</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>args4j</groupId>
                         <artifactId>args4j</artifactId>
@@ -3811,6 +3889,14 @@
                     <exclusion>
                         <groupId>javax.servlet</groupId>
                         <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.ops4j.pax.web</groupId>
+                        <artifactId>pax-web-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.ops4j.pax.web</groupId>
+                        <artifactId>pax-web-extender-war</artifactId>
                     </exclusion>
                 </exclusions>
                 <version>${version.org.jboss.osgi.webapp}</version>
@@ -4058,12 +4144,6 @@
                 <groupId>org.jboss.spec.javax.ejb</groupId>
                 <artifactId>jboss-ejb-api_3.1_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec}</version>
-                <exclusions>
-                  <exclusion>
-                    <groupId>javax.xml</groupId>
-                    <artifactId>jaxrpc-api</artifactId>
-                  </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -4917,6 +4997,12 @@
 
             <dependency>
                 <groupId>org.picketbox</groupId>
+                <artifactId>picketbox-commons</artifactId>
+                <version>${version.org.picketbox.picketbox-commons}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketbox</groupId>
                 <artifactId>picketbox-infinispan</artifactId>
                 <version>${version.org.picketbox}</version>
                 <exclusions>
@@ -4939,12 +5025,6 @@
                 </exclusions>
             </dependency>
             
-            <dependency>
-                <groupId>org.picketbox</groupId>
-                <artifactId>picketbox-commons</artifactId>
-                <version>${version.org.picketbox.picketbox-commons}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.scannotation</groupId>
                 <artifactId>scannotation</artifactId>

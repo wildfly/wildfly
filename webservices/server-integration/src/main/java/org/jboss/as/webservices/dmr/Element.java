@@ -35,10 +35,27 @@ enum Element {
     /** always the first **/
     UNKNOWN(null),
     SUBSYSTEM("subsystem"),
-    MODIFY_WSDL_ADDRESS("modify-wsdl-address"),
-    WSDL_HOST("wsdl-host"),
-    WSDL_PORT("wsdl-port"),
-    WSDL_SECURE_PORT("wsdl-secure-port");
+    MODIFY_WSDL_ADDRESS(Constants.MODIFY_WSDL_ADDRESS),
+    WSDL_HOST(Constants.WSDL_HOST),
+    WSDL_PORT(Constants.WSDL_PORT),
+    WSDL_SECURE_PORT(Constants.WSDL_SECURE_PORT),
+    ENDPOINT_CONFIG(Constants.ENDPOINT_CONFIG),
+    CONFIG_NAME(Constants.CONFIG_NAME),
+    PROPERTY(Constants.PROPERTY),
+    PROPERTY_NAME(Constants.PROPERTY_NAME),
+    PROPERTY_VALUE(Constants.PROPERTY_VALUE),
+    FEATURE(Constants.FEATURE),
+    FEATURE_NAME(Constants.FEATURE_NAME),
+    FEATURE_DATA(Constants.FEATURE_DATA),
+    PRE_HANDLER_CHAINS(Constants.PRE_HANDLER_CHAINS),
+    POST_HANDLER_CHAINS(Constants.POST_HANDLER_CHAINS),
+    HANDLER_CHAIN(Constants.HANDLER_CHAIN),
+    PROTOCOL_BINDING(Constants.PROTOCOL_BINDING),
+    SERVICE_NAME_PATTERN(Constants.SERVICE_NAME_PATTERN),
+    PORT_NAME_PATTERN(Constants.PORT_NAME_PATTERN),
+    HANDLER(Constants.HANDLER),
+    HANDLER_NAME(Constants.HANDLER_NAME),
+    HANDLER_CLASS(Constants.HANDLER_CLASS);
 
     private final String name;
 
