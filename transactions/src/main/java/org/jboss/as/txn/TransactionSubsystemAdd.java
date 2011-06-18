@@ -85,7 +85,9 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
         final String varDirPath = operation.get(CORE_ENVIRONMENT).hasDefined(PATH) ? operation.get(CORE_ENVIRONMENT).get(PATH).asString() : "var";
         final String recoveryBindingName = operation.get(RECOVERY_ENVIRONMENT).require(BINDING).asString();
         final String recoveryStatusBindingName = operation.get(RECOVERY_ENVIRONMENT).require(STATUS_BINDING).asString();
+        final boolean recoveryListener = operation.get(RECOVERY_ENVIRONMENT, RECOVERY_LISTENER).asBoolean(false);
         final boolean coordinatorEnableStatistics = operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).asBoolean(false);
+        final boolean transactionStatusManagerEnable = operation.get(COORDINATOR_ENVIRONMENT, ENABLE_TSM_STATUS).asBoolean(false);
         final ModelNode objectStore = operation.get(OBJECT_STORE);
         final String objectStorePathRef = objectStore.hasDefined(RELATIVE_TO) ? objectStore.get(RELATIVE_TO).asString() : "jboss.server.data.dir";
         final String objectStorePath = objectStore.hasDefined(PATH) ? objectStore.get(PATH).asString() : "tx-object-store";
@@ -105,7 +107,9 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
         subModel.get(CORE_ENVIRONMENT, PATH).set(operation.get(CORE_ENVIRONMENT, PATH));
         subModel.get(RECOVERY_ENVIRONMENT, BINDING).set(operation.get(RECOVERY_ENVIRONMENT).require(BINDING));
         subModel.get(RECOVERY_ENVIRONMENT, STATUS_BINDING).set(operation.get(RECOVERY_ENVIRONMENT, STATUS_BINDING));
+        subModel.get(RECOVERY_ENVIRONMENT, STATUS_BINDING).set(operation.get(RECOVERY_ENVIRONMENT, STATUS_BINDING));
         subModel.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).set(operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS));
+        subModel.get(COORDINATOR_ENVIRONMENT, ENABLE_TSM_STATUS).set(operation.get(COORDINATOR_ENVIRONMENT, ENABLE_TSM_STATUS));
         subModel.get(COORDINATOR_ENVIRONMENT, DEFAULT_TIMEOUT).set(operation.get(COORDINATOR_ENVIRONMENT, DEFAULT_TIMEOUT));
         subModel.get(OBJECT_STORE, RELATIVE_TO).set(operation.get(OBJECT_STORE, RELATIVE_TO));
         subModel.get(OBJECT_STORE, PATH).set(operation.get(OBJECT_STORE, PATH));
@@ -162,7 +166,7 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
                         .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
                         .setInitialMode(Mode.ACTIVE).install();
 
-                    final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService();
+                    final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener);
                     target.addService(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, recoveryManagerService)
                         .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, recoveryManagerService.getOrbInjector())
                         .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, recoveryManagerService.getRecoveryBindingInjector())
@@ -172,7 +176,7 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
                         .setInitialMode(Mode.ACTIVE)
                         .install();
 
-                    final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout);
+                    final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable);
                     ServiceBuilder<?> atmsBuilder = target.addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService);
                     atmsBuilder.addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector())
                         .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector())

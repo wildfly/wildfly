@@ -65,12 +65,15 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
     private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
     private ObjStoreBrowser objStoreBrowser;
 
+    private boolean transactionStatusManagerEnable;
     private boolean coordinatorEnableStatistics;
     private int coordinatorDefaultTimeout;
 
-    ArjunaTransactionManagerService(final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout) {
+    ArjunaTransactionManagerService(final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout,
+                                    final boolean transactionStatusManagerEnable) {
         this.coordinatorEnableStatistics = coordinatorEnableStatistics;
         this.coordinatorDefaultTimeout = coordinatorDefaultTimeout;
+        this.transactionStatusManagerEnable = transactionStatusManagerEnable;
     }
 
     @Override
@@ -89,6 +92,7 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
             final CoordinatorEnvironmentBean coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
             coordinatorEnvironmentBean.setEnableStatistics(coordinatorEnableStatistics);
             coordinatorEnvironmentBean.setDefaultTimeout(coordinatorDefaultTimeout);
+            coordinatorEnvironmentBean.setTransactionStatusManagerEnable(transactionStatusManagerEnable);
 
             // Object Store Browser bean
             Map<String, String> objStoreBrowserTypes = new HashMap<String, String> ();
