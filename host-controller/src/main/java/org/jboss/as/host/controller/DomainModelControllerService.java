@@ -60,7 +60,6 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
-import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.NewDomainController;
@@ -292,7 +291,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             // simple service that demands them
 
             RemotingServices.installDomainConnectorServices(serviceTarget, nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort());
-            ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME);
+            ServerToHostOperationHandlerFactoryService.install(serviceTarget, NewServerInventoryService.SERVICE_NAME);
             RemotingServices.installChannelOpenListenerService(serviceTarget, RemotingServices.SERVER_CHANNEL,
                     ServerToHostOperationHandlerFactoryService.SERVICE_NAME, null, null);
             RemotingServices.installChannelServices(serviceTarget, new NewModelControllerClientOperationHandlerFactoryService(),

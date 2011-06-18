@@ -7,7 +7,7 @@ import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Client for interacting with the master {@link DomainController} on a remote host.
+ * Client for interacting with the master {@link NewDomainController} on a remote host.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

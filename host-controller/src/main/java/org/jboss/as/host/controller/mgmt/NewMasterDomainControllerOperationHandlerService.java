@@ -23,7 +23,6 @@ package org.jboss.as.host.controller.mgmt;
 
 import org.jboss.as.controller.remote.NewAbstractModelControllerOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerFactoryService;
-import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.logging.Logger;
@@ -38,7 +37,7 @@ import org.jboss.msc.service.ServiceName;
 public class NewMasterDomainControllerOperationHandlerService extends NewAbstractModelControllerOperationHandlerFactoryService<NewMasterDomainControllerOperationHandlerImpl> {
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
-    public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(NewModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
+    public static final ServiceName SERVICE_NAME = NewDomainController.SERVICE_NAME.append(NewModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
 
     private final NewDomainController domainController;
     private final UnregisteredHostChannelRegistry registry;

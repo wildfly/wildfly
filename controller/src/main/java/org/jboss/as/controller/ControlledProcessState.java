@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicStampedReference;
 
 /**
- * The overall state of a process that is being managed by a {@link ModelController}.
+ * The overall state of a process that is being managed by a {@link NewModelController}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

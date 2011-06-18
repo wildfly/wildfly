@@ -71,7 +71,8 @@ import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 
 /**
- * Establishes the connection from a slave {@link org.jboss.as.domain.controller.DomainController} to the master {@link org.jboss.as.domain.controller.DomainController}
+ * Establishes the connection from a slave {@link org.jboss.as.domain.controller.NewDomainController} to the master
+ * {@link org.jboss.as.domain.controller.NewDomainController}
  *
  * @author Kabir Khan
  */

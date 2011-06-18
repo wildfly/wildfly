@@ -64,18 +64,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.jms.JMSServices.NodeAttribute;
 import org.jboss.dmr.ModelNode;

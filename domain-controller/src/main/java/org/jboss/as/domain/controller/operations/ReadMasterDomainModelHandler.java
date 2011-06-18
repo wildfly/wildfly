@@ -64,14 +64,17 @@ public class ReadMasterDomainModelHandler implements NewStepHandler, Description
 
 
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        //Lock the model here
-        final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+        // We're not going to update the model, but use readModelForUpdate to lock the model controller
+        final ModelNode modelClone = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).clone();  // clone
         final String hostName = operation.get(HOST).asString();
+
+        // Don't send the host tree
+        modelClone.get(HOST).clear();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME);
         op.get(OP_ADDR).setEmptyList();
-        op.get(DOMAIN_MODEL).set(model);
+        op.get(DOMAIN_MODEL).set(modelClone);
 
         //TODO get this from somewhere
         final NewProxyController proxy = registry.popChannelAndCreateProxy(hostName);

@@ -64,7 +64,7 @@ class NewServerInventoryService implements Service<NewServerInventory> {
 
     static Future<NewServerInventory> install(final ServiceTarget serviceTarget, final NewDomainController domainController, final HostControllerEnvironment environment, final NetworkInterfaceBinding interfaceBinding, final int port){
         final NewServerInventoryService inventory = new NewServerInventoryService(domainController, environment, interfaceBinding, port);
-        serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
+        serviceTarget.addService(NewServerInventoryService.SERVICE_NAME, inventory)
                 .addDependency(NewProcessControllerConnectionService.SERVICE_NAME, NewProcessControllerConnectionService.class, inventory.getClient())
                 .install();
         return inventory.futureInventory;

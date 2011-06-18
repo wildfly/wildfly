@@ -21,9 +21,6 @@
 */
 package org.jboss.as.test.surefire.xml;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-
-import javax.xml.namespace.QName;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
@@ -33,33 +30,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
-import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.controller.parsing.StandaloneXml;
-import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.persistence.XmlConfigurationPersister;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.domain.controller.DomainControllerSlaveClient;
-import org.jboss.as.domain.controller.DomainModelImpl;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -208,17 +188,18 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ModelNode loadServerModel(File file) throws Exception {
-        final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
-        final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader());
-        final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
-        final List<ModelNode> ops = persister.load();
-
-        TestServerController controller = new TestServerController(persister);
-        executeOperations(controller, ops);
-
-        ModelNode model = controller.getModel().clone();
-        persister.store(model, null);
-        return model;
+//        final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
+//        final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader());
+//        final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
+//        final List<ModelNode> ops = persister.load();
+//
+//        TestServerController controller = new TestServerController(persister);
+//        executeOperations(controller, ops);
+//
+//        ModelNode model = controller.getModel().clone();
+//        persister.store(model, null);
+//        return model;
+        throw new UnsupportedOperationException("Reimplement");
     }
 
 //    private ModelNode loadHostModel(File file) throws Exception {
@@ -258,30 +239,30 @@ public class ParseAndMarshalModelsTestCase {
 //        return model;
 //    }
 
-    private void executeOperations(ModelController controller, List<ModelNode> ops) {
-        for (final ModelNode op : ops) {
-            controller.execute(OperationBuilder.Factory.create(op).build(),
-                    new org.jboss.as.controller.ResultHandler() {
-
-                @Override
-                public void handleResultFragment(String[] location, ModelNode result) {
-                }
-
-                @Override
-                public void handleResultComplete() {
-                }
-
-                @Override
-                public void handleFailed(ModelNode failureDescription) {
-                    throw new IllegalArgumentException(op + " " + failureDescription.toString());
-                }
-
-                @Override
-                public void handleCancellation() {
-                }
-            });
-        }
-    }
+//    private void executeOperations(ModelController controller, List<ModelNode> ops) {
+//        for (final ModelNode op : ops) {
+//            controller.execute(OperationBuilder.Factory.create(op).build(),
+//                    new org.jboss.as.controller.ResultHandler() {
+//
+//                @Override
+//                public void handleResultFragment(String[] location, ModelNode result) {
+//                }
+//
+//                @Override
+//                public void handleResultComplete() {
+//                }
+//
+//                @Override
+//                public void handleFailed(ModelNode failureDescription) {
+//                    throw new IllegalArgumentException(op + " " + failureDescription.toString());
+//                }
+//
+//                @Override
+//                public void handleCancellation() {
+//                }
+//            });
+//        }
+//    }
 
     private File getOriginalStandaloneXml() {
         //Get the standalone.xml from the build/src directory, since the one in the
@@ -374,109 +355,6 @@ public class ParseAndMarshalModelsTestCase {
         try {
             closeable.close();
         } catch (IOException ignore) {
-        }
-    }
-
-    private static class TestServerController extends BasicModelController {
-
-        protected TestServerController(ExtensibleConfigurationPersister configurationPersister) {
-            super(ServerControllerModelUtil.createCoreModel(), configurationPersister, new DescriptionProvider() {
-
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    return new ModelNode();
-                }
-            });
-
-            ServerControllerModelUtil.initOperations(
-                    getRegistry(),
-                    new ContentRepository() {
-
-                        @Override
-                        public boolean hasContent(byte[] hash) {
-                            return false;
-                        }
-
-                        @Override
-                        public void removeContent(byte[] hash) {
-                            throw new RuntimeException("NYI: .removeContent");
-                        }
-
-                        @Override
-                        public byte[] addContent(InputStream stream) throws IOException {
-                            return null;
-                        }
-
-                        @Override
-                        public VirtualFile getContent(byte[] hash) {
-                            throw new RuntimeException("NYI: .getContent");
-                        }
-                    },
-                    configurationPersister, null);
-        }
-
-        @Override
-        protected ModelNode getModel() {
-            return super.getModel();
-        }
-
-        @Override
-        protected void persistConfiguration(ModelNode model,
-                ConfigurationPersisterProvider configurationPersisterFactory) {
-            // ignore
-        }
-    }
-
-    private static class TestHostController extends BasicModelController {
-
-        // TODO - This really shows these depencies need to be handled better.
-        public TestHostController(ExtensibleConfigurationPersister configurationPersister, ModelNodeRegistration rootRegistration) {
-            super(createBaseModel(), configurationPersister, rootRegistration);
-        }
-
-        static ModelNode createBaseModel() {
-            final ModelNode baseModel = new ModelNode();
-            baseModel.get(HOST);
-            return baseModel;
-        }
-
-        public ModelNode getHostModel() {
-            ModelNode model =  getModel().clone();
-
-            return model.get(HOST, "local");
-        }
-
-        @Override
-        protected void persistConfiguration(ModelNode model,
-                ConfigurationPersisterProvider configurationPersisterFactory) {
-            // ignore
-        }
-    }
-
-    private static class TestDomainController extends DomainModelImpl {
-        protected TestDomainController(ExtensibleConfigurationPersister configurationPersister, ModelNodeRegistration rootRegistration) {
-            super(rootRegistration, null, configurationPersister);
-            // Ensure the steps that would have occurred during the LocalHostAddHandler do occur.
-            setLocalHostName("local");
-            rootRegistration.registerSubModel(PathElement.pathElement(HOST, "local"),new DescriptionProvider() {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    return new ModelNode();
-                }
-            });
-
-            super.initialiseAsMasterDC(configurationPersister, MockContentRepository.INSTANCE, MockFileRepository.INSTANCE, new HashMap<String, DomainControllerSlaveClient>());
-        }
-
-        @Override
-        public ModelNode getDomainModel() {
-            return super.getDomainModel();
-        }
-
-        @Override
-        protected void persistConfiguration(ModelNode model,
-                ConfigurationPersisterProvider configurationPersisterFactory) {
-            // ignore
         }
     }
 

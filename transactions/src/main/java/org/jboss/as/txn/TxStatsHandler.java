@@ -22,27 +22,18 @@
 
 package org.jboss.as.txn;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.arjuna.ats.arjuna.coordinator.TxStats;
-import com.google.inject.internal.util.Finalizer;
-import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
-import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
-import sun.awt.geom.AreaOp;
-
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Handler;
 
 /**
  * Handler for transaction manager metrics

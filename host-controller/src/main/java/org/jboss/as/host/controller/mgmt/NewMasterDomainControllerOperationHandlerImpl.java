@@ -101,7 +101,7 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            expectHeader(input, DomainControllerProtocol.PARAM_HOST_ID);
+            expectHeader(input, NewDomainControllerProtocol.PARAM_HOST_ID);
             hostId = input.readUTF();
         }
     }
@@ -110,7 +110,7 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            expectHeader(input, DomainControllerProtocol.PARAM_HOST_ID);
+            expectHeader(input, NewDomainControllerProtocol.PARAM_HOST_ID);
             hostId = input.readUTF();
         }
 
@@ -141,10 +141,10 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
             }
 
             if (error != null) {
-                output.write(DomainControllerProtocol.PARAM_ERROR);
+                output.write(NewDomainControllerProtocol.PARAM_ERROR);
                 output.writeUTF(error);
             } else {
-                output.write(DomainControllerProtocol.PARAM_OK);
+                output.write(NewDomainControllerProtocol.PARAM_OK);
             }
         }
     }
@@ -164,21 +164,21 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
             final byte rootId;
             final String filePath;
             final FileRepository localFileRepository = domainController.getFileRepository();
-            expectHeader(input, DomainControllerProtocol.PARAM_ROOT_ID);
+            expectHeader(input, NewDomainControllerProtocol.PARAM_ROOT_ID);
             rootId = input.readByte();
-            expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
+            expectHeader(input, NewDomainControllerProtocol.PARAM_FILE_PATH);
             filePath = input.readUTF();
 
             switch (rootId) {
-                case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
+                case NewDomainControllerProtocol.PARAM_ROOT_ID_FILE: {
                     localPath = localFileRepository.getFile(filePath);
                     break;
                 }
-                case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
+                case NewDomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
                     localPath = localFileRepository.getConfigurationFile(filePath);
                     break;
                 }
-                case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
+                case NewDomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
                     byte[] hash = HashUtil.hexStringToByteArray(filePath);
                     localPath = localFileRepository.getDeploymentRoot(hash);
                     break;
@@ -191,7 +191,7 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
 
         @Override
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
-            output.writeByte(DomainControllerProtocol.PARAM_NUM_FILES);
+            output.writeByte(NewDomainControllerProtocol.PARAM_NUM_FILES);
             if (localPath == null || !localPath.exists()) {
                 output.writeInt(-1);
             } else if (localPath.isFile()) {
@@ -227,10 +227,10 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
         }
 
         private void writeFile(final File file, final FlushableDataOutput output) throws IOException {
-            output.writeByte(DomainControllerProtocol.FILE_START);
-            output.writeByte(DomainControllerProtocol.PARAM_FILE_PATH);
+            output.writeByte(NewDomainControllerProtocol.FILE_START);
+            output.writeByte(NewDomainControllerProtocol.PARAM_FILE_PATH);
             output.writeUTF(getRelativePath(localPath, file));
-            output.writeByte(DomainControllerProtocol.PARAM_FILE_SIZE);
+            output.writeByte(NewDomainControllerProtocol.PARAM_FILE_SIZE);
             output.writeLong(file.length());
             InputStream inputStream = null;
             try {
@@ -248,7 +248,7 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
                     }
                 }
             }
-            output.writeByte(DomainControllerProtocol.FILE_END);
+            output.writeByte(NewDomainControllerProtocol.FILE_END);
             output.flush();
         }
     }

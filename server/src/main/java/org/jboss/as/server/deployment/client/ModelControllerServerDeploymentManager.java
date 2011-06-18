@@ -18,30 +18,18 @@
  */
 package org.jboss.as.server.deployment.client;
 
-import java.io.InputStream;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.NewOperation;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.impl.AbstractServerDeploymentManager;
-import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link ServerDeploymentManager} the uses a {@link ModelController}.
+ * {@link ServerDeploymentManager} the uses a {@link NewModelController}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  *

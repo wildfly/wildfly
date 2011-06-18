@@ -78,7 +78,7 @@ public class NewHostControllerBootstrap {
 
         // Install the process controller client
         final NewProcessControllerConnectionService processControllerClient = new NewProcessControllerConnectionService(environment, authCode);
-        serviceTarget.addService(ProcessControllerConnectionService.SERVICE_NAME, processControllerClient).install();
+        serviceTarget.addService(NewProcessControllerConnectionService.SERVICE_NAME, processControllerClient).install();
 
         // Thread Factory and Executor Services
         final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");

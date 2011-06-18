@@ -29,13 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.server.ServerStartTask;
@@ -59,7 +54,7 @@ import org.jboss.msc.service.ServiceActivator;
  * @author Brian Stansberry
  * @author Emanuel Muckenhuber
  */
-class ManagedServer implements ModelController {
+class ManagedServer {
 
     private static final MarshallerFactory MARSHALLER_FACTORY;
     private static final MarshallingConfiguration CONFIG;
@@ -142,20 +137,6 @@ class ManagedServer implements ModelController {
 
     public void setState(ServerState state) {
         this.state = state;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(Operation operation, ResultHandler handler) {
-        // TODO use serverManagementConnection to execute the operation
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ModelNode execute(Operation operation) throws CancellationException {
-        // TODO use serverManagementConnection to execute the operation
-        return null;
     }
 
     void setServerManagementChannel(ManagementChannel serverManagementChannel) {

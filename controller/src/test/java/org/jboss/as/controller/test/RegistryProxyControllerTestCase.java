@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -62,7 +61,13 @@ public class RegistryProxyControllerTestCase {
 
     @Before
     public void setup() {
-        root = new TestController().getRegistry();
+        DescriptionProvider rootDescriptionProvider = new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(final Locale locale) {
+                return new ModelNode();
+            }
+        };
+        root = ModelNodeRegistration.Factory.create(rootDescriptionProvider);
         assertNotNull(root);
 
         profileAReg = registerSubModel(root, profileA);
@@ -226,17 +231,6 @@ public class RegistryProxyControllerTestCase {
                 return new ModelNode();
             }
         });
-    }
-
-    static class TestController extends BasicModelController {
-        public TestController() {
-            super(null);
-        }
-
-        @Override
-        protected ModelNodeRegistration getRegistry() {
-            return super.getRegistry();
-        }
     }
 
     static class TestProxyController implements NewProxyController {

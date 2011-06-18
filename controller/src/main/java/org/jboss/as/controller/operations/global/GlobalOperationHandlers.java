@@ -55,7 +55,6 @@ import java.util.TreeSet;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -66,7 +65,6 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -89,7 +87,7 @@ public class GlobalOperationHandlers {
     }
 
     /**
-     * {@link OperationHandler} reading a part of the model. The result will only contain the current attributes of a node by default,
+     * {@link NewStepHandler} reading a part of the model. The result will only contain the current attributes of a node by default,
      * excluding all addressable children and runtime attributes. Setting the request parameter "recursive" to "true" will recursively include
      * all children and configuration attributes. Non-recursive queries can include runtime attributes by setting the request parameter
      * "include-runtime" to "true".
@@ -329,7 +327,7 @@ public class GlobalOperationHandlers {
     }
 
     /**
-     * {@link OperationHandler} reading a single attribute at the given operation address. The required request parameter "name" represents the attribute name.
+     * {@link NewStepHandler} reading a single attribute at the given operation address. The required request parameter "name" represents the attribute name.
      */
     public static class ReadAttributeHandler extends AbstractMultiTargetHandler implements NewStepHandler {
 
@@ -361,7 +359,7 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * {@link OperationHandler} writing a single attribute. The required request parameter "name" represents the attribute name.
+     * {@link NewStepHandler} writing a single attribute. The required request parameter "name" represents the attribute name.
      */
     public static class WriteAttributeHandler implements NewStepHandler {
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
@@ -378,7 +376,7 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * {@link OperationHandler} querying the children names of a given "child-type".
+     * {@link NewStepHandler} querying the children names of a given "child-type".
      */
     public static class ReadChildrenNamesOperationHandler implements NewStepHandler {
 
@@ -413,7 +411,7 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * {@link OperationHandler} querying the children resources of a given "child-type".
+     * {@link NewStepHandler} querying the children resources of a given "child-type".
      */
     public static class ReadChildrenResourcesOperationHandler implements NewStepHandler {
 
@@ -528,7 +526,7 @@ public class GlobalOperationHandlers {
     }
 
     /**
-     * {@link OperationHandler} querying the child types of a given node.
+     * {@link NewStepHandler} querying the child types of a given node.
      */
     public static final NewStepHandler READ_CHILDREN_TYPES = new NewStepHandler() {
         @Override
@@ -545,7 +543,7 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * {@link OperationHandler} returning the names of the defined operations at a given model address.
+     * {@link NewStepHandler} returning the names of the defined operations at a given model address.
      */
     public static final NewStepHandler READ_OPERATION_NAMES = new NewStepHandler() {
 
@@ -571,7 +569,7 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * {@link OperationHandler} returning the type description of a single operation description.
+     * {@link NewStepHandler} returning the type description of a single operation description.
      */
     public static final NewStepHandler READ_OPERATION_DESCRIPTION = new NewStepHandler() {
 
@@ -591,7 +589,7 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * {@link OperationHandler} querying the complete type description of a given model node.
+     * {@link NewStepHandler} querying the complete type description of a given model node.
      */
     public static final NewStepHandler READ_RESOURCE_DESCRIPTION = new NewStepHandler() {
         private final ParametersValidator validator = new ParametersValidator();

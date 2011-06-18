@@ -31,7 +31,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.host.controller.HostController;
 import org.jboss.as.host.controller.NewServerInventory;
 import org.jboss.dmr.ModelNode;
 

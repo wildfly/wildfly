@@ -29,8 +29,6 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.host.controller.DomainModelProxy;
 import org.jboss.as.host.controller.NewHostModelUtil;
 import org.jboss.dmr.ModelNode;
 

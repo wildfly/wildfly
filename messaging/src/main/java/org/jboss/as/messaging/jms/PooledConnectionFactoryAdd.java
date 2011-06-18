@@ -22,23 +22,29 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.LOCAL;
+import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
+import static org.jboss.as.messaging.CommonAttributes.NONE;
+import static org.jboss.as.messaging.CommonAttributes.NO_TX;
+import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
+import static org.jboss.as.messaging.CommonAttributes.XA_TX;
+import static org.jboss.as.messaging.jms.JMSServices.CONNECTION_FACTORY_ATTRS;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
-import org.jboss.as.threads.Element;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -46,21 +52,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.LOCAL;
-import static org.jboss.as.messaging.CommonAttributes.NONE;
-import static org.jboss.as.messaging.jms.JMSServices.CONNECTION_FACTORY_ATTRS;
-import static org.jboss.as.messaging.CommonAttributes.NO_TX;
-import static org.jboss.as.messaging.CommonAttributes.XA_TX;
-import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
-import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>

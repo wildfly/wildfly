@@ -24,30 +24,14 @@ package org.jboss.as.host.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 
-import java.security.AccessController;
-import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ManagementDescription;
-import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.host.controller.HostControllerEnvironment;
-import org.jboss.as.network.NetworkInterfaceBinding;
-import org.jboss.as.server.mgmt.HttpManagementService;
-import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.threads.JBossThreadFactory;
 
 /**
  * A handler that activates the HTTP management API.
