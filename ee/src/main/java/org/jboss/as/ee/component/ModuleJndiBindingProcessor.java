@@ -21,19 +21,14 @@
  */
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.BindingHandleService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.HashMap;
@@ -46,7 +41,7 @@ import java.util.Set;
  * Processor that sets up JNDI bindings that are owned by the module. It also handles class level jndi bindings
  * that belong to components that do not have their own java:comp namespace, and class level bindings declared in
  * namespaces above java:comp.
- *
+ * <p/>
  * This processor is also responsible for throwing an exception if any ee component classes have been marked as invalid.
  *
  * @author Stuart Douglas
@@ -184,19 +179,8 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             );
             // The resource value is determined by the reference source, which may add a dependency on the original value to the binding
             bindingConfiguration.getSource().getResourceValue(resolutionContext, sourceServiceBuilder, phaseContext, service.getManagedObjectInjector());
-            ServiceContainer container = sourceServiceBuilder.install().getServiceContainer();
+            sourceServiceBuilder.install();
 
-
-            // FIXME, RESERVE NAME SO OPTIONAL DEPS DON'T FAIL
-            try {
-                BinderService binder = new BinderService(bindingName, bindingConfiguration.getSource());
-                ServiceBuilder<ManagedReferenceFactory> builder = container.addService(serviceName, binder);
-                builder.addDependency(serviceName.getParent(), NamingStore.class, binder.getNamingStoreInjector());
-                bindingConfiguration.getSource().getResourceValue(resolutionContext, builder, phaseContext, binder.getManagedObjectInjector());
-                builder.install();
-            } catch (Exception e) {
-                // EAT
-            }
         } else {
             throw new DeploymentUnitProcessingException("Binding name must not be null: " + bindingConfiguration);
         }

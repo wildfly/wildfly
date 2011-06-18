@@ -21,25 +21,26 @@
  */
 package org.jboss.as.testsuite.integration.injection.resource.enventry;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import javax.annotation.ManagedBean;
+import javax.annotation.Resource;
 
 /**
  * @author Stuart Douglas
  */
-@WebServlet(name="envEntry",urlPatterns = {"/envEntry"})
-public class EnvEntryInjectionServlet extends HttpServlet {
+@ManagedBean
+public class EnvEntryManagedBean {
 
-    private String field;
+    @Resource
+    private String nonExistantString = "hi";
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.getWriter().append(field).flush();
-        resp.getWriter().close();
+    @Resource
+    private String existingString = "hi";
+
+    public String getNonExistantString() {
+        return nonExistantString;
     }
 
+    public String getExistingString() {
+        return existingString;
+    }
 }

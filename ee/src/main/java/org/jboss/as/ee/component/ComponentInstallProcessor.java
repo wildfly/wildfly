@@ -23,10 +23,7 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.ee.naming.RootContextService;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.BindingHandleService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -35,7 +32,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -197,19 +193,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
                 ServiceBuilder<Void> serviceBuilder = serviceTarget.addService(handleServiceName, service);
                 bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
-                ServiceContainer container = serviceBuilder.install().getServiceContainer();
-
-                // FIXME, RESERVE NAME SO OPTIONAL DEPS DON'T FAIL
-                try {
-                    BinderService binder = new BinderService(bindingName, bindingConfiguration.getSource());
-                    ServiceBuilder<ManagedReferenceFactory> builder = container.addService(binderServiceName, binder);
-                    builder.addDependency(contextServiceName, NamingStore.class, binder.getNamingStoreInjector());
-                    bindingConfiguration.getSource().getResourceValue(resolutionContext, builder, phaseContext, binder.getManagedObjectInjector());
-                    builder.install();
-                } catch (Exception e) {
-                    // EAT
-                }
-
+                serviceBuilder.install();
             }
         }
     }
