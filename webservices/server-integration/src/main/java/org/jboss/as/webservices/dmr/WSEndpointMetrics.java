@@ -21,23 +21,16 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;

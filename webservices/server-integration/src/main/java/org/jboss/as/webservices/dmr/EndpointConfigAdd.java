@@ -21,21 +21,16 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import javax.xml.namespace.QName;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
@@ -46,11 +41,6 @@ import org.jboss.wsf.spi.metadata.config.EndpointConfig;
 import org.jboss.wsf.spi.metadata.config.Feature;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
-
-import javax.xml.namespace.QName;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * OperationHandler to add an endpoint configuration to {@link org.jboss.as.webservices.service.ServerConfigService ServerConfigService}

@@ -18,22 +18,15 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**

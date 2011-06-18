@@ -22,14 +22,15 @@
 
 package org.jboss.as.security;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.security.Principal;
 import java.util.Set;
-import org.jboss.as.controller.ModelQueryOperationHandler;
+
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
