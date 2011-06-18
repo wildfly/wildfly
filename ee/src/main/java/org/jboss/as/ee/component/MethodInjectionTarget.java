@@ -46,11 +46,7 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 public final class MethodInjectionTarget extends InjectionTarget {
 
     public MethodInjectionTarget(final String className, final String name, final String paramType) {
-        this(className, name, paramType, false);
-    }
-
-    public MethodInjectionTarget(final String className, final String name, final String paramType, final boolean optional) {
-        super(className, name, paramType, optional);
+        super(className, name, paramType);
     }
 
     public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
@@ -86,6 +82,6 @@ public final class MethodInjectionTarget extends InjectionTarget {
                     paramType != null ? "(" + paramType + ")" : "" +
                     " on " + className);
         }
-        return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, method, this.isOptionalInjection());
+        return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, method);
     }
 }

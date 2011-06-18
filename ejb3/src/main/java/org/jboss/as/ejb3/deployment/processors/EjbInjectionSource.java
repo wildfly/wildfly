@@ -45,6 +45,7 @@ import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
  * Implementation of {@link InjectionSource} responsible for finding a specific bean instance with a bean name and interface.
  *
  * @author John Bailey
+ * @author Stuart Douglas
  */
 public class EjbInjectionSource extends InjectionSource {
     private final String beanName;

@@ -21,18 +21,21 @@
  */
 package org.jboss.as.testsuite.integration.injection.resource.enventry;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * A test for injection via env-entry in web.xml
@@ -45,8 +48,8 @@ public class EnvEntryInjectionTestCase {
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
         war.addPackage(HttpRequest.class.getPackage());
-        war.addClasses(EnvEntryInjectionTestCase.class, EnvEntryInjectionServlet.class);
-        war.addAsWebInfResource(getWebXml(),"web.xml");
+        war.addPackage(EnvEntryInjectionTestCase.class.getPackage());
+        war.addAsWebInfResource(getWebXml(), "web.xml");
         return war;
     }
 
@@ -55,11 +58,30 @@ public class EnvEntryInjectionTestCase {
     }
 
     @Test
-    public void testEcho() throws Exception {
+    public void testEnvEntryInjectionIntoServlet() throws Exception {
         String result = performCall("envEntry");
         assertEquals("injection!", result);
     }
 
+    @Test
+    public void testEnvEntryInjectionIntoManagedBean() throws NamingException {
+        final InitialContext initialContext = new InitialContext();
+        final EnvEntryManagedBean bean = (EnvEntryManagedBean) initialContext.lookup("java:module/" + EnvEntryManagedBean.class.getName());
+        Assert.assertEquals("bye", bean.getExistingString());
+    }
+
+    @Test
+    public void testEnvEntryNonExistantManagedBean() throws NamingException {
+        final InitialContext initialContext = new InitialContext();
+        final EnvEntryManagedBean bean = (EnvEntryManagedBean) initialContext.lookup("java:module/" + EnvEntryManagedBean.class.getName());
+        Assert.assertEquals("hi", bean.getNonExistantString());
+    }
+
+    @Test(expected = NamingException.class)
+    public void testNonExistantResourceCannotBeLookedUp() throws NamingException {
+        final InitialContext initialContext = new InitialContext();
+        initialContext.lookup("java:module/env/" + EnvEntryManagedBean.class.getName() + "/nonExistantString");
+    }
 
     private static StringAsset getWebXml() {
         return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -74,9 +96,15 @@ public class EnvEntryInjectionTestCase {
                 "        <env-entry-name>foo</env-entry-name>\n" +
                 "        <env-entry-value>injection!</env-entry-value>\n" +
                 "        <injection-target>" +
-                "           <injection-target-class>"+EnvEntryInjectionServlet.class.getName()+"</injection-target-class>"+
+                "           <injection-target-class>" + EnvEntryInjectionServlet.class.getName() + "</injection-target-class>" +
                 "           <injection-target-name>field</injection-target-name>" +
                 "        </injection-target>\n" +
+                "    </env-entry>\n" +
+                "\n" +
+                "    <env-entry>\n" +
+                "        <env-entry-name>" + EnvEntryManagedBean.class.getName() + "/existingString</env-entry-name>\n" +
+                "        <env-entry-value>bye</env-entry-value>\n" +
+                "        <env-entry-type>java.lang.String</env-entry-type>\n" +
                 "    </env-entry>\n" +
                 "\n" +
                 "</web-app>");
