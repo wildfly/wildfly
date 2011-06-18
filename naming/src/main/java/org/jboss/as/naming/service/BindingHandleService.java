@@ -23,11 +23,7 @@
 package org.jboss.as.naming.service;
 
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.ManagedReferenceObjectFactory;
 import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.util.NameParser;
-import org.jboss.as.server.ServerController;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -37,14 +33,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
-import sun.net.spi.DefaultProxySelector;
-
-import javax.naming.Name;
-import javax.naming.NamingException;
-import javax.naming.Reference;
 
 /**
  * A service that represents a single combination of a jndi name and an injection source

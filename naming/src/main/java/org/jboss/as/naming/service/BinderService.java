@@ -22,7 +22,6 @@
 
 package org.jboss.as.naming.service;
 
-import org.jboss.as.controller.ControllerResource;
 import org.jboss.as.naming.ManagedReferenceObjectFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
