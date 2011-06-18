@@ -58,6 +58,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
 
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.NewCompositeOperationHandler;
@@ -150,7 +151,10 @@ public class
         return root;
     }
 
-    public static void initOperations(final ModelNodeRegistration root, final ContentRepository contentRepository, final ExtensibleConfigurationPersister extensibleConfigurationPersister, ServerEnvironment serverEnvironment) {
+    public static void initOperations(final ModelNodeRegistration root, final ContentRepository contentRepository,
+                                      final ExtensibleConfigurationPersister extensibleConfigurationPersister,
+                                      final ServerEnvironment serverEnvironment,
+                                      final ControlledProcessState processState) {
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
 
@@ -189,7 +193,7 @@ public class
         SnapshotTakeHandler snapshotTake = new SnapshotTakeHandler(extensibleConfigurationPersister);
         root.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false);
 
-        root.registerReadOnlyAttribute(ServerDescriptionConstants.SERVER_STATE, ServerStateAttributeHandler.INSTANCE, Storage.RUNTIME);
+        root.registerReadOnlyAttribute(ServerDescriptionConstants.SERVER_STATE, new ServerStateAttributeHandler(processState), Storage.RUNTIME);
         root.registerReadOnlyAttribute(ServerDescriptionConstants.PROCESS_TYPE, ProcessTypeHandler.INSTANCE, Storage.RUNTIME);
 
         // Runtime operations

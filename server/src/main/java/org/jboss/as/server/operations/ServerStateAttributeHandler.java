@@ -3,15 +3,10 @@
  */
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.ServerOperationContext;
-import org.jboss.as.server.ServerOperationHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -21,16 +16,16 @@ import org.jboss.dmr.ModelNode;
  */
 public class ServerStateAttributeHandler implements NewStepHandler {
 
-    public static final ServerStateAttributeHandler INSTANCE = new ServerStateAttributeHandler();
+    private final ControlledProcessState processState;
 
-    private ServerStateAttributeHandler() {
+    public ServerStateAttributeHandler(final ControlledProcessState processState) {
+        this.processState = processState;
     }
 
     @Override
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-        final ModelNode result = context.getResult();
-        // TODO get server state
+        context.getResult().set(processState.getState().toString());
         context.completeStep();
     }
 

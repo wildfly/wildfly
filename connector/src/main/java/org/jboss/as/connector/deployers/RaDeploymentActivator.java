@@ -25,6 +25,7 @@ package org.jboss.as.connector.deployers;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.DriverProcessor;
 import org.jboss.as.connector.deployers.processors.IronJacamarDeploymentParsingProcessor;
@@ -38,10 +39,8 @@ import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.rarepository.RaRepositoryService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
 import org.jboss.as.connector.services.ManagementRepositoryService;
-import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;

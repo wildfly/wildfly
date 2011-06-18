@@ -22,6 +22,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import javax.management.MBeanServerConnection;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -34,17 +35,15 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import javax.management.MBeanServerConnection;
-
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.ServerController;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -187,7 +186,9 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             op.get(NAME).set("server-state");
 
             ModelNode rsp = getModelControllerClient().execute(op);
-            return SUCCESS.equals(rsp.get(OUTCOME).asString()) && !ServerController.State.STARTING.toString().equals(rsp.get(RESULT).asString());
+            return SUCCESS.equals(rsp.get(OUTCOME).asString())
+                    && !ControlledProcessState.State.STARTING.toString().equals(rsp.get(RESULT).asString())
+                    && !ControlledProcessState.State.STOPPING.toString().equals(rsp.get(RESULT).asString());
         }
         catch (Exception ignored) {
             // ignore, as we will get exceptions until the management comm services start

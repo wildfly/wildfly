@@ -22,7 +22,6 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;

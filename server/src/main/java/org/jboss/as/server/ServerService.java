@@ -42,7 +42,7 @@ import org.jboss.as.server.deployment.SubDeploymentProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndexProcessor;
 import org.jboss.as.server.deployment.integration.SeamProcessor;
-import org.jboss.as.server.deployment.module.JdkDependenciesProcessor;
+import org.jboss.as.server.deployment.module.ServerDependenciesProcessor;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
@@ -96,6 +96,7 @@ public final class ServerService extends AbstractControllerService {
     private final InjectedValue<ExternalModuleService> injectedExternalModuleService = new InjectedValue<ExternalModuleService>();
     private final Bootstrap.Configuration configuration;
     private final BootstrapListener bootstrapListener;
+    private final ControlledProcessState processState;
 
     /**
      * Construct a new instance.
@@ -107,6 +108,7 @@ public final class ServerService extends AbstractControllerService {
         super(NewOperationContext.Type.SERVER, configuration.getConfigurationPersister(), processState, ServerDescriptionProviders.ROOT_PROVIDER, prepareStep);
         this.configuration = configuration;
         this.bootstrapListener = bootstrapListener;
+        this.processState = processState;
     }
 
     /**
@@ -184,7 +186,7 @@ public final class ServerService extends AbstractControllerService {
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_CLASS_PATH, new ModuleClassPathProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_EXTENSION_LIST, new ModuleExtensionListProcessor()));
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SUB_DEPLOYMENTS, new SubDeploymentDependencyProcessor()));
-        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_JDK, new JdkDependenciesProcessor()));
+        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_JDK, new ServerDependenciesProcessor()));
         deployers.get(Phase.CONFIGURE_MODULE).add(new RegisteredProcessor(Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor()));
         deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_INSTALL_EXTENSION, new ModuleExtensionNameProcessor()));
         deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_REFLECTION_INDEX, new InstallReflectionIndexProcessor()));
@@ -250,6 +252,7 @@ public final class ServerService extends AbstractControllerService {
 
     @Override
     protected void initModel(ModelNodeRegistration rootRegistration) {
-        ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(), configuration.getConfigurationPersister(), configuration.getServerEnvironment());
+        ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(),
+                configuration.getConfigurationPersister(), configuration.getServerEnvironment(), processState);
     }
 }

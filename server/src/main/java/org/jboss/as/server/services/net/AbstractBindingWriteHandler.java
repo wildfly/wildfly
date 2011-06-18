@@ -31,8 +31,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.network.SocketBinding;
-import org.jboss.as.network.SocketBindingManager;
-import org.jboss.as.server.ServerOperationContext;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;

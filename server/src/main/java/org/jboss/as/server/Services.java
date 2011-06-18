@@ -42,7 +42,7 @@ public final class Services {
     public static final ServiceName JBOSS_AS = ServiceName.JBOSS.append("as");
 
     /**
-     * The service corresponding to the {@link ServerController} for this instance.
+     * The service corresponding to the {@link org.jboss.as.controller.NewModelController} for this instance.
      */
     public static final ServiceName JBOSS_SERVER_CONTROLLER = JBOSS_AS.append("server-controller");
 
