@@ -23,7 +23,7 @@ package org.jboss.as.clustering.jgroups;
 
 import java.util.Map;
 
-import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.as.network.SocketBinding;
 
 /**
  * Defines the configuration of a JGroups protocol.
