@@ -22,7 +22,6 @@
 
 package org.jboss.as.server.deployment.module;
 
-import com.google.inject.internal.util.Iterables;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -48,8 +47,6 @@ import org.jboss.msc.value.ImmediateValue;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -145,7 +142,12 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         for (ModuleDependency dependency : moduleSpecification.getSystemDependencies()) {
             deps.add(dependency.getIdentifier());
         }
-
+        for (ModuleDependency dependency : moduleSpecification.getUserDependencies()) {
+            deps.add(dependency.getIdentifier());
+        }
+        for (ModuleDependency dependency : moduleSpecification.getLocalDependencies()) {
+            deps.add(dependency.getIdentifier());
+        }
         for (final ModuleSpecification depInfo : phaseContext.getAttachmentList(Attachments.MODULE_DEPENDENCY_INFORMATION)) {
             for (ModuleDependency dependency : depInfo.getSystemDependencies()) {
                 if (deps.contains(dependency)) {
@@ -280,16 +282,16 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
     private static void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource)
             throws DeploymentUnitProcessingException {
         try {
-            if(resource.getExportFilters().isEmpty()) {
-            specBuilder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(new VFSResourceLoader(resource
-                    .getRootName(), resource.getRoot())));
+            if (resource.getExportFilters().isEmpty()) {
+                specBuilder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(new VFSResourceLoader(resource
+                        .getRootName(), resource.getRoot())));
             } else {
                 final MultiplePathFilterBuilder filterBuilder = PathFilters.multiplePathFilterBuilder(true);
-                for(FilterSpecification filter : resource.getExportFilters()) {
+                for (FilterSpecification filter : resource.getExportFilters()) {
                     filterBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
                 }
                 specBuilder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(new VFSResourceLoader(resource
-                    .getRootName(), resource.getRoot()), filterBuilder.create()));
+                        .getRootName(), resource.getRoot()), filterBuilder.create()));
             }
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root ["
