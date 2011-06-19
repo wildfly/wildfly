@@ -58,6 +58,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFutureTask;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xnio.IoUtils;
 /**
@@ -81,7 +82,7 @@ public class RemoteProxyControllerProtocolTestCase {
         channels.shutdownRemoting();
     }
 
-    @Test
+    @Test @Ignore("OperationMessageHandlerProxy turned off temporarily")
     public void testOperationMessageHandler() throws Exception {
         final MockModelController controller = new MockModelController() {
             @Override

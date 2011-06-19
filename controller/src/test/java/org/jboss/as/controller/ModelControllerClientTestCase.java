@@ -49,6 +49,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xnio.IoUtils;
 /**
@@ -72,7 +73,7 @@ public class ModelControllerClientTestCase {
         channels.shutdownRemoting();
     }
 
-    @Test
+    @Test @Ignore("OperationMessageHandlerProxy turned off temporarily")
     public void testSynchronousOperationMessageHandler() throws Exception {
         ManagementChannel serverChannel = channels.getServerChannel();
         ManagementChannel clientChannel = channels.getClientChannel();
@@ -202,7 +203,7 @@ public class ModelControllerClientTestCase {
         }
     }
 
-    @Test
+    @Test @Ignore("OperationMessageHandlerProxy turned off temporarily")
     public void testAsynchronousOperationWithMessageHandler() throws Exception {
         ManagementChannel serverChannel = channels.getServerChannel();
         ManagementChannel clientChannel = channels.getClientChannel();

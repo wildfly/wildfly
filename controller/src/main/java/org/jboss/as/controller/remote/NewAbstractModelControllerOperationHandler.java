@@ -80,6 +80,13 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
 
         @Override
         public void handleReport(final MessageSeverity severity, final String message) {
+
+            //TEMPORARILY DISABLE THE OPERATION MESSAGE HANDLER STUFF
+            // Once reenabbled un-@Ignore tests in ModelControllerClientTestCase and RemoteProxyControllerProtocolTestCase
+            if (true) {
+                return;
+            }
+
             try {
                 //Invoke this synchronously so that the messages appear in the right order on the
                 //remote caller
