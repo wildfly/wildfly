@@ -72,7 +72,8 @@ public class ChannelServer implements Closeable {
         SimpleServerAuthenticationProvider provider = new SimpleServerAuthenticationProvider();
         //There is currently a probable bug in jboss remoting, so the user realm name MUST be the same as
         //the endpoint name.
-        provider.addUser("bob", configuration.getEndpointName(), "pass".toCharArray());
+
+        provider.addUser("TestUser", configuration.getEndpointName(), "TestUserPassword".toCharArray());
         //ChannelListener<AcceptingChannel<ConnectedStreamChannel>> serverListener = networkServerProvider.getServerListener(OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("DIGEST-MD5")), provider);
         System.out.println(configuration.getBindAddress());
         //AcceptingChannel<? extends ConnectedStreamChannel> streamServer = xnio.createStreamServer(configuration.getBindAddress(), connectionChannelThread, serverListener, OptionMap.EMPTY);
