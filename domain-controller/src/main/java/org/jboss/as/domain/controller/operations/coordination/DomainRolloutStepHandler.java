@@ -202,7 +202,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
                             }
                         }
                     }
-                    // TODO this seems a bitconvoluted. It's already an executor service thread calling this method
+                    // TODO this seems a bit convoluted. It's already an executor service thread calling this method
                     // But now we use another thread to actually make the invocation, so the first can read
                     // the result and decide how it fits in the overall rollout plan
                     ProxyTask task = new ProxyTask(server.getHostName(), operation, context, proxy);
@@ -234,7 +234,12 @@ public class DomainRolloutStepHandler implements NewStepHandler {
             NewRolloutPlanController.Result planResult = rolloutPlanController.execute();
             System.out.println("Rollout plan result is " + planResult);
             if (planResult == NewRolloutPlanController.Result.FAILED) {
-                domainOperationContext.setCompleteRollback(true);
+                domainOperationContext.setFailedOnAllHosts(true);
+                // AS7-801 -- we need to record a failure description here so the local host change gets aborted
+                // Waiting to do it in the DomainFinalResultHandler on the way out is too late
+                // Create the result node first so the server results will end up before the failure stuff
+                context.getResult();
+                context.getFailureDescription().set("Operation failed or was rolled back on all servers.");
             }
         }
     }

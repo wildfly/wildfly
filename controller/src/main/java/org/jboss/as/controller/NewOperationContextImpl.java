@@ -542,7 +542,8 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage == null || currentStage == Stage.DONE) {
             throw new IllegalStateException("Operation already complete");
         }
-        return new DelegatingImmutableModelNodeRegistration(modelController.getRootRegistration().getSubModel(address));
+        ImmutableModelNodeRegistration delegate = modelController.getRootRegistration().getSubModel(address);
+        return delegate == null ? null : new DelegatingImmutableModelNodeRegistration(delegate);
     }
 
     public ServiceRegistry getServiceRegistry(final boolean modify) throws UnsupportedOperationException {

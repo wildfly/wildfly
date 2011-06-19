@@ -92,7 +92,10 @@ public class DomainFinalResultHandler implements NewStepHandler {
     }
 
     private boolean collectContextFailure(NewOperationContext context, final boolean isDomain) {
-        if (context.hasFailureDescription()) {
+        // We ignore a context failure description if the request failed on all servers, as the
+        // DomainRolloutStepHandler would have had to set that to trigger model rollback
+        // but we still want to record the server results so the user can see the problem
+        if (!domainOperationContext.isFailedOnAllHosts() && context.hasFailureDescription()) {
             ModelNode formattedFailure = new ModelNode();
             if (isDomain) {
                 ModelNode failure = context.getFailureDescription();

@@ -46,8 +46,7 @@ public class DomainOperationContext {
     private final ConcurrentMap<ServerIdentity, ModelNode> serverResults = new ConcurrentHashMap<ServerIdentity, ModelNode>();
     private final Map<String, Boolean> serverGroupStatuses = new ConcurrentHashMap<String, Boolean>();
     private boolean completeRollback = true;
-    private boolean executedOnLocalHost = false;
-    private boolean executedOnAllHosts = false;
+    private boolean failedOnAllHosts;
 
     public DomainOperationContext(final LocalHostControllerInfo localHostInfo) {
         this.localHostInfo = localHostInfo;
@@ -94,7 +93,6 @@ public class DomainOperationContext {
         serverGroupStatuses.put(serverGroup, Boolean.valueOf(rollback));
     }
 
-
     public boolean hasHostLevelFailures() {
         boolean domainFailed = coordinatorResult.isDefined() && coordinatorResult.has(FAILURE_DESCRIPTION);
         if (domainFailed) {
@@ -106,5 +104,16 @@ public class DomainOperationContext {
             }
         }
         return false;
+    }
+
+    public boolean isFailedOnAllHosts() {
+        return failedOnAllHosts;
+    }
+
+    public void setFailedOnAllHosts(boolean failedOnAllHosts) {
+        this.failedOnAllHosts = failedOnAllHosts;
+        if (failedOnAllHosts) {
+            setCompleteRollback(true);
+        }
     }
 }

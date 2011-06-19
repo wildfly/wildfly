@@ -34,6 +34,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
@@ -50,9 +51,11 @@ import org.jboss.dmr.ModelNode;
 public class OperationRouting {
 
     public static OperationRouting determineRouting(final ModelNode operation, final LocalHostControllerInfo localHostControllerInfo,
-                                                    final ImmutableModelNodeRegistration registry) {
-        System.out.println("Finding routing for " + operation.require(OP).asString() + " from " +
-                            operation.get(OP_ADDR));
+                                                    final ImmutableModelNodeRegistration registry)
+                                                        throws OperationFailedException {
+
+        checkNull(operation, registry);
+
         OperationRouting routing = null;
 
         String targetHost = null;
@@ -67,6 +70,7 @@ public class OperationRouting {
 
         if (targetHost != null) {
             Set<OperationEntry.Flag> flags = registry.getOperationFlags(PathAddress.EMPTY_ADDRESS, operation.require(OP).asString());
+            checkNull(operation, flags);
             if(flags.contains(OperationEntry.Flag.READ_ONLY)) {
                 routing =  new OperationRouting(targetHost, false);
             }
@@ -92,6 +96,7 @@ public class OperationRouting {
         }
         else {
             Set<OperationEntry.Flag> flags = registry.getOperationFlags(PathAddress.EMPTY_ADDRESS, operation.require(OP).asString());
+            checkNull(operation, flags);
             if (flags.contains(OperationEntry.Flag.READ_ONLY)) {
                 // Direct read of domain model
                 routing = new OperationRouting(localHostControllerInfo.getLocalHostName(), false);
@@ -135,6 +140,15 @@ public class OperationRouting {
             }
         }
         return routing;
+
+    }
+
+    private static void checkNull(final ModelNode operation, final Object toCheck) throws OperationFailedException {
+        if (toCheck == null) {
+            String msg = String.format("No handler for %s at address %s", operation.require(OP).asString(),
+                                        PathAddress.pathAddress(operation.get(OP_ADDR)));
+            throw new OperationFailedException(new ModelNode().set(msg));
+        }
 
     }
 
