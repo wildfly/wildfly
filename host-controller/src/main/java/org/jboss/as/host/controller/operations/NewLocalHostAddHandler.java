@@ -22,6 +22,8 @@
 package org.jboss.as.host.controller.operations;
 
 import org.jboss.as.controller.PathElement;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
@@ -71,8 +73,9 @@ public class NewLocalHostAddHandler implements NewStepHandler, DescriptionProvid
         final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         NewHostModelUtil.initCoreModel(model);
 
-        // Create the empty security realms resource
+        // Create the empty managmeent security resources
         context.createResource(PathAddress.pathAddress(PathElement.pathElement(MANAGEMENT, SECURITY_REALMS)));
+        context.createResource(PathAddress.pathAddress(PathElement.pathElement(MANAGEMENT, CONNECTIONS)));
 
         final String localHostName = operation.require(NAME).asString();
         model.get(NAME).set(localHostName);

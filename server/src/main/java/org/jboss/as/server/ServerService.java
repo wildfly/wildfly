@@ -256,5 +256,6 @@ public final class ServerService extends AbstractControllerService {
 
         // TODO maybe make creating of empty nodes part of the MNR description
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.MANAGEMENT, ModelDescriptionConstants.SECURITY_REALMS), Resource.Factory.create());
+        rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.MANAGEMENT, ModelDescriptionConstants.CONNECTIONS), Resource.Factory.create());
     }
 }
