@@ -22,7 +22,6 @@
 package org.jboss.as.web.deployment;
 
 import org.apache.catalina.Context;
-import org.apache.catalina.Host;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;

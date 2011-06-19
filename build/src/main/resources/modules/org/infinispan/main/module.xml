@@ -33,7 +33,6 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.marshalling.river" services="import"/>
-        <module name="org.jgroups"/>
-        
+        <module name="org.jgroups" optional="true"/>
     </dependencies>
 </module>

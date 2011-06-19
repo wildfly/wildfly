@@ -186,6 +186,7 @@
                 <module>spec</module>
                 <module>integration</module>
                 <module>domain</module>
+                <module>clustering</module>
             </modules>
         </profile>
 

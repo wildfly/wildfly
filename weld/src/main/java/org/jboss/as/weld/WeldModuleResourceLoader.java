@@ -49,11 +49,11 @@ public class WeldModuleResourceLoader implements ResourceLoader {
     /**
      * Additional classes that have been added to the bean archive by the container or by a portable extension
      */
-    private final Map<String, Class<?>> additionalClasses;
+    private final Map<String, Class<?>> classes;
 
     public WeldModuleResourceLoader(Module module) {
         this.module = module;
-        this.additionalClasses = new ConcurrentHashMap<String, Class<?>>();
+        this.classes = new ConcurrentHashMap<String, Class<?>>();
     }
 
     /**
@@ -64,8 +64,8 @@ public class WeldModuleResourceLoader implements ResourceLoader {
     @Override
     public Class<?> classForName(String name) {
         try {
-            if (additionalClasses.containsKey(name)) {
-                return additionalClasses.get(name);
+            if (classes.containsKey(name)) {
+                return classes.get(name);
             }
             final Class<?> clazz = module.getClassLoader().loadClass(name);
             //TODO: this is a temporary workaround for an issue with weld
@@ -84,6 +84,7 @@ public class WeldModuleResourceLoader implements ResourceLoader {
                 c.getDeclaredAnnotations();
                 c = c.getSuperclass();
             }
+            classes.put(name, clazz);
             return clazz;
         } catch (NoClassDefFoundError e) {
             throw new ResourceLoadingException(e);
@@ -95,7 +96,7 @@ public class WeldModuleResourceLoader implements ResourceLoader {
     }
 
     public void addAdditionalClass(Class<?> clazz) {
-        this.additionalClasses.put(clazz.getName(), clazz);
+        this.classes.put(clazz.getName(), clazz);
     }
 
     /**

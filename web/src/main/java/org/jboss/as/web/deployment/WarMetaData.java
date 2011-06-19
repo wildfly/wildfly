@@ -41,52 +41,52 @@ public class WarMetaData {
     /**
      * jboss-web.xml metadata.
      */
-    private JBossWebMetaData jbossWebMetaData;
+    private volatile JBossWebMetaData jbossWebMetaData;
 
     /**
      * Main web.xml metadata.
      */
-    private WebMetaData webMetaData;
+    private volatile WebMetaData webMetaData;
 
     /**
      * Shared web.xml metadata.
      */
-    private WebMetaData sharedWebMetaData;
+    private volatile WebMetaData sharedWebMetaData;
 
     /**
      * Web fragments metadata.
      */
-    private Map<String, WebFragmentMetaData> webFragmentsMetaData;
+    private volatile Map<String, WebFragmentMetaData> webFragmentsMetaData;
 
     /**
      * Annotations metadata.
      */
-    private Map<String, WebMetaData> annotationsMetaData;
+    private volatile Map<String, WebMetaData> annotationsMetaData;
 
     /**
      * Order.
      */
-    private List<String> order;
+    private volatile List<String> order;
 
     /**
      * No order flag.
      */
-    private boolean noOrder = false;
+    private volatile boolean noOrder = false;
 
     /**
      * Overlays.
      */
-    private Set<VirtualFile> overlays;
+    private volatile Set<VirtualFile> overlays;
 
     /**
      * SCIs.
      */
-    private Map<String, VirtualFile> scis;
+    private volatile Map<String, VirtualFile> scis;
 
     /**
      * Final merged metadata.
      */
-    private JBossWebMetaData mergedJBossWebMetaData;
+    private volatile JBossWebMetaData mergedJBossWebMetaData;
 
     public JBossWebMetaData getJbossWebMetaData() {
         return jbossWebMetaData;
