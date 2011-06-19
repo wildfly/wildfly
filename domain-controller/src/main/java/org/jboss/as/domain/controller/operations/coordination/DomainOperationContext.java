@@ -46,7 +46,7 @@ public class DomainOperationContext {
     private final ConcurrentMap<ServerIdentity, ModelNode> serverResults = new ConcurrentHashMap<ServerIdentity, ModelNode>();
     private final Map<String, Boolean> serverGroupStatuses = new ConcurrentHashMap<String, Boolean>();
     private boolean completeRollback = true;
-    private boolean failedOnAllHosts;
+    private boolean failureReported;
 
     public DomainOperationContext(final LocalHostControllerInfo localHostInfo) {
         this.localHostInfo = localHostInfo;
@@ -106,14 +106,11 @@ public class DomainOperationContext {
         return false;
     }
 
-    public boolean isFailedOnAllHosts() {
-        return failedOnAllHosts;
+    public boolean isFailureReported() {
+        return failureReported;
     }
 
-    public void setFailedOnAllHosts(boolean failedOnAllHosts) {
-        this.failedOnAllHosts = failedOnAllHosts;
-        if (failedOnAllHosts) {
-            setCompleteRollback(true);
-        }
+    public void setFailureReported(boolean failureReported) {
+        this.failureReported = failureReported;
     }
 }

@@ -234,12 +234,13 @@ public class DomainRolloutStepHandler implements NewStepHandler {
             NewRolloutPlanController.Result planResult = rolloutPlanController.execute();
             System.out.println("Rollout plan result is " + planResult);
             if (planResult == NewRolloutPlanController.Result.FAILED) {
-                domainOperationContext.setFailedOnAllHosts(true);
+                domainOperationContext.setCompleteRollback(true);
                 // AS7-801 -- we need to record a failure description here so the local host change gets aborted
                 // Waiting to do it in the DomainFinalResultHandler on the way out is too late
                 // Create the result node first so the server results will end up before the failure stuff
                 context.getResult();
                 context.getFailureDescription().set("Operation failed or was rolled back on all servers.");
+                domainOperationContext.setFailureReported(true);
             }
         }
     }
@@ -358,6 +359,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         }
         if (domainFailure != null) {
             context.getFailureDescription().get(DOMAIN_FAILURE_DESCRIPTION).set(domainFailure);
+            domainOperationContext.setFailureReported(true);
             return true;
         }
         return false;
@@ -387,6 +389,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
 
         if (hostFailureResults != null) {
             context.getFailureDescription().get(HOST_FAILURE_DESCRIPTIONS).set(hostFailureResults);
+            domainOperationContext.setFailureReported(true);
             return true;
         }
         return false;

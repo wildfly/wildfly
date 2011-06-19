@@ -30,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 
 import java.util.HashMap;
@@ -95,7 +94,7 @@ public class DomainFinalResultHandler implements NewStepHandler {
         // We ignore a context failure description if the request failed on all servers, as the
         // DomainRolloutStepHandler would have had to set that to trigger model rollback
         // but we still want to record the server results so the user can see the problem
-        if (!domainOperationContext.isFailedOnAllHosts() && context.hasFailureDescription()) {
+        if (!domainOperationContext.isFailureReported() && context.hasFailureDescription()) {
             ModelNode formattedFailure = new ModelNode();
             if (isDomain) {
                 ModelNode failure = context.getFailureDescription();
