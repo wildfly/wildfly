@@ -27,6 +27,8 @@ import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -251,5 +253,8 @@ public final class ServerService extends AbstractControllerService {
         ServerControllerModelUtil.updateCoreModel(rootResource.getModel());
         ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(),
                 configuration.getConfigurationPersister(), configuration.getServerEnvironment(), processState);
+
+        // TODO maybe make creating of empty nodes part of the MNR description
+        rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.MANAGEMENT, ModelDescriptionConstants.SECURITY_REALMS), Resource.Factory.create());
     }
 }

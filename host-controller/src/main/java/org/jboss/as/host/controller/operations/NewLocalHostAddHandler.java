@@ -21,6 +21,8 @@
  */
 package org.jboss.as.host.controller.operations;
 
+import org.jboss.as.controller.PathElement;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
 import java.util.Locale;
@@ -29,6 +31,7 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALMS;
 import org.jboss.as.host.controller.NewHostModelUtil;
 import org.jboss.dmr.ModelNode;
 
@@ -67,6 +70,9 @@ public class NewLocalHostAddHandler implements NewStepHandler, DescriptionProvid
 
         final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         NewHostModelUtil.initCoreModel(model);
+
+        // Create the empty security realms resource
+        context.createResource(PathAddress.pathAddress(PathElement.pathElement(MANAGEMENT, SECURITY_REALMS)));
 
         final String localHostName = operation.require(NAME).asString();
         model.get(NAME).set(localHostName);
