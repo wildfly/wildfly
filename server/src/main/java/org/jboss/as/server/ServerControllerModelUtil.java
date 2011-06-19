@@ -139,6 +139,11 @@ public class
 
     public static ModelNode createCoreModel() {
         ModelNode root = new ModelNode();
+        updateCoreModel(root);
+        return root;
+    }
+
+    public static void updateCoreModel(final ModelNode root) {
         root.get(NAMESPACES).setEmptyList();
         root.get(SCHEMA_LOCATIONS).setEmptyList();
         root.get(NAME);
@@ -153,7 +158,6 @@ public class
         root.get(INTERFACE);
         root.get(SOCKET_BINDING_GROUP);
         root.get(DEPLOYMENT);
-        return root;
     }
 
     public static void initOperations(final ModelNodeRegistration root, final ContentRepository contentRepository,

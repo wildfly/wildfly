@@ -144,6 +144,10 @@ class NewModelControllerImpl implements NewModelController {
         bootingFlag.set(false);
     }
 
+    Resource getRootResource() {
+        return modelReference.get();
+    }
+
     ModelNodeRegistration getRootRegistration() {
         return rootRegistration;
     }

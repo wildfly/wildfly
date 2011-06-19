@@ -32,6 +32,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
@@ -41,9 +42,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
-import org.omg.CORBA.INITIALIZE;
 
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -114,11 +113,7 @@ public abstract class AbstractControllerTestBase {
             }
         }
 
-        protected ModelNode createCoreModel() {
-            return new ModelNode();
-        }
-
-        protected void initModel(ModelNodeRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
             try {
                 AbstractControllerTestBase.this.initModel(rootRegistration);
             } catch(Exception e) {

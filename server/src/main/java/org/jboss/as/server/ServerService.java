@@ -29,6 +29,7 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeployerChainsService;
@@ -246,12 +247,8 @@ public final class ServerService extends AbstractControllerService {
     }
 
     @Override
-    protected ModelNode createCoreModel() {
-        return ServerControllerModelUtil.createCoreModel();
-    }
-
-    @Override
-    protected void initModel(ModelNodeRegistration rootRegistration) {
+    protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+        ServerControllerModelUtil.updateCoreModel(rootResource.getModel());
         ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(),
                 configuration.getConfigurationPersister(), configuration.getServerEnvironment(), processState);
     }

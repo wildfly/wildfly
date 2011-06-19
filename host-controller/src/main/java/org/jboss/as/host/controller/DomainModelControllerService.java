@@ -58,6 +58,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
 import org.jboss.as.domain.controller.FileRepository;
@@ -229,14 +230,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    protected ModelNode createCoreModel() {
-        final ModelNode coreModel = new ModelNode();
-        NewDomainModelUtil.updateCoreModel(coreModel);
-        return coreModel;
-    }
-
-    @Override
-    protected void initModel(ModelNodeRegistration rootRegistration) {
+    protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+        NewDomainModelUtil.updateCoreModel(rootResource.getModel());
         NewHostModelUtil.createHostRegistry(rootRegistration, configurationPersister, environment, localFileRepository,
                 hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, this, this);
         this.modelNodeRegistration = rootRegistration;
