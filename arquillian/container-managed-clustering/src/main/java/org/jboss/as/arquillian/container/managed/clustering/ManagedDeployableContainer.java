@@ -129,6 +129,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 //            cmd.add("-server-config");
 //            cmd.add(jbossHomeDir + "/standalone/configuration/clustering-standalone.xml");
             cmd.add("org.jboss.as.standalone");
+            cmd.add("-Djava.net.preferIPv4Stack=true");
 
             log.info("Starting container with: " + cmd.toString());
             ProcessBuilder processBuilder = new ProcessBuilder(cmd);
