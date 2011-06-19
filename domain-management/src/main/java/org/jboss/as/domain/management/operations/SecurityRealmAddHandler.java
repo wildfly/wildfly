@@ -75,6 +75,11 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         }
     }
 
+    @Override
+    protected boolean requiresRuntime(NewOperationContext context) {
+        return context.getType() == NewOperationContext.Type.SERVER || context.getType() == NewOperationContext.Type.HOST;
+    }
+
     protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String realmName = address.getLastElement().getValue();

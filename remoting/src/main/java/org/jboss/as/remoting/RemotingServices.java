@@ -174,8 +174,9 @@ public final class RemotingServices {
      */
     public static void installDomainConnectorServices(ServiceTarget serviceTarget,
             final NetworkInterfaceBinding networkInterfaceBinding,
-            final int port) {
-        installConnectorServices(serviceTarget, null, networkInterfaceBinding, port, null, null, null);
+            final int port,
+            final ServiceName securityRealmName) {
+        installConnectorServices(serviceTarget, null, networkInterfaceBinding, port, securityRealmName, null, null);
     }
 
     /**
