@@ -144,10 +144,10 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             //Connection connection = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray()).get();
 
             IoFuture<Connection> future = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray());
-            Status status = future.await(1000, TimeUnit.MILLISECONDS);
+            Status status = future.await(2000, TimeUnit.MILLISECONDS);
             if (status == Status.WAITING) {
                 future.cancel();
-                throw new ConnectException("Could not connect to remote server at " + uri);
+                throw new ConnectException("Could not connect to remote server at " + uri + " within 2 seconds");
             }
             this.connection = future.get();
             return connection;
