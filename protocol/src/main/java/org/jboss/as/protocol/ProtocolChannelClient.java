@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,20 +37,14 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
-import org.xnio.BufferAllocator;
-import org.xnio.Buffers;
-import org.xnio.ChannelThreadPool;
-import org.xnio.ChannelThreadPools;
-import org.xnio.ConnectionChannelThread;
 import org.xnio.IoFuture;
 import org.xnio.IoFuture.Status;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
-import org.xnio.Pool;
-import org.xnio.ReadChannelThread;
-import org.xnio.WriteChannelThread;
+import org.xnio.Options;
 import org.xnio.Xnio;
 
 /**
@@ -62,42 +55,36 @@ import org.xnio.Xnio;
 public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeable {
     private final boolean startedEndpoint;
     private final Endpoint endpoint;
+    private final Registration providerRegistration;
     private final URI uri;
-    private final ReadChannelThread readChannelThread;
-    private final WriteChannelThread writeChannelThread;
-    private final ConnectionChannelThread connectionChannelThread;
     private final ProtocolChannelFactory<T> channelFactory;
     private volatile Connection connection;
     private final Set<T> channels = Collections.synchronizedSet(new HashSet<T>());
 
-    private ProtocolChannelClient(final Endpoint endpoint,
-            final URI uri,
-            final ProtocolChannelFactory<T> channelFactory) {
-        this(false, endpoint, uri, null, null, null, channelFactory);
-    }
+//    private ProtocolChannelClient(final Endpoint endpoint,
+//            final URI uri,
+//            final ProtocolChannelFactory<T> channelFactory) {
+//        this(false, endpoint, uri, channelFactory);
+//    }
 
-    private ProtocolChannelClient(final Endpoint endpoint,
-            final URI uri,
-            final ReadChannelThread readChannelThread,
-            final WriteChannelThread writeChannelThread,
-            final ConnectionChannelThread connectionChannelThread,
-            final ProtocolChannelFactory<T> channelFactory) {
-        this(true, endpoint, uri, readChannelThread, writeChannelThread, connectionChannelThread, channelFactory);
-    }
+//    private ProtocolChannelClient(final Endpoint endpoint,
+//            final URI uri,
+//            final ReadChannelThread readChannelThread,
+//            final WriteChannelThread writeChannelThread,
+//            final ConnectionChannelThread connectionChannelThread,
+//            final ProtocolChannelFactory<T> channelFactory) {
+//        this(true, endpoint, uri, readChannelThread, writeChannelThread, connectionChannelThread, channelFactory);
+//    }
 
     private ProtocolChannelClient(final boolean startedEndpoint,
             final Endpoint endpoint,
+            final Registration providerRegistration,
             final URI uri,
-            final ReadChannelThread readChannelThread,
-            final WriteChannelThread writeChannelThread,
-            final ConnectionChannelThread connectionChannelThread,
             final ProtocolChannelFactory<T> channelFactory) {
         this.startedEndpoint = startedEndpoint;
         this.endpoint = endpoint;
+        this.providerRegistration = providerRegistration;
         this.uri = uri;
-        this.readChannelThread = readChannelThread;
-        this.writeChannelThread = writeChannelThread;
-        this.connectionChannelThread = connectionChannelThread;
         this.channelFactory = channelFactory;
     }
 
@@ -110,7 +97,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         final Endpoint endpoint;
         if (configuration.getEndpoint() != null) {
             endpoint = configuration.getEndpoint();
-            return new ProtocolChannelClient<T>(endpoint, configuration.getUri(), configuration.getChannelFactory());
+            return new ProtocolChannelClient<T>(false, endpoint, null, configuration.getUri(), configuration.getChannelFactory());
         } else {
             endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getExecutor(), configuration.getOptionMap());
             Xnio xnio;
@@ -119,17 +106,9 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             } catch (ModuleLoadException e) {
                 throw new RuntimeException(e);
             }
-            final ReadChannelThread readChannelThread = xnio.createReadChannelThread(configuration.getGroup(), OptionMap.EMPTY);
-            final WriteChannelThread writeChannelThread = xnio.createWriteChannelThread(configuration.getGroup(), OptionMap.EMPTY);
-            final ConnectionChannelThread connectionChannelThread = xnio.createReadChannelThread(configuration.getGroup(), OptionMap.EMPTY);
 
-            final ChannelThreadPool<ReadChannelThread> readPool = ChannelThreadPools.singleton(readChannelThread);
-            final ChannelThreadPool<WriteChannelThread> writePool = ChannelThreadPools.singleton(writeChannelThread);
-            final ChannelThreadPool<ConnectionChannelThread> connectionPool = ChannelThreadPools.singleton(connectionChannelThread);
-            final Pool<ByteBuffer> bufferPool = Buffers.allocatedBufferPool(BufferAllocator.BYTE_BUFFER_ALLOCATOR, 8192);
-
-            endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(xnio, bufferPool, readPool, writePool, connectionPool));
-            return new ProtocolChannelClient<T>(endpoint, configuration.getUri(), readChannelThread, writeChannelThread, connectionChannelThread, configuration.getChannelFactory());
+            Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
+            return new ProtocolChannelClient<T>(true, endpoint, providerRegistration, configuration.getUri(), configuration.getChannelFactory());
         }
     }
 
@@ -182,12 +161,9 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         }
 
         IoUtils.safeClose(connection);
-
         if (startedEndpoint) {
+            IoUtils.safeClose(providerRegistration);
             IoUtils.safeClose(endpoint);
-            readChannelThread.shutdown();
-            writeChannelThread.shutdown();
-            connectionChannelThread.shutdown();
         }
     }
 

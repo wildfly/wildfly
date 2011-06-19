@@ -40,10 +40,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.security.SimpleServerAuthenticationProvider;
-import org.xnio.ChannelListener;
 import org.xnio.OptionMap;
-import org.xnio.Options;
-import org.xnio.Sequence;
 
 /**
  * Utility class to add remoting services
@@ -242,27 +239,29 @@ public final class RemotingServices {
         final SimpleServerAuthenticationProvider provider = new SimpleServerAuthenticationProvider();
         provider.addUser("bob", RemotingServices.ENDPOINT.getSimpleName(), "pass".toCharArray());
 
-        final ConnectorService connectorService = new ConnectorService();
-        //TODO replace these options with something better
-        connectorService.setOptionMap(OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("DIGEST-MD5")));
-
-        ServiceBuilder<?> builder = serviceTarget.addService(RemotingServices.connectorServiceName(MANAGEMENT_CHANNEL), connectorService)
-            .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
-            .addInjection(connectorService.getAuthenticationProviderInjector(), provider)
-            .setInitialMode(Mode.ACTIVE);
-        addController(newControllers, verificationHandler, builder);
+//        final ConnectorService connectorService = new ConnectorService();
+//        //TODO replace these options with something better
+//        connectorService.setOptionMap(OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("DIGEST-MD5")));
+//
+//        ServiceBuilder<?> builder = serviceTarget.addService(RemotingServices.connectorServiceName(MANAGEMENT_CHANNEL), connectorService)
+//            .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
+//            .addInjection(connectorService.getAuthenticationProviderInjector(), provider)
+//            .setInitialMode(Mode.ACTIVE);
+//        addController(newControllers, verificationHandler, builder);
 
         if(networkInterfaceBindingName != null) {
             final InjectedNetworkBindingStreamServerService streamServerService = new InjectedNetworkBindingStreamServerService(port);
-            builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
-                .addDependency(RemotingServices.connectorServiceName(MANAGEMENT_CHANNEL), ChannelListener.class, streamServerService.getConnectorInjector())
+            ServiceBuilder<?> builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
+                .addInjection(streamServerService.getAuthenticationProviderInjector(), provider)
+                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, streamServerService.getEndpointInjector())
                 .addDependency(networkInterfaceBindingName, NetworkInterfaceBinding.class, streamServerService.getInterfaceBindingInjector())
                 .setInitialMode(Mode.ACTIVE);
             addController(newControllers, verificationHandler, builder);
         } else {
             final NetworkBindingStreamServerService streamServerService = new NetworkBindingStreamServerService(networkInterfaceBinding, port);
-            builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
-                .addDependency(RemotingServices.connectorServiceName(MANAGEMENT_CHANNEL), ChannelListener.class, streamServerService.getConnectorInjector())
+            ServiceBuilder<?> builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
+                .addInjection(streamServerService.getAuthenticationProviderInjector(), provider)
+                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, streamServerService.getEndpointInjector())
                 .setInitialMode(Mode.ACTIVE);
             addController(newControllers, verificationHandler, builder);
         }

@@ -22,7 +22,6 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
 import static org.jboss.as.remoting.CommonAttributes.INCLUDE_MECHANISMS;
@@ -48,16 +47,10 @@ import java.util.Set;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistryException;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.security.ServerAuthenticationProvider;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Sequence;
@@ -88,28 +81,28 @@ public class ConnectorAdd extends AbstractAddStepHandler implements DescriptionP
     }
 
     protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        final ServiceTarget target = context.getServiceTarget();
-
-        final ConnectorService connectorService = new ConnectorService();
-        connectorService.setOptionMap(createOptionMap(operation));
-
-        // Register the service with the container and inject dependencies.
-        final ServiceName connectorName = RemotingServices.connectorServiceName(name);
-        try {
-            newControllers.add(target.addService(connectorName, connectorService)
-                    .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
-                    .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
-                    .addListener(verificationHandler)
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install());
-
-            // TODO create XNIO connector service from socket-binding, with dependency on connectorName
-        } catch (ServiceRegistryException e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+//        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+//        final String name = address.getLastElement().getValue();
+//
+//        final ServiceTarget target = context.getServiceTarget();
+//
+//        final ConnectorService connectorService = new ConnectorService();
+//        connectorService.setOptionMap(createOptionMap(operation));
+//
+//        // Register the service with the container and inject dependencies.
+//        final ServiceName connectorName = RemotingServices.connectorServiceName(name);
+//        try {
+//            newControllers.add(target.addService(connectorName, connectorService)
+//                    .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
+//                    .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
+//                    .addListener(verificationHandler)
+//                    .setInitialMode(ServiceController.Mode.ACTIVE)
+//                    .install());
+//
+//            // TODO create XNIO connector service from socket-binding, with dependency on connectorName
+//        } catch (ServiceRegistryException e) {
+//            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+//        }
 
     }
 

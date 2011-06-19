@@ -24,7 +24,6 @@ package org.jboss.as.remoting;
 
 import static org.xnio.IoUtils.safeClose;
 
-import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
 import org.jboss.msc.inject.Injector;
@@ -34,17 +33,11 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
-import org.xnio.BufferAllocator;
-import org.xnio.Buffers;
-import org.xnio.ChannelThreadPool;
-import org.xnio.ChannelThreadPools;
-import org.xnio.ConnectionChannelThread;
 import org.xnio.OptionMap;
-import org.xnio.Pool;
-import org.xnio.ReadChannelThread;
-import org.xnio.WriteChannelThread;
+import org.xnio.Options;
 import org.xnio.Xnio;
 
 /**
@@ -55,6 +48,7 @@ import org.xnio.Xnio;
 public final class EndpointService implements Service<Endpoint> {
     private Endpoint endpoint;
     private OptionMap optionMap;
+    private Registration providerRegistration;
 
     private final InjectedValue<Executor> executor = new InjectedValue<Executor>();
 
@@ -72,17 +66,8 @@ public final class EndpointService implements Service<Endpoint> {
         try {
             endpoint = Remoting.createEndpoint("endpoint", executor.getValue(), optionMap);
             Xnio xnio = XnioUtil.getXnio();
-            final ReadChannelThread readChannelThread = xnio.createReadChannelThread(new ThreadGroup("Remoting Read Threads"), OptionMap.EMPTY);
-            final WriteChannelThread writeChannelThread = xnio.createWriteChannelThread(new ThreadGroup("Remoting Write Threads"), OptionMap.EMPTY);
-            final ConnectionChannelThread connectionChannelThread = xnio.createReadChannelThread(new ThreadGroup("Remoting Connection Threads"), OptionMap.EMPTY);
 
-            final ChannelThreadPool<ReadChannelThread> readPool = ChannelThreadPools.singleton(readChannelThread);
-            final ChannelThreadPool<WriteChannelThread> writePool = ChannelThreadPools.singleton(writeChannelThread);
-            final ChannelThreadPool<ConnectionChannelThread> connectionPool = ChannelThreadPools.singleton(connectionChannelThread);
-            final Pool<ByteBuffer> bufferPool = Buffers.allocatedBufferPool(BufferAllocator.BYTE_BUFFER_ALLOCATOR, 8192);
-
-            //Should this happen only once, or once for each connector?
-            endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio, bufferPool, readPool, writePool, connectionPool));
+            providerRegistration = endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
 
         } catch (Exception e) {
             throw new StartException("Failed to start service", e);
@@ -91,6 +76,7 @@ public final class EndpointService implements Service<Endpoint> {
 
     /** {@inheritDoc} */
     public synchronized void stop(final StopContext context) {
+        safeClose(providerRegistration);
         safeClose(endpoint);
     }
 
