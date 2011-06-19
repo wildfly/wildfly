@@ -83,7 +83,7 @@ public class HostControllerConnectionService implements Service<ManagementChanne
         }
 
         try {
-            client.connect();
+            client.connect(null);
             channel = client.openChannel(RemotingServices.SERVER_CHANNEL);
             channel.startReceiving();
         } catch (IOException e) {

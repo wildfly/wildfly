@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.client;
 
+import javax.security.auth.callback.CallbackHandler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -123,7 +124,7 @@ public interface ModelControllerClient extends Closeable {
             return new AbstractModelControllerClient() {
                 @Override
                 protected ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException {
-                    return ManagementClientChannelStrategy.create(address.getHostName(), port, executor, this);
+                    return ManagementClientChannelStrategy.create(address.getHostName(), port, executor, this, null);
                 }
             };
         }
@@ -141,7 +142,26 @@ public interface ModelControllerClient extends Closeable {
             return new AbstractModelControllerClient() {
                 @Override
                 protected ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException {
-                    return ManagementClientChannelStrategy.create(hostName, port, executor, this);
+                    return ManagementClientChannelStrategy.create(hostName, port, executor, this, null);
+                }
+            };
+        }
+
+        /**
+         * Create a client instance for a remote address and port and CallbackHandler.
+         *
+         * @param hostName the remote host
+         * @param port     the port
+         * @param handler  CallbackHandler to obtain authentication information for the call.
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static ModelControllerClient create(final String hostName, final int port, final CallbackHandler handler) throws UnknownHostException {
+            //return new ModelControllerClient(hostName, port, handler);
+            return new AbstractModelControllerClient() {
+                @Override
+                protected ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException {
+                    return ManagementClientChannelStrategy.create(hostName, port, executor, this, handler);
                 }
             };
         }

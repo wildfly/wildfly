@@ -21,6 +21,13 @@
  */
 package org.jboss.as.cli;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.RealmCallback;
+import javax.security.sasl.RealmChoiceCallback;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -641,7 +648,8 @@ public class CommandLineMain {
             }
 
             try {
-                ModelControllerClient newClient = ModelControllerClient.Factory.create(host, port);
+                CallbackHandler cbh = new AuthenticationCallbackHandler();
+                ModelControllerClient newClient = ModelControllerClient.Factory.create(host, port, cbh);
                 if(this.client != null) {
                     disconnectController();
                 }
@@ -835,6 +843,51 @@ public class CommandLineMain {
         @Override
         public boolean isDomainMode() {
             return domainMode;
+        }
+
+        private class AuthenticationCallbackHandler implements CallbackHandler {
+
+            // TODO - For some reason this is getting called 5 times so cache the values for the 4 later calls.
+
+            private boolean realmShown = false;
+
+            private String userName = null;
+            private char[] password = null;
+
+            public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                for (Callback current : callbacks) {
+                    if (current instanceof RealmCallback) {
+                        RealmCallback rcb = (RealmCallback) current;
+                        String defaultText = rcb.getDefaultText();
+                        rcb.setText(defaultText); // For now just use the realm suggested.
+                        if (realmShown == false) {
+                            realmShown = true;
+                            printLine("Authenticating against security realm: " + defaultText);
+                        }
+                    } else if (current instanceof RealmChoiceCallback) {
+                        throw new UnsupportedCallbackException(current, "Realm choice not currently supported.");
+                    } else if (current instanceof NameCallback) {
+                        NameCallback ncb = (NameCallback) current;
+                        if (userName == null) {
+                            userName = console.readLine("Username:");
+                        }
+                        ncb.setName(userName);
+                    } else if (current instanceof PasswordCallback) {
+                        PasswordCallback pcb = (PasswordCallback) current;
+                        if (password == null) {
+                            String temp = console.readLine("Password:", '*');
+                            if (temp != null) {
+                                password = temp.toCharArray();
+                            }
+                        }
+                        pcb.setPassword(password);
+                    } else {
+                        printLine("Unexpected Callback " + current.getClass().getName());
+                        throw new UnsupportedCallbackException(current);
+                    }
+                }
+            }
+
         }
 
         private class HistoryImpl implements CommandHistory {

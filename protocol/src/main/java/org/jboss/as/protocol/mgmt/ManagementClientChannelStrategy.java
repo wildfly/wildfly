@@ -21,6 +21,7 @@
 */
 package org.jboss.as.protocol.mgmt;
 
+import javax.security.auth.callback.CallbackHandler;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
@@ -47,8 +48,8 @@ public abstract class ManagementClientChannelStrategy {
         return new Existing(channel);
     }
 
-    public static ManagementClientChannelStrategy create(String hostName, int port, final ExecutorService executorService, final ManagementOperationHandler handler) throws URISyntaxException, IOException {
-        ManagementClientChannelStrategy strategy = new EstablishingWithNewEndpoint(hostName, port, executorService, handler);
+    public static ManagementClientChannelStrategy create(String hostName, int port, final ExecutorService executorService, final ManagementOperationHandler handler, final CallbackHandler cbHandler) throws URISyntaxException, IOException {
+        ManagementClientChannelStrategy strategy = new EstablishingWithNewEndpoint(hostName, port, executorService, handler, cbHandler);
         //Make sure the other end is alive
         try {
             strategy.getChannel();
@@ -58,8 +59,8 @@ public abstract class ManagementClientChannelStrategy {
         return strategy;
     }
 
-    public static ManagementClientChannelStrategy create(String hostName, int port, final Endpoint endpoint, final ManagementOperationHandler handler) throws URISyntaxException, IOException {
-        ManagementClientChannelStrategy strategy = new EstablishingWithExistingEndpoint(hostName, port, endpoint, handler);
+    public static ManagementClientChannelStrategy create(String hostName, int port, final Endpoint endpoint, final ManagementOperationHandler handler, final CallbackHandler cbHandler) throws URISyntaxException, IOException {
+        ManagementClientChannelStrategy strategy = new EstablishingWithExistingEndpoint(hostName, port, endpoint, handler, cbHandler);
         //Make sure the other end is alive
         try {
             strategy.getChannel();
@@ -95,11 +96,13 @@ public abstract class ManagementClientChannelStrategy {
         private final ManagementOperationHandler handler;
         private volatile ProtocolChannelClient<ManagementChannel> client;
         private volatile ManagementChannel channel;
+        private final CallbackHandler callbackHandler;
 
-        public Establishing(String hostName, int port, final ManagementOperationHandler handler) {
+        public Establishing(String hostName, int port, final ManagementOperationHandler handler, final CallbackHandler callbackHandler) {
             this.hostName = hostName;
             this.port = port;
             this.handler = handler;
+            this.callbackHandler = callbackHandler;
         }
 
         @Override
@@ -114,11 +117,10 @@ public abstract class ManagementClientChannelStrategy {
                 throw new RuntimeException(e);
             }
 
-
             boolean ok = false;
             try {
                 try {
-                    client.connect();
+                    client.connect(callbackHandler);
                 } catch (ConnectException e) {
                     throw new ConnectException("Could not connect to " + configuration.getUri() + " in " + configuration.getConnectTimeout() + "ms. " +
                               "Consider setting a longer timeout by setting -D" + CONNECT_TIME_OUT_PROPERTY + "=<timeout in ms>.");
@@ -147,9 +149,10 @@ public abstract class ManagementClientChannelStrategy {
     private static class EstablishingWithNewEndpoint extends Establishing {
         private final ExecutorService executorService;
 
-        public EstablishingWithNewEndpoint(String hostName, int port, ExecutorService executorService, ManagementOperationHandler handler) {
-            super(hostName, port, handler);
+        public EstablishingWithNewEndpoint(String hostName, int port, ExecutorService executorService, ManagementOperationHandler handler, CallbackHandler cbHandler) {
+            super(hostName, port, handler, cbHandler);
             this.executorService = executorService;
+
         }
 
         @Override
@@ -164,8 +167,8 @@ public abstract class ManagementClientChannelStrategy {
     private static class EstablishingWithExistingEndpoint extends Establishing {
         private final Endpoint endpoint;
 
-        public EstablishingWithExistingEndpoint(String hostName, int port, Endpoint endpoint, ManagementOperationHandler handler) {
-            super(hostName, port, handler);
+        public EstablishingWithExistingEndpoint(String hostName, int port, Endpoint endpoint, ManagementOperationHandler handler, CallbackHandler cbHandler) {
+            super(hostName, port, handler, cbHandler);
             this.endpoint = endpoint;
         }
 

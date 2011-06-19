@@ -168,7 +168,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
             throw new RuntimeException(e);
         }
         try {
-            client.connect();
+            client.connect(null);
             this.channelClient = client;
 
             if (connected.get()) {

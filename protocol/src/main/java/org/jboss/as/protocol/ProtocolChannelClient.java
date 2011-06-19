@@ -21,6 +21,8 @@
  */
 package org.jboss.as.protocol;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -96,7 +98,8 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         }
     }
 
-    public Connection connect() throws IOException {
+
+    public Connection connect(CallbackHandler handler) throws IOException {
         if (closed) {
             throw new IllegalStateException("Closed this client");
         }
@@ -108,7 +111,14 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         //the endpoint name.
         //Connection connection = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray()).get();
 
-        IoFuture<Connection> future = endpoint.connect(uri, OptionMap.EMPTY, "TestUser", endpoint.getName(), "TestUserPassword".toCharArray());
+        IoFuture<Connection> future;
+        if (handler != null) {
+            future = endpoint.connect(uri, OptionMap.EMPTY, handler);
+        } else {
+            // TODO - Remove temporary hard coded value once all clients can supply a CallbackHandler.
+            future = endpoint.connect(uri, OptionMap.EMPTY, "TestUser", endpoint.getName(), "TestUserPassword".toCharArray());
+        }
+        // TODO - Re-evaluate timeouts - clients need time to enter their details but this extends the time for clients where we know this info in advance.
         Status status = future.await(connectTimeout, TimeUnit.MILLISECONDS);
         if (status == Status.WAITING) {
             future.cancel();

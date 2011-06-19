@@ -101,7 +101,7 @@ public class RemoteChannelPairSetup {
         configuration.setChannelFactory(new ManagementChannelFactory());
 
         ProtocolChannelClient <ManagementChannel>client = ProtocolChannelClient.create(configuration);
-        client.connect();
+        client.connect(null);
         clientChannel = client.openChannel(TEST_CHANNEL);
         try {
             clientConnectedLatch.await();

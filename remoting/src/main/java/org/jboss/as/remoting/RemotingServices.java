@@ -282,6 +282,7 @@ public final class RemotingServices {
             final InjectedNetworkBindingStreamServerService streamServerService = new InjectedNetworkBindingStreamServerService(port);
             builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
                     .addDependency(AUTHENTICATION_PROVIDER, ServerAuthenticationProvider.class, streamServerService.getAuthenticationProviderInjector())
+                    .addDependency(OPTION_MAP,OptionMap.class,streamServerService.getOptionMapInjectedValue())
                     .addDependency(RemotingServices.ENDPOINT, Endpoint.class, streamServerService.getEndpointInjector())
                     .addDependency(networkInterfaceBindingName, NetworkInterfaceBinding.class, streamServerService.getInterfaceBindingInjector())
                     .setInitialMode(ACTIVE);
@@ -290,6 +291,7 @@ public final class RemotingServices {
             final NetworkBindingStreamServerService streamServerService = new NetworkBindingStreamServerService(networkInterfaceBinding, port);
             builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
                     .addDependency(AUTHENTICATION_PROVIDER, ServerAuthenticationProvider.class, streamServerService.getAuthenticationProviderInjector())
+                    .addDependency(OPTION_MAP,OptionMap.class,streamServerService.getOptionMapInjectedValue())
                     .addDependency(RemotingServices.ENDPOINT, Endpoint.class, streamServerService.getEndpointInjector())
                     .setInitialMode(ACTIVE);
             addController(newControllers, verificationHandler, builder);
