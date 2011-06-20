@@ -22,46 +22,41 @@
 
 package org.jboss.as.txn;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import org.jboss.as.server.AbstractDeploymentChainStep;
-import org.jboss.as.server.DeploymentProcessorTarget;
-import org.jboss.as.server.deployment.Phase;
-import static org.jboss.as.txn.CommonAttributes.BINDING;
-import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
-import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
-import static org.jboss.as.txn.CommonAttributes.DEFAULT_TIMEOUT;
-import static org.jboss.as.txn.CommonAttributes.ENABLE_STATISTICS;
-import static org.jboss.as.txn.CommonAttributes.ENABLE_TSM_STATUS;
-import static org.jboss.as.txn.CommonAttributes.NODE_IDENTIFIER;
-import static org.jboss.as.txn.CommonAttributes.OBJECT_STORE;
-import static org.jboss.as.txn.CommonAttributes.PROCESS_ID;
-import static org.jboss.as.txn.CommonAttributes.RECOVERY_ENVIRONMENT;
-import static org.jboss.as.txn.CommonAttributes.RECOVERY_LISTENER;
-import static org.jboss.as.txn.CommonAttributes.SOCKET_PROCESS_ID_MAX_PORTS;
-import static org.jboss.as.txn.CommonAttributes.STATUS_BINDING;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.inject.InjectionException;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.tm.JBossXATerminator;
 import org.omg.CORBA.ORB;
+
+import javax.transaction.TransactionSynchronizationRegistry;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.txn.CommonAttributes.*;
 
 
 /**
@@ -218,6 +213,41 @@ class TransactionSubsystemAdd implements NewStepHandler {
                             controllers.add(target.addService(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, new UserTransactionRegistryService())
                                     .addListener(verificationHandler).setInitialMode(Mode.ACTIVE).install());
                             controllers.add(TransactionSynchronizationRegistryService.addService(target, verificationHandler));
+
+                            //bind the TransactionManger and the TSR into JNDI
+                            final BinderService tmBinderService = new BinderService("java:jboss/TransactionManager");
+                            final ServiceBuilder<ManagedReferenceFactory> tmBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmBinderService);
+                            tmBuilder.addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("java:jboss/TransactionManager"));
+                            tmBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, tmBinderService.getNamingStoreInjector());
+                            tmBuilder.addDependency(TransactionManagerService.SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
+                                @Override
+                                public void inject(final javax.transaction.TransactionManager value) throws InjectionException {
+                                    tmBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
+                                }
+
+                                @Override
+                                public void uninject() {
+                                    tmBinderService.getNamingStoreInjector().uninject();
+                                }
+                            });
+                            tmBuilder.install();
+
+                            final BinderService tsrBinderService = new BinderService("java:jboss/TransactionSynchronizationRegistry");
+                            final ServiceBuilder<ManagedReferenceFactory> tsrBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionSynchronizationRegistry"), tsrBinderService);
+                            tsrBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, tsrBinderService.getNamingStoreInjector());
+                            tsrBuilder.addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("java:jboss/TransactionSynchronizationRegistry"));
+                            tsrBuilder.addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, new Injector<TransactionSynchronizationRegistry>() {
+                                @Override
+                                public void inject(final TransactionSynchronizationRegistry value) throws InjectionException {
+                                    tsrBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
+                                }
+
+                                @Override
+                                public void uninject() {
+                                    tsrBinderService.getNamingStoreInjector().uninject();
+                                }
+                            });
+                            tsrBuilder.install();
 
                             //we need to initialize this class when we have the correct TCCL set
                             //so we force it to be initialized here
