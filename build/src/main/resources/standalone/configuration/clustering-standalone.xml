@@ -166,6 +166,7 @@
                     <uuid />
                 </process-id>
             </core-environment>
+            <coordinator-environment default-timeout="300"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jca:1.0">
             <archive-validation enabled="false" />

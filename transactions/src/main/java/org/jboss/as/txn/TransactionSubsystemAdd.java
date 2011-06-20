@@ -121,7 +121,7 @@ class TransactionSubsystemAdd implements NewStepHandler {
         subModel.get(RECOVERY_ENVIRONMENT, RECOVERY_LISTENER).set(operation.get(RECOVERY_ENVIRONMENT, RECOVERY_LISTENER));
         subModel.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).set(operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS));
         subModel.get(COORDINATOR_ENVIRONMENT, ENABLE_TSM_STATUS).set(operation.get(COORDINATOR_ENVIRONMENT, ENABLE_TSM_STATUS));
-        subModel.get(COORDINATOR_ENVIRONMENT, DEFAULT_TIMEOUT).set(operation.get(COORDINATOR_ENVIRONMENT, DEFAULT_TIMEOUT));
+        subModel.get(COORDINATOR_ENVIRONMENT, DEFAULT_TIMEOUT).set(coordinatorDefaultTimeout);  // store the default so we write it -- TODO store all the defaults
         subModel.get(OBJECT_STORE, RELATIVE_TO).set(operation.get(OBJECT_STORE, RELATIVE_TO));
         subModel.get(OBJECT_STORE,PATH).set(operation.get(OBJECT_STORE, PATH));
 
