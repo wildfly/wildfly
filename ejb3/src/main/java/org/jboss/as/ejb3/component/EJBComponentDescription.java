@@ -478,9 +478,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return denyAllApplicableClasses.contains(className);
     }
 
-    public void addRolesAllowedOnAllViewsForClass(final String className, final Collection<String> roles) {
+    public void setRolesAllowedOnAllViewsForClass(final String className, final Set<String> roles) {
         if (className == null || className.trim().isEmpty()) {
             throw new IllegalArgumentException("Classname cannot be null or empty: " + className);
+        }
+        if (roles == null) {
+            throw new IllegalArgumentException("Cannot set null roles for class " + className);
         }
         for (final ViewDescription view : this.getViews()) {
             Map<String, Set<String>> perViewRoles = this.classLevelRolesAllowed.get(view.getViewClassName());
@@ -488,37 +491,38 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 perViewRoles = new HashMap<String, Set<String>>();
                 this.classLevelRolesAllowed.put(view.getViewClassName(), perViewRoles);
             }
-            Set<String> perClassRoles = perViewRoles.get(className);
-            if (perClassRoles == null) {
-                perClassRoles = new HashSet<String>();
-                perViewRoles.put(className, perClassRoles);
-            }
-            perClassRoles.addAll(roles);
+            // set the roles for the classname
+            perViewRoles.put(className, roles);
         }
     }
 
-    public void addRolesAllowedForAllMethodsOfAllViews(final Collection<String> roles) {
+    public void setRolesAllowedForAllMethodsOfAllViews(final Set<String> roles) {
         // "All methods" implies a class level @RolesAllowed (a.k.a security-role)
-        this.addRolesAllowedOnAllViewsForClass(this.getEJBClassName(), roles);
+        this.setRolesAllowedOnAllViewsForClass(this.getEJBClassName(), roles);
     }
 
-    public void addRolesAllowedOnAllViewsForMethod(final EJBMethodIdentifier ejbMethodIdentifier, final Collection<String> roles) {
+    public void setRolesAllowedOnAllViewsForMethod(final EJBMethodIdentifier ejbMethodIdentifier, final Set<String> roles) {
+        if (ejbMethodIdentifier == null) {
+            throw new IllegalArgumentException("EJB method identifier cannot be null while setting roles on method");
+        }
+        if (roles == null) {
+            throw new IllegalArgumentException("Roles cannot be null while setting roles on method: " + ejbMethodIdentifier);
+        }
         for (final ViewDescription view : this.getViews()) {
             Map<EJBMethodIdentifier, Set<String>> perViewMethodRoles = this.methodLevelRolesAllowed.get(view.getViewClassName());
             if (perViewMethodRoles == null) {
                 perViewMethodRoles = new HashMap<EJBMethodIdentifier, Set<String>>();
                 this.methodLevelRolesAllowed.put(view.getViewClassName(), perViewMethodRoles);
             }
-            Set<String> perMethodRoles = perViewMethodRoles.get(ejbMethodIdentifier);
-            if (perMethodRoles == null) {
-                perMethodRoles = new HashSet<String>();
-                perViewMethodRoles.put(ejbMethodIdentifier, perMethodRoles);
-            }
-            perMethodRoles.addAll(roles);
+            // set the roles on the method
+            perViewMethodRoles.put(ejbMethodIdentifier, roles);
         }
     }
 
-    public void addRolesAllowedForAllMethodsOnViewType(final MethodIntf viewType, final Collection<String> roles) {
+    public void setRolesAllowedForAllMethodsOnViewType(final MethodIntf viewType, final Set<String> roles) {
+        if (roles == null) {
+            throw new IllegalArgumentException("Roles cannot be null while setting roles on view type: " + viewType);
+        }
         // find the right view(s) to apply the @RolesAllowed
         for (final ViewDescription view : this.getViews()) {
             // shouldn't really happen
@@ -536,17 +540,20 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 perViewRoles = new HashMap<String, Set<String>>();
                 this.classLevelRolesAllowed.put(view.getViewClassName(), perViewRoles);
             }
-            Set<String> perClassRoles = perViewRoles.get(view.getViewClassName());
-            if (perClassRoles == null) {
-                perClassRoles = new HashSet<String>();
-                perViewRoles.put(view.getViewClassName(), perClassRoles);
-            }
-            perClassRoles.addAll(roles);
+            // set the roles for the view class
+            perViewRoles.put(view.getViewClassName(), roles);
 
         }
     }
 
-    public void addRolesAllowedForMethodOnViewType(final MethodIntf viewType, final EJBMethodIdentifier ejbMethodIdentifier, final Collection<String> roles) {
+    public void setRolesAllowedForMethodOnViewType(final MethodIntf viewType, final EJBMethodIdentifier ejbMethodIdentifier, final Set<String> roles) {
+        if (ejbMethodIdentifier == null) {
+            throw new IllegalArgumentException("EJB method identifier cannot be null while setting roles on view type: " + viewType);
+        }
+        if (roles == null) {
+            throw new IllegalArgumentException("Roles cannot be null while setting roles on view type: " + viewType + " and method: " + ejbMethodIdentifier);
+        }
+
         // find the right view(s) to apply the @RolesAllowed
         for (final ViewDescription view : this.getViews()) {
             // shouldn't really happen
@@ -563,12 +570,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 perViewMethodRoles = new HashMap<EJBMethodIdentifier, Set<String>>();
                 this.methodLevelRolesAllowed.put(view.getViewClassName(), perViewMethodRoles);
             }
-            Set<String> perMethodRoles = perViewMethodRoles.get(ejbMethodIdentifier);
-            if (perMethodRoles == null) {
-                perMethodRoles = new HashSet<String>();
-                perViewMethodRoles.put(ejbMethodIdentifier, perMethodRoles);
-            }
-            perMethodRoles.addAll(roles);
+            // set the roles on the method
+            perViewMethodRoles.put(ejbMethodIdentifier, roles);
         }
     }
 

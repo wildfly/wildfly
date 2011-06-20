@@ -83,6 +83,10 @@ public class AssemblyDescriptorProcessor implements DeploymentUnitProcessor {
         for (final SecurityRoleMetaData securityRole : securityRoles) {
             final String roleName = securityRole.getRoleName();
             if (roleName != null && !roleName.trim().isEmpty()) {
+                // Augment the security roles
+                // EJB 3.1 spec, section 17.3.1:
+                // The Bean Provider may augment the set of security roles defined for the application by annotations in
+                // this way by means of the security-role deployment descriptor element.
                 ejbJarDescription.addSecurityRole(roleName);
             }
         }
