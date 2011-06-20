@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.spec.ejb3.security.authorization;
 
+import org.jboss.ejb3.annotation.SecurityDomain;
+
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -31,6 +33,7 @@ import javax.ejb.Stateless;
  */
 @Stateless
 @DenyAll
+@SecurityDomain("other")
 public class DenyAllOverrideBean {
 
     public String defaultEcho(final String message) {
