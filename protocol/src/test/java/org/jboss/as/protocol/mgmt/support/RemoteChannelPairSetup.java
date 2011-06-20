@@ -74,7 +74,7 @@ public class RemoteChannelPairSetup implements RemotingChannelPairSetup {
         ChannelServer.Configuration configuration = new ChannelServer.Configuration();
         configuration.setEndpointName(ENDPOINT_NAME);
         configuration.setUriScheme(URI_SCHEME);
-        configuration.setBindAddress(new InetSocketAddress("::1", PORT));
+        configuration.setBindAddress(new InetSocketAddress("127.0.0.1", PORT));
         configuration.setExecutor(executorService);
         channelServer = ChannelServer.create(configuration);
 
@@ -97,7 +97,7 @@ public class RemoteChannelPairSetup implements RemotingChannelPairSetup {
         ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
         configuration.setEndpointName(ENDPOINT_NAME);
         configuration.setUriScheme(URI_SCHEME);
-        configuration.setUri(new URI("" + URI_SCHEME + "://[::1]:" + PORT + ""));
+        configuration.setUri(new URI("" + URI_SCHEME + "://127.0.0.1:" + PORT + ""));
         configuration.setExecutor(executorService);
         configuration.setChannelFactory(new ManagementChannelFactory());
 
