@@ -34,6 +34,7 @@ import org.jboss.jandex.MethodInfo;
 
 import javax.annotation.security.RolesAllowed;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -73,11 +74,11 @@ public class RolesAllowedProcessor extends AbstractAnnotationEJBProcessor<EJBCom
                 final String[] roles = rolesAllowedAnnotation.value().asStringArray();
                 if (target instanceof ClassInfo) {
                     final String className = ((ClassInfo) target).name().toString();
-                    componentDescription.addRolesAllowedOnAllViewsForClass(className, Arrays.asList(roles));
+                    componentDescription.setRolesAllowedOnAllViewsForClass(className, new HashSet(Arrays.asList(roles)));
 
                 } else if (target instanceof MethodInfo) {
                     final EJBMethodIdentifier ejbMethodIdentifier = EJBMethodIdentifier.fromMethodInfo((MethodInfo) target);
-                    componentDescription.addRolesAllowedOnAllViewsForMethod(ejbMethodIdentifier, Arrays.asList(roles));
+                    componentDescription.setRolesAllowedOnAllViewsForMethod(ejbMethodIdentifier, new HashSet(Arrays.asList(roles)));
                 }
             }
             // move to super class
