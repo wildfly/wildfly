@@ -31,7 +31,7 @@ import javax.ejb.SessionContext;
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SessionBean extends BaseBean {
+public abstract class SessionBean extends BaseBean {
 
     private SessionContext sessionContext;
 
