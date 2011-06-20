@@ -22,11 +22,14 @@
 
 package org.jboss.as.testsuite.integration.ejb.security;
 
+import org.jboss.ejb3.annotation.SecurityDomain;
+
 import javax.ejb.Stateless;
 
 /**
  * User: jpai
  */
+@SecurityDomain("other")
 public class DDBasedSLSB implements FullAccess {
 
     public void accessDenied() {
