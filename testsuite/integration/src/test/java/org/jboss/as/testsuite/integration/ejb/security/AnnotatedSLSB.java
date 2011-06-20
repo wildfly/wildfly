@@ -22,6 +22,8 @@
 
 package org.jboss.as.testsuite.integration.ejb.security;
 
+import org.jboss.ejb3.annotation.SecurityDomain;
+
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.DenyAll;
 import javax.ejb.Local;
@@ -35,6 +37,7 @@ import javax.ejb.Stateless;
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @Local ({Restriction.class, FullAccess.class})
 @LocalBean
+@SecurityDomain("other")
 public class AnnotatedSLSB extends Base implements Restriction, FullAccess {
 
 
