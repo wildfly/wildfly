@@ -22,6 +22,7 @@
 package org.jboss.as.test.spec.ejb3.security.runas;
 
 import org.jboss.as.test.spec.ejb3.security.Entry;
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 import javax.annotation.security.RunAs;
 import javax.ejb.EJB;
@@ -40,6 +41,7 @@ import static javax.ejb.TransactionAttributeType.SUPPORTS;
 @LocalBean
 @RunAs("Role2")
 @TransactionAttribute(SUPPORTS)
+@SecurityDomain("other")
 public class EntryBean extends org.jboss.as.test.spec.ejb3.security.base.EntryBean implements Entry {
     @EJB
     private WhoAmIBean whoAmIBean;

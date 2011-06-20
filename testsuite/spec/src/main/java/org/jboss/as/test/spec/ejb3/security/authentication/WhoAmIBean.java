@@ -24,6 +24,7 @@ package org.jboss.as.test.spec.ejb3.security.authentication;
 import javax.ejb.Stateless;
 
 import org.jboss.as.test.spec.ejb3.security.WhoAmI;
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
  * Concrete implementation to allow deployment of bean.
@@ -31,5 +32,6 @@ import org.jboss.as.test.spec.ejb3.security.WhoAmI;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @Stateless
+@SecurityDomain("other")
 public class WhoAmIBean extends org.jboss.as.test.spec.ejb3.security.base.WhoAmIBean implements WhoAmI {
 }
