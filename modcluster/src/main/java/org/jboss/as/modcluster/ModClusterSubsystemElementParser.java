@@ -4,7 +4,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.parsing.ParseUtils.readProperty;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
@@ -87,7 +86,7 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
             writeSimpleLoadProvider(writer, config.get(SIMPLE_LOAD_PROVIDER));
         }
         if (config.hasDefined(DYNAMIC_LOAD_PROVIDER)) {
-            writeDynamicLoadProvider(writer, config.get(LOAD_PROVIDER));
+            writeDynamicLoadProvider(writer, config.get(DYNAMIC_LOAD_PROVIDER));
         }
         if (config.hasDefined(SSL)) {
             writeSSL(writer, config.get(SSL));
@@ -254,7 +253,7 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
 
     /* Dynamic load provider */
     static void writeDynamicLoadProvider(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        writer.writeStartElement(Element.SIMPLE_LOAD_PROVIDER.getLocalName());
+        writer.writeStartElement(Element.DYNAMIC_LOAD_PROVIDER.getLocalName());
         writeAttribute(writer, HISTORY, config);
         writeAttribute(writer, DECAY, config);
 
@@ -308,21 +307,21 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
 
     /* Load Metric parsing logic */
     static void writeLoadMetric(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        writer.writeStartElement(Element.LOAD_METRIC.getLocalName());
         final List<ModelNode> array = config.asList();
         Iterator<ModelNode> it = array.iterator();
         while (it.hasNext()) {
             final ModelNode node = (ModelNode) it.next();
-            writer.writeStartElement(Element.CUSTOM_LOAD_METRIC.getLocalName());
+            writer.writeStartElement(Element.LOAD_METRIC.getLocalName());
             writeAttribute(writer, TYPE, node);
             writeAttribute(writer, WEIGHT, node);
-            writeAttribute(writer, CLASS, node);
-            for (Property property : node.get("property").asPropertyList()) {
-                writeProperty(writer, property);
+            writeAttribute(writer, CAPACITY, node);
+            if (node.get("property").isDefined()) {
+                for (Property property : node.get("property").asPropertyList()) {
+                    writeProperty(writer, property);
+                }
             }
             writer.writeEndElement();
         }
-        writer.writeEndElement();
     }
 
     static ModelNode parseLoadMetric(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -352,7 +351,7 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
             switch (element) {
                 case PROPERTY:
                     final Property property = parseProperty(reader);
-                    load.set(property);
+                    load.get("property").add(property.getName(), property.getValue());
                     break;
                 default:
                     unexpectedElement(reader);
@@ -371,8 +370,10 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
             writeAttribute(writer, CAPACITY, node);
             writeAttribute(writer, WEIGHT, node);
             writeAttribute(writer, CLASS, node);
-            for (Property property : node.get("property").asPropertyList()) {
-                writeProperty(writer, property);
+            if (node.get("property").isDefined()) {
+                for (Property property : node.get("property").asPropertyList()) {
+                    writeProperty(writer, property);
+                }
             }
             writer.writeEndElement();
         }
@@ -404,7 +405,7 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
             switch (element) {
                 case PROPERTY:
                     final Property property = parseProperty(reader);
-                    load.set(property);
+                    load.get("property").add(property.getName(), property.getValue());
                     break;
                 default:
                     unexpectedElement(reader);
@@ -424,7 +425,7 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
     static void writeProperty(final XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writer.writeStartElement(Element.PROPERTY.getLocalName());
         writer.writeAttribute(NAME, property.getName());
-        writer.writeAttribute(VALUE, property.getValue().toString());
+        writer.writeAttribute(VALUE, property.getValue().asString());
         writer.writeEndElement();
     }
     static Property parseProperty(XMLExtendedStreamReader reader) throws XMLStreamException {
