@@ -113,6 +113,7 @@
         <version.org.jboss.classfilewriter>1.0.0.Alpha7</version.org.jboss.classfilewriter>
         <version.org.jboss.com.sun.httpserver>1.0.0.Beta1</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb3>2.0.0-beta-1</version.org.jboss.ejb3>
+        <version.org.jboss.ejb3.ext-api>2.0.0-SNAPSHOT</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
         <version.org.jboss.jboss-transaction-spi>7.0.0.CR1</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.interceptor>2.0.0.Alpha3</version.org.jboss.interceptor>
@@ -2892,16 +2893,12 @@
             <dependency>
                 <groupId>org.jboss.ejb3</groupId>
                 <artifactId>jboss-ejb3-ext-api</artifactId>
-                <version>1.1.1</version>
+                <version>${version.org.jboss.ejb3.ext-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.javaee</groupId>
                         <artifactId>jboss-ejb-api</artifactId>
                     </exclusion>                
-                    <exclusion>
-                        <groupId>org.jboss.metadata</groupId>
-                        <artifactId>jboss-metadata</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
