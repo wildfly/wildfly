@@ -88,6 +88,10 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
 
             };
 
+            if (serverCallbackHandler == null) {
+                return realmNameFix;
+            }
+
             return new CallbackHandler() {
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                     serverCallbackHandler.handle(callbacks);

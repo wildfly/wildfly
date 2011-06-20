@@ -43,7 +43,7 @@ class RealmAuthenticationProviderService implements Service<RealmAuthenticationP
     private RealmAuthenticationProvider realmAuthenticationProvider = null;
 
     public void start(StartContext startContext) throws StartException {
-        realmAuthenticationProvider = new RealmAuthenticationProvider(securityRealmInjectedValue.getValue(), serverCallbackValue.getValue());
+        realmAuthenticationProvider = new RealmAuthenticationProvider(securityRealmInjectedValue.getValue(), serverCallbackValue.getOptionalValue());
     }
 
     public void stop(StopContext stopContext) {

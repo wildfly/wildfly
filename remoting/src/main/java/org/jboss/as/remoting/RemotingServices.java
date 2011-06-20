@@ -177,7 +177,8 @@ public final class RemotingServices {
             final NetworkInterfaceBinding networkInterfaceBinding,
             final int port,
             final ServiceName securityRealmName) {
-        installConnectorServices(serviceTarget, null, networkInterfaceBinding, port, securityRealmName, null, null);
+        ServiceName serverCallbackService = ServiceName.JBOSS.append("host", "controller", "server-inventory", "callback");
+        installConnectorServices(serviceTarget, null, networkInterfaceBinding, port, securityRealmName, serverCallbackService, null, null);
     }
 
     /**
@@ -195,7 +196,7 @@ public final class RemotingServices {
             final ServiceName securityRealmName,
             final ServiceVerificationHandler verificationHandler,
             final List<ServiceController<?>> newControllers) {
-        installConnectorServices(serviceTarget, networkInterfaceBindingName, null, port, securityRealmName, verificationHandler, newControllers);
+        installConnectorServices(serviceTarget, networkInterfaceBindingName, null, port, securityRealmName, null, verificationHandler, newControllers);
     }
 
     /**
@@ -263,17 +264,19 @@ public final class RemotingServices {
                                                  final NetworkInterfaceBinding networkInterfaceBinding,
                                                  final int port,
                                                  final ServiceName securityRealmName,
+                                                 final ServiceName serverCallbackService,
                                                  final ServiceVerificationHandler verificationHandler,
                                                  final List<ServiceController<?>> newControllers) {
 
-        ServiceName serverCallbackService = ServiceName.JBOSS.append("host", "controller", "server-inventory", "callback");
         RealmAuthenticationProviderService raps = new RealmAuthenticationProviderService();
         ServiceBuilder<?> builder = serviceTarget.addService(AUTHENTICATION_PROVIDER, raps);
         if (securityRealmName != null) {
             builder.addDependency(securityRealmName, SecurityRealm.class, raps.getSecurityRealmInjectedValue());
         }
-        builder.addDependency(serverCallbackService, CallbackHandler.class, raps.getServerCallbackValue())
-                .setInitialMode(ON_DEMAND)
+        if (serverCallbackService != null) {
+            builder.addDependency(serverCallbackService, CallbackHandler.class, raps.getServerCallbackValue());
+        }
+        builder.setInitialMode(ON_DEMAND)
                 .install();
 
         RealmOptionMapService roms = new RealmOptionMapService();
@@ -286,7 +289,7 @@ public final class RemotingServices {
             final InjectedNetworkBindingStreamServerService streamServerService = new InjectedNetworkBindingStreamServerService(port);
             builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
                     .addDependency(AUTHENTICATION_PROVIDER, ServerAuthenticationProvider.class, streamServerService.getAuthenticationProviderInjector())
-                    .addDependency(OPTION_MAP,OptionMap.class,streamServerService.getOptionMapInjectedValue())
+                    .addDependency(OPTION_MAP, OptionMap.class, streamServerService.getOptionMapInjectedValue())
                     .addDependency(RemotingServices.ENDPOINT, Endpoint.class, streamServerService.getEndpointInjector())
                     .addDependency(networkInterfaceBindingName, NetworkInterfaceBinding.class, streamServerService.getInterfaceBindingInjector())
                     .setInitialMode(ACTIVE);
@@ -295,7 +298,7 @@ public final class RemotingServices {
             final NetworkBindingStreamServerService streamServerService = new NetworkBindingStreamServerService(networkInterfaceBinding, port);
             builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
                     .addDependency(AUTHENTICATION_PROVIDER, ServerAuthenticationProvider.class, streamServerService.getAuthenticationProviderInjector())
-                    .addDependency(OPTION_MAP,OptionMap.class,streamServerService.getOptionMapInjectedValue())
+                    .addDependency(OPTION_MAP, OptionMap.class, streamServerService.getOptionMapInjectedValue())
                     .addDependency(RemotingServices.ENDPOINT, Endpoint.class, streamServerService.getEndpointInjector())
                     .setInitialMode(ACTIVE);
             addController(newControllers, verificationHandler, builder);
