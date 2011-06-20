@@ -59,6 +59,7 @@ public class EJBSecurityTestCase {
         final Restriction restrictedBean = (Restriction) ctx.lookup("java:module/" + AnnotatedSLSB.class.getSimpleName() + "!" + Restriction.class.getName());
         try {
             restrictedBean.restrictedMethod();
+            Assert.fail("Call to restrictedMethod() method was expected to fail");
         } catch (EJBAccessException ejbae) {
             // expected
         }
@@ -69,6 +70,7 @@ public class EJBSecurityTestCase {
         final AnnotatedSLSB annotatedBean = (AnnotatedSLSB) ctx.lookup("java:module/" + AnnotatedSLSB.class.getSimpleName() + "!" + AnnotatedSLSB.class.getName());
         try {
             annotatedBean.restrictedMethod();
+            Assert.fail("Call to restrictedMethod() method was expected to fail");
         } catch (EJBAccessException ejbae) {
             //expected
         }
@@ -76,6 +78,7 @@ public class EJBSecurityTestCase {
         annotatedBean.doAnything();
         try {
             annotatedBean.restrictedBaseClassMethod();
+            Assert.fail("Call to restrictedBaseClassMethod() method was expected to fail");
         } catch (EJBAccessException ejbae) {
             //expected
         }
@@ -86,6 +89,8 @@ public class EJBSecurityTestCase {
         final FullyRestrictedBean fullyRestrictedBean = (FullyRestrictedBean) ctx.lookup("java:module/" + FullyRestrictedBean.class.getSimpleName() + "!" + FullyRestrictedBean.class.getName());
         try {
             fullyRestrictedBean.overriddenMethod();
+            Assert.fail("Call to overriddenMethod() method was expected to fail");
+
         } catch (EJBAccessException ejae) {
             // expected
         }
@@ -101,6 +106,7 @@ public class EJBSecurityTestCase {
         final DDBasedSLSB ddBasedSLSB = (DDBasedSLSB) ctx.lookup("java:module/" + DDBasedSLSB.class.getSimpleName() + "!" + DDBasedSLSB.class.getName());
         try {
             ddBasedSLSB.accessDenied();
+            Assert.fail("Call to accessDenied() method was expected to fail");
         } catch (EJBAccessException ejbae) {
             // expected
         }
