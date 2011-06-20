@@ -22,10 +22,11 @@
 
 package org.jboss.as.web;
 
+import javax.management.MBeanServer;
 import java.util.List;
 import java.util.Locale;
-import javax.management.MBeanServer;
-import org.jboss.as.controller.AbstractAddStepHandler;
+
+import com.sun.tools.internal.xjc.model.Model;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -51,6 +52,7 @@ import org.jboss.as.web.deployment.component.WebComponentProcessor;
 import org.jboss.as.web.deployment.jsf.JsfAnnotationProcessor;
 import org.jboss.as.web.deployment.jsf.JsfManagedBeanProcessor;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -73,14 +75,43 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
-        final ModelNode config = operation.get(Constants.CONTAINER_CONFIG);
 
-        model.get(Constants.CONTAINER_CONFIG).set(config);
+        ModelNode ourContainerConfig = new ModelNode();
+
+        ModelNode ourStaticResources = DefaultStaticResources.getDefaultStaticResource();
+        ourContainerConfig.get(Constants.STATIC_RESOURCES).set(ourStaticResources);
+        ModelNode ourJspConfig = DefaultJspConfig.getDefaultStaticResource();
+        ourContainerConfig.get(Constants.JSP_CONFIGURATION).set(ourJspConfig);
+
+        final ModelNode opConfig = operation.get(Constants.CONTAINER_CONFIG);
+        if (opConfig.hasDefined(Constants.STATIC_RESOURCES)) {
+            for (Property prop : opConfig.get(Constants.STATIC_RESOURCES).asPropertyList()) {
+                ModelNode val = DefaultStaticResources.getDefaultIfUndefined(prop.getName(), prop.getValue());
+                ourStaticResources.get(prop.getName()).set(val);
+            }
+        }
+        if (opConfig.hasDefined(Constants.JSP_CONFIGURATION)) {
+            for (Property prop : opConfig.get(Constants.JSP_CONFIGURATION).asPropertyList()) {
+                ModelNode val = DefaultStaticResources.getDefaultIfUndefined(prop.getName(), prop.getValue());
+                ourStaticResources.get(prop.getName()).set(val);
+            }
+        }
+        if (opConfig.hasDefined(Constants.MIME_MAPPING)) {
+            ourContainerConfig.get(Constants.MIME_MAPPING).set(opConfig.get(Constants.MIME_MAPPING));
+        }
+        if (opConfig.hasDefined(Constants.WELCOME_FILE)) {
+            ourContainerConfig.get(Constants.WELCOME_FILE).set(opConfig.get(Constants.WELCOME_FILE));
+        }
+
+        model.get(Constants.CONTAINER_CONFIG).set(ourContainerConfig);
+
         model.get(Constants.CONNECTOR).setEmptyObject();
         model.get(Constants.VIRTUAL_SERVER).setEmptyObject();
     }
 
-    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model,
+                                   ServiceVerificationHandler verificationHandler,
+                                   List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ModelNode config = operation.get(Constants.CONTAINER_CONFIG);
         final String defaultVirtualServer = operation.hasDefined(Constants.DEFAULT_VIRTUAL_SERVER) ?
                 operation.get(Constants.DEFAULT_VIRTUAL_SERVER).asString() : DEFAULT_VIRTUAL_SERVER;
