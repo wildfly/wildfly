@@ -78,7 +78,7 @@ public class DomainSlaveHandler implements NewStepHandler {
 
         for (Map.Entry<String, NewProxyController> entry : hostProxies.entrySet()) {
             String host = entry.getKey();
-            ProxyTask task = new ProxyTask(host, operation, context, entry.getValue());
+            ProxyTask task = new ProxyTask(host, operation.clone(), context, entry.getValue());
             tasks.put(host, task);
             futures.put(host, executorService.submit(task));
         }

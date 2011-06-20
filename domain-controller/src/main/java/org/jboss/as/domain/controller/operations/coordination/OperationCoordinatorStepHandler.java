@@ -171,7 +171,7 @@ public class OperationCoordinatorStepHandler {
         String localHostName = localHostControllerInfo.getLocalHostName();
         if (routing.isLocalCallNeeded(localHostName)) {
             ModelNode localResponse = overallContext.getCoordinatorResult();
-            localSlaveHandler.addSteps(context, slaveOp, localResponse, false);
+            localSlaveHandler.addSteps(context, slaveOp.clone(), localResponse, false);
         }
 
         if (localHostControllerInfo.isMasterDomainController()) {
