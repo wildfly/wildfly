@@ -47,6 +47,7 @@ import org.jboss.modules.Module;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -107,9 +108,9 @@ public class MethodPermissionDDProcessor extends AbstractEjbXmlDescriptorProcess
                     // if method name is * then it means all methods, which actually implies a class level @RolesAllowed
                     // now check if it specifies the optional method-inf. If it doesn't then it applies to all views
                     if (methodIntf == null) {
-                        ejbComponentDescription.addRolesAllowedForAllMethodsOfAllViews(securityRoles);
+                        ejbComponentDescription.setRolesAllowedForAllMethodsOfAllViews(securityRoles);
                     } else {
-                        ejbComponentDescription.addRolesAllowedForAllMethodsOnViewType(methodIntf, securityRoles);
+                        ejbComponentDescription.setRolesAllowedForAllMethodsOnViewType(methodIntf, securityRoles);
                     }
                 } else {
                     final MethodParametersMetaData methodParams = method.getMethodParams();
@@ -126,7 +127,7 @@ public class MethodPermissionDDProcessor extends AbstractEjbXmlDescriptorProcess
                             continue;
                         }
                         // apply the @RolesAllowed/method-permission
-                        this.addRolesAllowed(ejbComponentDescription, methodIntf, applicableMethods, securityRoles);
+                        this.setRolesAllowed(ejbComponentDescription, methodIntf, applicableMethods, securityRoles);
 
                     } else {
                         // style 3
@@ -148,7 +149,7 @@ public class MethodPermissionDDProcessor extends AbstractEjbXmlDescriptorProcess
                             continue;
                         }
                         // apply the @RolesAllowed/method-permission
-                        this.addRolesAllowed(ejbComponentDescription, methodIntf, applicableMethods, securityRoles);
+                        this.setRolesAllowed(ejbComponentDescription, methodIntf, applicableMethods, securityRoles);
                     }
                 }
             }
@@ -180,13 +181,13 @@ public class MethodPermissionDDProcessor extends AbstractEjbXmlDescriptorProcess
         }
     }
 
-    private void addRolesAllowed(final EJBComponentDescription ejbComponentDescription, final MethodIntf viewType, final Collection<Method> denyAllApplicableMethods, Collection<String> roles) {
-        for (final Method denyAllApplicableMethod : denyAllApplicableMethods) {
+    private void setRolesAllowed(final EJBComponentDescription ejbComponentDescription, final MethodIntf viewType, final Collection<Method> rolesAllowedApplicableMethods, Collection<String> roles) {
+        for (final Method denyAllApplicableMethod : rolesAllowedApplicableMethods) {
             final EJBMethodIdentifier ejbMethodIdentifier = EJBMethodIdentifier.fromMethod(denyAllApplicableMethod);
             if (viewType == null) {
-                ejbComponentDescription.addRolesAllowedOnAllViewsForMethod(ejbMethodIdentifier, roles);
+                ejbComponentDescription.setRolesAllowedOnAllViewsForMethod(ejbMethodIdentifier, new HashSet(roles));
             } else {
-                ejbComponentDescription.addRolesAllowedForMethodOnViewType(viewType, ejbMethodIdentifier, roles);
+                ejbComponentDescription.setRolesAllowedForMethodOnViewType(viewType, ejbMethodIdentifier, new HashSet(roles));
             }
         }
     }
