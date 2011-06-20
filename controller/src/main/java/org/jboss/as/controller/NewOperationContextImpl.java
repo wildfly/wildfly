@@ -280,7 +280,7 @@ final class NewOperationContextImpl implements NewOperationContext {
                     currentStage = currentStage.next();
                     if (contextType == Type.MANAGEMENT && currentStage == Stage.MODEL.next()) {
                         // Management mode; we do not proceed past the MODEL stage.
-                        currentStage = null;
+                        currentStage = Stage.DONE;
                     } else if (affectsRuntime && currentStage == Stage.VERIFY) {
                         // a change was made to the runtime.  Thus, we must wait for stability before resuming in to verify.
                         try {
