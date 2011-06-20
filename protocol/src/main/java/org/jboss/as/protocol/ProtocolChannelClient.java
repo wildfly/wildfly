@@ -116,6 +116,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             future = endpoint.connect(uri, OptionMap.EMPTY, handler);
         } else {
             // TODO - Remove temporary hard coded value once all clients can supply a CallbackHandler.
+            new Throwable("Using default username and password.").printStackTrace();
             future = endpoint.connect(uri, OptionMap.EMPTY, "TestUser", endpoint.getName(), "TestUserPassword".toCharArray());
         }
         // TODO - Re-evaluate timeouts - clients need time to enter their details but this extends the time for clients where we know this info in advance.

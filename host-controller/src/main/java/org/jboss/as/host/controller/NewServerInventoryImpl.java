@@ -23,12 +23,23 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.AuthorizeCallback;
+import javax.security.sasl.RealmCallback;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -41,6 +52,7 @@ import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
 import org.jboss.as.domain.controller.NewDomainController;
+import org.jboss.as.domain.management.security.UserNotFoundException;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -321,4 +333,61 @@ public class NewServerInventoryImpl implements NewServerInventory {
         final NewModelCombiner combiner = new NewModelCombiner(serverName, domainModel, hostModel, domainController, environment);
         return new ManagedServer(serverName, processControllerClient, managementAddress, combiner);
     }
+
+    public CallbackHandler getServerCallbackHandler() {
+        return new CallbackHandler() {
+            public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                List<Callback> toRespondTo = new LinkedList<Callback>();
+
+                String userName;
+                ManagedServer server = null;
+
+                // A single pass may be sufficient but by using a two pass approach the Callbackhandler will not
+                // fail if an unexpected order is encountered.
+
+                // First Pass - is to double check no unsupported callbacks and to retrieve
+                // information from the callbacks passing in information.
+                for (Callback current : callbacks) {
+
+                    if (current instanceof AuthorizeCallback) {
+                        toRespondTo.add(current);
+                    } else if (current instanceof NameCallback) {
+                        NameCallback nameCallback = (NameCallback) current;
+                        userName = nameCallback.getDefaultName();
+
+                        server = servers.get(ManagedServer.getServerProcessName(userName));
+                    } else if (current instanceof PasswordCallback) {
+                        toRespondTo.add(current);
+                    } else if (current instanceof RealmCallback) {
+                        // TODO - for now this is silently ignored.
+                    } else {
+                        throw new UnsupportedCallbackException(current);
+                    }
+                }
+
+                /*
+                * At the moment this is a special CallbackHandler where we know the setting of a password will be double checked
+                 * before going back to the base realm.
+                */
+                if (server == null) {
+                    return;
+                }
+
+                // Second Pass - Now iterate the Callback(s) requiring a response.
+                for (Callback current : toRespondTo) {
+                    if (current instanceof AuthorizeCallback) {
+
+                        AuthorizeCallback authorizeCallback = (AuthorizeCallback) current;
+                        // Don't support impersonating another identity
+                        authorizeCallback.setAuthorized(authorizeCallback.getAuthenticationID().equals(authorizeCallback.getAuthorizationID()));
+                    } else if (current instanceof PasswordCallback) {
+                        String password = new String(server.getAuthKey());
+                        ((PasswordCallback) current).setPassword(password.toCharArray());
+                    }
+                }
+
+            }
+        };
+    }
+
 }

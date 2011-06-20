@@ -22,6 +22,8 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
+
 import java.net.InetSocketAddress;
 import java.util.concurrent.Future;
 
@@ -30,6 +32,7 @@ import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -63,6 +66,12 @@ class NewServerInventoryService implements Service<NewServerInventory> {
     }
 
     static Future<NewServerInventory> install(final ServiceTarget serviceTarget, final NewDomainController domainController, final HostControllerEnvironment environment, final NetworkInterfaceBinding interfaceBinding, final int port){
+        final NewServerInventoryCallbackService callbackService = new NewServerInventoryCallbackService();
+        serviceTarget.addService(NewServerInventoryCallbackService.SERVICE_NAME, callbackService)
+                .addDependency(NewServerInventoryService.SERVICE_NAME, NewServerInventory.class, callbackService.getServerInventoryInjectedValue())
+                .setInitialMode(ON_DEMAND)
+                .install();
+
         final NewServerInventoryService inventory = new NewServerInventoryService(domainController, environment, interfaceBinding, port);
         serviceTarget.addService(NewServerInventoryService.SERVICE_NAME, inventory)
                 .addDependency(NewProcessControllerConnectionService.SERVICE_NAME, NewProcessControllerConnectionService.class, inventory.getClient())

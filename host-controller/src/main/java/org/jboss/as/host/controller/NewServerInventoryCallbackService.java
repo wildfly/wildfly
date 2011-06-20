@@ -19,46 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.remoting;
+package org.jboss.as.host.controller;
 
+
+import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 
-import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * The service to make the RealmAuthenticationProvider available.
- *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class RealmAuthenticationProviderService implements Service<RealmAuthenticationProvider> {
+public class NewServerInventoryCallbackService implements Service<CallbackHandler> {
 
-    private final InjectedValue<SecurityRealm> securityRealmInjectedValue = new InjectedValue<SecurityRealm>();
-    private final InjectedValue<CallbackHandler> serverCallbackValue = new InjectedValue<CallbackHandler>();
+    static final ServiceName SERVICE_NAME = NewServerInventoryService.SERVICE_NAME.append("callback");
 
-    private RealmAuthenticationProvider realmAuthenticationProvider = null;
+    private final InjectedValue<NewServerInventory> serverInventoryInjectedValue = new InjectedValue<NewServerInventory>();
 
     public void start(StartContext startContext) throws StartException {
-        realmAuthenticationProvider = new RealmAuthenticationProvider(securityRealmInjectedValue.getValue(), serverCallbackValue.getValue());
     }
 
     public void stop(StopContext stopContext) {
-        realmAuthenticationProvider = null;
     }
 
-    public RealmAuthenticationProvider getValue() throws IllegalStateException, IllegalArgumentException {
-        return realmAuthenticationProvider;
+    public InjectedValue<NewServerInventory> getServerInventoryInjectedValue() {
+        return serverInventoryInjectedValue;
     }
 
-    public InjectedValue<SecurityRealm> getSecurityRealmInjectedValue() {
-        return securityRealmInjectedValue;
-    }
-
-    public InjectedValue<CallbackHandler> getServerCallbackValue() {
-        return serverCallbackValue;
+    public CallbackHandler getValue() throws IllegalStateException, IllegalArgumentException {
+        return serverInventoryInjectedValue.getValue().getServerCallbackHandler();
     }
 }

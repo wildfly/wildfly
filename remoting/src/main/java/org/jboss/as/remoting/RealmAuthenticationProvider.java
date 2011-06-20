@@ -53,9 +53,11 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
     static final String DIGEST_MD5 = "DIGEST-MD5";
 
     private final SecurityRealm realm;
+    private final CallbackHandler serverCallbackHandler;
 
-    RealmAuthenticationProvider(final SecurityRealm realm) {
+    RealmAuthenticationProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler) {
         this.realm = realm;
+        this.serverCallbackHandler = serverCallbackHandler;
     }
 
     OptionMap getSaslOptionMap() {
@@ -71,7 +73,7 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
             final CallbackHandler realHandler = realm.getCallbackHandler();
             // TODO - Correct JBoss Remoting so that the realm can be specified independently of the endpoint name.
             // In the meantime
-            return new CallbackHandler() {
+            final CallbackHandler realmNameFix = new CallbackHandler() {
 
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                     List<Callback> filteredCallbacks = new ArrayList<Callback>(callbacks.length - 1);
@@ -84,6 +86,26 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
 
                 }
 
+            };
+
+            return new CallbackHandler() {
+                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                    serverCallbackHandler.handle(callbacks);
+                    if (handled(callbacks) == false) {
+                        realmNameFix.handle(callbacks);
+                    }
+                }
+
+                private boolean handled(Callback[] callbacks) {
+                    for (Callback current : callbacks) {
+                        if (current instanceof PasswordCallback) {
+                            PasswordCallback pcb = (PasswordCallback) current;
+                            char[] password = pcb.getPassword();
+                            return (password != null && password.length > 0);
+                        }
+                    }
+                    return false;
+                }
             };
         }
 

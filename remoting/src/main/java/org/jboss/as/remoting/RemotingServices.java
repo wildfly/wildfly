@@ -26,6 +26,7 @@ package org.jboss.as.remoting;
 import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
+import javax.security.auth.callback.CallbackHandler;
 import java.security.AccessController;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -265,12 +266,14 @@ public final class RemotingServices {
                                                  final ServiceVerificationHandler verificationHandler,
                                                  final List<ServiceController<?>> newControllers) {
 
+        ServiceName serverCallbackService = ServiceName.JBOSS.append("host", "controller", "server-inventory", "callback");
         RealmAuthenticationProviderService raps = new RealmAuthenticationProviderService();
         ServiceBuilder<?> builder = serviceTarget.addService(AUTHENTICATION_PROVIDER, raps);
         if (securityRealmName != null) {
             builder.addDependency(securityRealmName, SecurityRealm.class, raps.getSecurityRealmInjectedValue());
         }
-        builder.setInitialMode(ON_DEMAND)
+        builder.addDependency(serverCallbackService, CallbackHandler.class, raps.getServerCallbackValue())
+                .setInitialMode(ON_DEMAND)
                 .install();
 
         RealmOptionMapService roms = new RealmOptionMapService();

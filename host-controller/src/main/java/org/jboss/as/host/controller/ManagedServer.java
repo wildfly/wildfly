@@ -151,6 +151,10 @@ class ManagedServer {
         respawnCount.set(0);
     }
 
+    byte[] getAuthKey() {
+        return authKey;
+    }
+
     void createServerProcess() throws IOException {
         synchronized(lock) {
             final List<String> command = bootConfiguration.getServerLaunchCommand();
@@ -169,7 +173,7 @@ class ManagedServer {
             final List<ModelNode> bootUpdates = bootConfiguration.getBootUpdates();
 
             processControllerClient.startProcess(serverProcessName);
-            ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommuncationActivator(serverProcessName, managementSocket);
+            ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommuncationActivator(managementSocket, serverName, authKey);
             ServerStartTask startTask = new ServerStartTask(serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
             final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
             final OutputStream os = processControllerClient.sendStdin(serverProcessName);

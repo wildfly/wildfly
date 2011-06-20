@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller;
 
+import javax.security.auth.callback.CallbackHandler;
 import java.util.Map;
 
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
@@ -43,5 +44,6 @@ public interface NewServerInventory extends ManagedServerLifecycleCallback {
     void reconnectServer(final String serverName, final ModelNode domainModel, final boolean running);
     ServerStatus restartServer(String serverName, final int gracefulTimeout, final ModelNode domainModel);
     ServerStatus stopServer(final String serverName, final int gracefulTimeout);
+    CallbackHandler getServerCallbackHandler();
 
 }

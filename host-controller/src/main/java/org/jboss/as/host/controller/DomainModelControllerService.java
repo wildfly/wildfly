@@ -35,6 +35,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.IOException;
+import javax.security.auth.callback.CallbackHandler;
+
 import java.security.AccessController;
 import java.util.HashMap;
 import java.util.Map;
@@ -493,6 +495,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
         public ServerStatus stopServer(String serverName, int gracefulTimeout) {
             return serverInventory.stopServer(serverName, gracefulTimeout);
+        }
+
+        public CallbackHandler getServerCallbackHandler() {
+            return serverInventory.getServerCallbackHandler();
         }
 
         public boolean equals(Object obj) {

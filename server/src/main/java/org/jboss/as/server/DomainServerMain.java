@@ -154,7 +154,7 @@ public final class DomainServerMain {
             connection.removeListener(connectionListener);
 
             //Connect to the new HC address
-            addCommunicationServices(container, name, new InetSocketAddress(InetAddress.getByName(hostName), port));
+            addCommunicationServices(container, name, authKey, new InetSocketAddress(InetAddress.getByName(hostName), port));
 
         } catch (InterruptedIOException e) {
             Thread.interrupted();
@@ -172,8 +172,8 @@ public final class DomainServerMain {
         throw new IllegalStateException(); // not reached
     }
 
-    private static void addCommunicationServices(final ServiceTarget serviceTarget, final String serverName, final InetSocketAddress managementSocket) {
-        HostControllerConnectionService.install(serviceTarget, managementSocket);
+    private static void addCommunicationServices(final ServiceTarget serviceTarget, final String serverName, final byte[] authKey, final InetSocketAddress managementSocket) {
+        HostControllerConnectionService.install(serviceTarget, managementSocket, serverName, authKey);
 
         final HostControllerServerClient client = new HostControllerServerClient(serverName);
         serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
@@ -185,18 +185,21 @@ public final class DomainServerMain {
 
     public static final class HostControllerCommunicationActivator implements ServiceActivator, Serializable {
         private static final long serialVersionUID = 6671220116719309952L;
-        private final String serverName;
         private final InetSocketAddress managementSocket;
+        private final String serverName;
+        private final byte[] authKey;
 
-        public HostControllerCommunicationActivator(final String serverName, final InetSocketAddress managementSocket) {
-            this.serverName = serverName;
+        public HostControllerCommunicationActivator(final InetSocketAddress managementSocket, final String serverName, final byte[] authKey) {
             this.managementSocket = managementSocket;
+            this.serverName = serverName;
+            this.authKey = authKey;
         }
 
         @Override
         public void activate(final ServiceActivatorContext serviceActivatorContext) {
             final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
-            addCommunicationServices(serviceTarget, serverName, managementSocket);
+            // TODO - Correct the authKey propagation.
+            addCommunicationServices(serviceTarget, serverName, authKey, managementSocket);
         }
     }
 

@@ -168,6 +168,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
             throw new RuntimeException(e);
         }
         try {
+            // TODO - It is here we should supply our client side CallbackHandler to specify the Username and Password
             client.connect(null);
             this.channelClient = client;
 
