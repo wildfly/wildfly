@@ -27,10 +27,12 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
+import org.jboss.logging.Logger;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -42,8 +44,20 @@ import java.lang.reflect.Modifier;
  */
 public class EJBSecurityViewConfigurator implements ViewConfigurator {
 
+    private static final Logger logger = Logger.getLogger(EJBSecurityViewConfigurator.class);
+
     @Override
     public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription viewDescription, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
+        if (componentConfiguration.getComponentDescription() instanceof EJBComponentDescription == false) {
+            throw new IllegalArgumentException("Component named " + componentConfiguration.getComponentName() +
+                    " with component class " + componentConfiguration.getComponentClass() + " is not a EJB component");
+        }
+        final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
+        // if security is not enabled on the EJB, then do *not* add the security related interceptors
+        if (!ejbComponentDescription.isSecurityEnabled()) {
+            logger.debug("Security is *not* enabled on EJB: " + ejbComponentDescription.getEJBName() + ", no security interceptors will apply");
+            return;
+        }
         final String viewClassName = viewDescription.getViewClassName();
         // setup the security context interceptor
         viewConfiguration.addViewInterceptor(new SecurityContextInterceptorFactory(), InterceptorOrder.View.SECURITY_CONTEXT);
