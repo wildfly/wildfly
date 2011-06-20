@@ -63,7 +63,7 @@ public class ModuleInformationServiceProcessor implements DeploymentUnitProcesso
                 new ValueService<Object>(new ImmediateValue<Object>(moduleSpec)))
                 .install();
 
-        for (ModuleDependency dependency : moduleSpec.getSystemDependencies()) {
+        for (ModuleDependency dependency : moduleSpec.getAllDependencies()) {
             if (dependency.getIdentifier().getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
                 phaseContext.addDependency(ServiceModuleLoader.moduleInformationServiceName(dependency.getIdentifier()), Attachments.MODULE_DEPENDENCY_INFORMATION);
             }

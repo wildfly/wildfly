@@ -139,18 +139,13 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
      */
     private void processTransitiveDependencies(final ModuleSpecification moduleSpecification, final DeploymentPhaseContext phaseContext) {
         final Set<ModuleIdentifier> deps = new HashSet<ModuleIdentifier>();
-        for (ModuleDependency dependency : moduleSpecification.getSystemDependencies()) {
-            deps.add(dependency.getIdentifier());
-        }
-        for (ModuleDependency dependency : moduleSpecification.getUserDependencies()) {
-            deps.add(dependency.getIdentifier());
-        }
-        for (ModuleDependency dependency : moduleSpecification.getLocalDependencies()) {
+        for (ModuleDependency dependency : moduleSpecification.getAllDependencies()) {
             deps.add(dependency.getIdentifier());
         }
         for (final ModuleSpecification depInfo : phaseContext.getAttachmentList(Attachments.MODULE_DEPENDENCY_INFORMATION)) {
-            for (ModuleDependency dependency : depInfo.getSystemDependencies()) {
-                if (deps.contains(dependency)) {
+
+            for (ModuleDependency dependency : depInfo.getAllDependencies()) {
+                if (deps.contains(dependency.getIdentifier())) {
                     continue;
                 }
                 deps.add(dependency.getIdentifier());
@@ -184,7 +179,8 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
         try {
             ModuleSpecification specification = controller.getValue();
-            for (ModuleDependency dependency : specification.getSystemDependencies()) {
+            final List<ModuleDependency> allDeps = specification.getAllDependencies();
+            for (ModuleDependency dependency : allDeps) {
                 if (deps.contains(dependency)) {
                     continue;
                 }

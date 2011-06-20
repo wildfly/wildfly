@@ -60,6 +60,8 @@ public class ModuleSpecification extends SimpleAttachable {
 
     private final List<ResourceLoaderSpec> resourceLoaders = new ArrayList<ResourceLoaderSpec>();
 
+    private volatile List<ModuleDependency> allDependencies = null;
+
     /**
      * Modules that cannot be added as dependencies to the deployment, as the user has excluded them
      */
@@ -89,26 +91,31 @@ public class ModuleSpecification extends SimpleAttachable {
     }
 
     public void addSystemDependencies(Collection<ModuleDependency> dependencies) {
+        allDependencies = null;
         for (ModuleDependency dependency : dependencies) {
             addSystemDependency(dependency);
         }
     }
 
     public void addUserDependency(ModuleDependency dependency) {
+        allDependencies = null;
         this.userDependencies.add(dependency);
     }
 
     public void addUserDependencies(Collection<ModuleDependency> dependencies) {
+        allDependencies = null;
         userDependencies.addAll(dependencies);
     }
 
     public void addLocalDependency(ModuleDependency dependency) {
+        allDependencies = null;
         if (!exclusions.contains(dependency.getIdentifier())) {
             this.localDependencies.add(dependency);
         }
     }
 
     public void addLocalDependencies(Collection<ModuleDependency> dependencies) {
+        allDependencies = null;
         for (ModuleDependency dependency : dependencies) {
             addLocalDependency(dependency);
         }
@@ -119,6 +126,7 @@ public class ModuleSpecification extends SimpleAttachable {
     }
 
     public void addExclusion(ModuleIdentifier exclusion) {
+        allDependencies = null;
         exclusions.add(exclusion);
         Iterator<ModuleDependency> it = systemDependencies.iterator();
         while (it.hasNext()) {
@@ -183,4 +191,13 @@ public class ModuleSpecification extends SimpleAttachable {
         this.requiresTransitiveDependencies = requiresTransitiveDependencies;
     }
 
+    public List<ModuleDependency> getAllDependencies() {
+        if(allDependencies == null) {
+            allDependencies = new ArrayList<ModuleDependency>();
+            allDependencies.addAll(systemDependencies);
+            allDependencies.addAll(userDependencies);
+            allDependencies.addAll(localDependencies);
+        }
+        return allDependencies;
+    }
 }
