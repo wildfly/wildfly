@@ -102,15 +102,17 @@ public class AuthorizationInterceptor implements Interceptor {
                 throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " + ejbComponent.getComponentName()
                         + " is not allowed");
             }
-            // get allowed roles (if any) for this method invocation
-            final Collection<String> allowedRoles = ejbMethodSecurityMetaData.getRolesAllowed();
-            if (!allowedRoles.isEmpty()) {
-                // call the security API to do authorization check
-                final SimpleSecurityManager securityManager = ejbComponent.getSecurityManager();
-                if (!securityManager.isCallerInRole(allowedRoles.toArray(new String[allowedRoles.size()]))) {
-                    throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " +
-                            ejbComponent.getComponentName() + " is not allowed because caller is *not* in any of the " +
-                            "allowed roles: " + allowedRoles);
+            // If @PermitAll isn't applicable for the method then check the allowed roles
+            if (!ejbMethodSecurityMetaData.isPermitAll()) {
+                // get allowed roles (if any) for this method invocation
+                final Collection<String> allowedRoles = ejbMethodSecurityMetaData.getRolesAllowed();
+                if (!allowedRoles.isEmpty()) {
+                    // call the security API to do authorization check
+                    final SimpleSecurityManager securityManager = ejbComponent.getSecurityManager();
+                    if (!securityManager.isCallerInRole(allowedRoles.toArray(new String[allowedRoles.size()]))) {
+                        throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " +
+                                ejbComponent.getComponentName() + " is not allowed");
+                    }
                 }
             }
         }
