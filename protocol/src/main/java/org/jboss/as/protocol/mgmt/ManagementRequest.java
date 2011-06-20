@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.AsyncFuture;
@@ -42,6 +43,9 @@ import org.jboss.threads.AsyncFutureTask;
  * @author Kabir Khan
  */
 public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> {
+
+    private final Logger log = Logger.getLogger("org.jboss.as.protocol");
+
     private static final AtomicInteger requestId = new AtomicInteger();
     private final int currentRequestId = requestId.incrementAndGet();
     private final ManagementFuture<T> future = new ManagementFuture<T>();
@@ -88,18 +92,19 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
      * @return A future to retrieve the result when the request is complete
      */
     public AsyncFuture<T> execute(final ExecutorService executor, final ManagementClientChannelStrategy channelStrategy) {
+        log.tracef("Scheduling request %s with future %s - %d (%d)", this, this);
         executor.execute(new Runnable() {
-
             @Override
             public void run() {
 
                 try {
                     final ManagementChannel channel = channelStrategy.getChannel();
-                    //System.out.println("Executing " + ManagementRequest.this + " " + currentRequestId + "(" + batchId + ") - 0x" + Integer.toHexString(getRequestCode()));
+                    log.tracef("Got channel %s from request %s", channel, ManagementRequest.this);
+
                     //Ends up in writeRequest(ProtocolChannel, FlushableDataOutput)
                     channel.executeRequest(ManagementRequest.this, new DelegatingResponseHandler(channelStrategy));
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.tracef(e, "Could not get channel for request %s, failing %s", ManagementRequest.this, future);
                     future.failed(e);
                 }
             }

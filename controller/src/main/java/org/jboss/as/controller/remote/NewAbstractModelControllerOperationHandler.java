@@ -43,6 +43,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.old.ProtocolUtils;
+import org.jboss.logging.Logger;
 
 /**
  *
@@ -50,6 +51,8 @@ import org.jboss.as.protocol.old.ProtocolUtils;
  * @version $Revision: 1.1 $
  */
 public abstract class NewAbstractModelControllerOperationHandler implements ManagementOperationHandler {
+
+    final Logger log = Logger.getLogger("org.jboss.as.controller.remote");
 
     protected final ExecutorService executorService;
     protected final NewModelController controller;

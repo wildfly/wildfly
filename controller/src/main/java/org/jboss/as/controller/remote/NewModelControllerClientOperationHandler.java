@@ -100,7 +100,7 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
             try {
                 ModelNode result;
                 try {
-                    System.out.println("=== Executing client request " +  batchId + " on " + getContext().getChannel().getName() + "!!!");
+                    log.tracef("Executing client request %d(%d)", batchId, getContext().getHeader().getRequestId());
                     if (asynch) {
                         //register the cancel handler
                         asynchRequests.put(batchId, Thread.currentThread());
@@ -115,8 +115,9 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
                     failure.get(OUTCOME).set(FAILED);
                     failure.get(FAILURE_DESCRIPTION).set(e.getClass().getName() + ":" + e.getMessage());
                     result = failure;
+                } finally {
+                    log.tracef("Executed client request %d", batchId);
                 }
-                System.out.println("=== Executed client request " +  batchId + " " + result.get(OUTCOME).asString() + "!!!");
                 output.write(NewModelControllerProtocol.PARAM_RESPONSE);
                 result.writeExternal(output);
             } finally {

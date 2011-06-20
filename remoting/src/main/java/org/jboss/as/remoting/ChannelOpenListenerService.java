@@ -25,6 +25,7 @@ import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -46,6 +47,8 @@ import org.xnio.OptionMap;
  * @version $Revision: 1.1 $
  */
 public class ChannelOpenListenerService implements Service<Void>, OpenListener {
+
+    private final Logger log = Logger.getLogger("org.jboss.as.remoting");
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
 
@@ -80,7 +83,7 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
     @Override
     public void start(StartContext context) throws StartException {
         try {
-            System.out.println("--------- Registering channel listener for " + channelName);
+            log.debugf("Registering channel listener for %s", channelName);
             endpointValue.getValue().registerService(channelName, this, optionMap);
         } catch (Exception e) {
             throw new StartException(e);
@@ -96,11 +99,14 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
 
     @Override
     public void channelOpened(Channel channel) {
-        final ManagementChannel protocolChannel = new ManagementChannelFactory(operationHandlerFactoryValue.getValue().createOperationHandler()).create(channelName, channel);
+        final ManagementOperationHandler handler = operationHandlerFactoryValue.getValue().createOperationHandler();
+        final ManagementChannel protocolChannel = new ManagementChannelFactory(handler).create(channelName, channel);
+        log.tracef("Opened %s: %s with handler %s", channelName, protocolChannel, handler);
         protocolChannel.startReceiving();
         channel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed) {
+                log.tracef("Handling close for %s", protocolChannel);
                 protocolChannel.stopReceiving();
             }
         });

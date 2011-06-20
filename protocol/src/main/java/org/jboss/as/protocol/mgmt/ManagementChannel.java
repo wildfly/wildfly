@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.remoting3.Channel;
@@ -42,6 +43,8 @@ import org.xnio.IoUtils;
  */
 public class ManagementChannel extends ProtocolChannel {
 
+    private final Logger log = Logger.getLogger("org.jboss.as.protocol");
+
     private final RequestReceiver requestReceiver = new RequestReceiver();
     private final ResponseReceiver responseReceiver = new ResponseReceiver();
 
@@ -55,6 +58,7 @@ public class ManagementChannel extends ProtocolChannel {
 
     @Override
     protected void doHandle(final Channel channel, final MessageInputStream message) {
+        log.tracef("%s handling incoming data", this);
         final SimpleDataInput input = new SimpleDataInput(Marshalling.createByteInput(message));
         try {
             ManagementProtocolHeader header = ManagementProtocolHeader.parse(input);
@@ -63,10 +67,12 @@ public class ManagementChannel extends ProtocolChannel {
             } else {
                 responseReceiver.handleResponse((ManagementResponseHeader)header, input);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             //TODO handle properly
             e.printStackTrace();
+            log.tracef(e, "%s error handling incoming data", this);
         } finally {
+            log.tracef("%s done handling incoming data", this);
             IoUtils.safeClose(input);
             IoUtils.safeClose(message);
         }
@@ -109,6 +115,7 @@ public class ManagementChannel extends ProtocolChannel {
         private volatile ManagementOperationHandler operationHandler;
 
         private void handleRequest(final ManagementRequestHeader header, final DataInput input) throws IOException {
+            log.tracef("%s handling request %d(%d)", ManagementChannel.this, header.getBatchId());
             final FlushableDataOutputImpl output = FlushableDataOutputImpl.create(writeMessage());
 
             Exception error = null;
@@ -132,9 +139,9 @@ public class ManagementChannel extends ProtocolChannel {
                 requestHandler.writeResponse(output);
                 output.writeByte(ManagementProtocol.RESPONSE_END);
             } catch (Exception e) {
-                e.printStackTrace();
                 throwFormattedException(e);
             } finally {
+                log.tracef("%s finished request %d", ManagementChannel.this);
                 IoUtils.safeClose(output);
             }
         }
@@ -194,6 +201,7 @@ public class ManagementChannel extends ProtocolChannel {
         }
 
         private void handleResponse(ManagementResponseHeader header, DataInput input) throws IOException {
+            log.tracef("%s handling response %d", ManagementChannel.this, header.getResponseId());
             ManagementResponseHandler<?> responseHandler = responseHandlers.get(header.getResponseId());
             if (responseHandler == null) {
                 throw new IOException("No response handler for request " + header.getResponseId());
@@ -205,6 +213,8 @@ public class ManagementChannel extends ProtocolChannel {
                 expectHeader(input, ManagementProtocol.RESPONSE_END);
             } catch (Exception e) {
                 throwFormattedException(e);
+            } finally {
+                log.tracef("%s handled response %d", ManagementChannel.this, header.getResponseId());
             }
         }
     }
