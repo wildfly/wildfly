@@ -54,22 +54,13 @@ public class DataSourceDisable implements NewStepHandler {
                 public void execute(final NewOperationContext context, ModelNode operation) throws OperationFailedException {
                     final String jndiName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
 
-                    final ServiceRegistry registry = context.getServiceRegistry(false);
+                    final ServiceRegistry registry = context.getServiceRegistry(true);
 
                     final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
                     final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
                     if (dataSourceController != null) {
                         if (ServiceController.State.UP.equals(dataSourceController.getState())) {
                             dataSourceController.setMode(ServiceController.Mode.NEVER);
-                            dataSourceController.addListener(new AbstractServiceListener<Object>() {
-                                @Override
-                                public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                                    if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
-                                        controller.removeListener(this);
-                                        context.completeStep();
-                                    }
-                                }
-                            });
                         } else {
                             throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName + "] is not enabled"));
                         }
@@ -88,6 +79,7 @@ public class DataSourceDisable implements NewStepHandler {
                     if (binderController != null && ServiceController.State.UP.equals(binderController.getState())) {
                         binderController.setMode(ServiceController.Mode.NEVER);
                     }
+                    context.completeStep();
                 }
             }, NewOperationContext.Stage.RUNTIME);
         }
