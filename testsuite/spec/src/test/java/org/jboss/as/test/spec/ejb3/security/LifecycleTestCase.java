@@ -21,32 +21,31 @@
  */
 package org.jboss.as.test.spec.ejb3.security;
 
-import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
-import static org.junit.Assert.fail;
-import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.GET_CALLER_PRINCIPAL;
-import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.GET_CALLER_IDENTITY;
-import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.IS_CALLER_IN_ROLE;
-import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.IS_CALLER_IN_ROLE_IDENITY;
-import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.DEPENDENCY_INJECTION;
-import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.LIFECYCLE_CALLBACK;
-import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.BUSINESS;
-import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.AFTER_BEGIN;
-
-import javax.ejb.EJB;
-import javax.security.auth.login.LoginContext;
-import javax.servlet.jsp.jstl.sql.Result;
-import java.util.Map;
-import java.util.logging.Logger;
-
-import org.eclipse.jdt.internal.compiler.problem.AbortCompilationUnit;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.spec.ejb3.security.lifecycle.EntryBean;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.ejb.EJB;
+import javax.security.auth.login.LoginContext;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
+import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.AFTER_BEGIN;
+import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.BUSINESS;
+import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.DEPENDENCY_INJECTION;
+import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.GET_CALLER_IDENTITY;
+import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.GET_CALLER_PRINCIPAL;
+import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.IS_CALLER_IN_ROLE;
+import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.IS_CALLER_IN_ROLE_IDENITY;
+import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.LIFECYCLE_CALLBACK;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -90,10 +89,27 @@ public class LifecycleTestCase {
         lc.login();
         try {
             Map<String, String> result = entryBean.testStatefulBean();
-            verifyResult(result, DEPENDENCY_INJECTION, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE, failureMessages);
             verifyResult(result, LIFECYCLE_CALLBACK, USER1, UNSUPPORTED_OPERATION, TRUE, ILLEGAL_STATE, failureMessages);
             verifyResult(result, BUSINESS, USER1, UNSUPPORTED_OPERATION, TRUE, ILLEGAL_STATE, failureMessages);
             verifyResult(result, AFTER_BEGIN, USER1, UNSUPPORTED_OPERATION, TRUE, ILLEGAL_STATE, failureMessages);
+        } finally {
+            lc.logout();
+        }
+
+        if (failureMessages.length() > 0) {
+            fail(failureMessages.toString());
+        }
+    }
+
+    @Test
+    @Ignore("AS7-1064")
+    public void testStatefulBeanDependencyInjection() throws Exception {
+        StringBuilder failureMessages = new StringBuilder();
+        LoginContext lc = getCLMLoginContext("user1", "password1");
+        lc.login();
+        try {
+            Map<String, String> result = entryBean.testStatefulBean();
+            verifyResult(result, DEPENDENCY_INJECTION, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE, failureMessages);
         } finally {
             lc.logout();
         }
@@ -113,9 +129,49 @@ public class LifecycleTestCase {
             for (String current : result.keySet()) {
                 log.info(current + " = " + result.get(current));
             }
-            verifyResult(result, DEPENDENCY_INJECTION, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE, failureMessages);
-            verifyResult(result, LIFECYCLE_CALLBACK, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE, failureMessages);
             verifyResult(result, BUSINESS, USER1, UNSUPPORTED_OPERATION, TRUE, ILLEGAL_STATE, failureMessages);
+        } finally {
+            lc.logout();
+        }
+
+        if (failureMessages.length() > 0) {
+            fail(failureMessages.toString());
+        }
+    }
+
+    @Test
+    @Ignore("AS7-1064")
+    public void testStatelessBeanDependencyInjection() throws Exception {
+        StringBuilder failureMessages = new StringBuilder();
+        LoginContext lc = getCLMLoginContext("user1", "password1");
+        lc.login();
+        try {
+            Map<String, String> result = entryBean.testStatlessBean();
+            for (String current : result.keySet()) {
+                log.info(current + " = " + result.get(current));
+            }
+            verifyResult(result, DEPENDENCY_INJECTION, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE, failureMessages);
+        } finally {
+            lc.logout();
+        }
+
+        if (failureMessages.length() > 0) {
+            fail(failureMessages.toString());
+        }
+    }
+
+    @Test
+    @Ignore("AS7-1064")
+    public void testStatelessBeanLifecyleCallback() throws Exception {
+        StringBuilder failureMessages = new StringBuilder();
+        LoginContext lc = getCLMLoginContext("user1", "password1");
+        lc.login();
+        try {
+            Map<String, String> result = entryBean.testStatlessBean();
+            for (String current : result.keySet()) {
+                log.info(current + " = " + result.get(current));
+            }
+            verifyResult(result, LIFECYCLE_CALLBACK, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE, failureMessages);
         } finally {
             lc.logout();
         }
