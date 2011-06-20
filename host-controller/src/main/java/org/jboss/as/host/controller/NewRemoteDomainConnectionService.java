@@ -270,7 +270,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     public synchronized void stop(StopContext context) {
         shutdown.set(true);
         if (channelClient != null) {
-            channelClient.close();
+            unregister();
         }
     }
 
