@@ -226,7 +226,6 @@ public class GlobalOperationHandlers {
                         } else {
                             otherAttributes.put(attributeName, attrResponse);
                         }
-
                         context.addStep(attrResponse, attributeOperation, handler, NewOperationContext.Stage.IMMEDIATE);
                     }
                 }
@@ -488,7 +487,7 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * Assembles the resonse to a read-resource request from the components gathered by earlier steps.
+     * Assembles the response to a read-resource request from the components gathered by earlier steps.
      */
     private static class ReadChildrenResourcesAssemblyHandler implements NewStepHandler {
 
@@ -608,8 +607,35 @@ public class GlobalOperationHandlers {
             validator.registerValidator(OPERATIONS, new ModelTypeValidator(ModelType.BOOLEAN, true));
             validator.registerValidator(INHERITED, new ModelTypeValidator(ModelType.BOOLEAN, true));
         }
+
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+            if(address.isMultiTarget()) {
+                // Format wildcard queries as list
+                final ModelNode result = context.getResult().setEmptyList();
+                context.addStep(new ModelNode(), AbstractMultiTargetHandler.FAKE_OPERATION, new RegistrationAddressResolver(operation, result,
+                        new NewStepHandler() {
+                            @Override
+                            public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                                // step handler bypassing further wildcard resolution
+                                doExecute(context, operation);
+                            }
+                        }) , NewOperationContext.Stage.IMMEDIATE);
+                // Add a handler at the end of the chain to aggregate the result
+                context.addStep(new NewStepHandler() {
+                    @Override
+                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                        context.completeStep();
+                    }
+                }, NewOperationContext.Stage.VERIFY);
+                context.completeStep();
+            } else {
+                doExecute(context, operation);
+            }
+        }
+
+        void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
             validator.validate(operation);
 
@@ -684,15 +710,19 @@ public class GlobalOperationHandlers {
                         ModelNode rrRsp = new ModelNode();
                         childResources.put(element, rrRsp);
 
-
-                        NewStepHandler rrHandler = childReg.getOperationHandler(relativeAddr, opName);
-                        context.addStep(rrRsp, rrOp, rrHandler, NewOperationContext.Stage.IMMEDIATE);
+                        final NewStepHandler handler = childReg.isRemote() ? childReg.getOperationHandler(relativeAddr, opName) :
+                                new NewStepHandler() {
+                                    @Override
+                                    public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                                        doExecute(context, operation);
+                                    }
+                                };
+                        context.addStep(rrRsp, rrOp, handler, NewOperationContext.Stage.IMMEDIATE);
                     }
                     //Add a "child" => undefined
                     nodeDescription.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue());
                 }
             }
-
             context.completeStep();
         }
     };
@@ -747,6 +777,15 @@ public class GlobalOperationHandlers {
 
     public abstract static class AbstractMultiTargetHandler implements NewStepHandler {
 
+        public static final ModelNode FAKE_OPERATION;
+        static {
+            final ModelNode resolve = new ModelNode();
+            resolve.get(OP).set("resolve");
+            resolve.get(OP_ADDR).setEmptyList();
+            resolve.protect();
+            FAKE_OPERATION = resolve;
+        }
+
         @Override
         public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -756,8 +795,19 @@ public class GlobalOperationHandlers {
                 // The final result should be a list of executed operations
                 final ModelNode result = context.getResult().setEmptyList();
                 // Trick the context to give us the model-root
-                context.addStep(new ModelNode(), AddressResolutionHandler.FAKE_OPERATION,
-                        new AddressResolutionHandler(operation, result), NewOperationContext.Stage.IMMEDIATE);
+                context.addStep(new ModelNode(), FAKE_OPERATION, new ModelAddressResolver(operation, result, new NewStepHandler() {
+                            @Override
+                            public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                                doExecute(context, operation);
+                            }
+                        }), NewOperationContext.Stage.IMMEDIATE);
+                // Add a handler at the end of the chain to aggregate the result
+                context.addStep(new NewStepHandler() {
+                    @Override
+                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                        context.completeStep();
+                    }
+                }, NewOperationContext.Stage.VERIFY);
                 context.completeStep();
             } else {
                 doExecute(context, operation);
@@ -774,22 +824,15 @@ public class GlobalOperationHandlers {
         abstract void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException;
     }
 
-    public static final class AddressResolutionHandler implements NewStepHandler {
-
-        public static final ModelNode FAKE_OPERATION;
-        static {
-            final ModelNode resolve = new ModelNode();
-            resolve.get(OP).set("resolve");
-            resolve.get(OP_ADDR).setEmptyList();
-            resolve.protect();
-            FAKE_OPERATION = resolve;
-        }
+    public static final class ModelAddressResolver implements NewStepHandler {
 
         private final ModelNode operation;
         private final ModelNode result;
-        public AddressResolutionHandler(final ModelNode operation, final ModelNode result) {
+        private final NewStepHandler handler; // handler bypassing further wildcard resolution
+        public ModelAddressResolver(final ModelNode operation, final ModelNode result, final NewStepHandler delegate) {
             this.operation = operation;
             this.result = result;
+            this.handler = delegate;
         }
 
         /** {@inheritDoc} */
@@ -801,22 +844,18 @@ public class GlobalOperationHandlers {
         }
 
         void execute(final PathAddress address, final PathAddress base, final NewOperationContext context) {
+            final Resource resource = context.readResource(base);
             final PathAddress current = address.subAddress(base.size());
             final Iterator<PathElement> iterator = current.iterator();
             if(iterator.hasNext()) {
                 final PathElement element = iterator.next();
                 if(element.isMultiTarget()) {
-                    final String childType;
-                    if(element.getKey().equals("*")) {
-                        childType = null;
-                    } else {
-                        childType = element.getKey();
-                    }
+                    final String childType = element.getKey().equals("*") ? null : element.getKey();
                     final ImmutableModelNodeRegistration registration = context.getModelNodeRegistration().getSubModel(base);
                     if(registration.isRemote() || registration.isRuntimeOnly()) {
-                        // TODO dispatch
+                        // At least for proxies it should use the proxy operation handler
+                        throw new IllegalStateException();
                     }
-                    final Resource resource = context.readResource(base);
                     final Map<String, Set<String>> resolved = getChildAddresses(registration, resource, childType);
                     for (Map.Entry<String, Set<String>> entry : resolved.entrySet()) {
                         final String key = entry.getKey();
@@ -826,15 +865,75 @@ public class GlobalOperationHandlers {
                         }
                         if(element.isWildcard()) {
                             for(final String child : children) {
-                                execute(address, base.append(PathElement.pathElement(key, child)), context);
+                                // Double check if the child actually exists
+                                if(resource.hasChild(PathElement.pathElement(key, child))) {
+                                    execute(address, base.append(PathElement.pathElement(key, child)), context);
+                                }
                             }
                         } else {
                             for(final String segment : element.getSegments()) {
                                 if(children.contains(segment)) {
-                                    execute(address, base.append(PathElement.pathElement(key, segment)), context);
+                                    // Double check if the child actually exists
+                                    if(resource.hasChild(PathElement.pathElement(key, segment))) {
+                                        execute(address, base.append(PathElement.pathElement(key, segment)), context);
+                                    }
                                 }
                             }
                         }
+                    }
+                } else {
+                    // Double check if the child actually exists
+                    if(resource.hasChild(element)) {
+                        execute(address, base.append(element), context);
+                    }
+                }
+            } else {
+                final String operationName = operation.require(OP).asString();
+                final ModelNode newOp = operation.clone();
+                newOp.get(OP_ADDR).set(base.toModelNode());
+
+                final ModelNode result = this.result.add();
+                result.get(OP_ADDR).set(base.toModelNode());
+                context.addStep(result, newOp, handler, NewOperationContext.Stage.IMMEDIATE);
+            }
+        }
+
+    }
+
+    static class RegistrationAddressResolver implements NewStepHandler {
+
+        private final ModelNode operation;
+        private final ModelNode result;
+        private final NewStepHandler handler; // handler bypassing further wildcard resolution
+        RegistrationAddressResolver(final ModelNode operation, final ModelNode result, final NewStepHandler delegate) {
+            this.operation = operation;
+            this.result = result;
+            this.handler = delegate;
+        }
+
+        @Override
+        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            execute(address, PathAddress.EMPTY_ADDRESS, context);
+            context.completeStep();
+        }
+
+        void execute(final PathAddress address, PathAddress base, final NewOperationContext context) {
+            final PathAddress current = address.subAddress(base.size());
+            final Iterator<PathElement> iterator = current.iterator();
+            if(iterator.hasNext()) {
+                final PathElement element = iterator.next();
+                if(element.isMultiTarget()) {
+                    final Set<PathElement> children = context.getModelNodeRegistration().getChildAddresses(base);
+                    if(children == null || children.isEmpty()) {
+                        return;
+                    }
+                    final String childType = element.getKey().equals("*") ? null : element.getKey();
+                    for(final PathElement path : children) {
+                        if(childType != null && ! childType.equals(path.getKey())) {
+                            continue;
+                        }
+                        execute(address, base.append(path), context);
                     }
                 } else {
                     execute(address, base.append(element), context);
@@ -846,16 +945,15 @@ public class GlobalOperationHandlers {
 
                 final ModelNode result = this.result.add();
                 result.get(OP_ADDR).set(base.toModelNode());
-                final NewStepHandler handler = context.getModelNodeRegistration().getOperationHandler(base, operationName);
-                context.addStep(result, newOp, handler, NewOperationContext.Stage.MODEL);
+                context.addStep(result, newOp, handler, NewOperationContext.Stage.IMMEDIATE);
             }
         }
-
     }
 
     private static ModelNode safeReadModel(final NewOperationContext context) {
         try {
-            final ModelNode result = context.readModel(PathAddress.EMPTY_ADDRESS);
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            final ModelNode result = resource.getModel();
             if (result.isDefined()) {
                 return result;
             }

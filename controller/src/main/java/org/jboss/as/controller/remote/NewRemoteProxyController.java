@@ -92,7 +92,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
     }
 
     /**
-     * Creates a new remote proxy controller using an exisiting channel
+     * Creates a new remote proxy controller using an existing channel
      *
      * @param executorService the executor to use for the requests
      * @param pathAddress the address within the model of the created proxy controller

@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.embedded.mgmt;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -29,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -130,32 +133,33 @@ public class BasicOperationsUnitTestCase {
         }
     }
 
-//    @Test
-//    public void testSocketBindingDescriptions() throws IOException {
-//
-//        final ModelNode address = new ModelNode();
-//        address.add("socket-binding-group", "*");
-//        address.add("socket-binding", "*");
-//        address.protect();
-//
-//        final ModelNode operation = new ModelNode();
-//        operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
-//        operation.get(OP_ADDR).set(address);
-//
-//        final ModelNode result = client.execute(operation);
-//        Assert.assertTrue(result.hasDefined(RESULT));
-//        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-//        final Collection<ModelNode> steps = getSteps(result.get(RESULT));
-//        Assert.assertFalse(steps.isEmpty());
-//        for(final ModelNode step : steps) {
-//            Assert.assertTrue(step.hasDefined(OP_ADDR));
-//            Assert.assertTrue(step.hasDefined(RESULT));
-//            Assert.assertEquals(SUCCESS, step.get(OUTCOME).asString());
-//            final ModelNode stepResult = step.get(RESULT);
-//            Assert.assertTrue(stepResult.hasDefined(DESCRIPTION));
-//            Assert.assertTrue(stepResult.hasDefined(ATTRIBUTES));
-//        }
-//    }
+    @Test
+    public void testSocketBindingDescriptions() throws IOException {
+
+        final ModelNode address = new ModelNode();
+        address.add("socket-binding-group", "*");
+        address.add("socket-binding", "*");
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
+        operation.get(OP_ADDR).set(address);
+
+        final ModelNode result = getModelControllerClient().execute(operation);
+        Assert.assertTrue(result.hasDefined(RESULT));
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        final Collection<ModelNode> steps = result.get(RESULT).asList();
+        Assert.assertFalse(steps.isEmpty());
+        Assert.assertEquals("should only contain a single type", 1, steps.size());
+        for(final ModelNode step : steps) {
+            Assert.assertTrue(step.hasDefined(OP_ADDR));
+            Assert.assertTrue(step.hasDefined(RESULT));
+            Assert.assertEquals(SUCCESS, step.get(OUTCOME).asString());
+            final ModelNode stepResult = step.get(RESULT);
+            Assert.assertTrue(stepResult.hasDefined(DESCRIPTION));
+            Assert.assertTrue(stepResult.hasDefined(ATTRIBUTES));
+        }
+    }
 
     @Test
     public void testHttpSocketBinding() throws IOException {
