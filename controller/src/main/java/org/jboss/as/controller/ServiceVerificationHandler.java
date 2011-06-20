@@ -52,12 +52,18 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
         }
         if (! failed.isEmpty() || ! problem.isEmpty()) {
             final ModelNode failureDescription = context.getFailureDescription();
-            final ModelNode failedList = failureDescription.get("failed");
+            ModelNode failedList = null;
             for (ServiceController<?> controller : failed) {
+                if (failedList == null) {
+                    failedList = failureDescription.get("Failed services");
+                }
                 failedList.get(controller.getName().getCanonicalName()).set(controller.getStartException().toString());
             }
-            final ModelNode problemList = failureDescription.get("transitive-problem");
+            ModelNode problemList = null;
             for (ServiceController<?> controller : problem) {
+                if (problemList == null) {
+                    problemList = failureDescription.get("Services with missing/unavailable dependencies");
+                }
                 problemList.add(controller.getName().getCanonicalName());
             }
             if (NewModelControllerImpl.RB_ON_RT_FAILURE.get() == Boolean.TRUE) {
