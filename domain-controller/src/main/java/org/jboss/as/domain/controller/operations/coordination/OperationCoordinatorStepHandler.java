@@ -139,7 +139,11 @@ public class OperationCoordinatorStepHandler {
     private void executeDirect(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         System.out.println("Executing direct");
         final String operationName =  operation.require(OP).asString();
-        final NewStepHandler stepHandler = context.getModelNodeRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
+        NewStepHandler stepHandler = null;
+        final ImmutableModelNodeRegistration registration = context.getModelNodeRegistration();
+        if (registration != null) {
+            stepHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
+        }
         if(stepHandler != null) {
             context.addStep(stepHandler, NewOperationContext.Stage.MODEL);
         } else {

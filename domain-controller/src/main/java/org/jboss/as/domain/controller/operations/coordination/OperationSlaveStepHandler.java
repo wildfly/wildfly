@@ -82,6 +82,10 @@ public class OperationSlaveStepHandler {
 
         final PathAddress originalAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
         final ImmutableModelNodeRegistration originalRegistration = context.getModelNodeRegistration();
+        if (originalRegistration == null) {
+            String operationName = operation.require(OP).asString();
+            throw new OperationFailedException(new ModelNode().set(String.format("No handler for operation %s at address %s", operationName, originalAddress)));
+        }
         final Resource root = context.getRootResource();
         final ModelNode model = Resource.Tools.readModel(root);
         ParsedOp parsedOp = parseOperation(operation, 0, model);

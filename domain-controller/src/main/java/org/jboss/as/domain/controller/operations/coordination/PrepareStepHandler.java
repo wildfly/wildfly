@@ -37,6 +37,7 @@ import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.dmr.ModelNode;
 
@@ -102,7 +103,11 @@ public class PrepareStepHandler  implements NewStepHandler {
     private void executeDirect(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         System.out.println("PrepareStepHandler execute direct " + operation);
         final String operationName =  operation.require(OP).asString();
-        final NewStepHandler stepHandler = context.getModelNodeRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
+        NewStepHandler stepHandler = null;
+        final ImmutableModelNodeRegistration registration = context.getModelNodeRegistration();
+        if (registration != null) {
+            stepHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
+        }
         if(stepHandler != null) {
             context.addStep(stepHandler, NewOperationContext.Stage.MODEL);
         } else {
