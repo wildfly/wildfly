@@ -138,7 +138,7 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="connections">
+            <xs:element name="connections" minOccurs="0">
                 <xs:complexType>
                     <xs:sequence>
                       <xs:element name="ldap" type="ldapType" minOccurs="1" /> <!-- TODO minOccurs only while ldap is only supported connection. -->
@@ -200,8 +200,8 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="server-identities" type="server-identitiesType" />
-            <xs:element name="authentication" type="authenticationType" />
+            <xs:element name="server-identities" type="server-identitiesType" minOccurs="0" />
+            <xs:element name="authentication" type="authenticationType" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
