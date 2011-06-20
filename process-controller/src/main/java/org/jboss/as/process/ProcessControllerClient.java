@@ -22,11 +22,19 @@
 
 package org.jboss.as.process;
 
+import static org.jboss.as.protocol.old.StreamUtils.readFully;
+import static org.jboss.as.protocol.old.StreamUtils.readInt;
+import static org.jboss.as.protocol.old.StreamUtils.readLong;
+import static org.jboss.as.protocol.old.StreamUtils.readUTFZBytes;
+import static org.jboss.as.protocol.old.StreamUtils.readUnsignedByte;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.writeInt;
+import static org.jboss.as.protocol.old.StreamUtils.writeUTFZBytes;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,8 +43,6 @@ import org.jboss.as.protocol.old.MessageHandler;
 import org.jboss.as.protocol.old.ProtocolClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.logging.Logger;
-
-import static org.jboss.as.protocol.old.StreamUtils.*;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -283,6 +289,16 @@ public final class ProcessControllerClient implements Closeable {
             writeUTFZBytes(os, processName);
             writeUTFZBytes(os, hostName);
             writeInt(os, port);
+            os.close();
+        } finally {
+            safeClose(os);
+        }
+    }
+
+    public void shutdown() throws IOException {
+        final OutputStream os = connection.writeMessage();
+        try {
+            os.write(Protocol.SHUTDOWN);
             os.close();
         } finally {
             safeClose(os);

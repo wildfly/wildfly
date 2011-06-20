@@ -22,9 +22,7 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -96,4 +94,9 @@ public interface NewDomainController {
      * @return the file repository
      */
     FileRepository getFileRepository();
+
+    /**
+     * Stops this host controller
+     */
+    void stopLocalHost();
 }

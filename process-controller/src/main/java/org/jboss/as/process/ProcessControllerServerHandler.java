@@ -22,6 +22,12 @@
 
 package org.jboss.as.process;
 
+import static org.jboss.as.protocol.old.StreamUtils.readFully;
+import static org.jboss.as.protocol.old.StreamUtils.readInt;
+import static org.jboss.as.protocol.old.StreamUtils.readUTFZBytes;
+import static org.jboss.as.protocol.old.StreamUtils.readUnsignedByte;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -33,8 +39,6 @@ import org.jboss.as.protocol.old.ConnectionHandler;
 import org.jboss.as.protocol.old.MessageHandler;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.logging.Logger;
-
-import static org.jboss.as.protocol.old.StreamUtils.*;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -210,6 +214,18 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                                 log.tracef("Ignoring reconnect_process message from untrusted source");
                             }
                             dataStream.close();
+                            break;
+                        } case Protocol.SHUTDOWN: {
+                            if (isHostController) {
+                                new Thread(new Runnable() {
+                                    public void run() {
+                                        processController.shutdown();
+                                        System.exit(0);
+                                    }
+                                }).start();
+                            } else {
+                                log.tracef("Ignoring shutdown message from untrusted source");
+                            }
                             break;
                         }
                         default: {

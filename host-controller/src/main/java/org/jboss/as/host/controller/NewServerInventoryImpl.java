@@ -321,5 +321,4 @@ public class NewServerInventoryImpl implements NewServerInventory {
         final NewModelCombiner combiner = new NewModelCombiner(serverName, domainModel, hostModel, domainController, environment);
         return new ManagedServer(serverName, processControllerClient, managementAddress, combiner);
     }
-
 }

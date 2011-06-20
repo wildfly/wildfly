@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.io.IOException;
 import java.security.AccessController;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,6 +77,7 @@ import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryServ
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.NewStartServersHandler;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.remoting.RemotingServices;
@@ -110,16 +112,19 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final FileRepository localFileRepository;
     private final RemoteFileRepository remoteFileRepository;
     private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<ExecutorService>();
+    private final InjectedValue<NewProcessControllerConnectionService> injectedProcessControllerConnection = new InjectedValue<NewProcessControllerConnectionService>();
     private final Map<String, NewProxyController> hostProxies;
     private final Map<String, NewProxyController> serverProxies;
     private final PrepareStepHandler prepareStepHandler;
     private ModelNodeRegistration modelNodeRegistration;
+    private volatile NewMasterDomainControllerClient masterDomainControllerClient;
 
     private final Map<String, ManagementChannel> unregisteredHostChannels = new HashMap<String, ManagementChannel>();
     private final Map<String, ProxyCreatedCallback> proxyCreatedCallbacks = new HashMap<String, ProxyCreatedCallback>();
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool();
 
     private volatile NewServerInventory serverInventory;
+
 
     public static ServiceController<NewModelController> addService(final ServiceTarget serviceTarget,
                                                             final HostControllerEnvironment environment,
@@ -133,6 +138,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 hostProxies, serverProxies, prepareStepHandler);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(NewHostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.injectedExecutorService)
+                .addDependency(NewProcessControllerConnectionService.SERVICE_NAME, NewProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }
@@ -268,7 +274,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                         hostControllerInfo.getRemoteDomainControllerHost(),
                         hostControllerInfo.getRemoteDomainControllertPort(),
                         remoteFileRepository);
-                NewMasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
+                masterDomainControllerClient = getFuture(clientFuture);
                 //Registers us with the master and gets down the master copy of the domain model to our DC
                 //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
                 masterDomainControllerClient.register();
@@ -370,6 +376,17 @@ public class DomainModelControllerService extends AbstractControllerService impl
     public void stop(StopContext context) {
         serverInventory = null;
         super.stop(context);
+    }
+
+
+    @Override
+    public void stopLocalHost() {
+        final ProcessControllerClient client = injectedProcessControllerConnection.getValue().getClient();
+        try {
+            client.shutdown();
+        } catch (IOException e) {
+            throw new RuntimeException("Error closing down host", e);
+        }
     }
 
     @Override

@@ -93,6 +93,7 @@ import org.jboss.as.host.controller.NewRemoteDomainConnectionService.RemoteFileR
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
+import org.jboss.as.host.controller.operations.HostStopHandler;
 import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
@@ -174,6 +175,8 @@ public class NewHostModelUtil {
         hostRegistration.registerReadOnlyAttribute(MASTER, IsMasterHandler.INSTANCE, Storage.RUNTIME);
         NewStartServersHandler ssh = new NewStartServersHandler(environment, serverInventory);
         hostRegistration.registerOperationHandler(NewStartServersHandler.OPERATION_NAME, ssh, ssh, false, OperationEntry.EntryType.PRIVATE);
+        HostStopHandler hsh = new HostStopHandler(domainController);
+        hostRegistration.registerOperationHandler(HostStopHandler.OPERATION_NAME, hsh, hsh);
 
         // System Properties
         ModelNodeRegistration sysProps = hostRegistration.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
