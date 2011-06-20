@@ -22,6 +22,7 @@
 package org.jboss.as.test.spec.ejb3.security.runas;
 
 import org.jboss.as.test.spec.ejb3.security.WhoAmI;
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.LocalBean;
@@ -40,6 +41,7 @@ import static javax.ejb.TransactionAttributeType.SUPPORTS;
 @LocalBean
 @RolesAllowed("Role2")
 @TransactionAttribute(SUPPORTS)
+@SecurityDomain("other")
 public class WhoAmIBean extends org.jboss.as.test.spec.ejb3.security.base.WhoAmIBean implements WhoAmI {
 
     // TODO - Do I really need to override methods and do they really need to be annotated individually.
