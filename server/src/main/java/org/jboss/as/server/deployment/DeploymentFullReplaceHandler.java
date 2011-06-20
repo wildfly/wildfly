@@ -153,6 +153,7 @@ public class DeploymentFullReplaceHandler implements NewStepHandler, Description
             } finally {
                 StreamUtils.safeClose(in);
             }
+            contentItemNode.clear(); // AS7-1029
             contentItemNode.get(HASH).set(hash);
             // TODO: remove the content addition stuff?
             contentItem = new DeploymentHandlerUtil.ContentItem(hash);

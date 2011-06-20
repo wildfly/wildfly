@@ -154,6 +154,7 @@ public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider
             } finally {
                 StreamUtils.safeClose(in);
             }
+            contentItemNode.clear(); // AS7-1029
             contentItemNode.get(HASH).set(hash);
         } else {
             // Unmanaged content, the user is responsible for replication
