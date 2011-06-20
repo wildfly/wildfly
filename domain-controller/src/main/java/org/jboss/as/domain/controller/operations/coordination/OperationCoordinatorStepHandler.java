@@ -92,7 +92,9 @@ public class OperationCoordinatorStepHandler {
             routetoMasterDomainController(context, operation);
         }
         else if (routing.getSingleHost() != null && !localHostControllerInfo.getLocalHostName().equals(routing.getSingleHost())) {
-            System.out.println("Remote single host");
+            if (PrepareStepHandler.isTraceEnabled()) {
+                PrepareStepHandler.log.trace("Remote single host");
+            }
             // Possibly a two step operation, but not coordinated by this host. Execute direct and let the remote HC
             // coordinate any two step process (if there is one)
             executeDirect(context, operation);
@@ -119,7 +121,6 @@ public class OperationCoordinatorStepHandler {
     }
 
     private void routetoMasterDomainController(NewOperationContext context, ModelNode operation) {
-        // System.out.println("------ route to master ");
         // Per discussion on 2011/03/07, routing requests from a slave to the
         // master may overly complicate the security infrastructure. Therefore,
         // the ability to do this is being disabled until it's clear that it's
@@ -137,7 +138,9 @@ public class OperationCoordinatorStepHandler {
      * @throws OperationFailedException
      */
     private void executeDirect(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        System.out.println("Executing direct");
+        if (PrepareStepHandler.isTraceEnabled()) {
+            PrepareStepHandler.log.trace("Executing direct");
+        }
         final String operationName =  operation.require(OP).asString();
         NewStepHandler stepHandler = null;
         final ImmutableModelNodeRegistration registration = context.getModelNodeRegistration();
@@ -153,7 +156,9 @@ public class OperationCoordinatorStepHandler {
     }
 
     private void executeTwoPhaseOperation(NewOperationContext context, ModelNode operation, OperationRouting routing) throws OperationFailedException {
-        System.out.println("Executing two-phase");
+        if (PrepareStepHandler.isTraceEnabled()) {
+            PrepareStepHandler.log.trace("Executing two-phase");
+        }
 
         DomainOperationContext overallContext = new DomainOperationContext(localHostControllerInfo);
 

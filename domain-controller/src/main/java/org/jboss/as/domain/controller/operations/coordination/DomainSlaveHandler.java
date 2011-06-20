@@ -99,7 +99,9 @@ public class DomainSlaveHandler implements NewStepHandler {
                     futures.get(entry.getKey()).cancel(true);
                 }
 
-                System.out.println("Result for " + entry.getKey() + " is " + result);
+                if (PrepareStepHandler.isTraceEnabled()) {
+                    PrepareStepHandler.log.trace("Result for remote host " + entry.getKey() + " is " + result);
+                }
                 domainOperationContext.addHostControllerResult(entry.getKey(), result);
             }
 

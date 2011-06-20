@@ -40,6 +40,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
  * Initial step handler for a {@link org.jboss.as.controller.NewModelController} that is the model controller for a host controller.
@@ -49,6 +50,14 @@ import org.jboss.dmr.ModelNode;
 public class PrepareStepHandler  implements NewStepHandler {
 
     public static final String EXECUTE_FOR_COORDINATOR = "execute-for-coordinator";
+
+    static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
+
+    private static boolean trace = false;
+
+    public static boolean isTraceEnabled() {
+        return trace;
+    }
 
     private final LocalHostControllerInfo localHostControllerInfo;
     private final OperationCoordinatorStepHandler coordinatorHandler;
@@ -65,6 +74,8 @@ public class PrepareStepHandler  implements NewStepHandler {
     @Override
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
+        trace = log.isTraceEnabled();
+
         if (context.isBooting()) {
             executeDirect(context, operation);
         }
@@ -74,7 +85,6 @@ public class PrepareStepHandler  implements NewStepHandler {
             // Coordinator wants us to execute locally and send result including the steps needed for execution on the servers
             slaveHandler.execute(context, operation);
         } else if (isServerOperation(operation)) {
-            System.out.println("Server op");
             // Pass direct requests for the server through whether they come from the master or not
             executeDirect(context, operation);
         } else {
@@ -101,7 +111,9 @@ public class PrepareStepHandler  implements NewStepHandler {
      * @throws OperationFailedException
      */
     private void executeDirect(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        System.out.println("PrepareStepHandler execute direct " + operation);
+        if (trace) {
+            log.trace(getClass().getSimpleName() + " executing direct");
+        }
         final String operationName =  operation.require(OP).asString();
         NewStepHandler stepHandler = null;
         final ImmutableModelNodeRegistration registration = context.getModelNodeRegistration();

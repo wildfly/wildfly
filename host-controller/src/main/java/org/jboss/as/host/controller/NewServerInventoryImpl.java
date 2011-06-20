@@ -114,10 +114,8 @@ public class NewServerInventoryImpl implements NewServerInventory {
         final String processName = ManagedServer.getServerProcessName(serverName);
         final ManagedServer client = servers.get(processName);
         if (client == null) {
-            System.out.println(serverName + " unknown");
             status = ServerStatus.STOPPED; // TODO move the configuration state outside
         } else {
-            System.out.println(serverName + " is " + client.getState());
             switch (client.getState()) {
                 case AVAILABLE:
                 case BOOTING:

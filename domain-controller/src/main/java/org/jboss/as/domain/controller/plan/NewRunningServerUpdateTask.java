@@ -39,7 +39,7 @@ import org.jboss.logging.Logger;
  */
 class NewRunningServerUpdateTask extends AbstractServerUpdateTask {
 
-    private static final Logger logger = Logger.getLogger("org.jboss.as.domain.controller");
+    private static final Logger logger = Logger.getLogger("org.jboss.as.host.controller");
 
     private final NewServerOperationExecutor serverOperationExecutor;
     private final ModelNode serverUpdate;
@@ -61,7 +61,6 @@ class NewRunningServerUpdateTask extends AbstractServerUpdateTask {
         super(serverId, updatePolicy, resultHandler);
         this.serverOperationExecutor = serverOperationExecutor;
         this.serverUpdate = serverUpdate;
-        System.out.println("Task for " + serverId + " to execute " + serverUpdate);
     }
 
     @Override

@@ -310,7 +310,9 @@ final class NewOperationContextImpl implements NewOperationContext {
             return resultAction = ResultAction.ROLLBACK;
         }
         if (transactionControl != null) {
-            System.out.println("Prepared response is " + response);
+            if (log.isTraceEnabled()) {
+                log.trace("Prepared response is " + response);
+            }
             transactionControl.operationPrepared(new NewModelController.OperationTransaction() {
                 public void commit() {
                     ref.set(ResultAction.KEEP);

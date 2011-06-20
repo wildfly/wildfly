@@ -62,7 +62,10 @@ class ProxyTask implements Callable<ModelNode> {
     @Override
     public ModelNode call() throws Exception {
 
-        System.out.println("Sending " + operation + " to " + host);
+        boolean trace = PrepareStepHandler.isTraceEnabled();
+        if (trace) {
+            PrepareStepHandler.log.trace("Sending " + operation + " to " + host);
+        }
         OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
 
         final AtomicReference<NewModelController.OperationTransaction> txRef = new AtomicReference<NewModelController.OperationTransaction>();
@@ -93,10 +96,14 @@ class ProxyTask implements Callable<ModelNode> {
         ModelNode result = finalResultRef.get();
         if (result != null) {
             // operation failed before it could commit
-            System.out.println("Received final result " + result + " from " + host);
+            if (trace) {
+                PrepareStepHandler.log.trace("Received final result " + result + " from " + host);
+            }
         } else {
             result = preparedResultRef.get();
-            System.out.println("Received prepared result " + result + " from " + host);
+            if (trace) {
+                PrepareStepHandler.log.trace("Received prepared result " + result + " from " + host);
+            }
             remoteTransaction = txRef.get();
         }
 

@@ -156,9 +156,4 @@ public class ServerRootDescription {
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
 
-    public static void main(final String[] args) {
-        final ModelNode root = getDescription(null);
-        System.out.println(root);
-    }
-
 }

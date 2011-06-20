@@ -69,13 +69,12 @@ import org.jboss.logging.Logger;
  */
 public class DomainRolloutStepHandler implements NewStepHandler {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
-
     private final DomainOperationContext domainOperationContext;
     private final Map<String, NewProxyController> hostProxies;
     private final Map<String, NewProxyController> serverProxies;
     private final ExecutorService executorService;
     private final ModelNode providedRolloutPlan;
+    private final boolean trace = PrepareStepHandler.isTraceEnabled();
 
     public DomainRolloutStepHandler(final Map<String, NewProxyController> hostProxies,
                                     final Map<String, NewProxyController> serverProxies,
@@ -104,14 +103,20 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         if (pushToServers) {
             ModelNode ourResult = domainOperationContext.getCoordinatorResult();
             if (ourResult.has(FAILURE_DESCRIPTION)) {
-                System.out.println("coordinator failed: " + ourResult);
+                if (trace) {
+                    PrepareStepHandler.log.trace("coordinator failed: " + ourResult);
+                }
                 pushToServers = false;
                 domainOperationContext.setCompleteRollback(true);
             } else {
-                System.out.println("coordinator succeeded: " + ourResult);
+                if (trace) {
+                    PrepareStepHandler.log.trace("coordinator succeeded: " + ourResult);
+                }
                 for (ModelNode hostResult : domainOperationContext.getHostControllerResults().values()) {
                     if (hostResult.has(FAILURE_DESCRIPTION)) {
-                        System.out.println("host failed: " + hostResult);
+                        if (trace) {
+                            PrepareStepHandler.log.trace("host failed: " + hostResult);
+                        }
                         pushToServers = false;
                         domainOperationContext.setCompleteRollback(true);
                         break;
@@ -149,10 +154,10 @@ public class DomainRolloutStepHandler implements NewStepHandler {
                             domainOperationContext.addServerResult(entry.getKey(), finalResult);
                         } catch (InterruptedException e) {
                             interrupted = true;
-                            log.warnf("Interrupted awaiting final response from server %s on host %s", entry.getKey().getServerName(), entry.getKey().getHostName());
+                            PrepareStepHandler.log.warnf("Interrupted awaiting final response from server %s on host %s", entry.getKey().getServerName(), entry.getKey().getHostName());
 
                         } catch (ExecutionException e) {
-                            log.warnf(e.getCause(), "Caught exception awaiting final response from server %s on host %s",
+                            PrepareStepHandler.log.warnf(e.getCause(), "Caught exception awaiting final response from server %s on host %s",
                                     entry.getKey().getServerName(), entry.getKey().getHostName());
                         }
                     }
@@ -187,7 +192,9 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         if (opsByGroup.size() > 0) {
 
             final ModelNode rolloutPlan = getRolloutPlan(this.providedRolloutPlan, opsByGroup);
-            System.out.println("Rollout plan is " + rolloutPlan);
+            if (trace) {
+                PrepareStepHandler.log.trace("Rollout plan is " + rolloutPlan);
+            }
             final NewServerOperationExecutor operationExecutor = new NewServerOperationExecutor() {
                 @Override
                 public ModelNode executeServerOperation(ServerIdentity server, ModelNode operation) {
@@ -197,7 +204,9 @@ public class DomainRolloutStepHandler implements NewStepHandler {
                             // Use our server proxies
                             proxy = serverProxies.get(server.getServerName());
                             if (proxy == null) {
-                                System.out.println("No proxy for " + server);
+                                if (trace) {
+                                    PrepareStepHandler.log.trace("No proxy for " + server);
+                                }
                                 return null;
                             }
                         }
@@ -232,7 +241,9 @@ public class DomainRolloutStepHandler implements NewStepHandler {
             };
             NewRolloutPlanController rolloutPlanController = new NewRolloutPlanController(opsByGroup, rolloutPlan, domainOperationContext, operationExecutor, executorService);
             NewRolloutPlanController.Result planResult = rolloutPlanController.execute();
-            System.out.println("Rollout plan result is " + planResult);
+            if (trace) {
+                PrepareStepHandler.log.trace("Rollout plan result is " + planResult);
+            }
             if (planResult == NewRolloutPlanController.Result.FAILED) {
                 domainOperationContext.setCompleteRollback(true);
                 // AS7-801 -- we need to record a failure description here so the local host change gets aborted
@@ -249,7 +260,9 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         Map<String, Map<ServerIdentity, ModelNode>> result = new HashMap<String, Map<ServerIdentity, ModelNode>>();
 
         for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
-            System.out.println("Result from host " + entry.getKey() + " is " + entry.getValue());
+            if (trace) {
+                PrepareStepHandler.log.trace("1st phase result from host " + entry.getKey() + " is " + entry.getValue());
+            }
             ModelNode hostResult = entry.getValue().get(RESULT);
             if (hostResult.hasDefined(SERVER_OPERATIONS)) {
                 String host = entry.getKey();

@@ -50,6 +50,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -60,6 +61,8 @@ import org.jboss.threads.AsyncFutureTask;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 class NewModelControllerImpl implements NewModelController {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private static final ModelNode EMPTY;
 
@@ -333,7 +336,9 @@ class NewModelControllerImpl implements NewModelController {
 
         @Override
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-            System.out.println("Executing " + operation.get(OP) + " " + operation.get(OP_ADDR));
+            if (log.isTraceEnabled()) {
+                log.trace("Executing " + operation.get(OP) + " " + operation.get(OP_ADDR));
+            }
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String operationName =  operation.require(OP).asString();
             final NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);

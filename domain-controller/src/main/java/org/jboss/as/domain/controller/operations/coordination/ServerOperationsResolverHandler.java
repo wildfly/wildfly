@@ -103,9 +103,8 @@ public class ServerOperationsResolverHandler implements NewStepHandler {
                 createOverallResult(serverOps, localResult, responseNode);
             }
 
-            System.out.println("ServerOperationResolverHandler responseNode is " + responseNode);
-            if (!recordResponse) {
-                System.out.println("ServerOperationResolverHandler localResponse is " + localResponse);
+            if (PrepareStepHandler.isTraceEnabled()) {
+                PrepareStepHandler.log.trace(getClass().getSimpleName() + " responseNode is " + responseNode);
             }
         }
 

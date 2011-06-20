@@ -28,6 +28,7 @@ import org.jboss.as.domain.controller.operations.coordination.DomainOperationCon
 import org.jboss.as.domain.controller.plan.AbstractServerUpdateTask.ServerUpdateResultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 
 /**
  * Coordinates rolling out a series of operations to the servers specified in a rollout plan.
@@ -35,6 +36,8 @@ import org.jboss.dmr.Property;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class NewRolloutPlanController implements ServerUpdateResultHandler {
+
+    private static final Logger logger = Logger.getLogger("org.jboss.as.host.controller");
 
     public static enum Result {
         SUCCESS,
@@ -50,13 +53,13 @@ public class NewRolloutPlanController implements ServerUpdateResultHandler {
     private final NewServerOperationExecutor serverOperationExecutor;
     private final DomainOperationContext domainOperationContext;
     private final ConcurrentMap<String, Map<ServerIdentity, ModelNode>> serverResults = new ConcurrentHashMap<String, Map<ServerIdentity, ModelNode>>();
+    private final boolean trace = logger.isTraceEnabled();
 
     public NewRolloutPlanController(final Map<String, Map<ServerIdentity, ModelNode>> opsByGroup,
                                     final ModelNode rolloutPlan,
                                     final DomainOperationContext domainOperationContext,
                                     final NewServerOperationExecutor serverOperationExecutor,
                                     final ExecutorService executor) {
-
         this.domainOperationContext = domainOperationContext;
         this.serverOperationExecutor = serverOperationExecutor;
 
@@ -146,7 +149,9 @@ public class NewRolloutPlanController implements ServerUpdateResultHandler {
 
     @Override
     public void handleServerUpdateResult(ServerIdentity serverId, ModelNode response) {
-        System.out.println("From " + serverId + " received " + response);
+        if (trace) {
+            logger.trace("From " + serverId + " received " + response);
+        }
         Map<ServerIdentity, ModelNode> groupResults = serverResults.get(serverId.getServerGroupName());
         if (groupResults == null) {
             groupResults = new ConcurrentHashMap<ServerIdentity, ModelNode>();

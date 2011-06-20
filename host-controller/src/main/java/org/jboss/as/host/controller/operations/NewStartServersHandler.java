@@ -100,7 +100,6 @@ public class NewStartServersHandler implements NewStepHandler, DescriptionProvid
         for(final String serverName : servers.keys()) {
             if(servers.get(serverName, AUTO_START).asBoolean(true)) {
                 try {
-                    System.out.println("Start server " + serverName + " " + serverInventory);
                     serverInventory.startServer(serverName, domainModel);
                 } catch (Exception e) {
                     log.errorf(e, "Failed to start server (%s)", serverName);
