@@ -150,7 +150,6 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
                     channel.writeShutdown();
                 } catch (IOException ignore) {
                 }
-                IoUtils.safeClose(channel);
                 try {
                     channel.awaitClosed();
                 } catch (InterruptedException e) {

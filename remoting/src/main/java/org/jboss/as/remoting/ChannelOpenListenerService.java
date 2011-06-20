@@ -107,7 +107,6 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
             @Override
             public void handleClose(Channel closed) {
                 log.tracef("Handling close for %s", protocolChannel);
-                protocolChannel.stopReceiving();
             }
         });
     }

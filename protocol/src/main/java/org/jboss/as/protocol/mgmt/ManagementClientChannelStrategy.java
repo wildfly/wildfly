@@ -130,7 +130,6 @@ public abstract class ManagementClientChannelStrategy {
 
         @Override
         public void requestDone() {
-            IoUtils.safeClose(channel);
             IoUtils.safeClose(client);
         }
 

@@ -22,14 +22,12 @@
 package org.jboss.as.protocol;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.remoting3.Attachments;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
-import org.xnio.IoUtils;
 
 /**
  * A wrapper around the {@link Channel} that handles repeated receives on the Channel.
@@ -41,14 +39,13 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
     private final String name;
     private final Channel channel;
     private boolean start;
-    private final AtomicBoolean stopReceiving = new AtomicBoolean();
 
     protected ProtocolChannel(String name, Channel channel) {
         this.name = name;
         this.channel = channel;
         channel.addCloseHandler(new CloseHandler<Channel>() {
             public void handleClose(Channel closed) {
-                stopReceiving.set(true);
+                //stopReceiving.set(true);
             }
         });
     }
@@ -131,15 +128,12 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
 
     @Override
     public void handleEnd(Channel channel) {
-        //TODO handle this?
-    }
-
-    void receive() {
-        channel.receiveMessage(this);
-    }
-
-    public void stopReceiving() {
-        stopReceiving.set(true);
+        try {
+            close();
+            //stopReceiving.set(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -148,9 +142,6 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
         try {
             doHandle(channel, message);
         } finally {
-            if (stopReceiving.get()) {
-                IoUtils.safeClose(channel);
-            }
         }
     }
 

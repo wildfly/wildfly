@@ -213,8 +213,6 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
             log.errorf(e, "Error unregistering from master");
         }
         finally {
-            channel.stopReceiving();
-
             channelClient.close();
         }
     }
