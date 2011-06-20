@@ -28,25 +28,28 @@ import org.jboss.dmr.ModelNode;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
+ * Standard {@link Resource} implementation.
+ *
+ * <p>Concurrency note: if a thread needs to modify a BasicResource, it must use the clone() method to obtain its
+ * own copy of the resource. That instance cannot be made visible to other threads until all writes are complete.</p>
+ *
  * @author Emanuel Muckenhuber
  */
 class BasicResource implements Resource {
 
-    private static final AtomicMapFieldUpdater<BasicResource, String, ResourceProvider> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(BasicResource.class, Map.class, "children"));
-
     /** The local model. */
     private final ModelNode model = new ModelNode();
     /** The children. */
-    private volatile Map<String, ResourceProvider> children;
+    private final Map<String, ResourceProvider> children = new LinkedHashMap<String, ResourceProvider>();
 
     protected BasicResource() {
-        childrenUpdater.clear(this);
     }
 
     @Override
@@ -66,7 +69,7 @@ class BasicResource implements Resource {
 
     @Override
     public Resource getChild(final PathElement address) {
-        final ResourceProvider provider = childrenUpdater.get(this, address.getKey());
+        final ResourceProvider provider = children.get(address.getKey());
         if(provider == null) {
             return null;
         }
@@ -75,7 +78,7 @@ class BasicResource implements Resource {
 
     @Override
     public boolean hasChild(final PathElement address) {
-        final ResourceProvider provider = childrenUpdater.get(this, address.getKey());
+        final ResourceProvider provider = children.get(address.getKey());
         if(provider == null) {
             return false;
         }
@@ -110,7 +113,7 @@ class BasicResource implements Resource {
 
     @Override
     public Set<String> getChildrenNames(final String childType) {
-        final ResourceProvider provider = childrenUpdater.get(this, childType);
+        final ResourceProvider provider = children.get(childType);
         if(provider == null) {
             return Collections.emptySet();
         }
@@ -119,8 +122,7 @@ class BasicResource implements Resource {
 
     @Override
     public Set<String> getChildTypes() {
-        final Map<String, ResourceProvider> snapshot = childrenUpdater.get(this);
-        return new HashSet<String>(snapshot.keySet());
+        return new HashSet<String>(children.keySet());
     }
 
     @Override
@@ -157,7 +159,7 @@ class BasicResource implements Resource {
 
     @Override
     public Resource removeChild(PathElement address) {
-        final ResourceProvider provider = childrenUpdater.get(this, address.getKey());
+        final ResourceProvider provider = children.get(address.getKey());
         if(provider == null) {
             return null;
         }
@@ -187,26 +189,27 @@ class BasicResource implements Resource {
     }
 
     protected void registerResourceProvider(final String type, final ResourceProvider provider) {
-        if(childrenUpdater.putIfAbsent(this, type, provider) != null) {
-            throw new IllegalStateException();
+        if (children.containsKey(type)) {
+            throw new IllegalStateException("duplicate resource type " + type);
         }
+        children.put(type, provider);
     }
 
     protected ResourceProvider getProvider(final String type) {
-        return childrenUpdater.get(this, type);
+        return children.get(type);
     }
 
     protected ResourceProvider getOrCreateProvider(final String type) {
-        final Map<String, ResourceProvider> snapshot = childrenUpdater.get(this);
-        final ResourceProvider provider = snapshot.get(type);
+        final ResourceProvider provider = children.get(type);
         if(provider != null) {
             return provider;
         } else {
             final ResourceProvider newProvider = new DefaultResourceProvider();
-            final ResourceProvider existing = childrenUpdater.putIfAbsent(this, type, newProvider);
+            final ResourceProvider existing = children.get(type);
             if(existing != null) {
                 return existing;
             } else {
+                children.put(type, newProvider);
                 return newProvider;
             }
         }
@@ -214,27 +217,24 @@ class BasicResource implements Resource {
 
     static class DefaultResourceProvider implements ResourceProvider {
 
-        private static final AtomicMapFieldUpdater<DefaultResourceProvider, String, Resource> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(DefaultResourceProvider.class, Map.class, "children"));
-        private volatile Map<String, Resource> children;
+        private final Map<String, Resource> children = new LinkedHashMap<String, Resource>();
 
         protected DefaultResourceProvider() {
-            childrenUpdater.clear(this);
         }
 
         @Override
         public Set<String> children() {
-            final Map<String, Resource> snapshot = childrenUpdater.get(this);
-            return new HashSet<String>(snapshot.keySet());
+            return new HashSet<String>(children.keySet());
         }
 
         @Override
         public boolean has(String name) {
-            return childrenUpdater.get(this, name) != null;
+            return children.get(name) != null;
         }
 
         @Override
         public Resource get(String name) {
-            return childrenUpdater.get(this, name);
+            return children.get(name);
         }
 
         @Override
@@ -244,14 +244,15 @@ class BasicResource implements Resource {
 
         @Override
         public void register(String name, Resource resource) {
-            if(childrenUpdater.putIfAbsent(this, name, resource) != null) {
+            if (children.containsKey(name)) {
                 throw new IllegalStateException("duplicate resource" + name);
             }
+            children.put(name, resource);
         }
 
         @Override
         public Resource remove(String name) {
-            return childrenUpdater.remove(this, name);
+            return children.remove(name);
         }
     }
 
