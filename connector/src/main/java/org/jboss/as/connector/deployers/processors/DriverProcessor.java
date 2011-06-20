@@ -80,7 +80,7 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                     DriverService driverService = new DriverService(driverMetadata, driver);
                     phaseContext
                             .getServiceTarget()
-                            .addService(ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll(".", "_")), driverService)
+                            .addService(ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_")), driverService)
                             .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                                     driverService.getDriverRegistryServiceInjector()).setInitialMode(Mode.ACTIVE).install();
 
