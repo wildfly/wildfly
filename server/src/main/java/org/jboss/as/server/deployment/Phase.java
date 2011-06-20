@@ -227,6 +227,7 @@ public enum Phase {
     public static final int PARSE_EJB_TRANSACTION_MANAGEMENT            = 0x1600;
     public static final int PARSE_EJB_BUSINESS_VIEW_ANNOTATION          = 0x1700;
     public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1800;
+    public static final int PARSE_EJB_SECURITY_DOMAIN_ANNOTATION        = 0x1801;
     public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x1900;
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
     public static final int PARSE_REMOVE_METHOD_ANNOTAION               = 0x1902;

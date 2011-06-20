@@ -36,7 +36,6 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
-import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -650,6 +649,15 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             return false;
         }
         return permitAllApplicationClasses.contains(className);
+    }
+
+    /**
+     * Returns true if this bean is secured. Else returns false.
+     *
+     * @return
+     */
+    public boolean isSecurityEnabled() {
+        return this.securityDomain != null;
     }
 
     /**
