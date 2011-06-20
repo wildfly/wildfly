@@ -22,6 +22,8 @@
 
 package org.jboss.as.testsuite.integration.ejb.security;
 
+import org.jboss.ejb3.annotation.SecurityDomain;
+
 import javax.annotation.security.DenyAll;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
@@ -33,6 +35,7 @@ import javax.ejb.Stateful;
 @Singleton
 @DenyAll
 @LocalBean
+@SecurityDomain("other")
 public class FullyRestrictedBean extends AnnotatedSLSB {
 
     @Override
