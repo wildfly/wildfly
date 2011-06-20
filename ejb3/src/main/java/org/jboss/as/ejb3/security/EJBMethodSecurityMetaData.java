@@ -70,12 +70,6 @@ public class EJBMethodSecurityMetaData {
         this.denyAll = this.isAccessDenied(componentConfiguration, viewClassName, viewMethod);
         // process @PermitAll list
         this.permitAll = this.isPermitAll(componentConfiguration, viewClassName, viewMethod);
-        // if the method is marked for both @DenyAll (a.k.a exclude-list) and @PermitAll then it's an error
-        if (this.denyAll && this.permitAll) {
-            final Method componentMethod = this.findComponentMethod(componentConfiguration, viewMethod);
-            throw new IllegalStateException("Method " + componentMethod + " for view " + viewClassName + " shouldn't be " +
-                    "marked for both @PemitAll and @DenyAll at the same time");
-        }
         // process @RolesAllowed/method-permission
         this.rolesAllowed = Collections.unmodifiableSet(this.getRolesAllowed(componentConfiguration, viewClassName, viewMethod));
 
@@ -114,17 +108,34 @@ public class EJBMethodSecurityMetaData {
 
     private boolean isAccessDenied(final ComponentConfiguration componentConfiguration, final String viewClassName, final Method viewMethod) {
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
-        Collection<EJBMethodIdentifier> denyAllMethodsForView = ejbComponentDescription.getDenyAllMethodsForView(viewClassName);
-        if (denyAllMethodsForView == null) {
-            denyAllMethodsForView = Collections.emptySet();
-        }
         // find the component method corresponding to this view method
         final Method componentMethod = this.findComponentMethod(componentConfiguration, viewMethod);
         final EJBMethodIdentifier ejbMethodIdentifier = EJBMethodIdentifier.fromMethod(componentMethod);
-        if (denyAllMethodsForView.contains(ejbMethodIdentifier)) {
+        final Set<String> rolesAllowed = ejbComponentDescription.getRolesAllowed(viewClassName, ejbMethodIdentifier);
+        final boolean methodMarkedForDenyAll = this.isMethodMarkedForDenyAll(ejbComponentDescription, viewClassName, ejbMethodIdentifier);
+        final boolean methodMarkedForPermitAll = this.isMethodMarkedForPermitAll(ejbComponentDescription, viewClassName, ejbMethodIdentifier);
+        if (methodMarkedForDenyAll) {
+            // make sure the method isn't marked for @PermitAll
+            if (methodMarkedForPermitAll) {
+                throw new IllegalStateException("Method " + componentMethod + " for view " + viewClassName + " shouldn't be " +
+                        "marked for both @PemitAll and @DenyAll at the same time");
+            }
+            // make sure @RolesAllowed isn't applied to the method explicitly
+            if (!rolesAllowed.isEmpty()) {
+                throw new IllegalStateException("Method " + componentMethod + " for view " + viewClassName + " shouldn't be " +
+                        "marked for both @RolesAllowed and @DenyAll at the same time");
+            }
+            // only @DenyAll is applied on the method, so return true
             return true;
         }
-        // check on class level
+        // check on class level for @DenyAll *only* if the method isn't marked with @PermitAll and @RolesAllowed (in which case,
+        // it doesn't qualify for @DenyAll)
+        if (!rolesAllowed.isEmpty()) {
+            return false;
+        }
+        if (methodMarkedForPermitAll) {
+            return false;
+        }
         final Class<?> declaringClass = componentMethod.getDeclaringClass();
         if (ejbComponentDescription.isDenyAllApplicableToClass(viewClassName, declaringClass.getName())) {
             return true;
@@ -134,18 +145,34 @@ public class EJBMethodSecurityMetaData {
 
     private boolean isPermitAll(final ComponentConfiguration componentConfiguration, final String viewClassName, final Method viewMethod) {
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
-        Collection<EJBMethodIdentifier> permitAllMethodsForView = ejbComponentDescription.getPermitAllMethodsForView(viewClassName);
-        if (permitAllMethodsForView == null) {
-            permitAllMethodsForView = Collections.emptySet();
-        }
         // find the component method corresponding to this view method
         final Method componentMethod = this.findComponentMethod(componentConfiguration, viewMethod);
         final EJBMethodIdentifier ejbMethodIdentifier = EJBMethodIdentifier.fromMethod(componentMethod);
-        if (permitAllMethodsForView.contains(ejbMethodIdentifier)) {
+        final Set<String> rolesAllowed = ejbComponentDescription.getRolesAllowed(viewClassName, ejbMethodIdentifier);
+        final boolean methodMarkedForDenyAll = this.isMethodMarkedForDenyAll(ejbComponentDescription, viewClassName, ejbMethodIdentifier);
+        final boolean methodMarkedForPermitAll = this.isMethodMarkedForPermitAll(ejbComponentDescription, viewClassName, ejbMethodIdentifier);
+        if (methodMarkedForPermitAll) {
+            // make sure the method isn't marked for @DenyAll
+            if (methodMarkedForDenyAll) {
+                throw new IllegalStateException("Method " + componentMethod + " for view " + viewClassName + " shouldn't be " +
+                        "marked for both @PemitAll and @DenyAll at the same time");
+            }
+            // make sure @RolesAllowed isn't applied to the method explicitly
+            if (!rolesAllowed.isEmpty()) {
+                throw new IllegalStateException("Method " + componentMethod + " for view " + viewClassName + " shouldn't be " +
+                        "marked for both @RolesAllowed and @PermitAll at the same time");
+            }
+            // only @PermitAll is applied on the method, so return true
             return true;
         }
-        // check on class level
-
+        // check on class level for @PermitAll *only* if the method isn't marked with @DenyAll and @RolesAllowed (in which case,
+        // it doesn't qualify for @PermitAll)
+        if (!rolesAllowed.isEmpty()) {
+            return false;
+        }
+        if (methodMarkedForPermitAll) {
+            return false;
+        }
         final Class<?> declaringClass = componentMethod.getDeclaringClass();
         if (ejbComponentDescription.isPermitAllApplicableToClass(viewClassName, declaringClass.getName())) {
             return true;
@@ -159,16 +186,35 @@ public class EJBMethodSecurityMetaData {
         final Method componentMethod = this.findComponentMethod(componentConfiguration, viewMethod);
         final EJBMethodIdentifier ejbMethodIdentifier = EJBMethodIdentifier.fromMethod(componentMethod);
         final Set<String> rolesAllowed = ejbComponentDescription.getRolesAllowed(viewClassName, ejbMethodIdentifier);
+        final boolean methodMarkedForDenyAll = this.isMethodMarkedForDenyAll(ejbComponentDescription, viewClassName, ejbMethodIdentifier);
+        final boolean methodMarkedForPermitAll = this.isMethodMarkedForPermitAll(ejbComponentDescription, viewClassName, ejbMethodIdentifier);
         if (!rolesAllowed.isEmpty()) {
             return rolesAllowed;
         }
-        // there were no method level @RolesAllowed, so check on class level
+        // check on class level for @RolesAllowed *only* if the method isn't marked with @DenyAll and @PermitAll (in which case,
+        // it doesn't qualify for @RolesAllowed)
+        if (methodMarkedForDenyAll) {
+            return Collections.emptySet();
+        }
+        if (methodMarkedForPermitAll) {
+            return Collections.emptySet();
+        }
         final Class<?> declaringClass = componentMethod.getDeclaringClass();
         final Set<String> classLevelRolesAllowed = ejbComponentDescription.getRolesAllowedForClass(viewClassName, declaringClass.getName());
         if (!classLevelRolesAllowed.isEmpty()) {
             return classLevelRolesAllowed;
         }
         return Collections.emptySet();
+    }
+
+    private boolean isMethodMarkedForDenyAll(final EJBComponentDescription ejbComponentDescription, final String viewClassName, final EJBMethodIdentifier ejbMethodIdentifier) {
+        Collection<EJBMethodIdentifier> denyAllMethodsForView = ejbComponentDescription.getDenyAllMethodsForView(viewClassName);
+        return denyAllMethodsForView.contains(ejbMethodIdentifier);
+    }
+
+    private boolean isMethodMarkedForPermitAll(final EJBComponentDescription ejbComponentDescription, final String viewClassName, final EJBMethodIdentifier ejbMethodIdentifier) {
+        Collection<EJBMethodIdentifier> permitAllMethodsForView = ejbComponentDescription.getPermitAllMethodsForView(viewClassName);
+        return permitAllMethodsForView.contains(ejbMethodIdentifier);
     }
 
     private Method findComponentMethod(final ComponentConfiguration componentConfiguration, final Method viewMethod) {

@@ -61,14 +61,14 @@ public class PermitAllProcessor extends AbstractAnnotationEJBProcessor<EJBCompon
                 klass = getSuperClass(klass, index);
                 continue;
             }
-            final List<AnnotationInstance> denyAllAnnotations = annotationsOnBean.get(PERMIT_ALL_DOT_NAME);
-            if (denyAllAnnotations == null || denyAllAnnotations.isEmpty()) {
+            final List<AnnotationInstance> permitAllAnnotations = annotationsOnBean.get(PERMIT_ALL_DOT_NAME);
+            if (permitAllAnnotations == null || permitAllAnnotations.isEmpty()) {
                 // move to the super class
                 klass = getSuperClass(klass, index);
                 continue;
             }
-            for (final AnnotationInstance denyAllAnnotation : denyAllAnnotations) {
-                final AnnotationTarget target = denyAllAnnotation.target();
+            for (final AnnotationInstance permitAllAnnotation : permitAllAnnotations) {
+                final AnnotationTarget target = permitAllAnnotation.target();
                 if (target instanceof ClassInfo) {
                     componentDescription.applyPermitAllOnAllViewsForClass(((ClassInfo) target).name().toString());
                 } else if (target instanceof MethodInfo) {

@@ -235,6 +235,7 @@ public enum Phase {
     public static final int PARSE_EJB_RUN_AS_ANNOTATION                 = 0x1904;
     public static final int PARSE_EJB_DENY_ALL_ANNOTATION               = 0x1905;
     public static final int PARSE_EJB_ROLES_ALLOWED_ANNOTATION          = 0x1906;
+    public static final int PARSE_EJB_PERMIT_ALL_ANNOTATION             = 0x1907;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1A00;
     public static final int PARSE_EJB_STATEFUL_TIMEOUT_ANNOTATION       = 0x1A01;
