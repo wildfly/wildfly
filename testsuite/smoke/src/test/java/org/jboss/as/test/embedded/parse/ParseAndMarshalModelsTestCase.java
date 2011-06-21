@@ -446,7 +446,6 @@ public class ParseAndMarshalModelsTestCase {
 
         final List<ModelNode> toRun = new ArrayList<ModelNode>(ops);
         toRun.add(caputreModelOp);
-        executeOperations(controller, toRun);
 
         executeOperations(controller, toRun);
 
