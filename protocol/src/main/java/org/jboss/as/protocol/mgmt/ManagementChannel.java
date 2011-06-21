@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.protocol.ProtocolChannel;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.remoting3.Channel;
@@ -42,8 +41,6 @@ import org.xnio.IoUtils;
  * @version $Revision: 1.1 $
  */
 public class ManagementChannel extends ProtocolChannel {
-
-    private final Logger log = Logger.getLogger("org.jboss.as.protocol");
 
     private final RequestReceiver requestReceiver = new RequestReceiver();
     private final ResponseReceiver responseReceiver = new ResponseReceiver();

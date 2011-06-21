@@ -23,6 +23,7 @@ package org.jboss.as.protocol;
 
 import java.io.IOException;
 
+import org.jboss.logging.Logger;
 import org.jboss.remoting3.Attachments;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -36,6 +37,9 @@ import org.jboss.remoting3.MessageOutputStream;
  * @version $Revision: 1.1 $
  */
 public abstract class ProtocolChannel implements Channel, Channel.Receiver {
+
+    protected final Logger log = Logger.getLogger("org.jboss.as.protocol");
+
     private final String name;
     private final Channel channel;
     private boolean start;
@@ -122,18 +126,20 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
 
     @Override
     public void handleError(Channel channel, IOException error) {
-        //TODO handle this?
-        error.printStackTrace();
+        log.tracef(error, "Handling error, closing channel %s", this);
+        if (channel != this.channel) {
+            log.warn("Received error for wrong channel!");
+        }
+        ended(channel);
     }
 
     @Override
     public void handleEnd(Channel channel) {
-        try {
-            close();
-            //stopReceiving.set(true);
-        } catch (IOException e) {
-            e.printStackTrace();
+        log.tracef("Handling end, closing channel %s", this);
+        if (channel != this.channel) {
+            log.warn("Received end for wrong channel!");
         }
+        ended(channel);
     }
 
     @Override
@@ -146,4 +152,12 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
     }
 
     protected abstract void doHandle(final Channel channel, final MessageInputStream message);
+
+    private void ended(Channel channel) {
+        try {
+            close();
+        } catch (IOException e) {
+            log.warnf("Got error closing channel %s", e.getMessage());
+        }
+    }
 }
