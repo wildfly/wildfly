@@ -47,7 +47,7 @@ import junit.framework.Assert;
 import org.jboss.as.controller.NewModelController.OperationTransaction;
 import org.jboss.as.controller.NewProxyController.ProxyOperationControl;
 import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
@@ -504,7 +504,7 @@ public class RemoteProxyControllerProtocolTestCase {
         }
 
         @Override
-        public NewModelControllerClient createClient(Executor executor) {
+        public ModelControllerClient createClient(Executor executor) {
             return null;
         }
 

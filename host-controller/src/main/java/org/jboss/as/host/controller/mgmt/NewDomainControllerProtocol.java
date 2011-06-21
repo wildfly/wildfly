@@ -21,7 +21,7 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
-import org.jboss.as.controller.client.NewModelControllerProtocol;
+import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 
 
 /**
@@ -29,7 +29,7 @@ import org.jboss.as.controller.client.NewModelControllerProtocol;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public interface NewDomainControllerProtocol extends NewModelControllerProtocol{
+public interface NewDomainControllerProtocol extends ModelControllerProtocol {
     byte REGISTER_HOST_CONTROLLER_REQUEST = 0x51;
     byte UNREGISTER_HOST_CONTROLLER_REQUEST = 0x53;
     byte GET_FILE_REQUEST = 0x55;

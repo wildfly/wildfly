@@ -43,7 +43,7 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.shrinkwrap.api.Archive;
@@ -69,7 +69,7 @@ public class DescribeOperationUnitTestCase {
         ignored.add("deployment-scanner");
     }
 
-    private NewModelControllerClient client;
+    private ModelControllerClient client;
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -77,9 +77,9 @@ public class DescribeOperationUnitTestCase {
     }
 
     // [ARQ-458] @Before not called with @RunAsClient
-    private NewModelControllerClient getModelControllerClient() throws UnknownHostException {
+    private ModelControllerClient getModelControllerClient() throws UnknownHostException {
         StreamUtils.safeClose(client);
-        client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         return client;
     }
 

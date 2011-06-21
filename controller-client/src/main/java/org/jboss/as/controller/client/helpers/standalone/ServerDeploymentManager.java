@@ -25,7 +25,7 @@ package org.jboss.as.controller.client.helpers.standalone;
 import java.net.InetAddress;
 import java.util.concurrent.Future;
 
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.impl.ModelControllerClientServerDeploymentManager;
 
 /**
@@ -48,16 +48,16 @@ public interface ServerDeploymentManager {
          * @return A domain client
          */
         public static ServerDeploymentManager create(final InetAddress address, int port) {
-            return create(NewModelControllerClient.Factory.create(address, port));
+            return create(ModelControllerClient.Factory.create(address, port));
         }
 
         /**
-         * Create an {@link ServerDeploymentManager} instance using the given {@link NewModelControllerClient}.
+         * Create an {@link ServerDeploymentManager} instance using the given {@link org.jboss.as.controller.client.ModelControllerClient}.
          *
          * @param client the client
          * @return A domain client
          */
-        public static ServerDeploymentManager create(final NewModelControllerClient client) {
+        public static ServerDeploymentManager create(final ModelControllerClient client) {
             return new ModelControllerClientServerDeploymentManager(client);
         }
     }

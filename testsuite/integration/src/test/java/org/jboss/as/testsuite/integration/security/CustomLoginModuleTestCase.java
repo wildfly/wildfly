@@ -53,10 +53,10 @@ import org.apache.http.protocol.HTTP;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.testsuite.integration.websecurity.SecuredServlet;
 import org.jboss.as.testsuite.integration.websecurity.WebSecurityPasswordBasedBase;
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -105,7 +105,7 @@ public class CustomLoginModuleTestCase {
     public static WebArchive deployment() {
         // FIXME hack to get things prepared before the deployment happens
         try {
-            final NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
             // create required security domains
             createSecurityDomains(client);
         } catch (Exception e) {
@@ -121,7 +121,7 @@ public class CustomLoginModuleTestCase {
 
     @AfterClass
     public static void after() throws Exception {
-        final NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         // remove test security domains
         removeSecurityDomains(client);
     }
@@ -211,7 +211,7 @@ public class CustomLoginModuleTestCase {
         }
     }
 
-    public static void createSecurityDomains(final NewModelControllerClient client) throws Exception {
+    public static void createSecurityDomains(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
@@ -225,7 +225,7 @@ public class CustomLoginModuleTestCase {
         applyUpdates(updates, client);
     }
 
-    public static void removeSecurityDomains(final NewModelControllerClient client) throws Exception {
+    public static void removeSecurityDomains(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
@@ -236,14 +236,14 @@ public class CustomLoginModuleTestCase {
         applyUpdates(updates, client);
     }
 
-    public static void applyUpdates(final List<ModelNode> updates, final NewModelControllerClient client) throws Exception {
+    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
         for (ModelNode update : updates) {
             applyUpdate(update, client);
         }
     }
 
-    public static void applyUpdate(ModelNode update, final NewModelControllerClient client) throws Exception {
-        ModelNode result = client.execute(new NewOperationBuilder(update).build());
+    public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
+        ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));

@@ -32,7 +32,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.NewModelControllerProtocol;
+import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -97,14 +97,14 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
 
                     @Override
                     protected byte getRequestCode() {
-                        return NewModelControllerProtocol.HANDLE_REPORT_REQUEST;
+                        return ModelControllerProtocol.HANDLE_REPORT_REQUEST;
                     }
 
                     @Override
                     protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-                        output.write(NewModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
+                        output.write(ModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
                         output.writeUTF(severity.toString());
-                        output.write(NewModelControllerProtocol.PARAM_MESSAGE);
+                        output.write(ModelControllerProtocol.PARAM_MESSAGE);
                         output.writeUTF(message);
                     }
 
@@ -174,21 +174,21 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
                 new ManagementRequest<Void>(batchId) {
                     @Override
                     protected byte getRequestCode() {
-                        return NewModelControllerProtocol.GET_INPUTSTREAM_REQUEST;
+                        return ModelControllerProtocol.GET_INPUTSTREAM_REQUEST;
                     }
 
                     @Override
                     protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
-                        output.write(NewModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
+                        output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
                         output.writeInt(index);
                     }
 
                     @Override
                     protected Void readResponse(DataInput input) throws IOException {
                         synchronized (ProxiedInputStream.this) {
-                            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
+                            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
                             final int size = input.readInt();
-                            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
+                            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
 
                             final byte[] buf = new byte[size];
                             for (int i = 0 ; i < size ; i++) {

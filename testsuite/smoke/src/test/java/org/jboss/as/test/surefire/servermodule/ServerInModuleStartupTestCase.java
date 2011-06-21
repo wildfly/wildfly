@@ -32,7 +32,7 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.EmbeddedStandAloneServerFactory;
 import org.jboss.as.server.Main;
@@ -87,7 +87,7 @@ public class ServerInModuleStartupTestCase  {
      */
     @Test
     public void testReadConfigAsXml() throws Exception {
-        NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             ModelNode request = new ModelNode();
             request.get("operation").set("read-config-as-xml");
@@ -107,7 +107,7 @@ public class ServerInModuleStartupTestCase  {
      */
     @Test
     public void testReadResourceDescription() throws Exception {
-        NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             ModelNode request = new ModelNode();
             request.get("operation").set("read-resource");

@@ -23,31 +23,31 @@ package org.jboss.as.controller.client;
 
 import org.jboss.dmr.ModelNode;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+/**
+ * Encapsulates a detyped operation request passed in to the model controller, along with
+ * any attachments associated with the request.
+ *
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ */
+public interface Operation extends OperationAttachments {
 
-class NewOperationImpl implements NewOperation {
+    /**
+     * The detyped operation to execute
+     *
+     * @return the operation
+     */
+    ModelNode getOperation();
 
-    private final ModelNode operation;
-    private final List<InputStream> inputStreams;
+    /**
+     * Clones this operation.
+     */
+    @Deprecated
+    Operation clone();
 
-    NewOperationImpl(final ModelNode operation, final List<InputStream> inputStreams) {
-        this.operation = operation;
-        this.inputStreams = inputStreams;
-    }
-
-    @Override
-    public ModelNode getOperation() {
-        return operation;
-    }
-
-    @Override
-    public List<InputStream> getInputStreams() {
-        if (inputStreams == null) {
-            return Collections.emptyList();
-        }
-        return Collections.unmodifiableList(inputStreams);
-    }
+    /**
+     * Clones this operation, but overrides the raw operation node
+     */
+    @Deprecated
+    Operation clone(ModelNode operation);
 }

@@ -22,8 +22,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperation;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.impl.AbstractServerDeploymentManager;
 import org.jboss.dmr.ModelNode;
@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ModelControllerServerDeploymentManager extends AbstractServerDeploymentManager {
 
-    private final NewModelControllerClient client;
+    private final ModelControllerClient client;
 
     public ModelControllerServerDeploymentManager(final NewModelController controller) {
         this.client = controller.createClient(Executors.newCachedThreadPool());
@@ -46,7 +46,7 @@ public class ModelControllerServerDeploymentManager extends AbstractServerDeploy
      * {@inheritDoc}
      */
     @Override
-    protected Future<ModelNode> executeOperation(NewOperation executionContext) {
+    protected Future<ModelNode> executeOperation(Operation executionContext) {
         return client.executeAsync(executionContext, null);
     }
 

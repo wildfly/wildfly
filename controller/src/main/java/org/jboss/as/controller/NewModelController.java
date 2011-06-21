@@ -23,7 +23,8 @@
 package org.jboss.as.controller;
 
 import java.util.concurrent.Executor;
-import org.jboss.as.controller.client.NewModelControllerClient;
+
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
@@ -53,7 +54,7 @@ public interface NewModelController {
      * @param executor the executor to use for asynchronous operation execution
      * @return the client
      */
-    NewModelControllerClient createClient(Executor executor);
+    ModelControllerClient createClient(Executor executor);
 
     /**
      * A callback interface for the operation's completion status.  Implemented in order to control whether a complete

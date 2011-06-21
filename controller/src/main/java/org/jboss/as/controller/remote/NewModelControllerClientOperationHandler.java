@@ -33,8 +33,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewModelControllerProtocol;
+import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
@@ -42,7 +41,7 @@ import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Operation handlers for the remote implementation of {@link NewModelControllerClient}
+ * Operation handlers for the remote implementation of {@link org.jboss.as.controller.client.ModelControllerClient}
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
@@ -62,11 +61,11 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
     /** {@inheritDoc} */
     @Override
     public ManagementRequestHandler getRequestHandler(final byte id) {
-        if (id == NewModelControllerProtocol.EXECUTE_CLIENT_REQUEST) {
+        if (id == ModelControllerProtocol.EXECUTE_CLIENT_REQUEST) {
             return new ExecuteRequestHandler(false);
-        } else if (id == NewModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST) {
+        } else if (id == ModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST) {
             return new ExecuteRequestHandler(true);
-        } else if (id == NewModelControllerProtocol.CANCEL_ASYNC_REQUEST) {
+        } else if (id == ModelControllerProtocol.CANCEL_ASYNC_REQUEST) {
             return new CancelAsyncRequestHandler();
         }
         return null;
@@ -89,9 +88,9 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
         @Override
         protected void readRequest(final DataInput input) throws IOException {
             batchId = getContext().getHeader().getBatchId();
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_OPERATION);
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_OPERATION);
             operation.readExternal(input);
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
             attachmentsLength = input.readInt();
         }
 
@@ -118,7 +117,7 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
                 } finally {
                     log.tracef("Executed client request %d", batchId);
                 }
-                output.write(NewModelControllerProtocol.PARAM_RESPONSE);
+                output.write(ModelControllerProtocol.PARAM_RESPONSE);
                 result.writeExternal(output);
             } finally {
                 if (asynch) {

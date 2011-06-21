@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +65,6 @@ import org.jboss.as.cli.handlers.batch.BatchRunHandler;
 import org.jboss.as.cli.handlers.jca.DataSourceAddHandler;
 import org.jboss.as.cli.handlers.jca.DataSourceModifyHandler;
 import org.jboss.as.cli.handlers.jca.DataSourceRemoveHandler;
-import org.jboss.as.cli.handlers.jca.SimpleDataSourceOperationHandler;
 import org.jboss.as.cli.handlers.jca.XADataSourceAddHandler;
 import org.jboss.as.cli.handlers.jca.XADataSourceModifyHandler;
 import org.jboss.as.cli.handlers.jca.XADataSourceRemoveHandler;
@@ -87,7 +87,7 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -494,7 +494,7 @@ public class CommandLineMain {
         /** domain or standalone mode*/
         private boolean domainMode;
         /** the controller client */
-        private NewModelControllerClient client;
+        private ModelControllerClient client;
         /** the default controller host */
         private String defaultControllerHost = "localhost";
         /** the default controller port */
@@ -604,7 +604,7 @@ public class CommandLineMain {
         }
 
         @Override
-        public NewModelControllerClient getModelControllerClient() {
+        public ModelControllerClient getModelControllerClient() {
             return client;
         }
 
@@ -638,22 +638,26 @@ public class CommandLineMain {
                 port = defaultControllerPort;
             }
 
-            NewModelControllerClient newClient = NewModelControllerClient.Factory.create(host, port);
-            if(this.client != null) {
-                disconnectController();
-            }
+            try {
+                ModelControllerClient newClient = ModelControllerClient.Factory.create(host, port);
+                if(this.client != null) {
+                    disconnectController();
+                }
 
-            List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
-            if (!nodeTypes.isEmpty()) {
-                domainMode = nodeTypes.contains("server-group");
-                printLine("Connected to "
-                        + (domainMode ? "domain controller at " : "standalone controller at ")
-                        + host + ":" + port);
-                client = newClient;
-                this.controllerHost = host;
-                this.controllerPort = port;
-            } else {
-                printLine("The controller is not available at " + host + ":" + port);
+                List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
+                if (!nodeTypes.isEmpty()) {
+                    domainMode = nodeTypes.contains("server-group");
+                    printLine("Connected to "
+                            + (domainMode ? "domain controller at " : "standalone controller at ")
+                            + host + ":" + port);
+                    client = newClient;
+                    this.controllerHost = host;
+                    this.controllerPort = port;
+                } else {
+                    printLine("The controller is not available at " + host + ":" + port);
+                }
+            } catch (UnknownHostException e) {
+                printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
             }
         }
 

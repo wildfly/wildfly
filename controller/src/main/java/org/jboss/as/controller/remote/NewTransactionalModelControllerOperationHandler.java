@@ -34,7 +34,7 @@ import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewModelController.OperationTransaction;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewProxyController.ProxyOperationControl;
-import org.jboss.as.controller.client.NewModelControllerProtocol;
+import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -60,7 +60,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
 
     @Override
     public ManagementRequestHandler getRequestHandler(final byte id) {
-        if (id == NewModelControllerProtocol.EXECUTE_TX_REQUEST) {
+        if (id == ModelControllerProtocol.EXECUTE_TX_REQUEST) {
             return new ExecuteRequestHandler();
         }
         return null;
@@ -78,9 +78,9 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
         @Override
         protected void readRequest(final DataInput input) throws IOException {
             executeRequestContext = new ExecuteRequestContext(getContext());
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_OPERATION);
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_OPERATION);
             operation.readExternal(input);
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
             attachmentsLength = input.readInt();
         }
 
@@ -144,7 +144,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
 
                     @Override
                     protected byte getRequestCode() {
-                        return NewModelControllerProtocol.OPERATION_PREPARED_REQUEST;
+                        return ModelControllerProtocol.OPERATION_PREPARED_REQUEST;
                     }
 
                     @Override
@@ -155,16 +155,16 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                     @Override
                     protected Void readResponse(DataInput input) throws IOException {
                         //The caller has delegated the operationPrepared() call
-                        ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_PREPARED);
+                        ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_PREPARED);
                         executeRequestContext.setPreparedOrFailed();
 
                         //Now check if the Tx was committed or rolled back
                         byte status = input.readByte();
-                        if (status == NewModelControllerProtocol.PARAM_COMMIT) {
+                        if (status == ModelControllerProtocol.PARAM_COMMIT) {
                             transaction.commit();
                             executeRequestContext.setTxCompleted();
 
-                        } else if (status == NewModelControllerProtocol.PARAM_ROLLBACK){
+                        } else if (status == ModelControllerProtocol.PARAM_ROLLBACK){
                             transaction.rollback();
                             executeRequestContext.setTxCompleted();
                         } else {
@@ -188,7 +188,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
 
                     @Override
                     protected byte getRequestCode() {
-                        return NewModelControllerProtocol.OPERATION_FAILED_REQUEST;
+                        return ModelControllerProtocol.OPERATION_FAILED_REQUEST;
                     }
 
                 }.executeForResult(executorService, getChannelStrategy(executeRequestContext.getChannel()));
@@ -205,7 +205,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
 
                 @Override
                 protected byte getRequestCode() {
-                    return NewModelControllerProtocol.OPERATION_COMPLETED_REQUEST;
+                    return ModelControllerProtocol.OPERATION_COMPLETED_REQUEST;
                 }
 
             }.execute(executorService, getChannelStrategy(executeRequestContext.getChannel()));
@@ -223,7 +223,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
             }
             @Override
             protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-                output.write(NewModelControllerProtocol.PARAM_RESPONSE);
+                output.write(ModelControllerProtocol.PARAM_RESPONSE);
                 response.writeExternal(output);
             }
 

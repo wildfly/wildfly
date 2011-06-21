@@ -26,7 +26,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.ManagementHttpServer;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.NetworkInterfaceBinding;
@@ -56,7 +56,7 @@ public class HttpManagementService implements Service<HttpManagementService> {
     private InetSocketAddress bindAddress;
     private InetSocketAddress secureBindAddress;
     private ManagementHttpServer serverManagement;
-    private NewModelControllerClient modelControllerClient;
+    private ModelControllerClient modelControllerClient;
 
 
     /**

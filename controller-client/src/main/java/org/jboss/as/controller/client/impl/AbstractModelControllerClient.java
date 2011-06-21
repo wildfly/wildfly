@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.controller.client;
+package org.jboss.as.controller.client.impl;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,6 +35,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
@@ -54,7 +59,7 @@ import org.jboss.threads.AsyncFuture;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-abstract class NewAbstractModelControllerClient implements NewModelControllerClient, ManagementOperationHandler {
+public abstract class AbstractModelControllerClient implements ModelControllerClient, ManagementOperationHandler {
     private final Map<Integer, ExecuteRequestContext> activeRequests = Collections.synchronizedMap(new HashMap<Integer, ExecuteRequestContext>());
     protected final ExecutorService executor = Executors.newCachedThreadPool();
     final Logger log = Logger.getLogger("org.jboss.as.controller.client");
@@ -76,7 +81,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
     }
 
     @Override
-    public ModelNode execute(NewOperation operation) throws IOException {
+    public ModelNode execute(Operation operation) throws IOException {
         return execute(operation, null);
     }
 
@@ -86,7 +91,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
     }
 
     @Override
-    public ModelNode execute(NewOperation operation, OperationMessageHandler messageHandler) throws IOException {
+    public ModelNode execute(Operation operation, OperationMessageHandler messageHandler) throws IOException {
         return executeSynch(operation.getOperation(), operation, messageHandler);
     }
 
@@ -96,22 +101,22 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
     }
 
     @Override
-    public AsyncFuture<ModelNode> executeAsync(NewOperation operation, OperationMessageHandler messageHandler) {
+    public AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler) {
         return executeAsync(operation.getOperation(), operation, messageHandler);
     }
 
     /** {@inheritDoc} */
     @Override
     public ManagementRequestHandler getRequestHandler(final byte id) {
-        if (id == NewModelControllerProtocol.HANDLE_REPORT_REQUEST) {
+        if (id == ModelControllerProtocol.HANDLE_REPORT_REQUEST) {
             return new HandleReportRequestHandler();
-        } else if (id == NewModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
+        } else if (id == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
             return new ReadAttachmentInputStreamRequestHandler();
         }
         return null;
     }
 
-    abstract ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException;
+    protected abstract ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException;
 
     private ModelNode executeSynch(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler) {
         final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
@@ -152,7 +157,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
 
         @Override
         protected byte getRequestCode() {
-            return async ? NewModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST :NewModelControllerProtocol.EXECUTE_CLIENT_REQUEST;
+            return async ? ModelControllerProtocol.EXECUTE_ASYNC_CLIENT_REQUEST : ModelControllerProtocol.EXECUTE_CLIENT_REQUEST;
         }
 
         protected CloseHandler<Channel> getRequestCloseHandler(){
@@ -165,9 +170,9 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
                 log.tracef("Client writing request %d", getBatchId());
                 activeRequests.put(getBatchId(), executeRequestContext);
 
-                output.write(NewModelControllerProtocol.PARAM_OPERATION);
+                output.write(ModelControllerProtocol.PARAM_OPERATION);
                 operation.writeExternal(output);
-                output.write(NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
+                output.write(ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
                 int inputStreamLength = 0;
                 if (executeRequestContext.getAttachments() != null) {
                     List<InputStream> streams = executeRequestContext.getAttachments().getInputStreams();
@@ -194,7 +199,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         protected ModelNode readResponse(final DataInput input) throws IOException {
             log.tracef("Client reading response %d", getBatchId());
             try {
-                ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_RESPONSE);
+                ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_RESPONSE);
                 ModelNode node = new ModelNode();
                 node.readExternal(input);
                 log.tracef("Client read response %d successfully", getBatchId());
@@ -231,9 +236,9 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         @Override
         protected void readRequest(final DataInput input) throws IOException {
             int batchId = getContext().getHeader().getBatchId();
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
             MessageSeverity severity = Enum.valueOf(MessageSeverity.class, input.readUTF());
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_MESSAGE);
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE);
             String message = input.readUTF();
 
             ExecuteRequestContext requestContext = activeRequests.get(batchId);
@@ -260,7 +265,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
         protected void readRequest(final DataInput input) throws IOException {
             int batchId = getContext().getHeader().getBatchId();
             log.tracef("Client got inputstream request %d" +  batchId);
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
             int index = input.readInt();
 
             ExecuteRequestContext requestContext = activeRequests.get(batchId);
@@ -282,9 +287,9 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
                 }
             }
             byte[] bytes = bout.toByteArray();
-            output.write(NewModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
+            output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
             output.writeInt(bytes.length);
-            output.write(NewModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
+            output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
             output.write(bytes);
             log.tracef("Client handled inputstream request %d" +  getContext().getHeader().getBatchId());
         }
@@ -421,7 +426,7 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
 
             @Override
             protected byte getRequestCode() {
-                return NewModelControllerProtocol.CANCEL_ASYNC_REQUEST;
+                return ModelControllerProtocol.CANCEL_ASYNC_REQUEST;
             }
 
             @Override

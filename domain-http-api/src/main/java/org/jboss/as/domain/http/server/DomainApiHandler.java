@@ -56,8 +56,8 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
 import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
 import org.jboss.as.domain.http.server.security.BasicAuthenticator;
@@ -104,9 +104,9 @@ class DomainApiHandler implements ManagementHttpHandler {
         }
     }
 
-    private NewModelControllerClient modelController;
+    private ModelControllerClient modelController;
 
-    DomainApiHandler(NewModelControllerClient modelController) {
+    DomainApiHandler(ModelControllerClient modelController) {
         this.modelController = modelController;
     }
 
@@ -142,7 +142,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             dmr.get("address").setEmptyList();
             dmr.get("input-stream-index").set(0);
 
-            NewOperationBuilder operation = new NewOperationBuilder(dmr);
+            OperationBuilder operation = new OperationBuilder(dmr);
             operation.addInputStream(result.stream);
             response = modelController.execute(operation.build());
             drain(http.getRequestBody());
@@ -185,7 +185,7 @@ class DomainApiHandler implements ManagementHttpHandler {
 
         try {
             dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
-            response = modelController.execute(new NewOperationBuilder(dmr).build());
+            response = modelController.execute(new OperationBuilder(dmr).build());
         } catch (Throwable t) {
             log.error("Unexpected error executing model request", t);
 

@@ -32,7 +32,7 @@ import java.util.List;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -121,11 +121,11 @@ public class Util {
         return list;
     }
 
-    public static boolean isDeploymentInRepository(String name, NewModelControllerClient client) {
+    public static boolean isDeploymentInRepository(String name, ModelControllerClient client) {
         return getDeployments(client).contains(name);
     }
 
-    public static boolean isDeployedAndEnabledInStandalone(String name, NewModelControllerClient client) {
+    public static boolean isDeployedAndEnabledInStandalone(String name, ModelControllerClient client) {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         ModelNode request;
@@ -173,7 +173,7 @@ public class Util {
         return false;
     }
 
-    public static List<String> getAllEnabledServerGroups(String deploymentName, NewModelControllerClient client) {
+    public static List<String> getAllEnabledServerGroups(String deploymentName, ModelControllerClient client) {
 
         List<String> serverGroups = getServerGroups(client);
         if(serverGroups.isEmpty()) {
@@ -235,7 +235,7 @@ public class Util {
         return result;
     }
 
-    public static List<String> getAllReferencingServerGroups(String deploymentName, NewModelControllerClient client) {
+    public static List<String> getAllReferencingServerGroups(String deploymentName, ModelControllerClient client) {
 
         List<String> serverGroups = getServerGroups(client);
         if(serverGroups.isEmpty()) {
@@ -268,7 +268,7 @@ public class Util {
         return result;
     }
 
-    public static List<String> getDeployments(NewModelControllerClient client) {
+    public static List<String> getDeployments(ModelControllerClient client) {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
@@ -291,7 +291,7 @@ public class Util {
         return Collections.emptyList();
     }
 
-    public static List<String> getServerGroups(NewModelControllerClient client) {
+    public static List<String> getServerGroups(ModelControllerClient client) {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
@@ -314,7 +314,7 @@ public class Util {
         return Collections.emptyList();
     }
 
-    public static List<String> getNodeTypes(NewModelControllerClient client, OperationRequestAddress address) {
+    public static List<String> getNodeTypes(ModelControllerClient client, OperationRequestAddress address) {
         if(client == null) {
             return Collections.emptyList();
         }
@@ -347,7 +347,7 @@ public class Util {
         return result;
     }
 
-    public static List<String> getNodeNames(NewModelControllerClient client, OperationRequestAddress address, String type) {
+    public static List<String> getNodeNames(ModelControllerClient client, OperationRequestAddress address, String type) {
         if(client == null) {
             return Collections.emptyList();
         }
@@ -381,7 +381,7 @@ public class Util {
         return result;
     }
 
-    public static List<String> getJmsResources(NewModelControllerClient client, String profile, String type) {
+    public static List<String> getJmsResources(ModelControllerClient client, String profile, String type) {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
@@ -408,7 +408,7 @@ public class Util {
         return Collections.emptyList();
     }
 
-    public static List<String> getDatasources(NewModelControllerClient client, String profile, String dsType) {
+    public static List<String> getDatasources(ModelControllerClient client, String profile, String dsType) {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
@@ -435,17 +435,17 @@ public class Util {
         return Collections.emptyList();
     }
 
-    public static boolean isTopic(NewModelControllerClient client, String name) {
+    public static boolean isTopic(ModelControllerClient client, String name) {
         List<String> topics = getJmsResources(client, null, "topic");
         return topics.contains(name);
     }
 
-    public static boolean isQueue(NewModelControllerClient client, String name) {
+    public static boolean isQueue(ModelControllerClient client, String name) {
         List<String> queues = getJmsResources(client, null, "queue");
         return queues.contains(name);
     }
 
-    public static boolean isConnectionFactory(NewModelControllerClient client, String name) {
+    public static boolean isConnectionFactory(ModelControllerClient client, String name) {
         List<String> cf = getJmsResources(client, null, "connection-factory");
         return cf.contains(name);
     }

@@ -29,8 +29,7 @@ import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.PrefixFormatter;
-import org.jboss.as.controller.client.NewModelControllerClient;
-
+import org.jboss.as.controller.client.ModelControllerClient;
 
 
 /**
@@ -93,7 +92,7 @@ public interface CommandContext {
      * Returns the model controller client or null if it hasn't been initialized.
      * @return the model controller client or null if it hasn't been initialized.
      */
-    NewModelControllerClient getModelControllerClient();
+    ModelControllerClient getModelControllerClient();
 
     /**
      * Connects the controller client using the host and the port.

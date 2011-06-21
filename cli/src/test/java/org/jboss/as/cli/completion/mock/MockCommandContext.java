@@ -38,7 +38,7 @@ import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 
 /**
  *
@@ -46,7 +46,7 @@ import org.jboss.as.controller.client.NewModelControllerClient;
  */
 public class MockCommandContext implements CommandContext {
 
-    private NewModelControllerClient mcc;
+    private ModelControllerClient mcc;
     private OperationRequestParser operationParser;
     private OperationRequestAddress prefix;
     private PrefixFormatter prefixFormatter;
@@ -110,7 +110,7 @@ public class MockCommandContext implements CommandContext {
      * @see org.jboss.as.cli.CommandContext#getModelControllerClient()
      */
     @Override
-    public NewModelControllerClient getModelControllerClient() {
+    public ModelControllerClient getModelControllerClient() {
         return mcc;
     }
 

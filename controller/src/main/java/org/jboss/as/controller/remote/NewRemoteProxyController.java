@@ -41,7 +41,7 @@ import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.NewModelControllerProtocol;
+import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -113,15 +113,15 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
     /** {@inheritDoc} */
     @Override
     public ManagementRequestHandler getRequestHandler(final byte id) {
-        if (id == NewModelControllerProtocol.HANDLE_REPORT_REQUEST) {
+        if (id == ModelControllerProtocol.HANDLE_REPORT_REQUEST) {
             return new HandleReportRequestHandler();
-        } else if (id == NewModelControllerProtocol.OPERATION_FAILED_REQUEST) {
+        } else if (id == ModelControllerProtocol.OPERATION_FAILED_REQUEST) {
             return new OperationFailedRequestHandler();
-        } else if (id == NewModelControllerProtocol.OPERATION_COMPLETED_REQUEST) {
+        } else if (id == ModelControllerProtocol.OPERATION_COMPLETED_REQUEST) {
             return new OperationCompletedRequestHandler();
-        } else if (id == NewModelControllerProtocol.OPERATION_PREPARED_REQUEST) {
+        } else if (id == ModelControllerProtocol.OPERATION_PREPARED_REQUEST) {
             return new OperationPreparedRequestHandler();
-        } else if (id == NewModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
+        } else if (id == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
             return new ReadAttachmentInputStreamRequestHandler();
         }
         return null;
@@ -196,7 +196,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
 
         @Override
         protected byte getRequestCode() {
-            return NewModelControllerProtocol.EXECUTE_TX_REQUEST;
+            return ModelControllerProtocol.EXECUTE_TX_REQUEST;
         }
 
         @Override
@@ -205,9 +205,9 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
             activeRequests.put(getBatchId(), executeRequestContext);
 
             try {
-                output.write(NewModelControllerProtocol.PARAM_OPERATION);
+                output.write(ModelControllerProtocol.PARAM_OPERATION);
                 operation.writeExternal(output);
-                output.write(NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
+                output.write(ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
                 int inputStreamLength = 0;
                 if (executeRequestContext.getAttachments() != null) {
                     List<InputStream> streams = executeRequestContext.getAttachments().getInputStreams();
@@ -245,9 +245,9 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
         @Override
         protected void readRequest(final DataInput input) throws IOException {
             int batchId = getContext().getHeader().getBatchId();
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
             MessageSeverity severity = Enum.valueOf(MessageSeverity.class, input.readUTF());
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_MESSAGE);
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE);
             String message = input.readUTF();
 
             ExecuteRequestContext requestContext = activeRequests.get(batchId);
@@ -271,7 +271,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
         @Override
         protected void readRequest(final DataInput input) throws IOException {
             int batchId = getContext().getHeader().getBatchId();
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
             int index = input.readInt();
 
             ExecuteRequestContext requestContext = activeRequests.get(batchId);
@@ -293,9 +293,9 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
                 }
             }
             byte[] bytes = bout.toByteArray();
-            output.write(NewModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
+            output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
             output.writeInt(bytes.length);
-            output.write(NewModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
+            output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
             output.write(bytes);
         }
     }
@@ -308,7 +308,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
         @Override
         protected void readRequest(final DataInput input) throws IOException {
             int batchId = getContext().getHeader().getBatchId();
-            ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_RESPONSE);
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_RESPONSE);
             ModelNode response = new ModelNode();
             response.readExternal(input);
 
@@ -375,7 +375,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
                 }
 
                 private void done(boolean commit){
-                    status = commit ? NewModelControllerProtocol.PARAM_COMMIT : NewModelControllerProtocol.PARAM_ROLLBACK;
+                    status = commit ? ModelControllerProtocol.PARAM_COMMIT : ModelControllerProtocol.PARAM_ROLLBACK;
                     requestContext.setTxCommittedOrRolledBack();
                     try {
                         requestContext.awaitControlCompleted();
@@ -389,7 +389,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
 
         @Override
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
-            output.write(NewModelControllerProtocol.PARAM_PREPARED);
+            output.write(ModelControllerProtocol.PARAM_PREPARED);
             output.flush();
             try {
                 requestContext.awaitTxCommittedOrRolledBack();

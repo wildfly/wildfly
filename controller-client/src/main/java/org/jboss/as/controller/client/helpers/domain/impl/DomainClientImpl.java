@@ -33,9 +33,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperation;
-import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
@@ -52,10 +52,10 @@ import org.jboss.threads.AsyncFuture;
 public class DomainClientImpl implements DomainClient {
 
     private volatile DomainDeploymentManager deploymentManager;
-    private final NewModelControllerClient delegate;
+    private final ModelControllerClient delegate;
 
     public DomainClientImpl(InetAddress address, int port) {
-        this.delegate = NewModelControllerClient.Factory.create(address, port);
+        this.delegate = ModelControllerClient.Factory.create(address, port);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class DomainClientImpl implements DomainClient {
     }
 
     @Override
-    public ModelNode execute(NewOperation operation) throws IOException {
+    public ModelNode execute(Operation operation) throws IOException {
         return delegate.execute(operation);
     }
 
@@ -74,7 +74,7 @@ public class DomainClientImpl implements DomainClient {
     }
 
     @Override
-    public ModelNode execute(NewOperation operation, OperationMessageHandler messageHandler) throws IOException {
+    public ModelNode execute(Operation operation, OperationMessageHandler messageHandler) throws IOException {
         return delegate.execute(operation, messageHandler);
     }
 
@@ -84,7 +84,7 @@ public class DomainClientImpl implements DomainClient {
     }
 
     @Override
-    public AsyncFuture<ModelNode> executeAsync(NewOperation operation, OperationMessageHandler messageHandler) {
+    public AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler) {
         return delegate.executeAsync(operation, messageHandler);
     }
 
@@ -93,7 +93,7 @@ public class DomainClientImpl implements DomainClient {
         ModelNode op = new ModelNode();
         op.get("operation").set("upload-deployment-stream");
         op.get("input-stream-index").set(0);
-        NewOperation operation = new NewOperationBuilder(op).addInputStream(stream).build();
+        Operation operation = new OperationBuilder(op).addInputStream(stream).build();
         ModelNode result = executeForResult(operation);
         return result.asBytes();
     }
@@ -115,7 +115,7 @@ public class DomainClientImpl implements DomainClient {
         ModelNode op = new ModelNode();
         op.get("operation").set("read-children-names");
         op.get("child-type").set("host");
-        ModelNode result = executeForResult(new NewOperationBuilder(op).build());
+        ModelNode result = executeForResult(new OperationBuilder(op).build());
         List<String> hosts = new ArrayList<String>();
         for (ModelNode host : result.asList()) {
             hosts.add(host.asString());
@@ -148,7 +148,7 @@ public class DomainClientImpl implements DomainClient {
         op.get("operation").set("read-children-names");
         op.get("child-type").set("server-config");
         op.get("address").add("host", host);
-        ModelNode result = executeForResult(new NewOperationBuilder(op).build());
+        ModelNode result = executeForResult(new OperationBuilder(op).build());
         Set<String> servers = new HashSet<String>();
         for (ModelNode server : result.asList()) {
             servers.add(server.asString());
@@ -161,7 +161,7 @@ public class DomainClientImpl implements DomainClient {
         op.get("operation").set("read-attribute");
         op.get("address").set(address);
         op.get("name").set(name);
-        return executeForResult(new NewOperationBuilder(op).build());
+        return executeForResult(new OperationBuilder(op).build());
     }
 
     @Override
@@ -172,7 +172,7 @@ public class DomainClientImpl implements DomainClient {
         ModelNode address = op.get("address");
         address.add("host", hostControllerName);
         address.add("server-config", serverName);
-        ModelNode result = executeForResult(new NewOperationBuilder(op).build());
+        ModelNode result = executeForResult(new OperationBuilder(op).build());
         String status = result.asString();
         return Enum.valueOf(ServerStatus.class, status);
     }
@@ -187,7 +187,7 @@ public class DomainClientImpl implements DomainClient {
         address.add("host", hostControllerName);
         address.add("server-config", serverName);
         // FIXME add graceful shutdown
-        ModelNode result = executeForResult(new NewOperationBuilder(op).build());
+        ModelNode result = executeForResult(new OperationBuilder(op).build());
         String status = result.asString();
         return Enum.valueOf(ServerStatus.class, status);
     }
@@ -202,7 +202,7 @@ public class DomainClientImpl implements DomainClient {
         address.add("host", hostControllerName);
         address.add("server-config", serverName);
         // FIXME add graceful shutdown
-        ModelNode result = executeForResult(new NewOperationBuilder(op).build());
+        ModelNode result = executeForResult(new OperationBuilder(op).build());
         String status = result.asString();
         return Enum.valueOf(ServerStatus.class, status);
     }
@@ -211,7 +211,7 @@ public class DomainClientImpl implements DomainClient {
         final ModelNode op = new ModelNode();
         op.get("operation").set("read-children-names");
         op.get("child-type").set("deployment");
-        final ModelNode result = executeForResult(new NewOperationBuilder(op).build());
+        final ModelNode result = executeForResult(new OperationBuilder(op).build());
         final Set<String> deploymentNames = new HashSet<String>();
         if (result.isDefined()) {
             for (ModelNode node : result.asList()) {
@@ -226,7 +226,7 @@ public class DomainClientImpl implements DomainClient {
         delegate.close();
     }
 
-    ModelNode executeForResult(NewOperation op) {
+    ModelNode executeForResult(Operation op) {
         try {
             ModelNode result = delegate.execute(op);
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {

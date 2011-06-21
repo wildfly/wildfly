@@ -28,17 +28,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Builder for a {@link NewOperation}.
+ * Builder for a {@link Operation}.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NewOperationBuilder {
+public class OperationBuilder {
 
     private final ModelNode operation;
     private volatile List<InputStream> inputStreams;
 
-    public NewOperationBuilder(final ModelNode operation) {
+    public OperationBuilder(final ModelNode operation) {
         if (operation == null) {
             throw new IllegalArgumentException("Null operation");
         }
@@ -52,7 +52,7 @@ public class NewOperationBuilder {
      *
      * @return a builder than can be used to continue building the operation
      */
-    public NewOperationBuilder addInputStream(InputStream in) {
+    public OperationBuilder addInputStream(InputStream in) {
         if (inputStreams == null) {
             inputStreams = new ArrayList<InputStream>();
         }
@@ -75,7 +75,7 @@ public class NewOperationBuilder {
      *
      * @return the operation
      */
-    public NewOperation build() {
-        return new NewOperationImpl(operation, inputStreams);
+    public Operation build() {
+        return new OperationImpl(operation, inputStreams);
     }
 }

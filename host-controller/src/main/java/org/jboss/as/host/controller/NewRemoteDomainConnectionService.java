@@ -40,9 +40,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperation;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.NewMasterDomainControllerClient;
@@ -87,7 +88,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
 
     private volatile ProtocolChannelClient<ManagementChannel> channelClient;
     /** Used to invoke ModelController ops on the master */
-    private volatile NewModelControllerClient masterProxy;
+    private volatile ModelControllerClient masterProxy;
     /** Handler for transactional operations */
     private volatile NewTransactionalModelControllerOperationHandler txOperationHandler;
     private final AtomicBoolean shutdown = new AtomicBoolean();
@@ -185,7 +186,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
 
             channel.startReceiving();
 
-            masterProxy = NewModelControllerClient.Factory.create(channel);
+            masterProxy = new ExistingChannelModelControllerClient(channel);
         } catch (IOException e) {
             log.warnf("Could not connect to remote domain controller %s:%d", host.getHostAddress(), port);
             //TODO remove this line
@@ -229,7 +230,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     }
 
     @Override
-    public ModelNode execute(NewOperation operation) throws IOException {
+    public ModelNode execute(Operation operation) throws IOException {
         return masterProxy.execute(operation, OperationMessageHandler.logging);
     }
 
@@ -239,7 +240,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     }
 
     @Override
-    public ModelNode execute(NewOperation operation, OperationMessageHandler messageHandler) throws IOException {
+    public ModelNode execute(Operation operation, OperationMessageHandler messageHandler) throws IOException {
         return masterProxy.execute(operation, messageHandler);
     }
 
@@ -249,7 +250,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     }
 
     @Override
-    public AsyncFuture<ModelNode> executeAsync(NewOperation operation, OperationMessageHandler messageHandler) {
+    public AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler) {
         return masterProxy.executeAsync(operation, messageHandler);
     }
 

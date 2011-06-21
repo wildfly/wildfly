@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.controller.client;
-
-import org.jboss.dmr.ModelNode;
 
 /**
- * Encapsulates a detyped operation request passed in to the model controller, along with
- * any attachments associated with the request.
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * Implementation classes to support the {@link org.jboss.as.controller.client core JBoss AS management client API}.
+ * These classes are not part of the JBoss Application Server public API and may change without notice between
+ * releases. Therefore they should not be directly used by client applications.
  */
-public interface NewOperation extends OperationAttachments {
-
-    /**
-     * The detyped operation to execute
-     *
-     * @return the operation
-     */
-    ModelNode getOperation();
-}
+package org.jboss.as.controller.client.impl;

@@ -31,7 +31,7 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.demos.ws.archive.Endpoint;
 import org.jboss.as.demos.ws.archive.EndpointImpl;
@@ -68,7 +68,7 @@ public class WSTestCase {
 
     @Test
     public void testManagementDescription() throws Exception {
-        final NewModelControllerClient client = NewModelControllerClient.Factory.create("localhost", 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
         try {
             final ModelNode address = new ModelNode();
             address.add(ModelDescriptionConstants.DEPLOYMENT, "ws-example.war");

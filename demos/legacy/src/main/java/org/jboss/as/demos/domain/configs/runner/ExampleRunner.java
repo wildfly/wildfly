@@ -32,7 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -46,7 +46,7 @@ public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
 
-        final NewModelControllerClient client = NewModelControllerClient.Factory.create("localhost", 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
         try {
             final ModelNode domainOp = new ModelNode();
             domainOp.get(OP).set(READ_RESOURCE_OPERATION);

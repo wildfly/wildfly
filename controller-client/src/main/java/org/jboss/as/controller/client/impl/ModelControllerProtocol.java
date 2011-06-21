@@ -19,14 +19,14 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.controller.client;
+package org.jboss.as.controller.client.impl;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public interface NewModelControllerProtocol {
+public interface ModelControllerProtocol {
 
     byte EXECUTE_ASYNC_CLIENT_REQUEST = 0x45;
     byte EXECUTE_CLIENT_REQUEST = 0x46;

@@ -31,7 +31,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.RequestParameterArgument;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -69,7 +69,7 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
             return;
         }
 
-        NewModelControllerClient client = ctx.getModelControllerClient();
+        ModelControllerClient client = ctx.getModelControllerClient();
         final ModelNode result;
         try {
             result = client.execute(request);

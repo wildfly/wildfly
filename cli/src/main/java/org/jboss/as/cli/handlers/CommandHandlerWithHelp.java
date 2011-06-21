@@ -29,7 +29,7 @@ import java.util.List;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 
 /**
@@ -82,7 +82,7 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
         }
 
         if(connectionRequired) {
-            NewModelControllerClient client = ctx.getModelControllerClient();
+            ModelControllerClient client = ctx.getModelControllerClient();
             if(client == null) {
                 ctx.printLine("The controller client is not available. Make sure you are connected.");
                 return;

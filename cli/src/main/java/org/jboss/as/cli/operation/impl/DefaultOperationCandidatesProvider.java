@@ -29,7 +29,7 @@ import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -53,7 +53,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
     @Override
     public List<String> getNodeNames(OperationRequestAddress prefix) {
 
-        NewModelControllerClient client = ctx.getModelControllerClient();
+        ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
             return Collections.emptyList();
         }
@@ -102,7 +102,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
     @Override
     public List<String> getOperationNames(OperationRequestAddress prefix) {
 
-        NewModelControllerClient client = ctx.getModelControllerClient();
+        ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
             return Collections.emptyList();
         }
@@ -138,7 +138,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
     @Override
     public List<String> getPropertyNames(String operationName, OperationRequestAddress address) {
 
-        NewModelControllerClient client = ctx.getModelControllerClient();
+        ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
             return Collections.emptyList();
         }

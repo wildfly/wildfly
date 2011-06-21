@@ -3,7 +3,7 @@
  */
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -11,7 +11,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface NewMasterDomainControllerClient extends NewModelControllerClient {
+public interface NewMasterDomainControllerClient extends ModelControllerClient {
 
     /** Standard service name to use for a service that returns a MasterDomainControllerClient */
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller", "connection");

@@ -36,11 +36,8 @@ import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
 import static org.jboss.msc.service.ServiceBuilder.DependencyType.OPTIONAL;
 
-import java.io.IOException;
-import java.util.concurrent.Executors;
-
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.webservices.dmr.WSExtension;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
@@ -70,7 +67,7 @@ public final class ModelUpdateService extends AbstractService<Void> {
 
     private final InjectedValue<NewModelController> controllerValue = new InjectedValue<NewModelController>();
     private static final ModelUpdateService INSTANCE = new ModelUpdateService();
-    private volatile NewModelControllerClient client;
+    private volatile ModelControllerClient client;
 
     private ModelUpdateService() {
         super();

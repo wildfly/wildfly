@@ -76,8 +76,8 @@ import java.util.TreeSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.client.NewOperation;
-import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeploymentActionsCompleteBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanBuilder;
@@ -275,7 +275,7 @@ public class ExampleRunner implements Runnable {
 
         ModelNode op = new ModelNode();
         op.get("operation").set("read-config-as-xml");
-        stdout.println(executeForResult(new NewOperationBuilder(op).build()).asString());
+        stdout.println(executeForResult(new OperationBuilder(op).build()).asString());
         return continuePrompt();
     }
 
@@ -322,7 +322,7 @@ public class ExampleRunner implements Runnable {
         ModelNode op = new ModelNode();
         op.get("operation").set("read-config-as-xml");
         op.get("address").add("host", hc);
-        stdout.println(executeForResult(new NewOperationBuilder(op).build()).asString());
+        stdout.println(executeForResult(new OperationBuilder(op).build()).asString());
     }
 
     private boolean listServers() throws Exception {
@@ -349,7 +349,7 @@ public class ExampleRunner implements Runnable {
             ModelNode address = op.get("address");
             address.add("host", server.getHostName());
             address.add("server", server.getServerName());
-            stdout.println(executeForResult(new NewOperationBuilder(op).build()).asString());
+            stdout.println(executeForResult(new OperationBuilder(op).build()).asString());
         }
         return continuePrompt();
     }
@@ -489,7 +489,7 @@ public class ExampleRunner implements Runnable {
         op.get("operation").set("read-resource");
         op.get("recursive").set(true);
         op.get("proxies").set(false);
-        return executeForResult(new NewOperationBuilder(op).build());
+        return executeForResult(new OperationBuilder(op).build());
     }
 
     private boolean removeServer() throws Exception {
@@ -504,7 +504,7 @@ public class ExampleRunner implements Runnable {
             address.add("server-config", server.getServerName());
             boolean success = true;
             try {
-                executeForResult(new NewOperationBuilder(op).build());
+                executeForResult(new OperationBuilder(op).build());
             }
             catch (Exception e) {
                 success = false;
@@ -1241,10 +1241,10 @@ public class ExampleRunner implements Runnable {
     }
 
     private ModelNode executeForResult(ModelNode op) throws Exception {
-        return executeForResult(new NewOperationBuilder(op).build());
+        return executeForResult(new OperationBuilder(op).build());
     }
 
-    private ModelNode executeForResult(NewOperation op) {
+    private ModelNode executeForResult(Operation op) {
         try {
             ModelNode result = client.execute(op);
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {

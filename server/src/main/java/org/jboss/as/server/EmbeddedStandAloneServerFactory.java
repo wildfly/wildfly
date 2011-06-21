@@ -45,7 +45,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
@@ -102,7 +102,7 @@ public class EmbeddedStandAloneServerFactory {
             private ServiceContainer serviceContainer;
             private ServerDeploymentManager serverDeploymentManager;
             private Context context;
-            private NewModelControllerClient modelControllerClient;
+            private ModelControllerClient modelControllerClient;
 
             @Override
             public void deploy(File file) throws IOException, ExecutionException, InterruptedException {
@@ -122,7 +122,7 @@ public class EmbeddedStandAloneServerFactory {
             }
 
             @Override
-            public NewModelControllerClient getModelControllerClient() {
+            public ModelControllerClient getModelControllerClient() {
                 return modelControllerClient;
             }
 

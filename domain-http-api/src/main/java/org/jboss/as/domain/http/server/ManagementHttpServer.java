@@ -30,7 +30,7 @@ import java.util.concurrent.Executor;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.com.sun.net.httpserver.HttpsConfigurator;
@@ -92,7 +92,7 @@ public class ManagementHttpServer {
         }
     }
 
-    public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, NewModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm)
+    public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, ModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm)
             throws IOException {
         HttpServer httpServer = null;
         if (bindAddress != null) {

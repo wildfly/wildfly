@@ -25,9 +25,11 @@ package org.jboss.as.controller.client;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 
-import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
+import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
 
@@ -38,7 +40,7 @@ import org.jboss.threads.AsyncFuture;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface NewModelControllerClient extends Closeable {
+public interface ModelControllerClient extends Closeable {
 
     /**
      * Execute an operation synchronously.
@@ -55,7 +57,7 @@ public interface NewModelControllerClient extends Closeable {
      * @return the result of the operation
      * @throws IOException if an I/O error occurs while executing the operation
      */
-    ModelNode execute(NewOperation operation) throws IOException;
+    ModelNode execute(Operation operation) throws IOException;
 
     /**
      * Execute an operation synchronously, optionally receiving progress reports.
@@ -75,7 +77,7 @@ public interface NewModelControllerClient extends Closeable {
      * @return the result of the operation
      * @throws IOException if an I/O error occurs while executing the operation
      */
-    ModelNode execute(NewOperation operation, OperationMessageHandler messageHandler) throws IOException;
+    ModelNode execute(Operation operation, OperationMessageHandler messageHandler) throws IOException;
 
     /**
      * Execute an operation.
@@ -94,19 +96,19 @@ public interface NewModelControllerClient extends Closeable {
      * @param messageHandler the message handler to use for operation progress reporting, or {@code null} for none
      * @return the future result of the operation
      */
-    AsyncFuture<ModelNode> executeAsync(NewOperation operation, OperationMessageHandler messageHandler);
+    AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler);
 
     class Factory {
-        /**
-         * Create a client instance for an existing channel. It is the client's responsibility to close this channel
-         *
-         * @param channel The channel to use
-         * @return A model controller client
-         * @throws UnknownHostException if the host cannot be found
-         */
-        public static NewModelControllerClient create(final ManagementChannel channel) {
-            return new NewExistingChannelModelControllerClient(channel);
-        }
+//        /**
+//         * Create a client instance for an existing channel. It is the client's responsibility to close this channel
+//         *
+//         * @param channel The channel to use
+//         * @return A model controller client
+//         * @throws UnknownHostException if the host cannot be found
+//         */
+//        public static ModelControllerClient create(final ManagementChannel channel) {
+//            return new NewExistingChannelModelControllerClient(channel);
+//        }
 
         /**
          * Create a client instance for a remote address and port.
@@ -116,8 +118,14 @@ public interface NewModelControllerClient extends Closeable {
          * @return A model controller client
          * @throws UnknownHostException if the host cannot be found
          */
-        public static NewModelControllerClient create(final InetAddress address, final int port){
-            return new NewEstablishChannelModelControllerClient(address, port);
+        public static ModelControllerClient create(final InetAddress address, final int port){
+//            return new NewEstablishChannelModelControllerClient(address, port);
+            return new AbstractModelControllerClient() {
+                @Override
+                protected ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException {
+                    return ManagementClientChannelStrategy.create(address.getHostName(), port, executor, this);
+                }
+            };
         }
 
         /**
@@ -128,8 +136,14 @@ public interface NewModelControllerClient extends Closeable {
          * @return A model controller client
          * @throws UnknownHostException if the host cannot be found
          */
-        public static NewModelControllerClient create(final String hostName, final int port){
-            return new NewEstablishChannelModelControllerClient(hostName, port);
+        public static ModelControllerClient create(final String hostName, final int port) throws UnknownHostException {
+//            return new NewEstablishChannelModelControllerClient(hostName, port);
+            return new AbstractModelControllerClient() {
+                @Override
+                protected ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException {
+                    return ManagementClientChannelStrategy.create(hostName, port, executor, this);
+                }
+            };
         }
     }
 

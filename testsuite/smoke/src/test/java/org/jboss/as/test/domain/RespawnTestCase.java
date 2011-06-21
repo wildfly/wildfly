@@ -33,7 +33,7 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.process.Main;
 import org.jboss.as.process.ProcessController;
@@ -148,7 +148,7 @@ public class RespawnTestCase {
         boolean hasOne = false;
         boolean hasTwo = false;
         do {
-            final NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getLocalHost(), HC_PORT);
+            final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getLocalHost(), HC_PORT);
             Thread hack = new Thread(new Runnable() {
                @Override
                public void run() {

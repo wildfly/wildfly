@@ -40,8 +40,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperation;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
@@ -181,8 +181,8 @@ class NewModelControllerImpl implements NewModelController {
         }
     }
 
-    public NewModelControllerClient createClient(final Executor executor) {
-        return new NewModelControllerClient() {
+    public ModelControllerClient createClient(final Executor executor) {
+        return new ModelControllerClient() {
 
             @Override
             public void close() throws IOException {
@@ -195,7 +195,7 @@ class NewModelControllerImpl implements NewModelController {
             }
 
             @Override
-            public ModelNode execute(NewOperation operation) throws IOException {
+            public ModelNode execute(Operation operation) throws IOException {
                 return execute(operation, null);
             }
 
@@ -205,7 +205,7 @@ class NewModelControllerImpl implements NewModelController {
             }
 
             @Override
-            public ModelNode execute(NewOperation operation, OperationMessageHandler messageHandler) throws IOException {
+            public ModelNode execute(Operation operation, OperationMessageHandler messageHandler) throws IOException {
                 return NewModelControllerImpl.this.execute(operation.getOperation(), messageHandler, OperationTransactionControl.COMMIT, operation);
             }
 
@@ -215,7 +215,7 @@ class NewModelControllerImpl implements NewModelController {
             }
 
             @Override
-            public AsyncFuture<ModelNode> executeAsync(final NewOperation operation, final OperationMessageHandler messageHandler) {
+            public AsyncFuture<ModelNode> executeAsync(final Operation operation, final OperationMessageHandler messageHandler) {
                 return executeAsync(operation.getOperation(), messageHandler, operation);
             }
 

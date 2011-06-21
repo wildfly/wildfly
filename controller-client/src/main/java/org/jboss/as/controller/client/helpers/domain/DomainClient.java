@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.impl.DomainClientImpl;
 
 /**
@@ -37,7 +37,7 @@ import org.jboss.as.controller.client.helpers.domain.impl.DomainClientImpl;
  *
  * @author John Bailey
  */
-public interface DomainClient extends NewModelControllerClient {
+public interface DomainClient extends ModelControllerClient {
 
     /**
      * Gets the list of currently running host controllers.

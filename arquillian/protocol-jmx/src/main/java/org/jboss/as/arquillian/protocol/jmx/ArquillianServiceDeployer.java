@@ -45,7 +45,7 @@ import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -157,8 +157,8 @@ public class ArquillianServiceDeployer {
         }
     }
 
-    private NewModelControllerClient getModelControllerClient() throws UnknownHostException {
+    private ModelControllerClient getModelControllerClient() throws UnknownHostException {
         // TODO: make configurable via protocol config
-        return NewModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999);
+        return ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999);
     }
 }

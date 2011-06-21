@@ -50,8 +50,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
@@ -81,7 +81,7 @@ public class JmsClientTestCase {
     public void testMessagingClient() throws Exception {
         QueueConnection conn = null;
         QueueSession session = null;
-        NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999);
 
         boolean actionsApplied = false;
         try {
@@ -160,8 +160,8 @@ public class JmsClientTestCase {
         }
     }
 
-    static void applyUpdate(ModelNode update, final NewModelControllerClient client) throws IOException {
-        ModelNode result = client.execute(new NewOperationBuilder(update).build());
+    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
+        ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));

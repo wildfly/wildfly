@@ -20,22 +20,22 @@ package org.jboss.as.controller.client.helpers.standalone.impl;
 
 import java.util.concurrent.Future;
 
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperation;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link ServerDeploymentManager} that uses a {@link NewModelControllerClient}.
+ * {@link ServerDeploymentManager} that uses a {@link org.jboss.as.controller.client.ModelControllerClient}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  *
  */
 public class ModelControllerClientServerDeploymentManager extends AbstractServerDeploymentManager {
 
-    private final NewModelControllerClient client;
+    private final ModelControllerClient client;
 
-    public ModelControllerClientServerDeploymentManager(final NewModelControllerClient client) {
+    public ModelControllerClientServerDeploymentManager(final ModelControllerClient client) {
         this.client = client;
     }
 
@@ -43,7 +43,7 @@ public class ModelControllerClientServerDeploymentManager extends AbstractServer
      * {@inheritDoc}
      */
     @Override
-    protected Future<ModelNode> executeOperation(NewOperation operation) {
+    protected Future<ModelNode> executeOperation(Operation operation) {
         return client.executeAsync(operation, null);
     }
 

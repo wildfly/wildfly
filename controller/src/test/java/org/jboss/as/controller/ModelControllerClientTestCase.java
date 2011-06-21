@@ -37,10 +37,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -96,7 +97,7 @@ public class ModelControllerClientTestCase {
         NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
 
-        NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
+        ModelControllerClient client = new ExistingChannelModelControllerClient(channels.getClientChannel());
         try {
             clientChannel.setOperationHandler((ManagementOperationHandler)client);
 
@@ -179,7 +180,7 @@ public class ModelControllerClientTestCase {
         NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
 
-        NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
+        ModelControllerClient client = new ExistingChannelModelControllerClient(channels.getClientChannel());
         try {
             clientChannel.setOperationHandler((ManagementOperationHandler)client);
 
@@ -188,7 +189,7 @@ public class ModelControllerClientTestCase {
 
             ModelNode op = new ModelNode();
             op.get("name").set(123);
-            NewOperationBuilder builder = new NewOperationBuilder(op);
+            OperationBuilder builder = new OperationBuilder(op);
             builder.addInputStream(new ByteArrayInputStream(firstBytes));
             builder.addInputStream(new ByteArrayInputStream(secondBytes));
             builder.addInputStream(null);
@@ -226,7 +227,7 @@ public class ModelControllerClientTestCase {
         NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
 
-        NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
+        ModelControllerClient client = new ExistingChannelModelControllerClient(channels.getClientChannel());
         try {
             clientChannel.setOperationHandler((ManagementOperationHandler)client);
 
@@ -284,7 +285,7 @@ public class ModelControllerClientTestCase {
         NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
 
-        NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
+        ModelControllerClient client = new ExistingChannelModelControllerClient(channels.getClientChannel());
         try {
             clientChannel.setOperationHandler((ManagementOperationHandler)client);
 
@@ -326,7 +327,7 @@ public class ModelControllerClientTestCase {
         }
 
         @Override
-        public NewModelControllerClient createClient(Executor executor) {
+        public ModelControllerClient createClient(Executor executor) {
             return null;
         }
 

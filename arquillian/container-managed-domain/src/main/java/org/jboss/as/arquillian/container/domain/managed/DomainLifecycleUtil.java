@@ -46,8 +46,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jboss.as.controller.client.NewOperation;
-import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
@@ -350,7 +350,7 @@ public class DomainLifecycleUtil {
         op.get("operation").set("read-children-names");
         op.get("child-type").set("server-config");
         op.get("address").add("host", configuration.getHostName());
-        ModelNode opResult = executeForResult(new NewOperationBuilder(op).build());
+        ModelNode opResult = executeForResult(new OperationBuilder(op).build());
         Set<String> servers = new HashSet<String>();
         for (ModelNode server : opResult.asList()) {
             servers.add(server.asString());
@@ -373,14 +373,14 @@ public class DomainLifecycleUtil {
         op.get("operation").set("read-attribute");
         op.get("address").set(address);
         op.get("name").set(name);
-        return executeForResult(new NewOperationBuilder(op).build());
+        return executeForResult(new OperationBuilder(op).build());
     }
 
     private ModelNode executeForResult(ModelNode op) {
-        return executeForResult(new NewOperationBuilder(op).build());
+        return executeForResult(new OperationBuilder(op).build());
     }
 
-    private ModelNode executeForResult(NewOperation op) {
+    private ModelNode executeForResult(Operation op) {
         try {
             ModelNode result = getDomainClient().execute(op);
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {

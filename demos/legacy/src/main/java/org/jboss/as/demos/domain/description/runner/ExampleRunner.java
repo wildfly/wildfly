@@ -24,7 +24,7 @@ package org.jboss.as.demos.domain.description.runner;
 
 import java.net.InetAddress;
 
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -40,10 +40,10 @@ public class ExampleRunner {
      * @param args
      */
     public static void main(String[] args) throws Exception {
-        NewModelControllerClient client = null;
+        ModelControllerClient client = null;
         try {
             System.out.println("Connecting");
-            client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
             System.out.println("Connected");
 
             System.out.println("Dumping resource tree\n");
@@ -75,7 +75,7 @@ public class ExampleRunner {
 
     }
 
-    static void wildcards(final NewModelControllerClient client) throws Exception {
+    static void wildcards(final ModelControllerClient client) throws Exception {
         {
             final ModelNode address = new ModelNode();
             address.add("host", "*");

@@ -21,7 +21,8 @@
  */
 
 /**
- * Portion of the client API for managing deployments on a JBoss AS domain that
- * is specific to operations on a domain controller.
+ * Implementation classes to support the {@link org.jboss.as.controller.client.helpers.domain managed domain convenience API}.
+ * These classes are not part of the JBoss Application Server public API and may change without notice between
+ * releases. Therefore they should not be directly used by client applications.
  */
 package org.jboss.as.controller.client.helpers.domain.impl;

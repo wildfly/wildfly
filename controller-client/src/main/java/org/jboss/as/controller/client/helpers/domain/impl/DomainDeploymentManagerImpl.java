@@ -53,8 +53,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
-import org.jboss.as.controller.client.NewOperation;
-import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
 import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
@@ -102,7 +102,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         }
         DeploymentPlanImpl planImpl = DeploymentPlanImpl.class.cast(plan);
         Map<UUID, String> actionsById = new HashMap<UUID, String>();
-        NewOperation operation = getDeploymentPlanOperation(planImpl, actionsById);
+        Operation operation = getDeploymentPlanOperation(planImpl, actionsById);
         Future<ModelNode> future = client.executeAsync(operation, null);
         return new DomainDeploymentPlanResultFuture(planImpl, future, actionsById);
     }
@@ -112,13 +112,13 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         return InitialDeploymentPlanBuilderFactory.newInitialDeploymentPlanBuilder(this.contentDistributor);
     }
 
-    private NewOperation getDeploymentPlanOperation(DeploymentPlanImpl plan, Map<UUID, String> actionsById) {
-        NewOperation op = getCompositeOperation(plan, actionsById);
+    private Operation getDeploymentPlanOperation(DeploymentPlanImpl plan, Map<UUID, String> actionsById) {
+        Operation op = getCompositeOperation(plan, actionsById);
         addRollbackPlan(plan, op);
         return op;
     }
 
-    private NewOperation getCompositeOperation(DeploymentPlanImpl plan, Map<UUID, String> actionsById) {
+    private Operation getCompositeOperation(DeploymentPlanImpl plan, Map<UUID, String> actionsById) {
 
         Set<String> deployments = getCurrentDomainDeployments();
         Set<String> serverGroups = getServerGroupNames(plan);
@@ -131,7 +131,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(plan.isSingleServerRollback());
         // FIXME deal with shutdown params
 
-        NewOperationBuilder builder = new NewOperationBuilder(op);
+        OperationBuilder builder = new OperationBuilder(op);
         int stepNum = 1;
         for (DeploymentActionImpl action : plan.getDeploymentActionImpls()) {
 
@@ -225,7 +225,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         ModelNode op = new ModelNode();
         op.get("operation").set("read-children-names");
         op.get("child-type").set("deployment");
-        ModelNode rsp = client.executeForResult(new NewOperationBuilder(op).build());
+        ModelNode rsp = client.executeForResult(new OperationBuilder(op).build());
         Set<String> deployments = new HashSet<String>();
         if (rsp.isDefined()) {
             for (ModelNode node : rsp.asList()) {
@@ -235,7 +235,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         return deployments;
     }
 
-    private void addRollbackPlan(DeploymentPlanImpl plan, NewOperation op) {
+    private void addRollbackPlan(DeploymentPlanImpl plan, Operation op) {
         ModelNode opNode = op.getOperation();
         ModelNode rolloutPlan = opNode.get(OPERATION_HEADERS, ROLLOUT_PLAN);
         rolloutPlan.get("rollback-across-groups").set(plan.isRollbackAcrossGroups());

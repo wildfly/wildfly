@@ -44,8 +44,8 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -73,7 +73,7 @@ public class MessagingClientTestCase {
         final String queueName = "queue.standalone";
 
         final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
-        final NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
 
         try {
             // Check that the queue does not exists
@@ -130,8 +130,8 @@ public class MessagingClientTestCase {
         }
     }
 
-    static void applyUpdate(ModelNode update, final NewModelControllerClient client) throws IOException {
-        ModelNode result = client.execute(new NewOperationBuilder(update).build());
+    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
+        ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));

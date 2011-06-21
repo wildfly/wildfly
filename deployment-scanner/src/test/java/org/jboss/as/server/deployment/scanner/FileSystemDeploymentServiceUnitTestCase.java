@@ -50,8 +50,8 @@ import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperation;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
@@ -1074,7 +1074,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     }
 
-    private static class MockServerController implements NewModelControllerClient {
+    private static class MockServerController implements ModelControllerClient {
 
         private final List<ModelNode> requests = new ArrayList<ModelNode>(1);
         private final List<Response> responses = new ArrayList<Response>(1);
@@ -1088,7 +1088,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         @Override
-        public ModelNode execute(NewOperation operation) throws IOException {
+        public ModelNode execute(Operation operation) throws IOException {
             return execute(operation.getOperation());
         }
 
@@ -1098,7 +1098,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         @Override
-        public ModelNode execute(NewOperation operation, OperationMessageHandler messageHandler) throws IOException {
+        public ModelNode execute(Operation operation, OperationMessageHandler messageHandler) throws IOException {
             throw new UnsupportedOperationException();
         }
 
@@ -1108,7 +1108,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         @Override
-        public AsyncFuture<ModelNode> executeAsync(NewOperation operation, OperationMessageHandler messageHandler) {
+        public AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler) {
             throw new UnsupportedOperationException();
         }
 

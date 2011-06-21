@@ -63,9 +63,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperation;
-import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
@@ -121,7 +121,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private final Map<File, IncompleteDeploymentStatus> incompleteDeployments = new HashMap<File, IncompleteDeploymentStatus>();
 
     private final ScheduledExecutorService scheduledExecutor;
-    private final NewModelControllerClient controllerClient;
+    private final ModelControllerClient controllerClient;
     private final ServerDeploymentRepository deploymentRepository;
     private final ContentRepository contentRepository;
 
@@ -146,7 +146,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     };
 
-    FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final File relativeToDir, final NewModelControllerClient controllerClient, final ScheduledExecutorService scheduledExecutor,
+    FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final File relativeToDir, final ModelControllerClient controllerClient, final ScheduledExecutorService scheduledExecutor,
             final ServerDeploymentRepository deploymentRepository, final ContentRepository contentRepository) throws OperationFailedException {
         assert contentRepository != null : "content repository is null";
         if (scheduledExecutor == null) {
@@ -365,7 +365,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     while (!updates.isEmpty()) {
                         ModelNode composite = getCompositeUpdate(updates);
 
-                        final DeploymentTask deploymentTask = new DeploymentTask(new NewOperationBuilder(composite).build());
+                        final DeploymentTask deploymentTask = new DeploymentTask(new OperationBuilder(composite).build());
                         final Future<ModelNode> futureResults = scheduledExecutor.submit(deploymentTask);
                         final ModelNode results;
                         try {
@@ -1080,9 +1080,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
     }
 
     private class DeploymentTask implements Callable<ModelNode> {
-        private final NewOperation deploymentOp;
+        private final Operation deploymentOp;
 
-        private DeploymentTask(final NewOperation deploymentOp) {
+        private DeploymentTask(final Operation deploymentOp) {
             this.deploymentOp = deploymentOp;
         }
 

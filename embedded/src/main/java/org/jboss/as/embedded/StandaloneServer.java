@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutionException;
 
 import javax.naming.Context;
 
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 
 /**
  * The standalone server interface.
@@ -48,7 +48,7 @@ public interface StandaloneServer {
      */
     Context getContext();
 
-    NewModelControllerClient getModelControllerClient();
+    ModelControllerClient getModelControllerClient();
 
     void start() throws ServerStartException;
 

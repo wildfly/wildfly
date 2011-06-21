@@ -42,7 +42,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -58,7 +58,7 @@ public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
 
-        final NewModelControllerClient client = NewModelControllerClient.Factory.create("localhost", 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
         try {
 
             final ModelNode hostNamesOp = new ModelNode();
@@ -156,7 +156,7 @@ public class ExampleRunner {
     }
 
 
-    static ModelNode runServerOperation(final NewModelControllerClient client, final ModelNode address, final String opName) throws Exception {
+    static ModelNode runServerOperation(final ModelControllerClient client, final ModelNode address, final String opName) throws Exception {
         final ModelNode stopOperation = new ModelNode();
         stopOperation.get(OP).set(opName);
         stopOperation.get(OP_ADDR).set(address);
