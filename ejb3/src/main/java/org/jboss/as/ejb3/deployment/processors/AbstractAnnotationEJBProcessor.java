@@ -53,4 +53,12 @@ public abstract class AbstractAnnotationEJBProcessor<D extends EJBComponentDescr
         }
         processAnnotations(beanClass, index, componentDescriptionType.cast(componentDescription));
     }
+
+    protected ClassInfo getSuperClass(final ClassInfo klass, final CompositeIndex index) {
+        final DotName superClassDotName = klass.superName();
+        if (superClassDotName == null) {
+            return null;
+        }
+        return index.getClassByName(superClassDotName);
+    }
 }

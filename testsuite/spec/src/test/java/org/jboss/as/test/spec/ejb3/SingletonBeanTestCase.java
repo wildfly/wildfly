@@ -22,17 +22,6 @@
 
 package org.jboss.as.test.spec.ejb3;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
-
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.EJB;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.ejb3.archive.CallTrackerSingletonBean;
@@ -42,7 +31,6 @@ import org.jboss.as.demos.ejb3.archive.StartupSingleton;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -181,7 +169,7 @@ public class SingletonBeanTestCase {
         Assert.assertEquals("Unexpected count on singleton bean after invocation on method with WRITE lock semantic: ", 1, this.longWritesSingletonBean.getCount());
 
         for (Throwable t : throwables) {
-            assertTrue(t instanceof ConcurrentAccessTimeoutException);
+            assertTrue(t.toString(), t instanceof ConcurrentAccessTimeoutException);
         }
 
         assertEquals(1, passed.size());

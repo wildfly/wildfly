@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.dd;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.ejb.spec.MethodMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 import java.lang.reflect.Method;
@@ -33,9 +34,6 @@ import java.util.Collection;
  * @author Stuart Douglas
  */
 public class MethodResolutionUtils {
-
-    public MethodResolutionUtils() {
-    }
 
     public static Method resolveMethod(final NamedMethodMetaData methodData, final Class<?> componentClass, final DeploymentReflectionIndex reflectionIndex) throws DeploymentUnitProcessingException {
         Class<?> clazz = componentClass;
@@ -69,4 +67,8 @@ public class MethodResolutionUtils {
 
     }
 
+    public static Method resolveRequiredMethod(final MethodMetaData method, final Class<?> componentClass, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+
+        return null;
+    }
 }

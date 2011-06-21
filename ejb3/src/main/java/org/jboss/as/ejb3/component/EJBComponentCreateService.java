@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.msc.service.ServiceName;
 
@@ -52,7 +53,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final Map<String, ServiceName> viewServices;
 
-    private final ComponentConfiguration componentConfiguration;
+    private final EJBSecurityMetaData securityMetaData;
 
     /**
      * Construct a new instance.
@@ -61,8 +62,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
      */
     public EJBComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
         super(componentConfiguration);
-
-        this.componentConfiguration = componentConfiguration;
 
         this.ejbJarConfiguration = ejbJarConfiguration;
 
@@ -76,6 +75,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         } else {
             this.txAttrs = null;
         }
+        // Setup the security metadata for the bean
+        this.securityMetaData = new EJBSecurityMetaData(componentConfiguration);
+
         List<ViewConfiguration> views = componentConfiguration.getViews();
         if (views != null) {
             for (ViewConfiguration view : views) {
@@ -99,14 +101,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             this.processTxAttr(ejbComponentDescription, MethodIntf.BEAN, method);
         }
         final HashMap<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
-        for(ViewDescription view : componentConfiguration.getComponentDescription().getViews()) {
+        for (ViewDescription view : componentConfiguration.getComponentDescription().getViews()) {
             viewServices.put(view.getViewClassName(), view.getServiceName());
         }
         this.viewServices = viewServices;
-    }
-
-    public ComponentConfiguration getComponentConfiguration() {
-        return componentConfiguration;
     }
 
     private static Method getComponentMethod(final ComponentConfiguration componentConfiguration, final String name, final Class<?>[] parameterTypes) {
@@ -162,5 +160,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public Map<String, ServiceName> getViewServices() {
         return viewServices;
+    }
+
+    public EJBSecurityMetaData getSecurityMetaData() {
+        return this.securityMetaData;
     }
 }

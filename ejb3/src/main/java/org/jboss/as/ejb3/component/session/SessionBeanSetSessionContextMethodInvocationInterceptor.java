@@ -32,15 +32,16 @@ import org.jboss.invocation.InterceptorFactory;
 import javax.ejb.SessionBean;
 
 /**
- * Interceptor that injects the SessionContext into ejb's that implement {@link SessionBean}
+ * Interceptor that invokes the {@link SessionBean#setSessionContext(javax.ejb.SessionContext)} on session beans
+ * which implement the {@link SessionBean} interface.
  *
  * @author Stuart Douglas
  */
-public class SessionBeanSessionContextInjectionInterceptor implements Interceptor {
+public class SessionBeanSetSessionContextMethodInvocationInterceptor implements Interceptor {
 
-    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SessionBeanSessionContextInjectionInterceptor());
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SessionBeanSetSessionContextMethodInvocationInterceptor());
 
-    private SessionBeanSessionContextInjectionInterceptor() {
+    private SessionBeanSetSessionContextMethodInvocationInterceptor() {
     }
 
     @Override

@@ -227,9 +227,15 @@ public enum Phase {
     public static final int PARSE_EJB_TRANSACTION_MANAGEMENT            = 0x1600;
     public static final int PARSE_EJB_BUSINESS_VIEW_ANNOTATION          = 0x1700;
     public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1800;
+    public static final int PARSE_EJB_SECURITY_DOMAIN_ANNOTATION        = 0x1801;
     public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x1900;
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
     public static final int PARSE_REMOVE_METHOD_ANNOTAION               = 0x1902;
+    public static final int PARSE_EJB_DECLARE_ROLES_ANNOTATION          = 0x1903;
+    public static final int PARSE_EJB_RUN_AS_ANNOTATION                 = 0x1904;
+    public static final int PARSE_EJB_DENY_ALL_ANNOTATION               = 0x1905;
+    public static final int PARSE_EJB_ROLES_ALLOWED_ANNOTATION          = 0x1906;
+    public static final int PARSE_EJB_PERMIT_ALL_ANNOTATION             = 0x1907;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1A00;
     public static final int PARSE_EJB_STATEFUL_TIMEOUT_ANNOTATION       = 0x1A01;
@@ -265,6 +271,8 @@ public enum Phase {
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x3300;
     public static final int PARSE_RESOURCE_INJECTION_WEBSERVICE_CONTEXT_ANNOTATION  = 0x3401;
     public static final int PARSE_EJB_DD_INTERCEPTORS                   = 0x3500;
+    public static final int PARSE_EJB_SECURITY_ROLE_REF_DD              = 0x3501;
+    public static final int PARSE_EJB_SECURITY_IDENTITY_DD              = 0x3502;
     public static final int PARSE_EJB_ASSEMBLY_DESC_DD                  = 0x3600;
 
     // should be after all components are known
@@ -306,6 +314,8 @@ public enum Phase {
     public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
     public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0400;
     public static final int POST_MODULE_EJB_DD_REMOVE_METHOD            = 0x0500;
+    public static final int POST_MODULE_EJB_EXCLUDE_LIST_DD             = 0x0501;
+    public static final int POST_MODULE_EJB_METHOD_PERMISSION_DD        = 0x0502;
     public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0600;
     public static final int POST_MODULE_EJB_DD_CONCURRENCY              = 0x0601;
     public static final int POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION = 0x0700;

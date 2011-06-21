@@ -36,7 +36,9 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -47,6 +49,8 @@ public class EjbJarDescription {
     private final EEModuleDescription eeModuleDescription;
 
     private final Map<String, ApplicationException> applicationExceptions = new ConcurrentHashMap();
+
+    private final Set<String> applicationLevelSecurityRoles = new HashSet<String>();
 
     /**
      * True if this represents EJB's packaged in a war
@@ -59,6 +63,26 @@ public class EjbJarDescription {
             throw new IllegalArgumentException(EEModuleDescription.class.getSimpleName() + " cannot be null");
         }
         this.eeModuleDescription = eeModuleDescription;
+    }
+
+    public void addSecurityRole(final String role) {
+        if (role == null || role.trim().isEmpty()) {
+            throw new IllegalArgumentException("Security role name cannot be null or empty: " + role);
+        }
+        this.applicationLevelSecurityRoles.add(role);
+    }
+
+    /**
+     * Returns the security roles that have been defined at the application level (via security-role elements in the
+     * ejb-jar.xml). Note that this set does *not* include the roles that have been defined at each individual component
+     * level (via @DeclareRoles, @RolesAllowed annotations or security-role-ref element)
+     * <p/>
+     * Returns an empty set if no roles have been defined at the application level.
+     *
+     * @return
+     */
+    public Set<String> getSecurityRoles() {
+        return Collections.unmodifiableSet(this.applicationLevelSecurityRoles);
     }
 
     public void addApplicationException(final String exceptionClassName, final boolean rollback, final boolean inherited) {

@@ -28,8 +28,8 @@ import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
-import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
+import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
@@ -39,8 +39,8 @@ import org.junit.Test;
 
 import javax.ejb.Local;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.jboss.as.ejb3.TestHelper.index;
@@ -100,10 +100,10 @@ public class BusinessViewAnnotationProcessorTestCase {
         BusinessViewAnnotationProcessor processor = new BusinessViewAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
-        List<ViewDescription> views = componentDescription.getViews();
+        Collection<ViewDescription> views = componentDescription.getViews();
         assertNotNull("No views found", views);
         assertEquals("Unexpected number of views", 1, views.size());
-        EJBViewDescription ejbViewDescription = (EJBViewDescription) views.get(0);
+        EJBViewDescription ejbViewDescription = (EJBViewDescription) views.iterator().next();
         assertEquals(MyInterface.class.getName(), ejbViewDescription.getViewClassName());
         assertEquals(MethodIntf.LOCAL, ejbViewDescription.getMethodIntf());
     }
@@ -129,10 +129,10 @@ public class BusinessViewAnnotationProcessorTestCase {
         BusinessViewAnnotationProcessor processor = new BusinessViewAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
-        List<ViewDescription> views = componentDescription.getViews();
+        Collection<ViewDescription> views = componentDescription.getViews();
         assertNotNull("No views found", views);
         assertEquals("Unexpected number of views", 1, views.size());
-        EJBViewDescription ejbViewDescription = (EJBViewDescription) views.get(0);
+        EJBViewDescription ejbViewDescription = (EJBViewDescription) views.iterator().next();
         assertEquals(MyInterface.class.getName(), ejbViewDescription.getViewClassName());
         assertEquals(MethodIntf.LOCAL, ejbViewDescription.getMethodIntf());
     }
@@ -158,10 +158,10 @@ public class BusinessViewAnnotationProcessorTestCase {
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
         assertTrue("Bean should have no-interface view (EJB 3.1 FR 4.9.8 bullet 1.1)", componentDescription.hasNoInterfaceView());
-        List<ViewDescription> views = componentDescription.getViews();
+        Collection<ViewDescription> views = componentDescription.getViews();
         assertNotNull("No views found", views);
         assertEquals("Unexpected number of views", 1, views.size());
-        EJBViewDescription ejbViewDescription = (EJBViewDescription) views.get(0);
+        EJBViewDescription ejbViewDescription = (EJBViewDescription) views.iterator().next();
         assertEquals(ImplicitNoInterfaceBean.class.getName(), ejbViewDescription.getViewClassName());
         assertEquals(MethodIntf.LOCAL, ejbViewDescription.getMethodIntf());
     }

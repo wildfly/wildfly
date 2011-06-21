@@ -29,9 +29,6 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.transaction.TransactionManager;
-
-import org.jboss.ejb3.annotation.JndiInject;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
@@ -44,9 +41,6 @@ public class StatelessBean implements StatelessInterface {
 
     @Resource
     SessionContext sessionContext;
-
-    @JndiInject(jndiName = "java:/TransactionManager")
-    TransactionManager tm;
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void createEntity(Integer id, String name) {
