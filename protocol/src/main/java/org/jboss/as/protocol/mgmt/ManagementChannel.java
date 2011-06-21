@@ -68,8 +68,6 @@ public class ManagementChannel extends ProtocolChannel {
             while (input.read() != -1) {
             }
         } catch (Exception e) {
-            //TODO handle properly
-            e.printStackTrace();
             log.tracef(e, "%s error handling incoming data", this);
         } finally {
             log.tracef("%s done handling incoming data", this);
