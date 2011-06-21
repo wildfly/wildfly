@@ -45,9 +45,6 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
     protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
-        final ModelNode opAddr = operation.require(OP_ADDR);
-
-        final String serviceName = PathAddress.pathAddress(opAddr).getLastElement().getValue();
 
         final String rawJndiName = model.require(JNDINAME).asString();
         final String jndiName;
@@ -66,27 +63,27 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
         }
 
         final ServiceName referenceFactoryServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE
-                .append(serviceName);
+                .append(jndiName);
         final ServiceController<?> referenceFactoryController = registry.getService(referenceFactoryServiceName);
         if (referenceFactoryController != null) {
             context.removeService(referenceFactoryServiceName);
         }
 
-        final ServiceName dataSourceConfigServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(serviceName);
+        final ServiceName dataSourceConfigServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
         final ServiceController<?> dataSourceConfigController = registry.getService(dataSourceConfigServiceName);
         if (dataSourceConfigController != null) {
             context.removeService(dataSourceConfigServiceName);
         }
 
         final ServiceName xaDataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE
-                .append(serviceName);
+                .append(jndiName);
         final ServiceController<?> xaDataSourceConfigController = registry
                 .getService(xaDataSourceConfigServiceName);
         if (xaDataSourceConfigController != null) {
             context.removeService(xaDataSourceConfigServiceName);
         }
 
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(serviceName);
+        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
         final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
         if (dataSourceController != null) {
             context.removeService(dataSourceServiceName);

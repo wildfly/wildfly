@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -62,8 +64,17 @@ public class DataSourceEnable implements NewStepHandler {
         if (context.getType() == NewOperationContext.Type.SERVER) {
             context.addStep(new NewStepHandler() {
                 public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-                    final String jndiName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
-                    final ServiceRegistry registry = context.getServiceRegistry(false);
+
+                    final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                    final String rawJndiName = model.require(JNDINAME).asString();
+                    final String jndiName;
+                    if (!rawJndiName.startsWith("java:/") && model.hasDefined(USE_JAVA_CONTEXT) && model.get(USE_JAVA_CONTEXT).asBoolean()) {
+                        jndiName = "java:/" + rawJndiName;
+                    } else {
+                        jndiName = rawJndiName;
+                    }
+
+                    final ServiceRegistry registry = context.getServiceRegistry(true);
 
                     if (isXa()) {
                         final ServiceName dataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE

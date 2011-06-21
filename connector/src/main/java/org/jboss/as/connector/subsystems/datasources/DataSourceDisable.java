@@ -26,6 +26,9 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -52,7 +55,15 @@ public class DataSourceDisable implements NewStepHandler {
         if (context.getType() == NewOperationContext.Type.SERVER) {
             context.addStep(new NewStepHandler() {
                 public void execute(final NewOperationContext context, ModelNode operation) throws OperationFailedException {
-                    final String jndiName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
+
+                    final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                    final String rawJndiName = model.require(JNDINAME).asString();
+                    final String jndiName;
+                    if (!rawJndiName.startsWith("java:/") && model.hasDefined(USE_JAVA_CONTEXT) && model.get(USE_JAVA_CONTEXT).asBoolean()) {
+                        jndiName = "java:/" + rawJndiName;
+                    } else {
+                        jndiName = rawJndiName;
+                    }
 
                     final ServiceRegistry registry = context.getServiceRegistry(true);
 
