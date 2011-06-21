@@ -456,7 +456,7 @@
     <xs:complexType name="domain-controller-localType" />
 
     <xs:complexType name="domain-controller-remoteType">
-         <xs:attribute name="host" type="xs:anyURI" use="required" />
+         <xs:attribute name="host" type="xs:string" use="required" />
          <xs:attribute name="port" type="xs:integer" use="required" />
     </xs:complexType>
 
