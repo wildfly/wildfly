@@ -212,4 +212,12 @@ public final class CommonProviders {
             return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
     };
+
+    public static final DescriptionProvider VALIDATE_ADDRESS_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return new ModelNode();
+        }
+    };
+
 }

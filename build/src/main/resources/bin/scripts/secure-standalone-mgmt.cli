@@ -1,0 +1,20 @@
+##
+## Basic script which can be run against the default standalone.xml configuration to
+## secure the management interfaces. This requires the 'PropertiesMgmtSecurityRealm'
+## security-realm to be configured.
+##
+## ./jboss-admin.sh -c --file=scripts/secure-mgmt-interfaces.cli
+##
+
+# Use a batch, so that in case the validation does not pass we don't apply the subsequent changes.
+batch
+
+## first validate that the security-realm exist
+/management=security-realms/security-realm=PropertiesMgmtSecurityRealm:validate-address
+
+## update the native and http management interfaces
+/management-interface=http-interface:write-attribute(name=security-realm,value=PropertiesMgmtSecurityRealm)
+/management-interface=native-interface:write-attribute(name=security-realm,value=PropertiesMgmtSecurityRealm)
+
+# Execute the operations
+run-batch

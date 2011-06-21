@@ -82,6 +82,17 @@ public class GlobalOperationHandlers {
     public static final OperationStepHandler READ_CHILDREN_NAMES = new ReadChildrenNamesOperationHandler();
     public static final OperationStepHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
     public static final OperationStepHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
+    public static final OperationStepHandler VALIDATE_ADDRESS = new OperationStepHandler() {
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            try {
+                context.readResource(PathAddress.EMPTY_ADDRESS);
+            } catch (Exception e) {
+                context.getFailureDescription().set(new ModelNode().set("resource does not exist: " + operation.get(OP_ADDR)));
+            }
+            context.completeStep();
+        }
+    };
 
     private GlobalOperationHandlers() {
         //
