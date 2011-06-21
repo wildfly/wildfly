@@ -24,10 +24,13 @@ package org.jboss.as.controller.parsing;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import org.jboss.as.controller.operations.common.Util;
+
+import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
@@ -208,8 +211,8 @@ public class StandaloneXml extends CommonXml {
 
         // Handle attributes
         String name = null;
-        String defaultInterface = null;
-        String portOffset = null;
+        ModelNode defaultInterface = null;
+        ModelNode portOffset = null;
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.DEFAULT_INTERFACE);
         final int count = reader.getAttributeCount();
@@ -226,23 +229,25 @@ public class StandaloneXml extends CommonXml {
                     break;
                 }
                 case DEFAULT_INTERFACE: {
-                    defaultInterface = value;
+                    defaultInterface = parsePossibleExpression(value);
                     required.remove(attribute);
                     break;
                 }
                 case PORT_OFFSET: {
-                    portOffset = value;
-                    try {
-                        int offset = Integer.parseInt(value);
-                        if (offset < 0) {
-                            throw new XMLStreamException(portOffset + " is not a valid " +
-                                    attribute.getLocalName() + " -- must be greater than zero",
-                                    reader.getLocation());
-                        }
-                    } catch (final NumberFormatException e) {
-                        if (!Util.isExpression(value)) {
-                            throw new XMLStreamException(portOffset + " is not a valid " +
-                                    attribute.getLocalName(), reader.getLocation(), e);
+                    portOffset = parsePossibleExpression(value);
+                    if (portOffset.getType() != ModelType.EXPRESSION) {
+                        try {
+                            int offset = Integer.parseInt(value);
+                            if (offset < 0) {
+                                throw new XMLStreamException(portOffset + " is not a valid " +
+                                        attribute.getLocalName() + " -- must be greater than zero",
+                                        reader.getLocation());
+                            }
+                        } catch (final NumberFormatException e) {
+                            if (!Util.isExpression(value)) {
+                                throw new XMLStreamException(portOffset + " is not a valid " +
+                                        attribute.getLocalName(), reader.getLocation(), e);
+                            }
                         }
                     }
                     break;
@@ -259,7 +264,7 @@ public class StandaloneXml extends CommonXml {
         ModelNode groupAddress = address.clone().add(SOCKET_BINDING_GROUP, name);
         ModelNode op = Util.getEmptyOperation(ADD, groupAddress);
         op.get(DEFAULT_INTERFACE).set(defaultInterface);
-        op.get(PORT_OFFSET).set(portOffset == null ? "0" : portOffset);
+        op.get(PORT_OFFSET).set(portOffset == null ? new ModelNode().set(0) : portOffset);
 
         updates.add(op);
 
@@ -271,7 +276,7 @@ public class StandaloneXml extends CommonXml {
                     switch (element) {
                         case SOCKET_BINDING: {
                             // FIXME JBAS-8825
-                            final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, defaultInterface, updates);
+                            final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                             if (socketBindings.contains(bindingName)) {
                                 throw new XMLStreamException("socket-binding " + bindingName + " already declared", reader.getLocation());
                             }

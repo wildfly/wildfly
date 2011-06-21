@@ -34,6 +34,7 @@ import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -338,16 +339,22 @@ public final class ParseUtils {
         }
     }
 
-    public static int parseBoundedIntegerAttribute(final XMLExtendedStreamReader reader, final int index,
-            final int minInclusive, final int maxInclusive) throws XMLStreamException {
+    public static ModelNode parseBoundedIntegerAttribute(final XMLExtendedStreamReader reader, final int index,
+            final int minInclusive, final int maxInclusive, boolean allowExpression) throws XMLStreamException {
         final String stringValue = reader.getAttributeValue(index);
+        if (allowExpression) {
+            ModelNode expression = parsePossibleExpression(stringValue);
+            if (expression.getType() == ModelType.EXPRESSION) {
+                return expression;
+            }
+        }
         try {
             final int value = Integer.parseInt(stringValue);
             if (value < minInclusive || value > maxInclusive) {
                 throw new XMLStreamException("Illegal value " + value + " for attribute '" + reader.getAttributeName(index)
                         + "' must be between " + minInclusive + " and " + maxInclusive + " (inclusive)", reader.getLocation());
             }
-            return value;
+            return new ModelNode().set(value);
         } catch (NumberFormatException nfe) {
             throw new XMLStreamException("Illegal value '" + stringValue + "' for attribute '" + reader.getAttributeName(index)
                     + "' must be an integer", reader.getLocation(), nfe);
