@@ -34,7 +34,7 @@
                             urn:jboss:domain:naming:1.0 jboss-naming.xsd
                             urn:jboss:domain:osgi:1.0 jboss-osgi.xsd
                             urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
-                            urn:jboss:domain:resourceadapters:1.0 jboss-resource-adapters.xsd
+                            urn:jboss:domain:resource-adapters:1.0 jboss-resource-adapters.xsd
                             urn:jboss:domain:sar:1.0 jboss-sar.xsd
                             urn:jboss:domain:threads:1.0 jboss-threads.xsd
                             urn:jboss:domain:transactions:1.0 jboss-txn.xsd
@@ -179,7 +179,7 @@
                     </drivers>
                 </datasources>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
+            <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0" />
        <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                 <property name="manager.root">jboss-osgi</property>
@@ -250,20 +250,20 @@
             <persistence-enabled>false</persistence-enabled>
 
             <connectors>
-               <in-vm-connector name="in-vm" server-id="0" />
                <netty-connector name="netty" socket-binding="messaging" />
                <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
                   <param key="batch-delay" value="50"/>
                </netty-connector>
+               <in-vm-connector name="in-vm" server-id="0" />
             </connectors>
 
             <acceptors>
-               <in-vm-acceptor name="in-vm" server-id="0" />
                <netty-acceptor name="netty" socket-binding="messaging" />
                <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
                   <param key="batch-delay" value="50"/>
                   <param key="direct-deliver" value="false"/>
                </netty-acceptor>
+               <in-vm-acceptor name="in-vm" server-id="0" />
             </acceptors>
 
             <security-settings>
@@ -381,17 +381,17 @@
 
     <server-groups>
         <server-group name="main-server-group" profile="default">
-            <socket-binding-group ref="standard-sockets"/>
             <jvm name="default">
                <heap size="64m" max-size="512m"/>
             </jvm>
+            <socket-binding-group ref="standard-sockets"/>
         </server-group>
 
         <server-group name="other-server-group" profile="default">
-            <socket-binding-group ref="standard-sockets"/>
             <jvm name="default">
                <heap size="64m" max-size="512m"/>
             </jvm>
+            <socket-binding-group ref="standard-sockets"/>
         </server-group>
     </server-groups>
 
