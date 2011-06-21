@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -48,6 +47,7 @@ import org.xnio.Options;
 import org.xnio.Xnio;
 
 /**
+ * This class is not thread safe and should only be used by one thread
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
@@ -59,7 +59,8 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
     private final URI uri;
     private final ProtocolChannelFactory<T> channelFactory;
     private volatile Connection connection;
-    private final Set<T> channels = Collections.synchronizedSet(new HashSet<T>());
+    private final Set<T> channels = new HashSet<T>();
+    private boolean closed;
 
 //    private ProtocolChannelClient(final Endpoint endpoint,
 //            final URI uri,
@@ -113,24 +114,25 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
     }
 
     public Connection connect() throws IOException {
-        synchronized (this) {
-            if (connection != null) {
-                throw new IllegalStateException("Already connected");
-            }
-            //TODO Don't hardcode this login stuff
-            //There is currently a probable bug in jboss remoting, so the user realm name MUST be the same as
-            //the endpoint name.
-            //Connection connection = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray()).get();
-
-            IoFuture<Connection> future = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray());
-            Status status = future.await(2000, TimeUnit.MILLISECONDS);
-            if (status == Status.WAITING) {
-                future.cancel();
-                throw new ConnectException("Could not connect to remote server at " + uri + " within 2 seconds");
-            }
-            this.connection = future.get();
-            return connection;
+        if (closed) {
+            throw new IllegalStateException("Closed this client");
         }
+        if (connection != null) {
+            throw new IllegalStateException("Already connected");
+        }
+        //TODO Don't hardcode this login stuff
+        //There is currently a probable bug in jboss remoting, so the user realm name MUST be the same as
+        //the endpoint name.
+        //Connection connection = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray()).get();
+
+        IoFuture<Connection> future = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray());
+        Status status = future.await(2000, TimeUnit.MILLISECONDS);
+        if (status == Status.WAITING) {
+            future.cancel();
+            throw new ConnectException("Could not connect to remote server at " + uri + " within 2 seconds");
+        }
+        this.connection = future.get();
+        return connection;
     }
 
     public T openChannel(String channelName) throws IOException {
@@ -144,20 +146,18 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
     }
 
     public void close() {
-        synchronized (channels) {
-            for (T channel : channels) {
-                try {
-                    channel.writeShutdown();
-                } catch (IOException ignore) {
-                }
-                try {
-                    channel.awaitClosed();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+        for (T channel : channels) {
+            try {
+                channel.writeShutdown();
+            } catch (IOException ignore) {
             }
-            channels.clear();
+            try {
+                channel.awaitClosed();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
+        channels.clear();
 
         IoUtils.safeClose(connection);
         if (startedEndpoint) {
