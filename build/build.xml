@@ -786,6 +786,10 @@
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-multipart-provider" jandex="true"/>
         </module-def>
 
+        <module-def name="org.jboss.sasl">
+            <maven-resource group="org.jboss.sasl" artifact="jboss-sasl" />
+        </module-def>
+
         <module-def name="org.jboss.security.negotiation">
             <maven-resource group="org.jboss.security" artifact="jboss-negotiation"/>
         </module-def>
