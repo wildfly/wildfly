@@ -206,6 +206,7 @@ public class ModelDescriptionConstants {
     public static final String SOCKET_BINDING_PORT_OFFSET = "socket-binding-port-offset";
     public static final String SSL = "ssl";
     public static final String START = "start";
+    public static final String STATUS = "status";
     public static final String STEPS = "steps";
     /** The key for {@link AttributeAccess.Storage} fields. */
     public static final String STORAGE = "storage";

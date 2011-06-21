@@ -53,6 +53,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATUS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -141,6 +142,9 @@ public class DeploymentDescription {
                 root.get(ATTRIBUTES, PERSISTENT, DESCRIPTION).set(bundle.getString("deployment.persistent"));
                 root.get(ATTRIBUTES, PERSISTENT, REQUIRED).set(true);
 
+                root.get(ATTRIBUTES, STATUS, TYPE).set(ModelType.STRING);
+                root.get(ATTRIBUTES, STATUS, DESCRIPTION).set(bundle.getString("deployment.status"));
+                root.get(ATTRIBUTES, STATUS, REQUIRED).set(false);
             }
         }
         root.get(OPERATIONS);
