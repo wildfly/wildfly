@@ -22,17 +22,18 @@
 
 package org.jboss.as.remoting;
 
+import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
+import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
+
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
-import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
-import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceController;
 import org.xnio.OptionMap;
@@ -61,11 +62,13 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
         // todo configure option map
         endpointService.setOptionMap(OptionMap.EMPTY);
         final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
+        //TODO inject this from somewhere?
+        executorInjector.inject(Executors.newCachedThreadPool());
 
         newControllers.add(context
                 .getServiceTarget()
                 .addService(RemotingServices.ENDPOINT, endpointService)
-                .addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
+                //.addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
                 .addListener(verificationHandler)
                 .install());
     }
