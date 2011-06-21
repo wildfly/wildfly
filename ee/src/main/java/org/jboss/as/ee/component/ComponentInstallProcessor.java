@@ -186,7 +186,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         //we only handle java:comp bindings for components that have their own namespace here, the rest are processed by ModuleJndiBindingProcessor
         for (BindingConfiguration bindingConfiguration : bindings) {
             if (bindingConfiguration.getName().startsWith("java:comp") || !bindingConfiguration.getName().startsWith("java:")) {
-                final String bindingName = bindingConfiguration.getName();
+                final String bindingName = bindingConfiguration.getName().startsWith("java:comp") ? bindingConfiguration.getName() : "java:comp/env/" + bindingConfiguration.getName();
                 final ServiceName binderServiceName = ContextNames.serviceNameOfEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName);
                 final BindingHandleService service = new BindingHandleService(bindingName, binderServiceName, bindingConfiguration.getSource(), contextServiceName);
                 final ServiceName handleServiceName = binderServiceName.append(compServiceName).append(String.valueOf(handleCount.value++));
