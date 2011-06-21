@@ -368,7 +368,9 @@ public class CommandLineMain {
         if (line.isEmpty()) {
             return;
         }
-
+        if (line.charAt(0) == '#') {
+            return; // ignore comments
+        }
         if(isOperation(line)) {
             cmdCtx.setArgs(null, line, null);
             if(cmdCtx.isBatchMode()) {
