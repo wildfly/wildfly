@@ -76,32 +76,35 @@ public class BindingAddHandler extends SocketBindingAddHandler {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-
-        final String intf = resolvedOp.get(INTERFACE).isDefined() ? resolvedOp.get(INTERFACE).asString() : null;
-        final int port = resolvedOp.get(PORT).asInt();
-        final boolean fixedPort = resolvedOp.get(FIXED_PORT).asBoolean(false);
-        final String mcastAddr = resolvedOp.get(MULTICAST_ADDRESS).isDefined() ? resolvedOp.get(MULTICAST_ADDRESS).asString() : null;
-        final int mcastPort = resolvedOp.get(MULTICAST_PORT).isDefined() ? resolvedOp.get(MULTICAST_PORT).asInt() : 0;
-        final InetAddress mcastInet;
         try {
-            mcastInet = mcastAddr == null ? null : InetAddress.getByName(mcastAddr);
+            newControllers.add(installBindingService(context, resolvedOp, name));
         } catch (UnknownHostException e) {
             throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
+
+    }
+
+    protected boolean requiresRuntimeVerification() {
+        return false;
+    }
+
+    public static ServiceController<SocketBinding> installBindingService(NewOperationContext context, ModelNode resolvedConfig, String name) throws UnknownHostException {
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+
+        final String intf = resolvedConfig.get(INTERFACE).isDefined() ? resolvedConfig.get(INTERFACE).asString() : null;
+        final int port = resolvedConfig.get(PORT).asInt();
+        final boolean fixedPort = resolvedConfig.get(FIXED_PORT).asBoolean(false);
+        final String mcastAddr = resolvedConfig.get(MULTICAST_ADDRESS).isDefined() ? resolvedConfig.get(MULTICAST_ADDRESS).asString() : null;
+        final int mcastPort = resolvedConfig.get(MULTICAST_PORT).isDefined() ? resolvedConfig.get(MULTICAST_PORT).asInt() : 0;
+        final InetAddress mcastInet = mcastAddr == null ? null : InetAddress.getByName(mcastAddr);
 
         final SocketBindingService service = new SocketBindingService(name, port, fixedPort, mcastInet, mcastPort);
         final ServiceBuilder<SocketBinding> builder = serviceTarget.addService(SocketBinding.JBOSS_BINDING_NAME.append(name), service);
         if (intf != null) {
             builder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(intf), NetworkInterfaceBinding.class, service.getInterfaceBinding());
         }
-        newControllers.add(builder.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getSocketBindings())
+        return builder.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getSocketBindings())
                 .setInitialMode(Mode.ON_DEMAND)
-                .install());
-
-    }
-
-    protected boolean requiresRuntimeVerification() {
-        return false;
+                .install();
     }
 }

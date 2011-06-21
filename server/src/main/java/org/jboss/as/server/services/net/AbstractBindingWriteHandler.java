@@ -24,6 +24,10 @@ package org.jboss.as.server.services.net;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.net.UnknownHostException;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
@@ -35,6 +39,7 @@ import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Basic {@code OperationHandler} triggering a 'requireRestart' if a binding attribute is
@@ -107,17 +112,27 @@ abstract class AbstractBindingWriteHandler extends ServerWriteAttributeOperation
                         final ModelNode resolvedValue = newValue.isDefined() ? newValue.resolve() : newValue;
                         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
                         final PathElement element = address.getLastElement();
-                        final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(SOCKET_BINDING.append(element.getValue()));
-                        final SocketBinding binding = SocketBinding.class.cast(controller.getValue());
-                        boolean mustRestart = binding.isBound();
-                        if (mustRestart) {
+                        final String bindingName = element.getValue();
+                        final ModelNode bindingModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                        final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(SOCKET_BINDING.append(bindingName));
+                        final SocketBinding binding = controller.getState() == ServiceController.State.UP ? SocketBinding.class.cast(controller.getValue()) : null;
+                        final boolean bound = binding != null && binding.isBound();
+                        if (binding == null) {
+                            // existing is not started, so can't update it. Instead reinstall the service
+                            handleBindingReinstall(context, bindingName, bindingModel);
+                        }
+                        else if (bound) {
+                            // Cannot edit bound sockets
                             context.reloadRequired();
                         } else {
                             handleRuntimeChange(operation, attributeName, resolvedValue, binding);
                         }
 
                         if (context.completeStep() != NewOperationContext.ResultAction.KEEP ) {
-                            if (mustRestart) {
+                            if (binding == null) {
+                                // Back to the old service
+                                revertBindingReinstall(context, bindingName, bindingModel, attributeName, currentValue);
+                            } else if (bound) {
                                 context.revertReloadRequired();
                             } else {
                                 ModelNode resolvedPrevious = currentValue.isDefined() ? currentValue.resolve() : currentValue;
@@ -130,6 +145,30 @@ abstract class AbstractBindingWriteHandler extends ServerWriteAttributeOperation
         }
         if (context.completeStep() != NewOperationContext.ResultAction.KEEP && setReload) {
             context.revertReloadRequired();
+        }
+    }
+
+    private void handleBindingReinstall(NewOperationContext context, String bindingName, ModelNode bindingModel) throws OperationFailedException {
+        context.removeService(SOCKET_BINDING.append(bindingName));
+        ModelNode resolvedConfig = bindingModel.resolve();
+        try {
+            BindingAddHandler.installBindingService(context, resolvedConfig, bindingName);
+        } catch (UnknownHostException e) {
+            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+        }
+    }
+
+    private void revertBindingReinstall(NewOperationContext context, String bindingName, ModelNode bindingModel,
+                                        String attributeName, ModelNode previousValue) {
+        context.removeService(SOCKET_BINDING.append(bindingName));
+        ModelNode unresolvedConfig = bindingModel.clone();
+        unresolvedConfig.get(attributeName).set(previousValue);
+        ModelNode resolvedConfig = unresolvedConfig.resolve();
+        try {
+            BindingAddHandler.installBindingService(context, resolvedConfig, bindingName);
+        } catch (UnknownHostException uhe) {
+            // Bizarro, as we installed the service before
+            throw new RuntimeException(uhe);
         }
     }
 
