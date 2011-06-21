@@ -32,7 +32,9 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyFactory;
@@ -48,10 +50,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +100,7 @@ public class ComponentDescription {
     private boolean excludeDefaultInterceptors = false;
     private DeploymentDescriptorEnvironment deploymentDescriptorEnvironment;
 
-    private final List<ViewDescription> views = new ArrayList<ViewDescription>();
+    private final Set<ViewDescription> views = new HashSet<ViewDescription>();
 
     // Bindings
     private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
@@ -444,7 +448,7 @@ public class ComponentDescription {
      *
      * @return the list of views
      */
-    public List<ViewDescription> getViews() {
+    public Set<ViewDescription> getViews() {
         return views;
     }
 
@@ -455,6 +459,20 @@ public class ComponentDescription {
      */
     public Deque<ComponentConfigurator> getConfigurators() {
         return configurators;
+    }
+
+    private static InterceptorFactory weaved(final Collection<InterceptorFactory> interceptorFactories) {
+        return new InterceptorFactory() {
+            @Override
+            public Interceptor create(InterceptorFactoryContext context) {
+                final Interceptor[] interceptors = new Interceptor[interceptorFactories.size()];
+                final Iterator<InterceptorFactory> factories = interceptorFactories.iterator();
+                for (int i = 0; i < interceptors.length; i++) {
+                    interceptors[i] = factories.next().create(context);
+                }
+                return Interceptors.getWeavedInterceptor(interceptors);
+            }
+        };
     }
 
     private static class DefaultFirstConfigurator implements ComponentConfigurator {
@@ -640,28 +658,28 @@ public class ComponentDescription {
             final InterceptorFactory tcclInterceptor = new ImmediateInterceptorFactory(new TCCLInterceptor(module.getClassLoader()));
 
             // Apply post-construct
-            for (InterceptorFactory injector : injectors) {
-                configuration.addPostConstructInterceptor(injector, InterceptorOrder.ComponentPostConstruct.RESOURCE_INJECTION_INTERCEPTORS);
+            if (!injectors.isEmpty()) {
+                configuration.addPostConstructInterceptor(weaved(injectors), InterceptorOrder.ComponentPostConstruct.RESOURCE_INJECTION_INTERCEPTORS);
             }
 
-            for (InterceptorFactory instantiator : instantiators) {
-                configuration.addPostConstructInterceptor(instantiator, InterceptorOrder.ComponentPostConstruct.INSTANTIATION_INTERCEPTORS);
+            if (!instantiators.isEmpty()) {
+                configuration.addPostConstructInterceptor(weaved(instantiators), InterceptorOrder.ComponentPostConstruct.INSTANTIATION_INTERCEPTORS);
             }
-            for (InterceptorFactory interceptor : userPostConstruct) {
-                configuration.addPostConstructInterceptor(interceptor, InterceptorOrder.ComponentPostConstruct.USER_INTERCEPTORS);
+            if (!userPostConstruct.isEmpty()) {
+                configuration.addPostConstructInterceptor(weaved(userPostConstruct), InterceptorOrder.ComponentPostConstruct.USER_INTERCEPTORS);
             }
             configuration.addPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPostConstruct.TERMINAL_INTERCEPTOR);
             configuration.addPostConstructInterceptor(tcclInterceptor, InterceptorOrder.ComponentPostConstruct.TCCL_INTERCEPTOR);
 
             // Apply pre-destroy
-            for (InterceptorFactory uninjector : uninjectors) {
-                configuration.addPreDestroyInterceptor(uninjector, InterceptorOrder.ComponentPreDestroy.UNINJECTION_INTERCEPTORS);
+            if (!uninjectors.isEmpty()) {
+                configuration.addPreDestroyInterceptor(weaved(uninjectors), InterceptorOrder.ComponentPreDestroy.UNINJECTION_INTERCEPTORS);
             }
-            for (InterceptorFactory destructor : destructors) {
-                configuration.addPreDestroyInterceptor(destructor, InterceptorOrder.ComponentPreDestroy.DESTRUCTION_INTERCEPTORS);
+            if (!destructors.isEmpty()) {
+                configuration.addPreDestroyInterceptor(weaved(destructors), InterceptorOrder.ComponentPreDestroy.DESTRUCTION_INTERCEPTORS);
             }
-            for (InterceptorFactory interceptor : userPreDestroy) {
-                configuration.addPreDestroyInterceptor(interceptor, InterceptorOrder.ComponentPreDestroy.USER_INTERCEPTORS);
+            if (!userPreDestroy.isEmpty()) {
+                configuration.addPreDestroyInterceptor(weaved(userPreDestroy), InterceptorOrder.ComponentPreDestroy.USER_INTERCEPTORS);
             }
 
             configuration.addPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPreDestroy.TERMINAL_INTERCEPTOR);
@@ -683,16 +701,14 @@ public class ComponentDescription {
 
                 final MethodIdentifier identifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
 
-
+                final List<InterceptorFactory> userAroundInvokes = new ArrayList<InterceptorFactory>();
                 // first add the default interceptors (if not excluded) to the deque
                 if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
                     for (InterceptorDescription interceptorDescription : description.getDefaultInterceptors()) {
                         String interceptorClassName = interceptorDescription.getInterceptorClassName();
                         List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
                         if (aroundInvokes != null) {
-                            for (final InterceptorFactory factory : aroundInvokes) {
-                                configuration.addComponentInterceptor(method, factory, InterceptorOrder.Component.USER_INTERCEPTORS);
-                            }
+                            userAroundInvokes.addAll(aroundInvokes);
                         }
                     }
                 }
@@ -704,9 +720,7 @@ public class ComponentDescription {
                         List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
                         if (aroundInvokes != null) {
                             if (aroundInvokes != null) {
-                                for (final InterceptorFactory factory : aroundInvokes) {
-                                    configuration.addComponentInterceptor(method, factory, InterceptorOrder.Component.USER_INTERCEPTORS);
-                                }
+                                userAroundInvokes.addAll(aroundInvokes);
                             }
                         }
                     }
@@ -720,9 +734,7 @@ public class ComponentDescription {
                         List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
                         if (aroundInvokes != null) {
                             if (aroundInvokes != null) {
-                                for (final InterceptorFactory factory : aroundInvokes) {
-                                    configuration.addComponentInterceptor(method, factory, InterceptorOrder.Component.USER_INTERCEPTORS);
-                                }
+                                userAroundInvokes.addAll(aroundInvokes);
                             }
                         }
 
@@ -731,9 +743,11 @@ public class ComponentDescription {
 
                 // finally add the component level around invoke to the deque so that it's triggered last
                 if (componentUserAroundInvoke != null) {
-                    for (final InterceptorFactory factory : componentUserAroundInvoke) {
-                        configuration.addComponentInterceptor(method, factory, InterceptorOrder.Component.USER_INTERCEPTORS);
-                    }
+                    userAroundInvokes.addAll(componentUserAroundInvoke);
+                }
+
+                if (!userAroundInvokes.isEmpty()) {
+                    configuration.addComponentInterceptor(method, weaved(userAroundInvokes), InterceptorOrder.Component.USER_INTERCEPTORS);
                 }
             }
 

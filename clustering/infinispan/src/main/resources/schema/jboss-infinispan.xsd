@@ -50,7 +50,7 @@
     
     <xs:complexType name="cache-container">
         <xs:sequence>
-            <xs:element name="alias" type="xs:ID" minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
                     <xs:documentation></xs:documentation>
                 </xs:annotation>

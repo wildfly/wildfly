@@ -29,7 +29,7 @@
            attributeFormDefault="unqualified"
            version="1.0" xmlns:pref="urn:jboss:domain:threads:1.0">
     
-    <xs:import namespace="urn:jboss:domain:threads:1.0" schemaLocation="../../../../../threads/src/main/resources/schema/new-jboss-threads.xsd"/>
+    <xs:import namespace="urn:jboss:domain:threads:1.0" schemaLocation="schema/new-jboss-threads.xsd"/>
     
     <xs:element name="subsystem" type="subsystemType"/>
     
@@ -107,13 +107,34 @@
     
     <xs:complexType name="default-workmanagerType">
         <xs:all>
-            <xs:element name="short-running-threads" type="threads:unbounded-queue-thread-pool" maxOccurs="1" minOccurs="1"></xs:element>
-            <xs:element name="long-running-threads" type="threads:bounded-queue-thread-pool" maxOccurs="1" minOccurs="0"></xs:element>
+            <xs:element name="short-running-threads" type="thread-pool" maxOccurs="1" minOccurs="1"></xs:element>
+            <xs:element name="long-running-threads" type="thread-pool" maxOccurs="1" minOccurs="0"></xs:element>
         </xs:all>
     </xs:complexType>
 
     <xs:complexType name="cached-connection-managerType">
         <xs:attribute name="debug" type="xs:boolean" use="optional"></xs:attribute>
         <xs:attribute name="error" type="xs:boolean" use="optional"></xs:attribute>
+    </xs:complexType>
+
+     <xs:complexType name="thread-pool">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                See threads:bounded-queue-thread-pool.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all>
+            <xs:element name="core-threads" type="threads:scaled-count" minOccurs="0"/>
+            <xs:element name="queue-length" type="threads:scaled-count"/>
+            <xs:element name="max-threads" type="threads:scaled-count"/>
+            <xs:element name="keepalive-time" type="threads:time" minOccurs="0"/>
+            <xs:element name="thread-factory" type="threads:ref" minOccurs="0"/>
+            <xs:element name="handoff-executor" type="threads:ref" minOccurs="0"/>
+            <xs:element name="properties" type="threads:properties" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="allow-core-timeout" use="optional" type="xs:boolean"/>
+        <xs:attribute name="blocking" use="optional" type="xs:boolean"/>
     </xs:complexType>
 </xs:schema>

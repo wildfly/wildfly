@@ -368,7 +368,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             // TODO: Is there a better/efficient way of doing this? Why do we need to fetch all methods of the view
             // and then setup the interceptors on each of those methods? Why not just have a construct "applies to all
             // invocations on the view"?
-            List<ViewDescription> views = componentDescription.getViews();
+            Iterable<ViewDescription> views = componentDescription.getViews();
             for (ViewDescription view : views) {
                 view.getConfigurators().addFirst(new ViewConfigurator() {
                     @Override

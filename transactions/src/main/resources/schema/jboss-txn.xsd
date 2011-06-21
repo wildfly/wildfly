@@ -78,7 +78,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:all>
-            <xs:element name="process-id" type="xs:string" />
+            <xs:element name="process-id" type="process-id" />
         </xs:all>
         <xs:attribute name="node-identifier" type="xs:string" default="1"/>
         <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir"/>

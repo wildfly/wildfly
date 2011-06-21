@@ -22,8 +22,13 @@
 package org.jboss.as.ee.component.interceptors;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import static java.lang.Integer.toHexString;
 
 /**
  * Container for an ordered list of object. Objects are added to the container, and can be sorted and
@@ -37,26 +42,27 @@ import java.util.List;
  */
 public class OrderedItemContainer<T> {
 
-    private final List<OrderedItem<T>> items = new ArrayList<OrderedItem<T>>();
+    private final Map<Integer, T> items = new HashMap<Integer, T>();
     private volatile List<T> sortedItems;
 
-    public void add(final T interceptorFactory, int priority) {
+    public void add(final T item, int priority) {
         if(sortedItems != null) {
             throw new IllegalStateException("Cannot add any more items once getSortedItems() has been called");
         }
-        if(interceptorFactory == null) {
+        if(item == null) {
             throw new IllegalArgumentException("item cannot be null");
         }
-        items.add(new OrderedItem(interceptorFactory, priority));
+        final T current = items.get(priority);
+        if (current != null) {
+            throw new IllegalArgumentException("AS7-1042: can't add " + item + ", priority 0x" + toHexString(priority) + " is already taken by " + current);
+        }
+        items.put(priority, item);
     }
 
     public List<T> getSortedItems() {
         if(sortedItems == null) {
-            Collections.sort(items);
-            sortedItems = new ArrayList<T>(items.size());
-            for(OrderedItem<T> i : items) {
-                sortedItems.add(i.getItem());
-            }
+            final SortedMap<Integer, T> sortedMap = new TreeMap<Integer, T>(items);
+            sortedItems = new ArrayList<T>(sortedMap.values());
         }
         return sortedItems;
     }

@@ -176,8 +176,8 @@
                         ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="pool-size" type="xs:integer" use="required" default="5"/>
-        <xs:attribute name="max-threads" type="xs:integer" use="required" default="20"/>
+        <xs:attribute name="pool-size" type="xs:integer" use="optional" default="5"/>
+        <xs:attribute name="max-threads" type="xs:integer" use="optional" default="20"/>
     </xs:complexType>
 
     <xs:complexType name="interopConfigType">

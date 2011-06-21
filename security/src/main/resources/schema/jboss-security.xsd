@@ -408,7 +408,7 @@
          </xs:documentation>
       </xs:annotation>
       <xs:sequence>
-        <xs:element name="additional-properties" type="additionalPropertiesType" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="additional-properties" type="xs:string" minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
       <xs:attribute name="keystore-password" type="xs:string" use="optional"/>
       <xs:attribute name="keystore-type" type="xs:string" use="optional"/>
@@ -430,12 +430,6 @@
       <xs:attribute name="client-auth" type="xs:boolean" use="optional"/>
       <xs:attribute name="cipher-suites" type="xs:string" use="optional"/>
       <xs:attribute name="protocols" type="xs:string" use="optional"/>
-   </xs:complexType>
-   
-   <xs:complexType name="additionalPropertiesType">
-      <xs:simpleContent>
-         <xs:restriction base="xs:string"></xs:restriction>
-      </xs:simpleContent>
    </xs:complexType>
    
    <xs:complexType name="properties">
