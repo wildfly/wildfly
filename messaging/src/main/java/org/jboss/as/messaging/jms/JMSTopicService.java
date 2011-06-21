@@ -75,6 +75,13 @@ public class JMSTopicService implements Service<Void> {
         } catch (Exception e) {
             Logger.getLogger("org.jboss.messaging").warnf(e ,"failed to destroy jms topic: %s", name);
         }
+        // FIXME This shouldn't be here
+        for(final String jndiBinding : jndi) {
+            ServiceController<?> service = context.getController().getServiceContainer().getService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiBinding));
+            if (service != null) {
+                service.setMode(ServiceController.Mode.REMOVE);
+            }
+        }
     }
 
     /** {@inheritDoc} */
