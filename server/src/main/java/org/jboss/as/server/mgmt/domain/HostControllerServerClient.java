@@ -57,10 +57,12 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     private final InjectedValue<NewModelController> controller = new InjectedValue<NewModelController>();
 
     private final String serverName;
+    private final String serverProcessName;
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    public HostControllerServerClient(final String serverName) {
+    public HostControllerServerClient(final String serverName, final String serverProcessName) {
         this.serverName = serverName;
+        this.serverProcessName = serverProcessName;
     }
 
     /** {@inheritDoc} */
@@ -80,6 +82,10 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     public String getServerName(){
         return serverName;
+    }
+
+    public String getServerProcessName() {
+        return serverProcessName;
     }
 
     /** {@inheritDoc} */
@@ -105,7 +111,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         @Override
         protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
             output.write(DomainServerProtocol.PARAM_SERVER_NAME);
-            output.writeUTF(serverName);
+            output.writeUTF(serverProcessName);
         }
 
         @Override

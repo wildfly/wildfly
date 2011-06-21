@@ -34,6 +34,7 @@ import javax.security.sasl.RealmChoiceCallback;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.security.Security;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -48,6 +49,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.sasl.JBossSaslProvider;
 
 /**
  * Service used to connect to the host controller.  Will maintain the connection for the length of the service life.
@@ -81,6 +83,7 @@ public class HostControllerConnectionService implements Service<ManagementChanne
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
+        Security.addProvider(new JBossSaslProvider());
 
         ProtocolChannelClient<ManagementChannel> client;
         try {

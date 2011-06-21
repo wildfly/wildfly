@@ -141,6 +141,7 @@ public final class DomainServerMain {
             final ServiceContainer container = containerFuture.get();
             final ServiceController<?> client = container.getRequiredService(HostControllerServerClient.SERVICE_NAME);
             final String name = ((HostControllerServerClient)client.getValue()).getServerName();
+            final String processName = ((HostControllerServerClient)client.getValue()).getServerProcessName();
             client.addListener(clientListener);
             client.setMode(ServiceController.Mode.REMOVE);
 
@@ -154,7 +155,7 @@ public final class DomainServerMain {
             connection.removeListener(connectionListener);
 
             //Connect to the new HC address
-            addCommunicationServices(container, name, authKey, new InetSocketAddress(InetAddress.getByName(hostName), port));
+            addCommunicationServices(container, name, processName, authKey, new InetSocketAddress(InetAddress.getByName(hostName), port));
 
         } catch (InterruptedIOException e) {
             Thread.interrupted();
@@ -172,10 +173,10 @@ public final class DomainServerMain {
         throw new IllegalStateException(); // not reached
     }
 
-    private static void addCommunicationServices(final ServiceTarget serviceTarget, final String serverName, final byte[] authKey, final InetSocketAddress managementSocket) {
+    private static void addCommunicationServices(final ServiceTarget serviceTarget, final String serverName, final String serverProcessName, final byte[] authKey, final InetSocketAddress managementSocket) {
         HostControllerConnectionService.install(serviceTarget, managementSocket, serverName, authKey);
 
-        final HostControllerServerClient client = new HostControllerServerClient(serverName);
+        final HostControllerServerClient client = new HostControllerServerClient(serverName, serverProcessName);
         serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
             .addDependency(HostControllerConnectionService.SERVICE_NAME, ManagementChannel.class, client.getHcChannelInjector())
             .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewModelController.class, client.getServerControllerInjector())
@@ -187,11 +188,13 @@ public final class DomainServerMain {
         private static final long serialVersionUID = 6671220116719309952L;
         private final InetSocketAddress managementSocket;
         private final String serverName;
+        private final String serverProcessName;
         private final byte[] authKey;
 
-        public HostControllerCommunicationActivator(final InetSocketAddress managementSocket, final String serverName, final byte[] authKey) {
+        public HostControllerCommunicationActivator(final InetSocketAddress managementSocket, final String serverName, final String serverProcessName, final byte[] authKey) {
             this.managementSocket = managementSocket;
             this.serverName = serverName;
+            this.serverProcessName = serverProcessName;
             this.authKey = authKey;
         }
 
@@ -199,7 +202,7 @@ public final class DomainServerMain {
         public void activate(final ServiceActivatorContext serviceActivatorContext) {
             final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
             // TODO - Correct the authKey propagation.
-            addCommunicationServices(serviceTarget, serverName, authKey, managementSocket);
+            addCommunicationServices(serviceTarget, serverName, serverProcessName, authKey, managementSocket);
         }
     }
 

@@ -173,7 +173,7 @@ class ManagedServer {
             final List<ModelNode> bootUpdates = bootConfiguration.getBootUpdates();
 
             processControllerClient.startProcess(serverProcessName);
-            ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommuncationActivator(managementSocket, serverName, authKey);
+            ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommuncationActivator(managementSocket, serverName, serverProcessName, authKey);
             ServerStartTask startTask = new ServerStartTask(serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
             final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
             final OutputStream os = processControllerClient.sendStdin(serverProcessName);
