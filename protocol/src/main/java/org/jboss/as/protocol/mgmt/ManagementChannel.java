@@ -67,6 +67,9 @@ public class ManagementChannel extends ProtocolChannel {
             } else {
                 responseReceiver.handleResponse((ManagementResponseHeader)header, input);
             }
+            //Consume the rest of the output if any
+            while (input.read() != -1) {
+            }
         } catch (Exception e) {
             //TODO handle properly
             e.printStackTrace();
