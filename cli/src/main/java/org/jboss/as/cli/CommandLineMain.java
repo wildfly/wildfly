@@ -39,6 +39,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.UnknownHostException;
+import java.security.Security;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -97,6 +98,7 @@ import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.sasl.JBossSaslProvider;
 
 /**
  *
@@ -147,6 +149,7 @@ public class CommandLineMain {
     }
 
     public static void main(String[] args) throws Exception {
+        Security.addProvider(new JBossSaslProvider());
 
         String argError = null;
         String[] commands = null;

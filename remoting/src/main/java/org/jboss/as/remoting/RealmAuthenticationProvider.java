@@ -50,6 +50,8 @@ import org.xnio.Sequence;
  */
 class RealmAuthenticationProvider implements ServerAuthenticationProvider {
 
+    static final String ANONYMOUS = "ANONYMOUS";
+
     static final String DIGEST_MD5 = "DIGEST-MD5";
 
     private final SecurityRealm realm;
@@ -62,13 +64,29 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
 
     OptionMap getSaslOptionMap() {
         if (digestMd5Supported()) {
-            return OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("DIGEST-MD5"));
+            return OptionMap.create(Options.SASL_MECHANISMS, Sequence.of(DIGEST_MD5));
+        }
+
+        if (realm == null) {
+            return OptionMap.create(Options.SASL_MECHANISMS, Sequence.of(ANONYMOUS));
         }
 
         return OptionMap.EMPTY;
     }
 
     public CallbackHandler getCallbackHandler(String mechanismName) {
+        if (ANONYMOUS.equals(mechanismName) && realm == null) {
+            return new CallbackHandler() {
+
+                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                    for (Callback current : callbacks) {
+                        System.out.println(current.getClass().getName());
+                        new Throwable("TRACE").printStackTrace();
+                    }
+                }
+            };
+        }
+
         if (DIGEST_MD5.equals(mechanismName) && digestMd5Supported()) {
             final CallbackHandler realHandler = realm.getCallbackHandler();
             // TODO - Correct JBoss Remoting so that the realm can be specified independently of the endpoint name.
@@ -117,6 +135,10 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
     }
 
     private boolean digestMd5Supported() {
+        if (realm == null) {
+            return false;
+        }
+
         Class[] callbacks = realm.getCallbackHandler().getSupportedCallbacks();
         if (contains(NameCallback.class, callbacks) == false) {
             return false;

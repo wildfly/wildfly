@@ -23,12 +23,15 @@ package org.jboss.as.remoting;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import java.security.Security;
+
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.sasl.JBossSaslProvider;
 
 /**
  * The service to make the RealmAuthenticationProvider available.
@@ -43,7 +46,9 @@ class RealmAuthenticationProviderService implements Service<RealmAuthenticationP
     private RealmAuthenticationProvider realmAuthenticationProvider = null;
 
     public void start(StartContext startContext) throws StartException {
-        realmAuthenticationProvider = new RealmAuthenticationProvider(securityRealmInjectedValue.getValue(), serverCallbackValue.getOptionalValue());
+        // TODO - Find a better home for this.
+        Security.addProvider(new JBossSaslProvider());
+        realmAuthenticationProvider = new RealmAuthenticationProvider(securityRealmInjectedValue.getOptionalValue(), serverCallbackValue.getOptionalValue());
     }
 
     public void stop(StopContext stopContext) {
