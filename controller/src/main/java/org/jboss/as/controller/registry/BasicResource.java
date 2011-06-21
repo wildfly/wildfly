@@ -26,13 +26,13 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * Standard {@link Resource} implementation.
@@ -122,7 +122,7 @@ class BasicResource implements Resource {
 
     @Override
     public Set<String> getChildTypes() {
-        return new HashSet<String>(children.keySet());
+        return Collections.unmodifiableSet(children.keySet());
     }
 
     @Override
@@ -131,7 +131,7 @@ class BasicResource implements Resource {
         if(provider == null) {
             return Collections.emptySet();
         }
-        final Set<ResourceEntry> children = new HashSet<ResourceEntry>();
+        final Set<ResourceEntry> children = new LinkedHashSet<ResourceEntry>();
         for(final String name : provider.children()) {
             final Resource resource = provider.get(name);
             children.add(new DelegateResource(resource) {
@@ -224,7 +224,7 @@ class BasicResource implements Resource {
 
         @Override
         public Set<String> children() {
-            return new HashSet<String>(children.keySet());
+            return Collections.unmodifiableSet(children.keySet());
         }
 
         @Override
