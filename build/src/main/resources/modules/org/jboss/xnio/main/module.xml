@@ -30,5 +30,6 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="org.jboss.logging"/>
+        <module name="org.jboss.xnio.nio" services="import"/>
     </dependencies>
 </module>
