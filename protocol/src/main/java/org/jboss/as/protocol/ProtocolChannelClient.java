@@ -157,7 +157,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
     }
 
     public static final class Configuration<T extends ProtocolChannel> {
-        private static final long DEFAULT_CONNECT_TIMEOUT = 2000;
+        private static final long DEFAULT_CONNECT_TIMEOUT = 5000;
 
         private static final AtomicInteger COUNTER = new AtomicInteger();
         private Endpoint endpoint;
