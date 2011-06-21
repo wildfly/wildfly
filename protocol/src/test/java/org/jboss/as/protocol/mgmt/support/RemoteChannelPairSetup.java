@@ -36,6 +36,7 @@ import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.OpenListener;
+import org.jboss.remoting3.security.PasswordClientCallbackHandler;
 import org.xnio.IoUtils;
 
 /**
@@ -102,7 +103,7 @@ public class RemoteChannelPairSetup implements RemotingChannelPairSetup {
         configuration.setChannelFactory(new ManagementChannelFactory());
 
         ProtocolChannelClient<ManagementChannel> client = ProtocolChannelClient.create(configuration);
-        client.connect(null);
+        client.connect(new PasswordClientCallbackHandler("TestUser", configuration.getEndpointName(), "TestUserPassword".toCharArray()));
         clientChannel = client.openChannel(TEST_CHANNEL);
         try {
             clientConnectedLatch.await();
