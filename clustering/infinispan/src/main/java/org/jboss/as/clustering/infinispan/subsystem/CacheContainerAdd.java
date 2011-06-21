@@ -359,7 +359,7 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                                 transportConfig.setMachine(transport.get(ModelKeys.MACHINE).asString());
                             }
                         }
-                        builder.addDependency((stack != null) ? ChannelFactoryService.getServiceName(stack) : ChannelFactoryService.getServiceName(), ChannelFactory.class, transportConfig.getChannelFactoryInjector());
+                        builder.addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, transportConfig.getChannelFactoryInjector());
                         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, transportConfig.getEnvironmentInjector());
                         config.setTransport(transportConfig);
                     }

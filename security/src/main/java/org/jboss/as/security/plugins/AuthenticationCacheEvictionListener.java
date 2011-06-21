@@ -45,4 +45,8 @@ public class AuthenticationCacheEvictionListener implements EvictionListener<Pri
         }
     }
 
+    @Override
+    public void passivate(DomainInfo domain) {
+        // Do nothing
+    }
 }
