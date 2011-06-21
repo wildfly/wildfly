@@ -22,9 +22,13 @@
 
 package org.jboss.as.remoting;
 
+import java.security.AccessController;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -40,6 +44,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.security.SimpleServerAuthenticationProvider;
+import org.jboss.threads.JBossExecutors;
+import org.jboss.threads.JBossThreadFactory;
+import org.jboss.threads.QueueExecutor;
 import org.xnio.OptionMap;
 
 /**
@@ -75,6 +82,17 @@ public final class RemotingServices {
 
     /** The name of the channel used for Server to HC comms */
     public static final String SERVER_CHANNEL = "server";
+
+    private static final long EXECUTOR_KEEP_ALIVE_TIME = 60000;
+    private static final int EXECUTOR_MAX_THREADS = 20;
+
+    public static ExecutorService createExecutor() {
+        ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("Remoting"), Boolean.FALSE, null, "Remoting %f thread %t", null, null, AccessController.getContext());
+
+        QueueExecutor executor = new QueueExecutor(EXECUTOR_MAX_THREADS / 4 + 1, EXECUTOR_MAX_THREADS, EXECUTOR_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS, 500, threadFactory, true, null);
+
+        return JBossExecutors.protectedExecutorService(executor);
+    }
 
     /**
      * Create the service name for a connector
