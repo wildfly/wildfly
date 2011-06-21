@@ -63,7 +63,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         l = new ArgumentWithoutValue(this, "-l");
         l.setExclusive(true);
 
-        FilenameTabCompleter pathCompleter = Util.isWindows() ? WindowsFilenameTabCompleter.INSTANCE : DefaultFilenameTabCompleter.INSTANCE;
+        final FilenameTabCompleter pathCompleter = Util.isWindows() ? WindowsFilenameTabCompleter.INSTANCE : DefaultFilenameTabCompleter.INSTANCE;
         path = new ArgumentWithValue(this, pathCompleter, 0, "--path") {
             @Override
             public String getValue(ParsedArguments args) {
@@ -72,6 +72,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                     if(value.length() >= 0 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
                         value = value.substring(1, value.length() - 1);
                     }
+                    value = pathCompleter.translatePath(value);
                 }
                 return value;
             }
@@ -125,7 +126,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                 }
 
             }}, "--name");
-        path.addCantAppearAfter(l);
+        name.addCantAppearAfter(l);
         path.addCantAppearAfter(name);
         //name.addRequiredPreceding(path);
 
