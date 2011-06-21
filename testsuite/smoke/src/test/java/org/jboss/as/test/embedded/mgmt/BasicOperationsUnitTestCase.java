@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.embedded.mgmt;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -158,6 +159,9 @@ public class BasicOperationsUnitTestCase {
             final ModelNode stepResult = step.get(RESULT);
             Assert.assertTrue(stepResult.hasDefined(DESCRIPTION));
             Assert.assertTrue(stepResult.hasDefined(ATTRIBUTES));
+            Assert.assertTrue(stepResult.get(ModelDescriptionConstants.ATTRIBUTES).hasDefined(ModelDescriptionConstants.NAME));
+            Assert.assertTrue(stepResult.get(ModelDescriptionConstants.ATTRIBUTES).hasDefined(ModelDescriptionConstants.INTERFACE));
+            Assert.assertTrue(stepResult.get(ModelDescriptionConstants.ATTRIBUTES).hasDefined(ModelDescriptionConstants.PORT));
         }
     }
 

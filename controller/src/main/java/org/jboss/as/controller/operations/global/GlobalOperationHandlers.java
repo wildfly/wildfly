@@ -235,7 +235,7 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * Assembles the resonse to a read-resource request from the components gathered by earlier steps.
+     * Assembles the response to a read-resource request from the components gathered by earlier steps.
      */
     private static class ReadResourceAssemblyHandler implements NewStepHandler {
 
@@ -912,7 +912,7 @@ public class GlobalOperationHandlers {
         }
 
         @Override
-        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+        public void execute(final NewOperationContext context, final ModelNode ignored) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             execute(address, PathAddress.EMPTY_ADDRESS, context);
             context.completeStep();
