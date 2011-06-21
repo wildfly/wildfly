@@ -21,7 +21,8 @@
  */
 package org.jboss.as.protocol;
 
-import javax.security.auth.callback.Callback;
+import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
+
 import javax.security.auth.callback.CallbackHandler;
 import java.io.Closeable;
 import java.io.IOException;
@@ -111,13 +112,15 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         //the endpoint name.
         //Connection connection = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray()).get();
 
+        // TODO - do we need better way to decide this?
+        OptionMap map = OptionMap.create(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         IoFuture<Connection> future;
         if (handler != null) {
-            future = endpoint.connect(uri, OptionMap.EMPTY, handler);
+            future = endpoint.connect(uri, map, handler);
         } else {
             // TODO - Remove temporary hard coded value once all clients can supply a CallbackHandler.
             new Throwable("Using default username and password.").printStackTrace();
-            future = endpoint.connect(uri, OptionMap.EMPTY, "TestUser", endpoint.getName(), "TestUserPassword".toCharArray());
+            future = endpoint.connect(uri, map, "TestUser", endpoint.getName(), "TestUserPassword".toCharArray());
         }
         // TODO - Re-evaluate timeouts - clients need time to enter their details but this extends the time for clients where we know this info in advance.
         Status status = future.await(connectTimeout, TimeUnit.MILLISECONDS);

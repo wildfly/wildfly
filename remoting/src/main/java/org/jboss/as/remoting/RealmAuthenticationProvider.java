@@ -21,6 +21,9 @@
  */
 package org.jboss.as.remoting;
 
+import static org.xnio.Options.SASL_MECHANISMS;
+import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
+
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -64,11 +67,11 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
 
     OptionMap getSaslOptionMap() {
         if (digestMd5Supported()) {
-            return OptionMap.create(Options.SASL_MECHANISMS, Sequence.of(DIGEST_MD5));
+            return OptionMap.create(SASL_MECHANISMS, Sequence.of(DIGEST_MD5));
         }
 
         if (realm == null) {
-            return OptionMap.create(Options.SASL_MECHANISMS, Sequence.of(ANONYMOUS));
+            return OptionMap.create(SASL_MECHANISMS, Sequence.of(ANONYMOUS), SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         }
 
         return OptionMap.EMPTY;
