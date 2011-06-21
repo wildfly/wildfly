@@ -22,6 +22,7 @@
 package org.jboss.as.protocol.mgmt;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutorService;
@@ -87,6 +88,8 @@ public abstract class ManagementClientChannelStrategy {
 
     private abstract static class Establishing extends ManagementClientChannelStrategy {
 
+        private static final String CONNECT_TIME_OUT_PROPERTY = "org.jboss.as.client.connect.timeout";
+
         private final String hostName;
         private final int port;
         private final ManagementOperationHandler handler;
@@ -101,8 +104,8 @@ public abstract class ManagementClientChannelStrategy {
 
         @Override
         public ManagementChannel getChannel() throws IOException {
+            final ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
             try {
-                final ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
                 addConfigurationProperties(configuration);
                 configuration.setUri(new URI("remote://" + hostName +  ":" + port));
                 configuration.setChannelFactory(new ManagementChannelFactory());
@@ -114,7 +117,12 @@ public abstract class ManagementClientChannelStrategy {
 
             boolean ok = false;
             try {
-                client.connect();
+                try {
+                    client.connect();
+                } catch (ConnectException e) {
+                    throw new ConnectException("Could not connect to " + configuration.getUri() + " in " + configuration.getConnectTimeout() + "ms. " +
+                              "Consider setting a longer timeout by setting -D" + CONNECT_TIME_OUT_PROPERTY + "=<timeout in ms>.");
+                }
                 channel = client.openChannel("management");
                 channel.setOperationHandler(handler);
                 channel.startReceiving();

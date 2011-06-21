@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -61,32 +63,20 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
     private volatile Connection connection;
     private final Set<T> channels = new HashSet<T>();
     private boolean closed;
-
-//    private ProtocolChannelClient(final Endpoint endpoint,
-//            final URI uri,
-//            final ProtocolChannelFactory<T> channelFactory) {
-//        this(false, endpoint, uri, channelFactory);
-//    }
-
-//    private ProtocolChannelClient(final Endpoint endpoint,
-//            final URI uri,
-//            final ReadChannelThread readChannelThread,
-//            final WriteChannelThread writeChannelThread,
-//            final ConnectionChannelThread connectionChannelThread,
-//            final ProtocolChannelFactory<T> channelFactory) {
-//        this(true, endpoint, uri, readChannelThread, writeChannelThread, connectionChannelThread, channelFactory);
-//    }
+    private final long connectTimeout;
 
     private ProtocolChannelClient(final boolean startedEndpoint,
             final Endpoint endpoint,
             final Registration providerRegistration,
             final URI uri,
-            final ProtocolChannelFactory<T> channelFactory) {
+            final ProtocolChannelFactory<T> channelFactory,
+            final long connectTimeout) {
         this.startedEndpoint = startedEndpoint;
         this.endpoint = endpoint;
         this.providerRegistration = providerRegistration;
         this.uri = uri;
         this.channelFactory = channelFactory;
+        this.connectTimeout = connectTimeout;
     }
 
     public static <T extends ProtocolChannel> ProtocolChannelClient<T> create(final Configuration<T> configuration) throws IOException, URISyntaxException {
@@ -98,7 +88,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         final Endpoint endpoint;
         if (configuration.getEndpoint() != null) {
             endpoint = configuration.getEndpoint();
-            return new ProtocolChannelClient<T>(false, endpoint, null, configuration.getUri(), configuration.getChannelFactory());
+            return new ProtocolChannelClient<T>(false, endpoint, null, configuration.getUri(), configuration.getChannelFactory(), configuration.getConnectTimeout());
         } else {
             endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getExecutor(), configuration.getOptionMap());
             Xnio xnio;
@@ -109,7 +99,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             }
 
             Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
-            return new ProtocolChannelClient<T>(true, endpoint, providerRegistration, configuration.getUri(), configuration.getChannelFactory());
+            return new ProtocolChannelClient<T>(true, endpoint, providerRegistration, configuration.getUri(), configuration.getChannelFactory(), configuration.getConnectTimeout());
         }
     }
 
@@ -126,10 +116,10 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         //Connection connection = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray()).get();
 
         IoFuture<Connection> future = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray());
-        Status status = future.await(2000, TimeUnit.MILLISECONDS);
+        Status status = future.await(connectTimeout, TimeUnit.MILLISECONDS);
         if (status == Status.WAITING) {
             future.cancel();
-            throw new ConnectException("Could not connect to remote server at " + uri + " within 2 seconds");
+            throw new ConnectException("Could not connect to remote server at " + connectTimeout + " within " + connectTimeout + "ms");
         }
         this.connection = future.get();
         return connection;
@@ -167,6 +157,8 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
     }
 
     public static final class Configuration<T extends ProtocolChannel> {
+        private static final long DEFAULT_CONNECT_TIMEOUT = 2000;
+
         private static final AtomicInteger COUNTER = new AtomicInteger();
         private Endpoint endpoint;
 
@@ -177,6 +169,8 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         private URI uri;
         private ProtocolChannelFactory<T> channelFactory;
         private Executor executor;
+        private long connectTimeout = -1;
+        private String connectTimeoutProperty;
 
         public Configuration() {
         }
@@ -216,10 +210,28 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
                 throw new IllegalArgumentException("Don't need an executor when specified endpoint");
             }
             if (endpoint == null && executor == null) {
-                throw new IllegalArgumentException("Don't need an executor when specified endpoint");
+                throw new IllegalArgumentException("Need an executor when endpoint is not specified");
             }
             if (channelFactory == null) {
                 throw new IllegalArgumentException("Null channel factory");
+            }
+            if (connectTimeout != -1 && connectTimeoutProperty != null) {
+                throw new IllegalArgumentException("Can't use both a connect timeout and a connect timeout property");
+            }
+            if (connectTimeoutProperty != null) {
+                connectTimeout = AccessController.doPrivileged(new PrivilegedAction<Long>() {
+                    @Override
+                    public Long run() {
+                        try {
+                            return Long.valueOf(System.getProperty(connectTimeoutProperty, "-1"));
+                        } catch (NumberFormatException e) {
+                            return Long.valueOf("-1");
+                        }
+                    }
+                });
+            }
+            if (connectTimeout < 0) {
+                connectTimeout = DEFAULT_CONNECT_TIMEOUT;
             }
         }
 
@@ -237,6 +249,22 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
         public void setGroup(ThreadGroup group) {
             this.group = group;
+        }
+
+        public long getConnectTimeout() {
+            return connectTimeout;
+        }
+
+        public String getConnectTimeoutProperty() {
+            return connectTimeoutProperty;
+        }
+
+        public void setConnectTimeoutProperty(String connectTimeoutProperty) {
+            this.connectTimeoutProperty = connectTimeoutProperty;
+        }
+
+        public void setConnectTimeout(long connectTimeout) {
+            this.connectTimeout = connectTimeout;
         }
 
         public String getEndpointName() {
