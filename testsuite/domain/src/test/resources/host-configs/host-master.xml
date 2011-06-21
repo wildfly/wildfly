@@ -25,22 +25,8 @@
       xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd"
       name="master">
 
-    <management>
-        <security-realms>
-            <security-realm name="TestRealm">
-                <authentication>
-                    <users>
-                        <user username="TestUser">
-                            <password>TestUserPassword</password>
-                        </user>
-                    </users>
-                </authentication>
-            </security-realm>
-        </security-realms>
-    </management>
-
     <management-interfaces>
-       <native-interface interface="public" port="9999" security-realm="TestRealm"/>
+       <native-interface interface="public" port="9999" />
        <http-interface interface="public" port="9990"/>
     </management-interfaces>
 
