@@ -292,7 +292,8 @@ public class CommandLineMain {
 
         try {
             while (!cmdCtx.terminate) {
-                String line = console.readLine(cmdCtx.getPrompt()).trim();
+                String line = console.readLine(cmdCtx.getPrompt());
+                line = line != null ? line.trim() : "";
                 processLine(cmdCtx, line);
             }
         } finally {
