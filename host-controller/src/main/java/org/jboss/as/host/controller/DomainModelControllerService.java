@@ -284,6 +284,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                         hostControllerInfo.getLocalHostName(),
                         hostControllerInfo.getRemoteDomainControllerHost(),
                         hostControllerInfo.getRemoteDomainControllertPort(),
+                        hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
                         remoteFileRepository);
                 masterDomainControllerClient = getFuture(clientFuture);
                 //Registers us with the master and gets down the master copy of the domain model to our DC

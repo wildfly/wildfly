@@ -27,6 +27,7 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
 
+import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -49,6 +50,7 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
 
     private final InjectedValue<DomainCallbackHandler> callbackHandler = new InjectedValue<DomainCallbackHandler>();
     private final InjectedValue<SSLIdentityService> sslIdentity = new InjectedValue<SSLIdentityService>();
+    private final InjectedValue<CallbackHandlerFactory> secretCallbackFactory = new InjectedValue<CallbackHandlerFactory>();
 
     private final String name;
 
@@ -78,6 +80,10 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
 
     public InjectedValue<SSLIdentityService> getSSLIdentityInjector() {
         return sslIdentity;
+    }
+
+    public InjectedValue<CallbackHandlerFactory> getSecretCallbackFactory() {
+        return secretCallbackFactory;
     }
 
     /**
@@ -112,4 +118,7 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
         return null;
     }
 
+    public CallbackHandlerFactory getSecretCallbackHandlerFactory() {
+        return secretCallbackFactory.getValue();
+    }
 }

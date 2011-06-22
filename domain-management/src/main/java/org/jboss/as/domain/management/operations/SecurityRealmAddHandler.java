@@ -21,6 +21,8 @@
  */
 package org.jboss.as.domain.management.operations;
 
+import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
+
 import java.util.List;
 import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -36,14 +38,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
+import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.as.domain.management.security.LdapConnectionManagerService;
 import org.jboss.as.domain.management.security.PropertiesCallbackHandler;
 import org.jboss.as.domain.management.security.SSLIdentityService;
+import org.jboss.as.domain.management.security.SecretIdentityService;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.domain.management.security.UserDomainCallbackHandler;
 import org.jboss.as.domain.management.security.UserLdapCallbackHandler;
@@ -105,9 +112,15 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
             realmBuilder.addDependency(authenticationName, DomainCallbackHandler.class, securityRealmService.getCallbackHandlerInjector());
         }
 
-        if (serverIdentities != null && serverIdentities.hasDefined(SSL)) {
-            ServiceName sslServiceName = addSSLService(serverIdentities.require(SSL), realmServiceName, serviceTarget, newControllers);
-            realmBuilder.addDependency(sslServiceName, SSLIdentityService.class, securityRealmService.getSSLIdentityInjector());
+        if (serverIdentities != null) {
+            if (serverIdentities.hasDefined(SSL)) {
+                ServiceName sslServiceName = addSSLService(serverIdentities.require(SSL), realmServiceName, serviceTarget, newControllers);
+                realmBuilder.addDependency(sslServiceName, SSLIdentityService.class, securityRealmService.getSSLIdentityInjector());
+            }
+            if (serverIdentities.hasDefined(SECRET)) {
+                ServiceName secretServiceName = addSecretService(serverIdentities.require(SECRET),realmServiceName,serviceTarget,newControllers);
+                realmBuilder.addDependency(secretServiceName, CallbackHandlerFactory.class,securityRealmService.getSecretCallbackFactory());
+            }
         }
 
         newControllers.add(realmBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
@@ -134,7 +147,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         String connectionManager = ldap.require(CONNECTION).asString();
         ldapBuilder.addDependency(LdapConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, ldapCallbackHandler.getConnectionManagerInjector());
 
-        newControllers.add(ldapBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+        newControllers.add(ldapBuilder.setInitialMode(ON_DEMAND)
                 .install());
 
         return ldapServiceName;
@@ -149,7 +162,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
             propsBuilder.addDependency(pathName(properties.get(RELATIVE_TO).asString()), String.class, propsCallbackHandler.getRelativeToInjector());
         }
 
-        newControllers.add(propsBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+        newControllers.add(propsBuilder.setInitialMode(ON_DEMAND)
                 .install());
 
         return propsServiceName;
@@ -166,10 +179,23 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
             sslBuilder.addDependency(pathName(ssl.get(KEYSTORE, RELATIVE_TO).asString()), String.class, sslIdentityService.getRelativeToInjector());
         }
 
-        newControllers.add(sslBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+        newControllers.add(sslBuilder.setInitialMode(ON_DEMAND)
                 .install());
 
         return sslServiceName;
+    }
+
+    private ServiceName addSecretService(ModelNode secret, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
+        ServiceName secretServiceName = realmServiceName.append(SecretIdentityService.SERVICE_SUFFIX);
+
+        String secretValue = secret.require(VALUE).asString();
+
+        SecretIdentityService sis = new SecretIdentityService(secretValue);
+        serviceTarget.addService(secretServiceName, sis)
+                .setInitialMode(ON_DEMAND)
+                .install();
+
+        return secretServiceName;
     }
 
     private ServiceName addUsersService(ModelNode users, ServiceName realmServiceName, String realmName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {

@@ -24,6 +24,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 
 import java.util.Locale;
 
@@ -87,6 +88,11 @@ public class NewRemoteDomainControllerAddHandler extends AbstractAddStepHandler 
         final ModelNode host = operation.require(HOST);
         dc.get(REMOTE, PORT).set(port);
         dc.get(REMOTE, HOST).set(host);
+        if (operation.has(SECURITY_REALM)) {
+            ModelNode securityRealm = operation.require(SECURITY_REALM);
+            dc.get(REMOTE, SECURITY_REALM).set(securityRealm);
+            hostControllerInfo.setRemoteDomainControllerSecurityRealm(securityRealm.resolve().asString());
+        }
 
         if (dc.has(LOCAL)) {
             dc.remove(LOCAL);
@@ -95,6 +101,7 @@ public class NewRemoteDomainControllerAddHandler extends AbstractAddStepHandler 
         hostControllerInfo.setMasterDomainController(false);
         hostControllerInfo.setRemoteDomainControllerHost(host.resolve().asString());
         hostControllerInfo.setRemoteDomainControllerPort(port.resolve().asInt());
+
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
         NewDomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), fileRepository);

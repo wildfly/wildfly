@@ -24,6 +24,7 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
 
+import javax.security.auth.callback.CallbackHandler;
 import java.io.BufferedOutputStream;
 import java.io.DataInput;
 import java.io.File;
@@ -49,6 +50,9 @@ import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.NewMasterDomainControllerClient;
+import org.jboss.as.domain.management.CallbackHandlerFactory;
+import org.jboss.as.domain.management.security.SecretIdentityService;
+import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.host.controller.mgmt.NewDomainControllerProtocol;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -61,7 +65,9 @@ import org.jboss.as.remoting.RemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -73,6 +79,7 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.sasl.JBossSaslProvider;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
+
 
 /**
  * Establishes the connection from a slave {@link org.jboss.as.domain.controller.NewDomainController} to the master
@@ -101,6 +108,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     private final AtomicBoolean connected = new AtomicBoolean(false);
     private final FutureClient futureClient = new FutureClient();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
+    private final InjectedValue<CallbackHandlerFactory> callbackFactoryInjector = new InjectedValue<CallbackHandlerFactory>();
 
     private NewRemoteDomainConnectionService(final NewModelController controller, final String name, final InetAddress host, final int port, final RemoteFileRepository remoteFileRepository){
         this.controller = controller;
@@ -111,7 +119,9 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         remoteFileRepository.setRemoteFileRepositoryExecutor(remoteFileRepositoryExecutor);
     }
 
-    public static Future<NewMasterDomainControllerClient> install(final ServiceTarget serviceTarget, final NewModelController controller, final String localHostName, final String remoteDcHost, final int remoteDcPort, final RemoteFileRepository remoteFileRepository) {
+    public static Future<NewMasterDomainControllerClient> install(final ServiceTarget serviceTarget, final NewModelController controller,
+                                                                  final String localHostName, final String remoteDcHost, final int remoteDcPort,
+                                                                  final String securityRealm, final RemoteFileRepository remoteFileRepository) {
         NewRemoteDomainConnectionService service;
         try {
             service = new NewRemoteDomainConnectionService(
@@ -123,10 +133,16 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        serviceTarget.addService(NewMasterDomainControllerClient.SERVICE_NAME, service)
+        ServiceBuilder builder = serviceTarget.addService(NewMasterDomainControllerClient.SERVICE_NAME, service)
                 .addDependency(RemotingServices.ENDPOINT, Endpoint.class, service.endpointInjector)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+                .setInitialMode(ServiceController.Mode.ACTIVE);
+
+        if (securityRealm != null) {
+            ServiceName callbackHandlerService = SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm).append(SecretIdentityService.SERVICE_SUFFIX);
+            builder.addDependency(callbackHandlerService, CallbackHandlerFactory.class, service.callbackFactoryInjector);
+        }
+
+        builder.install();
         return service.futureClient;
     }
 
@@ -173,8 +189,13 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
             throw new RuntimeException(e);
         }
         try {
-            // TODO - It is here we should supply our client side CallbackHandler to specify the Username and Password
-            client.connect(null);
+            CallbackHandler handler = null;
+            CallbackHandlerFactory handlerFactory = callbackFactoryInjector.getOptionalValue();
+            if (handlerFactory != null) {
+                handler = handlerFactory.getCallbackHandler(name);
+            }
+
+            client.connect(handler);
             this.channelClient = client;
 
             if (connected.get()) {

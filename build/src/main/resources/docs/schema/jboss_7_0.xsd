@@ -219,8 +219,24 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-          <xs:element name="ssl" type="sslType"/>
+          <xs:element name="ssl" type="sslType" minOccurs="0" />
+          <xs:element name="secret" type="secretType" minOccurs="0" />
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="secretType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of the SSL identity of this server.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="value" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The secret / password - Base64 Encoded
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="sslType">
@@ -458,6 +474,7 @@
     <xs:complexType name="domain-controller-remoteType">
          <xs:attribute name="host" type="xs:string" use="required" />
          <xs:attribute name="port" type="xs:integer" use="required" />
+         <xs:attribute name="security-realm" type="xs:string" use="optional" />
     </xs:complexType>
 
     <xs:complexType name="serversType">

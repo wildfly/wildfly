@@ -19,40 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.domain.management;
 
-import javax.net.ssl.SSLContext;
-
-import org.jboss.as.domain.management.security.DomainCallbackHandler;
+import javax.security.auth.callback.CallbackHandler;
 
 /**
- * Interface to the security realm.
+ *  Interface to represent a CallbackHandlerFactory
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface SecurityRealm {
+public interface CallbackHandlerFactory {
 
     /**
-     * @return The name of this SecurityRealm
-     */
-    String getName();
-
-    /**
-     * @return The CallbackHandler for the realm
-     */
-    DomainCallbackHandler getCallbackHandler();
-
-    /**
-     * Used to obtain the SSLContext as configured for this security realm.
+     * Create a CallbackHandler for the specified username.
      *
-     * @return the SSLContext server identity for this realm.
-     * @throws IllegalStateException - If no SSL server-identity has been defined.
+     * @param username - The username to be set by the created CallbackHandler
+     * @return the CallbackHandler
      */
-    SSLContext getSSLContext();
+    CallbackHandler getCallbackHandler(final String username);
 
-    /**
-     * @return A CallbackHandlerFactory for a pre-configured secret.
-     */
-    CallbackHandlerFactory getSecretCallbackHandlerFactory();
 
 }
