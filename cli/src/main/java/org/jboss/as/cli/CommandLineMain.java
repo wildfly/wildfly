@@ -850,7 +850,9 @@ public class CommandLineMain {
 
         private class AuthenticationCallbackHandler implements CallbackHandler {
 
-            // TODO - For some reason this is getting called 5 times so cache the values for the 4 later calls.
+            // After the CLI has connected the physical connection may be re-established numerous times.
+            // for this reason we cache the entered values to allow for re-use without pestering the end
+            // user.
 
             private boolean realmShown = false;
 
@@ -858,6 +860,12 @@ public class CommandLineMain {
             private char[] password = null;
 
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                // Special case for anonymous authentication to avoid prompting user for their name.
+                if (callbacks.length == 1 && callbacks[0] instanceof NameCallback) {
+                    ((NameCallback)callbacks[0]).setName("anonymous CLI user");
+                    return;
+                }
+
                 for (Callback current : callbacks) {
                     if (current instanceof RealmCallback) {
                         RealmCallback rcb = (RealmCallback) current;
