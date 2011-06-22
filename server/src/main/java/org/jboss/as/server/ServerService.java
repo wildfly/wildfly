@@ -70,6 +70,7 @@ import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
 import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
@@ -136,16 +137,6 @@ public final class ServerService extends AbstractControllerService {
     }
 
     protected void boot(final BootContext context) throws ConfigurationPersistenceException {
-        final EnumMap<Phase, Set<RegisteredProcessor>> deployers = new EnumMap<Phase, Set<RegisteredProcessor>>(Phase.class);
-        for (Phase phase : Phase.values()) {
-            deployers.put(phase, new TreeSet<RegisteredProcessor>());
-        }
-        final ThreadLocal<DeploymentProcessorTarget> local = AbstractDeploymentChainStep.PROCESSOR_TARGET_THREAD_LOCAL;
-        local.set(new DeploymentProcessorTarget() {
-            public void addDeploymentProcessor(final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
-                deployers.get(phase).add(new RegisteredProcessor(priority, processor));
-            }
-        });
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
         final ServiceTarget serviceTarget = context.getServiceTarget();
         serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
@@ -156,7 +147,7 @@ public final class ServerService extends AbstractControllerService {
                 new ExtensionIndexService(newExtDirs)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         // Activate module loader
-        deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_SERVICE_MODULE_LOADER, new DeploymentUnitProcessor() {
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_SERVICE_MODULE_LOADER, new DeploymentUnitProcessor() {
             @Override
             public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
                 phaseContext.getDeploymentUnit().putAttachment(Attachments.SERVICE_MODULE_LOADER, injectedModuleLoader.getValue());
@@ -167,86 +158,56 @@ public final class ServerService extends AbstractControllerService {
             public void undeploy(DeploymentUnit context) {
                 context.removeAttachment(Attachments.SERVICE_MODULE_LOADER);
             }
-        }));
+        });
 
         // Activate core processors for jar deployment
-        deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_MOUNT, new DeploymentRootMountProcessor()));
-        deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_MANIFEST, new ManifestAttachmentProcessor()));
-        deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_ADDITIONAL_MANIFEST, new ManifestAttachmentProcessor()));
-        deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_SUB_DEPLOYMENT, new SubDeploymentProcessor()));
-        deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_MODULE_IDENTIFIERS, new ModuleIdentifierProcessor()));
-        deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_ANNOTATION_INDEX, new AnnotationIndexProcessor()));
-        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_STRUCTURE_DESCRIPTOR, new DeploymentStructureDescriptorParser()));
-        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_DEPENDENCIES_MANIFEST, new ManifestDependencyProcessor()));
-        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_COMPOSITE_ANNOTATION_INDEX, new CompositeIndexProcessor()));
-        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_ADDITIONAL_MODULES, new AdditionalModuleProcessor()));
-        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_CLASS_PATH, new ManifestClassPathProcessor()));
-        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor()));
-        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_EXTENSION_NAME, new ManifestExtensionNameProcessor()));
-        deployers.get(Phase.PARSE).add(new RegisteredProcessor(Phase.PARSE_SERVICE_LOADER_DEPLOYMENT, new ServiceLoaderProcessor()));
-        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_MODULE, new ModuleDependencyProcessor()));
-        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SAR_MODULE, new ServiceActivatorDependencyProcessor()));
-        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_CLASS_PATH, new ModuleClassPathProcessor()));
-        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_EXTENSION_LIST, new ModuleExtensionListProcessor()));
-        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SUB_DEPLOYMENTS, new SubDeploymentDependencyProcessor()));
-        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_JDK, new ServerDependenciesProcessor()));
-        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_MODULE_INFO_SERVICE, new ModuleInformationServiceProcessor()));
-        deployers.get(Phase.CONFIGURE_MODULE).add(new RegisteredProcessor(Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor()));
-        deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_INSTALL_EXTENSION, new ModuleExtensionNameProcessor()));
-        deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_REFLECTION_INDEX, new InstallReflectionIndexProcessor()));
-        deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor()));
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MOUNT, new DeploymentRootMountProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MANIFEST, new ManifestAttachmentProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_ADDITIONAL_MANIFEST, new ManifestAttachmentProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_SUB_DEPLOYMENT, new SubDeploymentProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MODULE_IDENTIFIERS, new ModuleIdentifierProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_ANNOTATION_INDEX, new AnnotationIndexProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_STRUCTURE_DESCRIPTOR, new DeploymentStructureDescriptorParser());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DEPENDENCIES_MANIFEST, new ManifestDependencyProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_COMPOSITE_ANNOTATION_INDEX, new CompositeIndexProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ADDITIONAL_MODULES, new AdditionalModuleProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_CLASS_PATH, new ManifestClassPathProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EXTENSION_NAME, new ManifestExtensionNameProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SERVICE_LOADER_DEPLOYMENT, new ServiceLoaderProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE, new ModuleDependencyProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SAR_MODULE, new ServiceActivatorDependencyProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLASS_PATH, new ModuleClassPathProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EXTENSION_LIST, new ModuleExtensionListProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SUB_DEPLOYMENTS, new SubDeploymentDependencyProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JDK, new ServerDependenciesProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE_INFO_SERVICE, new ModuleInformationServiceProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.CONFIGURE_MODULE, Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_INSTALL_EXTENSION, new ModuleExtensionNameProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_REFLECTION_INDEX, new InstallReflectionIndexProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor());
 
         // Ext integration deployers
 
-        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SEAM, new SeamProcessor(serviceTarget)));
-
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SEAM, new SeamProcessor(serviceTarget));
 
         try {
             super.boot(context);
         } finally {
-            local.set(null);
+            DeployerChainAddHandler.DEPLOYERS.set(null);
         }
 
-        final EnumMap<Phase, List<DeploymentUnitProcessor>> finalDeployers = new EnumMap<Phase, List<DeploymentUnitProcessor>>(Phase.class);
-        final List<DeploymentUnitProcessor> processorList = new ArrayList<DeploymentUnitProcessor>(256);
-        for (Phase phase : Phase.values()) {
-            processorList.clear();
-            final Set<RegisteredProcessor> processorSet = deployers.get(phase);
-            for (RegisteredProcessor processor : processorSet) {
-                processorList.add(processor.getProcessor());
-            }
-            finalDeployers.put(phase, Arrays.asList(processorList.toArray(new DeploymentUnitProcessor[processorList.size()])));
-        }
-        DeployerChainsService.addService(serviceTarget, finalDeployers);
         bootstrapListener.tick();
+    }
+
+    protected void boot(List<ModelNode> bootOperations) throws ConfigurationPersistenceException {
+        final List<ModelNode> operations = new ArrayList<ModelNode>(bootOperations);
+        operations.add(DeployerChainAddHandler.OPERATION);
+        super.boot(operations);
     }
 
     public void stop(final StopContext context) {
         super.stop(context);
-    }
-
-    static final class RegisteredProcessor implements Comparable<RegisteredProcessor> {
-        private final int priority;
-        private final DeploymentUnitProcessor processor;
-
-        RegisteredProcessor(final int priority, final DeploymentUnitProcessor processor) {
-            this.priority = priority;
-            this.processor = processor;
-        }
-
-        @Override
-        public int compareTo(final RegisteredProcessor o) {
-            final int rel = Integer.signum(priority - o.priority);
-            return rel == 0 ? processor.getClass().getName().compareTo(o.getClass().getName()) : rel;
-        }
-
-        int getPriority() {
-            return priority;
-        }
-
-        DeploymentUnitProcessor getProcessor() {
-            return processor;
-        }
     }
 
     @Override

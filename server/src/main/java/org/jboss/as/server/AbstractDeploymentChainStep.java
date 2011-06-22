@@ -24,6 +24,8 @@ package org.jboss.as.server;
 
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -33,14 +35,14 @@ import org.jboss.dmr.ModelNode;
  */
 public abstract class AbstractDeploymentChainStep implements NewStepHandler {
 
-    static final ThreadLocal<DeploymentProcessorTarget> PROCESSOR_TARGET_THREAD_LOCAL = new ThreadLocal<DeploymentProcessorTarget>();
+    private static DeploymentProcessorTarget TARGET = new DeploymentProcessorTarget() {
+        public void addDeploymentProcessor(final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
+            DeployerChainAddHandler.addDeploymentProcessor(phase, priority, processor);
+        }
+    };
 
     public final void execute(final NewOperationContext context, final ModelNode operation) {
-        final DeploymentProcessorTarget target = PROCESSOR_TARGET_THREAD_LOCAL.get();
-        if (target == null) {
-            throw new IllegalStateException("Boot operation executing during runtime");
-        }
-        execute(target);
+        execute(TARGET);
         context.completeStep();
     }
 

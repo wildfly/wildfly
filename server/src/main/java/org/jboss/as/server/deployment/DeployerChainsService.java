@@ -24,6 +24,7 @@ package org.jboss.as.server.deployment;
 
 import java.util.EnumMap;
 import java.util.List;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -38,9 +39,10 @@ import org.jboss.msc.service.StopContext;
 public class DeployerChainsService implements Service<DeployerChains> {
     private final DeployerChains deployerChains;
 
-    public static void addService(final ServiceTarget serviceTarget, final EnumMap<Phase, List<DeploymentUnitProcessor>> phases) {
+    public static void addService(final ServiceTarget serviceTarget, final EnumMap<Phase, List<DeploymentUnitProcessor>> phases, final ServiceVerificationHandler verificationHandler) {
         final DeployerChains deployerChains = new DeployerChains(phases);
         serviceTarget.addService(Services.JBOSS_DEPLOYMENT_CHAINS, new DeployerChainsService(deployerChains))
+            .addListener(verificationHandler)
             .install();
     }
 
