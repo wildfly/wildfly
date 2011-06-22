@@ -186,8 +186,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public void unregisterRemoteHost(String id) {
-        Logger.getLogger("org.jboss.domain").info("Unregistering host " + id);
-        hostProxies.remove(id);
+        if (hostProxies.remove(id) != null) {
+            Logger.getLogger("org.jboss.domain").info("Unregistered host " + id);
+        }
         modelNodeRegistration.unregisterProxyController(PathElement.pathElement(HOST, id));
     }
 
@@ -409,11 +410,17 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public synchronized NewProxyController popChannelAndCreateProxy(String hostName) {
+    public synchronized NewProxyController popChannelAndCreateProxy(final String hostName) {
         ManagementChannel channel = unregisteredHostChannels.remove(hostName);
         if (channel == null) {
             throw new IllegalArgumentException("No channel for host " + hostName);
         }
+        channel.addCloseHandler(new CloseHandler<Channel>() {
+            public void handleClose(Channel closed) {
+                //TODO A bit strange doing it here before the proxy is actually registered
+                unregisterRemoteHost(hostName);
+            }
+        });
         final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
         NewRemoteProxyController proxy = NewRemoteProxyController.create(proxyExecutor, addr, ProxyOperationAddressTranslator.HOST, channel);
         ProxyCreatedCallback callback = proxyCreatedCallbacks.remove(hostName);
