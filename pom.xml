@@ -152,7 +152,7 @@
         <version.org.jboss.osgi.webapp>1.0.2</version.org.jboss.osgi.webapp>
         <version.org.jboss.osgi.webconsole>1.0.6</version.org.jboss.osgi.webconsole>
         <version.org.jboss.osgi.xerces>2.9.1.SP7</version.org.jboss.osgi.xerces>
-        <version.org.jboss.remoting3.jboss-remoting>3.2.0.Beta1-20110621.222634-11</version.org.jboss.remoting3.jboss-remoting>
+        <version.org.jboss.remoting3.jboss-remoting>3.2.0.Beta1</version.org.jboss.remoting3.jboss-remoting>
         <version.org.jboss.resteasy.resteasy-jaxrs>2.1.0.GA</version.org.jboss.resteasy.resteasy-jaxrs>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>2.2.0.Beta2</version.org.jboss.security.jboss-negotiation>
@@ -192,8 +192,8 @@
         <version.org.jboss.ws.jbossws-cxf>4.0.0.Beta2</version.org.jboss.ws.jbossws-cxf>
         <version.org.jboss.ws.spi>2.0.0.Beta5</version.org.jboss.ws.spi>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
-        <version.org.jboss.xnio.xnio-api>3.0.0.Beta2-20110621.215524-14</version.org.jboss.xnio.xnio-api>
-        <version.org.jboss.xnio.xnio-nio>3.0.0.Beta2-20110621.215553-14</version.org.jboss.xnio.xnio-nio>
+        <version.org.jboss.xnio.xnio-api>3.0.0.Beta2</version.org.jboss.xnio.xnio-api>
+        <version.org.jboss.xnio.xnio-nio>3.0.0.Beta2</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>2.12.1.Final</version.org.jgroups>
         <version.org.mockito>1.8.5</version.org.mockito>
         <version.org.picketbox>4.0.0.CR1</version.org.picketbox>
