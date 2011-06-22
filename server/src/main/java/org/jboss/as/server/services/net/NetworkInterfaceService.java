@@ -130,25 +130,38 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
     }
 
     static NetworkInterfaceBinding resolveInterface(final InterfaceCriteria criteria) throws SocketException {
+        NetworkInterfaceBinding result = null;
         final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
         log.tracef("resolveInterface, checking criteria: %s\n", criteria);
-        while (networkInterfaces.hasMoreElements()) {
+        while (result == null && networkInterfaces.hasMoreElements()) {
             final NetworkInterface networkInterface = networkInterfaces.nextElement();
-            log.tracef("resolveInterface, checking NetworkInterface: %s\n", toString(networkInterface));
-            final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
-            while (interfaceAddresses.hasMoreElements()) {
-                final InetAddress address = interfaceAddresses.nextElement();
-                if(preferIPv4Stack && ! preferIPv6Stack && ! (address instanceof Inet4Address)) {
-                    continue;
-                } else if(preferIPv6Stack && ! preferIPv4Stack && ! (address instanceof Inet6Address)) {
-                    continue;
+            result = resolveInterface(criteria, networkInterface);
+            if (result == null) {
+                final Enumeration<NetworkInterface> subInterfaces = networkInterface.getSubInterfaces();
+                while (result == null && subInterfaces.hasMoreElements()) {
+                    final NetworkInterface subInterface = subInterfaces.nextElement();
+                    result = resolveInterface(criteria, subInterface);
                 }
-                log.tracef("Checking interface(name=%s,address=%s), criteria=%s\n", networkInterface.getName(), address, criteria);
-                InetAddress bindAddress = criteria.isAcceptable(networkInterface, address);
-                if (bindAddress != null) {
-                    log.tracef("Criteria provided bind address: %s\n", bindAddress);
-                    return new NetworkInterfaceBinding(Collections.singleton(networkInterface), bindAddress);
-                }
+            }
+        }
+        return result;
+    }
+
+    private static NetworkInterfaceBinding resolveInterface(final InterfaceCriteria criteria, final NetworkInterface networkInterface) throws SocketException {
+        log.tracef("resolveInterface, checking NetworkInterface: %s\n", toString(networkInterface));
+        final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
+        while (interfaceAddresses.hasMoreElements()) {
+            final InetAddress address = interfaceAddresses.nextElement();
+            if(preferIPv4Stack && ! preferIPv6Stack && ! (address instanceof Inet4Address)) {
+                continue;
+            } else if(preferIPv6Stack && ! preferIPv4Stack && ! (address instanceof Inet6Address)) {
+                continue;
+            }
+            log.tracef("Checking interface(name=%s,address=%s), criteria=%s\n", networkInterface.getName(), address, criteria);
+            InetAddress bindAddress = criteria.isAcceptable(networkInterface, address);
+            if (bindAddress != null) {
+                log.tracef("Criteria provided bind address: %s\n", bindAddress);
+                return new NetworkInterfaceBinding(Collections.singleton(networkInterface), bindAddress);
             }
         }
         return null;
