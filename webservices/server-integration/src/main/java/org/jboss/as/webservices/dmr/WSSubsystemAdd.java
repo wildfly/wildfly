@@ -43,7 +43,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.deployers.WebServiceRefAnnotationParsingProcessor;
 import org.jboss.as.webservices.service.EndpointRegistryService;
-import org.jboss.as.webservices.service.ModelUpdateService;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.as.webservices.util.WSServices;
@@ -106,7 +105,6 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ServerConfigImpl serverConfig = createServerConfig(operation);
         newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
-        newControllers.add(ModelUpdateService.install(serviceTarget, verificationHandler));
         newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
     }
 
