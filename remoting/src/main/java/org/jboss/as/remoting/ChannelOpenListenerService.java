@@ -84,7 +84,7 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
     public void start(StartContext context) throws StartException {
         try {
             log.debugf("Registering channel listener for %s", channelName);
-            endpointValue.getValue().registerService(channelName, this, optionMap);
+            registration = endpointValue.getValue().registerService(channelName, this, optionMap);
         } catch (Exception e) {
             throw new StartException(e);
         }

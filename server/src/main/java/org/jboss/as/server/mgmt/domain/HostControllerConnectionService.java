@@ -93,7 +93,6 @@ public class HostControllerConnectionService implements Service<ManagementChanne
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
-        safeClose(channel);
         safeClose(client);
         client = null;
         channel = null;
