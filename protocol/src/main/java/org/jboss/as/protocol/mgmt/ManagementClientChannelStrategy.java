@@ -159,7 +159,6 @@ public abstract class ManagementClientChannelStrategy {
         public EstablishingWithNewEndpoint(String hostName, int port, ExecutorService executorService, ManagementOperationHandler handler, CallbackHandler cbHandler) {
             super(hostName, port, handler, cbHandler);
             this.executorService = executorService;
-
         }
 
         @Override

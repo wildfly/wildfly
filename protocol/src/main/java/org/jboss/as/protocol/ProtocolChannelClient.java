@@ -67,7 +67,6 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
     private final ProtocolChannelFactory<T> channelFactory;
     private volatile Connection connection;
     private final Set<T> channels = new HashSet<T>();
-    private boolean closed;
     private final long connectTimeout;
 
     private ProtocolChannelClient(final boolean startedEndpoint,
@@ -104,33 +103,48 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
 
     public Connection connect(CallbackHandler handler) throws IOException {
-        if (closed) {
-            throw new IllegalStateException("Closed this client");
-        }
         if (connection != null) {
             throw new IllegalStateException("Already connected");
         }
-        //TODO Don't hardcode this login stuff
-        //There is currently a probable bug in jboss remoting, so the user realm name MUST be the same as
-        //the endpoint name.
-        //Connection connection = endpoint.connect(uri, OptionMap.EMPTY, "bob", endpoint.getName(), "pass".toCharArray()).get();
 
         // TODO - do we need better way to decide this?
         OptionMap map = OptionMap.create(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         IoFuture<Connection> future;
-        if (handler != null) {
-            future = endpoint.connect(uri, map, handler);
-        } else {
-            // TODO - Remove temporary hard coded value once all clients can supply a CallbackHandler.
-            //new Throwable("Using default username and password.").printStackTrace();
-            future = endpoint.connect(uri, map, new AnonymousCallbackHandler());
-        }
-        // TODO - Re-evaluate timeouts - clients need time to enter their details but this extends the time for clients where we know this info in advance.
+        CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
+        WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(actualHandler);
+        future = endpoint.connect(uri, map, wrapperHandler);
+
         Status status = future.await(connectTimeout, TimeUnit.MILLISECONDS);
-        if (status == Status.WAITING) {
-            future.cancel();
-            throw new ConnectException("Could not connect to remote server at " + connectTimeout + " within " + connectTimeout + "ms");
+        while (status == Status.WAITING) {
+            boolean cancel = false;
+            if (wrapperHandler.isInCall()) {
+                // Here we know we are blocked waiting for user input so block again for the same time.
+                status = future.await(connectTimeout, TimeUnit.MILLISECONDS);
+            } else if (wrapperHandler.getCallFinished() > -1) {
+                // Here make the timeout apply since the call to the handler last completed.
+                // We could have been blocked in the await call for some of that so work out how much time is left.
+                long timeSinceFinished = System.currentTimeMillis() - wrapperHandler.getCallFinished();
+                // There is a small possibility a second call could have passed through the handler while we were
+                // checking - synchronization would be overkill so if we get a value we don't understand assume
+                // the call literally just completed which will cause a wait of the full timeout.
+                if (timeSinceFinished < 0) {
+                    timeSinceFinished = 0;
+                }
+                if (timeSinceFinished < connectTimeout) {
+                    status = future.await(connectTimeout - timeSinceFinished, TimeUnit.MILLISECONDS);
+                } else {
+                    cancel = true;
+                }
+            } else {
+                cancel = true;
+            }
+
+            if (cancel == true) {
+                future.cancel();
+                throw new ConnectException("Could not connect to remote server at " + connectTimeout + " within " + connectTimeout + "ms");
+            }
         }
+
         this.connection = future.get();
         return connection;
     }
@@ -326,6 +340,39 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
         public void setChannelFactory(ProtocolChannelFactory<T> channelFactory) {
             this.channelFactory = channelFactory;
+        }
+    }
+
+    private static final class WrapperCallbackHandler implements CallbackHandler {
+
+        private volatile boolean inCall = false;
+
+        private volatile long callFinished = -1;
+
+        private final CallbackHandler wrapped;
+
+        WrapperCallbackHandler(final CallbackHandler toWrap) {
+            this.wrapped = toWrap;
+        }
+
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            inCall = true;
+            try {
+                wrapped.handle(callbacks);
+            } finally {
+                // Set the time first so if a read is made between these two calls it will say inCall=true until
+                // callFinished is set.
+                callFinished = System.currentTimeMillis();
+                inCall = false;
+            }
+        }
+
+        boolean isInCall() {
+            return inCall;
+        }
+
+        long getCallFinished() {
+            return callFinished;
         }
     }
 
