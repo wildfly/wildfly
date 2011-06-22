@@ -114,6 +114,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
                 .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewModelController.class, service.controllerValue)
                 .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.deploymentRepositoryValue)
                 .addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.contentRepositoryValue)
+                .addDependency(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_CHAINS)
                 .addInjection(service.scheduledExecutorValue, scheduledExecutorService);
         if (relativePathService != null) {
             builder.addDependency(relativePathService, String.class, service.relativePathValue);

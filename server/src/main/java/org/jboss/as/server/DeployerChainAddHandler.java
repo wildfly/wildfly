@@ -39,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -96,7 +97,7 @@ public class DeployerChainAddHandler implements NewStepHandler, DescriptionProvi
                     context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
 
                     if(context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(Services.JBOSS_DEPLOYER_CHAINS);
+                        context.removeService(Services.JBOSS_DEPLOYMENT_CHAINS);
                     }
                 }
             }, NewOperationContext.Stage.VERIFY);
