@@ -22,6 +22,7 @@
 
 package org.jboss.as.process;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -65,13 +66,14 @@ public final class Main {
         String javaHome = System.getProperty("java.home", ".");
         String jvmName = javaHome + "/bin/java";
         String jbossHome = System.getProperty("jboss.home.dir", ".");
-        String modulePath = System.getProperty("jboss.module.path", "modules");
-        String bootJar = "jboss-modules.jar";
+        String modulePath = null;
+        String bootJar = null;
         String logModule = "org.jboss.logmanager";
         String jaxpModule = "javax.xml.jaxp-provider";
         String bootModule = HOST_CONTROLLER_MODULE;
         String bindAddress = "127.0.0.1";
         int bindPort = 0;
+        String currentWorkingDir = System.getProperty("user.dir");
 
         final List<String> javaOptions = new ArrayList<String>();
         final List<String> smOptions = new ArrayList<String>();
@@ -118,6 +120,16 @@ public final class Main {
                 throw new IllegalArgumentException("Bad option: " + arg);
             }
         }
+        if (modulePath == null) {
+            // if "-mp" (i.e. module path) wasn't part of the command line args, then check the system property.
+            // if system property not set, then default to JBOSS_HOME/modules
+            modulePath = System.getProperty("jboss.module.path", jbossHome + File.separator + "modules");
+        }
+        if (bootJar == null) {
+            // if "-jar" wasn't part of the command line args, then default to JBOSS_HOME/jboss-modules.jar
+            bootJar = jbossHome + File.separator + "jboss-modules.jar";
+        }
+
 
         Handler consoleHandler = null;
 
@@ -152,8 +164,6 @@ public final class Main {
 
         final List<String> initialCommand = new ArrayList<String>();
         initialCommand.add(jvmName);
-        initialCommand.add("-D" + "jboss.home.dir=" + jbossHome);
-
         initialCommand.addAll(javaOptions);
         initialCommand.add("-jar");
         initialCommand.add(bootJar);
@@ -169,8 +179,11 @@ public final class Main {
         initialCommand.add(CommandLineConstants.INTERPROCESS_PC_PORT);
         initialCommand.add(Integer.toString(boundAddress.getPort()));
         initialCommand.addAll(smOptions);
+        initialCommand.add("-D" + "jboss.home.dir=" + jbossHome);
 
-        processController.addProcess(HOST_CONTROLLER_PROCESS_NAME, initialCommand, Collections.<String, String>emptyMap(), jbossHome, true);
+
+
+        processController.addProcess(HOST_CONTROLLER_PROCESS_NAME, initialCommand, Collections.<String, String>emptyMap(), currentWorkingDir, true);
         processController.startProcess(HOST_CONTROLLER_PROCESS_NAME);
 
         final Thread shutdownThread = new Thread(new Runnable() {
