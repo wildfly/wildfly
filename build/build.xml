@@ -31,6 +31,9 @@
                 <include name="bin/**"/>
             </fileset>
             <fileset dir="src/main/resources">
+                <include name="docs/**"/>
+            </fileset>
+            <fileset dir="src/main/resources">
                 <include name="domain/**"/>
             </fileset>
             <fileset dir="src/main/resources">
@@ -410,7 +413,7 @@
         </module-def>
 
         <module-def name="org.jboss.as.aggregate" />
-    	
+
         <module-def name="org.jboss.as.cli">
             <maven-resource group="org.jboss.as" artifact="jboss-as-cli"/>
         </module-def>
