@@ -217,7 +217,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
                 ModelNode transaction = cache.get(ModelKeys.TRANSACTION);
                 FluentConfiguration.TransactionConfig fluentTx = fluent.transaction();
                 if (transaction.hasDefined(ModelKeys.STOP_TIMEOUT)) {
-                    fluentTx.cacheStopTimeout(transaction.get(ModelKeys.TIMEOUT).asInt());
+                    fluentTx.cacheStopTimeout(transaction.get(ModelKeys.STOP_TIMEOUT).asInt());
                 }
                 if (transaction.hasDefined(ModelKeys.MODE)) {
                     TransactionMode txMode = TransactionMode.valueOf(transaction.get(ModelKeys.MODE).asString());
