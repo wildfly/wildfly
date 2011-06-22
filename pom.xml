@@ -154,7 +154,7 @@
         <version.org.jboss.osgi.xerces>2.9.1.SP7</version.org.jboss.osgi.xerces>
         <version.org.jboss.remoting3.jboss-remoting>3.2.0.Beta1</version.org.jboss.remoting3.jboss-remoting>
         <version.org.jboss.resteasy.resteasy-jaxrs>2.1.0.GA</version.org.jboss.resteasy.resteasy-jaxrs>
-        <version.org.jboss.sasl>1.0.0.Beta1-SNAPSHOT</version.org.jboss.sasl>
+        <version.org.jboss.sasl>1.0.0.Beta1</version.org.jboss.sasl>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>2.2.0.Beta2</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-beta-2</version.org.jboss.shrinkwrap.shrinkwrap>
