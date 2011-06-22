@@ -264,7 +264,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         @Override
         protected void readRequest(final DataInput input) throws IOException {
             int batchId = getContext().getHeader().getBatchId();
-            log.tracef("Client got inputstream request %d" +  batchId);
+            log.tracef("Client got inputstream request %d",  batchId);
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
             int index = input.readInt();
 
@@ -291,7 +291,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             output.writeInt(bytes.length);
             output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
             output.write(bytes);
-            log.tracef("Client handled inputstream request %d" +  getContext().getHeader().getBatchId());
+            log.tracef("Client handled inputstream request %d",  getContext().getHeader().getBatchId());
         }
     }
 
