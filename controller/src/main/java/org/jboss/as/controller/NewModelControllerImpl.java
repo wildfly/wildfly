@@ -77,7 +77,7 @@ class NewModelControllerImpl implements NewModelController {
     private final ModelNodeRegistration rootRegistration;
     private final Lock writeLock = new ReentrantLock();
     private final ContainerStateMonitor stateMonitor;
-    private final AtomicReference<Resource> modelReference = new AtomicReference<Resource>(Resource.Factory.create());
+    private final RootResource model = new RootResource();
     private final ConfigurationPersister persister;
     private final NewOperationContext.Type controllerType;
     private final AtomicBoolean bootingFlag = new AtomicBoolean(true);
@@ -111,7 +111,7 @@ class NewModelControllerImpl implements NewModelController {
         final ModelNode headers = operation.has(OPERATION_HEADERS) ? operation.get(OPERATION_HEADERS) : null;
         final boolean rollbackOnFailure = headers == null || !headers.hasDefined(ROLLBACK_ON_RUNTIME_FAILURE) || headers.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean();
         final EnumSet<NewOperationContextImpl.ContextFlag> contextFlags = rollbackOnFailure ? EnumSet.of(NewOperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL) : EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class);
-        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, contextFlags, handler, attachments, modelReference.get(), control, processState, bootingFlag.get());
+        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, contextFlags, handler, attachments, model, control, processState, bootingFlag.get());
         ModelNode response = new ModelNode();
         context.addStep(response, operation, prepareStep, NewOperationContext.Stage.MODEL);
         RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
@@ -133,7 +133,7 @@ class NewModelControllerImpl implements NewModelController {
     }
 
     void boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control) {
-        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class), handler, null, modelReference.get(), control, processState, bootingFlag.get());
+        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class), handler, null, model, control, processState, bootingFlag.get());
         ModelNode result = context.getResult();
         result.setEmptyList();
         for (ModelNode bootOp : bootList) {
@@ -148,7 +148,7 @@ class NewModelControllerImpl implements NewModelController {
     }
 
     Resource getRootResource() {
-        return modelReference.get();
+        return model;
     }
 
     ModelNodeRegistration getRootRegistration() {
@@ -263,7 +263,7 @@ class NewModelControllerImpl implements NewModelController {
 
             @Override
             public void commit() {
-                modelReference.set(resource);
+                model.set(resource);
                 delegate.commit();
             }
 
@@ -350,4 +350,87 @@ class NewModelControllerImpl implements NewModelController {
             context.completeStep();
         }
     }
+
+    /**
+     * The root resource, maintains a read-only reference to the current model. All write operations have to performed
+     * after acquiring the write lock on a clone of the underlying model.
+     */
+    private class RootResource implements Resource {
+
+        private final AtomicReference<Resource> modelReference = new AtomicReference<Resource>(Resource.Factory.create());
+
+        void set(Resource resource){
+            modelReference.set(resource);
+        }
+
+        public Resource clone() {
+            return getDelegate().clone();
+        }
+
+        public Resource getChild(PathElement element) {
+            return getDelegate().getChild(element);
+        }
+
+        public Set<Resource.ResourceEntry> getChildren(String childType) {
+            return getDelegate().getChildren(childType);
+        }
+
+        public Set<String> getChildrenNames(String childType) {
+            return getDelegate().getChildrenNames(childType);
+        }
+
+        public Set<String> getChildTypes() {
+            return getDelegate().getChildTypes();
+        }
+
+        public ModelNode getModel() {
+            return getDelegate().getModel();
+        }
+
+        public boolean hasChild(PathElement element) {
+            return getDelegate().hasChild(element);
+        }
+
+        public boolean hasChildren(String childType) {
+            return getDelegate().hasChildren(childType);
+        }
+
+        public boolean isModelDefined() {
+            return getDelegate().isModelDefined();
+        }
+
+        public boolean isProxy() {
+            return getDelegate().isProxy();
+        }
+
+        public boolean isRuntime() {
+            return getDelegate().isRuntime();
+        }
+
+        public Resource navigate(PathAddress address) {
+            return getDelegate().navigate(address);
+        }
+
+        public void registerChild(PathElement address, Resource resource) {
+            getDelegate().registerChild(address, resource);
+        }
+
+        public Resource removeChild(PathElement address) {
+            return getDelegate().removeChild(address);
+        }
+
+        public Resource requireChild(PathElement element) {
+            return getDelegate().requireChild(element);
+        }
+
+        public void writeModel(ModelNode newModel) {
+            getDelegate().writeModel(newModel);
+        }
+
+        private Resource getDelegate() {
+            return this.modelReference.get();
+        }
+
+    }
+
 }
