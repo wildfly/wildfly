@@ -42,6 +42,7 @@ import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 
 import org.apache.catalina.connector.Connector;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -51,6 +52,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -142,8 +144,12 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
         }
         final ServiceBuilder<Connector> serviceBuilder = context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name), service)
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getServer())
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
-                .setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER);
+                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding());
+        if (operation.hasDefined(EXECUTOR)) {
+            String executorRef = operation.get(EXECUTOR).asString();
+            serviceBuilder.addDependency(ThreadsServices.executorName(executorRef), Executor.class, service.getExecutor());
+        }
+        serviceBuilder.setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER);
         if (enabled) {
             serviceBuilder.addListener(verificationHandler);
         }
