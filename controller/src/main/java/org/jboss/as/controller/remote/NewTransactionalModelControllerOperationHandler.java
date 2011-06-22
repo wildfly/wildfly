@@ -34,8 +34,8 @@ import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewModelController.OperationTransaction;
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewProxyController.ProxyOperationControl;
-import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
@@ -91,18 +91,20 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                 public void run() {
                     final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(getContext(), executeRequestContext.getBatchId());
                     final ProxyOperationControlProxy control = new ProxyOperationControlProxy(executeRequestContext);
+                    final OperationAttachmentsProxy attachmentsProxy = new OperationAttachmentsProxy(getContext(), executeRequestContext.getBatchId(), attachmentsLength);
                     final ModelNode result;
                     try {
                         result = controller.execute(
                                 operation,
                                 messageHandlerProxy,
                                 control,
-                                new OperationAttachmentsProxy(getContext(), executeRequestContext.getBatchId(), attachmentsLength));
+                                attachmentsProxy);
                     } catch (Exception e) {
                         final ModelNode failure = new ModelNode();
                         failure.get(OUTCOME).set(FAILED);
                         failure.get(FAILURE_DESCRIPTION).set(e.getClass().getName() + ":" + e.getMessage());
                         control.operationFailed(failure);
+                        attachmentsProxy.shutdown(e);
                         return;
                     }
                     if (result.hasDefined(FAILURE_DESCRIPTION)) {

@@ -33,8 +33,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.old.ProtocolUtils;
@@ -96,6 +96,7 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
 
         @Override
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
+            OperationAttachmentsProxy attachmentsProxy = new OperationAttachmentsProxy(getContext(), batchId, attachmentsLength);
             try {
                 ModelNode result;
                 try {
@@ -108,12 +109,13 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
                             operation,
                             new OperationMessageHandlerProxy(getContext(), batchId),
                             NewModelController.OperationTransactionControl.COMMIT,
-                            new OperationAttachmentsProxy(getContext(), batchId, attachmentsLength));
+                            attachmentsProxy);
                 } catch (Exception e) {
                     final ModelNode failure = new ModelNode();
                     failure.get(OUTCOME).set(FAILED);
                     failure.get(FAILURE_DESCRIPTION).set(e.getClass().getName() + ":" + e.getMessage());
                     result = failure;
+                    attachmentsProxy.shutdown(e);
                 } finally {
                     log.tracef("Executed client request %d", batchId);
                 }

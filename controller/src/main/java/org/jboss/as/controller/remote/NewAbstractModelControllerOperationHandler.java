@@ -32,9 +32,9 @@ import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
@@ -120,10 +120,10 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
     }
 
     class OperationAttachmentsProxy implements OperationAttachments {
-        final List<InputStream> proxiedStreams;
+        final List<ProxiedInputStream> proxiedStreams;
 
         OperationAttachmentsProxy(final ManagementRequestContext context, final int batchId, final int size){
-            proxiedStreams = new ArrayList<InputStream>(size);
+            proxiedStreams = new ArrayList<ProxiedInputStream>(size);
             for (int i = 0 ; i < size ; i++) {
                 proxiedStreams.add(new ProxiedInputStream(context, batchId, i));
             }
@@ -131,7 +131,15 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
 
         @Override
         public List<InputStream> getInputStreams() {
-            return Collections.unmodifiableList(proxiedStreams);
+            List<InputStream> result = new ArrayList<InputStream>();
+            result.addAll(proxiedStreams);
+            return Collections.unmodifiableList(result);
+        }
+
+        void shutdown(Exception error) {
+            for (ProxiedInputStream stream : proxiedStreams) {
+                stream.shutdown(error);
+            }
         }
     }
 
@@ -141,8 +149,9 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
         final int index;
         volatile byte[] bytes;
         volatile ByteArrayInputStream delegate;
+        volatile Exception error;
 
-        public ProxiedInputStream(final ManagementRequestContext context, final int batchId, final int index) {
+        ProxiedInputStream(final ManagementRequestContext context, final int batchId, final int index) {
             this.context = context;
             this.batchId = batchId;
             this.index = index;
@@ -160,6 +169,12 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                             throw new RuntimeException("Thread was interrupted waiting to read attachment input stream from remote caller");
+                        }
+                        if (error != null) {
+                            if (error instanceof IOException) {
+                                throw (IOException)error;
+                            }
+                            throw new IOException(error);
                         }
                         delegate = new ByteArrayInputStream(bytes);
                         bytes = null;
@@ -200,6 +215,13 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
                         return null;
                     }
                 }.execute(executorService, getChannelStrategy(context.getChannel()));
+            }
+        }
+
+        void shutdown(Exception error) {
+            this.error = error;
+            synchronized (this) {
+                notifyAll();
             }
         }
     }
