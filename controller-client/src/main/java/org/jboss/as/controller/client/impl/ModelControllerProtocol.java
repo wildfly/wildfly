@@ -37,6 +37,8 @@ public interface ModelControllerProtocol {
     byte OPERATION_PREPARED_REQUEST = 0x4B;
     byte GET_INPUTSTREAM_REQUEST = 0x4C;
     byte CANCEL_ASYNC_REQUEST = 0x4D;
+    //TODO this can go once REM3-121 is available
+    byte TEMP_PING_REQUEST = 0x4E;
 
 
     byte PARAM_END = 0x60;
@@ -51,4 +53,5 @@ public interface ModelControllerProtocol {
     byte PARAM_PREPARED = 0x69;
     byte PARAM_COMMIT = 0x70;
     byte PARAM_ROLLBACK = 0x71;
+
 }

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.NewModelController.OperationTransaction;
@@ -41,9 +42,9 @@ import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementBatchIdManager;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -55,6 +56,8 @@ import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.threads.AsyncFuture;
+import org.jboss.threads.AsyncFuture.Status;
 
 /**
  *
@@ -165,6 +168,23 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
         }
     }
 
+    //TODO this should be deleted once REM3-121 is available
+    public boolean ping(long timeoutMs) {
+        ManagementClientChannelStrategy channelStrategy = getChannelStrategy();
+        AsyncFuture<Void> future = new PingRequest().execute(executorService, channelStrategy);
+        try {
+            Status status = future.await(timeoutMs, TimeUnit.MILLISECONDS);
+            if (status == Status.WAITING) {
+                return false;
+            }
+            return status == Status.COMPLETE;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Thread was interrupted waiting for ping request");
+        }
+    }
+
+
     private ManagementClientChannelStrategy getChannelStrategy() {
         return ManagementClientChannelStrategy.create(channel);
     }
@@ -178,6 +198,20 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
         final ModelNode proxyOp = op.clone();
         proxyOp.get(OP_ADDR).set(translated.toModelNode());
         return proxyOp;
+    }
+
+    private class PingRequest extends ManagementRequest<Void>{
+
+        @Override
+        protected byte getRequestCode() {
+            return ModelControllerProtocol.TEMP_PING_REQUEST;
+        }
+
+        @Override
+        protected Void readResponse(DataInput input) throws IOException {
+            return null;
+        }
+
     }
 
     /**

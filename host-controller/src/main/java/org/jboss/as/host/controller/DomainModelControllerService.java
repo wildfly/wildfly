@@ -174,20 +174,27 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
         PathAddress pa = hostControllerClient.getProxyNodeAddress();
         PathElement pe = pa.getElement(0);
-        Logger.getLogger("org.jboss.domain").info("Registering host " + pe.getValue());
-        if (modelNodeRegistration.getProxyController(pa) != null || hostControllerInfo.getLocalHostName().equals(pe.getValue())){
-            throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
+        NewProxyController existingController = modelNodeRegistration.getProxyController(pa);
+        if (existingController != null || hostControllerInfo.getLocalHostName().equals(pe.getValue())){
+            //This horrible hack is there to make sure that the slave has not crashed since we don't get notifications due to REM3-121
+            if ((existingController instanceof NewRemoteProxyController)) {
+                if (((NewRemoteProxyController)existingController).ping(3000)) {
+                    throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
+                }
+                unregisterRemoteHost(pe.getValue());
+            }
+            //throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
         }
         modelNodeRegistration.registerProxyController(pe, hostControllerClient);
         hostProxies.put(pe.getValue(), hostControllerClient);
 
-
+        Logger.getLogger("org.jboss.domain").info("Registered remote slave host " + pe.getValue());
     }
 
     @Override
     public void unregisterRemoteHost(String id) {
         if (hostProxies.remove(id) != null) {
-            Logger.getLogger("org.jboss.domain").info("Unregistered host " + id);
+            Logger.getLogger("org.jboss.domain").info("Unregistered remote slave host " + id);
         }
         modelNodeRegistration.unregisterProxyController(PathElement.pathElement(HOST, id));
     }
@@ -393,9 +400,12 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     public synchronized void registerChannel(final String hostName, final ManagementChannel channel, final ProxyCreatedCallback callback) {
         PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
+
+        /* Disable this as part of the REM3-121 workarounds
         if (modelNodeRegistration.getProxyController(addr) != null) {
-            throw new IllegalArgumentException("There is already a registered server named '" + hostName + "'");
+            throw new IllegalArgumentException("There is already a registered slave named '" + hostName + "'");
         }
+        */
         if (unregisteredHostChannels.containsKey(hostName)) {
             throw new IllegalArgumentException("Already have a connection for host " + hostName);
         }
@@ -416,6 +426,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             throw new IllegalArgumentException("No channel for host " + hostName);
         }
         channel.addCloseHandler(new CloseHandler<Channel>() {
+            //This does not get called when slave terminates abruptly - see REM3-121
             public void handleClose(Channel closed) {
                 //TODO A bit strange doing it here before the proxy is actually registered
                 unregisterRemoteHost(hostName);

@@ -62,8 +62,22 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
     public ManagementRequestHandler getRequestHandler(final byte id) {
         if (id == ModelControllerProtocol.EXECUTE_TX_REQUEST) {
             return new ExecuteRequestHandler();
+        } else if (id == ModelControllerProtocol.TEMP_PING_REQUEST){
+            return new PingRequestHandler();
         }
         return null;
+    }
+
+    //TODO this should be deleted once REM3-121 is available
+    private static class PingRequestHandler extends ManagementRequestHandler {
+
+        @Override
+        protected void readRequest(DataInput input) throws IOException {
+        }
+
+        @Override
+        protected void writeResponse(FlushableDataOutput output) throws IOException {
+        }
     }
 
     /**
