@@ -44,8 +44,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import junit.framework.Assert;
 
-import org.jboss.as.controller.NewModelController.OperationTransaction;
-import org.jboss.as.controller.NewProxyController.ProxyOperationControl;
+import org.jboss.as.controller.ModelController.OperationTransaction;
+import org.jboss.as.controller.ProxyController.ProxyOperationControl;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -496,7 +496,7 @@ public class RemoteProxyControllerProtocolTestCase {
         return proxyController;
     }
 
-    private static abstract class MockModelController implements NewModelController {
+    private static abstract class MockModelController implements ModelController {
         protected volatile ModelNode operation;
 
         ModelNode getOperation() {

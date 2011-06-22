@@ -24,7 +24,7 @@ package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -50,7 +50,7 @@ public class ManagementSocketAddHandler extends AbstractAddStepHandler implement
         model.get(ModelDescriptionConstants.MANAGEMENT_INTERFACE, ModelDescriptionConstants.PORT).set(port);
     }
 
-    protected boolean requiresRuntime(NewOperationContext context) {
+    protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
 

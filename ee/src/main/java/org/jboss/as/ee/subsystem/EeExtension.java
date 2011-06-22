@@ -30,8 +30,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -248,10 +248,10 @@ public class EeExtension implements Extension {
         }
     }
 
-    private static class EESubsystemDescribeHandler implements NewStepHandler, DescriptionProvider {
+    private static class EESubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final EESubsystemDescribeHandler INSTANCE = new EESubsystemDescribeHandler();
 
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
             final ModelNode op = createEESubSystemAddOperation();
             if (model.hasDefined(CommonAttributes.GLOBAL_MODULES)) {

@@ -35,8 +35,8 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
@@ -107,10 +107,10 @@ public class NamingExtension implements Extension {
         }
     }
 
-    private static class NamingSubsystemDescribeHandler implements NewStepHandler, DescriptionProvider {
+    private static class NamingSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final NamingSubsystemDescribeHandler INSTANCE = new NamingSubsystemDescribeHandler();
 
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
             context.getResult().add(createAddOperation());
             context.completeStep();
         }

@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -43,16 +43,16 @@ import org.jboss.dmr.ModelNode;
 */
 class ProxyTask implements Callable<ModelNode> {
 
-    private final NewProxyController proxyController;
+    private final ProxyController proxyController;
     private final String host;
     private final ModelNode operation;
-    private final NewOperationContext context;
+    private final OperationContext context;
 
     private final AtomicReference<Boolean> transactionAction = new AtomicReference<Boolean>();
     private final AtomicReference<ModelNode> uncommittedResultRef = new AtomicReference<ModelNode>();
     private boolean cancelRemoteTransaction;
 
-    public ProxyTask(String host, ModelNode operation, NewOperationContext context, NewProxyController proxyController) {
+    public ProxyTask(String host, ModelNode operation, OperationContext context, ProxyController proxyController) {
         this.host = host;
         this.operation = operation;
         this.context = context;
@@ -68,13 +68,13 @@ class ProxyTask implements Callable<ModelNode> {
         }
         OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
 
-        final AtomicReference<NewModelController.OperationTransaction> txRef = new AtomicReference<NewModelController.OperationTransaction>();
+        final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<ModelController.OperationTransaction>();
         final AtomicReference<ModelNode> preparedResultRef = new AtomicReference<ModelNode>();
         final AtomicReference<ModelNode> finalResultRef = new AtomicReference<ModelNode>();
-        final NewProxyController.ProxyOperationControl proxyControl = new NewProxyController.ProxyOperationControl() {
+        final ProxyController.ProxyOperationControl proxyControl = new ProxyController.ProxyOperationControl() {
 
             @Override
-            public void operationPrepared(NewModelController.OperationTransaction transaction, ModelNode result) {
+            public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode result) {
                 txRef.set(transaction);
                 preparedResultRef.set(result);
             }
@@ -92,7 +92,7 @@ class ProxyTask implements Callable<ModelNode> {
 
         proxyController.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
 
-        NewModelController.OperationTransaction remoteTransaction = null;
+        ModelController.OperationTransaction remoteTransaction = null;
         ModelNode result = finalResultRef.get();
         if (result != null) {
             // operation failed before it could commit
@@ -170,9 +170,9 @@ class ProxyTask implements Callable<ModelNode> {
 
     private static class DelegatingMessageHandler implements OperationMessageHandler {
 
-        private final NewOperationContext context;
+        private final OperationContext context;
 
-        DelegatingMessageHandler(final NewOperationContext context) {
+        DelegatingMessageHandler(final OperationContext context) {
             this.context = context;
         }
 
@@ -184,8 +184,8 @@ class ProxyTask implements Callable<ModelNode> {
 
     private static class DelegatingOperationAttachments implements OperationAttachments {
 
-        private final NewOperationContext context;
-        private DelegatingOperationAttachments(final NewOperationContext context) {
+        private final OperationContext context;
+        private DelegatingOperationAttachments(final OperationContext context) {
             this.context = context;
         }
 

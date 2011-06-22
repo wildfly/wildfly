@@ -24,7 +24,7 @@ package org.jboss.as.controller.remote;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -45,7 +45,7 @@ public abstract class NewAbstractModelControllerOperationHandlerFactoryService<T
 
     public static final ServiceName OPERATION_HANDLER_NAME_SUFFIX = ServiceName.of("operation", "handler");
 
-    private final InjectedValue<NewModelController> modelControllerValue = new InjectedValue<NewModelController>();
+    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
 
     private volatile ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -54,7 +54,7 @@ public abstract class NewAbstractModelControllerOperationHandlerFactoryService<T
      *
      * @return the injected value holder
      */
-    public InjectedValue<NewModelController> getModelControllerInjector() {
+    public InjectedValue<ModelController> getModelControllerInjector() {
         return modelControllerValue;
     }
 
@@ -75,7 +75,7 @@ public abstract class NewAbstractModelControllerOperationHandlerFactoryService<T
         return this;
     }
 
-    protected NewModelController getController() {
+    protected ModelController getController() {
         return modelControllerValue.getValue();
     }
 

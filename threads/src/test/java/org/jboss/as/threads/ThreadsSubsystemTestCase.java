@@ -24,7 +24,7 @@ package org.jboss.as.threads;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -97,8 +97,8 @@ import junit.framework.Assert;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -165,7 +165,7 @@ public class ThreadsSubsystemTestCase {
     private ModelNode model;
 
     private ServiceContainer container;
-    private NewModelController controller;
+    private ModelController controller;
 
     @Before
     public void setupController() throws InterruptedException {
@@ -173,7 +173,7 @@ public class ThreadsSubsystemTestCase {
         ServiceTarget target = container.subTarget();
         ControlledProcessState processState = new ControlledProcessState(true);
         ModelControllerService svc = new ModelControllerService(container, processState);
-        ServiceBuilder<NewModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
+        ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         svc.latch.await();
         controller = svc.getValue();
@@ -883,7 +883,7 @@ public class ThreadsSubsystemTestCase {
         private final CountDownLatch latch = new CountDownLatch(1);
 
         ModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
-            super(NewOperationContext.Type.SERVER, new TestConfigurationPersister(), processState, NULL_PROVIDER, null);
+            super(OperationContext.Type.SERVER, new TestConfigurationPersister(), processState, NULL_PROVIDER, null);
         }
 
         @Override
@@ -903,9 +903,9 @@ public class ThreadsSubsystemTestCase {
             rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
-            rootRegistration.registerOperationHandler("setup", new NewStepHandler() {
+            rootRegistration.registerOperationHandler("setup", new OperationStepHandler() {
                 @Override
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("profile", "test")));
                     context.completeStep();
                 }

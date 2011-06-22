@@ -25,8 +25,8 @@ package org.jboss.as.server;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -104,8 +104,8 @@ public final class ServerService extends AbstractControllerService {
      * @param configuration the bootstrap configuration
      * @param prepareStep the prepare step to use
      */
-    ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState, final NewStepHandler prepareStep, final BootstrapListener bootstrapListener) {
-        super(NewOperationContext.Type.SERVER, configuration.getConfigurationPersister(), processState, ServerDescriptionProviders.ROOT_PROVIDER, prepareStep);
+    ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState, final OperationStepHandler prepareStep, final BootstrapListener bootstrapListener) {
+        super(OperationContext.Type.SERVER, configuration.getConfigurationPersister(), processState, ServerDescriptionProviders.ROOT_PROVIDER, prepareStep);
         this.configuration = configuration;
         this.bootstrapListener = bootstrapListener;
         this.processState = processState;

@@ -31,7 +31,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -107,7 +107,7 @@ public class RegistryProxyControllerTestCase {
         assertNull(root.getProxyController(PathAddress.pathAddress(profileB, PathElement.pathElement("a", "b"))));
 
         PathAddress address = PathAddress.pathAddress(profileB, proxyA);
-        NewProxyController proxy = root.getProxyController(address);
+        ProxyController proxy = root.getProxyController(address);
         assertNotNull(proxy);
         assertEquals(address, proxy.getProxyNodeAddress());
 
@@ -217,7 +217,7 @@ public class RegistryProxyControllerTestCase {
 
     private Set<PathAddress> getProxyAddresses(PathAddress address){
         Set<PathAddress> addresses = new HashSet<PathAddress>();
-        for (NewProxyController proxy : root.getProxyControllers(address)) {
+        for (ProxyController proxy : root.getProxyControllers(address)) {
             addresses.add(proxy.getProxyNodeAddress());
         }
         return addresses;
@@ -233,7 +233,7 @@ public class RegistryProxyControllerTestCase {
         });
     }
 
-    static class TestProxyController implements NewProxyController {
+    static class TestProxyController implements ProxyController {
 
         private final PathAddress address;
 

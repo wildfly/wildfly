@@ -60,7 +60,7 @@ import org.jboss.threads.AsyncFutureTask;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-class NewModelControllerImpl implements NewModelController {
+class ModelControllerImpl implements ModelController {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
@@ -79,21 +79,21 @@ class NewModelControllerImpl implements NewModelController {
     private final ContainerStateMonitor stateMonitor;
     private final RootResource model = new RootResource();
     private final ConfigurationPersister persister;
-    private final NewOperationContext.Type controllerType;
+    private final OperationContext.Type controllerType;
     private final AtomicBoolean bootingFlag = new AtomicBoolean(true);
-    private final NewStepHandler prepareStep;
+    private final OperationStepHandler prepareStep;
     private final ControlledProcessState processState;
 
     @Deprecated
-    NewModelControllerImpl(final ModelNode model, final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
-                       final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final NewOperationContext.Type controllerType,
-                       final NewStepHandler prepareStep,final ControlledProcessState processState) {
+    ModelControllerImpl(final ModelNode model, final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
+                        final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final OperationContext.Type controllerType,
+                        final OperationStepHandler prepareStep, final ControlledProcessState processState) {
         this(serviceRegistry, serviceTarget, rootRegistration, stateMonitor, persister, controllerType, prepareStep, processState);
     }
 
-    NewModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
-                           final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final NewOperationContext.Type controllerType,
-                           final NewStepHandler prepareStep,final ControlledProcessState processState) {
+    ModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
+                        final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final OperationContext.Type controllerType,
+                        final OperationStepHandler prepareStep, final ControlledProcessState processState) {
         this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
         this.rootRegistration = rootRegistration;
@@ -110,10 +110,10 @@ class NewModelControllerImpl implements NewModelController {
     public ModelNode execute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments) {
         final ModelNode headers = operation.has(OPERATION_HEADERS) ? operation.get(OPERATION_HEADERS) : null;
         final boolean rollbackOnFailure = headers == null || !headers.hasDefined(ROLLBACK_ON_RUNTIME_FAILURE) || headers.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean();
-        final EnumSet<NewOperationContextImpl.ContextFlag> contextFlags = rollbackOnFailure ? EnumSet.of(NewOperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL) : EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class);
-        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, contextFlags, handler, attachments, model, control, processState, bootingFlag.get());
+        final EnumSet<OperationContextImpl.ContextFlag> contextFlags = rollbackOnFailure ? EnumSet.of(OperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL) : EnumSet.noneOf(OperationContextImpl.ContextFlag.class);
+        OperationContextImpl context = new OperationContextImpl(this, controllerType, contextFlags, handler, attachments, model, control, processState, bootingFlag.get());
         ModelNode response = new ModelNode();
-        context.addStep(response, operation, prepareStep, NewOperationContext.Stage.MODEL);
+        context.addStep(response, operation, prepareStep, OperationContext.Stage.MODEL);
         RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
         try {
             context.completeStep();
@@ -133,12 +133,12 @@ class NewModelControllerImpl implements NewModelController {
     }
 
     void boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control) {
-        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class), handler, null, model, control, processState, bootingFlag.get());
+        OperationContextImpl context = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class), handler, null, model, control, processState, bootingFlag.get());
         ModelNode result = context.getResult();
         result.setEmptyList();
         for (ModelNode bootOp : bootList) {
             final ModelNode response = result.add();
-            context.addStep(response, bootOp, new BootStepHandler(bootOp, response), NewOperationContext.Stage.MODEL);
+            context.addStep(response, bootOp, new BootStepHandler(bootOp, response), OperationContext.Stage.MODEL);
         }
         context.completeStep();
     }
@@ -155,7 +155,7 @@ class NewModelControllerImpl implements NewModelController {
         return rootRegistration;
     }
 
-    class BootStepHandler implements NewStepHandler {
+    class BootStepHandler implements OperationStepHandler {
         private final ModelNode operation;
         private final ModelNode response;
 
@@ -164,16 +164,16 @@ class NewModelControllerImpl implements NewModelController {
             this.response = response;
         }
 
-        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
             final String operationName = operation.require(OP).asString();
-            final NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
+            final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
             if (stepHandler == null) {
                 context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, address));
             } else {
-                NewOperationContext.Stage stage = NewOperationContext.Stage.MODEL;
+                OperationContext.Stage stage = OperationContext.Stage.MODEL;
                 if(stepHandler instanceof AbstractExtensionAddHandler) {
-                    stage = NewOperationContext.Stage.IMMEDIATE;
+                    stage = OperationContext.Stage.IMMEDIATE;
                 }
                 context.addStep(response, this.operation, stepHandler, stage);
             }
@@ -201,12 +201,12 @@ class NewModelControllerImpl implements NewModelController {
 
             @Override
             public ModelNode execute(final ModelNode operation, final OperationMessageHandler messageHandler) {
-                return NewModelControllerImpl.this.execute(operation, messageHandler, OperationTransactionControl.COMMIT, null);
+                return ModelControllerImpl.this.execute(operation, messageHandler, OperationTransactionControl.COMMIT, null);
             }
 
             @Override
             public ModelNode execute(Operation operation, OperationMessageHandler messageHandler) throws IOException {
-                return NewModelControllerImpl.this.execute(operation.getOperation(), messageHandler, OperationTransactionControl.COMMIT, operation);
+                return ModelControllerImpl.this.execute(operation.getOperation(), messageHandler, OperationTransactionControl.COMMIT, operation);
             }
 
             @Override
@@ -245,7 +245,7 @@ class NewModelControllerImpl implements NewModelController {
                     public void run() {
                         opThread.set(Thread.currentThread());
                         try {
-                            opTask.handleResult(NewModelControllerImpl.this.execute(operation, messageHandler, OperationTransactionControl.COMMIT, attachments));
+                            opTask.handleResult(ModelControllerImpl.this.execute(operation, messageHandler, OperationTransactionControl.COMMIT, attachments));
                         } finally {
                             opThread.set(null);
                         }
@@ -332,18 +332,18 @@ class NewModelControllerImpl implements NewModelController {
         processState.revertRestartRequired(stamp);
     }
 
-    private class DefaultPrepareStepHandler implements NewStepHandler {
+    private class DefaultPrepareStepHandler implements OperationStepHandler {
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             if (log.isTraceEnabled()) {
                 log.trace("Executing " + operation.get(OP) + " " + operation.get(OP_ADDR));
             }
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String operationName =  operation.require(OP).asString();
-            final NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
+            final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
             if(stepHandler != null) {
-                context.addStep(stepHandler, NewOperationContext.Stage.MODEL);
+                context.addStep(stepHandler, OperationContext.Stage.MODEL);
             } else {
                 context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, address));
             }

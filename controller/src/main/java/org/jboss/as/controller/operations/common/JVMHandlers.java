@@ -25,8 +25,8 @@ package org.jboss.as.controller.operations.common;
 import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -73,11 +73,11 @@ public final class JVMHandlers {
 
     static final String[] SERVER_ATTRIBUTES = {JVM_DEBUG_ENABLED, JVM_DEBUG_OPTIONS};
 
-    private static final NewStepHandler writeHandler = WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE;
-    private static final NewStepHandler booleanWriteHandler = new NewStepHandler() {
+    private static final OperationStepHandler writeHandler = WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE;
+    private static final OperationStepHandler booleanWriteHandler = new OperationStepHandler() {
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
             try {
                 final String name = operation.require(NAME).asString();
                 final boolean value = operation.get(VALUE).asBoolean();
@@ -134,7 +134,7 @@ public final class JVMHandlers {
             model.get(JVM_OPTIONS).add(option);
         }
 
-        protected boolean requiresRuntime(NewOperationContext context) {
+        protected boolean requiresRuntime(OperationContext context) {
             return false;
         }
 
@@ -152,7 +152,7 @@ public final class JVMHandlers {
         static final String OPERATION_NAME = "remove-jvm-option";
         static final JVMOptionRemoveHandler INSTANCE = new JVMOptionRemoveHandler();
 
-        protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) {
+        protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) {
             final ModelNode option = operation.require(JVM_OPTION);
             if (model.hasDefined(JVM_OPTIONS)) {
                 final ModelNode values = model.get(JVM_OPTIONS);
@@ -166,7 +166,7 @@ public final class JVMHandlers {
             }
         }
 
-        protected boolean requiresRuntime(NewOperationContext context) {
+        protected boolean requiresRuntime(OperationContext context) {
             return false;
         }
 

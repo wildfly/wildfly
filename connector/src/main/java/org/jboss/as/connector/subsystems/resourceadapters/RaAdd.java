@@ -22,8 +22,8 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 
@@ -42,7 +42,7 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author maeste
  */
-public class RaAdd extends AbstractRaOperation implements NewStepHandler {
+public class RaAdd extends AbstractRaOperation implements OperationStepHandler {
     static final RaAdd INSTANCE = new RaAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) {
@@ -53,7 +53,7 @@ public class RaAdd extends AbstractRaOperation implements NewStepHandler {
         }
     }
 
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
         final ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         populateModel(operation, subModel);
 
@@ -62,9 +62,9 @@ public class RaAdd extends AbstractRaOperation implements NewStepHandler {
         final String archive = PathAddress.pathAddress(address).getLastElement().getValue();
         operation.get(ARCHIVE).set(archive);
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceTarget serviceTarget = context.getServiceTarget();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
 
@@ -80,15 +80,15 @@ public class RaAdd extends AbstractRaOperation implements NewStepHandler {
                         ((ModifiableResourceAdaptors) raService.getValue()).addAllResourceAdapters(resourceAdapters.getResourceAdapters());
                     }
 
-                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         if(controller != null) {
                             context.removeService(ConnectorServices.RESOURCEADAPTERS_SERVICE);
                         }
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }

@@ -23,7 +23,7 @@
 package org.jboss.as.jmx;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
@@ -40,16 +40,16 @@ class JMXConnectorRemove extends AbstractRemoveStepHandler {
         //
     }
 
-    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) {
         context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(CommonAttributes.SERVER_BINDING).clear();
         context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(CommonAttributes.REGISTRY_BINDING).clear();
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         context.removeService(JMXConnectorService.SERVICE_NAME);
     }
 
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         //TODO: RE-ADD Services
     }
 }

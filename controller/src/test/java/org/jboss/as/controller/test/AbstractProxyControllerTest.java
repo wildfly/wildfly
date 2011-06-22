@@ -25,6 +25,8 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
+
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -69,10 +71,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -123,12 +124,12 @@ public abstract class AbstractProxyControllerTest {
         ControlledProcessState processState = new ControlledProcessState(true);
 
         ProxyModelControllerService proxyService = new ProxyModelControllerService(container, processState);
-        ServiceBuilder<NewModelController> proxyBuilder = target.addService(ServiceName.of("ProxyModelController"), proxyService);
+        ServiceBuilder<ModelController> proxyBuilder = target.addService(ServiceName.of("ProxyModelController"), proxyService);
         proxyBuilder.install();
 
         MainModelControllerService mainService = new MainModelControllerService(container, processState);
-        ServiceBuilder<NewModelController> mainBuilder = target.addService(ServiceName.of("MainModelController"), mainService);
-        mainBuilder.addDependency(ServiceName.of("ProxyModelController"), NewModelController.class, mainService.proxy);
+        ServiceBuilder<ModelController> mainBuilder = target.addService(ServiceName.of("MainModelController"), mainService);
+        mainBuilder.addDependency(ServiceName.of("ProxyModelController"), ModelController.class, mainService.proxy);
         mainBuilder.install();
 
         mainService.latch.await();
@@ -538,15 +539,15 @@ public abstract class AbstractProxyControllerTest {
         return new OperationBuilder(operation).build();
     }
 
-    protected abstract NewProxyController createProxyController(NewModelController proxiedController, PathAddress proxyNodeAddress);
+    protected abstract ProxyController createProxyController(ModelController proxiedController, PathAddress proxyNodeAddress);
 
     public class MainModelControllerService extends AbstractControllerService {
 
         private final CountDownLatch latch = new CountDownLatch(1);
-        private final InjectedValue<NewModelController> proxy = new InjectedValue<NewModelController>();
+        private final InjectedValue<ModelController> proxy = new InjectedValue<ModelController>();
 
         MainModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
-            super(NewOperationContext.Type.SERVER, new NullConfigurationPersister(), processState, new DescriptionProvider() {
+            super(OperationContext.Type.SERVER, new NullConfigurationPersister(), processState, new DescriptionProvider() {
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
                     ModelNode node = new ModelNode();
@@ -577,9 +578,9 @@ public abstract class AbstractProxyControllerTest {
             rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
-            rootRegistration.registerOperationHandler("setup", new NewStepHandler() {
+            rootRegistration.registerOperationHandler("setup", new OperationStepHandler() {
                 @Override
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ModelNode mainModel = new ModelNode();
                     mainModel.get("host", "hostA");  //Create an empty node to be got from the proxied model
                     mainModel.get("profile", "profileA").get(NAME).set("Profile A");
@@ -616,7 +617,7 @@ public abstract class AbstractProxyControllerTest {
     public class ProxyModelControllerService extends AbstractControllerService {
 
         ProxyModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
-            super(NewOperationContext.Type.SERVER, new NullConfigurationPersister(), processState, new DescriptionProvider() {
+            super(OperationContext.Type.SERVER, new NullConfigurationPersister(), processState, new DescriptionProvider() {
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
                     ModelNode node = new ModelNode();
@@ -644,9 +645,9 @@ public abstract class AbstractProxyControllerTest {
             rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
             rootRegistration.registerOperationHandler("Test",
-                    new NewStepHandler() {
+                    new OperationStepHandler() {
                         @Override
-                        public void execute(NewOperationContext context, ModelNode operation) {
+                        public void execute(OperationContext context, ModelNode operation) {
                             context.completeStep();
                         }
                     },
@@ -662,9 +663,9 @@ public abstract class AbstractProxyControllerTest {
                     true);
 
 
-            rootRegistration.registerOperationHandler("setup", new NewStepHandler() {
+            rootRegistration.registerOperationHandler("setup", new OperationStepHandler() {
                 @Override
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ModelNode proxyModel = new ModelNode();
                     proxyModel.get("hostchild", "hcA", "name").set("hostA");
                     proxyModel.get("hostchild", "hcA", "child", "childA", "name").set("childName");
@@ -718,9 +719,9 @@ public abstract class AbstractProxyControllerTest {
             hostChildReg.registerMetric("metric", GlobalOperationsTestCase.TestMetricHandler.INSTANCE);
 
             hostChildReg.registerOperationHandler("test-op",
-                    new NewStepHandler() {
+                    new OperationStepHandler() {
                         @Override
-                        public void execute(NewOperationContext context, ModelNode operation) {
+                        public void execute(OperationContext context, ModelNode operation) {
                             return;
                         }
                     },
@@ -741,11 +742,11 @@ public abstract class AbstractProxyControllerTest {
     }
 
 
-    static class DelegatingProxyController implements NewProxyController {
+    static class DelegatingProxyController implements ProxyController {
 
-        NewProxyController delegate;
+        ProxyController delegate;
 
-        void setDelegate(NewProxyController delegate) {
+        void setDelegate(ProxyController delegate) {
             this.delegate = delegate;
         }
 

@@ -18,7 +18,7 @@
  */
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 
@@ -48,7 +48,7 @@ public interface UnregisteredHostChannelRegistry {
      * @return the channel
      * @throws IllegalArgumentException if there is no channel for the hostName
      */
-    NewProxyController popChannelAndCreateProxy(String hostName);
+    ProxyController popChannelAndCreateProxy(String hostName);
 
 
     //TODO Kabir: Ugly but all I have time for now

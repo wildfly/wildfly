@@ -52,8 +52,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -77,23 +77,23 @@ import org.jboss.dmr.ModelType;
  */
 public class GlobalOperationHandlers {
 
-    public static final NewStepHandler READ_RESOURCE = new ReadResourceHandler();
-    public static final NewStepHandler READ_ATTRIBUTE = new ReadAttributeHandler();
-    public static final NewStepHandler READ_CHILDREN_NAMES = new ReadChildrenNamesOperationHandler();
-    public static final NewStepHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
-    public static final NewStepHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
+    public static final OperationStepHandler READ_RESOURCE = new ReadResourceHandler();
+    public static final OperationStepHandler READ_ATTRIBUTE = new ReadAttributeHandler();
+    public static final OperationStepHandler READ_CHILDREN_NAMES = new ReadChildrenNamesOperationHandler();
+    public static final OperationStepHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
+    public static final OperationStepHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
 
     private GlobalOperationHandlers() {
         //
     }
 
     /**
-     * {@link NewStepHandler} reading a part of the model. The result will only contain the current attributes of a node by default,
+     * {@link org.jboss.as.controller.OperationStepHandler} reading a part of the model. The result will only contain the current attributes of a node by default,
      * excluding all addressable children and runtime attributes. Setting the request parameter "recursive" to "true" will recursively include
      * all children and configuration attributes. Non-recursive queries can include runtime attributes by setting the request parameter
      * "include-runtime" to "true".
      */
-    public static class ReadResourceHandler extends AbstractMultiTargetHandler implements NewStepHandler {
+    public static class ReadResourceHandler extends AbstractMultiTargetHandler implements OperationStepHandler {
 
         private final ParametersValidator validator = new ParametersValidator();
 
@@ -104,7 +104,7 @@ public class GlobalOperationHandlers {
         }
 
         @Override
-        public void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void doExecute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             validator.validate(operation);
 
@@ -131,7 +131,7 @@ public class GlobalOperationHandlers {
 
             // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
             final ReadResourceAssemblyHandler assemblyHandler = new ReadResourceAssemblyHandler(directAttributes, metrics, otherAttributes, directChildren, childResources);
-            context.addStep(assemblyHandler, NewOperationContext.Stage.IMMEDIATE);
+            context.addStep(assemblyHandler, OperationContext.Stage.IMMEDIATE);
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             // Get the model for this resource.
@@ -180,8 +180,8 @@ public class GlobalOperationHandlers {
                                 ModelNode rrRsp = new ModelNode();
                                 childResources.put(childPE, rrRsp);
 
-                                NewStepHandler rrHandler = childReg.getOperationHandler(relativeAddr, opName);
-                                context.addStep(rrRsp, rrOp, rrHandler, NewOperationContext.Stage.IMMEDIATE);
+                                OperationStepHandler rrHandler = childReg.getOperationHandler(relativeAddr, opName);
+                                context.addStep(rrRsp, rrOp, rrHandler, OperationContext.Stage.IMMEDIATE);
                             }
                         }
                         if (storeDirect) {
@@ -210,7 +210,7 @@ public class GlobalOperationHandlers {
                         continue;
                     }
                     final AccessType type = access.getAccessType();
-                    final NewStepHandler handler = access.getReadHandler();
+                    final OperationStepHandler handler = access.getReadHandler();
                     if (handler != null) {
                         // Discard any directAttribute map entry for this, as the read handler takes precedence
                         directAttributes.remove(attributeName);
@@ -226,7 +226,7 @@ public class GlobalOperationHandlers {
                         } else {
                             otherAttributes.put(attributeName, attrResponse);
                         }
-                        context.addStep(attrResponse, attributeOperation, handler, NewOperationContext.Stage.IMMEDIATE);
+                        context.addStep(attrResponse, attributeOperation, handler, OperationContext.Stage.IMMEDIATE);
                     }
                 }
             }
@@ -237,7 +237,7 @@ public class GlobalOperationHandlers {
     /**
      * Assembles the response to a read-resource request from the components gathered by earlier steps.
      */
-    private static class ReadResourceAssemblyHandler implements NewStepHandler {
+    private static class ReadResourceAssemblyHandler implements OperationStepHandler {
 
         private final Map<String, ModelNode> directAttributes;
         private final Map<String, ModelNode> directChildren;
@@ -270,7 +270,7 @@ public class GlobalOperationHandlers {
         }
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             Map<String, ModelNode> sortedAttributes = new TreeMap<String, ModelNode>();
             Map<String, ModelNode> sortedChildren = new TreeMap<String, ModelNode>();
@@ -334,12 +334,12 @@ public class GlobalOperationHandlers {
     }
 
     /**
-     * {@link NewStepHandler} reading a single attribute at the given operation address. The required request parameter "name" represents the attribute name.
+     * {@link org.jboss.as.controller.OperationStepHandler} reading a single attribute at the given operation address. The required request parameter "name" represents the attribute name.
      */
-    public static class ReadAttributeHandler extends AbstractMultiTargetHandler implements NewStepHandler {
+    public static class ReadAttributeHandler extends AbstractMultiTargetHandler implements OperationStepHandler {
 
         @Override
-        public void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void doExecute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             final String attributeName = operation.require(NAME).asString();
             final ModelNode subModel = safeReadModel(context);
@@ -366,10 +366,10 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * {@link NewStepHandler} writing a single attribute. The required request parameter "name" represents the attribute name.
+     * {@link org.jboss.as.controller.OperationStepHandler} writing a single attribute. The required request parameter "name" represents the attribute name.
      */
-    public static class WriteAttributeHandler implements NewStepHandler {
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public static class WriteAttributeHandler implements OperationStepHandler {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final String attributeName = operation.require(NAME).asString();
             final AttributeAccess attributeAccess = context.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
             if (attributeAccess == null) {
@@ -383,9 +383,9 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * {@link NewStepHandler} querying the children names of a given "child-type".
+     * {@link org.jboss.as.controller.OperationStepHandler} querying the children names of a given "child-type".
      */
-    public static class ReadChildrenNamesOperationHandler implements NewStepHandler {
+    public static class ReadChildrenNamesOperationHandler implements OperationStepHandler {
 
         private final ParametersValidator validator = new ParametersValidator();
 
@@ -394,7 +394,7 @@ public class GlobalOperationHandlers {
         }
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             validator.validate(operation);
             final String childType = operation.require(CHILD_TYPE).asString();
@@ -418,9 +418,9 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * {@link NewStepHandler} querying the children resources of a given "child-type".
+     * {@link org.jboss.as.controller.OperationStepHandler} querying the children resources of a given "child-type".
      */
-    public static class ReadChildrenResourcesOperationHandler implements NewStepHandler {
+    public static class ReadChildrenResourcesOperationHandler implements OperationStepHandler {
 
         private final ParametersValidator validator = new ParametersValidator();
 
@@ -432,7 +432,7 @@ public class GlobalOperationHandlers {
         }
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             validator.validate(operation);
             final String childType = operation.require(CHILD_TYPE).asString();
@@ -452,7 +452,7 @@ public class GlobalOperationHandlers {
 
                 // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
                 final ReadChildrenResourcesAssemblyHandler assemblyHandler = new ReadChildrenResourcesAssemblyHandler(resources);
-                context.addStep(assemblyHandler, NewOperationContext.Stage.IMMEDIATE);
+                context.addStep(assemblyHandler, OperationContext.Stage.IMMEDIATE);
 
                 final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
                 for (final String key : resource.getChildrenNames(childType)) {
@@ -472,13 +472,13 @@ public class GlobalOperationHandlers {
                     if (operation.hasDefined(PROXIES)) {
                         readOp.get(PROXIES).set(operation.get(PROXIES));
                     }
-                    final NewStepHandler handler = context.getResourceRegistration().getOperationHandler(childAddress, READ_RESOURCE_OPERATION);
+                    final OperationStepHandler handler = context.getResourceRegistration().getOperationHandler(childAddress, READ_RESOURCE_OPERATION);
                     if(handler == null) {
                         throw new OperationFailedException(new ModelNode().set("no operation handler"));
                     }
                     ModelNode rrRsp = new ModelNode();
                     resources.put(childPath, rrRsp);
-                    context.addStep(rrRsp, readOp, handler, NewOperationContext.Stage.IMMEDIATE);
+                    context.addStep(rrRsp, readOp, handler, OperationContext.Stage.IMMEDIATE);
                 }
             }
 
@@ -489,7 +489,7 @@ public class GlobalOperationHandlers {
     /**
      * Assembles the response to a read-resource request from the components gathered by earlier steps.
      */
-    private static class ReadChildrenResourcesAssemblyHandler implements NewStepHandler {
+    private static class ReadChildrenResourcesAssemblyHandler implements OperationStepHandler {
 
         private final Map<PathElement, ModelNode> resources;
 
@@ -506,7 +506,7 @@ public class GlobalOperationHandlers {
         }
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             Map<String, ModelNode> sortedChildren = new TreeMap<String, ModelNode>();
             boolean failed = false;
@@ -534,11 +534,11 @@ public class GlobalOperationHandlers {
     }
 
     /**
-     * {@link NewStepHandler} querying the child types of a given node.
+     * {@link org.jboss.as.controller.OperationStepHandler} querying the child types of a given node.
      */
-    public static final NewStepHandler READ_CHILDREN_TYPES = new NewStepHandler() {
+    public static final OperationStepHandler READ_CHILDREN_TYPES = new OperationStepHandler() {
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             Set<String> childTypes = registry.getChildNames(PathAddress.EMPTY_ADDRESS);
             final ModelNode result = context.getResult();
@@ -551,12 +551,12 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * {@link NewStepHandler} returning the names of the defined operations at a given model address.
+     * {@link org.jboss.as.controller.OperationStepHandler} returning the names of the defined operations at a given model address.
      */
-    public static final NewStepHandler READ_OPERATION_NAMES = new NewStepHandler() {
+    public static final OperationStepHandler READ_OPERATION_NAMES = new OperationStepHandler() {
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             final Map<String, OperationEntry> operations = registry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, true);
@@ -577,12 +577,12 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * {@link NewStepHandler} returning the type description of a single operation description.
+     * {@link org.jboss.as.controller.OperationStepHandler} returning the type description of a single operation description.
      */
-    public static final NewStepHandler READ_OPERATION_DESCRIPTION = new NewStepHandler() {
+    public static final OperationStepHandler READ_OPERATION_DESCRIPTION = new OperationStepHandler() {
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             String operationName = operation.require(NAME).asString();
 
@@ -597,9 +597,9 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * {@link NewStepHandler} querying the complete type description of a given model node.
+     * {@link org.jboss.as.controller.OperationStepHandler} querying the complete type description of a given model node.
      */
-    public static final NewStepHandler READ_RESOURCE_DESCRIPTION = new NewStepHandler() {
+    public static final OperationStepHandler READ_RESOURCE_DESCRIPTION = new OperationStepHandler() {
         private final ParametersValidator validator = new ParametersValidator();
         {
             validator.registerValidator(RECURSIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
@@ -609,33 +609,33 @@ public class GlobalOperationHandlers {
         }
 
         @Override
-        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             if(address.isMultiTarget()) {
                 // Format wildcard queries as list
                 final ModelNode result = context.getResult().setEmptyList();
                 context.addStep(new ModelNode(), AbstractMultiTargetHandler.FAKE_OPERATION, new RegistrationAddressResolver(operation, result,
-                        new NewStepHandler() {
+                        new OperationStepHandler() {
                             @Override
-                            public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                                 // step handler bypassing further wildcard resolution
                                 doExecute(context, operation);
                             }
-                        }) , NewOperationContext.Stage.IMMEDIATE);
+                        }) , OperationContext.Stage.IMMEDIATE);
                 // Add a handler at the end of the chain to aggregate the result
-                context.addStep(new NewStepHandler() {
+                context.addStep(new OperationStepHandler() {
                     @Override
-                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         context.completeStep();
                     }
-                }, NewOperationContext.Stage.VERIFY);
+                }, OperationContext.Stage.VERIFY);
                 context.completeStep();
             } else {
                 doExecute(context, operation);
             }
         }
 
-        void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        void doExecute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             validator.validate(operation);
 
@@ -660,7 +660,7 @@ public class GlobalOperationHandlers {
 
             // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
             final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, childResources);
-            context.addStep(assemblyHandler, NewOperationContext.Stage.IMMEDIATE);
+            context.addStep(assemblyHandler, OperationContext.Stage.IMMEDIATE);
 
             if (ops) {
                 for (final Map.Entry<String, OperationEntry> entry : registry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, inheritedOps).entrySet()) {
@@ -710,14 +710,14 @@ public class GlobalOperationHandlers {
                         ModelNode rrRsp = new ModelNode();
                         childResources.put(element, rrRsp);
 
-                        final NewStepHandler handler = childReg.isRemote() ? childReg.getOperationHandler(relativeAddr, opName) :
-                                new NewStepHandler() {
+                        final OperationStepHandler handler = childReg.isRemote() ? childReg.getOperationHandler(relativeAddr, opName) :
+                                new OperationStepHandler() {
                                     @Override
-                                    public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                                    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                                         doExecute(context, operation);
                                     }
                                 };
-                        context.addStep(rrRsp, rrOp, handler, NewOperationContext.Stage.IMMEDIATE);
+                        context.addStep(rrRsp, rrOp, handler, OperationContext.Stage.IMMEDIATE);
                     }
                     //Add a "child" => undefined
                     nodeDescription.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue());
@@ -730,7 +730,7 @@ public class GlobalOperationHandlers {
     /**
      * Assembles the response to a read-resource request from the components gathered by earlier steps.
      */
-    private static class ReadResourceDescriptionAssemblyHandler implements NewStepHandler {
+    private static class ReadResourceDescriptionAssemblyHandler implements OperationStepHandler {
 
         private final ModelNode nodeDescription;
         private final Map<String, ModelNode> operations;
@@ -753,7 +753,7 @@ public class GlobalOperationHandlers {
         }
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
             for (Map.Entry<PathElement, ModelNode> entry : childResources.entrySet()) {
                 final PathElement element = entry.getKey();
@@ -775,7 +775,7 @@ public class GlobalOperationHandlers {
         }
     }
 
-    public abstract static class AbstractMultiTargetHandler implements NewStepHandler {
+    public abstract static class AbstractMultiTargetHandler implements OperationStepHandler {
 
         public static final ModelNode FAKE_OPERATION;
         static {
@@ -787,7 +787,7 @@ public class GlobalOperationHandlers {
         }
 
         @Override
-        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             // In case if it's a multiTarget operation, resolve the address first
             // This only works for model resources, which can be resolved into a concrete addresses
@@ -795,19 +795,19 @@ public class GlobalOperationHandlers {
                 // The final result should be a list of executed operations
                 final ModelNode result = context.getResult().setEmptyList();
                 // Trick the context to give us the model-root
-                context.addStep(new ModelNode(), FAKE_OPERATION, new ModelAddressResolver(operation, result, new NewStepHandler() {
+                context.addStep(new ModelNode(), FAKE_OPERATION, new ModelAddressResolver(operation, result, new OperationStepHandler() {
                             @Override
-                            public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                                 doExecute(context, operation);
                             }
-                        }), NewOperationContext.Stage.IMMEDIATE);
+                        }), OperationContext.Stage.IMMEDIATE);
                 // Add a handler at the end of the chain to aggregate the result
-                context.addStep(new NewStepHandler() {
+                context.addStep(new OperationStepHandler() {
                     @Override
-                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         context.completeStep();
                     }
-                }, NewOperationContext.Stage.VERIFY);
+                }, OperationContext.Stage.VERIFY);
                 context.completeStep();
             } else {
                 doExecute(context, operation);
@@ -821,15 +821,15 @@ public class GlobalOperationHandlers {
          * @param operation the original operation
          * @throws OperationFailedException
          */
-        abstract void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException;
+        abstract void doExecute(OperationContext context, ModelNode operation) throws OperationFailedException;
     }
 
-    public static final class ModelAddressResolver implements NewStepHandler {
+    public static final class ModelAddressResolver implements OperationStepHandler {
 
         private final ModelNode operation;
         private final ModelNode result;
-        private final NewStepHandler handler; // handler bypassing further wildcard resolution
-        public ModelAddressResolver(final ModelNode operation, final ModelNode result, final NewStepHandler delegate) {
+        private final OperationStepHandler handler; // handler bypassing further wildcard resolution
+        public ModelAddressResolver(final ModelNode operation, final ModelNode result, final OperationStepHandler delegate) {
             this.operation = operation;
             this.result = result;
             this.handler = delegate;
@@ -837,13 +837,13 @@ public class GlobalOperationHandlers {
 
         /** {@inheritDoc} */
         @Override
-        public void execute(final NewOperationContext context, final ModelNode ignored) throws OperationFailedException {
+        public void execute(final OperationContext context, final ModelNode ignored) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             execute(address, PathAddress.EMPTY_ADDRESS, context);
             context.completeStep();
         }
 
-        void execute(final PathAddress address, final PathAddress base, final NewOperationContext context) {
+        void execute(final PathAddress address, final PathAddress base, final OperationContext context) {
             final Resource resource = context.readResource(base);
             final PathAddress current = address.subAddress(base.size());
             final Iterator<PathElement> iterator = current.iterator();
@@ -894,31 +894,31 @@ public class GlobalOperationHandlers {
 
                 final ModelNode result = this.result.add();
                 result.get(OP_ADDR).set(base.toModelNode());
-                context.addStep(result, newOp, handler, NewOperationContext.Stage.IMMEDIATE);
+                context.addStep(result, newOp, handler, OperationContext.Stage.IMMEDIATE);
             }
         }
 
     }
 
-    static class RegistrationAddressResolver implements NewStepHandler {
+    static class RegistrationAddressResolver implements OperationStepHandler {
 
         private final ModelNode operation;
         private final ModelNode result;
-        private final NewStepHandler handler; // handler bypassing further wildcard resolution
-        RegistrationAddressResolver(final ModelNode operation, final ModelNode result, final NewStepHandler delegate) {
+        private final OperationStepHandler handler; // handler bypassing further wildcard resolution
+        RegistrationAddressResolver(final ModelNode operation, final ModelNode result, final OperationStepHandler delegate) {
             this.operation = operation;
             this.result = result;
             this.handler = delegate;
         }
 
         @Override
-        public void execute(final NewOperationContext context, final ModelNode ignored) throws OperationFailedException {
+        public void execute(final OperationContext context, final ModelNode ignored) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             execute(address, PathAddress.EMPTY_ADDRESS, context);
             context.completeStep();
         }
 
-        void execute(final PathAddress address, PathAddress base, final NewOperationContext context) {
+        void execute(final PathAddress address, PathAddress base, final OperationContext context) {
             final PathAddress current = address.subAddress(base.size());
             final Iterator<PathElement> iterator = current.iterator();
             if(iterator.hasNext()) {
@@ -945,12 +945,12 @@ public class GlobalOperationHandlers {
 
                 final ModelNode result = this.result.add();
                 result.get(OP_ADDR).set(base.toModelNode());
-                context.addStep(result, newOp, handler, NewOperationContext.Stage.IMMEDIATE);
+                context.addStep(result, newOp, handler, OperationContext.Stage.IMMEDIATE);
             }
         }
     }
 
-    private static ModelNode safeReadModel(final NewOperationContext context) {
+    private static ModelNode safeReadModel(final OperationContext context) {
         try {
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             final ModelNode result = resource.getModel();

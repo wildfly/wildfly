@@ -26,7 +26,7 @@ import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 import java.util.List;
 import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -83,11 +83,11 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
     }
 
     @Override
-    protected boolean requiresRuntime(NewOperationContext context) {
-        return context.getType() == NewOperationContext.Type.SERVER || context.getType() == NewOperationContext.Type.HOST;
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getType() == OperationContext.Type.SERVER || context.getType() == OperationContext.Type.HOST;
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String realmName = address.getLastElement().getValue();
 

@@ -30,10 +30,9 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewModelController.OperationTransaction;
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewProxyController.ProxyOperationControl;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ModelController.OperationTransaction;
+import org.jboss.as.controller.ProxyController.ProxyOperationControl;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -54,7 +53,7 @@ import org.jboss.remoting3.HandleableCloseable.Key;
  */
 public class NewTransactionalModelControllerOperationHandler extends NewAbstractModelControllerOperationHandler {
 
-    public NewTransactionalModelControllerOperationHandler(final ExecutorService executorService, final NewModelController controller) {
+    public NewTransactionalModelControllerOperationHandler(final ExecutorService executorService, final ModelController controller) {
         super(executorService, controller);
     }
 
@@ -81,7 +80,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
     }
 
     /**
-     * Handles incoming {@link NewProxyController#execute(ModelNode, OperationMessageHandler, ProxyOperationControl, org.jboss.as.controller.client.OperationAttachments)}
+     * Handles incoming {@link org.jboss.as.controller.ProxyController#execute(ModelNode, OperationMessageHandler, ProxyOperationControl, org.jboss.as.controller.client.OperationAttachments)}
      * requests from the remote proxy controller and forwards them to the target model controller
      */
     private class ExecuteRequestHandler extends ManagementRequestHandler {

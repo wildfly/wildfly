@@ -23,8 +23,8 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -36,7 +36,7 @@ import org.jboss.dmr.Property;
 /**
  * @author Paul Ferraro
  */
-public class JGroupsSubsystemDescribe implements NewStepHandler, DescriptionProvider {
+public class JGroupsSubsystemDescribe implements OperationStepHandler, DescriptionProvider {
 
     /**
      * {@inheritDoc}
@@ -48,7 +48,7 @@ public class JGroupsSubsystemDescribe implements NewStepHandler, DescriptionProv
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode result = new ModelNode();
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement());
         final ModelNode subModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));

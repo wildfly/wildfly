@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -95,7 +95,7 @@ class DeploymentModelUtils {
         return PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystemName), element);
     }
 
-    static DeploymentModelUtils create(final NewOperationContext context, final PathAddress address) {
+    static DeploymentModelUtils create(final OperationContext context, final PathAddress address) {
             final Resource resource = context.readResourceForUpdate(address);
 
             final ImmutableManagementResourceRegistration registration = context.getResourceRegistration().getSubModel(address);

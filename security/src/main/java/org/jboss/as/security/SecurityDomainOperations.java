@@ -27,8 +27,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.security.Principal;
 import java.util.Set;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -51,16 +51,16 @@ class SecurityDomainOperations {
 
     private static final String PRINCIPAL_ARGUMENT = "principal";
 
-    static final NewStepHandler LIST_CACHED_PRINCIPALS_OP = new NewStepHandler() {
+    static final OperationStepHandler LIST_CACHED_PRINCIPALS_OP = new OperationStepHandler() {
 
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode opAddr = operation.require(OP_ADDR);
             PathAddress address = PathAddress.pathAddress(opAddr);
             final String securityDomain = address.getLastElement().getValue();
 
-            if (context.getType() == NewOperationContext.Type.SERVER) {
-                context.addStep(new NewStepHandler() {
-                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            if (context.getType() == OperationContext.Type.SERVER) {
+                context.addStep(new OperationStepHandler() {
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
                         ServiceController<SecurityDomainContext> controller = (ServiceController<SecurityDomainContext>) context
                                 .getServiceRegistry(false).getRequiredService(
@@ -81,7 +81,7 @@ class SecurityDomainOperations {
                         }
                         context.completeStep();
                     }
-                }, NewOperationContext.Stage.RUNTIME);
+                }, OperationContext.Stage.RUNTIME);
             } else {
                 context.getResult().set("authentication cache for security domain " + securityDomain + " available");
             }
@@ -89,9 +89,9 @@ class SecurityDomainOperations {
         }
     };
 
-    static final NewStepHandler FLUSH_CACHE_OP = new NewStepHandler() {
+    static final OperationStepHandler FLUSH_CACHE_OP = new OperationStepHandler() {
 
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode opAddr = operation.require(OP_ADDR);
             PathAddress address = PathAddress.pathAddress(opAddr);
             final String securityDomain = address.getLastElement().getValue();
@@ -99,9 +99,9 @@ class SecurityDomainOperations {
             if (operation.hasDefined(PRINCIPAL_ARGUMENT))
                 principal = operation.get(PRINCIPAL_ARGUMENT).asString();
             final String principalName = principal;
-            if (context.getType() == NewOperationContext.Type.SERVER) {
-                context.addStep(new NewStepHandler() {
-                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            if (context.getType() == OperationContext.Type.SERVER) {
+                context.addStep(new OperationStepHandler() {
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         ServiceController<SecurityDomainContext> controller = (ServiceController<SecurityDomainContext>) context
                                 .getServiceRegistry(false).getRequiredService(
                                         SecurityDomainService.SERVICE_NAME.append(securityDomain));
@@ -118,7 +118,7 @@ class SecurityDomainOperations {
                         }
                         context.completeStep();
                     }
-                }, NewOperationContext.Stage.RUNTIME);
+                }, OperationContext.Stage.RUNTIME);
             } else {
                 context.getResult().set("authentication cache for security domain " + securityDomain + " available");
             }

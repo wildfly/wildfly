@@ -22,19 +22,18 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -44,17 +43,17 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author John Bailey
  */
-public class DataSourceDisable implements NewStepHandler {
+public class DataSourceDisable implements OperationStepHandler {
     static final DataSourceDisable INSTANCE = new DataSourceDisable();
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
         context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED).set(false);
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(final NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
 
                     final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
                     final String rawJndiName = model.require(JNDINAME).asString();
@@ -92,7 +91,7 @@ public class DataSourceDisable implements NewStepHandler {
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }

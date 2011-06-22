@@ -39,7 +39,7 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface NewOperationContext {
+public interface OperationContext {
 
     /**
      * Add an execution step to this operation process.  Runtime operation steps are automatically added after
@@ -50,7 +50,7 @@ public interface NewOperationContext {
      * @param stage the stage at which the operation applies
      * @throws IllegalArgumentException if the step handler is not valid for this controller type
      */
-    void addStep(NewStepHandler step, Stage stage) throws IllegalArgumentException;
+    void addStep(OperationStepHandler step, Stage stage) throws IllegalArgumentException;
 
     /**
      * Add an execution step to this operation process, writing any output to the response object
@@ -63,7 +63,7 @@ public interface NewOperationContext {
      * @param stage the stage at which the operation applies
      * @throws IllegalArgumentException if the step handler is not valid for this controller type
      */
-    void addStep(final ModelNode operation, final NewStepHandler step, final Stage stage) throws IllegalArgumentException;
+    void addStep(final ModelNode operation, final OperationStepHandler step, final Stage stage) throws IllegalArgumentException;
 
     /**
      * Add an execution step to this operation process.  Runtime operation steps are automatically added after
@@ -76,7 +76,7 @@ public interface NewOperationContext {
      * @param stage the stage at which the operation applies
      * @throws IllegalArgumentException if the step handler is not valid for this controller type
      */
-    void addStep(ModelNode response, ModelNode operation, NewStepHandler step, Stage stage) throws IllegalArgumentException;
+    void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage) throws IllegalArgumentException;
 
     /**
      * Get a stream which is attached to the request.
@@ -270,10 +270,10 @@ public interface NewOperationContext {
     ModelNode readModelForUpdate(PathAddress address);
 
     /**
-     * Acquire the controlling {@link NewModelController}'s exclusive lock. Holding this lock prevent other operations
+     * Acquire the controlling {@link ModelController}'s exclusive lock. Holding this lock prevent other operations
      * from mutating the model, the {@link org.jboss.as.controller.registry.ManagementResourceRegistration management resource registry} or the runtime
      * service registry until the lock is released. The lock is automatically released when the
-     * {@link NewStepHandler#execute(NewOperationContext, org.jboss.dmr.ModelNode) execute method} of the handler
+     * {@link OperationStepHandler#execute(OperationContext, org.jboss.dmr.ModelNode) execute method} of the handler
      * that invoked this method returns.
      * <p>
      * This method should be little used. The model controller's exclusive lock is acquired automatically when any

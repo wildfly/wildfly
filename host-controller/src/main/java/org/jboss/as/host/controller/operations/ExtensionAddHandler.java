@@ -20,7 +20,6 @@ package org.jboss.as.host.controller.operations;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
 import org.jboss.dmr.ModelNode;

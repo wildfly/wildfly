@@ -319,7 +319,7 @@ public class ModelControllerClientTestCase {
         }
     }
 
-    private static abstract class MockModelController implements NewModelController {
+    private static abstract class MockModelController implements ModelController {
         protected volatile ModelNode operation;
 
         ModelNode getOperation() {

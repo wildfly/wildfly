@@ -19,8 +19,8 @@
 package org.jboss.as.logging;
 
 import java.util.Locale;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -56,11 +56,11 @@ import org.jboss.dmr.Property;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class LoggingDescribeHandler implements NewStepHandler, DescriptionProvider{
+public class LoggingDescribeHandler implements OperationStepHandler, DescriptionProvider{
 
     static final LoggingDescribeHandler INSTANCE = new LoggingDescribeHandler();
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
         PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());

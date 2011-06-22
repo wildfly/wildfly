@@ -19,7 +19,7 @@
 package org.jboss.as.server.services.net;
 
 import java.util.List;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -93,7 +93,7 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
     }
 
     @Override
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         // Resolve any expressions and re-validate
         final ModelNode resolvedOp = operation.resolve();
         runtimeValidator.validate(resolvedOp);

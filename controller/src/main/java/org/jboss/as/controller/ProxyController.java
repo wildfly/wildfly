@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface NewProxyController {
+public interface ProxyController {
 
     /**
      * Get the address where this proxy controller applies to in the host ModelController
@@ -52,8 +52,8 @@ public interface NewProxyController {
 
     /**
      * Execute an operation, sending updates to the given handler and receiving the response via the given
-     * {@link NewModelController.OperationTransactionControl}.   When this operation returns, either the
-     * {@link ProxyOperationControl#operationPrepared(org.jboss.as.controller.NewModelController.OperationTransaction, org.jboss.dmr.ModelNode)}
+     * {@link ModelController.OperationTransactionControl}.   When this operation returns, either the
+     * {@link ProxyOperationControl#operationPrepared(ModelController.OperationTransaction, org.jboss.dmr.ModelNode)}
      * or the {@link ProxyOperationControl#operationFailed(org.jboss.dmr.ModelNode)} callbacks on the given  {@code control}
      * will have been invoked.
      *
@@ -64,11 +64,11 @@ public interface NewProxyController {
      */
     void execute(ModelNode operation, OperationMessageHandler handler, ProxyOperationControl control, OperationAttachments attachments);
 
-    interface ProxyOperationControl extends NewModelController.OperationTransactionControl {
+    interface ProxyOperationControl extends ModelController.OperationTransactionControl {
 
         /**
          * Handle the result of an operation whose execution failed before
-         * {@link NewModelController.OperationTransactionControl#operationPrepared(NewModelController.OperationTransaction, ModelNode)}
+         * {@link ModelController.OperationTransactionControl#operationPrepared(ModelController.OperationTransaction, ModelNode)}
          * could be invoked.
          *
          * @param response the response to the operation.
@@ -77,7 +77,7 @@ public interface NewProxyController {
 
         /**
          * Handle the final result of an operation, following invocation of
-         * {@link NewModelController.OperationTransactionControl#operationPrepared(NewModelController.OperationTransaction, ModelNode)}.
+         * {@link ModelController.OperationTransactionControl#operationPrepared(ModelController.OperationTransaction, ModelNode)}.
          * This provides the final response, including any changes made as a result of rolling back the transaction.
          *
          * @param response the response

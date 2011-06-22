@@ -71,8 +71,8 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -983,9 +983,9 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
         rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
         rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
         rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
-        rootRegistration.registerOperationHandler("setup", new NewStepHandler() {
+        rootRegistration.registerOperationHandler("setup", new OperationStepHandler() {
             @Override
-            public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final ModelNode model = new ModelNode();
                 //Atttributes
                 model.get("profile", "profileA", "subsystem", "subsystem1", "attr1").add(1);
@@ -1187,9 +1187,9 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
         });
 
         profileSub1Reg.registerOperationHandler("testA1-1",
-                new NewStepHandler() {
+                new OperationStepHandler() {
                     @Override
-                    public void execute(NewOperationContext context, ModelNode operation) {
+                    public void execute(OperationContext context, ModelNode operation) {
                         return;
                     }
                 },
@@ -1205,10 +1205,10 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
                 },
                 false);
         profileSub1Reg.registerOperationHandler("testA1-2",
-                new NewStepHandler() {
+                new OperationStepHandler() {
 
                     @Override
-                    public void execute(NewOperationContext context, ModelNode operation) {
+                    public void execute(OperationContext context, ModelNode operation) {
                         return;
                     }
                 },
@@ -1226,10 +1226,10 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
 
 
         profileASub2Reg.registerOperationHandler("testA2",
-                new NewStepHandler() {
+                new OperationStepHandler() {
 
                     @Override
-                    public void execute(NewOperationContext context, ModelNode operation) {
+                    public void execute(OperationContext context, ModelNode operation) {
                         return;
                     }
                 },
@@ -1277,10 +1277,10 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
                 return node;
             }
         });
-        profileCSub5Reg.registerReadOnlyAttribute("name", new NewStepHandler() {
+        profileCSub5Reg.registerReadOnlyAttribute("name", new OperationStepHandler() {
 
             @Override
-            public void execute(NewOperationContext context, ModelNode operation) {
+            public void execute(OperationContext context, ModelNode operation) {
                 context.getResult().set("Overridden by special read handler");
                 context.completeStep();
             }
@@ -1309,11 +1309,11 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
         return rsp.get(RESULT);
     }
 
-    static class TestMetricHandler implements NewStepHandler {
+    static class TestMetricHandler implements OperationStepHandler {
         static final TestMetricHandler INSTANCE = new TestMetricHandler();
         private static final Random random = new Random();
         @Override
-        public void execute(final NewOperationContext context, final ModelNode operation) {
+        public void execute(final OperationContext context, final ModelNode operation) {
             context.getResult().set(random.nextInt());
             context.completeStep();
         }

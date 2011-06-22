@@ -27,13 +27,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Handler;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -90,7 +89,7 @@ public final class LogServices {
         return controllers;
     }
 
-    static void uninstallLoggerHandlers(final NewOperationContext context, final String loggerName, final ModelNode handlers) {
+    static void uninstallLoggerHandlers(final OperationContext context, final String loggerName, final ModelNode handlers) {
         for(final ModelNode handler : handlers.asList()) {
             final String handlerName = handler.asString();
             context.removeService(LogServices.loggerHandlerName(loggerName, handlerName));

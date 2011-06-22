@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -74,7 +74,7 @@ public class EndpointConfigAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model,
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> newControllers) throws OperationFailedException {
 

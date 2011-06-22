@@ -33,8 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
@@ -112,10 +112,10 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    NewStepHandler getOperationHandler(final ListIterator<PathElement> iterator, final String operationName, NewStepHandler inherited) {
+    OperationStepHandler getOperationHandler(final ListIterator<PathElement> iterator, final String operationName, OperationStepHandler inherited) {
         if (iterator.hasNext()) {
-            NewStepHandler ourInherited = getInheritableOperationHandler(operationName);
-            NewStepHandler inheritance = ourInherited == null ? inherited : ourInherited;
+            OperationStepHandler ourInherited = getInheritableOperationHandler(operationName);
+            OperationStepHandler inheritance = ourInherited == null ? inherited : ourInherited;
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());
             if (subregistry == null) {
@@ -129,7 +129,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    NewStepHandler getInheritableOperationHandler(final String operationName) {
+    OperationStepHandler getInheritableOperationHandler(final String operationName) {
         final OperationEntry entry = operationsUpdater.get(this, operationName);
         if (entry != null && entry.isInherited()) {
             return entry.getOperationHandler();
@@ -170,42 +170,42 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    public void registerOperationHandler(final String operationName, final NewStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
+    public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
         if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited, entryType)) != null) {
             throw new IllegalArgumentException("A handler named '" + operationName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerOperationHandler(final String operationName, final NewStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
+    public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
         if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited, entryType, flags)) != null) {
             throw new IllegalArgumentException("A handler named '" + operationName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerReadWriteAttribute(final String attributeName, final NewStepHandler readHandler, final NewStepHandler writeHandler, AttributeAccess.Storage storage) {
+    public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
         if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerReadOnlyAttribute(final String attributeName, final NewStepHandler readHandler, AttributeAccess.Storage storage) {
+    public void registerReadOnlyAttribute(final String attributeName, final OperationStepHandler readHandler, AttributeAccess.Storage storage) {
         if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerMetric(String attributeName, NewStepHandler metricHandler) {
+    public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
         if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerProxyController(final PathElement address, final NewProxyController controller) throws IllegalArgumentException {
+    public void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException {
         getOrCreateSubregistry(address.getKey()).registerProxyController(address.getValue(), controller);
     }
 
@@ -399,7 +399,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    NewProxyController getProxyController(Iterator<PathElement> iterator) {
+    ProxyController getProxyController(Iterator<PathElement> iterator) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());
@@ -413,7 +413,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    void getProxyControllers(Iterator<PathElement> iterator, Set<NewProxyController> controllers) {
+    void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());

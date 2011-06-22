@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
@@ -85,7 +85,7 @@ final class NodeSubregistry {
         }
     }
 
-    ProxyControllerRegistration registerProxyController(final String elementValue, final NewProxyController proxyController) {
+    ProxyControllerRegistration registerProxyController(final String elementValue, final ProxyController proxyController) {
         final ProxyControllerRegistration newRegistry = new ProxyControllerRegistration(elementValue, this, proxyController);
         final AbstractResourceRegistration appearingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
         if (appearingRegistry != null) {
@@ -99,7 +99,7 @@ final class NodeSubregistry {
         childRegistriesUpdater.remove(this, elementValue);
     }
 
-    NewStepHandler getOperationHandler(final ListIterator<PathElement> iterator, final String child, final String operationName, NewStepHandler inherited) {
+    OperationStepHandler getOperationHandler(final ListIterator<PathElement> iterator, final String child, final String operationName, OperationStepHandler inherited) {
         final Map<String, AbstractResourceRegistration> snapshot = childRegistriesUpdater.get(this);
         final AbstractResourceRegistration childRegistry = snapshot.get(child);
         if (childRegistry != null) {
@@ -234,7 +234,7 @@ final class NodeSubregistry {
         return childRegistry.getChildAddresses(iterator);
     }
 
-    NewProxyController getProxyController(final Iterator<PathElement> iterator, final String child) {
+    ProxyController getProxyController(final Iterator<PathElement> iterator, final String child) {
         final Map<String, AbstractResourceRegistration> snapshot = childRegistries;
         AbstractResourceRegistration childRegistry = snapshot.get(child);
         if (childRegistry == null) {
@@ -256,7 +256,7 @@ final class NodeSubregistry {
         return childRegistry.getResourceRegistration(iterator);
     }
 
-    void getProxyControllers(final Iterator<PathElement> iterator, final String child, Set<NewProxyController> controllers) {
+    void getProxyControllers(final Iterator<PathElement> iterator, final String child, Set<ProxyController> controllers) {
         final Map<String, AbstractResourceRegistration> snapshot = childRegistries;
         if (child != null) {
             AbstractResourceRegistration childRegistry = snapshot.get(child);

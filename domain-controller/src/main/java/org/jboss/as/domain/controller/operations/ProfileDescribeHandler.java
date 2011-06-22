@@ -31,8 +31,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -47,7 +47,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ProfileDescribeHandler implements NewStepHandler, DescriptionProvider {
+public class ProfileDescribeHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final ProfileDescribeHandler INSTANCE = new ProfileDescribeHandler();
 
@@ -56,7 +56,7 @@ public class ProfileDescribeHandler implements NewStepHandler, DescriptionProvid
 
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         final String opName = operation.require(OP).asString();
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -78,7 +78,7 @@ public class ProfileDescribeHandler implements NewStepHandler, DescriptionProvid
                 final ModelNode newOp = operation.clone();
                 newOp.get(OP_ADDR).set(subsystemAddress);
                 PathAddress relativeAddress = PathAddress.pathAddress(pe);
-                NewStepHandler subsysHandler = registry.getOperationHandler(relativeAddress, opName);
+                OperationStepHandler subsysHandler = registry.getOperationHandler(relativeAddress, opName);
                 if (subsysHandler == null) {
                     throw new OperationFailedException(new ModelNode().set(String.format("No handler for operation %s at address %s", opName, fullAddress)));
                 }
@@ -86,9 +86,9 @@ public class ProfileDescribeHandler implements NewStepHandler, DescriptionProvid
                 // Add steps in the reverse of expected order, as Stage.IMMEDIATE adds to the top of the list
 
                 // Step to store subsystem ops in overall list
-                context.addStep(new NewStepHandler() {
+                context.addStep(new OperationStepHandler() {
                     @Override
-                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         if (failureRef.get() == null) {
                             if (subsystemRsp.hasDefined(FAILURE_DESCRIPTION)) {
                                 failureRef.set(subsystemRsp.get(FAILURE_DESCRIPTION));
@@ -100,10 +100,10 @@ public class ProfileDescribeHandler implements NewStepHandler, DescriptionProvid
                         }
                         context.completeStep();
                     }
-                }, NewOperationContext.Stage.IMMEDIATE);
+                }, OperationContext.Stage.IMMEDIATE);
 
                 // Step to determine subsystem ops
-                context.addStep(subsystemRsp, newOp, subsysHandler, NewOperationContext.Stage.IMMEDIATE);
+                context.addStep(subsystemRsp, newOp, subsysHandler, OperationContext.Stage.IMMEDIATE);
             }
         }
 
@@ -123,14 +123,14 @@ public class ProfileDescribeHandler implements NewStepHandler, DescriptionProvid
                     final ModelNode newOp = operation.clone();
                     newOp.get(OP_ADDR).set(includeAddress);
 
-                    context.addStep(includeRsp, newOp, INSTANCE, NewOperationContext.Stage.IMMEDIATE);
+                    context.addStep(includeRsp, newOp, INSTANCE, OperationContext.Stage.IMMEDIATE);
                 }
             }
 
             // Add a step at end to assemble all the data
-            context.addStep(new NewStepHandler() {
+            context.addStep(new OperationStepHandler() {
                 @Override
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     boolean failed = false;
                     for (ModelNode includeRsp : includeResults.values()) {
                         if (includeRsp.hasDefined(FAILURE_DESCRIPTION)) {
@@ -154,7 +154,7 @@ public class ProfileDescribeHandler implements NewStepHandler, DescriptionProvid
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.MODEL);
+            }, OperationContext.Stage.MODEL);
         }
 
         context.completeStep();

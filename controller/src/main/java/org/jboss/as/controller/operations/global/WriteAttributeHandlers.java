@@ -24,8 +24,8 @@ package org.jboss.as.controller.operations.global;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
@@ -44,7 +44,7 @@ import org.jboss.dmr.ModelType;
  */
 public class WriteAttributeHandlers {
 
-    public static class WriteAttributeOperationHandler implements NewStepHandler {
+    public static class WriteAttributeOperationHandler implements OperationStepHandler {
         public static WriteAttributeOperationHandler INSTANCE = new WriteAttributeOperationHandler();
 
         final ParameterValidator valueValidator;
@@ -65,7 +65,7 @@ public class WriteAttributeHandlers {
         }
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final String name = operation.require(NAME).asString();
             // Don't require VALUE. Let validateValue decide if it's bothered
             // by an undefined value
@@ -97,7 +97,7 @@ public class WriteAttributeHandlers {
         /**
          * Notification that the model has been changed. Subclasses can override
          * to apply additional processing. Any subclass that overrides MUST ensure
-         * that either {@link org.jboss.as.controller.NewOperationContext#completeStep()} is invoked
+         * that either {@link org.jboss.as.controller.OperationContext#completeStep()} is invoked
          * or {@link OperationFailedException} is thrown.
          *
          * @param context the context of the operation
@@ -108,7 +108,7 @@ public class WriteAttributeHandlers {
          *
          * @throws OperationFailedException
          */
-        protected void modelChanged(final NewOperationContext context, final ModelNode operation, final String attributeName,
+        protected void modelChanged(final OperationContext context, final ModelNode operation, final String attributeName,
                                     final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
             context.completeStep();

@@ -24,8 +24,8 @@ package org.jboss.as.controller.test;
 
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -60,9 +60,9 @@ public abstract class AbstractControllerTestBase {
     }
 
     private ServiceContainer container;
-    private NewModelController controller;
+    private ModelController controller;
 
-    public NewModelController getController() {
+    public ModelController getController() {
         return controller;
     }
 
@@ -72,7 +72,7 @@ public abstract class AbstractControllerTestBase {
         ServiceTarget target = container.subTarget();
         ControlledProcessState processState = new ControlledProcessState(true);
         ModelControllerService svc = new ModelControllerService(container, processState);
-        ServiceBuilder<NewModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
+        ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         svc.latch.await();
         controller = svc.getValue();
@@ -101,7 +101,7 @@ public abstract class AbstractControllerTestBase {
         private final CountDownLatch latch = new CountDownLatch(1);
 
         ModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
-            super(NewOperationContext.Type.SERVER, new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null);
+            super(OperationContext.Type.SERVER, new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null);
         }
 
         @Override
@@ -122,11 +122,11 @@ public abstract class AbstractControllerTestBase {
         }
     }
 
-    static void createModel(final NewOperationContext context, final ModelNode node) {
+    static void createModel(final OperationContext context, final ModelNode node) {
         createModel(context, PathAddress.EMPTY_ADDRESS, node);
     }
 
-    static void createModel(final NewOperationContext context, final PathAddress base, final ModelNode node) {
+    static void createModel(final OperationContext context, final PathAddress base, final ModelNode node) {
         if(! node.isDefined()) {
             return;
         }

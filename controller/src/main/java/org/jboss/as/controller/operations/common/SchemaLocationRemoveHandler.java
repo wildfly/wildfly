@@ -21,7 +21,7 @@ package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -62,7 +62,7 @@ public class SchemaLocationRemoveHandler extends AbstractRemoveStepHandler imple
     private SchemaLocationRemoveHandler() {
     }
 
-    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         ModelNode param = operation.get(SCHEMA_LOCATION);
         typeValidator.validateParameter(SCHEMA_LOCATION, param);
 
@@ -86,7 +86,7 @@ public class SchemaLocationRemoveHandler extends AbstractRemoveStepHandler imple
         }
     }
 
-    protected boolean requiresRuntime(NewOperationContext context) {
+    protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
 

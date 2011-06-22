@@ -103,7 +103,7 @@ public class NewLocalDomainControllerAddHandler extends AbstractAddStepHandler i
     }
 
     //Done by DomainModelControllerService
-//    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model,
+//    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
 //                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 //        final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 //        final ServiceTarget serviceTarget = context.getServiceTarget();

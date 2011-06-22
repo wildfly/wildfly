@@ -20,7 +20,7 @@ package org.jboss.as.domain.controller.operations.deployment;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
@@ -46,7 +46,7 @@ public class ServerGroupDeploymentRemoveHandler extends AbstractRemoveStepHandle
         return ServerGroupDescription.getDeploymentRemoveOperation(locale);
     }
 
-    protected boolean requiresRuntime(NewOperationContext context) {
+    protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
 }

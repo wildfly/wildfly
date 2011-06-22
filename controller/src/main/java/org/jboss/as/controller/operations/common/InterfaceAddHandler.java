@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -75,7 +75,7 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
         model.get(CRITERIA).set(criteriaNode);
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         String name = getInterfaceName(operation);
         ParsedInterfaceCriteria parsed = getCriteria(operation);
         if (parsed.getFailureMessage() != null) {
@@ -96,7 +96,7 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
         return ParsedInterfaceCriteria.parse(criteriaNode.clone(), specified);
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, String name, ParsedInterfaceCriteria criteria) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, String name, ParsedInterfaceCriteria criteria) {
     }
 
     @Override

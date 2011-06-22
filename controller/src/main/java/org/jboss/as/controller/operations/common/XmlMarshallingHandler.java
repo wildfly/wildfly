@@ -27,8 +27,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.util.Locale;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -37,11 +37,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 /**
- * A {@link org.jboss.as.controller.NewStepHandler} that can output a model in XML form
+ * A {@link org.jboss.as.controller.OperationStepHandler} that can output a model in XML form
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class XmlMarshallingHandler implements NewStepHandler, DescriptionProvider {
+public class XmlMarshallingHandler implements OperationStepHandler, DescriptionProvider {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
@@ -60,7 +60,7 @@ public class XmlMarshallingHandler implements NewStepHandler, DescriptionProvide
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
         final Resource resource = context.getRootResource();
         // Get the model recursively
         final ModelNode model = Resource.Tools.readModel(resource);

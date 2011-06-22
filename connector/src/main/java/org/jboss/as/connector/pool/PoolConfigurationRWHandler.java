@@ -34,8 +34,8 @@ import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -64,10 +64,10 @@ public class PoolConfigurationRWHandler {
             USE_FAST_FAIL};
 
     // TODO this seems to just do what the default handler does, so registering it is probably unnecessary
-    public static class PoolConfigurationReadHandler implements NewStepHandler {
+    public static class PoolConfigurationReadHandler implements OperationStepHandler {
         public static PoolConfigurationReadHandler INSTANCE = new PoolConfigurationReadHandler();
 
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final String parameterName = operation.require(NAME).asString();
 
             final ModelNode submodel = context.readModel(PathAddress.EMPTY_ADDRESS);
@@ -86,13 +86,13 @@ public class PoolConfigurationRWHandler {
         }
 
         @Override
-        protected boolean applyUpdateToRuntime(final NewOperationContext context, final ModelNode operation,
+        protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
                final String parameterName, final ModelNode newValue,
                final ModelNode currentValue) throws OperationFailedException {
 
-            if (context.getType() == NewOperationContext.Type.SERVER) {
-                context.addStep(new NewStepHandler() {
-                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            if (context.getType() == OperationContext.Type.SERVER) {
+                context.addStep(new OperationStepHandler() {
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                         final String jndiName = address.getLastElement().getValue();
 
@@ -109,12 +109,12 @@ public class PoolConfigurationRWHandler {
                             }
                         }
 
-                        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK && poolConfigs != null) {
+                        if (context.completeStep() == OperationContext.ResultAction.ROLLBACK && poolConfigs != null) {
                             updatePoolConfigs(poolConfigs, parameterName, currentValue);
                         }
 
                     }
-                }, NewOperationContext.Stage.RUNTIME);
+                }, OperationContext.Stage.RUNTIME);
             }
 
             return (IDLETIMEOUTMINUTES.equals(parameterName) || BACKGROUNDVALIDATION.equals(parameterName)

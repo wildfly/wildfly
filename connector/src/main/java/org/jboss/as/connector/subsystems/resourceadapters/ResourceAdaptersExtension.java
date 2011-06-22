@@ -84,8 +84,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapter
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.TEST_CONNECTION_DESC;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -635,10 +635,10 @@ public class ResourceAdaptersExtension implements Extension {
         }
     }
 
-    private static class ResourceAdaptersSubsystemDescribeHandler implements NewStepHandler, DescriptionProvider {
+    private static class ResourceAdaptersSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final ResourceAdaptersSubsystemDescribeHandler INSTANCE = new ResourceAdaptersSubsystemDescribeHandler();
 
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final ModelNode address = new ModelNode();
             address.add(ModelDescriptionConstants.SUBSYSTEM, RESOURCEADAPTERS);
             address.protect();

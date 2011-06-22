@@ -26,8 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -43,7 +43,7 @@ import org.jboss.logging.Logger;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NewStartServersHandler implements NewStepHandler, DescriptionProvider {
+public class NewStartServersHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "start-servers";
 
@@ -64,15 +64,15 @@ public class NewStartServersHandler implements NewStepHandler, DescriptionProvid
      * {@inheritDoc}
      */
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (!context.isBooting()) {
             throw new OperationFailedException(new ModelNode().set(String.format("Cannot invoke %s after host boot", operation.require(OP))));
         }
         final ModelNode domainModel = Resource.Tools.readModel(context.getRootResource());
-        context.addStep(new NewStepHandler() {
+        context.addStep(new OperationStepHandler() {
             @Override
-            public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 // start servers
                 final Resource resource =  context.readResource(PathAddress.EMPTY_ADDRESS);
                 final ModelNode hostModel = Resource.Tools.readModel(resource);
@@ -86,7 +86,7 @@ public class NewStartServersHandler implements NewStepHandler, DescriptionProvid
                 }
                 context.completeStep();
             }
-        }, NewOperationContext.Stage.RUNTIME);
+        }, OperationContext.Stage.RUNTIME);
         context.completeStep();
     }
 

@@ -43,8 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -68,7 +68,7 @@ public class OperationSlaveStepHandler {
         this.localHostControllerInfo = localHostControllerInfo;
     }
 
-    void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         operation.get(OPERATION_HEADERS).remove(PrepareStepHandler.EXECUTE_FOR_COORDINATOR);
 
@@ -77,7 +77,7 @@ public class OperationSlaveStepHandler {
         context.completeStep();
     }
 
-    void addSteps(final NewOperationContext context, final ModelNode operation, final ModelNode response, final boolean recordResponse) throws OperationFailedException {
+    void addSteps(final OperationContext context, final ModelNode operation, final ModelNode response, final boolean recordResponse) throws OperationFailedException {
 
         final PathAddress originalAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
         final ImmutableManagementResourceRegistration originalRegistration = context.getResourceRegistration();
@@ -99,7 +99,7 @@ public class OperationSlaveStepHandler {
         ServerOperationResolver resolver = new ServerOperationResolver(localHostControllerInfo.getLocalHostName());
         ServerOperationsResolverHandler sorh = new ServerOperationsResolverHandler(localHostControllerInfo.getLocalHostName(),
                 resolver, parsedOp, originalAddress, originalRegistration, response, recordResponse);
-        context.addStep(sorh, NewOperationContext.Stage.DOMAIN);
+        context.addStep(sorh, OperationContext.Stage.DOMAIN);
     }
 
     /**
@@ -108,11 +108,11 @@ public class OperationSlaveStepHandler {
      * @param operation the operation
      * @throws OperationFailedException
      */
-    private void addBasicStep(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    private void addBasicStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         final String operationName =  operation.require(OP).asString();
-        final NewStepHandler stepHandler = context.getResourceRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
+        final OperationStepHandler stepHandler = context.getResourceRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
         if(stepHandler != null) {
-            context.addStep(operation, stepHandler, NewOperationContext.Stage.MODEL);
+            context.addStep(operation, stepHandler, OperationContext.Stage.MODEL);
         } else {
             throw new OperationFailedException(new ModelNode().set(String.format("No handler for operation %s at address %s", operationName, PathAddress.pathAddress(operation.get(OP_ADDR)))));
         }

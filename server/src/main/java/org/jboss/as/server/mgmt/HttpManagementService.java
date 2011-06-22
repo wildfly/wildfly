@@ -25,7 +25,7 @@ package org.jboss.as.server.mgmt;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.ManagementHttpServer;
 import org.jboss.as.domain.management.security.SecurityRealmService;
@@ -46,7 +46,7 @@ import org.jboss.msc.value.InjectedValue;
 public class HttpManagementService implements Service<HttpManagementService> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http");
 
-    private final InjectedValue<NewModelController> modelControllerValue = new InjectedValue<NewModelController>();
+    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
     private final InjectedValue<Integer> securePortValue = new InjectedValue<Integer>();
@@ -66,7 +66,7 @@ public class HttpManagementService implements Service<HttpManagementService> {
      * @throws StartException If any errors occur
      */
     public synchronized void start(StartContext context) throws StartException {
-        final NewModelController modelController = modelControllerValue.getValue();
+        final ModelController modelController = modelControllerValue.getValue();
         final ExecutorService executorService = executorServiceValue.getValue();
         final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getValue();
         modelControllerClient = modelController.createClient(executorService);
@@ -149,7 +149,7 @@ public class HttpManagementService implements Service<HttpManagementService> {
      *
      * @return the injector
      */
-    public Injector<NewModelController> getModelControllerInjector() {
+    public Injector<ModelController> getModelControllerInjector() {
         return modelControllerValue;
     }
 

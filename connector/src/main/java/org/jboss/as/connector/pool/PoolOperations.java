@@ -3,8 +3,8 @@ package org.jboss.as.connector.pool;
 import java.util.ArrayList;
 import java.util.List;
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -16,7 +16,7 @@ import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
-public abstract class PoolOperations implements NewStepHandler {
+public abstract class PoolOperations implements OperationStepHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.datasources");
 
@@ -27,13 +27,13 @@ public abstract class PoolOperations implements NewStepHandler {
         this.matcher = matcher;
     }
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String jndiName = address.getLastElement().getValue();
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
                             ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
                     if (managementRepoService != null) {
@@ -55,7 +55,7 @@ public abstract class PoolOperations implements NewStepHandler {
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }

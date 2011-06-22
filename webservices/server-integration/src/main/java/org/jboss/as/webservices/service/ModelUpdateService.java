@@ -36,7 +36,7 @@ import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
 import static org.jboss.msc.service.ServiceBuilder.DependencyType.OPTIONAL;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.webservices.dmr.WSExtension;
 import org.jboss.as.webservices.util.WSServices;
@@ -65,7 +65,7 @@ public final class ModelUpdateService extends AbstractService<Void> {
 
     private static final Logger log = Logger.getLogger(ModelUpdateService.class);
 
-    private final InjectedValue<NewModelController> controllerValue = new InjectedValue<NewModelController>();
+    private final InjectedValue<ModelController> controllerValue = new InjectedValue<ModelController>();
     private static final ModelUpdateService INSTANCE = new ModelUpdateService();
     private volatile ModelControllerClient client;
 
@@ -73,7 +73,7 @@ public final class ModelUpdateService extends AbstractService<Void> {
         super();
     }
 
-    private InjectedValue<NewModelController> getServerControllerInjector() {
+    private InjectedValue<ModelController> getServerControllerInjector() {
         return controllerValue;
     }
 
@@ -96,16 +96,16 @@ public final class ModelUpdateService extends AbstractService<Void> {
     }
 
     public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServiceListener<Object>... listeners) {
-        final Injector<NewModelController> controllerInjector = INSTANCE.getServerControllerInjector();
+        final Injector<ModelController> controllerInjector = INSTANCE.getServerControllerInjector();
         final ServiceBuilder<Void> builder = serviceTarget.addService(WSServices.MODEL_SERVICE, INSTANCE);
-        builder.addDependency(OPTIONAL, JBOSS_SERVER_CONTROLLER, NewModelController.class, controllerInjector);
+        builder.addDependency(OPTIONAL, JBOSS_SERVER_CONTROLLER, ModelController.class, controllerInjector);
         builder.addListener(listeners);
         builder.setInitialMode(Mode.ACTIVE);
         return builder.install();
     }
 
     public void add(final Endpoint endpoint) {
-        final NewModelController controller = controllerValue.getOptionalValue();
+        final ModelController controller = controllerValue.getOptionalValue();
         if (controller != null) {
             // TODO AS7-855
             log.warn("Registering webservice endpoints in the management model is temporarily disabled (AS7-855)");
@@ -119,7 +119,7 @@ public final class ModelUpdateService extends AbstractService<Void> {
     }
 
     public void remove(final Endpoint endpoint) {
-        final NewModelController controller = controllerValue.getOptionalValue();
+        final ModelController controller = controllerValue.getOptionalValue();
         if (controller != null) {
             // TODO AS7-855
             log.warn("Registering webservice endpoints in the management model is temporarily disabled (AS7-855)");

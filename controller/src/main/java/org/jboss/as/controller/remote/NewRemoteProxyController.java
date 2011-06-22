@@ -37,8 +37,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.controller.NewModelController.OperationTransaction;
-import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.ModelController.OperationTransaction;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.MessageSeverity;
@@ -64,7 +64,7 @@ import org.jboss.threads.AsyncFuture.Status;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NewRemoteProxyController implements NewProxyController, ManagementOperationHandler {
+public class NewRemoteProxyController implements ProxyController, ManagementOperationHandler {
 
     private final AtomicBoolean closed = new AtomicBoolean();
     private final PathAddress pathAddress;
@@ -388,7 +388,7 @@ public class NewRemoteProxyController implements NewProxyController, ManagementO
     }
 
     /**
-     * Handles {@link ProxyOperationControl#operationPrepared(org.jboss.as.controller.NewModelController.OperationTransaction, ModelNode)}
+     * Handles {@link ProxyOperationControl#operationPrepared(org.jboss.as.controller.ModelController.OperationTransaction, ModelNode)}
      * method calls done in the remote target controller
      */
     private class OperationPreparedRequestHandler extends ProxyOperationControlRequestHandler {

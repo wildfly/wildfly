@@ -22,8 +22,8 @@
 
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.Services;
@@ -39,7 +39,7 @@ import java.util.Locale;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class ServerReloadHandler implements NewStepHandler, DescriptionProvider {
+public class ServerReloadHandler implements OperationStepHandler, DescriptionProvider {
 
     /**
      * The operation name.
@@ -55,10 +55,10 @@ public class ServerReloadHandler implements NewStepHandler, DescriptionProvider 
 
     /** {@inheritDoc} */
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        context.addStep(new NewStepHandler() {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new OperationStepHandler() {
             @Override
-            public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(Services.JBOSS_AS);
                 service.addListener(new AbstractServiceListener<Object>() {
                     public void listenerAdded(final ServiceController<?> controller) {
@@ -74,7 +74,7 @@ public class ServerReloadHandler implements NewStepHandler, DescriptionProvider 
                 });
                 context.completeStep();
             }
-        }, NewOperationContext.Stage.RUNTIME);
+        }, OperationContext.Stage.RUNTIME);
         context.completeStep();
     }
 

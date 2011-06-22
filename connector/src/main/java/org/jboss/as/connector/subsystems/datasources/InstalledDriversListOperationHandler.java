@@ -15,8 +15,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAM
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -25,17 +25,17 @@ import org.jboss.msc.service.ServiceController;
  * Reads the "installed-drivers" attribute.
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class InstalledDriversListOperationHandler implements NewStepHandler {
+public class InstalledDriversListOperationHandler implements OperationStepHandler {
 
     public static final InstalledDriversListOperationHandler INSTANCE = new InstalledDriversListOperationHandler();
 
     private InstalledDriversListOperationHandler() {
     }
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceController<?> sc = context.getServiceRegistry(false).getRequiredService(
                             ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE);
                     DriverRegistry driverRegistry = DriverRegistry.class.cast(sc.getValue());
@@ -65,7 +65,7 @@ public class InstalledDriversListOperationHandler implements NewStepHandler {
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         } else {
             context.getResult().set("no metrics available");
         }

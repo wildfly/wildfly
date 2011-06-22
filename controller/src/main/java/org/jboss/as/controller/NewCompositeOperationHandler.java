@@ -44,18 +44,18 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public final class NewCompositeOperationHandler implements NewStepHandler, DescriptionProvider {
+public final class NewCompositeOperationHandler implements OperationStepHandler, DescriptionProvider {
     public static final NewCompositeOperationHandler INSTANCE = new NewCompositeOperationHandler();
     public static final String NAME = ModelDescriptionConstants.COMPOSITE;
 
     private NewCompositeOperationHandler() {
     }
 
-    public void execute(final NewOperationContext context, final ModelNode operation) {
+    public void execute(final OperationContext context, final ModelNode operation) {
         ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
         final List<ModelNode> list = operation.get(STEPS).asList();
         ModelNode responseMap = context.getResult().setEmptyObject();
-        Map<String, NewStepHandler> stepHandlerMap = new HashMap<String, NewStepHandler>();
+        Map<String, OperationStepHandler> stepHandlerMap = new HashMap<String, OperationStepHandler>();
         final int size = list.size();
         // Validate all needed handlers are available.
         for (int i = 0; i < size; i++) {
@@ -65,7 +65,7 @@ public final class NewCompositeOperationHandler implements NewStepHandler, Descr
             final ModelNode subOperation = list.get(i);
             PathAddress stepAddress = PathAddress.pathAddress(subOperation.get(OP_ADDR));
             String stepOpName = subOperation.require(OP).asString();
-            NewStepHandler stepHandler = registry.getOperationHandler(stepAddress, stepOpName);
+            OperationStepHandler stepHandler = registry.getOperationHandler(stepAddress, stepOpName);
             if (stepHandler == null) {
                 context.getFailureDescription().set(String.format("No handler for %s at address %s", stepOpName, stepAddress));
                 context.completeStep();
@@ -77,10 +77,10 @@ public final class NewCompositeOperationHandler implements NewStepHandler, Descr
         for (int i = size - 1; i >= 0; i --) {
             final ModelNode subOperation = list.get(i);
             String stepName = "step-" + (i+1);
-            context.addStep(responseMap.get(stepName).setEmptyObject(), subOperation, stepHandlerMap.get(stepName), NewOperationContext.Stage.IMMEDIATE);
+            context.addStep(responseMap.get(stepName).setEmptyObject(), subOperation, stepHandlerMap.get(stepName), OperationContext.Stage.IMMEDIATE);
         }
 
-        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+        if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
             final ModelNode failureMsg = new ModelNode();
             // TODO i18n
             final String baseMsg = "Composite operation failed and was rolled back. Steps that failed:";

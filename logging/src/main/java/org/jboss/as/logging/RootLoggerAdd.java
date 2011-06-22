@@ -24,8 +24,8 @@ package org.jboss.as.logging;
 
 import java.util.Collection;
 import java.util.logging.Level;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -38,13 +38,13 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class RootLoggerAdd implements NewStepHandler {
+class RootLoggerAdd implements OperationStepHandler {
 
     static final RootLoggerAdd INSTANCE = new RootLoggerAdd();
 
     static final String OPERATION_NAME = "set-root-logger";
 
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
         final String level = operation.require(CommonAttributes.LEVEL).asString();
         final ModelNode handlers = operation.get(CommonAttributes.HANDLERS);
 
@@ -52,9 +52,9 @@ class RootLoggerAdd implements NewStepHandler {
         subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.LEVEL).set(level);
         subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS).set(handlers);
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceTarget target = context.getServiceTarget();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     try {
@@ -80,16 +80,16 @@ class RootLoggerAdd implements NewStepHandler {
                         throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
                     }
 
-                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         context.removeService(LogServices.ROOT_LOGGER);
                         if (loggerControllers != null) for (ServiceController<?> loggerController : loggerControllers) {
                             context.removeService(loggerController.getName());
                         }
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }

@@ -22,8 +22,8 @@
 
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
@@ -33,7 +33,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class LaunchTypeHandler implements NewStepHandler {
+public class LaunchTypeHandler implements OperationStepHandler {
 
     private final ServerEnvironment.LaunchType launchType;
 
@@ -42,7 +42,7 @@ public class LaunchTypeHandler implements NewStepHandler {
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         context.getResult().set(launchType.toString());
         context.completeStep();
     }

@@ -21,9 +21,7 @@
  */
 package org.jboss.as.server.services.net;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.PathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
 import org.jboss.dmr.ModelNode;
 
@@ -39,12 +37,12 @@ public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
     protected SpecifiedInterfaceRemoveHandler() {
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         String name = getInterfaceName(operation);
         context.removeService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
     }
 
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO: Re-Add Services
     }
 }

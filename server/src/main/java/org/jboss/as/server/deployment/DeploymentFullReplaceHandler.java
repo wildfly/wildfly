@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -67,7 +67,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentFullReplaceHandler implements NewStepHandler, DescriptionProvider {
+public class DeploymentFullReplaceHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = FULL_REPLACE_DEPLOYMENT;
 
@@ -112,7 +112,7 @@ public class DeploymentFullReplaceHandler implements NewStepHandler, Description
         return DeploymentDescription.getFullReplaceDeploymentOperation(locale);
     }
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         validator.validate(operation);
 

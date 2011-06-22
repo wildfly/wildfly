@@ -50,9 +50,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.domain.controller.ServerIdentity;
@@ -60,24 +60,23 @@ import org.jboss.as.domain.controller.plan.NewRolloutPlanController;
 import org.jboss.as.domain.controller.plan.NewServerOperationExecutor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 
 /**
  * Formulates a rollout plan, invokes the proxies to execute it on the servers.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DomainRolloutStepHandler implements NewStepHandler {
+public class DomainRolloutStepHandler implements OperationStepHandler {
 
     private final DomainOperationContext domainOperationContext;
-    private final Map<String, NewProxyController> hostProxies;
-    private final Map<String, NewProxyController> serverProxies;
+    private final Map<String, ProxyController> hostProxies;
+    private final Map<String, ProxyController> serverProxies;
     private final ExecutorService executorService;
     private final ModelNode providedRolloutPlan;
     private final boolean trace = PrepareStepHandler.isTraceEnabled();
 
-    public DomainRolloutStepHandler(final Map<String, NewProxyController> hostProxies,
-                                    final Map<String, NewProxyController> serverProxies,
+    public DomainRolloutStepHandler(final Map<String, ProxyController> hostProxies,
+                                    final Map<String, ProxyController> serverProxies,
                                     final DomainOperationContext domainOperationContext,
                                     final ModelNode rolloutPlan,
                                     final ExecutorService executorService) {
@@ -89,7 +88,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
     }
 
     @Override
-    public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
 
         if (context.hasFailureDescription()) {
             // abort
@@ -180,7 +179,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         return cancelled;
     }
 
-    private void pushToServers(final NewOperationContext context, final Map<ServerIdentity, ProxyTask> tasks,
+    private void pushToServers(final OperationContext context, final Map<ServerIdentity, ProxyTask> tasks,
                                final Map<ServerIdentity, Future<ModelNode>> futures) throws OperationFailedException {
 
         final String localHostName = domainOperationContext.getLocalHostInfo().getLocalHostName();
@@ -198,7 +197,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
             final NewServerOperationExecutor operationExecutor = new NewServerOperationExecutor() {
                 @Override
                 public ModelNode executeServerOperation(ServerIdentity server, ModelNode operation) {
-                    NewProxyController proxy = hostProxies.get(server.getHostName());
+                    ProxyController proxy = hostProxies.get(server.getHostName());
                     if (proxy == null) {
                         if (localHostName.equals(server.getHostName())) {
                             // Use our server proxies
@@ -356,7 +355,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         return result;
     }
 
-    private void reportHostFailures(final NewOperationContext context, final ModelNode operation) {
+    private void reportHostFailures(final OperationContext context, final ModelNode operation) {
 
         final boolean isDomain = isDomainOperation(operation);
         if (!collectDomainFailure(context, isDomain)) {
@@ -364,7 +363,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         }
     }
 
-    private boolean collectDomainFailure(NewOperationContext context, final boolean isDomain) {
+    private boolean collectDomainFailure(OperationContext context, final boolean isDomain) {
         final ModelNode coordinator = domainOperationContext.getCoordinatorResult();
         ModelNode domainFailure = null;
         if (isDomain &&  coordinator != null && coordinator.has(FAILURE_DESCRIPTION)) {
@@ -378,7 +377,7 @@ public class DomainRolloutStepHandler implements NewStepHandler {
         return false;
     }
 
-    private boolean collectHostFailures(final NewOperationContext context, final boolean isDomain) {
+    private boolean collectHostFailures(final OperationContext context, final boolean isDomain) {
         ModelNode hostFailureResults = null;
         for (Map.Entry<String, ModelNode> entry : domainOperationContext.getHostControllerResults().entrySet()) {
             ModelNode hostResult = entry.getValue();

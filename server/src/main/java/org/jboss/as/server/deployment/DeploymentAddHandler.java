@@ -44,11 +44,10 @@ import java.io.InputStream;
 import java.util.Locale;
 
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
@@ -68,7 +67,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider {
+public class DeploymentAddHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -123,7 +122,7 @@ public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider
     /**
      * {@inheritDoc}
      */
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
 
         final ModelNode opAddr = operation.get(OP_ADDR);
@@ -175,7 +174,7 @@ public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider
         subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
         subModel.get(PERSISTENT).set(!operation.hasDefined(PERSISTENT) || operation.get(PERSISTENT).asBoolean());
 
-        if (subModel.get(ENABLED).asBoolean() && (context.getType() == NewOperationContext.Type.SERVER)) {
+        if (subModel.get(ENABLED).asBoolean() && (context.getType() == OperationContext.Type.SERVER)) {
             DeploymentHandlerUtil.deploy(context, runtimeName, name, contentItem);
         }
 

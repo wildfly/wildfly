@@ -21,7 +21,7 @@ package org.jboss.as.server.deployment.client;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
@@ -29,7 +29,7 @@ import org.jboss.as.controller.client.helpers.standalone.impl.AbstractServerDepl
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link ServerDeploymentManager} the uses a {@link NewModelController}.
+ * {@link ServerDeploymentManager} the uses a {@link org.jboss.as.controller.ModelController}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  *
@@ -38,7 +38,7 @@ public class ModelControllerServerDeploymentManager extends AbstractServerDeploy
 
     private final ModelControllerClient client;
 
-    public ModelControllerServerDeploymentManager(final NewModelController controller) {
+    public ModelControllerServerDeploymentManager(final ModelController controller) {
         this.client = controller.createClient(Executors.newCachedThreadPool());
     }
 

@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -58,27 +58,27 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
 
     /** {@inheritDoc} */
     @Override
-    public void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider) {
+    public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {
         registerOperationHandler(operationName, handler, descriptionProvider, false);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void registerOperationHandler(final String operationName, final NewStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
+    public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
         registerOperationHandler(operationName, handler, descriptionProvider, inherited, OperationEntry.EntryType.PUBLIC);
     }
 
     /** {@inheritDoc} */
     @Override
-    public abstract void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType);
+    public abstract void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType);
 
     /** {@inheritDoc} */
     @Override
-    public abstract void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags);
+    public abstract void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags);
 
     /** {@inheritDoc} */
     @Override
-    public abstract void registerProxyController(final PathElement address, final NewProxyController controller) throws IllegalArgumentException;
+    public abstract void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException;
 
     /** {@inheritDoc} */
     @Override
@@ -92,9 +92,9 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
      * @return the operation handler, or {@code null} if none match
      */
     @Override
-    public final NewStepHandler getOperationHandler(final PathAddress pathAddress, final String operationName) {
-        NewStepHandler inheritable = getInheritableOperationHandler(operationName);
-        NewStepHandler result =  getOperationHandler(pathAddress.iterator(), operationName, inheritable);
+    public final OperationStepHandler getOperationHandler(final PathAddress pathAddress, final String operationName) {
+        OperationStepHandler inheritable = getInheritableOperationHandler(operationName);
+        OperationStepHandler result =  getOperationHandler(pathAddress.iterator(), operationName, inheritable);
         NodeSubregistry ancestorSubregistry = parent;
         while (result == null && ancestorSubregistry != null) {
             AbstractResourceRegistration ancestor = ancestorSubregistry.getParent();
@@ -104,8 +104,8 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
         return result;
     }
 
-    abstract NewStepHandler getOperationHandler(ListIterator<PathElement> iterator, String operationName, NewStepHandler inherited);
-    abstract NewStepHandler getInheritableOperationHandler(String operationName);
+    abstract OperationStepHandler getOperationHandler(ListIterator<PathElement> iterator, String operationName, OperationStepHandler inherited);
+    abstract OperationStepHandler getInheritableOperationHandler(String operationName);
 
     @Override
     public AttributeAccess getAttributeAccess(final PathAddress address, final String attributeName) {
@@ -200,19 +200,19 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
 
     abstract Set<PathElement> getChildAddresses(Iterator<PathElement> iterator);
 
-    public NewProxyController getProxyController(final PathAddress address) {
+    public ProxyController getProxyController(final PathAddress address) {
         return getProxyController(address.iterator());
     }
 
-    abstract NewProxyController getProxyController(Iterator<PathElement> iterator);
+    abstract ProxyController getProxyController(Iterator<PathElement> iterator);
 
-    public Set<NewProxyController> getProxyControllers(PathAddress address){
-        Set<NewProxyController> controllers = new HashSet<NewProxyController>();
+    public Set<ProxyController> getProxyControllers(PathAddress address){
+        Set<ProxyController> controllers = new HashSet<ProxyController>();
         getProxyControllers(address.iterator(), controllers);
         return controllers;
     }
 
-    abstract void getProxyControllers(Iterator<PathElement> iterator, Set<NewProxyController> controllers);
+    abstract void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers);
 
     /** {@inheritDoc} */
     @Override

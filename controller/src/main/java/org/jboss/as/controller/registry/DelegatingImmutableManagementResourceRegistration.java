@@ -25,8 +25,8 @@ package org.jboss.as.controller.registry;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -62,7 +62,7 @@ public class DelegatingImmutableManagementResourceRegistration implements Immuta
     }
 
     @Override
-    public NewStepHandler getOperationHandler(PathAddress address, String operationName) {
+    public OperationStepHandler getOperationHandler(PathAddress address, String operationName) {
         return delegate.getOperationHandler(address, operationName);
     }
 
@@ -107,12 +107,12 @@ public class DelegatingImmutableManagementResourceRegistration implements Immuta
     }
 
     @Override
-    public NewProxyController getProxyController(PathAddress address) {
+    public ProxyController getProxyController(PathAddress address) {
         return delegate.getProxyController(address);
     }
 
     @Override
-    public Set<NewProxyController> getProxyControllers(PathAddress address) {
+    public Set<ProxyController> getProxyControllers(PathAddress address) {
         return delegate.getProxyControllers(address);
     }
 

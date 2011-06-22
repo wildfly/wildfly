@@ -108,7 +108,7 @@ public class NewRemoteDomainControllerAddHandler extends AbstractAddStepHandler 
     }
 
   //Done by DomainModelControllerService
-//    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+//    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 //        final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 //        final ServiceTarget serviceTarget = context.getServiceTarget();
 //        newControllers.add(installRemoteDomainControllerConnection(hostModel, serviceTarget, fileRepository));

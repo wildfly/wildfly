@@ -21,8 +21,8 @@
 */
 package org.jboss.as.controller.test;
 
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
@@ -47,7 +47,7 @@ public class RemoteChannelProxyControllerTestCase extends AbstractProxyControlle
     }
 
     @Override
-    protected NewProxyController createProxyController(final NewModelController proxiedController, final PathAddress proxyNodeAddress) {
+    protected ProxyController createProxyController(final ModelController proxiedController, final PathAddress proxyNodeAddress) {
         try {
             channels = new RemoteChannelPairSetup();
             channels.setupRemoting();

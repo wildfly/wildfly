@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -54,7 +54,7 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
      * @param executorService executor to use to execute requests from this operation handler to the initiator
      * @param controller the target controller
      */
-    public NewModelControllerClientOperationHandler(final ExecutorService executorService, final NewModelController controller) {
+    public NewModelControllerClientOperationHandler(final ExecutorService executorService, final ModelController controller) {
         super(executorService, controller);
     }
 
@@ -108,7 +108,7 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
                     result = controller.execute(
                             operation,
                             new OperationMessageHandlerProxy(getContext(), batchId),
-                            NewModelController.OperationTransactionControl.COMMIT,
+                            ModelController.OperationTransactionControl.COMMIT,
                             attachmentsProxy);
                 } catch (Exception e) {
                     final ModelNode failure = new ModelNode();

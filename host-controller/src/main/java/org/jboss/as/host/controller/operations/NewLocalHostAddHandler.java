@@ -21,6 +21,7 @@
  */
 package org.jboss.as.host.controller.operations;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTIONS;
@@ -29,8 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 
 import java.util.Locale;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALMS;
@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class NewLocalHostAddHandler implements NewStepHandler, DescriptionProvider {
+public class NewLocalHostAddHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "add-host";
 
@@ -65,7 +65,7 @@ public class NewLocalHostAddHandler implements NewStepHandler, DescriptionProvid
     /**
      * {@inheritDoc}
      */
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
         if (!context.isBooting()) {
             throw new IllegalStateException(String.format("Invocations of %s after HostController boot are not allowed", OPERATION_NAME));
         }

@@ -28,33 +28,33 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 /**
- * Base class for {@link NewStepHandler} implementations that add managed resource.
+ * Base class for {@link OperationStepHandler} implementations that add managed resource.
  *
  * @author John Bailey
  */
-public abstract class AbstractAddStepHandler implements NewStepHandler {
+public abstract class AbstractAddStepHandler implements OperationStepHandler {
 
     /** {@inheritDoc */
-    public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         populateModel(operation, model);
 
         if (requiresRuntime(context)) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     performRuntime(context, operation, model, verificationHandler, controllers);
 
                     if(requiresRuntimeVerification()) {
-                        context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+                        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
                     }
 
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         rollbackRuntime(context, operation, model, controllers);
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }
@@ -70,20 +70,20 @@ public abstract class AbstractAddStepHandler implements NewStepHandler {
     protected abstract void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException;
 
     /**
-     * Gets whether {@link #performRuntime(NewOperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)}}
+     * Gets whether {@link #performRuntime(OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)}}
      * should be called. This default implementation always returns {@code true}. Subclasses that perform no runtime
      * update could override and return {@code false}.
      *
      * @param context operation context
      * @return {@code true} if {@code performRuntime} should be invoked; {@code false} otherwise.
      */
-    protected boolean requiresRuntime(NewOperationContext context) {
-        return context.getType() == NewOperationContext.Type.SERVER;
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getType() == OperationContext.Type.SERVER;
     }
 
     /**
      * Gets whether the {@link ServiceVerificationHandler} parameter passed to
-     * {@link #performRuntime(NewOperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)}
+     * {@link #performRuntime(OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)}
      * should be added to the operation context as a step.
      * <p>
      * This default implementation always returns {@code true}.
@@ -108,20 +108,20 @@ public abstract class AbstractAddStepHandler implements NewStepHandler {
      * @param model persistent configuration model node that corresponds to the address of {@code operation}
      * @param verificationHandler step handler that can be added as a listener to any new services installed in order to
      *                            validate the services installed correctly during the
-     *                            {@link org.jboss.as.controller.NewOperationContext.Stage#VERIFY VERIFY stage}
+     *                            {@link OperationContext.Stage#VERIFY VERIFY stage}
      * @param newControllers holder for the {@link ServiceController} for any new services installed by the method. The
      *                       method should add the {@code ServiceController} for any new services to this list. If the
      *                       overall operation needs to be rolled back, the list will be used in
-     *                       {@link #rollbackRuntime(NewOperationContext, ModelNode, ModelNode, java.util.List)}  to automatically removed
+     *                       {@link #rollbackRuntime(OperationContext, ModelNode, ModelNode, java.util.List)}  to automatically removed
      *                       the newly added services
      * @throws OperationFailedException if {@code operation} is invalid or updating the runtime otherwise fails
      */
-    protected void performRuntime(final NewOperationContext context, final ModelNode operation, final ModelNode model,
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
     }
 
     /**
-     * Rollback runtime changes made in {@link #performRuntime(NewOperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)}.
+     * Rollback runtime changes made in {@link #performRuntime(OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)}.
      * <p>
      * This default implementation removes all services in the given list of {@code controllers}. The contents of
      * {@code controllers} is the same as what was in the {@code newControllers} parameter passed to {@code performRuntime()}
@@ -131,9 +131,9 @@ public abstract class AbstractAddStepHandler implements NewStepHandler {
      * @param operation the operation being executed
      * @param model persistent configuration model node that corresponds to the address of {@code operation}
      * @param controllers  holder for the {@link ServiceController} for any new services installed by
-     *                     {@link #performRuntime(NewOperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)}
+     *                     {@link #performRuntime(OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)}
      */
-    protected void rollbackRuntime(NewOperationContext context, final ModelNode operation, final ModelNode model, List<ServiceController<?>> controllers) {
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final ModelNode model, List<ServiceController<?>> controllers) {
         for(ServiceController<?> controller : controllers) {
             context.removeService(controller.getName());
         }

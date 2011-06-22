@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -54,7 +54,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
 
     private final InjectedValue<ManagementChannel> hcChannel = new InjectedValue<ManagementChannel>();
-    private final InjectedValue<NewModelController> controller = new InjectedValue<NewModelController>();
+    private final InjectedValue<ModelController> controller = new InjectedValue<ModelController>();
 
     private final String serverName;
     private final String serverProcessName;
@@ -97,7 +97,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return hcChannel;
     }
 
-    public Injector<NewModelController> getServerControllerInjector() {
+    public Injector<ModelController> getServerControllerInjector() {
         return controller;
     }
 

@@ -24,8 +24,8 @@ package org.jboss.as.logging;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
@@ -37,20 +37,20 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author John Bailey
  */
-public class HandlerLevelChange implements NewStepHandler {
+public class HandlerLevelChange implements OperationStepHandler {
     static final String OPERATION_NAME = "change-log-level";
     static final HandlerLevelChange INSTANCE = new HandlerLevelChange();
 
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final String level = operation.get(CommonAttributes.LEVEL).asString();
 
         context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(CommonAttributes.LEVEL).set(level);
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) {
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
                     if (controller != null) {
@@ -58,7 +58,7 @@ public class HandlerLevelChange implements NewStepHandler {
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }

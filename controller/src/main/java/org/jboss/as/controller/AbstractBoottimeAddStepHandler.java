@@ -28,7 +28,7 @@ import org.jboss.msc.service.ServiceController;
 import java.util.List;
 
 /**
- * Base class for {@link NewStepHandler} implementations that add managed resource and also perform runtime
+ * Base class for {@link OperationStepHandler} implementations that add managed resource and also perform runtime
  * processing that should only occur during server boot. An example of such processing would be installing a
  * deployment processor.
  *
@@ -37,12 +37,12 @@ import java.util.List;
 public abstract class AbstractBoottimeAddStepHandler extends AbstractAddStepHandler {
 
     /**
-     * If {@link org.jboss.as.controller.NewOperationContext#isBooting()} returns {@code true}, invokes
-     * {@link #performBoottime(NewOperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)},
-     * else invokes {@link org.jboss.as.controller.NewOperationContext#reloadRequired()}.
+     * If {@link OperationContext#isBooting()} returns {@code true}, invokes
+     * {@link #performBoottime(OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)},
+     * else invokes {@link OperationContext#reloadRequired()}.
      */
     @Override
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         if (context.isBooting()) {
             performBoottime(context, operation, model, verificationHandler, newControllers);
         } else {
@@ -52,29 +52,29 @@ public abstract class AbstractBoottimeAddStepHandler extends AbstractAddStepHand
 
     /**
      * Make any runtime changes necessary to effect the changes indicated by the given {@code operation}. Will only be
-     * invoked if {@link org.jboss.as.controller.NewOperationContext#isBooting()} returns {@code true}.
+     * invoked if {@link OperationContext#isBooting()} returns {@code true}.
      *
      * @param context             the operation context
      * @param operation           the operation being executed
      * @param model               persistent configuration model node that corresponds to the address of {@code operation}
      * @param verificationHandler step handler that can be added as a listener to any new services installed in order to
      *                            validate the services installed correctly during the
-     *                            {@link org.jboss.as.controller.NewOperationContext.Stage#VERIFY VERIFY stage}
+     *                            {@link OperationContext.Stage#VERIFY VERIFY stage}
      * @param newControllers      holder for the {@link ServiceController} for any new services installed by the method. The
      *                            method should add the {@code ServiceController} for any new services to this list. If the
      *                            overall operation needs to be rolled back, the list will be used in
-     *                            {@link #rollbackRuntime(NewOperationContext, ModelNode, ModelNode, java.util.List)}  to automatically removed
+     *                            {@link #rollbackRuntime(OperationContext, ModelNode, ModelNode, java.util.List)}  to automatically removed
      *                            the newly added services
      * @throws OperationFailedException if {@code operation} is invalid or updating the runtime otherwise fails
      */
-    protected abstract void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException;
+    protected abstract void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException;
 
     /**
-     * Overrides the superclass to additionally call {@link org.jboss.as.controller.NewOperationContext#revertReloadRequired()}
-     * if {@link org.jboss.as.controller.NewOperationContext#isBooting()} returns {@code false}.
+     * Overrides the superclass to additionally call {@link OperationContext#revertReloadRequired()}
+     * if {@link OperationContext#isBooting()} returns {@code false}.
      */
     @Override
-    protected void rollbackRuntime(NewOperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
         super.rollbackRuntime(context, operation, model, controllers);
         if (!context.isBooting()) {
             context.revertReloadRequired();

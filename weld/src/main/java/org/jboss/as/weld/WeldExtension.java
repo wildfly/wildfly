@@ -28,8 +28,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -127,10 +127,10 @@ public class WeldExtension implements Extension {
         }
     };
 
-    private static class WeldSubsystemDescribeHandler implements NewStepHandler, DescriptionProvider {
+    private static class WeldSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final WeldSubsystemDescribeHandler INSTANCE = new WeldSubsystemDescribeHandler();
 
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             context.getResult().add(createAddSubSystemOperation());
             context.completeStep();
         }

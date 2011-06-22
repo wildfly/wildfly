@@ -42,7 +42,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -90,7 +90,7 @@ import org.jboss.threads.AsyncFutureTask;
 public class NewRemoteDomainConnectionService implements NewMasterDomainControllerClient, Service<NewMasterDomainControllerClient>, ClosedCallback {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
-    private final NewModelController controller;
+    private final ModelController controller;
     private final InetAddress host;
     private final int port;
     private final String name;
@@ -110,7 +110,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
     private final InjectedValue<CallbackHandlerFactory> callbackFactoryInjector = new InjectedValue<CallbackHandlerFactory>();
 
-    private NewRemoteDomainConnectionService(final NewModelController controller, final String name, final InetAddress host, final int port, final RemoteFileRepository remoteFileRepository){
+    private NewRemoteDomainConnectionService(final ModelController controller, final String name, final InetAddress host, final int port, final RemoteFileRepository remoteFileRepository){
         this.controller = controller;
         this.name = name;
         this.host = host;
@@ -119,7 +119,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         remoteFileRepository.setRemoteFileRepositoryExecutor(remoteFileRepositoryExecutor);
     }
 
-    public static Future<NewMasterDomainControllerClient> install(final ServiceTarget serviceTarget, final NewModelController controller,
+    public static Future<NewMasterDomainControllerClient> install(final ServiceTarget serviceTarget, final ModelController controller,
                                                                   final String localHostName, final String remoteDcHost, final int remoteDcPort,
                                                                   final String securityRealm, final RemoteFileRepository remoteFileRepository) {
         NewRemoteDomainConnectionService service;

@@ -22,7 +22,6 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -36,11 +35,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewModelController.OperationTransaction;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ModelController.OperationTransaction;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -56,7 +55,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author John Bailey
  */
-public class ReadMasterDomainModelHandler implements NewStepHandler, DescriptionProvider {
+public class ReadMasterDomainModelHandler implements OperationStepHandler, DescriptionProvider {
     public static final String OPERATION_NAME = "read-master-domain-model";
 
     private final NewDomainController domainController;
@@ -67,7 +66,7 @@ public class ReadMasterDomainModelHandler implements NewStepHandler, Description
         this.registry = registry;
     }
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         //Lock the model here
         final Resource root = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final String hostName = operation.get(HOST).asString();
@@ -81,12 +80,12 @@ public class ReadMasterDomainModelHandler implements NewStepHandler, Description
         op.get(DOMAIN_MODEL).set(modelDescription);
 
         //TODO get this from somewhere
-        final NewProxyController proxy = registry.popChannelAndCreateProxy(hostName);
+        final ProxyController proxy = registry.popChannelAndCreateProxy(hostName);
 
         final AtomicReference<ModelNode> failedRef = new AtomicReference<ModelNode>();
         final AtomicReference<ModelNode> preparedRef = new AtomicReference<ModelNode>();
         final AtomicReference<OperationTransaction> txRef = new AtomicReference<OperationTransaction>();
-        NewProxyController.ProxyOperationControl control = new NewProxyController.ProxyOperationControl() {
+        ProxyController.ProxyOperationControl control = new ProxyController.ProxyOperationControl() {
 
             @Override
             public void operationFailed(ModelNode response) {
@@ -117,10 +116,10 @@ public class ReadMasterDomainModelHandler implements NewStepHandler, Description
                 context.getFailureDescription().set(preparedResult.get(FAILURE_DESCRIPTION));
             }
 
-            NewOperationContext.ResultAction resultAction = context.completeStep();
-            NewModelController.OperationTransaction tx = txRef.get();
+            OperationContext.ResultAction resultAction = context.completeStep();
+            ModelController.OperationTransaction tx = txRef.get();
             if (tx != null) {
-                if (resultAction == NewOperationContext.ResultAction.KEEP) {
+                if (resultAction == OperationContext.ResultAction.KEEP) {
                     tx.commit();
                     domainController.registerRemoteHost(proxy);
                 } else {

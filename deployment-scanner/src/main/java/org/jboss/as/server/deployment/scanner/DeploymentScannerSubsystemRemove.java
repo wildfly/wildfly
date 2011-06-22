@@ -24,7 +24,7 @@ package org.jboss.as.server.deployment.scanner;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -45,14 +45,14 @@ public class DeploymentScannerSubsystemRemove extends AbstractRemoveStepHandler 
         //
     }
 
-    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.SCANNER) && model.get(CommonAttributes.SCANNER).asInt() > 0) {
             throw new OperationFailedException(new ModelNode().set("Cannot remove subsystem while it still has scanners configured. Remove all scanners first."));
         }
         super.performRemove(context, operation, model);
     }
 
-    protected boolean requiresRuntime(NewOperationContext context) {
+    protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
 

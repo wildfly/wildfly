@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewModelController.OperationTransactionControl;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.NewAbstractModelControllerOperationHandler;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandler;
@@ -63,7 +63,7 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
     private final NewDomainController domainController;
     private final UnregisteredHostChannelRegistry registry;
 
-    public NewMasterDomainControllerOperationHandlerImpl(final ExecutorService executorService, final NewModelController controller, final UnregisteredHostChannelRegistry registry, final NewDomainController domainController) {
+    public NewMasterDomainControllerOperationHandlerImpl(final ExecutorService executorService, final ModelController controller, final UnregisteredHostChannelRegistry registry, final NewDomainController domainController) {
         super(executorService, controller);
         this.domainController = domainController;
         this.registry = registry;

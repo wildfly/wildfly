@@ -23,10 +23,10 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import org.jboss.as.controller.OperationContext;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,13 +36,13 @@ class LoggerRemove extends AbstractRemoveStepHandler {
 
     static final LoggerRemove INSTANCE = new LoggerRemove();
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final ModelNode address = operation.get(OP_ADDR);
         final String name = address.get(address.asInt() - 1).asProperty().getValue().asString();
         context.removeService(LogServices.loggerName(name));
     }
 
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
 }

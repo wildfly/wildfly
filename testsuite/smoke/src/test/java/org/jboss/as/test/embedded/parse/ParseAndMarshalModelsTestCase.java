@@ -47,9 +47,9 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -305,7 +305,7 @@ public class ParseAndMarshalModelsTestCase {
         final List<ModelNode> ops = persister.load();
 
         final ModelNode model = new ModelNode();
-        final NewModelController controller = createController(model, new Setup() {
+        final ModelController controller = createController(model, new Setup() {
             public void setup(ModelNode model, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model);
                 ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null);
@@ -331,7 +331,7 @@ public class ParseAndMarshalModelsTestCase {
 
         final ModelNode model = new ModelNode();
 
-        final NewModelController controller = createController(model, new Setup() {
+        final ModelController controller = createController(model, new Setup() {
             public void setup(ModelNode model, ManagementResourceRegistration root) {
                 NewHostModelUtil.initCoreModel(model.get(HOST, "local"));
 
@@ -433,7 +433,7 @@ public class ParseAndMarshalModelsTestCase {
 
 
         final ModelNode model = new ModelNode();
-        final NewModelController controller = createController(model, new Setup() {
+        final ModelController controller = createController(model, new Setup() {
             public void setup(ModelNode model, ManagementResourceRegistration rootRegistration) {
                 NewDomainModelUtil.updateCoreModel(model);
                 NewDomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, null, new MockFileRepository(), null, null);
@@ -453,7 +453,7 @@ public class ParseAndMarshalModelsTestCase {
         return model;
     }
 
-    public NewModelController createController(final ModelNode model, final Setup registration) throws InterruptedException {
+    public ModelController createController(final ModelNode model, final Setup registration) throws InterruptedException {
         final ServiceController<?> existingController = serviceContainer.getService(ServiceName.of("ModelController"));
         if (existingController != null) {
             final CountDownLatch latch = new CountDownLatch(1);
@@ -474,17 +474,17 @@ public class ParseAndMarshalModelsTestCase {
         ServiceTarget target = serviceContainer.subTarget();
         ControlledProcessState processState = new ControlledProcessState(true);
         ModelControllerService svc = new ModelControllerService(processState, registration, model);
-        ServiceBuilder<NewModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
+        ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         svc.latch.await();
-        NewModelController controller = svc.getValue();
+        ModelController controller = svc.getValue();
         ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
         controller.execute(setup, null, null, null);
         processState.setRunning();
         return controller;
     }
 
-    private void executeOperations(NewModelController controller, List<ModelNode> ops) {
+    private void executeOperations(ModelController controller, List<ModelNode> ops) {
         for (final ModelNode op : ops) {
             controller.execute(op, null, null, null);
         }
@@ -596,7 +596,7 @@ public class ParseAndMarshalModelsTestCase {
         private final Setup registration;
 
         ModelControllerService(final ControlledProcessState processState, final Setup registration, final ModelNode model) {
-            super(NewOperationContext.Type.MANAGEMENT, new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null);
+            super(OperationContext.Type.MANAGEMENT, new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null);
             this.model = model;
             this.registration = registration;
         }
@@ -613,8 +613,8 @@ public class ParseAndMarshalModelsTestCase {
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             registration.setup(rootResource.getModel(), rootRegistration);
 
-            rootRegistration.registerOperationHandler("capture-model", new NewStepHandler() {
-                        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            rootRegistration.registerOperationHandler("capture-model", new OperationStepHandler() {
+                        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                             model.set(context.readModel(PathAddress.EMPTY_ADDRESS));
                         }
                     }, getRootDescriptionProvider());

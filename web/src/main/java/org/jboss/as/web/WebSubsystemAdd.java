@@ -26,9 +26,8 @@ import javax.management.MBeanServer;
 import java.util.List;
 import java.util.Locale;
 
-import com.sun.tools.internal.xjc.model.Model;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -109,7 +108,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
         model.get(Constants.VIRTUAL_SERVER).setEmptyObject();
     }
 
-    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model,
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model,
                                    ServiceVerificationHandler verificationHandler,
                                    List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ModelNode config = operation.get(Constants.CONTAINER_CONFIG);
@@ -140,7 +139,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JSF_ANNOTATIONS, new JsfAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultVirtualServer));
             }
-        }, NewOperationContext.Stage.RUNTIME);
+        }, OperationContext.Stage.RUNTIME);
 
         final WebServerService service = new WebServerService(defaultVirtualServer, useNative);
         newControllers.add(context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB, service)

@@ -20,8 +20,8 @@ package org.jboss.as.server.deployment;
 
 import java.util.Locale;
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -53,7 +53,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentReplaceHandler implements NewStepHandler, DescriptionProvider {
+public class DeploymentReplaceHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REPLACE_DEPLOYMENT;
 
@@ -80,7 +80,7 @@ public class DeploymentReplaceHandler implements NewStepHandler, DescriptionProv
         return DeploymentDescription.getReplaceDeploymentOperation(locale);
     }
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
 
         // ModelNode deployments = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(DEPLOYMENT);

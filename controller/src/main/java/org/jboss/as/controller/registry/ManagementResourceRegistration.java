@@ -24,8 +24,8 @@ package org.jboss.as.controller.registry;
 
 import java.util.EnumSet;
 
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -78,7 +78,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param descriptionProvider the description provider for this operation
      * @throws IllegalArgumentException if either parameter is {@code null}
      */
-    void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider);
+    void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider);
 
     /**
      * Register an operation handler for this model node.
@@ -89,7 +89,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
      * @throws IllegalArgumentException if either parameter is {@code null}
      */
-    void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited);
+    void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited);
 
     /**
      * Register an operation handler for this model node.
@@ -101,7 +101,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param entryType the operation entry type
      * @throws IllegalArgumentException if either parameter is {@code null}
      */
-    void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType);
+    void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType);
 
     /**
      * Register an operation handler for this model node.
@@ -114,7 +114,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param flags operational modifier flags for this operation (e.g. read-only)
      * @throws IllegalArgumentException if either parameter is {@code null}
      */
-    void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags);
+    void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags);
 
 
     /**
@@ -128,7 +128,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param storage the storage type for this attribute
      * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
      */
-    void registerReadWriteAttribute(String attributeName, NewStepHandler readHandler, NewStepHandler writeHandler, AttributeAccess.Storage storage);
+    void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, AttributeAccess.Storage storage);
 
     /**
      * Records that the given attribute can be read from but not written to, and
@@ -140,7 +140,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param storage the storage type for this attribute
      * @throws IllegalArgumentException if {@code attributeName} is {@code null}
      */
-    void registerReadOnlyAttribute(String attributeName, NewStepHandler readHandler, AttributeAccess.Storage storage);
+    void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, AttributeAccess.Storage storage);
 
     /**
      * Records that the given attribute is a metric.
@@ -150,7 +150,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
      */
-    void registerMetric(String attributeName, NewStepHandler metricHandler);
+    void registerMetric(String attributeName, OperationStepHandler metricHandler);
 
     /**
      * Register a proxy controller.
@@ -158,7 +158,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param address the child of this registry that should be proxied
      * @param proxyController the proxy controller
      */
-    void registerProxyController(PathElement address, NewProxyController proxyController);
+    void registerProxyController(PathElement address, ProxyController proxyController);
 
     /**
      * Unregister a proxy controller

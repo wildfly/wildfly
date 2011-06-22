@@ -25,8 +25,8 @@ package org.jboss.as.web.deployment;
 import org.apache.catalina.Context;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardWrapper;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -84,18 +84,18 @@ public class ServletDeploymentStats {
         });
     }
 
-    abstract static class AbstractMetricsHandler implements NewStepHandler {
+    abstract static class AbstractMetricsHandler implements OperationStepHandler {
 
         abstract void handle(ModelNode response, String name, Wrapper wrapper);
 
         @Override
-        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
             final String deploymentName = address.getElement(address.size() -3).getValue();
             final ModelNode node  = context.readModel(PathAddress.EMPTY_ADDRESS);
-            context.addStep(new NewStepHandler() {
+            context.addStep(new OperationStepHandler() {
                 @Override
-                public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(WebSubsystemServices.JBOSS_WEB.append(deploymentName));
                     if(controller != null) {
                         final String name = node.get("servlet-name").asString();
@@ -105,7 +105,7 @@ public class ServletDeploymentStats {
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
             context.completeStep();
         }
     }

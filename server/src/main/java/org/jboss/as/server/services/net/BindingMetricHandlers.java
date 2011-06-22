@@ -26,8 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.net.InetAddress;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -47,17 +47,17 @@ public final class BindingMetricHandlers {
     private static final ServiceName SOCKET_BINDING = SocketBinding.JBOSS_BINDING_NAME;
     private static final ModelNode NO_METRICS = new ModelNode().set("no metrics available");
 
-    abstract static class AbstractBindingMetricsHandler implements NewStepHandler {
+    abstract static class AbstractBindingMetricsHandler implements OperationStepHandler {
 
         /** {@inheritDoc} */
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final PathElement element = address.getLastElement();
 
-            context.addStep(new NewStepHandler() {
+            context.addStep(new OperationStepHandler() {
                 @Override
-                public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final ModelNode result = context.getResult();
                     final ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(SOCKET_BINDING.append(element.getValue()));
                     if(controller != null) {
@@ -68,7 +68,7 @@ public final class BindingMetricHandlers {
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
             context.completeStep();
         }
 
@@ -78,7 +78,7 @@ public final class BindingMetricHandlers {
     public static class BoundHandler extends AbstractBindingMetricsHandler {
 
         public static final String ATTRIBUTE_NAME = "bound";
-        public static final NewStepHandler INSTANCE = new BoundHandler();
+        public static final OperationStepHandler INSTANCE = new BoundHandler();
 
         private BoundHandler() {
             //
@@ -94,7 +94,7 @@ public final class BindingMetricHandlers {
     public static class BoundAddressHandler extends AbstractBindingMetricsHandler {
 
         public static final String ATTRIBUTE_NAME = "bound-address";
-        public static final NewStepHandler INSTANCE = new BoundAddressHandler();
+        public static final OperationStepHandler INSTANCE = new BoundAddressHandler();
 
         private BoundAddressHandler() {
             //
@@ -113,7 +113,7 @@ public final class BindingMetricHandlers {
     public static class BoundPortHandler extends AbstractBindingMetricsHandler {
 
         public static final String ATTRIBUTE_NAME = "bound-port";
-        public static final NewStepHandler INSTANCE = new BoundPortHandler();
+        public static final OperationStepHandler INSTANCE = new BoundPortHandler();
 
         private BoundPortHandler() {
             //

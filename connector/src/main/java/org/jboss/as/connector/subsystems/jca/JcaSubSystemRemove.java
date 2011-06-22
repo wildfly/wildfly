@@ -23,8 +23,8 @@ package org.jboss.as.connector.subsystems.jca;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -33,13 +33,13 @@ import org.jboss.dmr.ModelNode;
  */
 public class JcaSubSystemRemove extends AbstractRemoveStepHandler {
 
-    static final NewStepHandler INSTANCE = new JcaSubSystemRemove();
+    static final OperationStepHandler INSTANCE = new JcaSubSystemRemove();
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         context.removeService(ConnectorServices.CONNECTOR_CONFIG_SERVICE);
     }
 
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
 

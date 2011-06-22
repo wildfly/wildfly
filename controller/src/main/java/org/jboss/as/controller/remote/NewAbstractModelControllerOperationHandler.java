@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -55,9 +55,9 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
     final Logger log = Logger.getLogger("org.jboss.as.controller.remote");
 
     protected final ExecutorService executorService;
-    protected final NewModelController controller;
+    protected final ModelController controller;
 
-    public NewAbstractModelControllerOperationHandler(final ExecutorService executorService, final NewModelController controller) {
+    public NewAbstractModelControllerOperationHandler(final ExecutorService executorService, final ModelController controller) {
         this.executorService = executorService;
         this.controller = controller;
     }

@@ -23,9 +23,7 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -45,14 +43,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
 import org.jboss.as.domain.controller.NewDomainController;
-import org.jboss.as.domain.management.security.UserNotFoundException;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -258,7 +255,7 @@ public class NewServerInventoryImpl implements NewServerInventory {
             server.setState(ServerState.STARTED);
 
             final PathElement element = PathElement.pathElement(RUNNING_SERVER, server.getServerName());
-            final NewProxyController serverController = NewRemoteProxyController.create(Executors.newCachedThreadPool(),
+            final ProxyController serverController = NewRemoteProxyController.create(Executors.newCachedThreadPool(),
                     PathAddress.pathAddress(PathElement.pathElement(HOST, domainController.getLocalHostInfo().getLocalHostName()), element),
                     ProxyOperationAddressTranslator.SERVER,
                     channel);

@@ -22,7 +22,6 @@
 
 package org.jboss.as.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
@@ -38,8 +37,8 @@ import javax.security.auth.login.Configuration;
 import java.util.List;
 import java.util.Properties;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.NamingStore;
@@ -77,7 +76,7 @@ import org.jboss.security.plugins.mapping.JBossMappingManager;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Brian Stansberry
  */
-class SecuritySubsystemAdd implements NewStepHandler {
+class SecuritySubsystemAdd implements OperationStepHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.security");
 
@@ -115,7 +114,7 @@ class SecuritySubsystemAdd implements NewStepHandler {
     /**
      * {@inheritDoc}
      */
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
 
         String authenticationManagerClassName = "default";
         String callbackHandlerClassName = "default";
@@ -221,7 +220,7 @@ class SecuritySubsystemAdd implements NewStepHandler {
             resolvedSubjectFactoryClassName = subjectFactoryClassName;
         }
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
+        if (context.getType() == OperationContext.Type.SERVER) {
             if (!context.isBooting()) {
                 context.reloadRequired();
             } else {
@@ -230,12 +229,12 @@ class SecuritySubsystemAdd implements NewStepHandler {
                         processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE,
                                 new SecurityDependencyProcessor());
                     }
-                }, NewOperationContext.Stage.RUNTIME);
+                }, OperationContext.Stage.RUNTIME);
 
                 final Properties securityPropertiesStr = securityProperties;
 
-                context.addStep(new NewStepHandler() {
-                    public void execute(NewOperationContext context, ModelNode operation) {
+                context.addStep(new OperationStepHandler() {
+                    public void execute(OperationContext context, ModelNode operation) {
                         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                         log.info("Activating Security Subsystem");
 
@@ -288,18 +287,18 @@ class SecuritySubsystemAdd implements NewStepHandler {
                                 .addListener(verificationHandler)
                                 .install();
 
-                        context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+                        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-                        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                             context.removeService(JaasConfigurationService.SERVICE_NAME);
                         }
                     }
-                }, NewOperationContext.Stage.RUNTIME);
+                }, OperationContext.Stage.RUNTIME);
             }
         }
 
-        if (context.completeStep() != NewOperationContext.ResultAction.KEEP
-                && context.getType() == NewOperationContext.Type.SERVER && !context.isBooting()) {
+        if (context.completeStep() != OperationContext.ResultAction.KEEP
+                && context.getType() == OperationContext.Type.SERVER && !context.isBooting()) {
             context.revertReloadRequired();
         }
     }

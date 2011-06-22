@@ -26,7 +26,7 @@ import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 import java.io.InputStream;
 import java.util.concurrent.Future;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
@@ -60,14 +60,14 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
-    private final InjectedValue<NewModelController> injectedController = new InjectedValue<NewModelController>();
+    private final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
     private ServerDeploymentManager deploymentManager;
 
     public static ServiceController<?> addService(final ServiceTarget target) {
         BundleInstallProviderIntegration service = new BundleInstallProviderIntegration();
         ServiceBuilder<BundleInstallProvider> builder = target.addService(Services.BUNDLE_INSTALL_PROVIDER, service);
-        builder.addDependency(JBOSS_SERVER_CONTROLLER, NewModelController.class, service.injectedController);
+        builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedController);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.ON_DEMAND);

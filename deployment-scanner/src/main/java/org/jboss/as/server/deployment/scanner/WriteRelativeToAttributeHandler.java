@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
@@ -42,7 +42,7 @@ class WriteRelativeToAttributeHandler extends ServerWriteAttributeOperationHandl
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(final NewOperationContext context, final ModelNode operation,
+    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
             final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
         return true;

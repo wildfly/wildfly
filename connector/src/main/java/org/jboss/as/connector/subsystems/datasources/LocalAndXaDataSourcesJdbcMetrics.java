@@ -24,8 +24,8 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import java.util.Set;
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -39,16 +39,16 @@ import org.jboss.msc.service.ServiceController;
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-public class LocalAndXaDataSourcesJdbcMetrics implements NewStepHandler {
+public class LocalAndXaDataSourcesJdbcMetrics implements OperationStepHandler {
 
     static LocalAndXaDataSourcesJdbcMetrics INSTANCE = new LocalAndXaDataSourcesJdbcMetrics();
 
     static final Set<String> ATTRIBUTES = (new JdbcStatisticsPlugin()).getNames();
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                     final String jndiName = address.getLastElement().getValue();
                     final String attributeName = operation.require(NAME).asString();
@@ -75,7 +75,7 @@ public class LocalAndXaDataSourcesJdbcMetrics implements NewStepHandler {
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
 
         context.completeStep();

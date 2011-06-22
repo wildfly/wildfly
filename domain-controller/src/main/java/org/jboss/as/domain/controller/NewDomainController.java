@@ -22,7 +22,7 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -55,7 +55,7 @@ public interface NewDomainController {
      *                                  <code>hostControllerClient</code>
      * @throws UnsupportedOperationException is the host is not the master domain controller
      */
-    void registerRemoteHost(final NewProxyController hostControllerClient);
+    void registerRemoteHost(final ProxyController hostControllerClient);
 
     /**
      * Unregisters a previously registered Host Controller.
@@ -70,7 +70,7 @@ public interface NewDomainController {
      *
      * @param serverControllerClient client the controller can use to communicate with the server.
      */
-    void registerRunningServer(final NewProxyController serverControllerClient);
+    void registerRunningServer(final ProxyController serverControllerClient);
 
     /**
      * Unregisters a running server from the domain model

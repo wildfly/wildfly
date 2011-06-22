@@ -18,8 +18,8 @@
  */
 package org.jboss.as.controller.operations.common;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -35,7 +35,7 @@ import java.util.Locale;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class SnapshotDeleteHandler implements NewStepHandler, DescriptionProvider {
+public class SnapshotDeleteHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "delete-snapshot";
 
@@ -46,7 +46,7 @@ public class SnapshotDeleteHandler implements NewStepHandler, DescriptionProvide
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         String name = operation.require(ModelDescriptionConstants.NAME).asString();
         try {
             persister.deleteSnapshot(name);

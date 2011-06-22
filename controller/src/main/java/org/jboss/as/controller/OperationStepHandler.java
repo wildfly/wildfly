@@ -27,18 +27,18 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface NewStepHandler {
+public interface OperationStepHandler {
 
     /**
-     * Execute this step.  If the operation fails, {@link NewOperationContext#getFailureDescription() context.getFailureDescroption()}
-     * must be called, or {@link OperationFailedException} must be thrown, before calling {@link NewOperationContext#completeStep() context.completeStep()}.
-     * If the operation succeeded, {@link NewOperationContext#getResult() context.getResult()} should
-     * be called and the result populated with the outcome, after which {@link NewOperationContext#completeStep() context.completeStep()}
+     * Execute this step.  If the operation fails, {@link OperationContext#getFailureDescription() context.getFailureDescroption()}
+     * must be called, or {@link OperationFailedException} must be thrown, before calling {@link OperationContext#completeStep() context.completeStep()}.
+     * If the operation succeeded, {@link OperationContext#getResult() context.getResult()} should
+     * be called and the result populated with the outcome, after which {@link OperationContext#completeStep() context.completeStep()}
      * must be called.
      *
      * @param context the operation context
      * @param operation the operation being executed
      * @throws OperationFailedException if the operation failed <b>before</b> calling {@code context.completeStep()}
      */
-    void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException;
+    void execute(OperationContext context, ModelNode operation) throws OperationFailedException;
 }

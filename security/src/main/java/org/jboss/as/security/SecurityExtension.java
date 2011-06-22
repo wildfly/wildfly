@@ -24,8 +24,8 @@ package org.jboss.as.security;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -97,10 +97,10 @@ public class SecurityExtension implements Extension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), PARSER);
     }
 
-    private static class SecurityDescribeHandler implements NewStepHandler {
+    private static class SecurityDescribeHandler implements OperationStepHandler {
         static final SecurityDescribeHandler INSTANCE = new SecurityDescribeHandler();
 
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
             final ModelNode subsystem = new ModelNode();

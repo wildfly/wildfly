@@ -21,7 +21,7 @@ package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
@@ -60,7 +60,7 @@ public class SocketBindingGroupIncludeRemoveHandler extends AbstractRemoveStepHa
     private SocketBindingGroupIncludeRemoveHandler() {
     }
 
-    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         ModelNode param = operation.get(INCLUDE);
         ModelNode includes = model.get(INCLUDE);
         ModelNode toRemove = null;

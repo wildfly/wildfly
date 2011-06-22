@@ -30,8 +30,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -458,10 +458,10 @@ public class TransactionExtension implements Extension {
         }
     }
 
-    private static class TransactionDescribeHandler implements NewStepHandler, DescriptionProvider {
+    private static class TransactionDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final TransactionDescribeHandler INSTANCE = new TransactionDescribeHandler();
 
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode add = createEmptyAddOperation();
 
             final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);

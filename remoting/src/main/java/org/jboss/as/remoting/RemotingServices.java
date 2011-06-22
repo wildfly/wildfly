@@ -35,7 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
 import org.jboss.as.controller.remote.NewAbstractModelControllerOperationHandlerFactoryService;
@@ -242,7 +242,7 @@ public final class RemotingServices {
         final ServiceName operationHandlerName = operationHandlerName(modelControllerName, channelName);
 
         ServiceBuilder<?> builder = serviceTarget.addService(operationHandlerName, operationHandlerService)
-            .addDependency(modelControllerName, NewModelController.class, operationHandlerService.getModelControllerInjector())
+            .addDependency(modelControllerName, ModelController.class, operationHandlerService.getModelControllerInjector())
             .setInitialMode(ACTIVE);
         addController(newControllers, verificationHandler, builder);
 

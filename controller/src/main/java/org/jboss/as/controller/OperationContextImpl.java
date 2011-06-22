@@ -80,17 +80,17 @@ import org.jboss.msc.value.Value;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class NewOperationContextImpl implements NewOperationContext {
+final class OperationContextImpl implements OperationContext {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
-    private final NewModelControllerImpl modelController;
+    private final ModelControllerImpl modelController;
     private final Type contextType;
     private final EnumSet<ContextFlag> contextFlags;
     private final OperationMessageHandler messageHandler;
     private final Thread initiatingThread;
     private final EnumMap<Stage, Deque<Step>> steps;
-    private final NewModelController.OperationTransactionControl transactionControl;
+    private final ModelController.OperationTransactionControl transactionControl;
     private final ServiceTarget serviceTarget;
     private final Map<ServiceName, ServiceController<?>> realRemovingControllers = new HashMap<ServiceName, ServiceController<?>>();
     private final boolean booting;
@@ -133,10 +133,10 @@ final class NewOperationContextImpl implements NewOperationContext {
         ROLLBACK_ON_FAIL,
     }
 
-    NewOperationContextImpl(final NewModelControllerImpl modelController, final Type contextType, final EnumSet<ContextFlag> contextFlags,
-                            final OperationMessageHandler messageHandler, final OperationAttachments attachments,
-                            final Resource model, final NewModelController.OperationTransactionControl transactionControl,
-                            final ControlledProcessState processState, final boolean booting) {
+    OperationContextImpl(final ModelControllerImpl modelController, final Type contextType, final EnumSet<ContextFlag> contextFlags,
+                         final OperationMessageHandler messageHandler, final OperationAttachments attachments,
+                         final Resource model, final ModelController.OperationTransactionControl transactionControl,
+                         final ControlledProcessState processState, final boolean booting) {
         this.contextType = contextType;
         this.transactionControl = transactionControl;
         this.booting = booting;
@@ -167,15 +167,15 @@ final class NewOperationContextImpl implements NewOperationContext {
         return attachments == null ? 0 : attachments.getInputStreams().size();
     }
 
-    public void addStep(final NewStepHandler step, final Stage stage) throws IllegalArgumentException {
+    public void addStep(final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
         addStep(response, operation, step, stage);
     }
 
-    public void addStep(final ModelNode operation, final NewStepHandler step, final Stage stage) throws IllegalArgumentException {
+    public void addStep(final ModelNode operation, final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
         addStep(response, operation, step, stage);
     }
 
-    public void addStep(final ModelNode response, final ModelNode operation, final NewStepHandler step, final Stage stage) throws IllegalArgumentException {
+    public void addStep(final ModelNode response, final ModelNode operation, final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
         assert Thread.currentThread() == initiatingThread;
         if (response == null) {
             throw new IllegalArgumentException("response is null");
@@ -313,7 +313,7 @@ final class NewOperationContextImpl implements NewOperationContext {
             if (log.isTraceEnabled()) {
                 log.trace("Prepared response is " + response);
             }
-            transactionControl.operationPrepared(new NewModelController.OperationTransaction() {
+            transactionControl.operationPrepared(new ModelController.OperationTransaction() {
                 public void commit() {
                     ref.set(ResultAction.KEEP);
                 }
@@ -915,12 +915,12 @@ final class NewOperationContextImpl implements NewOperationContext {
     }
 
     static class Step {
-        private final NewStepHandler handler;
+        private final OperationStepHandler handler;
         private final ModelNode response;
         private final ModelNode operation;
         private final StampHolder restartStamp  = new StampHolder();
 
-        private Step(final NewStepHandler handler, final ModelNode response, final ModelNode operation) {
+        private Step(final OperationStepHandler handler, final ModelNode response, final ModelNode operation) {
             this.handler = handler;
             this.response = response;
             this.operation = operation;
@@ -931,8 +931,8 @@ final class NewOperationContextImpl implements NewOperationContext {
 
     /**
      *  Simple wrapper object to allow the context and the current Step to share a reference to the object returned by
-     *  {@link org.jboss.as.controller.NewModelControllerImpl#setReloadRequired()} or
-     *  {@link org.jboss.as.controller.NewModelControllerImpl#setRestartRequired()}
+     *  {@link ModelControllerImpl#setReloadRequired()} or
+     *  {@link ModelControllerImpl#setRestartRequired()}
      */
     static class StampHolder {
         private Object restartStamp;
@@ -940,9 +940,9 @@ final class NewOperationContextImpl implements NewOperationContext {
 
     class ContextServiceTarget implements ServiceTarget {
 
-        private final NewModelControllerImpl modelController;
+        private final ModelControllerImpl modelController;
 
-        ContextServiceTarget(final NewModelControllerImpl modelController) {
+        ContextServiceTarget(final ModelControllerImpl modelController) {
             this.modelController = modelController;
         }
 

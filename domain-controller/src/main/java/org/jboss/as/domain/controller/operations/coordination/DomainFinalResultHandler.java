@@ -37,8 +37,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.domain.controller.ServerIdentity;
@@ -50,7 +50,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DomainFinalResultHandler implements NewStepHandler {
+public class DomainFinalResultHandler implements OperationStepHandler {
 
     private final DomainOperationContext domainOperationContext;
 
@@ -59,7 +59,7 @@ public class DomainFinalResultHandler implements NewStepHandler {
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         context.completeStep();
 
@@ -77,7 +77,7 @@ public class DomainFinalResultHandler implements NewStepHandler {
         }
     }
 
-    private boolean collectDomainFailure(NewOperationContext context, final boolean isDomain) {
+    private boolean collectDomainFailure(OperationContext context, final boolean isDomain) {
         final ModelNode coordinator = domainOperationContext.getCoordinatorResult();
         ModelNode domainFailure = null;
         if (isDomain &&  coordinator != null && coordinator.has(FAILURE_DESCRIPTION)) {
@@ -90,7 +90,7 @@ public class DomainFinalResultHandler implements NewStepHandler {
         return false;
     }
 
-    private boolean collectContextFailure(NewOperationContext context, final boolean isDomain) {
+    private boolean collectContextFailure(OperationContext context, final boolean isDomain) {
         // We ignore a context failure description if the request failed on all servers, as the
         // DomainRolloutStepHandler would have had to set that to trigger model rollback
         // but we still want to record the server results so the user can see the problem
@@ -118,7 +118,7 @@ public class DomainFinalResultHandler implements NewStepHandler {
         return false;
     }
 
-    private boolean collectHostFailures(final NewOperationContext context, final boolean isDomain) {
+    private boolean collectHostFailures(final OperationContext context, final boolean isDomain) {
         ModelNode hostFailureResults = null;
         for (Map.Entry<String, ModelNode> entry : domainOperationContext.getHostControllerResults().entrySet()) {
             ModelNode hostResult = entry.getValue();
@@ -167,7 +167,7 @@ public class DomainFinalResultHandler implements NewStepHandler {
         return singleHost == null ? new ModelNode() : singleHost.get(RESULT);
     }
 
-    private void populateServerGroupResults(final NewOperationContext context, final ModelNode result) {
+    private void populateServerGroupResults(final OperationContext context, final ModelNode result) {
         final Set<String> groupNames = new TreeSet<String>();
         final Map<String, Set<HostServer>> groupToServerMap = new HashMap<String, Set<HostServer>>();
         for (Map.Entry<ServerIdentity, ModelNode> entry : domainOperationContext.getServerResults().entrySet()) {

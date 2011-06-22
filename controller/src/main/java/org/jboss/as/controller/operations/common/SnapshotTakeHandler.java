@@ -18,8 +18,8 @@
  */
 package org.jboss.as.controller.operations.common;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -36,7 +36,7 @@ import java.util.Locale;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class SnapshotTakeHandler implements NewStepHandler, DescriptionProvider {
+public class SnapshotTakeHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "take-snapshot";
 
@@ -47,7 +47,7 @@ public class SnapshotTakeHandler implements NewStepHandler, DescriptionProvider 
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         try {
             String name = persister.snapshot();
             ModelNode result = context.getResult();

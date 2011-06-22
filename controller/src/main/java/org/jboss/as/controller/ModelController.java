@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface NewModelController {
+public interface ModelController {
 
     /**
      * Execute an operation, sending updates to the given handler.  This method is not intended to be invoked directly

@@ -21,8 +21,8 @@ package org.jboss.as.host.controller.operations;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Kabir Khan
  */
-public class HostStopHandler implements NewStepHandler, DescriptionProvider {
+public class HostStopHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "stop";
 
@@ -57,14 +57,14 @@ public class HostStopHandler implements NewStepHandler, DescriptionProvider {
      * {@inheritDoc}
      */
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        context.addStep(new NewStepHandler() {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new OperationStepHandler() {
             @Override
-            public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 domainController.stopLocalHost();
                 context.completeStep();
             }
-        }, NewOperationContext.Stage.RUNTIME);
+        }, OperationContext.Stage.RUNTIME);
         context.completeStep();
     }
 

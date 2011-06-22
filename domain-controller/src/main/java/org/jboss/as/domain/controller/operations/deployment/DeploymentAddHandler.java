@@ -42,8 +42,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -65,7 +65,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider {
+public class DeploymentAddHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -118,7 +118,7 @@ public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider
     /**
      * {@inheritDoc}
      */
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
@@ -170,7 +170,7 @@ public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider
         context.completeStep();
     }
 
-    private static InputStream getInputStream(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    private static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
         InputStream in = null;
         String message = "";
         if (operation.hasDefined(INPUT_STREAM_INDEX)) {

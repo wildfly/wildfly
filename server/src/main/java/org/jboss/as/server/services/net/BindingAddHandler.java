@@ -21,7 +21,7 @@ package org.jboss.as.server.services.net;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -67,7 +67,7 @@ public class BindingAddHandler extends SocketBindingAddHandler {
         runtimeValidator.registerValidator(MULTICAST_PORT, new IntRangeValidator(0, 65535, true, false));
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         // Resolve any expressions and re-validate
         final ModelNode resolvedOp = operation.resolve();
         runtimeValidator.validate(resolvedOp);
@@ -88,7 +88,7 @@ public class BindingAddHandler extends SocketBindingAddHandler {
         return false;
     }
 
-    public static ServiceController<SocketBinding> installBindingService(NewOperationContext context, ModelNode resolvedConfig, String name) throws UnknownHostException {
+    public static ServiceController<SocketBinding> installBindingService(OperationContext context, ModelNode resolvedConfig, String name) throws UnknownHostException {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         final String intf = resolvedConfig.get(INTERFACE).isDefined() ? resolvedConfig.get(INTERFACE).asString() : null;

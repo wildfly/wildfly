@@ -23,16 +23,15 @@ package org.jboss.as.threads;
 
 import java.util.Locale;
 import java.util.concurrent.Executor;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.controller.operations.common.Util;
 import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
@@ -45,7 +44,6 @@ import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BoundedOperationParameters;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -56,14 +54,14 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class BoundedQueueThreadPoolAdd implements NewStepHandler, DescriptionProvider {
+public class BoundedQueueThreadPoolAdd implements OperationStepHandler, DescriptionProvider {
 
     public static final BoundedQueueThreadPoolAdd INSTANCE = new BoundedQueueThreadPoolAdd();
 
     /**
      * {@inheritDoc}
      */
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final BoundedOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseBoundedThreadPoolOperationParameters(operation);
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -101,9 +99,9 @@ public class BoundedQueueThreadPoolAdd implements NewStepHandler, DescriptionPro
             model.get(CORE_THREADS).set(operation.get(CORE_THREADS));
         }
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) {
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     ServiceTarget target = context.getServiceTarget();
                     final int coreThreads =  params.getCoreThreads() == null ? params.getMaxThreads().getScaledCount() : params.getCoreThreads().getScaledCount();
@@ -123,13 +121,13 @@ public class BoundedQueueThreadPoolAdd implements NewStepHandler, DescriptionPro
                     serviceBuilder.addListener(verificationHandler);
                     serviceBuilder.install();
 
-                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         context.removeService(serviceName);
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
 
         context.completeStep();

@@ -24,8 +24,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.Locale;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NewServerStartHandler implements NewStepHandler, DescriptionProvider {
+public class NewServerStartHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "start";
 
@@ -66,21 +66,21 @@ public class NewServerStartHandler implements NewStepHandler, DescriptionProvide
      * {@inheritDoc}
      */
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
 
         final ModelNode model = Resource.Tools.readModel(context.getRootResource());
-        context.addStep(new NewStepHandler() {
+        context.addStep(new OperationStepHandler() {
             @Override
-            public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final ServerStatus status = serverInventory.startServer(serverName, model);
                 context.getResult().set(status.toString());
                 context.completeStep();
             }
-        }, NewOperationContext.Stage.RUNTIME);
+        }, OperationContext.Stage.RUNTIME);
         context.completeStep();
     }
 

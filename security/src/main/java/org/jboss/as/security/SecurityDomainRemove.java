@@ -23,7 +23,7 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -48,13 +48,13 @@ class SecurityDomainRemove extends AbstractRemoveStepHandler {
     private SecurityDomainRemove() {
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String securityDomain = address.getLastElement().getValue();
         context.removeService(SecurityDomainService.SERVICE_NAME.append(securityDomain));
     }
 
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
 }

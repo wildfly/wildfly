@@ -22,8 +22,8 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -41,11 +41,11 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author John Bailey
  */
-public class HandlerFileChange implements NewStepHandler {
+public class HandlerFileChange implements OperationStepHandler {
     static final String OPERATION_NAME = "change-file";
     static final HandlerFileChange INSTANCE = new HandlerFileChange();
 
-    public void execute(final NewOperationContext context, final ModelNode operation) {
+    public void execute(final OperationContext context, final ModelNode operation) {
         final ModelNode existingFile = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(CommonAttributes.FILE);
         existingFile.get(CommonAttributes.PATH).set(operation.get(CommonAttributes.PATH));
 
@@ -56,9 +56,9 @@ public class HandlerFileChange implements NewStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(final NewOperationContext context, final ModelNode operation) {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(final OperationContext context, final ModelNode operation) {
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -77,13 +77,13 @@ public class HandlerFileChange implements NewStepHandler {
                         installService(context, operation, serviceTarget, name);
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
 
     }
 
-    private void installService(NewOperationContext context, ModelNode operation, ServiceTarget serviceTarget, String name) {
+    private void installService(OperationContext context, ModelNode operation, ServiceTarget serviceTarget, String name) {
         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
         final HandlerFileService service = new HandlerFileService(operation.get(CommonAttributes.PATH).asString());
         final ServiceBuilder<?> builder = serviceTarget.addService(LogServices.handlerFileName(name), service);
@@ -93,9 +93,9 @@ public class HandlerFileChange implements NewStepHandler {
         builder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler).install();
 
-        context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+        if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
             context.removeService(LogServices.handlerFileName(name));
         }
     }

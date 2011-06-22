@@ -25,8 +25,8 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import org.jboss.as.connector.ConnectorServices;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -37,10 +37,10 @@ import org.jboss.dmr.ModelNode;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-public class RaRemove extends AbstractRaOperation implements NewStepHandler {
+public class RaRemove extends AbstractRaOperation implements OperationStepHandler {
     static final RaRemove INSTANCE = new RaRemove();
 
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
 
         final ModelNode opAddr = operation.require(OP_ADDR);
         final String archive = PathAddress.pathAddress(opAddr).getLastElement().getValue();
@@ -59,15 +59,15 @@ public class RaRemove extends AbstractRaOperation implements NewStepHandler {
         }
         context.removeResource(PathAddress.EMPTY_ADDRESS);
 
-        context.addStep(new NewStepHandler() {
-            public void execute(NewOperationContext context, ModelNode operation) {
+        context.addStep(new OperationStepHandler() {
+            public void execute(OperationContext context, ModelNode operation) {
                 context.removeService(ConnectorServices.RESOURCEADAPTERS_SERVICE);
 
-                if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                     // TODO:  RE-ADD SERVICES
                 }
             }
-        }, NewOperationContext.Stage.RUNTIME);
+        }, OperationContext.Stage.RUNTIME);
         context.completeStep();
     }
 }

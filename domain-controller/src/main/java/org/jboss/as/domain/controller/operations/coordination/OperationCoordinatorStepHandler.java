@@ -46,9 +46,9 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -65,14 +65,14 @@ import org.jboss.dmr.ModelNode;
 public class OperationCoordinatorStepHandler {
 
     private final LocalHostControllerInfo localHostControllerInfo;
-    private final Map<String, NewProxyController> hostProxies;
-    private final Map<String, NewProxyController> serverProxies;
+    private final Map<String, ProxyController> hostProxies;
+    private final Map<String, ProxyController> serverProxies;
     private final OperationSlaveStepHandler localSlaveHandler;
     private volatile ExecutorService executorService;
 
     OperationCoordinatorStepHandler(final LocalHostControllerInfo localHostControllerInfo,
-                                    final Map<String, NewProxyController> hostProxies,
-                                    final Map<String, NewProxyController> serverProxies,
+                                    final Map<String, ProxyController> hostProxies,
+                                    final Map<String, ProxyController> serverProxies,
                                     final OperationSlaveStepHandler localSlaveHandler) {
         this.localHostControllerInfo = localHostControllerInfo;
         this.hostProxies = hostProxies;
@@ -80,7 +80,7 @@ public class OperationCoordinatorStepHandler {
         this.localSlaveHandler = localSlaveHandler;
     }
 
-    void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         // Determine routing
         ImmutableManagementResourceRegistration opRegistry = context.getResourceRegistration();
@@ -120,7 +120,7 @@ public class OperationCoordinatorStepHandler {
         return executorService == null ? Executors.newSingleThreadExecutor() : executorService;
     }
 
-    private void routetoMasterDomainController(NewOperationContext context, ModelNode operation) {
+    private void routetoMasterDomainController(OperationContext context, ModelNode operation) {
         // Per discussion on 2011/03/07, routing requests from a slave to the
         // master may overly complicate the security infrastructure. Therefore,
         // the ability to do this is being disabled until it's clear that it's
@@ -137,25 +137,25 @@ public class OperationCoordinatorStepHandler {
      * @param operation the operation
      * @throws OperationFailedException
      */
-    private void executeDirect(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    private void executeDirect(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (PrepareStepHandler.isTraceEnabled()) {
             PrepareStepHandler.log.trace("Executing direct");
         }
         final String operationName =  operation.require(OP).asString();
-        NewStepHandler stepHandler = null;
+        OperationStepHandler stepHandler = null;
         final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
         if (registration != null) {
             stepHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
         }
         if(stepHandler != null) {
-            context.addStep(stepHandler, NewOperationContext.Stage.MODEL);
+            context.addStep(stepHandler, OperationContext.Stage.MODEL);
         } else {
             context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, PathAddress.pathAddress(operation.get(OP_ADDR))));
         }
         context.completeStep();
     }
 
-    private void executeTwoPhaseOperation(NewOperationContext context, ModelNode operation, OperationRouting routing) throws OperationFailedException {
+    private void executeTwoPhaseOperation(OperationContext context, ModelNode operation, OperationRouting routing) throws OperationFailedException {
         if (PrepareStepHandler.isTraceEnabled()) {
             PrepareStepHandler.log.trace("Executing two-phase");
         }
@@ -167,7 +167,7 @@ public class OperationCoordinatorStepHandler {
             ? operation.get(OPERATION_HEADERS).remove(ROLLOUT_PLAN) : new ModelNode();
 
         // A stage that on the way out fixes up the result/failure description. On the way in it does nothing
-        context.addStep(new DomainFinalResultHandler(overallContext), NewOperationContext.Stage.MODEL);
+        context.addStep(new DomainFinalResultHandler(overallContext), OperationContext.Stage.MODEL);
 
         final ModelNode slaveOp = operation.clone();
         // Hackalicious approach to not streaming content to all the slaves
@@ -198,9 +198,9 @@ public class OperationCoordinatorStepHandler {
                     remoteHosts.addAll(hostProxies.keySet());
                 }
 
-                Map<String, NewProxyController> remoteProxies = new HashMap<String, NewProxyController>();
+                Map<String, ProxyController> remoteProxies = new HashMap<String, ProxyController>();
                 for (String host : remoteHosts) {
-                    NewProxyController proxy = hostProxies.get(host);
+                    ProxyController proxy = hostProxies.get(host);
                     if (proxy != null) {
                         remoteProxies.put(host, proxy);
                     } else if (!global) {
@@ -208,18 +208,18 @@ public class OperationCoordinatorStepHandler {
                     }
                 }
 
-                context.addStep(slaveOp, new DomainSlaveHandler(remoteProxies, overallContext, executorService), NewOperationContext.Stage.DOMAIN);
+                context.addStep(slaveOp, new DomainSlaveHandler(remoteProxies, overallContext, executorService), OperationContext.Stage.DOMAIN);
 
             }
         }
 
         // Finally, the step to formulate and execute the 2nd phase rollout plan
-        context.addStep(new DomainRolloutStepHandler(hostProxies, serverProxies, overallContext, rolloutPlan, getExecutorService()), NewOperationContext.Stage.DOMAIN);
+        context.addStep(new DomainRolloutStepHandler(hostProxies, serverProxies, overallContext, rolloutPlan, getExecutorService()), OperationContext.Stage.DOMAIN);
 
         context.completeStep();
     }
 
-    private void storeDeploymentContent(ModelNode opNode, NewOperationContext context) throws OperationFailedException {
+    private void storeDeploymentContent(ModelNode opNode, OperationContext context) throws OperationFailedException {
 
         try {
             // A pretty painful hack. We analyze the operation for operations that include deployment content attachments; if found

@@ -37,7 +37,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
@@ -82,7 +82,7 @@ abstract class AbstractDeploymentHandler {
         return contents;
     }
 
-    protected static InputStream getInputStream(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    protected static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
         InputStream in = null;
         String message = "";
         if (operation.hasDefined(INPUT_STREAM_INDEX)) {

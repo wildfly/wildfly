@@ -18,11 +18,7 @@
  */
 package org.jboss.as.host.controller.operations;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.PathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
-import org.jboss.as.server.services.net.NetworkInterfaceService;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.dmr.ModelNode;
 
@@ -40,18 +36,18 @@ public class HostSpecifiedInterfaceRemoveHandler extends SpecifiedInterfaceRemov
     }
 
     @Override
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         super.performRuntime(context, operation, model);
         localHostControllerInfo.removeNetworkInterfaceBinding(getInterfaceName(operation));
     }
 
     @Override
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO: Re-Add Services
     }
 
     @Override
-    protected boolean requiresRuntime(NewOperationContext context) {
+    protected boolean requiresRuntime(OperationContext context) {
         return true;
     }
 }

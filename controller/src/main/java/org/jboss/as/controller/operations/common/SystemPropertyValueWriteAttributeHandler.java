@@ -24,8 +24,8 @@ package org.jboss.as.controller.operations.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
@@ -43,16 +43,16 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
     private SystemPropertyValueWriteAttributeHandler() {
     }
 
-    protected void modelChanged(final NewOperationContext context, final ModelNode operation, final String attributeName,
+    protected void modelChanged(final OperationContext context, final ModelNode operation, final String attributeName,
                                 final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) {
                     final String propertyName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
                     final String propertyValue = newValue.isDefined() ? newValue.asString() : null;
                     SecurityActions.setSystemProperty(propertyName, propertyValue);
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         if (currentValue.isDefined()) {
                             SecurityActions.setSystemProperty(propertyName, currentValue.asString());
                         } else {
@@ -60,7 +60,7 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
                         }
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }
