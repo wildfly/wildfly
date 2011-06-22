@@ -34,7 +34,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
@@ -91,13 +90,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             return new ProtocolChannelClient<T>(false, endpoint, null, configuration.getUri(), configuration.getChannelFactory(), configuration.getConnectTimeout());
         } else {
             endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getExecutor(), configuration.getOptionMap());
-            Xnio xnio;
-            try {
-                xnio = XnioUtil.getXnio();
-            } catch (ModuleLoadException e) {
-                throw new RuntimeException(e);
-            }
-
+            Xnio xnio = Xnio.getInstance();
             Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
             return new ProtocolChannelClient<T>(true, endpoint, providerRegistration, configuration.getUri(), configuration.getChannelFactory(), configuration.getConnectTimeout());
         }
