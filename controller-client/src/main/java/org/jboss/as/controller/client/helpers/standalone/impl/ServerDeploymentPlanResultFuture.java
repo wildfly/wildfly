@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerUpdateActionResult.Result;
@@ -66,14 +67,14 @@ class ServerDeploymentPlanResultFuture implements Future<ServerDeploymentPlanRes
     @Override
     public ServerDeploymentPlanResult get() throws InterruptedException, ExecutionException {
         ModelNode node = nodeFuture.get();
-        return getResultFromNode(node);
+        return getResultFromNode(node.get(ClientConstants.RESULT));
     }
 
     @Override
     public ServerDeploymentPlanResult get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException,
             TimeoutException {
         ModelNode node = nodeFuture.get(timeout, unit);
-        return getResultFromNode(node);
+        return getResultFromNode(node.get(ClientConstants.RESULT));
     }
 
     private ServerDeploymentPlanResult getResultFromNode(ModelNode planResultNode) {
@@ -83,7 +84,7 @@ class ServerDeploymentPlanResultFuture implements Future<ServerDeploymentPlanRes
         for (int i = 0; i < actions.size(); i++) {
             DeploymentActionImpl action = actions.get(i);
             UUID actionId = action.getId();
-            ModelNode actionResultNode = planResultNode.get("step-" + i);
+            ModelNode actionResultNode = planResultNode.get("step-" + (i + 1));
             actionResults.put(actionId, getActionResult(actionId, actionResultNode));
         }
         return new DeploymentPlanResultImpl(planId, actionResults);
