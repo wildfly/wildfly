@@ -23,7 +23,10 @@ package org.jboss.as.protocol;
 
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 
+import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -119,8 +122,8 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             future = endpoint.connect(uri, map, handler);
         } else {
             // TODO - Remove temporary hard coded value once all clients can supply a CallbackHandler.
-            new Throwable("Using default username and password.").printStackTrace();
-            future = endpoint.connect(uri, map, "TestUser", endpoint.getName(), "TestUserPassword".toCharArray());
+            //new Throwable("Using default username and password.").printStackTrace();
+            future = endpoint.connect(uri, map, new AnonymousCallbackHandler());
         }
         // TODO - Re-evaluate timeouts - clients need time to enter their details but this extends the time for clients where we know this info in advance.
         Status status = future.await(connectTimeout, TimeUnit.MILLISECONDS);
@@ -324,6 +327,21 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         public void setChannelFactory(ProtocolChannelFactory<T> channelFactory) {
             this.channelFactory = channelFactory;
         }
+    }
+
+    private static final class AnonymousCallbackHandler implements CallbackHandler {
+
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            for (Callback current : callbacks) {
+                if (current instanceof NameCallback) {
+                    NameCallback ncb = (NameCallback) current;
+                    ncb.setName("anonymous");
+                } else {
+                    throw new UnsupportedCallbackException(current);
+                }
+            }
+        }
+
     }
 
 }

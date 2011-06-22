@@ -72,6 +72,10 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+        <groupId>org.jboss.sasl</groupId>
+        <artifactId>jboss-sasl</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.as</groupId>
       <artifactId>jboss-as-build</artifactId>
       <version>${project.version}</version>

@@ -26,11 +26,14 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.Provider;
+import java.security.Security;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.ProtocolChannelClient.Configuration;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.sasl.JBossSaslProvider;
 import org.xnio.IoUtils;
 
 /**
@@ -90,7 +93,7 @@ public abstract class ManagementClientChannelStrategy {
     private abstract static class Establishing extends ManagementClientChannelStrategy {
 
         private static final String CONNECT_TIME_OUT_PROPERTY = "org.jboss.as.client.connect.timeout";
-
+        private static final Provider saslProvider = new JBossSaslProvider();
         private final String hostName;
         private final int port;
         private final ManagementOperationHandler handler;
@@ -107,6 +110,10 @@ public abstract class ManagementClientChannelStrategy {
 
         @Override
         public ManagementChannel getChannel() throws IOException {
+            if (Security.getProvider(saslProvider.getName()) == null) {
+                Security.insertProviderAt(saslProvider, 1);
+            }
+
             final ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
             try {
                 addConfigurationProperties(configuration);

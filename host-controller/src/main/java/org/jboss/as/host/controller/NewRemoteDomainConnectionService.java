@@ -33,6 +33,8 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.security.Provider;
+import java.security.Security;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -68,6 +70,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.sasl.JBossSaslProvider;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 
@@ -85,6 +88,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     private final int port;
     private final String name;
     private final RemoteFileRepository remoteFileRepository;
+    private final Provider saslProvider = new JBossSaslProvider();
 
     private volatile ProtocolChannelClient<ManagementChannel> channelClient;
     /** Used to invoke ModelController ops on the master */
@@ -156,6 +160,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     }
 
     private synchronized void connect() {
+        Security.addProvider(saslProvider);
         txOperationHandler = new NewTransactionalModelControllerOperationHandler(executor, controller);
         ProtocolChannelClient<ManagementChannel> client;
         try {

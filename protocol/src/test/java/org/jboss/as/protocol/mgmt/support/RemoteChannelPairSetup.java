@@ -103,7 +103,7 @@ public class RemoteChannelPairSetup implements RemotingChannelPairSetup {
         configuration.setChannelFactory(new ManagementChannelFactory());
 
         ProtocolChannelClient<ManagementChannel> client = ProtocolChannelClient.create(configuration);
-        client.connect(new PasswordClientCallbackHandler("TestUser", configuration.getEndpointName(), "TestUserPassword".toCharArray()));
+        client.connect(new PasswordClientCallbackHandler("TestUser", "localhost.localdomain", "TestUserPassword".toCharArray()));
         clientChannel = client.openChannel(TEST_CHANNEL);
         try {
             clientConnectedLatch.await();

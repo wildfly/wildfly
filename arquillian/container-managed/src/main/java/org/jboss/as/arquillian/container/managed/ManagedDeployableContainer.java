@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.Provider;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -45,6 +47,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.jboss.sasl.JBossSaslProvider;
 
 /**
  * JBossAsManagedContainer
@@ -58,6 +61,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     private MBeanServerConnectionProvider provider;
     private Thread shutdownThread;
     private Process process;
+    private Provider saslProvider = new JBossSaslProvider();
 
     @Inject
     @ContainerScoped
@@ -87,6 +91,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
     @Override
     protected void startInternal() throws LifecycleException {
+        Security.addProvider(saslProvider);
         try {
             ManagedContainerConfiguration config = getContainerConfiguration();
             final String jbossHomeDir = config.getJbossHome();
@@ -173,6 +178,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         } catch (Exception e) {
             throw new LifecycleException("Could not stop container", e);
         }
+        Security.removeProvider(saslProvider.getName());
     }
 
     @Override
