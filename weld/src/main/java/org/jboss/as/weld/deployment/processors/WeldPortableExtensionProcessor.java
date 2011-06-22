@@ -27,15 +27,18 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
+import org.jboss.as.server.deployment.ServicesAttachment;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.spi.Metadata;
-import org.jboss.weld.util.ServiceLoader;
+import org.jboss.weld.metadata.MetadataImpl;
 
 import javax.enterprise.inject.spi.Extension;
-import java.util.Iterator;
+import java.lang.reflect.Constructor;
+import java.util.List;
 
 /**
  * Deployment processor that loads CDI portable extensions.
@@ -45,6 +48,8 @@ import java.util.Iterator;
 public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
 
     private static final Logger log = Logger.getLogger("org.jboss.weld");
+
+    private static final String[] EMPTY_STRING_ARRAY = {};
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -72,25 +77,52 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit
                 .getParent();
 
+        final ServicesAttachment services = deploymentUnit.getAttachment(Attachments.SERVICES);
+
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         ClassLoader oldCl = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(module.getClassLoader());
-            loadAttachments(module, topLevelDeployment);
+            loadAttachments(services, module, topLevelDeployment);
         } finally {
             SecurityActions.setContextClassLoader(oldCl);
         }
     }
 
-    private void loadAttachments(Module module, DeploymentUnit deploymentUnit) {
+    private void loadAttachments(final ServicesAttachment servicesAttachment, Module module, DeploymentUnit deploymentUnit) {
         // now load extensions
-        final ServiceLoader<Extension> loader = ServiceLoader.load(Extension.class, module.getClassLoader());
-        final Iterator<Metadata<Extension>> iterator = loader.iterator();
-        while (iterator.hasNext()) {
-            Metadata<Extension> extension = iterator.next();
-            log.debug("Loaded portable extension " + extension.getLocation());
-            deploymentUnit.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, extension);
+        final DeploymentReflectionIndex index = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
+        final List<String> services = servicesAttachment.getServiceImplementations(Extension.class.getName());
+        if (services == null) {
+            return;
         }
+        for (String service : services) {
+            final Extension extension = loadExtension(service, index,  module.getClassLoader());
+            if(extension == null) {
+                continue;
+            }
+            Metadata<Extension> metadata = new MetadataImpl<Extension>(extension, deploymentUnit.getName());
+            log.debug("Loaded portable extension " + extension);
+            deploymentUnit.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
+        }
+    }
+
+    private Extension loadExtension(String serviceClassName, final DeploymentReflectionIndex index, final ClassLoader loader) {
+        Class<?> clazz = null;
+        Class<Extension> serviceClass = null;
+        try {
+            clazz = loader.loadClass(serviceClassName);
+            serviceClass = (Class<Extension>) clazz;
+            final Constructor<Extension> ctor = index.getClassIndex(serviceClass).getConstructor(EMPTY_STRING_ARRAY);
+            return ctor.newInstance();
+        } catch (ClassNotFoundException e) {
+            log.warn("Could not load portable extension class " + serviceClassName);
+        } catch (ClassCastException e) {
+            throw new RuntimeException("Service class " + serviceClassName + " didn't implement the Extension interface");
+        } catch (Exception e) {
+            log.warn("Could not load portable extension " + serviceClassName, e);
+        }
+        return null;
     }
 
     @Override
