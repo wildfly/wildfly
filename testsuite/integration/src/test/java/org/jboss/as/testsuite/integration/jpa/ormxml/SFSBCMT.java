@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.jpa.transaction;
+package org.jboss.as.testsuite.integration.jpa.ormxml;
 
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
@@ -28,10 +28,8 @@ import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.transaction.UserTransaction;
 
 /**
  * stateful session bean
@@ -39,56 +37,18 @@ import javax.transaction.UserTransaction;
  * @author Scott Marlow
  */
 @Stateful
-@TransactionManagement(TransactionManagementType.BEAN)
-public class SFSB1 {
-    @PersistenceContext(unitName = "mypc")
+@TransactionManagement(TransactionManagementType.CONTAINER)
+public class SFSBCMT {
+    @PersistenceContext(unitName = "ORMpc")
         EntityManager em;
 
     @Resource
     SessionContext sessionContext;
 
-    // always throws a TransactionRequiredException
-    public void createEmployeeNoTx(String name, String address, int id) {
-
-
-        Employee emp = new Employee();
-        emp.setId(id);
-        emp.setAddress(address);
-        emp.setName(name);
-
-        UserTransaction tx1 = sessionContext.getUserTransaction();
-        try {
-            tx1.begin();
-            em.joinTransaction();
-            em.persist(emp);
-            tx1.commit();
-        }
-        catch (Exception e) {
-            throw new RuntimeException("couldn't start tx" , e);
-        }
-
-        em.flush();         // should throw TransactionRequiredException
-    }
-
-
-    public Employee getEmployeeNoTX(int id) {
-
-        return em.find(Employee.class, id);
-    }
-
-    public String queryEmployeeNameNoTX(int id) {
-        Query q = em.createQuery("SELECT e.name FROM Employee e");
-        try {
-            String name = (String)q.getSingleResult();
-            return name;
-        }
-        catch (NoResultException expected) {
-            return "success";
-        }
-        catch (Exception unexpected) {
-            return unexpected.getMessage();
-        }
-
+    public Employee queryEmployeeName(int id) {
+        Query q = em.createQuery("SELECT e FROM Employee e where id=?");
+        q.setParameter(1,new Integer(id));
+        return (Employee)q.getSingleResult();
     }
 
 
