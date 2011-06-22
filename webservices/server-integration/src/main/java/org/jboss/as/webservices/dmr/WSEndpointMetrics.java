@@ -24,6 +24,9 @@ package org.jboss.as.webservices.dmr;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
@@ -96,7 +99,12 @@ final class WSEndpointMetrics implements OperationStepHandler {
 
     private ModelNode getEndpointMetricsFragment(final ModelNode operation, final ServiceController<?> controller) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String endpointId = address.getLastElement().getValue();
+        String endpointId = null;
+        try {
+            endpointId = URLDecoder.decode(address.getLastElement().getValue(), "UTF-8");
+        } catch (final UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
         final String metricName = operation.require(NAME).asString();
         final String webContext = endpointId.substring(0, endpointId.indexOf(":"));
         final String endpointName = endpointId.substring(endpointId.indexOf(":") + 1);

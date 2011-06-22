@@ -22,21 +22,18 @@
 
 package org.jboss.as.webservices.dmr;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CLASS;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONTEXT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_NAME;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
-import org.jboss.as.webservices.service.ModelUpdateService;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
@@ -58,8 +55,13 @@ public final class ModelDeploymentAspect extends AbstractDeploymentAspect {
         final DeploymentUnit unit = dep.getAttachment(DeploymentUnit.class);
         for (final Endpoint endpoint : dep.getService().getEndpoints()) {
 
-            final ModelNode op = unit.createDeploymentSubModel(WSExtension.SUBSYSTEM_NAME,
-                    PathElement.pathElement(ENDPOINT, getId(endpoint)));
+            ModelNode op = null;
+            try {
+                op = unit.createDeploymentSubModel(WSExtension.SUBSYSTEM_NAME,
+                    PathElement.pathElement(ENDPOINT, URLEncoder.encode(getId(endpoint), "UTF-8")));
+            } catch (final UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
 
             op.get(ENDPOINT_NAME).set(getName(endpoint));
             op.get(ENDPOINT_CONTEXT).set(getContext(endpoint));
