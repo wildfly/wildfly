@@ -113,7 +113,7 @@ public class ManagementChannel extends ProtocolChannel {
         private volatile ManagementOperationHandler operationHandler;
 
         private void handleRequest(final ManagementRequestHeader header, final DataInput input) throws IOException {
-            log.tracef("%s handling request %d", ManagementChannel.this, header.getBatchId());
+            log.tracef("%s handling request %d(%d)", ManagementChannel.this, header.getBatchId(), header.getRequestId());
             final FlushableDataOutputImpl output = FlushableDataOutputImpl.create(writeMessage());
 
             Exception error = null;

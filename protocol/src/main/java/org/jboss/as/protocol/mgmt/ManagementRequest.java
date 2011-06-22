@@ -92,7 +92,7 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
      * @return A future to retrieve the result when the request is complete
      */
     public AsyncFuture<T> execute(final ExecutorService executor, final ManagementClientChannelStrategy channelStrategy) {
-        log.tracef("Scheduling request %s with future %s", this, this);
+        log.tracef("Scheduling request %s with future %s - %d (%d)", this, future, getBatchId(), getCurrentRequestId());
         executor.execute(new Runnable() {
             @Override
             public void run() {
