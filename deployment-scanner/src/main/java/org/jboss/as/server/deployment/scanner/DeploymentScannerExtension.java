@@ -47,7 +47,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
@@ -90,13 +90,13 @@ public class DeploymentScannerExtension implements Extension {
 
         final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER);
         subsystem.registerXMLElementWriter(parser);
-        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM);
         registration.registerOperationHandler(DeploymentScannerSubsystemAdd.OPERATION_NAME, DeploymentScannerSubsystemAdd.INSTANCE,
                 DeploymentScannerSubsystemAdd.INSTANCE, false);
         registration.registerOperationHandler(DeploymentScannerSubsystemRemove.OPERATION_NAME, DeploymentScannerSubsystemRemove.INSTANCE,
                 DeploymentScannerSubsystemRemove.INSTANCE, false);
         // Register operation handlers
-        final ModelNodeRegistration scanners = registration.registerSubModel(scannersPath, SCANNER);
+        final ManagementResourceRegistration scanners = registration.registerSubModel(scannersPath, SCANNER);
         scanners.registerOperationHandler(DeploymentScannerAdd.OPERATION_NAME, DeploymentScannerAdd.INSTANCE, DeploymentScannerAdd.INSTANCE, false);
         scanners.registerOperationHandler(DeploymentScannerRemove.OPERATION_NAME, DeploymentScannerRemove.INSTANCE, DeploymentScannerRemove.INSTANCE, false);
         scanners.registerReadWriteAttribute(Attribute.PATH.getLocalName(), null, WritePathAttributeHandler.INSTANCE, Storage.CONFIGURATION);

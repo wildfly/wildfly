@@ -26,8 +26,7 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -41,9 +40,9 @@ class DeploymentModelUtils {
     static final String SUB_DEPLOYMENT = "subdeployment";
 
     private final Resource root;
-    private final ImmutableModelNodeRegistration registration;
+    private final ImmutableManagementResourceRegistration registration;
 
-    DeploymentModelUtils(final Resource root, final ImmutableModelNodeRegistration registration) {
+    DeploymentModelUtils(final Resource root, final ImmutableManagementResourceRegistration registration) {
         this.root = root;
         this.registration = registration;
     }
@@ -68,7 +67,7 @@ class DeploymentModelUtils {
 
     ModelNode createDeploymentSubModel(final String subsystemName, final PathElement address) {
         final Resource subsystem = getOrCreate(root, PathElement.pathElement(SUBSYSTEM, subsystemName));
-        final ImmutableModelNodeRegistration subModel = registration.getSubModel(getExtensionAddress(subsystemName, address));
+        final ImmutableManagementResourceRegistration subModel = registration.getSubModel(getExtensionAddress(subsystemName, address));
         if(subModel == null) {
             throw new IllegalStateException(address.toString());
         }
@@ -99,7 +98,7 @@ class DeploymentModelUtils {
     static DeploymentModelUtils create(final NewOperationContext context, final PathAddress address) {
             final Resource resource = context.readResourceForUpdate(address);
 
-            final ImmutableModelNodeRegistration registration = context.getModelNodeRegistration().getSubModel(address);
+            final ImmutableManagementResourceRegistration registration = context.getResourceRegistration().getSubModel(address);
             return new DeploymentModelUtils(resource, registration);
     }
 

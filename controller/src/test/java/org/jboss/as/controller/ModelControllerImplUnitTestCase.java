@@ -69,7 +69,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -144,7 +144,7 @@ public class ModelControllerImplUnitTestCase {
         }
 
         @Override
-        protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
 
             rootRegistration.registerOperationHandler("setup", new SetupHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("composite", NewCompositeOperationHandler.INSTANCE, DESC_PROVIDER, false);

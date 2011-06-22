@@ -34,7 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import org.jboss.as.controller.descriptions.common.JVMDescriptions;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -91,11 +91,11 @@ public final class JVMHandlers {
         }
     };
 
-    public static void register(final ModelNodeRegistration registration) {
+    public static void register(final ManagementResourceRegistration registration) {
         register(registration, false);
     }
 
-    public static void register(final ModelNodeRegistration registration, final boolean server) {
+    public static void register(final ManagementResourceRegistration registration, final boolean server) {
 
         registration.registerOperationHandler(JVMAddHandler.OPERATION_NAME, JVMAddHandler.INSTANCE, JVMAddHandler.INSTANCE, false);
         registration.registerOperationHandler(JVMRemoveHandler.OPERATION_NAME, JVMRemoveHandler.INSTANCE, JVMRemoveHandler.INSTANCE, false);

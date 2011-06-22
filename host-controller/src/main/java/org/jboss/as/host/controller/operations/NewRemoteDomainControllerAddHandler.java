@@ -34,7 +34,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.NewDomainModelUtil;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
@@ -51,12 +51,12 @@ public class NewRemoteDomainControllerAddHandler extends AbstractAddStepHandler 
 
     private final ParametersValidator parametersValidator = new ParametersValidator();
 
-    private final ModelNodeRegistration rootRegistration;
+    private final ManagementResourceRegistration rootRegistration;
     private final HostControllerConfigurationPersister overallConfigPersister;
     private final FileRepository fileRepository;
     private final LocalHostControllerInfoImpl hostControllerInfo;
 
-    public static NewRemoteDomainControllerAddHandler getInstance(final ModelNodeRegistration rootRegistration,
+    public static NewRemoteDomainControllerAddHandler getInstance(final ManagementResourceRegistration rootRegistration,
                                                                  final LocalHostControllerInfoImpl hostControllerInfo,
                                                                  final HostControllerConfigurationPersister overallConfigPersister,
                                                                  final FileRepository fileRepository) {
@@ -66,7 +66,7 @@ public class NewRemoteDomainControllerAddHandler extends AbstractAddStepHandler 
     /**
      * Create the ServerAddHandler
      */
-    NewRemoteDomainControllerAddHandler(final ModelNodeRegistration rootRegistration,
+    NewRemoteDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
                                         final LocalHostControllerInfoImpl hostControllerInfo,
                                         final HostControllerConfigurationPersister overallConfigPersister,
                                         final FileRepository fileRepository) {

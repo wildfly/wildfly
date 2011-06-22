@@ -62,49 +62,30 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.AbstractControllerService;
-import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -992,7 +973,7 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
     }
 
     @Override
-    protected void initModel(ModelNodeRegistration rootRegistration) {
+    protected void initModel(ManagementResourceRegistration rootRegistration) {
         rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
         rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
         rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
@@ -1050,7 +1031,7 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
             }
         }, false, OperationEntry.EntryType.PRIVATE);
 
-        ModelNodeRegistration profileReg = rootRegistration.registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
+        ManagementResourceRegistration profileReg = rootRegistration.registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
 
             @Override
             public ModelNode getModelDescription(Locale locale) {
@@ -1067,7 +1048,7 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
             }
         });
 
-        ModelNodeRegistration profileSub1Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem1"), new DescriptionProvider() {
+        ManagementResourceRegistration profileSub1Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem1"), new DescriptionProvider() {
 
             @Override
             public ModelNode getModelDescription(Locale locale) {
@@ -1118,8 +1099,8 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
             }
         };
 
-        ModelNodeRegistration profileSub1RegChildType11 = profileSub1Reg.registerSubModel(PathElement.pathElement("type1", "*"), thingProvider);
-        ModelNodeRegistration profileSub1RegChildType2 = profileSub1Reg.registerSubModel(PathElement.pathElement("type2", "other"), new DescriptionProvider() {
+        ManagementResourceRegistration profileSub1RegChildType11 = profileSub1Reg.registerSubModel(PathElement.pathElement("type1", "*"), thingProvider);
+        ManagementResourceRegistration profileSub1RegChildType2 = profileSub1Reg.registerSubModel(PathElement.pathElement("type2", "other"), new DescriptionProvider() {
 
             @Override
             public ModelNode getModelDescription(Locale locale) {
@@ -1132,7 +1113,7 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
             }
         });
 
-        ModelNodeRegistration profileASub2Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem2"), new DescriptionProvider() {
+        ManagementResourceRegistration profileASub2Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem2"), new DescriptionProvider() {
 
             @Override
             public ModelNode getModelDescription(Locale locale) {
@@ -1191,7 +1172,7 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
 
         profileASub2Reg.registerReadWriteAttribute("long", null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.LONG, false), AttributeAccess.Storage.CONFIGURATION);
 
-        ModelNodeRegistration profileBSub3Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem3"), new DescriptionProvider() {
+        ManagementResourceRegistration profileBSub3Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem3"), new DescriptionProvider() {
 
             @Override
             public ModelNode getModelDescription(Locale locale) {
@@ -1264,7 +1245,7 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
                 },
                 false);
 
-        ModelNodeRegistration profileCSub4Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem4"), new DescriptionProvider() {
+        ManagementResourceRegistration profileCSub4Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem4"), new DescriptionProvider() {
 
             @Override
             public ModelNode getModelDescription(Locale locale) {
@@ -1281,7 +1262,7 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
         });
 
 
-        ModelNodeRegistration profileCSub5Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem5"), new DescriptionProvider() {
+        ManagementResourceRegistration profileCSub5Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem5"), new DescriptionProvider() {
 
             @Override
             public ModelNode getModelDescription(Locale locale) {
@@ -1306,7 +1287,7 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
         }, AttributeAccess.Storage.CONFIGURATION);
 
 
-        ModelNodeRegistration profileCSub5Type1Reg = profileCSub5Reg.registerSubModel(PathElement.pathElement("type1", "thing1"), new DescriptionProvider() {
+        ManagementResourceRegistration profileCSub5Type1Reg = profileCSub5Reg.registerSubModel(PathElement.pathElement("type1", "thing1"), new DescriptionProvider() {
 
             @Override
             public ModelNode getModelDescription(Locale locale) {

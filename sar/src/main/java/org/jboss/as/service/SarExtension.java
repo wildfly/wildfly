@@ -42,7 +42,7 @@ import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -66,7 +66,7 @@ public class SarExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(SarSubsystemProviders.SUBSYSTEM);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SarSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, SarSubsystemAdd.INSTANCE, SarSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, SarDescribeHandler.INSTANCE, SarDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(parser);

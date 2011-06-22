@@ -33,7 +33,7 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.ServerIdentity;
@@ -54,12 +54,12 @@ public class ServerOperationsResolverHandler implements NewStepHandler {
     private final ServerOperationResolver resolver;
     private final ParsedOp parsedOp;
     private final PathAddress originalAddress;
-    private final ImmutableModelNodeRegistration originalRegistration;
+    private final ImmutableManagementResourceRegistration originalRegistration;
     private final ModelNode localResponse;
     private final boolean recordResponse;
 
     ServerOperationsResolverHandler(final String localHostName, final ServerOperationResolver resolver, final ParsedOp parsedOp,
-                                    final PathAddress originalAddress, final ImmutableModelNodeRegistration originalRegistration,
+                                    final PathAddress originalAddress, final ImmutableManagementResourceRegistration originalRegistration,
                                     final ModelNode response, final boolean recordResponse) {
         this.localHostName = localHostName;
         this.resolver = resolver;

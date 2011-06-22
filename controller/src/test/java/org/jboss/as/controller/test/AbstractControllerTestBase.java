@@ -31,7 +31,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -54,7 +54,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractControllerTestBase {
 
     abstract DescriptionProvider getRootDescriptionProvider();
-    abstract void initModel(final ModelNodeRegistration registration);
+    abstract void initModel(final ManagementResourceRegistration registration);
     protected ModelNode createCoreModel() {
         return new ModelNode();
     }
@@ -113,7 +113,7 @@ public abstract class AbstractControllerTestBase {
             }
         }
 
-        protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             try {
                 AbstractControllerTestBase.this.initModel(rootRegistration);
             } catch(Exception e) {
@@ -130,7 +130,7 @@ public abstract class AbstractControllerTestBase {
         if(! node.isDefined()) {
             return;
         }
-        final ModelNodeRegistration registration = context.getModelNodeRegistrationForUpdate();
+        final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
         final Set<String> children = registration.getChildNames(base);
         final ModelNode current = new ModelNode();
 

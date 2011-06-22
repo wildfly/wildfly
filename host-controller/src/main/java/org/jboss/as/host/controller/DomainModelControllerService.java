@@ -31,7 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.IOException;
@@ -61,7 +60,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.NewRemoteProxyController;
@@ -119,7 +118,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final Map<String, NewProxyController> hostProxies;
     private final Map<String, NewProxyController> serverProxies;
     private final PrepareStepHandler prepareStepHandler;
-    private ModelNodeRegistration modelNodeRegistration;
+    private ManagementResourceRegistration modelNodeRegistration;
     private volatile NewMasterDomainControllerClient masterDomainControllerClient;
 
     private final Map<String, ManagementChannel> unregisteredHostChannels = new HashMap<String, ManagementChannel>();
@@ -210,7 +209,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             throw new IllegalArgumentException("There is already a registered server named '" + pe.getValue() + "'");
         }
         Logger.getLogger("org.jboss.host.controller").info("Registering server " + pe.getValue());
-        ModelNodeRegistration hostRegistration = modelNodeRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST)));
+        ManagementResourceRegistration hostRegistration = modelNodeRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST)));
         hostRegistration.registerProxyController(pe, serverControllerClient);
         serverProxies.put(pe.getValue(), serverControllerClient);
     }
@@ -220,7 +219,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerInfo.getLocalHostName()));
         PathElement pe = PathElement.pathElement(RUNNING_SERVER, serverName);
         Logger.getLogger("org.jboss.host.controller").info("Unregistering server " + serverName);
-        ModelNodeRegistration hostRegistration = modelNodeRegistration.getSubModel(pa);
+        ManagementResourceRegistration hostRegistration = modelNodeRegistration.getSubModel(pa);
         hostRegistration.unregisterProxyController(pe);
         serverProxies.remove(serverName);
     }
@@ -247,7 +246,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         NewDomainModelUtil.updateCoreModel(rootResource.getModel());
         NewHostModelUtil.createHostRegistry(rootRegistration, configurationPersister, environment, localFileRepository,
                 hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, this, this);

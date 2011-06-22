@@ -97,7 +97,7 @@ import org.jboss.as.controller.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.FileRepository;
@@ -306,7 +306,7 @@ public class ParseAndMarshalModelsTestCase {
 
         final ModelNode model = new ModelNode();
         final NewModelController controller = createController(model, new Setup() {
-            public void setup(ModelNode model, ModelNodeRegistration rootRegistration) {
+            public void setup(ModelNode model, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model);
                 ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null);
             }
@@ -332,13 +332,13 @@ public class ParseAndMarshalModelsTestCase {
         final ModelNode model = new ModelNode();
 
         final NewModelController controller = createController(model, new Setup() {
-            public void setup(ModelNode model, ModelNodeRegistration root) {
+            public void setup(ModelNode model, ManagementResourceRegistration root) {
                 NewHostModelUtil.initCoreModel(model.get(HOST, "local"));
 
                 final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(new ControlledProcessState(false));
 
                 // Add of the host itself
-                ModelNodeRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST), HostDescriptionProviders.HOST_ROOT_PROVIDER);
+                ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST), HostDescriptionProviders.HOST_ROOT_PROVIDER);
 
                 // Other root resource operations
                 XmlMarshallingHandler xmh = new XmlMarshallingHandler(persister);
@@ -349,44 +349,44 @@ public class ParseAndMarshalModelsTestCase {
                 hostRegistration.registerReadOnlyAttribute(MASTER, IsMasterHandler.INSTANCE, AttributeAccess.Storage.RUNTIME);
 
                 // System Properties
-                ModelNodeRegistration sysProps = hostRegistration.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
+                ManagementResourceRegistration sysProps = hostRegistration.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
                 sysProps.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, false);
 
                 // Central Management
                 // TODO - Need to split the provider.
-                ModelNodeRegistration securityRealms = hostRegistration.registerSubModel(PathElement.pathElement(MANAGEMENT, SECURITY_REALMS), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
-                ModelNodeRegistration securityRealm = securityRealms.registerSubModel(PathElement.pathElement(SECURITY_REALM), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
+                ManagementResourceRegistration securityRealms = hostRegistration.registerSubModel(PathElement.pathElement(MANAGEMENT, SECURITY_REALMS), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
+                ManagementResourceRegistration securityRealm = securityRealms.registerSubModel(PathElement.pathElement(SECURITY_REALM), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
                 securityRealm.registerOperationHandler(SecurityRealmAddHandler.OPERATION_NAME, SecurityRealmAddHandler.INSTANCE, SecurityRealmAddHandler.INSTANCE, false);
 
-                ModelNodeRegistration connections = hostRegistration.registerSubModel(PathElement.pathElement(MANAGEMENT, CONNECTIONS), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
-                ModelNodeRegistration connection = connections.registerSubModel(PathElement.pathElement(CONNECTION), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
+                ManagementResourceRegistration connections = hostRegistration.registerSubModel(PathElement.pathElement(MANAGEMENT, CONNECTIONS), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
+                ManagementResourceRegistration connection = connections.registerSubModel(PathElement.pathElement(CONNECTION), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
                 connection.registerOperationHandler(ConnectionAddHandler.OPERATION_NAME, ConnectionAddHandler.INSTANCE, ConnectionAddHandler.INSTANCE, false);
                 // Management API protocols
-                ModelNodeRegistration managementNative = hostRegistration.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
+                ManagementResourceRegistration managementNative = hostRegistration.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
                 NativeManagementAddHandler nmah = new NativeManagementAddHandler(hostControllerInfo);
                 managementNative.registerOperationHandler(NativeManagementAddHandler.OPERATION_NAME, nmah, nmah, false);
 
                 //Extensions
-                ModelNodeRegistration extensions = hostRegistration.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
+                ManagementResourceRegistration extensions = hostRegistration.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
                 ExtensionContext extensionContext = new ExtensionContextImpl(hostRegistration, null, persister);
                 ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
                 extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
 
                 // Jvms
-                final ModelNodeRegistration jvms = hostRegistration.registerSubModel(PathElement.pathElement(JVM), CommonProviders.JVM_PROVIDER);
+                final ManagementResourceRegistration jvms = hostRegistration.registerSubModel(PathElement.pathElement(JVM), CommonProviders.JVM_PROVIDER);
                 JVMHandlers.register(jvms);
 
                 //Paths
-                ModelNodeRegistration paths = hostRegistration.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
+                ManagementResourceRegistration paths = hostRegistration.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
                 paths.registerOperationHandler(PathAddHandler.OPERATION_NAME, PathAddHandler.SPECIFIED_INSTANCE, PathAddHandler.SPECIFIED_INSTANCE, false);
 
                 //interface
-                ModelNodeRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
+                ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
                 HostSpecifiedInterfaceAddHandler hsiah = new HostSpecifiedInterfaceAddHandler(hostControllerInfo);
                 interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, hsiah, false);
 
                 //server
-                ModelNodeRegistration servers = hostRegistration.registerSubModel(PathElement.pathElement(SERVER_CONFIG), HostDescriptionProviders.SERVER_PROVIDER);
+                ManagementResourceRegistration servers = hostRegistration.registerSubModel(PathElement.pathElement(SERVER_CONFIG), HostDescriptionProviders.SERVER_PROVIDER);
                 servers.registerOperationHandler(ServerAddHandler.OPERATION_NAME, ServerAddHandler.INSTANCE, ServerAddHandler.INSTANCE, false);
                 servers.registerReadWriteAttribute(AUTO_START, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), AttributeAccess.Storage.CONFIGURATION);
                 servers.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
@@ -396,19 +396,19 @@ public class ParseAndMarshalModelsTestCase {
 
 
                 //server paths
-                ModelNodeRegistration serverPaths = servers.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
+                ManagementResourceRegistration serverPaths = servers.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
                 serverPaths.registerOperationHandler(PathAddHandler.OPERATION_NAME, PathAddHandler.SPECIFIED_INSTANCE, PathAddHandler.SPECIFIED_INSTANCE, false);
                 //server interfaces
-                ModelNodeRegistration serverInterfaces = servers.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
+                ManagementResourceRegistration serverInterfaces = servers.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
                 serverInterfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
                 // Server system Properties
-                ModelNodeRegistration serverSysProps = servers.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SERVER_SYSTEM_PROPERTIES_PROVIDER);
+                ManagementResourceRegistration serverSysProps = servers.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SERVER_SYSTEM_PROPERTIES_PROVIDER);
                 serverSysProps.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, false);
                 serverSysProps.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
                 serverSysProps.registerReadWriteAttribute(BOOT_TIME, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), AttributeAccess.Storage.CONFIGURATION);
 
                 // Server jvm
-                final ModelNodeRegistration serverVMs = servers.registerSubModel(PathElement.pathElement(JVM), JVMHandlers.SERVER_MODEL_PROVIDER);
+                final ManagementResourceRegistration serverVMs = servers.registerSubModel(PathElement.pathElement(JVM), JVMHandlers.SERVER_MODEL_PROVIDER);
                 JVMHandlers.register(serverVMs, true);
             }
         });
@@ -434,7 +434,7 @@ public class ParseAndMarshalModelsTestCase {
 
         final ModelNode model = new ModelNode();
         final NewModelController controller = createController(model, new Setup() {
-            public void setup(ModelNode model, ModelNodeRegistration rootRegistration) {
+            public void setup(ModelNode model, ManagementResourceRegistration rootRegistration) {
                 NewDomainModelUtil.updateCoreModel(model);
                 NewDomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, null, new MockFileRepository(), null, null);
             }
@@ -586,7 +586,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     interface Setup {
-        void setup(ModelNode modelNode, ModelNodeRegistration rootRegistration);
+        void setup(ModelNode modelNode, ManagementResourceRegistration rootRegistration);
     }
 
     class ModelControllerService extends AbstractControllerService {
@@ -610,7 +610,7 @@ public class ParseAndMarshalModelsTestCase {
             }
         }
 
-        protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             registration.setup(rootResource.getModel(), rootRegistration);
 
             rootRegistration.registerOperationHandler("capture-model", new NewStepHandler() {

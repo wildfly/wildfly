@@ -110,7 +110,7 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -790,10 +790,10 @@ public class ThreadsSubsystemTestCase {
     }
 
     static class TestNewExtensionContext implements ExtensionContext {
-        final ModelNodeRegistration testProfileRegistration;
-        ModelNodeRegistration createdRegistration;
+        final ManagementResourceRegistration testProfileRegistration;
+        ManagementResourceRegistration createdRegistration;
 
-        TestNewExtensionContext(ModelNodeRegistration testProfileRegistration) {
+        TestNewExtensionContext(ManagementResourceRegistration testProfileRegistration) {
             this.testProfileRegistration = testProfileRegistration;
         }
 
@@ -801,7 +801,7 @@ public class ThreadsSubsystemTestCase {
         public SubsystemRegistration registerSubsystem(final String name) throws IllegalArgumentException {
             return new SubsystemRegistration() {
                 @Override
-                public ModelNodeRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
+                public ManagementResourceRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
                     if (descriptionProvider == null) {
                         throw new IllegalArgumentException("descriptionProvider is null");
                     }
@@ -812,7 +812,7 @@ public class ThreadsSubsystemTestCase {
                 }
 
                 @Override
-                public ModelNodeRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
+                public ManagementResourceRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
                     throw new IllegalStateException("Not implemented");
                 }
 
@@ -892,7 +892,7 @@ public class ThreadsSubsystemTestCase {
             latch.countDown();
         }
 
-        protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
@@ -916,7 +916,7 @@ public class ThreadsSubsystemTestCase {
                 }
             });
 
-            ModelNodeRegistration profileRegistration = rootRegistration.registerSubModel(PathElement.pathElement("profile"), profileDescriptionProvider);
+            ManagementResourceRegistration profileRegistration = rootRegistration.registerSubModel(PathElement.pathElement("profile"), profileDescriptionProvider);
             TestNewExtensionContext context = new TestNewExtensionContext(profileRegistration);
             ThreadsExtension extension = new ThreadsExtension();
             extension.initialize(context);

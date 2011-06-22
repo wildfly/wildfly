@@ -56,7 +56,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import static org.jboss.as.remoting.CommonAttributes.ADD_CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
@@ -103,12 +103,12 @@ public class RemotingExtension implements Extension {
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
         registration.registerXMLElementWriter(NewRemotingSubsystemParser.INSTANCE);
         // Remoting subsystem description and operation handlers
-        final ModelNodeRegistration subsystem = registration.registerSubsystemModel(RemotingSubsystemProviders.SUBSYSTEM);
+        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(RemotingSubsystemProviders.SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, RemotingSubsystemAdd.INSTANCE, RemotingSubsystemProviders.SUBSYSTEM_ADD, false);
         subsystem.registerOperationHandler(DESCRIBE, RemotingSubsystemDescribeHandler.INSTANCE, RemotingSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         // Remoting connectors
-        final ModelNodeRegistration connectors = subsystem.registerSubModel(PathElement.pathElement(CONNECTOR), RemotingSubsystemProviders.CONNECTOR_SPEC);
+        final ManagementResourceRegistration connectors = subsystem.registerSubModel(PathElement.pathElement(CONNECTOR), RemotingSubsystemProviders.CONNECTOR_SPEC);
         connectors.registerOperationHandler(ADD, ConnectorAdd.INSTANCE, ConnectorAdd.INSTANCE, false);
         connectors.registerOperationHandler(REMOVE, ConnectorRemove.INSTANCE, ConnectorRemove.INSTANCE, false);
 

@@ -44,7 +44,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -82,7 +82,7 @@ public class JPAExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
+        final ManagementResourceRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
         nodeRegistration.registerOperationHandler(JPASubSystemAdd.OPERATION_NAME, JPASubSystemAdd.INSTANCE, JPASubSystemAdd.INSTANCE, false);
         nodeRegistration.registerOperationHandler(JPASubSystemRemove.OPERATION_NAME, JPASubSystemRemove.INSTANCE, JPASubSystemRemove.INSTANCE, false);
         nodeRegistration.registerOperationHandler(DESCRIBE, JPADescribeHandler.INSTANCE, JPADescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);

@@ -26,7 +26,7 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -48,7 +48,7 @@ public class JacORBExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(JacORBSubsystemDescriptions.SUBSYSTEM);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JacORBSubsystemDescriptions.SUBSYSTEM);
         registration.registerOperationHandler(ADD, JacORBSubsystemAdd.INSTANCE, JacORBSubsystemDescriptions.SUBSYSTEM_ADD,
                 false);
         registration.registerOperationHandler(DESCRIBE, JacORBSubsystemDescribe.INSTANCE, JacORBSubsystemDescriptions.SUBSYSTEM_DESCRIBE,

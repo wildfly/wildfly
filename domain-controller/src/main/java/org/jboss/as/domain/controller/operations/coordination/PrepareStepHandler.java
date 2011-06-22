@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -37,7 +36,7 @@ import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -116,7 +115,7 @@ public class PrepareStepHandler  implements NewStepHandler {
         }
         final String operationName =  operation.require(OP).asString();
         NewStepHandler stepHandler = null;
-        final ImmutableModelNodeRegistration registration = context.getModelNodeRegistration();
+        final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
         if (registration != null) {
             stepHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
         }

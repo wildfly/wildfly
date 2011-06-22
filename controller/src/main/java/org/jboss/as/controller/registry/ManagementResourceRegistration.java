@@ -23,8 +23,6 @@
 package org.jboss.as.controller.registry;
 
 import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
@@ -37,12 +35,12 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface ModelNodeRegistration extends ImmutableModelNodeRegistration {
+public interface ManagementResourceRegistration extends ImmutableManagementResourceRegistration {
 
 
 
     @Override
-    ModelNodeRegistration getSubModel(PathAddress address);
+    ManagementResourceRegistration getSubModel(PathAddress address);
 
     /**
      * Register the existence of an addressable sub-node of this model node. The submodel is expected to have some
@@ -56,21 +54,21 @@ public interface ModelNodeRegistration extends ImmutableModelNodeRegistration {
      * @throws IllegalArgumentException if a submodel is already registered at {@code address}
      * @throws IllegalStateException if {@link #isRuntimeOnly()} returns {@code true}
      */
-    ModelNodeRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider);
+    ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider);
 
     /**
      * Register the existence of an addressable sub-node of this model node.
      *
      * @param address the address of the submodel (may include a wildcard)
      * @param subModel registry for the submodel. Must have been created by the same {@link Factory} that
-     *                 created this ModelNodeRegistration
+     *                 created this ManagementResourceRegistration
      *
      * @throws IllegalArgumentException if a submodel is already registered at {@code address} or if
      *              {@code subModel} was created by a different {@link Factory} than the creator of
      *              this object
      */
     @Deprecated
-    void registerSubModel(PathElement address, ModelNodeRegistration subModel);
+    void registerSubModel(PathElement address, ManagementResourceRegistration subModel);
 
     /**
      * Register an operation handler for this model node.
@@ -185,11 +183,11 @@ public interface ModelNodeRegistration extends ImmutableModelNodeRegistration {
          * @param rootModelDescriptionProvider the model description provider for the root model node
          * @return the new root model node registration
          */
-        public static ModelNodeRegistration create(final DescriptionProvider rootModelDescriptionProvider) {
+        public static ManagementResourceRegistration create(final DescriptionProvider rootModelDescriptionProvider) {
             if (rootModelDescriptionProvider == null) {
                 throw new IllegalArgumentException("rootModelDescriptionProvider is null");
             }
-            return new ConcreteNodeRegistration(null, null, rootModelDescriptionProvider, false);
+            return new ConcreteResourceRegistration(null, null, rootModelDescriptionProvider, false);
         }
     }
 }

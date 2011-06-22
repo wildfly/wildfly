@@ -51,7 +51,7 @@ import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
 import org.jboss.as.domain.controller.operations.deployment.NewDeploymentUploadUtil;
@@ -83,7 +83,7 @@ public class OperationCoordinatorStepHandler {
     void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
         // Determine routing
-        ImmutableModelNodeRegistration opRegistry = context.getModelNodeRegistration();
+        ImmutableManagementResourceRegistration opRegistry = context.getResourceRegistration();
         OperationRouting routing = OperationRouting.determineRouting(operation, localHostControllerInfo, opRegistry);
 
         if (!localHostControllerInfo.isMasterDomainController()
@@ -143,7 +143,7 @@ public class OperationCoordinatorStepHandler {
         }
         final String operationName =  operation.require(OP).asString();
         NewStepHandler stepHandler = null;
-        final ImmutableModelNodeRegistration registration = context.getModelNodeRegistration();
+        final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
         if (registration != null) {
             stepHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
         }

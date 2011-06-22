@@ -32,11 +32,11 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
- * Read-only view of a {@link ModelNodeRegistration}.
+ * Read-only view of a {@link ManagementResourceRegistration}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface ImmutableModelNodeRegistration {
+public interface ImmutableManagementResourceRegistration {
     /**
      * Gets whether this model node only exists in the runtime and has no representation in the
      * persistent configuration model.
@@ -163,5 +163,5 @@ public interface ImmutableModelNodeRegistration {
      * @param address the address
      * @return the node registration, <code>null</code> if there is none
      */
-    ImmutableModelNodeRegistration getSubModel(PathAddress address);
+    ImmutableManagementResourceRegistration getSubModel(PathAddress address);
 }

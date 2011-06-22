@@ -28,7 +28,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -72,7 +72,7 @@ public abstract class AbstractControllerService implements Service<NewModelContr
     public void start(final StartContext context) throws StartException {
         final ServiceController<?> serviceController = context.getController();
         final ServiceContainer container = serviceController.getServiceContainer();
-        final NewModelControllerImpl controller = new NewModelControllerImpl(container, context.getChildTarget(), ModelNodeRegistration.Factory.create(rootDescriptionProvider), new ContainerStateMonitor(container, serviceController), configurationPersister, controllerType, prepareStep, processState);
+        final NewModelControllerImpl controller = new NewModelControllerImpl(container, context.getChildTarget(), ManagementResourceRegistration.Factory.create(rootDescriptionProvider), new ContainerStateMonitor(container, serviceController), configurationPersister, controllerType, prepareStep, processState);
         initModel(controller.getRootResource(), controller.getRootRegistration());
         this.controller = controller;
 
@@ -126,5 +126,5 @@ public abstract class AbstractControllerService implements Service<NewModelContr
         return controller;
     }
 
-    protected abstract void initModel(Resource rootResource, ModelNodeRegistration rootRegistration);
+    protected abstract void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration);
 }

@@ -37,7 +37,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,10 +54,10 @@ public class RegistryProxyControllerTestCase {
     PathElement proxyA = PathElement.pathElement("proxy", "proxyA");
     PathElement proxyB = PathElement.pathElement("proxy", "proxyB");
 
-    ModelNodeRegistration root;
-    ModelNodeRegistration profileAReg;
-    ModelNodeRegistration profileBReg;
-    ModelNodeRegistration profileAChildAReg;
+    ManagementResourceRegistration root;
+    ManagementResourceRegistration profileAReg;
+    ManagementResourceRegistration profileBReg;
+    ManagementResourceRegistration profileAChildAReg;
 
     @Before
     public void setup() {
@@ -67,7 +67,7 @@ public class RegistryProxyControllerTestCase {
                 return new ModelNode();
             }
         };
-        root = ModelNodeRegistration.Factory.create(rootDescriptionProvider);
+        root = ManagementResourceRegistration.Factory.create(rootDescriptionProvider);
         assertNotNull(root);
 
         profileAReg = registerSubModel(root, profileA);
@@ -223,7 +223,7 @@ public class RegistryProxyControllerTestCase {
         return addresses;
     }
 
-    private ModelNodeRegistration registerSubModel(final ModelNodeRegistration parent, final PathElement address) {
+    private ManagementResourceRegistration registerSubModel(final ManagementResourceRegistration parent, final PathElement address) {
         return parent.registerSubModel(address, new DescriptionProvider() {
 
             @Override

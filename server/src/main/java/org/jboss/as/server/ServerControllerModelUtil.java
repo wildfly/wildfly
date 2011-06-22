@@ -21,12 +21,9 @@
  */
 package org.jboss.as.server;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
@@ -85,7 +82,7 @@ import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLe
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.domain.management.operations.ConnectionAddHandler;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
@@ -129,8 +126,6 @@ import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.dmr.ModelNode;
 
-import java.util.Locale;
-
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -162,7 +157,7 @@ public class
         root.get(DEPLOYMENT);
     }
 
-    public static void initOperations(final ModelNodeRegistration root, final ContentRepository contentRepository,
+    public static void initOperations(final ManagementResourceRegistration root, final ContentRepository contentRepository,
                                       final ExtensibleConfigurationPersister extensibleConfigurationPersister,
                                       final ServerEnvironment serverEnvironment,
                                       final ControlledProcessState processState) {
@@ -221,46 +216,46 @@ public class
             root.registerOperationHandler(DumpServicesHandler.OPERATION_NAME, DumpServicesHandler.INSTANCE, DumpServicesHandler.INSTANCE, false);
         }
         // System Properties
-        ModelNodeRegistration sysProps = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), ServerDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
+        ManagementResourceRegistration sysProps = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), ServerDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
         sysProps.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITHOUT_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITHOUT_BOOTTIME, false);
         sysProps.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
         sysProps.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
 
         // Central Management
         // TODO - Need to split the provider.
-        ModelNodeRegistration securityRealms = root.registerSubModel(PathElement.pathElement(MANAGEMENT, SECURITY_REALMS), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
-        ModelNodeRegistration securityRealm = securityRealms.registerSubModel(PathElement.pathElement(SECURITY_REALM), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
+        ManagementResourceRegistration securityRealms = root.registerSubModel(PathElement.pathElement(MANAGEMENT, SECURITY_REALMS), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
+        ManagementResourceRegistration securityRealm = securityRealms.registerSubModel(PathElement.pathElement(SECURITY_REALM), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
         securityRealm.registerOperationHandler(SecurityRealmAddHandler.OPERATION_NAME, SecurityRealmAddHandler.INSTANCE, SecurityRealmAddHandler.INSTANCE, false);
 
-        ModelNodeRegistration connections = root.registerSubModel(PathElement.pathElement(MANAGEMENT, CONNECTIONS), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
-        ModelNodeRegistration connection = connections.registerSubModel(PathElement.pathElement(CONNECTION), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
+        ManagementResourceRegistration connections = root.registerSubModel(PathElement.pathElement(MANAGEMENT, CONNECTIONS), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
+        ManagementResourceRegistration connection = connections.registerSubModel(PathElement.pathElement(CONNECTION), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
         connection.registerOperationHandler(ConnectionAddHandler.OPERATION_NAME, ConnectionAddHandler.INSTANCE, ConnectionAddHandler.INSTANCE, false);
 
         // Management Interface protocols
-        ModelNodeRegistration managementNative = root.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
+        ManagementResourceRegistration managementNative = root.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
         managementNative.registerOperationHandler(NativeManagementAddHandler.OPERATION_NAME, NativeManagementAddHandler.INSTANCE, NativeManagementAddHandler.INSTANCE, false);
 
-        ModelNodeRegistration managementHttp = root.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, HTTP_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
+        ManagementResourceRegistration managementHttp = root.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, HTTP_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
         managementHttp.registerOperationHandler(HttpManagementAddHandler.OPERATION_NAME, HttpManagementAddHandler.INSTANCE, HttpManagementAddHandler.INSTANCE, false);
         // root.registerReadWriteAttribute(ModelDescriptionConstants.MANAGEMENT_INTERFACE, GlobalOperationHandlers.READ_ATTRIBUTE, ManagementSocketAddHandler.INSTANCE);
 
         // Paths
-        ModelNodeRegistration paths = root.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
+        ManagementResourceRegistration paths = root.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
         paths.registerOperationHandler(SpecifiedPathAddHandler.OPERATION_NAME, SpecifiedPathAddHandler.INSTANCE, SpecifiedPathAddHandler.INSTANCE, false);
         paths.registerOperationHandler(SpecifiedPathRemoveHandler.OPERATION_NAME, SpecifiedPathRemoveHandler.INSTANCE, SpecifiedPathRemoveHandler.INSTANCE, false);
 
         // Interfaces
-        ModelNodeRegistration interfaces = root.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
+        ManagementResourceRegistration interfaces = root.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
         interfaces.registerOperationHandler(SpecifiedInterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
         interfaces.registerOperationHandler(SpecifiedInterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, SpecifiedInterfaceRemoveHandler.INSTANCE, false);
 
         // Sockets
-        ModelNodeRegistration socketGroup = root.registerSubModel(PathElement.pathElement(SOCKET_BINDING_GROUP), ServerDescriptionProviders.SOCKET_BINDING_GROUP_PROVIDER);
+        ManagementResourceRegistration socketGroup = root.registerSubModel(PathElement.pathElement(SOCKET_BINDING_GROUP), ServerDescriptionProviders.SOCKET_BINDING_GROUP_PROVIDER);
         socketGroup.registerOperationHandler(BindingGroupAddHandler.OPERATION_NAME, BindingGroupAddHandler.INSTANCE, BindingGroupAddHandler.INSTANCE, false);
         socketGroup.registerOperationHandler(SocketBindingGroupRemoveHandler.OPERATION_NAME, SocketBindingGroupRemoveHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false);
         socketGroup.registerReadWriteAttribute(PORT_OFFSET, null, BindingGroupPortOffsetHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         socketGroup.registerReadWriteAttribute(DEFAULT_INTERFACE, null, BindingGroupDefaultInterfaceHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        ModelNodeRegistration socketBinding = socketGroup.registerSubModel(PathElement.pathElement(SOCKET_BINDING), CommonProviders.SOCKET_BINDING_PROVIDER);
+        ManagementResourceRegistration socketBinding = socketGroup.registerSubModel(PathElement.pathElement(SOCKET_BINDING), CommonProviders.SOCKET_BINDING_PROVIDER);
         socketBinding.registerOperationHandler(BindingAddHandler.OPERATION_NAME, BindingAddHandler.INSTANCE, BindingAddHandler.INSTANCE, false);
         socketBinding.registerOperationHandler(BindingRemoveHandler.OPERATION_NAME, BindingRemoveHandler.INSTANCE, BindingRemoveHandler.INSTANCE, false);
         socketBinding.registerMetric(BindingMetricHandlers.BoundHandler.ATTRIBUTE_NAME, BindingMetricHandlers.BoundHandler.INSTANCE);
@@ -273,7 +268,7 @@ public class
         socketBinding.registerReadWriteAttribute(MULTICAST_PORT, null, BindingMulticastPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
 
         // Deployments
-        ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
+        ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
         DeploymentAddHandler dah = new DeploymentAddHandler(contentRepository);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DeploymentRemoveHandler.INSTANCE, false);
@@ -287,7 +282,7 @@ public class
 
 
         // Extensions
-        ModelNodeRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
+        ManagementResourceRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
         ExtensionContext extensionContext = new ExtensionContextImpl(root, deployments, extensibleConfigurationPersister);
         ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);

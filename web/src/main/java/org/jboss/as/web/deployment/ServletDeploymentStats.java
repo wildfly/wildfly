@@ -29,15 +29,11 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.metadata.web.jboss.JBossServletMetaData;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.ServiceController;
 
 import java.util.Locale;
@@ -54,7 +50,7 @@ public class ServletDeploymentStats {
         }
     };
 
-    public static void register(final ModelNodeRegistration registration) {
+    public static void register(final ManagementResourceRegistration registration) {
 
         registration.registerMetric("load-time", new AbstractMetricsHandler() {
             @Override

@@ -36,7 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
@@ -69,14 +69,14 @@ public class SecurityExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(SecuritySubsystemDescriptions.SUBSYSTEM);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SecuritySubsystemDescriptions.SUBSYSTEM);
         registration.registerOperationHandler(ADD, SecuritySubsystemAdd.INSTANCE, SecuritySubsystemDescriptions.SUBSYSTEM_ADD,
                 false);
         registration.registerOperationHandler(DESCRIBE, SecurityDescribeHandler.INSTANCE,
                 SecuritySubsystemDescriptions.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
 
         // security domains
-        final ModelNodeRegistration securityDomain = registration.registerSubModel(PathElement.pathElement(SECURITY_DOMAIN),
+        final ManagementResourceRegistration securityDomain = registration.registerSubModel(PathElement.pathElement(SECURITY_DOMAIN),
                 SecuritySubsystemDescriptions.SECURITY_DOMAIN);
         securityDomain.registerOperationHandler(SecurityDomainAdd.OPERATION_NAME, SecurityDomainAdd.INSTANCE,
                 SecuritySubsystemDescriptions.SECURITY_DOMAIN_ADD, false);

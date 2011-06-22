@@ -47,7 +47,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -74,7 +74,7 @@ class NewModelControllerImpl implements NewModelController {
 
     private final ServiceRegistry serviceRegistry;
     private final ServiceTarget serviceTarget;
-    private final ModelNodeRegistration rootRegistration;
+    private final ManagementResourceRegistration rootRegistration;
     private final Lock writeLock = new ReentrantLock();
     private final ContainerStateMonitor stateMonitor;
     private final RootResource model = new RootResource();
@@ -85,13 +85,13 @@ class NewModelControllerImpl implements NewModelController {
     private final ControlledProcessState processState;
 
     @Deprecated
-    NewModelControllerImpl(final ModelNode model, final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ModelNodeRegistration rootRegistration,
+    NewModelControllerImpl(final ModelNode model, final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
                        final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final NewOperationContext.Type controllerType,
                        final NewStepHandler prepareStep,final ControlledProcessState processState) {
         this(serviceRegistry, serviceTarget, rootRegistration, stateMonitor, persister, controllerType, prepareStep, processState);
     }
 
-    NewModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ModelNodeRegistration rootRegistration,
+    NewModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
                            final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final NewOperationContext.Type controllerType,
                            final NewStepHandler prepareStep,final ControlledProcessState processState) {
         this.serviceRegistry = serviceRegistry;
@@ -151,7 +151,7 @@ class NewModelControllerImpl implements NewModelController {
         return model;
     }
 
-    ModelNodeRegistration getRootRegistration() {
+    ManagementResourceRegistration getRootRegistration() {
         return rootRegistration;
     }
 

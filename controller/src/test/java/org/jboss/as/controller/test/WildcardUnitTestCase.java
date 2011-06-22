@@ -35,8 +35,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -91,7 +91,7 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
     }
 
     @Override
-    void initModel(ModelNodeRegistration root) {
+    void initModel(ManagementResourceRegistration root) {
             root.registerOperationHandler("read-resource", GlobalOperationHandlers.READ_RESOURCE, NULL, true);
             root.registerOperationHandler("describe", new DescribeHandler(), NULL, true);
 
@@ -116,10 +116,10 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
 
 
 
-            final ModelNodeRegistration hosts = root.registerSubModel(host, NULL);
-            final ModelNodeRegistration servers = hosts.registerSubModel(server, NULL);
-            final ModelNodeRegistration subsystems = servers.registerSubModel(subsystem, NULL);
-            final ModelNodeRegistration connectors = subsystems.registerSubModel(connector, NULL);
+            final ManagementResourceRegistration hosts = root.registerSubModel(host, NULL);
+            final ManagementResourceRegistration servers = hosts.registerSubModel(server, NULL);
+            final ManagementResourceRegistration subsystems = servers.registerSubModel(subsystem, NULL);
+            final ManagementResourceRegistration connectors = subsystems.registerSubModel(connector, NULL);
     }
 
     private static class DescribeHandler implements NewStepHandler {
@@ -127,7 +127,7 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
         /** {@inheritDoc} */
         public void execute(NewOperationContext context, ModelNode operation) {
 
-            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final DescriptionProvider descriptionProvider = registry.getModelDescription(address);
             if(descriptionProvider == null) {

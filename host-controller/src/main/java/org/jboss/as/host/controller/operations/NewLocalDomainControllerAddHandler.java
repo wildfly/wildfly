@@ -27,7 +27,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.NewDomainController;
@@ -47,7 +47,7 @@ public class NewLocalDomainControllerAddHandler extends AbstractAddStepHandler i
 
     public static final String OPERATION_NAME = "write-local-domain-controller";
 
-    private final ModelNodeRegistration rootRegistration;
+    private final ManagementResourceRegistration rootRegistration;
     private final HostControllerEnvironment environment;
     private final HostControllerConfigurationPersister overallConfigPersister;
     private final FileRepository fileRepository;
@@ -55,7 +55,7 @@ public class NewLocalDomainControllerAddHandler extends AbstractAddStepHandler i
     private final NewDomainController domainController;
     private final UnregisteredHostChannelRegistry registry;
 
-    public static NewLocalDomainControllerAddHandler getInstance(final ModelNodeRegistration rootRegistration,
+    public static NewLocalDomainControllerAddHandler getInstance(final ManagementResourceRegistration rootRegistration,
                                                                  final LocalHostControllerInfoImpl hostControllerInfo,
                                                                  final HostControllerEnvironment environment,
                                                                  final HostControllerConfigurationPersister overallConfigPersister,
@@ -68,7 +68,7 @@ public class NewLocalDomainControllerAddHandler extends AbstractAddStepHandler i
     /**
      * Create the ServerAddHandler
      */
-    NewLocalDomainControllerAddHandler(final ModelNodeRegistration rootRegistration,
+    NewLocalDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
                                        final LocalHostControllerInfoImpl hostControllerInfo,
                                        final HostControllerEnvironment environment,
                                        final HostControllerConfigurationPersister overallConfigPersister,

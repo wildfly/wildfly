@@ -32,22 +32,22 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
- * {@link ImmutableModelNodeRegistration} implementation that simply delegates to another
- * {@link ImmutableModelNodeRegistration} (typically a mutable implementation of sub-interface
- * {@link ModelNodeRegistration}.
+ * {@link ImmutableManagementResourceRegistration} implementation that simply delegates to another
+ * {@link ImmutableManagementResourceRegistration} (typically a mutable implementation of sub-interface
+ * {@link ManagementResourceRegistration}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DelegatingImmutableModelNodeRegistration implements ImmutableModelNodeRegistration {
+public class DelegatingImmutableManagementResourceRegistration implements ImmutableManagementResourceRegistration {
 
-    private final ImmutableModelNodeRegistration delegate;
+    private final ImmutableManagementResourceRegistration delegate;
 
     /**
-     * creates a new ImmutableModelNodeRegistration.
+     * creates a new ImmutableManagementResourceRegistration.
      *
      * @param delegate the delegate. Cannot be {@code null}
      */
-    public DelegatingImmutableModelNodeRegistration(ImmutableModelNodeRegistration delegate) {
+    public DelegatingImmutableManagementResourceRegistration(ImmutableManagementResourceRegistration delegate) {
         this.delegate = delegate;
     }
 
@@ -117,8 +117,8 @@ public class DelegatingImmutableModelNodeRegistration implements ImmutableModelN
     }
 
     @Override
-    public ImmutableModelNodeRegistration getSubModel(PathAddress address) {
-        ImmutableModelNodeRegistration sub = delegate.getSubModel(address);
-        return sub == null ? null : new DelegatingImmutableModelNodeRegistration(sub);
+    public ImmutableManagementResourceRegistration getSubModel(PathAddress address) {
+        ImmutableManagementResourceRegistration sub = delegate.getSubModel(address);
+        return sub == null ? null : new DelegatingImmutableManagementResourceRegistration(sub);
     }
 }

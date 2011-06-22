@@ -64,7 +64,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -132,7 +132,7 @@ public class GlobalOperationHandlers {
             // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
             final ReadResourceAssemblyHandler assemblyHandler = new ReadResourceAssemblyHandler(directAttributes, metrics, otherAttributes, directChildren, childResources);
             context.addStep(assemblyHandler, NewOperationContext.Stage.IMMEDIATE);
-            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             // Get the model for this resource.
             final ModelNode model = resource.getModel();
@@ -162,7 +162,7 @@ public class GlobalOperationHandlers {
                         if (recursive) {
                             PathElement childPE = PathElement.pathElement(childType, child);
                             PathAddress relativeAddr = PathAddress.pathAddress(childPE);
-                            ImmutableModelNodeRegistration childReg = registry.getSubModel(relativeAddr);
+                            ImmutableManagementResourceRegistration childReg = registry.getSubModel(relativeAddr);
                             if(childReg == null) {
                                 throw new OperationFailedException(new ModelNode().set(String.format("no child registry for (%s, %s)", childType, child)));
                             }
@@ -343,9 +343,9 @@ public class GlobalOperationHandlers {
 
             final String attributeName = operation.require(NAME).asString();
             final ModelNode subModel = safeReadModel(context);
-            final AttributeAccess attributeAccess = context.getModelNodeRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
+            final AttributeAccess attributeAccess = context.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
             if (attributeAccess == null) {
-                final Set<String> children = context.getModelNodeRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
+                final Set<String> children = context.getResourceRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
                 if(children.contains(attributeName)) {
                     throw new OperationFailedException(new ModelNode().set(String.format("'%s' is a registered child of resource (%s)", attributeName, operation.get(OP_ADDR)))); // TODO i18n
                 } else if(subModel.has(attributeName)) {
@@ -371,7 +371,7 @@ public class GlobalOperationHandlers {
     public static class WriteAttributeHandler implements NewStepHandler {
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             final String attributeName = operation.require(NAME).asString();
-            final AttributeAccess attributeAccess = context.getModelNodeRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
+            final AttributeAccess attributeAccess = context.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
             if (attributeAccess == null) {
                 throw new OperationFailedException(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
             } else if (attributeAccess.getAccessType() != AccessType.READ_WRITE) {
@@ -399,7 +399,7 @@ public class GlobalOperationHandlers {
             validator.validate(operation);
             final String childType = operation.require(CHILD_TYPE).asString();
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-            ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             Map<String, Set<String>> childAddresses = getChildAddresses(registry, resource, childType);
             Set<String> childNames = childAddresses.get(childType);
             if (childNames == null) {
@@ -437,7 +437,7 @@ public class GlobalOperationHandlers {
             validator.validate(operation);
             final String childType = operation.require(CHILD_TYPE).asString();
 
-            final Set<String> childNames = context.getModelNodeRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
+            final Set<String> childNames = context.getResourceRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
             if (!childNames.contains(childType)) {
                 throw new OperationFailedException(new ModelNode().set(String.format("No known child type named %s", childType))); //TODO i18n
             }
@@ -472,7 +472,7 @@ public class GlobalOperationHandlers {
                     if (operation.hasDefined(PROXIES)) {
                         readOp.get(PROXIES).set(operation.get(PROXIES));
                     }
-                    final NewStepHandler handler = context.getModelNodeRegistration().getOperationHandler(childAddress, READ_RESOURCE_OPERATION);
+                    final NewStepHandler handler = context.getResourceRegistration().getOperationHandler(childAddress, READ_RESOURCE_OPERATION);
                     if(handler == null) {
                         throw new OperationFailedException(new ModelNode().set("no operation handler"));
                     }
@@ -539,7 +539,7 @@ public class GlobalOperationHandlers {
     public static final NewStepHandler READ_CHILDREN_TYPES = new NewStepHandler() {
         @Override
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             Set<String> childTypes = registry.getChildNames(PathAddress.EMPTY_ADDRESS);
             final ModelNode result = context.getResult();
             result.setEmptyList();
@@ -558,7 +558,7 @@ public class GlobalOperationHandlers {
         @Override
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             final Map<String, OperationEntry> operations = registry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, true);
 
             final ModelNode result = new ModelNode();
@@ -586,7 +586,7 @@ public class GlobalOperationHandlers {
 
             String operationName = operation.require(NAME).asString();
 
-            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             final DescriptionProvider descriptionProvider = registry.getOperationDescription(PathAddress.EMPTY_ADDRESS, operationName);
 
             final ModelNode result = descriptionProvider == null ? new ModelNode() : descriptionProvider.getModelDescription(getLocale(operation));
@@ -647,7 +647,7 @@ public class GlobalOperationHandlers {
             final boolean ops = operation.get(OPERATIONS).asBoolean(false);
             final boolean inheritedOps = operation.get(INHERITED).asBoolean(true);
 
-            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
             final Locale locale = getLocale(operation);
 
@@ -689,7 +689,7 @@ public class GlobalOperationHandlers {
             if (recursive) {
                 for (final PathElement element : registry.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
                     PathAddress relativeAddr = PathAddress.pathAddress(element);
-                    ImmutableModelNodeRegistration childReg = registry.getSubModel(relativeAddr);
+                    ImmutableManagementResourceRegistration childReg = registry.getSubModel(relativeAddr);
 
                     boolean readChild = true;
                     if (childReg.isRemote() && !proxies) {
@@ -851,7 +851,7 @@ public class GlobalOperationHandlers {
                 final PathElement element = iterator.next();
                 if(element.isMultiTarget()) {
                     final String childType = element.getKey().equals("*") ? null : element.getKey();
-                    final ImmutableModelNodeRegistration registration = context.getModelNodeRegistration().getSubModel(base);
+                    final ImmutableManagementResourceRegistration registration = context.getResourceRegistration().getSubModel(base);
                     if(registration.isRemote() || registration.isRuntimeOnly()) {
                         // At least for proxies it should use the proxy operation handler
                         throw new IllegalStateException();
@@ -924,7 +924,7 @@ public class GlobalOperationHandlers {
             if(iterator.hasNext()) {
                 final PathElement element = iterator.next();
                 if(element.isMultiTarget()) {
-                    final Set<PathElement> children = context.getModelNodeRegistration().getChildAddresses(base);
+                    final Set<PathElement> children = context.getResourceRegistration().getChildAddresses(base);
                     if(children == null || children.isEmpty()) {
                         return;
                     }
@@ -972,7 +972,7 @@ public class GlobalOperationHandlers {
      *                       should include all child types
      * @return map where the keys are the child types and the values are a set of child names associated with a type
      */
-    private static Map<String,Set<String>> getChildAddresses(final ImmutableModelNodeRegistration registry, Resource resource, final String validChildType) {
+    private static Map<String,Set<String>> getChildAddresses(final ImmutableManagementResourceRegistration registry, Resource resource, final String validChildType) {
 
         Map<String,Set<String>> result = new HashMap<String, Set<String>>();
         Set<PathElement> elements = registry.getChildAddresses(PathAddress.EMPTY_ADDRESS);
@@ -990,7 +990,7 @@ public class GlobalOperationHandlers {
                 }
             }
             if (!element.isWildcard()) {
-                ImmutableModelNodeRegistration childReg = registry.getSubModel(PathAddress.pathAddress(element));
+                ImmutableManagementResourceRegistration childReg = registry.getSubModel(PathAddress.pathAddress(element));
                 if (childReg != null && childReg.isRuntimeOnly()) {
                     set.add(element.getValue());
                 }

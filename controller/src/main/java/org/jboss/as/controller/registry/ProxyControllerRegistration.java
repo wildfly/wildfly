@@ -32,7 +32,6 @@ import java.util.Set;
 
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -42,7 +41,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ProxyControllerRegistration extends AbstractNodeRegistration implements DescriptionProvider {
+final class ProxyControllerRegistration extends AbstractResourceRegistration implements DescriptionProvider {
 
     private final NewProxyController proxyController;
 
@@ -72,12 +71,12 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
     }
 
     @Override
-    public ModelNodeRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
+    public ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerSubModel(final PathElement address, final ModelNodeRegistration subModel) {
+    public void registerSubModel(final PathElement address, final ManagementResourceRegistration subModel) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
@@ -181,7 +180,7 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
     }
 
     @Override
-    ModelNodeRegistration getNodeRegistration(Iterator<PathElement> iterator) {
+    ManagementResourceRegistration getResourceRegistration(Iterator<PathElement> iterator) {
         // BES 2011/06/14 I do not see why the IAE makes sense, so...
 //        if (!iterator.hasNext()) {
 //            return this;

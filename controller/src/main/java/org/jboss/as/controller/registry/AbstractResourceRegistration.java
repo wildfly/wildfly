@@ -42,19 +42,19 @@ import org.jboss.as.controller.registry.OperationEntry.EntryType;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-abstract class AbstractNodeRegistration implements ModelNodeRegistration {
+abstract class AbstractResourceRegistration implements ManagementResourceRegistration {
 
     private final String valueString;
     private final NodeSubregistry parent;
 
-    AbstractNodeRegistration(final String valueString, final NodeSubregistry parent) {
+    AbstractResourceRegistration(final String valueString, final NodeSubregistry parent) {
         this.valueString = valueString;
         this.parent = parent;
     }
 
     /** {@inheritDoc} */
     @Override
-    public abstract ModelNodeRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider);
+    public abstract ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider);
 
     /** {@inheritDoc} */
     @Override
@@ -97,7 +97,7 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
         NewStepHandler result =  getOperationHandler(pathAddress.iterator(), operationName, inheritable);
         NodeSubregistry ancestorSubregistry = parent;
         while (result == null && ancestorSubregistry != null) {
-            AbstractNodeRegistration ancestor = ancestorSubregistry.getParent();
+            AbstractResourceRegistration ancestor = ancestorSubregistry.getParent();
             result = ancestor.getInheritableOperationHandler(operationName);
             ancestorSubregistry = ancestor.parent;
         }
@@ -137,7 +137,7 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
         DescriptionProvider result = getOperationDescription(address.iterator(), operationName, inheritable);
         NodeSubregistry ancestorSubregistry = parent;
         while (result == null && ancestorSubregistry != null) {
-            AbstractNodeRegistration ancestor = ancestorSubregistry.getParent();
+            AbstractResourceRegistration ancestor = ancestorSubregistry.getParent();
             result = ancestor.getInheritableOperationDescription(operationName);
             ancestorSubregistry = ancestor.parent;
         }
@@ -160,7 +160,7 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
         Set<OperationEntry.Flag> result =  getOperationFlags(pathAddress.iterator(), operationName, inheritable);
         NodeSubregistry ancestorSubregistry = parent;
         while (result == null && ancestorSubregistry != null) {
-            AbstractNodeRegistration ancestor = ancestorSubregistry.getParent();
+            AbstractResourceRegistration ancestor = ancestorSubregistry.getParent();
             result = ancestor.getInheritableOperationFlags(operationName);
             ancestorSubregistry = ancestor.parent;
         }
@@ -216,11 +216,11 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     /** {@inheritDoc} */
     @Override
-    public ModelNodeRegistration getSubModel(PathAddress address) {
-        return getNodeRegistration(address.iterator());
+    public ManagementResourceRegistration getSubModel(PathAddress address) {
+        return getResourceRegistration(address.iterator());
     }
 
-    abstract ModelNodeRegistration getNodeRegistration(Iterator<PathElement> iterator);
+    abstract ManagementResourceRegistration getResourceRegistration(Iterator<PathElement> iterator);
 
     final String getValueString()  {
         return valueString;

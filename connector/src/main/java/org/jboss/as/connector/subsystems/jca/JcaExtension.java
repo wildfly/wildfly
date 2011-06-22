@@ -66,7 +66,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.threads.BoundedQueueThreadPoolAdd;
 import org.jboss.as.threads.BoundedQueueThreadPoolRemove;
@@ -97,14 +97,14 @@ public class JcaExtension implements Extension {
         registration.registerXMLElementWriter(NewConnectorSubsystemParser.INSTANCE);
 
         // Connector subsystem description and operation handlers
-        final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
+        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, JcaSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
         subsystem.registerOperationHandler(REMOVE, JcaSubSystemRemove.INSTANCE, SUBSYSTEM_REMOVE_DESC, false);
         subsystem.registerOperationHandler(DESCRIBE, ConnectorSubsystemDescribeHandler.INSTANCE,
                 ConnectorSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
 
-        final ModelNodeRegistration threadPools = subsystem.registerSubModel(PathElement.pathElement(THREAD_POOL), BOUNDED_QUEUE_THREAD_POOL_DESC);
+        final ManagementResourceRegistration threadPools = subsystem.registerSubModel(PathElement.pathElement(THREAD_POOL), BOUNDED_QUEUE_THREAD_POOL_DESC);
         threadPools.registerOperationHandler(ADD, BoundedQueueThreadPoolAdd.INSTANCE, BoundedQueueThreadPoolAdd.INSTANCE, false);
         threadPools.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE, BoundedQueueThreadPoolRemove.INSTANCE, false);
     }

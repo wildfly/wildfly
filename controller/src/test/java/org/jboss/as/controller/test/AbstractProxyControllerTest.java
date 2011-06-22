@@ -86,7 +86,7 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -567,7 +567,7 @@ public abstract class AbstractProxyControllerTest {
             latch.countDown();
         }
 
-        protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
@@ -634,7 +634,7 @@ public abstract class AbstractProxyControllerTest {
             super.start(context);
         }
 
-        protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
@@ -680,7 +680,7 @@ public abstract class AbstractProxyControllerTest {
                 }
             }, false, OperationEntry.EntryType.PRIVATE);
 
-            ModelNodeRegistration hostReg = rootRegistration.registerSubModel(PathElement.pathElement("hostchild", "*"), new DescriptionProvider() {
+            ManagementResourceRegistration hostReg = rootRegistration.registerSubModel(PathElement.pathElement("hostchild", "*"), new DescriptionProvider() {
 
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
@@ -697,7 +697,7 @@ public abstract class AbstractProxyControllerTest {
                 }
             });
 
-            ModelNodeRegistration hostChildReg = hostReg.registerSubModel(PathElement.pathElement("child", "*"), new DescriptionProvider() {
+            ManagementResourceRegistration hostChildReg = hostReg.registerSubModel(PathElement.pathElement("child", "*"), new DescriptionProvider() {
 
                 @Override
                 public ModelNode getModelDescription(Locale locale) {

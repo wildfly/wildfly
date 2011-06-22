@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
@@ -43,7 +42,7 @@ import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 
-final class ConcreteNodeRegistration extends AbstractNodeRegistration {
+final class ConcreteResourceRegistration extends AbstractResourceRegistration {
 
     @SuppressWarnings("unused")
     private volatile Map<String, NodeSubregistry> children;
@@ -59,12 +58,12 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
 
     private final boolean runtimeOnly;
 
-    private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "children"));
-    private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, OperationEntry> operationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "operations"));
-    private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, AttributeAccess> attributesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "attributes"));
-    private static final AtomicReferenceFieldUpdater<ConcreteNodeRegistration, DescriptionProvider> descriptionProviderUpdater = AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, DescriptionProvider.class, "descriptionProvider");
+    private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "children"));
+    private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, OperationEntry> operationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "operations"));
+    private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, AttributeAccess> attributesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "attributes"));
+    private static final AtomicReferenceFieldUpdater<ConcreteResourceRegistration, DescriptionProvider> descriptionProviderUpdater = AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, DescriptionProvider.class, "descriptionProvider");
 
-    ConcreteNodeRegistration(final String valueString, final NodeSubregistry parent, final DescriptionProvider provider, final boolean runtimeOnly) {
+    ConcreteResourceRegistration(final String valueString, final NodeSubregistry parent, final DescriptionProvider provider, final boolean runtimeOnly) {
         super(valueString, parent);
         childrenUpdater.clear(this);
         operationsUpdater.clear(this);
@@ -84,7 +83,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    public ModelNodeRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
+    public ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
         if (address == null) {
             throw new IllegalArgumentException("address is null");
         }
@@ -100,7 +99,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    public void registerSubModel(final PathElement address, final ModelNodeRegistration subModel) {
+    public void registerSubModel(final PathElement address, final ManagementResourceRegistration subModel) {
         if (address == null) {
             throw new IllegalArgumentException("address is null");
         }
@@ -438,7 +437,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         }
     }
 
-    ModelNodeRegistration getNodeRegistration(Iterator<PathElement> iterator) {
+    ManagementResourceRegistration getResourceRegistration(Iterator<PathElement> iterator) {
         if(! iterator.hasNext()) {
             return this;
         } else {
@@ -446,7 +445,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
             final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
             final NodeSubregistry subregistry = snapshot.get(address.getKey());
             if (subregistry != null) {
-                return subregistry.getModelNodeRegistration(iterator, address.getValue());
+                return subregistry.getResourceRegistration(iterator, address.getValue());
             } else {
                 return null;
             }

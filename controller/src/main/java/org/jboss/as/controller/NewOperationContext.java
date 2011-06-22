@@ -25,8 +25,8 @@ package org.jboss.as.controller;
 import java.io.InputStream;
 
 import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -194,18 +194,18 @@ public interface NewOperationContext {
     void runtimeUpdateSkipped();
 
     /**
-     * Get a read only view of the model node registration.  The registration is relative to the operation address.
+     * Get a read only view of the managed resource registration.  The registration is relative to the operation address.
      *
      * @return the model node registration
      */
-    ImmutableModelNodeRegistration getModelNodeRegistration();
+    ImmutableManagementResourceRegistration getResourceRegistration();
 
     /**
-     * Get a mutable view of the model node registration.  The registration is relative to the operation address.
+     * Get a mutable view of the managed resource registration.  The registration is relative to the operation address.
      *
      * @return the model node registration
      */
-    ModelNodeRegistration getModelNodeRegistrationForUpdate();
+    ManagementResourceRegistration getResourceRegistrationForUpdate();
 
     /**
      * Get the service registry.  If the step is not a runtime operation handler step, an exception will be thrown.  The
@@ -271,7 +271,7 @@ public interface NewOperationContext {
 
     /**
      * Acquire the controlling {@link NewModelController}'s exclusive lock. Holding this lock prevent other operations
-     * from mutating the model, the {@link ModelNodeRegistration management resource registry} or the runtime
+     * from mutating the model, the {@link org.jboss.as.controller.registry.ManagementResourceRegistration management resource registry} or the runtime
      * service registry until the lock is released. The lock is automatically released when the
      * {@link NewStepHandler#execute(NewOperationContext, org.jboss.dmr.ModelNode) execute method} of the handler
      * that invoked this method returns.
@@ -336,7 +336,7 @@ public interface NewOperationContext {
     boolean isModelAffected();
 
     /**
-     * Determine whether the {@link ModelNodeRegistration management resource registry} has thus far been affected by this operation.
+     * Determine whether the {@link org.jboss.as.controller.registry.ManagementResourceRegistration management resource registry} has thus far been affected by this operation.
      *
      * @return {@code true} if the management resource registry was affected, {@code false} otherwise
      */

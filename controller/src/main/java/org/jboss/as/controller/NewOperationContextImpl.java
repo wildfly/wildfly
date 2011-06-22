@@ -55,9 +55,9 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.as.controller.registry.DelegatingImmutableModelNodeRegistration;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.DelegatingImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -519,7 +519,7 @@ final class NewOperationContextImpl implements NewOperationContext {
     }
 
 
-    public ModelNodeRegistration getModelNodeRegistrationForUpdate() {
+    public ManagementResourceRegistration getResourceRegistrationForUpdate() {
         final PathAddress address = modelAddress;
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
@@ -537,15 +537,15 @@ final class NewOperationContextImpl implements NewOperationContext {
     }
 
 
-    public ImmutableModelNodeRegistration getModelNodeRegistration() {
+    public ImmutableManagementResourceRegistration getResourceRegistration() {
         final PathAddress address = modelAddress;
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
         if (currentStage == null || currentStage == Stage.DONE) {
             throw new IllegalStateException("Operation already complete");
         }
-        ImmutableModelNodeRegistration delegate = modelController.getRootRegistration().getSubModel(address);
-        return delegate == null ? null : new DelegatingImmutableModelNodeRegistration(delegate);
+        ImmutableManagementResourceRegistration delegate = modelController.getRootRegistration().getSubModel(address);
+        return delegate == null ? null : new DelegatingImmutableManagementResourceRegistration(delegate);
     }
 
     public ServiceRegistry getServiceRegistry(final boolean modify) throws UnsupportedOperationException {

@@ -30,11 +30,10 @@ import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -83,10 +82,7 @@ import org.jboss.msc.value.InjectedValue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -211,7 +207,7 @@ public final class ServerService extends AbstractControllerService {
     }
 
     @Override
-    protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         ServerControllerModelUtil.updateCoreModel(rootResource.getModel());
         ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(),
                 configuration.getConfigurationPersister(), configuration.getServerEnvironment(), processState);

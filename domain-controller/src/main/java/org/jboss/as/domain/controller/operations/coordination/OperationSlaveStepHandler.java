@@ -23,7 +23,6 @@
 package org.jboss.as.domain.controller.operations.coordination;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
@@ -50,7 +49,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
@@ -81,7 +80,7 @@ public class OperationSlaveStepHandler {
     void addSteps(final NewOperationContext context, final ModelNode operation, final ModelNode response, final boolean recordResponse) throws OperationFailedException {
 
         final PathAddress originalAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final ImmutableModelNodeRegistration originalRegistration = context.getModelNodeRegistration();
+        final ImmutableManagementResourceRegistration originalRegistration = context.getResourceRegistration();
         if (originalRegistration == null) {
             String operationName = operation.require(OP).asString();
             throw new OperationFailedException(new ModelNode().set(String.format("No handler for operation %s at address %s", operationName, originalAddress)));
@@ -111,7 +110,7 @@ public class OperationSlaveStepHandler {
      */
     private void addBasicStep(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         final String operationName =  operation.require(OP).asString();
-        final NewStepHandler stepHandler = context.getModelNodeRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
+        final NewStepHandler stepHandler = context.getResourceRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
         if(stepHandler != null) {
             context.addStep(operation, stepHandler, NewOperationContext.Stage.MODEL);
         } else {
