@@ -24,7 +24,7 @@
 <!-- This file supplies the internal configuration defaults per cache mode -->
 <infinispan xmlns="urn:infinispan:config:5.0">
     <global>
-        <transport strictPeerToPeer="false"></transport>
+        <transport strictPeerToPeer="false" distributedSyncTimeout="60000"/>
         <shutdown hookBehavior="DONT_REGISTER"/>
     </global>
     <default>

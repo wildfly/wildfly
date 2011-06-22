@@ -29,15 +29,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.process.ProcessControllerClient;
-import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
@@ -59,7 +54,7 @@ import org.jboss.msc.service.ServiceActivator;
  * @author Brian Stansberry
  * @author Emanuel Muckenhuber
  */
-class ManagedServer implements ModelController {
+class ManagedServer {
 
     private static final MarshallerFactory MARSHALLER_FACTORY;
     private static final MarshallingConfiguration CONFIG;
@@ -85,6 +80,14 @@ class ManagedServer implements ModelController {
         return SERVER_PROCESS_NAME_PREFIX + serverName;
     }
 
+    public static boolean isServerProcess(String serverProcessName) {
+        return serverProcessName.startsWith(SERVER_PROCESS_NAME_PREFIX);
+    }
+
+    public static String getServerName(String serverProcessName) {
+        return serverProcessName.substring(SERVER_PROCESS_NAME_PREFIX.length());
+    }
+
     private final String serverName;
     private final String serverProcessName;
     private final Object lock = new Object();
@@ -94,7 +97,7 @@ class ManagedServer implements ModelController {
     private final ManagedServerBootConfiguration bootConfiguration;
     private final byte[] authKey;
     private volatile ServerState state;
-    private volatile Connection serverManagementConnection;
+    private volatile ManagementChannel serverManagementChannel;
 
     public ManagedServer(final String serverName, final ProcessControllerClient processControllerClient,
             final InetSocketAddress managementSocket, final ManagedServerBootConfiguration bootConfiguration) {
@@ -124,8 +127,8 @@ class ManagedServer implements ModelController {
         return serverProcessName;
     }
 
-    Connection getServerConnection() {
-        return serverManagementConnection;
+    ManagementChannel getServerManagementChannel() {
+        return serverManagementChannel;
     }
 
     public ServerState getState() {
@@ -136,22 +139,8 @@ class ManagedServer implements ModelController {
         this.state = state;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(Operation operation, ResultHandler handler) {
-        // TODO use serverManagementConnection to execute the operation
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ModelNode execute(Operation operation) throws CancellationException {
-        // TODO use serverManagementConnection to execute the operation
-        return null;
-    }
-
-    void setServerManagementConnection(Connection serverManagementConnection) {
-        this.serverManagementConnection = serverManagementConnection;
+    void setServerManagementChannel(ManagementChannel serverManagementChannel) {
+        this.serverManagementChannel = serverManagementChannel;
     }
 
     int incrementAndGetRespawnCount() {

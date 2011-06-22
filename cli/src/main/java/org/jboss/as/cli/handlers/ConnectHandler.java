@@ -40,6 +40,11 @@ public class ConnectHandler extends CommandHandlerWithHelp {
     }
 
     @Override
+    public boolean hasArgument(int index) {
+        return index <= 1;
+    }
+
+    @Override
     protected void doHandle(CommandContext ctx) {
 
         String args = ctx.getArgumentsString();

@@ -62,6 +62,15 @@ class ModClusterSubsystemDescriptions {
         return node;
     }
 
+    static ModelNode getListProxiesDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("list-proxies");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.list-proxies"));
+        return node;
+    }
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();

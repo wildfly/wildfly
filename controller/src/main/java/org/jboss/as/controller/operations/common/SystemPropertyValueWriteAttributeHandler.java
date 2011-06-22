@@ -24,13 +24,10 @@ package org.jboss.as.controller.operations.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeOperationContext;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.dmr.ModelNode;
 
@@ -46,22 +43,25 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
     private SystemPropertyValueWriteAttributeHandler() {
     }
 
-    protected void modelChanged(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
-                final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+    protected void modelChanged(final NewOperationContext context, final ModelNode operation, final String attributeName,
+                                final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-        RuntimeOperationContext runtimeContext = context.getRuntimeContext();
-        if (runtimeContext != null) {
-            final String propertyName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
-            final String propertyValue = newValue.isDefined() ? newValue.asString() : null;
-            runtimeContext.setRuntimeTask(new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) {
+                    final String propertyName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
+                    final String propertyValue = newValue.isDefined() ? newValue.asString() : null;
                     SecurityActions.setSystemProperty(propertyName, propertyValue);
-                    resultHandler.handleResultComplete();
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        if (currentValue.isDefined()) {
+                            SecurityActions.setSystemProperty(propertyName, currentValue.asString());
+                        } else {
+                            SecurityActions.clearSystemProperty(propertyName);
+                        }
+                    }
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
+        context.completeStep();
     }
 }

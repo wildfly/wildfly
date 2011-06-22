@@ -42,9 +42,9 @@ import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.ServerController;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -201,7 +201,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             op.get(NAME).set("server-state");
 
             ModelNode rsp = getModelControllerClient().execute(op);
-            return SUCCESS.equals(rsp.get(OUTCOME).asString()) && !ServerController.State.STARTING.toString().equals(rsp.get(RESULT).asString());
+            return SUCCESS.equals(rsp.get(OUTCOME).asString()) && !ControlledProcessState.State.STARTING.toString().equals(rsp.get(RESULT).asString());
         }
         catch (Exception ignored) {
             // ignore, as we will get exceptions until the management comm services start

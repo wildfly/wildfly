@@ -28,7 +28,9 @@ package org.jboss.as.connector.subsystems.datasources;
  * @author John Bailey
  */
 public class DataSourceRemove extends AbstractDataSourceRemove {
+
     static final DataSourceRemove INSTANCE = new DataSourceRemove();
+
     protected AttributeDefinition[] getModelProperties() {
         return DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE;
     }

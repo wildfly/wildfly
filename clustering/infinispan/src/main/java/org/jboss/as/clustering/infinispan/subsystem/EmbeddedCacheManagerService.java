@@ -46,15 +46,12 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.util.loading.ContextClassLoaderSwitcher;
-import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
 
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
-import java.security.AccessController;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -71,9 +68,6 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
     public static ServiceName getServiceName(String name) {
         return (name != null) ? SERVICE_NAME.append(name) : SERVICE_NAME;
     }
-
-    @SuppressWarnings("unchecked")
-    private static final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
 
     private final EmbeddedCacheManagerConfiguration configuration;
 
@@ -171,23 +165,17 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
                 new TransactionSynchronizationRegistryProvider(transactionSynchronizationRegistry));
         }
 
-        SwitchContext switchContext = switcher.getSwitchContext(this.getClass().getClassLoader());
-
-        try {
-            EmbeddedCacheManager manager = new DefaultCacheManager(global, defaultConfig, false);
-            manager.addListener(this);
-            // Add named configurations
-            for (Map.Entry<String, Configuration> entry: this.configuration.getConfigurations().entrySet()) {
-                Configuration overrides = entry.getValue();
-                Configuration configuration = defaults.getDefaultConfiguration(overrides.getCacheMode()).clone();
-                configuration.applyOverrides(overrides);
-                manager.defineConfiguration(entry.getKey(), configuration);
-            }
-            this.container = new DefaultEmbeddedCacheManager(manager, this.configuration.getDefaultCache());
-            this.container.start();
-        } finally {
-            switchContext.reset();
+        EmbeddedCacheManager manager = new DefaultCacheManager(global, defaultConfig, false);
+        manager.addListener(this);
+        // Add named configurations
+        for (Map.Entry<String, Configuration> entry: this.configuration.getConfigurations().entrySet()) {
+            Configuration overrides = entry.getValue();
+            Configuration configuration = defaults.getDefaultConfiguration(overrides.getCacheMode()).clone();
+            configuration.applyOverrides(overrides);
+            manager.defineConfiguration(entry.getKey(), configuration);
         }
+        this.container = new DefaultEmbeddedCacheManager(manager, this.configuration.getDefaultCache());
+        this.container.start();
     }
 
     /**

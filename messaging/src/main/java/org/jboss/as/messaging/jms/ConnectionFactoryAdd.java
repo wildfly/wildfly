@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging.jms;
 
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -67,18 +68,13 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.jms.JMSServices.NodeAttribute;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 
@@ -89,44 +85,32 @@ import org.jboss.msc.service.ServiceName;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-public class ConnectionFactoryAdd implements ModelAddOperationHandler {
+public class ConnectionFactoryAdd extends AbstractAddStepHandler {
 
     public static final ConnectionFactoryAdd INSTANCE = new ConnectionFactoryAdd();
     private static final String[] NO_BINDINGS = new String[0];
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        ModelNode opAddr = operation.require(OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
-        final String name = address.getLastElement().getValue();
-
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
-
-        final ModelNode subModel = context.getSubModel();
-        for(final NodeAttribute attribute : JMSServices.CONNECTION_FACTORY_ATTRS) {
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        for (final NodeAttribute attribute : JMSServices.CONNECTION_FACTORY_ATTRS) {
             final String attrName = attribute.getName();
-            if(operation.hasDefined(attrName)) {
-                subModel.get(attrName).set(operation.get(attrName));
+            if (operation.hasDefined(attrName)) {
+                model.get(attrName).set(operation.get(attrName));
             }
         }
+    }
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ConnectionFactoryConfiguration configuration = createConfiguration(name, operation);
-                    final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
-                    final ServiceName serviceName = JMSServices.JMS_CF_BASE.append(name);
-                    context.getServiceTarget().addService(serviceName, service)
-                            .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
-                            .setInitialMode(Mode.ACTIVE)
-                            .install();
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensatingOperation);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+
+        final ConnectionFactoryConfiguration configuration = createConfiguration(name, operation);
+        final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
+        final ServiceName serviceName = JMSServices.JMS_CF_BASE.append(name);
+        newControllers.add(context.getServiceTarget().addService(serviceName, service)
+                .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
+                .addListener(verificationHandler)
+                .setInitialMode(Mode.ACTIVE)
+                .install());
     }
 
     static ConnectionFactoryConfiguration createConfiguration(final String name, final ModelNode operation) {
@@ -140,7 +124,7 @@ public class ConnectionFactoryAdd implements ModelAddOperationHandler {
         config.setCacheLargeMessagesClient(operation.get(CACHE_LARGE_MESSAGE_CLIENT).asBoolean(HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT));
         config.setCallTimeout(operation.get(CALL_TIMEOUT).asLong(HornetQClient.DEFAULT_CALL_TIMEOUT));
         config.setClientFailureCheckPeriod(operation.get(CLIENT_FAILURE_CHECK_PERIOD).asInt((int) HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD));
-        if(operation.hasDefined(CLIENT_ID)) {
+        if (operation.hasDefined(CLIENT_ID)) {
             config.setClientID(operation.get(CLIENT_ID).asString());
         }
         config.setConfirmationWindowSize(operation.get(CONFIRMATION_WINDOW_SIZE).asInt(HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE));
@@ -158,7 +142,7 @@ public class ConnectionFactoryAdd implements ModelAddOperationHandler {
         // config.setConnectorNames(connectors);
         config.setConsumerMaxRate(operation.get(CONSUMER_MAX_RATE).asInt(HornetQClient.DEFAULT_CONSUMER_MAX_RATE));
         config.setConsumerWindowSize(operation.get(CONSUMER_WINDOW_SIZE).asInt(HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE));
-        if(operation.hasDefined(DISCOVERY_GROUP_NAME)) {
+        if (operation.hasDefined(DISCOVERY_GROUP_NAME)) {
             config.setDiscoveryGroupName(operation.get(DISCOVERY_GROUP_NAME).asString());
         }
         config.setDupsOKBatchSize(operation.get(DUPS_OK_BATCH_SIZE).asInt(HornetQClient.DEFAULT_ACK_BATCH_SIZE));
@@ -168,7 +152,7 @@ public class ConnectionFactoryAdd implements ModelAddOperationHandler {
         }
 
         if (operation.hasDefined(LOAD_BALANCING_CLASS_NAME)) {
-             config.setLoadBalancingPolicyClassName(operation.get(LOAD_BALANCING_CLASS_NAME).asString());
+            config.setLoadBalancingPolicyClassName(operation.get(LOAD_BALANCING_CLASS_NAME).asString());
         }
         config.setMaxRetryInterval(operation.get(MAX_RETRY_INTERVAL).asLong(HornetQClient.DEFAULT_MAX_RETRY_INTERVAL));
         config.setMinLargeMessageSize(operation.get(MIN_LARGE_MESSAGE_SIZE).asInt(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE));
@@ -187,9 +171,9 @@ public class ConnectionFactoryAdd implements ModelAddOperationHandler {
     }
 
     static String[] jndiBindings(final ModelNode node) {
-        if(node.hasDefined(ENTRIES)) {
+        if (node.hasDefined(ENTRIES)) {
             final Set<String> bindings = new HashSet<String>();
-            for(final ModelNode entry : node.get(ENTRIES).asList()) {
+            for (final ModelNode entry : node.get(ENTRIES).asList()) {
                 bindings.add(entry.asString());
             }
             return bindings.toArray(new String[bindings.size()]);
@@ -203,9 +187,9 @@ public class ConnectionFactoryAdd implements ModelAddOperationHandler {
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).set(address);
 
-        for(final NodeAttribute attribute : JMSServices.CONNECTION_FACTORY_ATTRS) {
+        for (final NodeAttribute attribute : JMSServices.CONNECTION_FACTORY_ATTRS) {
             final String attrName = attribute.getName();
-            if(subModel.has(attrName)) {
+            if (subModel.has(attrName)) {
                 operation.get(attrName).set(subModel.get(attrName));
             }
         }

@@ -22,19 +22,13 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
+import java.util.Collection;
 import java.util.logging.Level;
-
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -44,55 +38,59 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class RootLoggerAdd implements ModelUpdateOperationHandler {
+class RootLoggerAdd implements NewStepHandler {
 
     static final RootLoggerAdd INSTANCE = new RootLoggerAdd();
 
     static final String OPERATION_NAME = "set-root-logger";
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(OP).set("remove-root-logger");
-
+    public void execute(NewOperationContext context, ModelNode operation) {
         final String level = operation.require(CommonAttributes.LEVEL).asString();
         final ModelNode handlers = operation.get(CommonAttributes.HANDLERS);
 
-        final ModelNode subModel = context.getSubModel();
+        final ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.LEVEL).set(level);
         subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS).set(handlers);
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceTarget target = context.getServiceTarget();
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     try {
+
                         final RootLoggerService service = new RootLoggerService();
                         service.setLevel(Level.parse(level));
                         target.addService(LogServices.ROOT_LOGGER, service)
+                                .addListener(verificationHandler)
                                 .setInitialMode(ServiceController.Mode.ACTIVE)
                                 .install();
+
+
                     } catch (Throwable t) {
                         throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
                     }
+                    Collection<ServiceController<?>> loggerControllers = null;
                     try {
                         // install logger handler services
                         if (handlers.getType() != ModelType.UNDEFINED) {
-                            LogServices.installLoggerHandlers(target, "", handlers);
+                            loggerControllers = LogServices.installLoggerHandlers(target, "", handlers, verificationHandler);
                         }
-                        resultHandler.handleResultComplete();
                     } catch (Throwable t) {
                         throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
                     }
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensatingOperation);
-    }
 
+                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        context.removeService(LogServices.ROOT_LOGGER);
+                        if (loggerControllers != null) for (ServiceController<?> loggerController : loggerControllers) {
+                            context.removeService(loggerController.getName());
+                        }
+                    }
+                }
+            }, NewOperationContext.Stage.RUNTIME);
+        }
+        context.completeStep();
+    }
 }

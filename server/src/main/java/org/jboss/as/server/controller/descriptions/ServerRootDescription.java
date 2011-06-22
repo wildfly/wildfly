@@ -149,16 +149,22 @@ public class ServerRootDescription {
         return node;
     }
 
+    public static ModelNode getDumpServicesOperationDescription(final Locale locale) {
+        ResourceBundle bundle = getResourceBundle(locale);
+
+        ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(DUMP_SERVICES);
+        node.get(DESCRIPTION).set(bundle.getString("dump-services"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
+        return node;
+    }
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
-    }
-
-    public static void main(final String[] args) {
-        final ModelNode root = getDescription(null);
-        System.out.println(root);
     }
 
 }

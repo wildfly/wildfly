@@ -50,6 +50,7 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
 
 "%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+    -logmodule "org.jboss.logmanager"  ^
     -mp "%JBOSS_HOME%\modules" ^
      org.jboss.as.cli ^
      %*

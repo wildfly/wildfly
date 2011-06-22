@@ -18,32 +18,6 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
-import org.jboss.as.controller.operations.validation.ListValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersOfValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.deployment.api.ContentRepository;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Locale;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
@@ -54,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
@@ -64,12 +39,36 @@ import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getInputS
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Locale;
+
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
+import org.jboss.as.controller.operations.validation.ListValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersOfValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.protocol.old.StreamUtils;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 /**
  * Handles addition of a deployment to the model.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -124,15 +123,13 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
     /**
      * {@inheritDoc}
      */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
 
-        ModelNode opAddr = operation.get(OP_ADDR);
+        final ModelNode opAddr = operation.get(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
-        String name = address.getLastElement().getValue();
-        String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
+        final String name = address.getLastElement().getValue();
+        final String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
 
         final byte[] hash;
         // clone it, so we can modify it to our own content
@@ -158,6 +155,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             } finally {
                 StreamUtils.safeClose(in);
             }
+            contentItemNode.clear(); // AS7-1029
             contentItemNode.get(HASH).set(hash);
             // TODO: remove the content addition stuff?
             contentItem = new DeploymentHandlerUtil.ContentItem(hash);
@@ -169,17 +167,18 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             contentItem = new DeploymentHandlerUtil.ContentItem(path, relativeTo, archive);
         }
 
-        ModelNode subModel = context.getSubModel();
+        ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         subModel.get(NAME).set(name);
         subModel.get(RUNTIME_NAME).set(runtimeName);
         // content is a clone
         subModel.get(CONTENT).set(content);
         subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
-        if (context.getRuntimeContext() != null && subModel.get(ENABLED).asBoolean()) {
-            DeploymentHandlerUtil.deploy(context, runtimeName, name, resultHandler, contentItem);
-        } else {
-            resultHandler.handleResultComplete();
+        subModel.get(PERSISTENT).set(!operation.hasDefined(PERSISTENT) || operation.get(PERSISTENT).asBoolean());
+
+        if (subModel.get(ENABLED).asBoolean() && (context.getType() == NewOperationContext.Type.SERVER)) {
+            DeploymentHandlerUtil.deploy(context, runtimeName, name, contentItem);
         }
-        return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));
+
+        context.completeStep();
     }
 }

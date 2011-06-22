@@ -22,24 +22,15 @@
 
 package org.jboss.as.jmx;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class JMXConnectorRemove implements ModelUpdateOperationHandler {
+class JMXConnectorRemove extends AbstractRemoveStepHandler {
 
     static final JMXConnectorRemove INSTANCE = new JMXConnectorRemove();
 
@@ -49,37 +40,16 @@ class JMXConnectorRemove implements ModelUpdateOperationHandler {
         //
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        final ModelNode subModel = context.getSubModel();
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(JMXConnectorAdd.OPERATION_NAME);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(CommonAttributes.SERVER_BINDING).set(subModel.get(CommonAttributes.SERVER_BINDING));
-        compensatingOperation.get(CommonAttributes.REGISTRY_BINDING).set(subModel.get(CommonAttributes.REGISTRY_BINDING));
-
-        subModel.get(CommonAttributes.SERVER_BINDING).clear();
-        subModel.get(CommonAttributes.REGISTRY_BINDING).clear();
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceController<?> service = context.getServiceRegistry().getService(JMXConnectorService.SERVICE_NAME);
-                    if (service != null) {
-                        service.setMode(ServiceController.Mode.REMOVE);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensatingOperation);
+    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) {
+        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(CommonAttributes.SERVER_BINDING).clear();
+        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(CommonAttributes.REGISTRY_BINDING).clear();
     }
 
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+        context.removeService(JMXConnectorService.SERVICE_NAME);
+    }
 
-
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        //TODO: RE-ADD Services
+    }
 }

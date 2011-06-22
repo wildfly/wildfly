@@ -40,12 +40,8 @@ public class ChannelFactoryService implements Service<ChannelFactory> {
 
     private volatile ChannelFactory factory;
 
-    public static ServiceName getServiceName() {
-        return SERVICE_NAME;
-    }
-
     public static ServiceName getServiceName(String name) {
-        return SERVICE_NAME.append(name);
+        return (name != null) ? SERVICE_NAME.append(name) : SERVICE_NAME;
     }
 
     public ChannelFactoryService(ProtocolStackConfiguration configuration) {

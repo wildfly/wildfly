@@ -75,12 +75,12 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     private ServiceContainer serviceContainer;
     private ServiceTarget serviceTarget;
 
-    static void addService(final ServiceTarget target) {
+    static ServiceController<?> addService(final ServiceTarget target) {
         ModuleLoaderIntegration service = new ModuleLoaderIntegration();
         ServiceBuilder<?> builder = target.addService(Services.MODULE_LOADER_PROVIDER, service);
         builder.addDependency(JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
         builder.setInitialMode(Mode.ON_DEMAND);
-        builder.install();
+        return builder.install();
     }
 
     private ModuleLoaderIntegration() {

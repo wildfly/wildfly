@@ -21,7 +21,7 @@
  */
 package org.jboss.as.demos.managedbean.runner;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;

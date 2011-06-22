@@ -18,37 +18,6 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
-import org.jboss.as.controller.operations.validation.ListValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersOfValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.deployment.api.ContentRepository;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
@@ -63,12 +32,40 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
+import org.jboss.as.controller.operations.validation.ListValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersOfValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.protocol.old.StreamUtils;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 /**
  * Handles addition of a deployment to the model.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -82,13 +79,12 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
     private static final List<String> CONTENT_ADDITION_PARAMETERS = Arrays.asList(INPUT_STREAM_INDEX, BYTES, URL);
 
     private final ContentRepository contentRepository;
-    private final boolean isMaster;
 
     private final ParametersValidator validator = new ParametersValidator();
     private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
     private final ParametersValidator managedContentValidator = new ParametersValidator();
 
-    public DeploymentAddHandler(final ContentRepository contentRepository, final boolean isMaster) {
+    public DeploymentAddHandler(final ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         final ParametersValidator contentValidator = new ParametersValidator();
@@ -112,7 +108,6 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         this.managedContentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
         this.unmanagedContentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN));
         this.unmanagedContentValidator.registerValidator(PATH, new StringLengthValidator(1));
-        this.isMaster = isMaster;
     }
 
     @Override
@@ -123,13 +118,9 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
     /**
      * {@inheritDoc}
      */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
-
-        ModelNode opAddr = operation.get(OP_ADDR);
-        PathAddress address = PathAddress.pathAddress(opAddr);
+        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
         String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
 
@@ -144,10 +135,10 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             // If we are the master, validate that we actually have this content. If we're not the master
             // we do not need the content until it's added to a server group we care about, so we defer
             // pulling it until then
-            if (isMaster && !contentRepository.hasContent(hash))
+            if (contentRepository != null && !contentRepository.hasContent(hash))
                 throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
-            if (!isMaster) {
+            if (contentRepository == null) {
                 // This is a slave DC. We can't handle this operation; it should have been fixed up on the master DC
                 throw createFailureException("A slave domain controller cannot accept deployment content uploads");
             }
@@ -163,6 +154,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             } finally {
                 StreamUtils.safeClose(in);
             }
+            contentItemNode.clear(); // AS7-1029
             contentItemNode.get(HASH).set(hash);
         } else {
             // Unmanaged content, the user is responsible for replication
@@ -170,26 +162,21 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             unmanagedContentValidator.validate(contentItemNode);
         }
 
-        ModelNode subModel = context.getSubModel();
+        ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         subModel.get(NAME).set(name);
         subModel.get(RUNTIME_NAME).set(runtimeName);
         subModel.get(CONTENT).set(content);
 
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));
+        context.completeStep();
     }
 
-    private static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
+    private static InputStream getInputStream(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         InputStream in = null;
         String message = "";
         if (operation.hasDefined(INPUT_STREAM_INDEX)) {
             int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-            if (streamIndex > context.getInputStreams().size() - 1) {
-                IllegalArgumentException e = new IllegalArgumentException("Invalid " + INPUT_STREAM_INDEX + "=" + streamIndex + ", the maximum index is " + (context.getInputStreams().size() - 1));
-                throw createFailureException(e, e.getMessage());
-            }
             message = "Null stream at index " + streamIndex;
-            in = context.getInputStreams().get(streamIndex);
+            in = context.getAttachmentStream(streamIndex);
         } else if (operation.hasDefined(BYTES)) {
             message = "Invalid byte stream.";
             in = new ByteArrayInputStream(operation.get(BYTES).asBytes());
@@ -214,7 +201,6 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
      * Checks to see if a valid deployment parameter has been defined.
      *
      * @param operation the operation to check.
-     *
      * @return {@code true} of the parameter is valid, otherwise {@code false}.
      */
     private static boolean hasValidContentAdditionParameterDefined(ModelNode operation) {

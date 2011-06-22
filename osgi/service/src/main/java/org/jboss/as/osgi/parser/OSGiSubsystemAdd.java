@@ -21,9 +21,14 @@
  */
 package org.jboss.as.osgi.parser;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Set;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.osgi.deployment.BundleStartTracker;
+import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
 import static org.jboss.as.osgi.parser.CommonAttributes.ACTIVATION;
 import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION_PROPERTIES;
@@ -32,29 +37,17 @@ import static org.jboss.as.osgi.parser.CommonAttributes.PID;
 import static org.jboss.as.osgi.parser.CommonAttributes.PROPERTIES;
 import static org.jboss.as.osgi.parser.CommonAttributes.STARTLEVEL;
 
-import java.util.Hashtable;
-import java.util.Set;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.osgi.deployment.BundleStartTracker;
-import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
 import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
 import org.jboss.as.osgi.service.BundleInstallProviderIntegration;
-import org.jboss.as.server.BootOperationContext;
-import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -64,7 +57,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @since 11-Sep-2010
  */
-class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
@@ -76,45 +69,42 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
         // Private to ensure a singleton.
     }
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-        populateSubModel(context.getSubModel(), operation);
-
-        if (context instanceof BootOperationContext) {
-            final BootOperationContext updateContext = (BootOperationContext) context;
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    log.infof("Activating OSGi Subsystem");
-                    long begin = System.currentTimeMillis();
-                    try {
-                        SubsystemState subsystemState = createSubsystemState(operation);
-
-                        ServiceTarget serviceTarget = context.getServiceTarget();
-                        BundleStartTracker.addService(serviceTarget);
-                        BundleInstallProviderIntegration.addService(serviceTarget);
-                        FrameworkBootstrapService.addService(serviceTarget, subsystemState);
-
-                        ConfigAdminServiceImpl.addService(serviceTarget, subsystemState);
-
-                        new OSGiDeploymentActivator().activate(updateContext);
-                        resultHandler.handleResultComplete();
-                    } catch (RuntimeException rte) {
-                        log.errorf(rte, "Failed to activate OSGi subsystem");
-                        throw rte;
-                    }
-                    long end = System.currentTimeMillis();
-                    log.debugf("Activated OSGi Subsystem in %dms", end - begin);
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+    protected void populateModel(final ModelNode operation, final ModelNode subModel) {
+        if (operation.has(ACTIVATION)) {
+            subModel.get(ACTIVATION).set(operation.get(ACTIVATION));
         }
+        if (operation.has(CONFIGURATION)) {
+            subModel.get(CONFIGURATION).set(operation.get(CONFIGURATION));
+        }
+        if (operation.has(PROPERTIES)) {
+            subModel.get(PROPERTIES).set(operation.get(PROPERTIES));
+        }
+        if (operation.has(MODULES)) {
+            subModel.get(MODULES).set(operation.get(MODULES));
+        }
+    }
 
-        // Create the compensating operation
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        return new BasicOperationResult(compensatingOperation);
+    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                new OSGiDeploymentActivator().activate(processorTarget);
+            }
+        }, NewOperationContext.Stage.RUNTIME);
+
+        log.infof("Activating OSGi Subsystem");
+        long begin = System.currentTimeMillis();
+        SubsystemState subsystemState = createSubsystemState(operation);
+
+        ServiceTarget serviceTarget = context.getServiceTarget();
+        newControllers.add(BundleStartTracker.addService(serviceTarget));
+        newControllers.add(BundleInstallProviderIntegration.addService(serviceTarget));
+        newControllers.addAll(FrameworkBootstrapService.addService(serviceTarget, subsystemState, verificationHandler));
+
+        newControllers.add(ConfigAdminServiceImpl.addService(serviceTarget, subsystemState, verificationHandler));
+
+        long end = System.currentTimeMillis();
+        log.debugf("Activated OSGi Subsystem in %dms", end - begin);
     }
 
     // TODO - This conversion should be reviewed, initially this is to simplify
@@ -172,20 +162,4 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
 
         return subsystemState;
     }
-
-    private void populateSubModel(final ModelNode subModel, final ModelNode operation) {
-        if (operation.has(ACTIVATION)) {
-            subModel.get(ACTIVATION).set(operation.get(ACTIVATION));
-        }
-        if (operation.has(CONFIGURATION)) {
-            subModel.get(CONFIGURATION).set(operation.get(CONFIGURATION));
-        }
-        if (operation.has(PROPERTIES)) {
-            subModel.get(PROPERTIES).set(operation.get(PROPERTIES));
-        }
-        if (operation.has(MODULES)) {
-            subModel.get(MODULES).set(operation.get(MODULES));
-        }
-    }
-
 }

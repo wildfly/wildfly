@@ -22,27 +22,21 @@
 
 package org.jboss.as.web;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.RequestGroupInfo;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class WebConnectorMetrics implements ModelQueryOperationHandler {
+class WebConnectorMetrics implements NewStepHandler {
 
     static WebConnectorMetrics INSTANCE = new WebConnectorMetrics();
 
@@ -55,23 +49,20 @@ class WebConnectorMetrics implements ModelQueryOperationHandler {
     private static final String REQUEST_COUNT = "requestCount";
     static final String[] ATTRIBUTES = new String[] {BYTES_SENT, BYTES_RECEIVED, PROCESSING_TIME, ERROR_COUNT, MAX_TIME, REQUEST_COUNT};
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                     final String name = address.getLastElement().getValue();
                     final String attributeName = operation.require(NAME).asString();
 
-                    final ServiceController<?> controller = context.getServiceRegistry()
+                    final ServiceController<?> controller = context.getServiceRegistry(false)
                             .getService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name));
                     if (controller != null) {
                         try {
                             final Connector connector = (Connector) controller.getValue();
-                            final ModelNode result = new ModelNode();
+                            final ModelNode result = context.getResult();
                             if (connector.getProtocolHandler() != null && connector.getProtocolHandler().getRequestGroupInfo() != null) {
                                 RequestGroupInfo info = connector.getProtocolHandler().getRequestGroupInfo();
                                 if (BYTES_SENT.equals(attributeName)) {
@@ -88,22 +79,18 @@ class WebConnectorMetrics implements ModelQueryOperationHandler {
                                     result.set("" + info.getRequestCount());
                                 }
                             }
-                            resultHandler.handleResultFragment(new String[0], result);
-                            resultHandler.handleResultComplete();
                         } catch (Exception e) {
                             throw new OperationFailedException(new ModelNode().set("failed to get metrics" + e.getMessage()));
                         }
                     } else {
-                        resultHandler.handleResultFragment(NO_LOCATION, new ModelNode().set("no metrics available"));
-                        resultHandler.handleResultComplete();
+                        context.getResult().set("no metrics available");
                     }
+                    context.completeStep();
                 }
-            });
+            }, NewOperationContext.Stage.RUNTIME);
         } else {
-            resultHandler.handleResultFragment(NO_LOCATION, new ModelNode().set("no metrics available"));
-            resultHandler.handleResultComplete();
+            context.getResult().set("no metrics available");
         }
-        return new BasicOperationResult();
+        context.completeStep();
     }
-
 }

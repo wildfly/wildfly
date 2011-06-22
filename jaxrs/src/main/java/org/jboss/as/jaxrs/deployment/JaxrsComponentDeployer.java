@@ -3,10 +3,12 @@ package org.jboss.as.jaxrs.deployment;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.web.deployment.component.WebComponentDescription;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
@@ -14,7 +16,7 @@ import org.jboss.resteasy.util.GetRestful;
 
 /**
  * Integrate's JAX-RS with other component types such as managed beans and EJB's
- *
+ * <p/>
  * This is not needed if beans.xml is present, as in this case the integration is handed by the more general
  * integration with CDI.
  *
@@ -32,20 +34,22 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
             //no need to integrate twice.
             return;
         }
+
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        if(module == null) {
+        if (module == null) {
             return;
         }
 
+
         final ResteasyDeploymentData resteasy = deploymentUnit.getAttachment(JaxrsAttachments.RESTEASY_DEPLOYMENT_DATA);
-        if(resteasy == null) {
+        if (resteasy == null) {
             return;
         }
         // right now I only support resources
         if (!resteasy.isScanResources()) return;
 
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        if(moduleDescription == null) {
+        if (moduleDescription == null) {
             return;
         }
 
@@ -60,15 +64,30 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
             }
             if (!GetRestful.isRootResource(componentClass)) continue;
 
+            if (component instanceof WebComponentDescription) {
+                continue;
+            }
+            if (component instanceof SessionBeanComponentDescription) {
+                Class jaxrsType = GetRestful.getSubResourceClass(componentClass);
+                String jndiName = "java:app/" + moduleDescription.getModuleName() + "/" + componentClass.getSimpleName() + "!" + jaxrsType.getName();
+                log.debug("Found JAX-RS Managed Bean: " + component.getComponentClassName() + " local jndi name: " + jndiName);
+                StringBuilder buf = new StringBuilder();
+                buf.append(jndiName).append(";").append(component.getComponentClassName()).append(";").append("true");
 
-            String jndiName = "java:module/" + component.getComponentName();
-            log.debug("Found JAX-RS Managed Bean: " + component.getComponentClassName() + " local jndi name: " + jndiName);
-            StringBuilder buf = new StringBuilder();
-            buf.append(jndiName).append(";").append(component.getComponentClassName()).append(";").append("true");
+                resteasy.getScannedJndiComponentResources().add(buf.toString());
+                // make sure its removed from list
+                resteasy.getScannedResourceClasses().remove(component.getComponentClassName());
+            } else {
 
-            resteasy.getScannedJndiComponentResources().add(buf.toString());
-            // make sure its removed from list
-            resteasy.getScannedResourceClasses().remove(component.getComponentClassName());
+                String jndiName = "java:app/" + moduleDescription.getModuleName() + "/" + component.getComponentName();
+                log.debug("Found JAX-RS Managed Bean: " + component.getComponentClassName() + " local jndi name: " + jndiName);
+                StringBuilder buf = new StringBuilder();
+                buf.append(jndiName).append(";").append(component.getComponentClassName()).append(";").append("true");
+
+                resteasy.getScannedJndiComponentResources().add(buf.toString());
+                // make sure its removed from list
+                resteasy.getScannedResourceClasses().remove(component.getComponentClassName());
+            }
         }
     }
 

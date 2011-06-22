@@ -43,10 +43,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -58,14 +60,23 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class DataSourcesOperationsUnitTestCase {
 
-    @Deployment(testable = false)
+    private ModelControllerClient client;
+
+    @Deployment
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
 
     // [ARQ-458] @Before not called with @RunAsClient
     private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        return ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        StreamUtils.safeClose(client);
+        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        return client;
+    }
+
+    @After
+    public void tearDown() {
+        StreamUtils.safeClose(client);
     }
 
     @Test

@@ -21,19 +21,17 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import javax.xml.namespace.QName;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -44,87 +42,72 @@ import org.jboss.wsf.spi.metadata.config.Feature;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
 
-import javax.xml.namespace.QName;
-
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * OperationHandler to add an endpoint configuration to {@link org.jboss.as.webservices.service.ServerConfigService ServerConfigService}
  * @author <a href="ema@redhat.com">Jim Ma</a>
  */
-public class EndpointConfigAdd implements ModelAddOperationHandler {
+public class EndpointConfigAdd extends AbstractAddStepHandler {
 
     static final EndpointConfigAdd INSTANCE = new EndpointConfigAdd();
 
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
-            throws OperationFailedException {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(OP).set(REMOVE);
-
-        final ModelNode subModel = context.getSubModel();
         if (operation.hasDefined(Constants.PRE_HANDLER_CHAINS)) {
             ModelNode preHandlers = operation.get(Constants.PRE_HANDLER_CHAINS);
-            subModel.get(Constants.PRE_HANDLER_CHAINS).set(preHandlers);
+            model.get(Constants.PRE_HANDLER_CHAINS).set(preHandlers);
         }
 
         if (operation.hasDefined(Constants.POST_HANDLER_CHAINS)) {
             ModelNode postHandlers = operation.get(Constants.POST_HANDLER_CHAINS);
-            subModel.get(Constants.POST_HANDLER_CHAINS).set(postHandlers);
+            model.get(Constants.POST_HANDLER_CHAINS).set(postHandlers);
         }
 
         if (operation.hasDefined(Constants.PROPERTY)) {
             ModelNode property = operation.get(Constants.PROPERTY);
-            subModel.get(Constants.PROPERTY).set(property);
+            model.get(Constants.PROPERTY).set(property);
         }
         if (operation.hasDefined(Constants.FEATURE)) {
             ModelNode feature = operation.get(Constants.FEATURE);
-            subModel.get(Constants.FEATURE).set(feature);
+            model.get(Constants.FEATURE).set(feature);
         }
+    }
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ServiceController<?> configService = context.getServiceRegistry().getService(WSServices.CONFIG_SERVICE);
-                    if (configService != null) {
-                        ServerConfig config = (ServerConfig) configService.getValue();
-                        EndpointConfig endpointConfig = new EndpointConfig();
-                        endpointConfig.setConfigName(name);
-                        if (subModel.hasDefined(Constants.PRE_HANDLER_CHAINS)) {
-                            ModelNode preHandlers =subModel.get(Constants.PRE_HANDLER_CHAINS);
-                            endpointConfig.setPreHandlerChains(buildChainMD(preHandlers));
-                        }
-                        if (subModel.hasDefined(Constants.POST_HANDLER_CHAINS)) {
-                            ModelNode postHandlers =subModel.get(Constants.POST_HANDLER_CHAINS);
-                            endpointConfig.setPostHandlerChains(buildChainMD(postHandlers));
-                        }
+    @Override
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model,
+                                  ServiceVerificationHandler verificationHandler,
+                                  List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-                        if (subModel.hasDefined(Constants.PROPERTY)) {
-                            for (String name :subModel.get(Constants.PROPERTY).keys()) {
-                                endpointConfig.setProperty(name, subModel.get(Constants.PROPERTY).get(name).asString());
-                            }
-                        }
-                        if (subModel.hasDefined(Constants.FEATURE)) {
-                            for (String name :subModel.get(Constants.FEATURE).keys()) {
-                                endpointConfig.setFeature(new Feature(name), true);
-                            }
-                        }
-                        config.addEndpointConfig(endpointConfig);
-                    }
-                    resultHandler.handleResultComplete();
+        ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
+        if (configService != null) {
+
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final String name = address.getLastElement().getValue();
+
+            ServerConfig config = (ServerConfig) configService.getValue();
+            EndpointConfig endpointConfig = new EndpointConfig();
+            endpointConfig.setConfigName(name);
+            if (model.hasDefined(Constants.PRE_HANDLER_CHAINS)) {
+                ModelNode preHandlers = model.get(Constants.PRE_HANDLER_CHAINS);
+                endpointConfig.setPreHandlerChains(buildChainMD(preHandlers));
+            }
+            if (model.hasDefined(Constants.POST_HANDLER_CHAINS)) {
+                ModelNode postHandlers = model.get(Constants.POST_HANDLER_CHAINS);
+                endpointConfig.setPostHandlerChains(buildChainMD(postHandlers));
+            }
+
+            if (model.hasDefined(Constants.PROPERTY)) {
+                for (String key : model.get(Constants.PROPERTY).keys()) {
+                    endpointConfig.setProperty(key, model.get(Constants.PROPERTY).get(key).asString());
                 }
-            });
-
-        } else {
-            resultHandler.handleResultComplete();
+            }
+            if (model.hasDefined(Constants.FEATURE)) {
+                for (String key : model.get(Constants.FEATURE).keys()) {
+                    endpointConfig.setFeature(new Feature(key), true);
+                }
+            }
+            config.addEndpointConfig(endpointConfig);
         }
-        return new BasicOperationResult(compensatingOperation);
     }
 
 

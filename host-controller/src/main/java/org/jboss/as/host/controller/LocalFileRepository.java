@@ -23,9 +23,17 @@
 package org.jboss.as.host.controller;
 
 import java.io.File;
+import java.lang.annotation.Target;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 
 /**
@@ -33,7 +41,8 @@ import org.jboss.as.domain.controller.FileRepository;
  *
  * @author John Bailey
  */
-public class LocalFileRepository implements FileRepository {
+public class LocalFileRepository implements FileRepository, Service<FileRepository> {
+
     private final File repositoryRoot;
     private final File deploymentRoot;
     private final File configurationRoot;
@@ -71,5 +80,20 @@ public class LocalFileRepository implements FileRepository {
         String hex = HashUtil.bytesToHexString(hash);
         File first = new File(deploymentRoot, hex.substring(0,2));
         return new File(first, hex.substring(2));
+    }
+
+    @Override
+    public void start(StartContext context) throws StartException {
+        // no-op
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        // no-op
+    }
+
+    @Override
+    public FileRepository getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
     }
 }

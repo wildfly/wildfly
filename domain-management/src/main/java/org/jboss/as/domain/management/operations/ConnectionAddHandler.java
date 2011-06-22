@@ -22,6 +22,14 @@
 
 package org.jboss.as.domain.management.operations;
 
+import java.util.List;
+import java.util.Locale;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -29,20 +37,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.management.security.LdapConnectionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -53,45 +47,37 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class ConnectionAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class ConnectionAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final ConnectionAddHandler INSTANCE = new ConnectionAddHandler();
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
-    public OperationResult execute(OperationContext context, ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        ModelNode operationAddress = operation.require(OP_ADDR);
-        PathAddress address = PathAddress.pathAddress(operationAddress);
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.get(TYPE).set(operation.require(TYPE).asString());
+        model.get(URL).set(operation.require(URL).asString());
+        model.get(SEARCH_DN).set(operation.require(SEARCH_DN).asString());
+        model.get(SEARCH_CREDENTIAL).set(operation.require(SEARCH_CREDENTIAL).asString());
+        if (operation.has(INITIAL_CONTEXT_FACTORY)) {
+            model.get(INITIAL_CONTEXT_FACTORY).set(operation.require(INITIAL_CONTEXT_FACTORY).asString());
+        }
+    }
+
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final String type = operation.get(TYPE).asString();
 
-        final ModelNode subModel = context.getSubModel();
-        subModel.get(TYPE).set(operation.require(TYPE).asString());
-        subModel.get(URL).set(operation.require(URL).asString());
-        subModel.get(SEARCH_DN).set(operation.require(SEARCH_DN).asString());
-        subModel.get(SEARCH_CREDENTIAL).set(operation.require(SEARCH_CREDENTIAL).asString());
-        if (operation.has(INITIAL_CONTEXT_FACTORY)) {
-            subModel.get(INITIAL_CONTEXT_FACTORY).set(operation.require(INITIAL_CONTEXT_FACTORY).asString());
-        }
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-                    if (LDAP.equals(type)) {
-                        final LdapConnectionManagerService connectionManagerService = new LdapConnectionManagerService(subModel);
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        if (LDAP.equals(type)) {
+            final LdapConnectionManagerService connectionManagerService = new LdapConnectionManagerService(model);
 
-                        serviceTarget.addService(LdapConnectionManagerService.BASE_SERVICE_NAME.append(name), connectionManagerService)
-                                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                                .install();
-                    }
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            newControllers.add(serviceTarget.addService(LdapConnectionManagerService.BASE_SERVICE_NAME.append(name), connectionManagerService)
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                    .install());
         }
-        final ModelNode compensatingOperation = new ModelNode(); // TODO - Complete the remove.
-        return new BasicOperationResult(compensatingOperation);
     }
+
 
     public ModelNode getModelDescription(Locale locale) {
         // TODO - Complete getModelDescription()

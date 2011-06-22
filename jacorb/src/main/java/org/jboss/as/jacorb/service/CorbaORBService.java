@@ -25,7 +25,7 @@ package org.jboss.as.jacorb.service;
 import org.jboss.as.jacorb.JacORBConstants;
 import org.jboss.as.jacorb.ORBInitializer;
 import org.jboss.as.jacorb.naming.ORBInitialContextFactory;
-import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;

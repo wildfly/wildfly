@@ -22,14 +22,9 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -37,7 +32,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ProcessTypeHandler implements OperationHandler {
+public class ProcessTypeHandler implements NewStepHandler {
 
     public static final ProcessTypeHandler MASTER = new ProcessTypeHandler(true);
     public static final ProcessTypeHandler SLAVE = new ProcessTypeHandler(true);
@@ -51,11 +46,8 @@ public class ProcessTypeHandler implements OperationHandler {
     }
 
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        ModelNode root = context.getSubModel();
-        resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, new ModelNode().set(master ? DOMAIN_CONTROLLER_TYPE : HOST_CONTROLLER_TYPE));
-        resultHandler.handleResultComplete();
-
-        return new BasicOperationResult();
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        context.getResult().set(master ? DOMAIN_CONTROLLER_TYPE : HOST_CONTROLLER_TYPE);
+        context.completeStep();
     }
 }

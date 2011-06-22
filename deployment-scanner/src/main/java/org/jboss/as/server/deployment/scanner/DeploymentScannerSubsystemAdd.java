@@ -22,18 +22,11 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,7 +34,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public class DeploymentScannerSubsystemAdd implements ModelAddOperationHandler, DescriptionProvider {
+public class DeploymentScannerSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
@@ -51,18 +44,12 @@ public class DeploymentScannerSubsystemAdd implements ModelAddOperationHandler, 
         //
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.get(CommonAttributes.SCANNER).setEmptyObject();
+    }
 
-        // Initialize the scanner
-        context.getSubModel().get(CommonAttributes.SCANNER).setEmptyObject();
-
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-
-        resultHandler.handleResultComplete();
-
-        return new BasicOperationResult(compensatingOperation);
+    protected boolean requiresRuntime(NewOperationContext context) {
+        return false;
     }
 
     @Override

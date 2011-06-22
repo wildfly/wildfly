@@ -51,25 +51,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.controller.client.Cancellable;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.OperationResult;
-import org.jboss.as.controller.client.ResultHandler;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
 import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
 import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
 import org.jboss.as.controller.client.helpers.domain.InitialDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -112,10 +103,8 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         DeploymentPlanImpl planImpl = DeploymentPlanImpl.class.cast(plan);
         Map<UUID, String> actionsById = new HashMap<UUID, String>();
         Operation operation = getDeploymentPlanOperation(planImpl, actionsById);
-        Handler handler = new Handler(operation);
-        OperationResult c = client.execute(operation, handler.resultHandler);
-        handler.setCancellable(c.getCancellable());
-        return new DomainDeploymentPlanResultFuture(planImpl, handler, actionsById);
+        Future<ModelNode> future = client.executeAsync(operation, null);
+        return new DomainDeploymentPlanResultFuture(planImpl, future, actionsById);
     }
 
     @Override
@@ -142,7 +131,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(plan.isSingleServerRollback());
         // FIXME deal with shutdown params
 
-        OperationBuilder builder = OperationBuilder.Factory.create(op);
+        OperationBuilder builder = new OperationBuilder(op);
         int stepNum = 1;
         for (DeploymentActionImpl action : plan.getDeploymentActionImpls()) {
 
@@ -236,7 +225,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         ModelNode op = new ModelNode();
         op.get("operation").set("read-children-names");
         op.get("child-type").set("deployment");
-        ModelNode rsp = client.executeForResult(OperationBuilder.Factory.create(op).build());
+        ModelNode rsp = client.executeForResult(new OperationBuilder(op).build());
         Set<String> deployments = new HashSet<String>();
         if (rsp.isDefined()) {
             for (ModelNode node : rsp.asList()) {
@@ -303,151 +292,6 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         }
         op.get(OP_ADDR).add(DEPLOYMENT, uniqueName);
         return op;
-    }
-
-    private static class Handler implements Future<ModelNode> {
-
-        private enum State {
-            RUNNING, CANCELLED, DONE
-        }
-
-        private final Operation operation;
-        private AtomicReference<State> state = new AtomicReference<State>(State.RUNNING);
-        private final Thread runner = Thread.currentThread();
-        private final ModelNode result = new ModelNode();
-        private Cancellable cancellable;
-        private final AtomicReference<Exception> exception = new AtomicReference<Exception>();
-
-        private Handler(Operation operation) {
-            this.operation = operation;
-        }
-
-        private final ResultHandler resultHandler = new ResultHandler() {
-            @Override
-            public void handleResultFragment(String[] location, ModelNode fragment) {
-                if (state.get() == State.RUNNING) {
-                    result.get(location).set(fragment);
-                }
-            }
-
-            @Override
-            public void handleResultComplete() {
-                state.compareAndSet(State.RUNNING, State.DONE);
-                cleanUpAndNotify();
-            }
-
-            @Override
-            public void handleCancellation() {
-                state.compareAndSet(State.RUNNING, State.CANCELLED);
-                cleanUpAndNotify();
-            }
-
-            @Override
-            public void handleFailed(ModelNode failureDescription) {
-                String message = failureDescription.isDefined() ? failureDescription.toString() : "Operation failed with no failure description";
-                Exception e = new Exception(message);
-                exception.compareAndSet(null, e);
-                state.compareAndSet(State.RUNNING, State.DONE);
-                cleanUpAndNotify();
-            }
-        };
-
-        synchronized void cleanUpAndNotify() {
-            for (InputStream in : operation.getInputStreams()) {
-                StreamUtils.safeClose(in);
-            }
-            notifyAll();
-        }
-
-        void setCancellable(Cancellable c) {
-            this.cancellable = c;
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            boolean cancelled = false;
-            if (state.get() == State.RUNNING) {
-                try {
-                    if (cancellable.cancel()) {
-                        cancelled = state.compareAndSet(State.RUNNING, State.CANCELLED);
-                    }
-                } catch (IOException ignored) {
-                    // ignore
-                }
-
-                if (!cancelled) {
-                    if (mayInterruptIfRunning) {
-                        runner.interrupt();
-                    }
-                    if (state.compareAndSet(State.RUNNING, State.DONE)) {
-                        exception.set(new CancellationException());
-                    }
-                }
-            }
-            synchronized (this) {
-                notifyAll();
-            }
-            return cancelled;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return state.get() == State.CANCELLED;
-        }
-
-        @Override
-        public boolean isDone() {
-            return state.get() != State.RUNNING;
-        }
-
-        @Override
-        public ModelNode get() throws InterruptedException, ExecutionException {
-            synchronized (this) {
-                while (!isDone()) {
-                    wait();
-                }
-
-                return getResult();
-            }
-        }
-
-        @Override
-        public ModelNode get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException,
-                TimeoutException {
-            long toWait = unit.toMillis(timeout);
-            long expire = System.currentTimeMillis() + toWait;
-            synchronized (this) {
-                while (!isDone()) {
-                    wait(toWait);
-                    if (!isDone()) {
-                        long now = System.currentTimeMillis();
-                        if (now >= expire) {
-                            throw new TimeoutException();
-                        }
-                        toWait = expire - now;
-                    }
-                }
-                return getResult();
-            }
-        }
-
-        private ModelNode getResult() throws ExecutionException {
-
-            Exception e = exception.get();
-            if (e instanceof ExecutionException) {
-                throw (ExecutionException) e;
-            } else if (e instanceof CancellationException) {
-                throw (CancellationException) e;
-            } else if (e != null) {
-                throw new ExecutionException(e);
-            } else if (state.get() == State.CANCELLED) {
-                throw new CancellationException();
-            } else {
-                return result;
-            }
-
-        }
-
     }
 
 }

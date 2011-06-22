@@ -21,7 +21,7 @@
  */
 package org.jboss.as.demos.jms.client.runner;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 import javax.jms.JMSException;
 import javax.jms.Message;

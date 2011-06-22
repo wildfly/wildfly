@@ -3,49 +3,6 @@
  */
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.server.ServerController;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.deployment.api.ContentRepository;
-import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.vfs.VirtualFile;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -67,6 +24,46 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UND
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
+import org.jboss.dmr.ModelNode;
+import org.jboss.threads.AsyncFuture;
+import org.jboss.vfs.VirtualFile;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Unit tests of {@link FileSystemDeploymentService}.
@@ -1077,12 +1074,48 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     }
 
-    private static class MockServerController implements ServerController {
+    private static class MockServerController implements ModelControllerClient {
 
         private final List<ModelNode> requests = new ArrayList<ModelNode>(1);
         private final List<Response> responses = new ArrayList<Response>(1);
         private final Map<String, byte[]> added = new HashMap<String, byte[]>();
         private final Map<String, byte[]> deployed = new HashMap<String, byte[]>();
+
+        @Override
+        public ModelNode execute(ModelNode operation) throws IOException {
+            requests.add(operation);
+            return processOp(operation);
+        }
+
+        @Override
+        public ModelNode execute(Operation operation) throws IOException {
+            return execute(operation.getOperation());
+        }
+
+        @Override
+        public ModelNode execute(ModelNode operation, OperationMessageHandler messageHandler) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ModelNode execute(Operation operation, OperationMessageHandler messageHandler) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationMessageHandler messageHandler) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void close() throws IOException {
+            throw new UnsupportedOperationException();
+        }
 
         private static class Response {
             private final boolean ok;
@@ -1157,18 +1190,6 @@ public class FileSystemDeploymentServiceUnitTestCase {
             return content;
         }
 
-        @Override
-        public OperationResult execute(Operation operation, ResultHandler handler) {
-            throw new UnsupportedOperationException("not supported");
-        }
-
-        @Override
-        public ModelNode execute(Operation operation) throws CancellationException {
-            ModelNode op = operation.getOperation();
-            requests.add(op);
-            return processOp(op);
-        }
-
         private ModelNode processOp(ModelNode op) {
 
             String opName = op.require(OP).asString();
@@ -1225,21 +1246,6 @@ public class FileSystemDeploymentServiceUnitTestCase {
             else {
                 throw new IllegalArgumentException("unexpected operation " + opName);
             }
-        }
-
-        @Override
-        public ServerEnvironment getServerEnvironment() {
-            throw new UnsupportedOperationException("not supported");
-        }
-
-        @Override
-        public ServiceRegistry getServiceRegistry() {
-            throw new UnsupportedOperationException("not supported");
-        }
-
-        @Override
-        public State getState() {
-            throw new UnsupportedOperationException("not supported");
         }
 
     }

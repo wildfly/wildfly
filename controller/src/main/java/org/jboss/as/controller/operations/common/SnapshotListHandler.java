@@ -18,14 +18,9 @@
  */
 package org.jboss.as.controller.operations.common;
 
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.SnapshotDescriptions;
@@ -33,13 +28,15 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.dmr.ModelNode;
 
+import java.util.Locale;
+
 /**
  * An operation that lists the snapshots taken of the current configuration
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class SnapshotListHandler implements ModelQueryOperationHandler, DescriptionProvider {
+public class SnapshotListHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "list-snapshots";
 
@@ -50,18 +47,16 @@ public class SnapshotListHandler implements ModelQueryOperationHandler, Descript
     }
 
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         try {
             SnapshotInfo info = persister.listSnapshots();
-            ModelNode result = new ModelNode();
+            ModelNode result = context.getResult();
             result.get(ModelDescriptionConstants.DIRECTORY).set(info.getSnapshotDirectory());
             result.get(ModelDescriptionConstants.NAMES).setEmptyList();
             for (String name : info.names()) {
                 result.get(ModelDescriptionConstants.NAMES).add(name);
             }
-            resultHandler.handleResultFragment(new String[0], result);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+            context.completeStep();
         } catch (Exception e) {
             throw new OperationFailedException(e.getMessage(), new ModelNode().set(e.getMessage()));
         }

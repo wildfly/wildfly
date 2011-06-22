@@ -22,96 +22,57 @@
 
 package org.jboss.as.server.operations;
 
-import java.security.AccessController;
-import java.util.concurrent.ThreadFactory;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
+import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.Executors;
 
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ManagementDescription;
+import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerFactoryService;
+import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.server.Services;
-import org.jboss.as.server.mgmt.ManagementCommunicationService;
-import org.jboss.as.server.mgmt.ServerControllerOperationHandlerService;
-import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.threads.JBossThreadFactory;
 
 /**
- * @author Emanuel Muckenhuber
+ * @author Kabir Khan
  */
-public class NativeManagementAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class NativeManagementAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final NativeManagementAddHandler INSTANCE = new NativeManagementAddHandler();
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(ModelDescriptionConstants.REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
+    protected void populateModel(ModelNode operation, ModelNode model) {
         final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
         final int port = operation.require(ModelDescriptionConstants.PORT).asInt();
 
-        final ModelNode subModel = context.getSubModel();
-        subModel.get(ModelDescriptionConstants.INTERFACE).set(interfaceName);
-        subModel.get(ModelDescriptionConstants.PORT).set(port);
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-
-                    Logger.getLogger("org.jboss.as").infof("creating native management service using network interface (%s) port (%s)", interfaceName, port);
-
-                    final ThreadGroup threadGroup = new ThreadGroup("ManagementCommunication-threads");
-                    final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-
-                    final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
-                    serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
-                            .addDependency(
-                                    NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
-                                    NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
-                            .addInjection(managementCommunicationService.getPortInjector(), port)
-                            .addInjection(managementCommunicationService.getExecutorServiceInjector(), Executors.newCachedThreadPool(threadFactory))
-                            .addInjection(managementCommunicationService.getThreadFactoryInjector(), threadFactory)
-                            .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .install();
-
-                    ServerControllerOperationHandlerService operationHandlerService = new ServerControllerOperationHandlerService();
-                    serviceTarget.addService(ServerControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
-                            .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
-                            .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, operationHandlerService.getModelControllerValue())
-                            .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .install();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensatingOperation);
+        model.get(ModelDescriptionConstants.INTERFACE).set(interfaceName);
+        model.get(ModelDescriptionConstants.PORT).set(port);
     }
 
-    /** {@inheritDoc} */
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
+        final int port = operation.require(ModelDescriptionConstants.PORT).asInt();
+
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+
+        RemotingServices.installStandaloneConnectorServices(serviceTarget, NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName), port, verificationHandler, newControllers);
+        RemotingServices.installChannelServices(serviceTarget,
+                new NewModelControllerClientOperationHandlerFactoryService(),
+                Services.JBOSS_SERVER_CONTROLLER,
+                RemotingServices.MANAGEMENT_CHANNEL,
+                verificationHandler,
+                newControllers);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ManagementDescription.getAddNativeManagementDescription(locale);

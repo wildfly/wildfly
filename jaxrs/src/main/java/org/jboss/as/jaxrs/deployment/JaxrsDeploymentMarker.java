@@ -28,17 +28,21 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  * Marker for JAX-RS deployments
  *
  * @author Stuart Douglas
- *
  */
 public class JaxrsDeploymentMarker {
     private static final AttachmentKey<Boolean> ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
 
     public static void mark(DeploymentUnit deployment) {
-        deployment.putAttachment(ATTACHMENT_KEY, true);
+        if (deployment.getParent() != null) {
+            deployment.getParent().putAttachment(ATTACHMENT_KEY, true);
+        } else {
+            deployment.putAttachment(ATTACHMENT_KEY, true);
+        }
     }
 
     public static boolean isJaxrsDeployment(DeploymentUnit deploymentUnit) {
-        Boolean val = deploymentUnit.getAttachment(ATTACHMENT_KEY);
+        DeploymentUnit deployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        Boolean val = deployment.getAttachment(ATTACHMENT_KEY);
         return val != null && val;
     }
 }

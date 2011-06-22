@@ -51,8 +51,8 @@ public interface DomainClient extends ModelControllerClient {
      * {@link #getDeploymentManager() the DomainDeploymentManager offers a
      * more convenient API for manipulating domain deployments.
      *
-     * @param stream The data stream for the deployment
-     * @return The unique hash for the deployment
+     * @param stream the data stream for the deployment
+     * @return the unique hash for the deployment
      */
     byte[] addDeploymentContent(InputStream stream);
 
@@ -91,7 +91,7 @@ public interface DomainClient extends ModelControllerClient {
      * @param gracefulShutdownTimeout maximum period to wait to allow the server
      *           to gracefully handle long running tasks before shutting down,
      *           or {@code -1} to shutdown immediately
-     * @param timeUnit time unit in which {@code gracefulShutdownTimeout} is expressed
+     * @param timeunit time unit in which {@code gracefulShutdownTimeout} is expressed
      *
      * @return the status of the server following the stop. Will not be <code>null</code>
      */
@@ -105,7 +105,7 @@ public interface DomainClient extends ModelControllerClient {
      * @param gracefulShutdownTimeout maximum period to wait to allow the server
      *           to gracefully handle long running tasks before shutting down,
      *           or {@code -1} to shutdown immediately
-     * @param timeUnit time unit in which {@code gracefulShutdownTimeout} is expressed
+     * @param timeunit time unit in which {@code gracefulShutdownTimeout} is expressed
      *
      * @return the status of the server following the restart. Will not be <code>null</code>
      */

@@ -22,6 +22,10 @@
 
 package org.jboss.as.connector.deployers;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.DriverProcessor;
 import org.jboss.as.connector.deployers.processors.IronJacamarDeploymentParsingProcessor;
@@ -35,40 +39,52 @@ import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.rarepository.RaRepositoryService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
 import org.jboss.as.connector.services.ManagementRepositoryService;
-import org.jboss.as.server.BootOperationContext;
+import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Service activator which installs the various service required for rar
  * deployments.
+ *
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public class RaDeploymentActivator {
-    /**
-     * Activate the services required for service deployments.
-     * @param updateContext The update context
-     */
-    public void activate(final BootOperationContext updateContext, final ServiceTarget serviceTarget) {
+    private final MdrService mdrService = new MdrService();
+
+    public Collection<ServiceController<?>> activateServices(final ServiceTarget serviceTarget, final ServiceListener<Object>... listeners) {
+        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
         // add resources here
-        MdrService mdrService = new MdrService();
-        serviceTarget.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService).install();
+
+        controllers.add(serviceTarget.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService)
+            .addListener(listeners)
+            .install());
 
         RaRepositoryService raRepositoryService = new RaRepositoryService();
-        serviceTarget
-                .addService(ConnectorServices.RA_REPOSISTORY_SERVICE, raRepositoryService)
-                .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class,
-                        raRepositoryService.getMdrInjector()).install();
+        controllers.add(serviceTarget.addService(ConnectorServices.RA_REPOSISTORY_SERVICE, raRepositoryService)
+            .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, raRepositoryService.getMdrInjector())
+            .addListener(listeners)
+            .install());
 
         ManagementRepositoryService managementRepositoryService = new ManagementRepositoryService();
-        serviceTarget.addService(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, managementRepositoryService).install();
+        controllers.add(serviceTarget.addService(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, managementRepositoryService)
+            .addListener(listeners)
+            .install());
 
         ResourceAdapterDeploymentRegistryService registryService = new ResourceAdapterDeploymentRegistryService();
-        serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService)
-                .addDependency(ConnectorServices.IRONJACAMAR_MDR).install();
+        controllers.add(serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService)
+            .addDependency(ConnectorServices.IRONJACAMAR_MDR)
+            .addListener(listeners)
+            .install());
 
+        return controllers;
+    }
+
+
+    public void activateProcessors(final DeploymentProcessorTarget updateContext) {
         updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_RAR_CONFIG, new RarDependencyProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RA_DEPLOYMENT, new RaDeploymentParsingProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_IRON_JACAMAR_DEPLOYMENT,

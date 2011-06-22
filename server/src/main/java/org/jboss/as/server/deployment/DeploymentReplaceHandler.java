@@ -18,25 +18,14 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.deployment.api.ContentRepository;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
 import java.util.Locale;
-
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -47,15 +36,24 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Handles replacement in the runtime of one deployment by another.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentReplaceHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class DeploymentReplaceHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REPLACE_DEPLOYMENT;
 
@@ -82,15 +80,11 @@ public class DeploymentReplaceHandler implements ModelUpdateOperationHandler, De
         return DeploymentDescription.getReplaceDeploymentOperation(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
 
-        ModelNode deployments = context.getSubModel().get(DEPLOYMENT);
+        // ModelNode deployments = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(DEPLOYMENT);
+        final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
         String name = operation.require(NAME).asString();
         String toReplace = operation.require(TO_REPLACE).asString();
 
@@ -101,15 +95,18 @@ public class DeploymentReplaceHandler implements ModelUpdateOperationHandler, De
                     DeploymentFullReplaceHandler.OPERATION_NAME));
         }
 
-        ModelNode replaceNode = deployments.hasDefined(toReplace) ? deployments.get(toReplace) : null;
-        if (replaceNode == null) {
+        final PathElement deployPath = PathElement.pathElement(DEPLOYMENT, name);
+        final PathElement replacePath = PathElement.pathElement(DEPLOYMENT, toReplace);
+
+        if (! root.hasChild(replacePath)) {
             throw operationFailed(String.format("No deployment with name %s found", toReplace));
         }
-
+        final Resource resource = context.readResource(PathAddress.pathAddress(replacePath));
+        final ModelNode replaceNode = resource.getModel();
         final String replacedName = replaceNode.require(RUNTIME_NAME).asString();
 
-        ModelNode deployNode = deployments.hasDefined(name) ? deployments.get(name) : null;
-        if (deployNode == null) {
+        Resource deployResource = root.getChild(deployPath);
+        if (deployResource == null) {
             if (!operation.hasDefined(CONTENT)) {
                 throw operationFailed(String.format("No deployment with name %s found", name));
             }
@@ -128,28 +125,22 @@ public class DeploymentReplaceHandler implements ModelUpdateOperationHandler, De
                 unmanagedContentValidator.validate(contentItemNode);
             }
             final String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : replacedName;
-            deployNode = new ModelNode();
+
+            // Create the resource
+            deployResource = context.createResource(PathAddress.pathAddress(deployPath));
+            final ModelNode deployNode = deployResource.getModel();
             deployNode.get(RUNTIME_NAME).set(runtimeName);
             deployNode.get(CONTENT).set(content);
-            deployments.get(name).set(deployNode);
-        }
-        else if (deployNode.get(ENABLED).asBoolean()) {
+
+            final DeploymentHandlerUtil.ContentItem[] contents = getContents(deployNode.require(CONTENT));
+            DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedName, contents);
+
+        } else if (deployResource.getModel().get(ENABLED).asBoolean()) {
             throw operationFailed(String.format("Deployment %s is already started", toReplace));
         }
 
-        // Update model
-        deployNode.get(ENABLED).set(true);
         replaceNode.get(ENABLED).set(false);
-
-        ModelNode compensatingOp = operation.clone();
-        compensatingOp.get(NAME).set(toReplace);
-        compensatingOp.get(TO_REPLACE).set(name);
-
-        final String runtimeName = deployNode.require(RUNTIME_NAME).asString();
-        final DeploymentHandlerUtil.ContentItem[] contents = getContents(deployNode.require(CONTENT));
-        DeploymentHandlerUtil.replace(context, runtimeName, name, replacedName, resultHandler, contents);
-
-        return new BasicOperationResult();
+        context.completeStep();
     }
 
     private static OperationFailedException operationFailed(String msg) {

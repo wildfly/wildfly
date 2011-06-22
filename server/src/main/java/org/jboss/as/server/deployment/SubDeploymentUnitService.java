@@ -43,9 +43,12 @@ public class SubDeploymentUnitService extends AbstractDeploymentUnitService {
     }
 
     protected DeploymentUnit createAndInitializeDeploymentUnit(ServiceRegistry registry) {
-        final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, deploymentRoot.getRootName(), registry);
+        final String deploymentName = deploymentRoot.getRootName();
+        final DeploymentModelUtils parentModel = parent.getAttachment(DeploymentModelUtils.KEY);
+        final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, deploymentName, registry, parentModel.createSubDeployment(deploymentName));
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, deploymentRoot);
         deploymentUnit.putAttachment(Attachments.MODULE_SPECIFICATION, new ModuleSpecification());
         return deploymentUnit;
     }
+
 }

@@ -22,8 +22,12 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
@@ -31,14 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -58,7 +54,9 @@ public class LoggingExtension implements Extension {
     private static final PathElement sizePeriodicHandlersPath = PathElement.pathElement(CommonAttributes.SIZE_ROTATING_FILE_HANDLER);
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
@@ -122,35 +120,30 @@ public class LoggingExtension implements Extension {
         sizePeriodicHandler.registerOperationHandler(SizeRotatingHandlerUpdateProperties.OPERATION_NAME, SizeRotatingHandlerUpdateProperties.INSTANCE, LoggingSubsystemProviders.SIZE_PERIODIC_HANDLER_UPDATE, false);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), LoggingSubsystemParser.getInstance());
     }
 
 
-    static class NewLoggingSubsystemAdd implements ModelAddOperationHandler {
+    static class NewLoggingSubsystemAdd extends AbstractAddStepHandler {
 
         static final NewLoggingSubsystemAdd ADD_INSTANCE = new NewLoggingSubsystemAdd();
 
-        /** {@inheritDoc} */
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        protected void populateModel(ModelNode operation, ModelNode model) {
+            model.get(CommonAttributes.LOGGER).setEmptyObject();
+            model.get(CommonAttributes.ASYNC_HANDLER).setEmptyObject();
+            model.get(CommonAttributes.CONSOLE_HANDLER).setEmptyObject();
+            model.get(CommonAttributes.FILE_HANDLER).setEmptyObject();
+            model.get(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER).setEmptyObject();
+            model.get(CommonAttributes.SIZE_ROTATING_FILE_HANDLER).setEmptyObject();
+        }
 
-            final ModelNode compensatingOperation = new ModelNode();
-            compensatingOperation.get(OP).set(REMOVE);
-            compensatingOperation.get(OP_ADDR).set(operation.get(OP_ADDR));
-
-            final ModelNode subModel = context.getSubModel();
-            subModel.get(CommonAttributes.LOGGER).setEmptyObject();
-            subModel.get(CommonAttributes.ASYNC_HANDLER).setEmptyObject();
-            subModel.get(CommonAttributes.CONSOLE_HANDLER).setEmptyObject();
-            subModel.get(CommonAttributes.FILE_HANDLER).setEmptyObject();
-            subModel.get(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER).setEmptyObject();
-            subModel.get(CommonAttributes.SIZE_ROTATING_FILE_HANDLER).setEmptyObject();
-
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult(compensatingOperation);
+        protected boolean requiresRuntime(NewOperationContext context) {
+            return false;
         }
 
         static ModelNode createOperation(ModelNode address) {

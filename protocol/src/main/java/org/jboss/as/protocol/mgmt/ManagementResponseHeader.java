@@ -26,24 +26,18 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.jboss.as.protocol.old.ProtocolUtils;
+
 /**
  * DomainClientProtocol header used for management operation responses. Provides the default header fields from
  * {@link ManagementProtocolHeader}.
  *
  * @author John Bailey
+ * @author Kabir Khan
  */
-public class ManagementResponseHeader extends ManagementProtocolHeader {
+class ManagementResponseHeader extends ManagementProtocolHeader {
     private int responseId;
-
-    /**
-     * Construct a new instance and read the header information from the input provided.
-     *
-     * @param input The input to read the header information from
-     * @throws IOException If any problem occur reading from the input
-     */
-    public ManagementResponseHeader(final DataInput input) throws IOException {
-        super(input);
-    }
+    private String error;
 
     /**
      * Construct an instance with the protocol version for the header.
@@ -51,19 +45,40 @@ public class ManagementResponseHeader extends ManagementProtocolHeader {
      * @param version The protocol version
      * @param responseId The response id
      */
-    public ManagementResponseHeader(final int version, final int responseId) {
+    public ManagementResponseHeader(final int version, final int responseId, final String error) {
         super(version);
         this.responseId = responseId;
+        this.error = error;
+    }
+
+    ManagementResponseHeader(final int version, final DataInput input) throws IOException {
+        super(version);
+        read(input);
     }
 
     public void read(final DataInput input) throws IOException {
-        super.read(input);
+        ProtocolUtils.expectHeader(input, ManagementProtocol.RESPONSE_ID);
         this.responseId = input.readInt();
+        ProtocolUtils.expectHeader(input, ManagementProtocol.RESPONSE_TYPE);
+        byte type = input.readByte();
+        if (type == ManagementProtocol.RESPONSE_ERROR) {
+            error = input.readUTF();
+        } else if (type != ManagementProtocol.RESPONSE_BODY) {
+            throw new IllegalArgumentException("Type is neither RESPONSE_ERROR not RESPONSE_BODY: " + type);
+        }
     }
 
     public void write(DataOutput output) throws IOException {
         super.write(output);
+        output.write(ManagementProtocol.RESPONSE_ID);
         output.writeInt(responseId);
+        output.write(ManagementProtocol.RESPONSE_TYPE);
+        if (error != null) {
+            output.write(ManagementProtocol.RESPONSE_ERROR);
+            output.writeUTF(error);
+        } else {
+            output.write(ManagementProtocol.RESPONSE_BODY);
+        }
     }
 
     /**
@@ -73,5 +88,19 @@ public class ManagementResponseHeader extends ManagementProtocolHeader {
      */
     public int getResponseId() {
         return responseId;
+    }
+
+    /**
+     * Gets any error that happened on the server trying to initialize the request
+     *
+     * @return the error
+     */
+    public String getError() {
+        return error;
+    }
+
+    @Override
+    byte getType() {
+        return ManagementProtocol.TYPE_RESPONSE;
     }
 }

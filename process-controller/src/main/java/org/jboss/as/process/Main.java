@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 
 import javax.net.ServerSocketFactory;
 
-import org.jboss.as.protocol.ProtocolServer;
+import org.jboss.as.protocol.old.ProtocolServer;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.handlers.ConsoleHandler;
 import org.jboss.threads.JBossThreadFactory;

@@ -3,11 +3,9 @@
  */
 package org.jboss.as.jpa.subsystem;
 
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
@@ -30,23 +28,23 @@ public class JPADefaultDatasourceWriteHandler extends ServerWriteAttributeOperat
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
-                                           String attributeName, ModelNode newValue, ModelNode currentValue) throws
-        OperationFailedException {
-        if (context.getRuntimeContext() != null) {
-            final String dataSourceName = newValue.resolve().asString();
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceRegistry registry = context.getServiceRegistry();
+    protected boolean applyUpdateToRuntime(final NewOperationContext context, final ModelNode operation,
+            String attributeName, final ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
+
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) {
+                    final String dataSourceName = newValue.resolve().asString();
+                    final ServiceRegistry registry = context.getServiceRegistry(true);
                     ServiceController<?> sc = registry.getRequiredService(JPAService.SERVICE_NAME);
                     JPAService jpaService = JPAService.class.cast(sc.getValue());
+                    String currentDataSourceName = JPAService.getDefaultDataSourceName();
                     jpaService.setDefaultDataSourceName(dataSourceName);
-                    resultHandler.handleResultComplete();
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        jpaService.setDefaultDataSourceName(currentDataSourceName);
+                    }
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
         return false;
     }

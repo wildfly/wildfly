@@ -3,6 +3,17 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
+import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.registry.DriverRegistry;
+import org.jboss.as.connector.registry.InstalledDriver;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+
 import static org.jboss.as.connector.subsystems.datasources.Constants.DEPLOYMENT_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
@@ -13,45 +24,33 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.registry.DriverRegistry;
-import org.jboss.as.connector.registry.InstalledDriver;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeOperationContext;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-
 /**
  * Reads the "installed-drivers" attribute.
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class GetInstalledDriverOperationHandler implements OperationHandler {
+public class GetInstalledDriverOperationHandler implements NewStepHandler {
 
     public static final GetInstalledDriverOperationHandler INSTANCE = new GetInstalledDriverOperationHandler();
 
+    private final ParametersValidator validator = new ParametersValidator();
+
     private GetInstalledDriverOperationHandler() {
+        validator.registerValidator(DRIVER_NAME, new StringLengthValidator(1));
     }
 
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
+    public void execute(final NewOperationContext context, final ModelNode operation)
             throws OperationFailedException {
 
-        final RuntimeOperationContext runtimeContext = context.getRuntimeContext();
+        validator.validate(operation);
 
         final String name = operation.require(DRIVER_NAME).asString();
-        if (runtimeContext != null) {
-            runtimeContext.setRuntimeTask(new RuntimeTask() {
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
 
                 @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ServiceController<?> sc = context.getServiceRegistry().getRequiredService(
+                public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                    ServiceController<?> sc = context.getServiceRegistry(false).getRequiredService(
                             ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE);
                     DriverRegistry driverRegistry = DriverRegistry.class.cast(sc.getValue());
                     ModelNode result = new ModelNode();
@@ -76,12 +75,12 @@ public class GetInstalledDriverOperationHandler implements OperationHandler {
                     driverNode.get(JDBC_COMPLIANT).set(driver.isJdbcCompliant());
                     result.add(driverNode);
 
-                    resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, result);
+                    context.getResult().set(result);
+                    context.completeStep();
                 }
-            });
+            }, NewOperationContext.Stage.RUNTIME);
         }
 
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult();
+        context.completeStep();
     }
 }

@@ -51,6 +51,8 @@ public class ModelDescriptionConstants {
     public static final String CANCELLED = "cancelled";
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
+    /** @deprecated operation responses will no longer include the compensating operation */
+    @Deprecated
     public static final String COMPENSATING_OPERATION = "compensating-operation";
     public static final String COMPOSITE = "composite";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
@@ -69,7 +71,9 @@ public class ModelDescriptionConstants {
     public static final String DISABLE = "disable";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
     public static final String DOMAIN_CONTROLLER = "domain-controller";
+    public static final String DOMAIN_MODEL = "domain-model";
     public static final String DOMAIN_RESULTS = "domain-results";
+    public static final String DUMP_SERVICES = "dump-services";
     public static final String ENABLE = "enable";
     public static final String ENABLED = "enabled";
     public static final String EXTENSION = "extension";
@@ -86,7 +90,7 @@ public class ModelDescriptionConstants {
     public static final String HOST_FAILURE_DESCRIPTION = "host-failure-description";
     public static final String HOST_FAILURE_DESCRIPTIONS = "host-failure-descriptions";
     public static final String HTTP_INTERFACE = "http-interface";
-    public static final String IGNORED = "ignored";
+    public static final String IGNORED = "ignored-by-unaffected-host-controller";
     public static final String IN_SERIES = "in-series";
     public static final String INCLUDE = "include";
     public static final String INCLUDES = "includes";
@@ -138,14 +142,17 @@ public class ModelDescriptionConstants {
     public static final String OUTCOME = "outcome";
     public static final String PASSWORD = "password";
     public static final String PATH = "path";
+    public static final String PERSISTENT = "persistent";
     public static final String PORT = "port";
     public static final String PORT_OFFSET = "port-offset";
     public static final String PRIORITY = "priority";
     public static final String PROCESS_TYPE = "process-type";
+    public static final String PROCESS_STATE = "process-state";
     public static final String PROFILE = "profile";
     public static final String PROFILE_NAME = "profile-name";
     public static final String PROPERTIES = "properties";
     public static final String PROTOCOL = "protocol";
+    public static final String PROXIES = "proxies";
     public static final String READ_ATTRIBUTE_OPERATION = "read-attribute";
     public static final String READ_CHILDREN_NAMES_OPERATION = "read-children-names";
     public static final String READ_CHILDREN_TYPES_OPERATION = "read-children-types";
@@ -166,6 +173,7 @@ public class ModelDescriptionConstants {
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String REQUIRED = "required";
     public static final String RESPONSE = "response";
+    public static final String RESPONSE_HEADERS = "response-headers";
     public static final String RESULT = "result";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
     public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
@@ -175,6 +183,7 @@ public class ModelDescriptionConstants {
     public static final String ROLLOUT_PLAN = "rollout-plan";
     public static final String RUNNING_SERVER = "server";
     public static final String RUNTIME_NAME = "runtime-name";
+    public static final String RUNTIME_UPDATE_SKIPPED = "runtime-update-skipped";
     public static final String SCHEMA_LOCATION = "schema-location";
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SEARCH_CREDENTIAL = "search-credential";
@@ -189,6 +198,8 @@ public class ModelDescriptionConstants {
     public static final String SERVER_GROUPS = "server-groups";
     public static final String SERVER_IDENTITIES = "server-identities";
     public static final String SERVER_OPERATIONS = "server-operations";
+    public static final String OPERATION_REQUIRES_RELOAD = "operation-requires-reload";
+    public static final String OPERATION_REQUIRES_RESTART = "operation-requires-restart";
     public static final String SHUTDOWN = "shutdown";
     public static final String SOCKET_BINDING = "socket-binding";
     public static final String SOCKET_BINDING_GROUP = "socket-binding-group";
@@ -196,6 +207,7 @@ public class ModelDescriptionConstants {
     public static final String SOCKET_BINDING_PORT_OFFSET = "socket-binding-port-offset";
     public static final String SSL = "ssl";
     public static final String START = "start";
+    public static final String STATUS = "status";
     public static final String STEPS = "steps";
     /** The key for {@link AttributeAccess.Storage} fields. */
     public static final String STORAGE = "storage";

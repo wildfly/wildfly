@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
@@ -93,7 +94,7 @@ public class Util {
     }
 
     public static void copyParamsToModel(final ModelNode operation, final ModelNode model) {
-        Set<String> keys = operation.keys();
+        Set<String> keys = new HashSet<String>(operation.keys());
         // Remove general operation params
         keys.remove(OP);
         keys.remove(OP_ADDR);

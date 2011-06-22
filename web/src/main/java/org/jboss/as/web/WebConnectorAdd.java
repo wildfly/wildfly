@@ -22,12 +22,6 @@
 
 package org.jboss.as.web;
 
-import org.apache.catalina.connector.Connector;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.web.Constants.ENABLED;
@@ -46,25 +40,28 @@ import static org.jboss.as.web.Constants.SOCKET_BINDING;
 import static org.jboss.as.web.Constants.SSL;
 import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
 
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import java.util.List;
+import java.util.Locale;
+
+import org.apache.catalina.connector.Connector;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-
-import java.util.Locale;
 
 /**
  * {@code OperationHandler} responsible for adding a web connector.
  *
  * @author Emanuel Muckenhuber
  */
-class WebConnectorAdd implements ModelAddOperationHandler, DescriptionProvider {
+class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     static final String OPERATION_NAME = ADD;
 
@@ -81,8 +78,10 @@ class WebConnectorAdd implements ModelAddOperationHandler, DescriptionProvider {
         if (existing.hasDefined(PROXY_PORT)) op.get(PROXY_PORT).set(existing.get(PROXY_PORT).asInt());
         if (existing.hasDefined(REDIRECT_PORT)) op.get(REDIRECT_PORT).set(existing.get(REDIRECT_PORT).asInt());
         if (existing.hasDefined(MAX_POST_SIZE)) op.get(MAX_POST_SIZE).set(existing.get(MAX_POST_SIZE).asInt());
-        if (existing.hasDefined(MAX_SAVE_POST_SIZE)) op.get(MAX_SAVE_POST_SIZE).set(existing.get(MAX_SAVE_POST_SIZE).asInt());
-        if (existing.hasDefined(MAX_CONNECTIONS)) op.get(Constants.MAX_CONNECTIONS).set(existing.get(Constants.MAX_CONNECTIONS).asInt());
+        if (existing.hasDefined(MAX_SAVE_POST_SIZE))
+            op.get(MAX_SAVE_POST_SIZE).set(existing.get(MAX_SAVE_POST_SIZE).asInt());
+        if (existing.hasDefined(MAX_CONNECTIONS))
+            op.get(Constants.MAX_CONNECTIONS).set(existing.get(Constants.MAX_CONNECTIONS).asInt());
         op.get(Constants.VIRTUAL_SERVER).set(existing.get(Constants.VIRTUAL_SERVER));
         op.get(Constants.SSL).set(existing.get(Constants.SSL));
 
@@ -95,69 +94,60 @@ class WebConnectorAdd implements ModelAddOperationHandler, DescriptionProvider {
         //
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    protected void populateModel(ModelNode operation, ModelNode subModel) {
+        subModel.get(PROTOCOL).set(operation.get(PROTOCOL));
+        subModel.get(SOCKET_BINDING).set(operation.get(SOCKET_BINDING));
+        if (operation.hasDefined(SCHEME)) subModel.get(SCHEME).set(operation.get(SCHEME));
+        if (operation.hasDefined(SECURE)) subModel.get(SECURE).set(operation.get(SECURE).asBoolean());
+        if (operation.hasDefined(ENABLED)) subModel.get(ENABLED).set(operation.get(ENABLED).asBoolean());
+        if (operation.hasDefined(ENABLE_LOOKUPS))
+            subModel.get(ENABLE_LOOKUPS).set(operation.get(ENABLE_LOOKUPS).asBoolean());
+        if (operation.hasDefined(EXECUTOR)) subModel.get(EXECUTOR).set(operation.get(EXECUTOR).asString());
+        if (operation.hasDefined(PROXY_NAME)) subModel.get(PROXY_NAME).set(operation.get(PROXY_NAME).asString());
+        if (operation.hasDefined(PROXY_PORT)) subModel.get(PROXY_PORT).set(operation.get(PROXY_PORT).asInt());
+        if (operation.hasDefined(REDIRECT_PORT)) subModel.get(REDIRECT_PORT).set(operation.get(REDIRECT_PORT).asInt());
+        if (operation.hasDefined(MAX_POST_SIZE)) subModel.get(MAX_POST_SIZE).set(operation.get(MAX_POST_SIZE).asInt());
+        if (operation.hasDefined(MAX_SAVE_POST_SIZE))
+            subModel.get(MAX_SAVE_POST_SIZE).set(operation.get(MAX_SAVE_POST_SIZE).asInt());
+        if (operation.hasDefined(MAX_CONNECTIONS))
+            subModel.get(Constants.MAX_CONNECTIONS).set(operation.get(Constants.MAX_CONNECTIONS).asInt());
+        subModel.get(Constants.VIRTUAL_SERVER).set(operation.get(Constants.VIRTUAL_SERVER));
+        subModel.get(Constants.SSL).set(operation.get(Constants.SSL));
+    }
 
-        ModelNode opAddr = operation.require(OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final String bindingRef = operation.require(SOCKET_BINDING).asString();
 
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
-
-        final ModelNode subModel = context.getSubModel();
-        subModel.get(PROTOCOL).set(operation.get(PROTOCOL));
-        subModel.get(SOCKET_BINDING).set(operation.get(SOCKET_BINDING));
-        if(operation.hasDefined(SCHEME)) subModel.get(SCHEME).set(operation.get(SCHEME));
-        if(operation.hasDefined(SECURE)) subModel.get(SECURE).set(operation.get(SECURE).asBoolean());
-        if(operation.hasDefined(ENABLED)) subModel.get(ENABLED).set(operation.get(ENABLED).asBoolean());
-        if(operation.hasDefined(ENABLE_LOOKUPS)) subModel.get(ENABLE_LOOKUPS).set(operation.get(ENABLE_LOOKUPS).asBoolean());
-        if(operation.hasDefined(EXECUTOR)) subModel.get(EXECUTOR).set(operation.get(EXECUTOR).asString());
-        if(operation.hasDefined(PROXY_NAME)) subModel.get(PROXY_NAME).set(operation.get(PROXY_NAME).asString());
-        if(operation.hasDefined(PROXY_PORT)) subModel.get(PROXY_PORT).set(operation.get(PROXY_PORT).asInt());
-        if(operation.hasDefined(REDIRECT_PORT)) subModel.get(REDIRECT_PORT).set(operation.get(REDIRECT_PORT).asInt());
-        if(operation.hasDefined(MAX_POST_SIZE)) subModel.get(MAX_POST_SIZE).set(operation.get(MAX_POST_SIZE).asInt());
-        if(operation.hasDefined(MAX_SAVE_POST_SIZE)) subModel.get(MAX_SAVE_POST_SIZE).set(operation.get(MAX_SAVE_POST_SIZE).asInt());
-        if(operation.hasDefined(MAX_CONNECTIONS)) subModel.get(Constants.MAX_CONNECTIONS).set(operation.get(Constants.MAX_CONNECTIONS).asInt());
-        subModel.get(Constants.VIRTUAL_SERVER).set(operation.get(Constants.VIRTUAL_SERVER));
-        subModel.get(Constants.SSL).set(operation.get(Constants.SSL));
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final boolean enabled = operation.hasDefined(ENABLED) ? operation.get(ENABLED).asBoolean() : true;
-                    final WebConnectorService service = new WebConnectorService(operation.require(PROTOCOL).asString(), operation.get(SCHEME).asString());
-                    if (operation.hasDefined(SECURE)) service.setSecure(operation.get(SECURE).asBoolean());
-                    if (operation.hasDefined(ENABLE_LOOKUPS))
-                        service.setEnableLookups(operation.get(ENABLE_LOOKUPS).asBoolean());
-                    if (operation.hasDefined(PROXY_NAME)) service.setProxyName(operation.get(PROXY_NAME).asString());
-                    if (operation.hasDefined(PROXY_PORT)) service.setProxyPort(operation.get(PROXY_PORT).asInt());
-                    if (operation.hasDefined(REDIRECT_PORT))
-                        service.setRedirectPort(operation.get(REDIRECT_PORT).asInt());
-                    if (operation.hasDefined(MAX_POST_SIZE))
-                        service.setMaxPostSize(operation.get(MAX_POST_SIZE).asInt());
-                    if (operation.hasDefined(MAX_SAVE_POST_SIZE))
-                        service.setMaxSavePostSize(operation.get(MAX_SAVE_POST_SIZE).asInt());
-                    if (operation.hasDefined(MAX_CONNECTIONS))
-                        service.setMaxConnections(operation.get(MAX_CONNECTIONS).asInt());
-                    if (operation.hasDefined(VIRTUAL_SERVER))
-                        service.setVirtualServers(operation.get(VIRTUAL_SERVER).clone());
-                    if (operation.hasDefined(SSL)) {
-                        service.setSsl(operation.get(SSL).clone());
-                    }
-                    final ServiceBuilder<Connector> serviceBuilder = context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name), service)
-                            .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getServer())
-                            .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
-                            .setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER);
-                    serviceBuilder.install();
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+        final boolean enabled = operation.hasDefined(ENABLED) ? operation.get(ENABLED).asBoolean() : true;
+        final WebConnectorService service = new WebConnectorService(operation.require(PROTOCOL).asString(), operation.get(SCHEME).asString());
+        if (operation.hasDefined(SECURE)) service.setSecure(operation.get(SECURE).asBoolean());
+        if (operation.hasDefined(ENABLE_LOOKUPS))
+            service.setEnableLookups(operation.get(ENABLE_LOOKUPS).asBoolean());
+        if (operation.hasDefined(PROXY_NAME)) service.setProxyName(operation.get(PROXY_NAME).asString());
+        if (operation.hasDefined(PROXY_PORT)) service.setProxyPort(operation.get(PROXY_PORT).asInt());
+        if (operation.hasDefined(REDIRECT_PORT))
+            service.setRedirectPort(operation.get(REDIRECT_PORT).asInt());
+        if (operation.hasDefined(MAX_POST_SIZE))
+            service.setMaxPostSize(operation.get(MAX_POST_SIZE).asInt());
+        if (operation.hasDefined(MAX_SAVE_POST_SIZE))
+            service.setMaxSavePostSize(operation.get(MAX_SAVE_POST_SIZE).asInt());
+        if (operation.hasDefined(MAX_CONNECTIONS))
+            service.setMaxConnections(operation.get(MAX_CONNECTIONS).asInt());
+        if (operation.hasDefined(VIRTUAL_SERVER))
+            service.setVirtualServers(operation.get(VIRTUAL_SERVER).clone());
+        if (operation.hasDefined(SSL)) {
+            service.setSsl(operation.get(SSL).clone());
         }
-        return new BasicOperationResult(compensatingOperation);
+        final ServiceBuilder<Connector> serviceBuilder = context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name), service)
+                .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getServer())
+                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
+                .setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER);
+        if (enabled) {
+            serviceBuilder.addListener(verificationHandler);
+        }
+        newControllers.add(serviceBuilder.install());
     }
 
     @Override

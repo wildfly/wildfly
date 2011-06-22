@@ -31,11 +31,15 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.demos.ws.archive.Endpoint;
 import org.jboss.as.demos.ws.archive.EndpointImpl;
 import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.as.test.modular.utils.PollingUtils.UrlConnectionTask;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.as.webservices.dmr.WSExtension;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -60,6 +64,49 @@ public class WSTestCase {
         String s = performCall("?wsdl", null);
         Assert.assertNotNull(s);
         Assert.assertTrue(s.contains("wsdl:definitions"));
+    }
+
+    @Test
+    public void testManagementDescription() throws Exception {
+        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
+        try {
+            final ModelNode address = new ModelNode();
+            address.add(ModelDescriptionConstants.DEPLOYMENT, "ws-example.war");
+            address.add(ModelDescriptionConstants.SUBSYSTEM, WSExtension.SUBSYSTEM_NAME); //EndpointService
+            address.add("endpoint", "*"); // get all endpoints
+
+            final ModelNode operation = new ModelNode();
+            operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
+            operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+            operation.get(ModelDescriptionConstants.RECURSIVE).set(true);
+
+            final ModelNode result = client.execute(operation);
+            Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
+
+            for(final ModelNode endpointResult : result.get("result").asList()) {
+                final ModelNode endpoint = endpointResult.get("result");
+                Assert.assertTrue(endpoint.hasDefined("class"));
+                Assert.assertTrue(endpoint.hasDefined("name"));
+                Assert.assertTrue(endpoint.hasDefined("wsdl-url"));
+
+                final URL url = new URL(endpoint.get("wsdl-url").asString());
+                UrlConnectionTask task = new UrlConnectionTask(url, null);
+                PollingUtils.retryWithTimeout(10000, task);
+
+                // Read a metric
+                final ModelNode readAttribute = new ModelNode();
+                readAttribute.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
+                readAttribute.get(ModelDescriptionConstants.OP_ADDR).set(endpointResult.get(ModelDescriptionConstants.OP_ADDR));
+                readAttribute.get(ModelDescriptionConstants.NAME).set("request-count");
+
+                final ModelNode attribute = client.execute(operation);
+                Assert.assertEquals(ModelDescriptionConstants.SUCCESS, attribute.get(ModelDescriptionConstants.OUTCOME).asString());
+                Assert.assertTrue(attribute.get("result").asInt() > 0);
+            }
+
+        } finally {
+            client.close();
+        }
     }
 
     @Test

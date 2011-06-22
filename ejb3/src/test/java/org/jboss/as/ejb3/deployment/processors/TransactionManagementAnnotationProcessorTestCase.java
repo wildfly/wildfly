@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
@@ -32,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.Indexer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -178,6 +180,11 @@ public class TransactionManagementAnnotationProcessorTestCase {
             @Override
             public <T> void addToAttachmentList(AttachmentKey<AttachmentList<T>> key, T value) {
                 throw new RuntimeException("NYI");
+            }
+
+            @Override
+            public ModelNode createDeploymentSubModel(String subsystemName, PathElement address) {
+                return new ModelNode();
             }
         };
 

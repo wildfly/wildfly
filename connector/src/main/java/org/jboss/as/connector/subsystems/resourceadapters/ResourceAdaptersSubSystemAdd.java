@@ -23,46 +23,27 @@
 package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 /**
  * Handler for adding the datasource subsystem.
+ *
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  * @author John Bailey
  */
-class ResourceAdaptersSubSystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+class ResourceAdaptersSubSystemAdd extends AbstractAddStepHandler {
 
     static final ResourceAdaptersSubSystemAdd INSTANCE = new ResourceAdaptersSubSystemAdd();
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-        // Populate subModel
-        final ModelNode subModel = context.getSubModel();
-        subModel.setEmptyObject();
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.setEmptyObject();
+        model.get(RESOURCEADAPTER);
+    }
 
-        // Initialize the DS and Driver lists
-        subModel.get(RESOURCEADAPTER);
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOperation);
+    protected boolean requiresRuntime(NewOperationContext context) {
+        return false;
     }
 }

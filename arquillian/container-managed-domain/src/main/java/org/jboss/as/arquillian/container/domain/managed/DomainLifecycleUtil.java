@@ -18,6 +18,11 @@
  */
 package org.jboss.as.arquillian.container.domain.managed;
 
+import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,12 +45,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -351,7 +350,7 @@ public class DomainLifecycleUtil {
         op.get("operation").set("read-children-names");
         op.get("child-type").set("server-config");
         op.get("address").add("host", configuration.getHostName());
-        ModelNode opResult = executeForResult(OperationBuilder.Factory.create(op).build());
+        ModelNode opResult = executeForResult(new OperationBuilder(op).build());
         Set<String> servers = new HashSet<String>();
         for (ModelNode server : opResult.asList()) {
             servers.add(server.asString());
@@ -374,11 +373,11 @@ public class DomainLifecycleUtil {
         op.get("operation").set("read-attribute");
         op.get("address").set(address);
         op.get("name").set(name);
-        return executeForResult(OperationBuilder.Factory.create(op).build());
+        return executeForResult(new OperationBuilder(op).build());
     }
 
     private ModelNode executeForResult(ModelNode op) {
-        return executeForResult(OperationBuilder.Factory.create(op).build());
+        return executeForResult(new OperationBuilder(op).build());
     }
 
     private ModelNode executeForResult(Operation op) {
@@ -455,21 +454,21 @@ public class DomainLifecycleUtil {
         @Override
         public void run() {
             final InputStream stream = process.getInputStream();
-            final InputStreamReader reader = new InputStreamReader(stream);
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
             final boolean writeOutput = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
 
                 @Override
                 public Boolean run() {
                     // this needs a better name
                     String val = System.getProperty("org.jboss.as.writeconsole");
-                    return val != null && "true".equals(val);
+                    return val == null || !"false".equals(val);
                 }
             });
-            final char[] data = new char[100];
+            String line = null;
             try {
-                for (int read = 0; read != -1; read = reader.read(data)) {
+                while((line = reader.readLine())!=null) {
                     if (writeOutput) {
-                        System.out.print(data);
+                        System.out.println(line);
                     }
                 }
             } catch (IOException e) {

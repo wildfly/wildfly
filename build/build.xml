@@ -524,7 +524,11 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-naming"/>
         </module-def>
 
-        <module-def name="org.jboss.as.osgi">
+        <module-def name="org.jboss.as.network">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-network"/>
+        </module-def>
+
+     	  <module-def name="org.jboss.as.osgi">
             <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-service"/>
         </module-def>
 

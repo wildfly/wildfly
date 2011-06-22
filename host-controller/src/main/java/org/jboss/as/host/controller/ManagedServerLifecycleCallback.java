@@ -22,18 +22,23 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.process.ProcessInfo;
-import org.jboss.as.protocol.Connection;
-
 import java.util.Map;
+
+import org.jboss.as.process.ProcessInfo;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 
 /**
  * @author Emanuel Muckenhuber
  */
 public interface ManagedServerLifecycleCallback {
 
-    void serverRegistered(String serverName, Connection connection);
-    void serverStartFailed(String serverName);
-    void serverStopped(String serverName);
+    void serverRegistered(String serverProcessName, ManagementChannel channel, ProxyCreatedCallback callback);
+    void serverStartFailed(String serverProcessName);
+    void serverStopped(String serverProcessName);
     void processInventory(Map<String, ProcessInfo> processInfos);
+
+    interface ProxyCreatedCallback {
+        void proxyOperationHandlerCreated(ManagementOperationHandler handler);
+    }
 }

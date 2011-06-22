@@ -337,9 +337,11 @@ public enum Phase {
     public static final int POST_MODULE_PERSISTENCE_REF                 = 0x1600;
     public static final int POST_MODULE_DATASOURCE_REF                  = 0x1700;
     public static final int POST_MODULE_WS_JMS_INTEGRATION              = 0x1800;
+    public static final int POST_MODULE_RESOLVE_EJB_INJECTIONS          = 0x1900;
+    public static final int POST_MODULE_JAXRS_SCANNING                  = 0x1A00;
+    public static final int POST_MODULE_JAXRS_COMPONENT                 = 0x1B00;
 
     // INSTALL
-    public static final int INSTALL_JAXRS_SCANNING                      = 0x0200;
     public static final int INSTALL_APP_CONTEXT                         = 0x0300;
     public static final int INSTALL_MODULE_CONTEXT                      = 0x0400;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
@@ -362,7 +364,6 @@ public enum Phase {
     public static final int INSTALL_DEPENDS_ON_ANNOTATION               = 0x1210;
     public static final int INSTALL_EE_COMPONENT                        = 0x1230;
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1300;
-    public static final int INSTALL_JAXRS_COMPONENT                     = 0x1400;
     public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1500;
     public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1600;
     public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1700;

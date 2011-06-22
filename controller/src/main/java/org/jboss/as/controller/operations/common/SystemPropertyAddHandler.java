@@ -18,37 +18,32 @@
  */
 package org.jboss.as.controller.operations.common;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import java.util.List;
+import java.util.Locale;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Base class for domain/host and server system property add handlers.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SystemPropertyAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class SystemPropertyAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -63,8 +58,7 @@ public class SystemPropertyAddHandler implements ModelAddOperationHandler, Descr
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
         if (value == null) {
             op.get(VALUE).set(new ModelNode());
-        }
-        else {
+        } else {
             op.get(VALUE).set(value);
         }
         if (boottime != null) {
@@ -87,36 +81,30 @@ public class SystemPropertyAddHandler implements ModelAddOperationHandler, Descr
             validator.registerValidator(BOOT_TIME, new ModelTypeValidator(ModelType.BOOLEAN, true));
         }
     }
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
 
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         validator.validate(operation);
 
-        ModelNode opAddr = operation.require(OP_ADDR);
-        final String name = PathAddress.pathAddress(opAddr).getLastElement().getValue();
         final String value = operation.get(VALUE).isDefined() ? operation.get(VALUE).asString() : null;
-        ModelNode node = context.getSubModel();
         if (value == null) {
-            node.get(VALUE).set(new ModelNode());
-        }
-        else {
-            node.get(VALUE).set(value);
+            model.get(VALUE).set(new ModelNode());
+        } else {
+            model.get(VALUE).set(value);
         }
         if (useBoottime) {
             boolean boottime = operation.get(BOOT_TIME).isDefined() ? operation.get(BOOT_TIME).asBoolean() : true;
-            node.get(BOOT_TIME).set(boottime);
+            model.get(BOOT_TIME).set(boottime);
         }
-        ModelNode compensating = Util.getResourceRemoveOperation(opAddr);
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    SecurityActions.setSystemProperty(name, value);
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensating);
+    }
+
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
+        final String value = operation.get(VALUE).isDefined() ? operation.get(VALUE).asString() : null;
+        SecurityActions.setSystemProperty(name, value);
+    }
+
+    protected boolean requiresRuntimeVerification() {
+        return false;
     }
 
     public ModelNode getModelDescription(Locale locale) {

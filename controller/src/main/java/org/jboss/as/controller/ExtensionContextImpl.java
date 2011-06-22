@@ -81,7 +81,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
                 if (descriptionProvider == null) {
                     throw new IllegalArgumentException("descriptionProvider is null");
                 }
-                return deploymentOverrideRegistration.registerSubModel(new PathElement("configuration", name), descriptionProvider);
+                return deploymentOverrideRegistration.registerSubModel(new PathElement("subsystem", name), descriptionProvider);
             }
 
             @Override

@@ -24,6 +24,7 @@ package org.jboss.as.test.surefire.servermodule;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -57,7 +58,7 @@ import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
 import org.jboss.dmr.ModelNode;
@@ -162,7 +163,8 @@ public class ServerInModuleDeploymentTestCase  {
         final File deployDir = createDeploymentDir("deployments");
 
         ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-        ModelNode result = addDeploymentScanner(deployDir, client, "zips");
+        final String scannerName = "zips";
+        addDeploymentScanner(deployDir, client, scannerName);
 
         try {
             final File target = new File(deployDir, "test-deployment.sar");
@@ -255,7 +257,7 @@ public class ServerInModuleDeploymentTestCase  {
             });
         } finally {
             try {
-                client.execute(result.get(ModelDescriptionConstants.COMPENSATING_OPERATION));
+                removeDeploymentScanner(client, scannerName);
             } catch (Exception e) {
                 client.close();
             }
@@ -268,7 +270,8 @@ public class ServerInModuleDeploymentTestCase  {
         final File deployDir = createDeploymentDir("exploded-deployments");
 
         ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-        ModelNode result = addDeploymentScanner(deployDir, client, "exploded");
+        final String scannerName = "exploded";
+        addDeploymentScanner(deployDir, client, scannerName);
 
         final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
@@ -352,7 +355,7 @@ public class ServerInModuleDeploymentTestCase  {
             });
         } finally {
             try {
-                client.execute(result.get(ModelDescriptionConstants.COMPENSATING_OPERATION));
+                removeDeploymentScanner(client, scannerName);
             } catch (Exception e) {
                 client.close();
             }
@@ -374,6 +377,17 @@ public class ServerInModuleDeploymentTestCase  {
         ModelNode result = client.execute(add);
         Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.require(ModelDescriptionConstants.OUTCOME).asString());
         return result;
+    }
+
+    private void removeDeploymentScanner(final ModelControllerClient client, final String scannerName) throws IOException {
+
+        ModelNode addr = new ModelNode();
+        addr.add("subsystem", "deployment-scanner");
+        addr.add("scanner", scannerName);
+        ModelNode op = new ModelNode();
+        op.get(OP).set(REMOVE);
+        op.get(OP_ADDR).set(addr);
+        client.execute(op);
     }
 
     private File createDeploymentDir(String dir) {

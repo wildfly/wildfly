@@ -22,7 +22,10 @@
 
 package org.jboss.as.remoting;
 
+import static org.xnio.IoUtils.safeClose;
+
 import java.util.concurrent.Executor;
+
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -30,10 +33,12 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.Remoting;
-import org.jboss.xnio.OptionMap;
-
-import static org.jboss.xnio.IoUtils.safeClose;
+import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
+import org.xnio.OptionMap;
+import org.xnio.Options;
+import org.xnio.Xnio;
 
 /**
  * An MSC service for Remoting endpoints.
@@ -43,6 +48,7 @@ import static org.jboss.xnio.IoUtils.safeClose;
 public final class EndpointService implements Service<Endpoint> {
     private Endpoint endpoint;
     private OptionMap optionMap;
+    private Registration providerRegistration;
 
     private final InjectedValue<Executor> executor = new InjectedValue<Executor>();
 
@@ -58,7 +64,11 @@ public final class EndpointService implements Service<Endpoint> {
     /** {@inheritDoc} */
     public synchronized void start(final StartContext context) throws StartException {
         try {
-            endpoint = Remoting.createEndpoint("name", executor.getValue(), optionMap);
+            endpoint = Remoting.createEndpoint("endpoint", executor.getValue(), optionMap);
+            Xnio xnio = XnioUtil.getXnio();
+
+            providerRegistration = endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
+
         } catch (Exception e) {
             throw new StartException("Failed to start service", e);
         }
@@ -66,6 +76,7 @@ public final class EndpointService implements Service<Endpoint> {
 
     /** {@inheritDoc} */
     public synchronized void stop(final StopContext context) {
+        safeClose(providerRegistration);
         safeClose(endpoint);
     }
 

@@ -22,18 +22,17 @@
 
 package org.jboss.as.server.mgmt.domain;
 
-import static org.jboss.as.protocol.StreamUtils.writeUTFZBytes;
-
+import java.io.DataInput;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import org.jboss.as.controller.remote.ModelControllerOperationHandler;
-import org.jboss.as.protocol.Connection;
-import org.jboss.as.protocol.MessageHandler;
-import org.jboss.as.protocol.mgmt.ManagementHeaderMessageHandler;
+import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
+import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementChannel;
+import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
-import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
-import org.jboss.as.server.ServerController;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -44,24 +43,21 @@ import org.jboss.msc.value.InjectedValue;
 
 /**
  * Client used to interact with the local {@link HostController}.
+ * The HC counterpart is ServerToHostOperationHandler
  *
  * @author John Bailey
  * @author Emanuel Muckenhuber
+ * @author Kabir Khan
  */
 public class HostControllerServerClient implements Service<HostControllerServerClient> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
-    private final InjectedValue<Connection> smConnection = new InjectedValue<Connection>();
-    private final InjectedValue<ServerController> controller = new InjectedValue<ServerController>();
-    private final String serverName;
-    private volatile ModelControllerOperationHandler modelControllerOperationHandler;
-    private final MessageHandler initialMessageHandler = new ManagementHeaderMessageHandler() {
 
-        @Override
-        protected MessageHandler getHandlerForId(byte handlerId) {
-            return modelControllerOperationHandler;
-        }
-    };
+    private final InjectedValue<ManagementChannel> hcChannel = new InjectedValue<ManagementChannel>();
+    private final InjectedValue<NewModelController> controller = new InjectedValue<NewModelController>();
+
+    private final String serverName;
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public HostControllerServerClient(final String serverName) {
         this.serverName = serverName;
@@ -69,14 +65,13 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
-        final Connection smConnection = this.smConnection.getValue();
+        hcChannel.getValue().setOperationHandler(new NewTransactionalModelControllerOperationHandler(executor, controller.getValue()));
+
         try {
-            new ServerRegisterRequest().executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(smConnection));
+            new ServerRegisterRequest().executeForResult(executor, ManagementClientChannelStrategy.create(hcChannel.getValue()));
         } catch (Exception e) {
             throw new StartException("Failed to send registration message to host controller", e);
         }
-        modelControllerOperationHandler = ModelControllerOperationHandler.Factory.create(controller.getValue(), initialMessageHandler);
-        smConnection.setMessageHandler(initialMessageHandler);
     }
 
     /** {@inheritDoc} */
@@ -92,21 +87,15 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return this;
     }
 
-    public Injector<Connection> getSmConnectionInjector() {
-        return smConnection;
+    public Injector<ManagementChannel> getHcChannelInjector() {
+        return hcChannel;
     }
 
-    public Injector<ServerController> getServerControllerInjector() {
+    public Injector<NewModelController> getServerControllerInjector() {
         return controller;
     }
 
-
-
     private class ServerRegisterRequest extends ManagementRequest<Void> {
-        @Override
-        protected byte getHandlerId() {
-            return DomainServerProtocol.SERVER_TO_HOST_CONTROLLER_OPERATION;
-        }
 
         @Override
         protected byte getRequestCode() {
@@ -114,14 +103,14 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         }
 
         @Override
-        protected byte getResponseCode() {
-            return DomainServerProtocol.REGISTER_RESPONSE;
+        protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
+            output.write(DomainServerProtocol.PARAM_SERVER_NAME);
+            output.writeUTF(serverName);
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            output.write(DomainServerProtocol.PARAM_SERVER_NAME);
-            writeUTFZBytes(output, serverName);
+        protected Void readResponse(DataInput input) throws IOException {
+            return null;
         }
     }
 }

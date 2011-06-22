@@ -21,13 +21,15 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -51,41 +53,44 @@ public class DeploymentAddHandlerTestCase {
     public void testContent() throws OperationFailedException {
         final ContentRepository contentRepository = null;
         final DeploymentAddHandler handler = new DeploymentAddHandler(contentRepository);
-        final OperationContext context = null;
+        final NewOperationContext context = Mockito.mock(NewOperationContext.class);
+        Mockito.when(context.getResult()).thenReturn(new ModelNode());
+        Mockito.when(context.readModelForUpdate(PathAddress.EMPTY_ADDRESS)).thenReturn(new ModelNode());
+        Mockito.when(context.getType()).thenReturn(NewOperationContext.Type.SERVER);
         final ModelNode operation = new ModelNode();
         //operation.get("address").setEmptyList().get(0).get("deployment").set("test.war");
         operation.get("address").get(0).setExpression("deployment", "test.war");
         operation.get("content").get(0).get("archive").set(true);
         operation.get("content").get(0).get("path").set("test.war");
-        final ResultHandler resultHandler = null;
-        handler.execute(context, operation, resultHandler);
+        handler.execute(context, operation);
+        Mockito.verify(context).addStep(Mockito.any(NewStepHandler.class), NewOperationContext.Stage.RUNTIME);
+        Mockito.verify(context).completeStep();
+
     }
 
     @Test (expected = OperationFailedException.class)
     public void testTooMuchContent() throws OperationFailedException {
         final ContentRepository contentRepository = null;
         final DeploymentAddHandler handler = new DeploymentAddHandler(contentRepository);
-        final OperationContext context = null;
+        final NewOperationContext context = Mockito.mock(NewOperationContext.class);
         final ModelNode operation = new ModelNode();
         //operation.get("address").setEmptyList().get(0).get("deployment").set("test.war");
         operation.get("address").get(0).setExpression("deployment", "test.war");
         operation.get("content").get(0).get("archive").set(true);
         operation.get("content").get(0).get("path").set("test.war");
         operation.get("content").add("muck");
-        final ResultHandler resultHandler = null;
-        handler.execute(context, operation, resultHandler);
+        handler.execute(context, operation);
     }
 
     @Test
     public void testValidator() throws OperationFailedException {
         final ContentRepository contentRepository = null;
         final DeploymentAddHandler handler = new DeploymentAddHandler(contentRepository);
-        final OperationContext context = null;
+        final NewOperationContext context = Mockito.mock(NewOperationContext.class);
         final ModelNode operation = new ModelNode();
         operation.get("content").get(0).get("archive").set("wrong");
-        final ResultHandler resultHandler = null;
         try {
-            handler.execute(context, operation, resultHandler);
+            handler.execute(context, operation);
         } catch (OperationFailedException e) {
             // TODO: check exception
         }

@@ -22,329 +22,179 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-
-import java.io.EOFException;
+import java.io.DataInput;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.protocol.ByteDataInput;
-import org.jboss.as.protocol.ByteDataOutput;
-import org.jboss.as.protocol.Connection;
-import org.jboss.as.protocol.MessageHandler;
-import org.jboss.as.protocol.SimpleByteDataInput;
-import org.jboss.as.protocol.SimpleByteDataOutput;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.logging.Logger;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.threads.AsyncFuture;
+import org.jboss.threads.AsyncFutureTask;
 
 /**
  * Base management request used for remote requests.  Provides the basic mechanism for connecting to a remote host controller
  * for performing a task.  It will manage connecting and retrieving the correct response.
  *
+ *
  * @author John Bailey
+ * @author Kabir Khan
  */
-public abstract class ManagementRequest<T> extends AbstractMessageHandler {
-    private int requestId = 0;
-    private final ResponseFuture<T> future = new ResponseFuture<T>();
-    private ManagementRequestConnectionStrategy connectionStrategy;
-    // @GuardedBy(resultLock)
-    private T result;
-    /**
-     * Ensures the assignment of 'result' by thread running responseBodyHandler
-     * is visible to thread running responseEndHandler.
-     */
-    private final Object resultLock = new Object();
+public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> {
+
+    private final Logger log = Logger.getLogger("org.jboss.as.protocol");
+
+    private static final AtomicInteger requestId = new AtomicInteger();
+    private final int currentRequestId = requestId.incrementAndGet();
+    private final ManagementFuture<T> future = new ManagementFuture<T>();
+    private final int batchId;
 
     /**
-     * Get the handler id of the request.  These should match the id of a @{link org.jboss.as.host.controller.management.ManagementOperationHandler}.
-     *
-     * @return The handler id
+     * Create a new ManagementRequest that is not part of an 'execution', i.e. this is a standalone request.
      */
-    protected abstract byte getHandlerId();
+    protected ManagementRequest() {
+        this(0);
+    }
+
+    /**
+     * Create a new ManagementRequest that is part of a batch
+     *
+     *  @param executionId the id of the 'execution' this request is a part of
+     */
+    protected ManagementRequest(int batchId) {
+        this.batchId = batchId;
+    }
+
+    /**
+     * Get the id of the protocol request. The {@link ManagementOperationHandler} will use this to
+     * determine the {@link ManagementRequestHandler} to use.
+     *
+     * @return the request code
+     */
+    protected abstract byte getRequestCode();
+
+    protected int getCurrentRequestId() {
+        return currentRequestId;
+    }
+
+    protected int getBatchId() {
+        return batchId;
+    }
 
     /**
      * Execute the request by connecting and then delegating to the implementation's execute
      * and return a future used to get the response when complete.
      *
-     * @param connectionStrategy The connection strategy
+     * @param executor The executor to use to handle the request and response
+     * @param channel The channel strategy
      * @return A future to retrieve the result when the request is complete
-     * @throws IOException if any problems occur
      */
-    public Future<T> execute(final ManagementRequestConnectionStrategy connectionStrategy) throws IOException {
-        this.connectionStrategy = connectionStrategy;
-        OutputStream dataOutput = null;
-        ByteDataOutput output = null;
-        try {
-            final Connection connection = connectionStrategy.getConnection();
-            connection.backupMessageHandler();
+    public AsyncFuture<T> execute(final ExecutorService executor, final ManagementClientChannelStrategy channelStrategy) {
+        log.tracef("Scheduling request %s with future %s - %d (%d)", this, future, getBatchId(), getCurrentRequestId());
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
 
-            connection.setMessageHandler(initiatingMessageHandler);
-            dataOutput = connection.writeMessage();
-            output = new SimpleByteDataOutput(dataOutput);
-            // Start by writing the header
-            final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, requestId, getHandlerId());
-            managementRequestHeader.write(output);
-            connection.setMessageHandler(initiatingMessageHandler);
-            output.close();
-            dataOutput.close();
-        } finally {
-            safeClose(output);
-            safeClose(dataOutput);
-        }
+                try {
+                    final ManagementChannel channel = channelStrategy.getChannel();
+                    log.tracef("Got channel %s from request %s", channel, ManagementRequest.this);
+
+                    //Ends up in writeRequest(ProtocolChannel, FlushableDataOutput)
+                    channel.executeRequest(ManagementRequest.this, new DelegatingResponseHandler(channelStrategy));
+                } catch (Exception e) {
+                    log.tracef(e, "Could not get channel for request %s, failing %s", ManagementRequest.this, future);
+                    future.failed(e);
+                }
+            }
+        });
+
         return future;
+    }
+
+    void writeRequest(ProtocolChannel channel, FlushableDataOutput output) throws IOException {
+        //Body
+        writeRequest(ManagementProtocol.VERSION, output);
+        output.writeByte(ManagementProtocol.REQUEST_END);
     }
 
     /**
      * Execute the request and wait for the result.
      *
-     * @param connectionStrategy The connection strategy
+     * @param executor The executor to use to handle the request and response
+     * @param channelStrategy The channel strategy
      * @return The result
      * @throws IOException If any problems occur
      */
-    public T executeForResult(final ManagementRequestConnectionStrategy connectionStrategy) throws Exception {
-        return execute(connectionStrategy).get();
+    public T executeForResult(final ExecutorService executor, final ManagementClientChannelStrategy channelStrategy) throws Exception {
+        return execute(executor, channelStrategy).get();
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public void handle(Connection connection, InputStream input) throws IOException {
-        try {
-            connection.setMessageHandler(responseBodyHandler);
-            byte header = StreamUtils.readByte(input);
-            if (header == ManagementProtocol.REMOTE_EXCEPTION) {
-                throw new IOException("Remote side caught an (unknown) exception and cannot process the request");
-            }
-            expectHeader(header, ManagementProtocol.RESPONSE_START);
-            byte responseCode = StreamUtils.readByte(input);
-            if (responseCode != getResponseCode()) {
-                throw new IOException("Invalid response code.  Expecting '" + getResponseCode() + "' received '" + responseCode + "'");
-            }
-        } catch (Exception e) {
-            future.setException(e);
-        }
-    }
-
-    private MessageHandler initiatingMessageHandler = new AbstractMessageHandler() {
-        @Override
-        public final void handle(final Connection connection, final InputStream inputStream) throws IOException {
-            final ManagementResponseHeader responseHeader;
-            ByteDataInput input = null;
-            try {
-                input = new SimpleByteDataInput(inputStream);
-                responseHeader = new ManagementResponseHeader(input);
-                int responseId = responseHeader.getResponseId();
-                if (responseId == ManagementProtocol.REMOTE_EXCEPTION) {
-                    throw new IOException("Remote side caught an (unknown) exception and cannot process the request");
-                }
-                else if (requestId != responseId) {
-                    throw new IOException("Invalid request ID expecting " + requestId + " received " + responseHeader.getResponseId());
-                }
-                connection.setMessageHandler(ManagementRequest.this);
-                sendRequest(responseHeader.getVersion(), connection);
-            } catch (Exception e) {
-                future.setException(e);
-            } finally {
-                safeClose(input);
-                if (future.isDone()) {
-                    // We must have failed above and set the exception.
-                    // If we fail sending we shouldn't expect a response,
-                    // so consider the connection complete
-                    connectionStrategy.complete();
-                }
-            }
-        }
-    };
 
     /**
-     * Execute the request body.  This is run after the connection is established and the headers are exchanged.
+     * Override to send extra parameters to the server {@link ManagementRequestHandler}. This default
+     * implementation does not send any extra data
      *
-     * @param protocolVersion The active protocol version for the request
-     * @param connection      The connection
-     * @throws IOException If any errors occur
+     * @param protocolVersion the protocol version
+     * @param output the data output to write the data to
      */
-    protected void sendRequest(final int protocolVersion, final Connection connection) throws IOException {
-        OutputStream outputStream = null;
-        ByteDataOutput output = null;
-        try {
-            outputStream = connection.writeMessage();
-            output = new SimpleByteDataOutput(outputStream);
-            output.writeByte(ManagementProtocol.REQUEST_OPERATION);
-            output.writeByte(getRequestCode());
-            output.writeByte(ManagementProtocol.REQUEST_START);
-            output.close();
-            outputStream.close();
-        } finally {
-            safeClose(output);
-            safeClose(outputStream);
-        }
-
-        try {
-            outputStream = connection.writeMessage();
-            outputStream.write(ManagementProtocol.REQUEST_BODY);
-            sendRequest(protocolVersion, outputStream);
-            outputStream.close();
-        } finally {
-            safeClose(outputStream);
-        }
-
-        try {
-            outputStream = connection.writeMessage();
-            output = new SimpleByteDataOutput(outputStream);
-            output.writeByte(ManagementProtocol.REQUEST_END);
-            output.close();
-            outputStream.close();
-        } finally {
-            safeClose(output);
-            safeClose(outputStream);
-        }
+    protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
     }
 
-    protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-    }
-
-    protected abstract byte getRequestCode();
-
-    protected abstract byte getResponseCode();
-
-    private MessageHandler responseBodyHandler = new AbstractMessageHandler() {
-        @Override
-        public final void handle(final Connection connection, final InputStream input) throws IOException {
-            try {
-                connection.setMessageHandler(responseEndHandler);
-                byte header = StreamUtils.readByte(input);
-                if (header == ManagementProtocol.REMOTE_EXCEPTION) {
-                    throw new IOException("Remote side caught an (unknown) exception and cannot process the request");
-                }
-                expectHeader(header, ManagementProtocol.RESPONSE_BODY);
-                synchronized (resultLock) {
-                    result = receiveResponse(input);
-                }
-            }
-            catch (Exception e) {
-                future.setException(e);
-            }
-        }
-
-        @Override
-        public void handleFinished(Connection connection) throws IOException {
-            super.handleFinished(connection);
-
-            future.setException(new EOFException("Connection closed"));
-        }
-
-        @Override
-        public void handleFailure(Connection connection, IOException e) throws IOException {
-            super.handleFailure(connection, e);
-            future.setException(e);
-        }
-    };
-
-    private MessageHandler responseEndHandler = new AbstractMessageHandler() {
-        @Override
-        public final void handle(final Connection connection, final InputStream input) throws IOException {
-            try {
-                connection.restoreMessageHandler();
-                expectHeader(input, ManagementProtocol.RESPONSE_END);
-                synchronized (resultLock) {
-                    future.set(result);
-                }
-            }
-            catch (Exception e) {
-                future.setException(e);
-            }
-            finally {
-                connectionStrategy.complete();
-            }
-        }
-
-        @Override
-        public void handleFinished(Connection connection) throws IOException {
-            super.handleFinished(connection);
-
-            future.setException(new EOFException("Connection closed"));
-        }
-
-        @Override
-        public void handleFailure(Connection connection, IOException e) throws IOException {
-            super.handleFailure(connection, e);
-            future.setException(e);
-        }
-    };
-
-    protected T receiveResponse(final InputStream input) throws IOException {
+    /**
+     * Override to register a close handler for the channel that will be removed once the request is done
+     *
+     * @return the close handler
+     */
+    protected CloseHandler<Channel> getRequestCloseHandler() {
         return null;
     }
 
-    private final class ResponseFuture<R> implements Future<R>{
-        private volatile R result;
-        private volatile Exception exception;
-        private AtomicBoolean valueSet = new AtomicBoolean();
+    private final class DelegatingResponseHandler extends ManagementResponseHandler<T>{
+        private final ManagementClientChannelStrategy clientChannelStrategy;
+
+        public DelegatingResponseHandler(ManagementClientChannelStrategy clientChannelStrategy) {
+            this.clientChannelStrategy = clientChannelStrategy;
+        }
 
         @Override
-        public R get() throws InterruptedException, ExecutionException {
-            boolean intr = false;
+        protected T readResponse(DataInput input) {
+            final String error = getResponseContext().getResponse().getError();
+            if (error != null) {
+                future.failed(new IOException("A problem happened executing on the server: " + error));
+                return null;
+            }
+
+            T result = null;
             try {
-                synchronized (this) {
-                    while (!valueSet.get()) {
-                        try {
-                            wait();
-                        } catch (InterruptedException e) {
-                            intr = true;
-                        }
-                    }
-                }
-                if (exception != null) {
-                    throw new ExecutionException(exception);
-                }
+                ManagementRequest.this.setResponseContext(getResponseContext());
+                result = ManagementRequest.this.readResponse(input);
+                future.done(result);
                 return result;
+            } catch (Exception e) {
+                future.failed(e);
             } finally {
-                if (intr) Thread.currentThread().interrupt();
+                clientChannelStrategy.requestDone();
             }
+            return result;
+        }
+    }
+
+    protected void setError(Exception e) {
+        future.failed(e);
+    }
+
+    static class ManagementFuture<T> extends AsyncFutureTask<T>{
+        protected ManagementFuture() {
+            super(null);
         }
 
-
-        void set(final R result) {
-            synchronized (this) {
-                if(valueSet.compareAndSet(false, true)) {
-                    this.result = result;
-                    notifyAll();
-                }
-            }
+        void done(T result) {
+            super.setResult(result);
         }
 
-        void setException(final Exception exception) {
-            synchronized (this) {
-                if(valueSet.compareAndSet(false, true)) {
-                    this.exception = exception;
-                    notifyAll();
-                }
-            }
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            return false;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return false;
-        }
-
-        @Override
-        public synchronized boolean isDone() {
-            return result != null || exception != null;
-        }
-
-        @Override
-        public R get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            return null;
+        void failed(Exception ex) {
+            super.setFailed(ex);
         }
     }
 }

@@ -37,7 +37,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;

@@ -22,16 +22,10 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
 import org.jboss.as.server.services.path.AbstractPathService;
@@ -47,36 +41,25 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author John Bailey
  */
-public class HandlerFileChange implements ModelUpdateOperationHandler {
+public class HandlerFileChange implements NewStepHandler {
     static final String OPERATION_NAME = "change-file";
     static final HandlerFileChange INSTANCE = new HandlerFileChange();
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        final ModelNode opAddr = operation.require(OP_ADDR);
-
-        final ModelNode model = context.getSubModel();
-
-        final ModelNode existingFile = model.get(CommonAttributes.FILE);
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(OPERATION_NAME);
-        compensatingOperation.get(OP_ADDR).set(opAddr);
-
-        compensatingOperation.get(CommonAttributes.PATH).set(existingFile.get(CommonAttributes.PATH));
+    public void execute(final NewOperationContext context, final ModelNode operation) {
+        final ModelNode existingFile = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(CommonAttributes.FILE);
         existingFile.get(CommonAttributes.PATH).set(operation.get(CommonAttributes.PATH));
 
         if (existingFile.hasDefined(CommonAttributes.RELATIVE_TO)) {
-            compensatingOperation.get(CommonAttributes.RELATIVE_TO).set(existingFile.get(CommonAttributes.RELATIVE_TO));
             existingFile.get(CommonAttributes.RELATIVE_TO).set(operation.get(CommonAttributes.RELATIVE_TO));
         }
 
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceRegistry serviceRegistry = context.getServiceRegistry();
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(final NewOperationContext context, final ModelNode operation) {
+                    final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     final ServiceTarget serviceTarget = context.getServiceTarget();
 
                     final ServiceController<?> controller = serviceRegistry.getService(LogServices.handlerFileName(name));
@@ -87,32 +70,33 @@ public class HandlerFileChange implements ModelUpdateOperationHandler {
                             }
 
                             public void serviceRemoved(ServiceController<?> controller) {
-                                installService(operation, serviceTarget, name, resultHandler);
+                                installService(context, operation, serviceTarget, name);
                             }
                         });
                     } else {
-                        installService(operation, serviceTarget, name, resultHandler);
+                        installService(context, operation, serviceTarget, name);
                     }
-
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
-        return new BasicOperationResult(compensatingOperation);
+        context.completeStep();
+
     }
 
-    private void installService(ModelNode operation, ServiceTarget serviceTarget, String name, final ResultHandler resultHandler) {
+    private void installService(NewOperationContext context, ModelNode operation, ServiceTarget serviceTarget, String name) {
+        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
         final HandlerFileService service = new HandlerFileService(operation.get(CommonAttributes.PATH).asString());
         final ServiceBuilder<?> builder = serviceTarget.addService(LogServices.handlerFileName(name), service);
         if (operation.hasDefined(CommonAttributes.RELATIVE_TO)) {
             builder.addDependency(AbstractPathService.pathNameOf(operation.get(RELATIVE_TO).asString()), String.class, service.getRelativeToInjector());
         }
         builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(new AbstractServiceListener<Object>() {
-                    public void serviceStarted(ServiceController<?> controller) {
-                        resultHandler.handleResultComplete();
-                    }
-                }).install();
+                .addListener(verificationHandler).install();
+
+        context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+
+        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+            context.removeService(LogServices.handlerFileName(name));
+        }
     }
 }

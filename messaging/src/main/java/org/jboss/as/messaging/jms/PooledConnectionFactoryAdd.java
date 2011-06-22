@@ -22,48 +22,43 @@
 
 package org.jboss.as.messaging.jms;
 
-import org.hornetq.core.server.HornetQServer;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.MessagingServices;
-import org.jboss.as.threads.Element;
-import org.jboss.as.txn.TxnServices;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL;
-import static org.jboss.as.messaging.CommonAttributes.NONE;
-import static org.jboss.as.messaging.jms.JMSServices.CONNECTION_FACTORY_ATTRS;
-import static org.jboss.as.messaging.CommonAttributes.NO_TX;
-import static org.jboss.as.messaging.CommonAttributes.XA_TX;
-import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
+import static org.jboss.as.messaging.CommonAttributes.NONE;
+import static org.jboss.as.messaging.CommonAttributes.NO_TX;
+import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
+import static org.jboss.as.messaging.CommonAttributes.XA_TX;
+import static org.jboss.as.messaging.jms.JMSServices.CONNECTION_FACTORY_ATTRS;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hornetq.core.server.HornetQServer;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.txn.TxnServices;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  *         Date: 5/13/11
  *         Time: 1:42 PM
  */
-public class PooledConnectionFactoryAdd implements ModelAddOperationHandler {
+public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
     /**
      * Create an "add" operation using the existing model
@@ -86,24 +81,35 @@ public class PooledConnectionFactoryAdd implements ModelAddOperationHandler {
 
     public static final PooledConnectionFactoryAdd INSTANCE = new PooledConnectionFactoryAdd();
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        ModelNode opAddr = operation.require(OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
-        final String name = address.getLastElement().getValue();
-
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
-
-        final String jndiName;
         if(operation.hasDefined(CommonAttributes.ENTRIES)) {
             List<ModelNode> entries = operation.get(CommonAttributes.ENTRIES).asList();
             if(entries.size() == 0) {
                 throw new OperationFailedException("at least 1 jndi entry should be provided", operation);
             }
-            jndiName = entries.get(0).asString();
         } else {
             throw new OperationFailedException("at least 1 jndi entry should be provided", operation);
         }
+
+        for(final JMSServices.NodeAttribute attribute : CONNECTION_FACTORY_ATTRS) {
+            final String attrName = attribute.getName();
+            if(operation.hasDefined(attrName)) {
+                model.get(attrName).set(operation.get(attrName));
+            }
+        }
+
+    }
+
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
+                                  List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+        ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
+
+        // We validated that jndiName part of the model in populateModel
+        final String jndiName = operation.get(CommonAttributes.ENTRIES).asList().get(0).asString();
 
         final String txSupport;
         if(operation.hasDefined(TRANSACTION)) {
@@ -118,47 +124,22 @@ public class PooledConnectionFactoryAdd implements ModelAddOperationHandler {
         } else {
             txSupport = XA_TX;
         }
-        final ModelNode subModel = context.getSubModel();
-        for(final JMSServices.NodeAttribute attribute : CONNECTION_FACTORY_ATTRS) {
-            final String attrName = attribute.getName();
-            if(operation.hasDefined(attrName)) {
-                subModel.get(attrName).set(operation.get(attrName));
-            }
-        }
 
+        ServiceTarget serviceTarget = context.getServiceTarget();
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+        List<String> connectors = getConnectors(operation);
 
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+        List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(operation);
 
-                    try {
+        ServiceName hornetQResourceAdapterService = MessagingServices.POOLED_CONNECTION_FACTORY_BASE.append(name);
+        PooledConnectionFactoryService resourceAdapterService = new PooledConnectionFactoryService(name, connectors, adapterParams, jndiName, txSupport);
+        ServiceBuilder serviceBuilder = serviceTarget
+                .addService(hornetQResourceAdapterService, resourceAdapterService)
+                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, resourceAdapterService.getTransactionManager())
+                .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, resourceAdapterService.getHornetQService())
+                .addListener(verificationHandler);
 
-                        ServiceTarget serviceTarget = context.getServiceTarget();
-
-                        List<String> connectors = getConnectors(operation);
-
-                        List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(operation);
-
-                        ServiceName hornetQResourceAdapterService = MessagingServices.POOLED_CONNECTION_FACTORY_BASE.append(name);
-                        PooledConnectionFactoryService resourceAdapterService = new PooledConnectionFactoryService(name, connectors, adapterParams, jndiName, txSupport);
-                        ServiceBuilder serviceBuilder = serviceTarget
-                                .addService(hornetQResourceAdapterService, resourceAdapterService)
-                                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, resourceAdapterService.getTransactionManager())
-                                .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, resourceAdapterService.getHornetQService());
-                        serviceBuilder.setInitialMode(Mode.ACTIVE).install();
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        resultHandler.handleCancellation();
-                    }
-
-                    resultHandler.handleResultComplete();
-                }
-            });
-        }
-
-        return new BasicOperationResult(compensatingOperation);
+        newControllers.add(serviceBuilder.setInitialMode(Mode.ACTIVE).install());
     }
 
     static List<String> getConnectors(final ModelNode operation) {

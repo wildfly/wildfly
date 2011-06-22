@@ -22,23 +22,81 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.messaging.CommonAttributes.*;
+import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
+import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
+import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
+import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
+import static org.jboss.as.messaging.CommonAttributes.BACKUP;
+import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
+import static org.jboss.as.messaging.CommonAttributes.CLUSTER_PASSWORD;
+import static org.jboss.as.messaging.CommonAttributes.CLUSTER_USER;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL_OVERRIDE;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.CONSUME_NAME;
+import static org.jboss.as.messaging.CommonAttributes.CREATEDURABLEQUEUE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.CREATE_BINDINGS_DIR;
+import static org.jboss.as.messaging.CommonAttributes.CREATE_JOURNAL_DIR;
+import static org.jboss.as.messaging.CommonAttributes.CREATE_NON_DURABLE_QUEUE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.DELETEDURABLEQUEUE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.DURABLE;
+import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
+import static org.jboss.as.messaging.CommonAttributes.FILTER;
+import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
+import static org.jboss.as.messaging.CommonAttributes.JMX_DOMAIN;
+import static org.jboss.as.messaging.CommonAttributes.JMX_MANAGEMENT_ENABLED;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_BUFFER_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_BUFFER_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_COMPACT_MIN_FILES;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_COMPACT_PERCENTAGE;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_FILE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_MAX_IO;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_MIN_FILES;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_NON_TRANSACTIONAL;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_TRANSACTIONAL;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_TYPE;
+import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
+import static org.jboss.as.messaging.CommonAttributes.LOG_JOURNAL_WRITE_RATE;
+import static org.jboss.as.messaging.CommonAttributes.LVQ;
+import static org.jboss.as.messaging.CommonAttributes.MANAGE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.MAX_DELIVERY_ATTEMPTS;
+import static org.jboss.as.messaging.CommonAttributes.MAX_SIZE_BYTES_NODE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
+import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.PARAM;
+import static org.jboss.as.messaging.CommonAttributes.PERF_BLAST_PAGES;
+import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
+import static org.jboss.as.messaging.CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
+import static org.jboss.as.messaging.CommonAttributes.PERSIST_ID_CACHE;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE;
+import static org.jboss.as.messaging.CommonAttributes.REDELIVERY_DELAY;
+import static org.jboss.as.messaging.CommonAttributes.REDISTRIBUTION_DELAY;
+import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
+import static org.jboss.as.messaging.CommonAttributes.SEND_NAME;
+import static org.jboss.as.messaging.CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE;
+import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
+import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 
+import javax.management.MBeanServer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.management.MBeanServer;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -54,24 +112,19 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.MessagingServices.TransportConfigType;
 import org.jboss.as.messaging.jms.JMSService;
-import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -79,7 +132,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-class MessagingSubsystemAdd implements ModelAddOperationHandler {
+class MessagingSubsystemAdd extends AbstractAddStepHandler {
 
     private static final String DEFAULT_PATH = "messaging";
     private static final String DEFAULT_RELATIVE_TO = "jboss.server.data.dir";
@@ -92,68 +145,56 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
 
     static final MessagingSubsystemAdd INSTANCE = new MessagingSubsystemAdd();
 
-
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
-
-        // Populate subModel
-        final ModelNode subModel = context.getSubModel();
-        subModel.setEmptyObject();
-        for(final String attribute : MessagingSubsystemProviders.MESSAGING_ROOT_ATTRIBUTES) {
-            if(operation.hasDefined(attribute)) {
-                subModel.get(attribute).set(operation.get(attribute));
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.setEmptyObject();
+        for (final String attribute : MessagingSubsystemProviders.MESSAGING_ROOT_ATTRIBUTES) {
+            if (operation.hasDefined(attribute)) {
+                model.get(attribute).set(operation.get(attribute));
             }
         }
-        subModel.get(QUEUE);
-        subModel.get(CONNECTION_FACTORY).setEmptyObject();
-        subModel.get(JMS_QUEUE).setEmptyObject();
-        subModel.get(JMS_TOPIC).setEmptyObject();
-        subModel.get(POOLED_CONNECTION_FACTORY).setEmptyObject();
+        model.get(QUEUE);
+        model.get(CONNECTION_FACTORY).setEmptyObject();
+        model.get(JMS_QUEUE).setEmptyObject();
+        model.get(JMS_TOPIC).setEmptyObject();
+        model.get(POOLED_CONNECTION_FACTORY).setEmptyObject();
+    }
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-                    // Create the HornetQ Service
-                    final HornetQService hqService = new HornetQService();
-                    // Transform the configuration
-                    final Configuration configuration = transformConfig(operation);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        // Create the HornetQ Service
+        final HornetQService hqService = new HornetQService();
+        // Transform the configuration
+        final Configuration configuration = transformConfig(operation);
 
-                    // Add the HornetQ Service
-                    final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(MessagingServices.JBOSS_MESSAGING, hqService)
-                            .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqService.getMBeanServer());
-                    // Create path services
-                    serviceBuilder.addDependency(createDirectoryService(DEFAULT_BINDINGS_DIR, operation.get(BINDINGS_DIRECTORY), serviceTarget),
-                            String.class, hqService.getPathInjector(DEFAULT_BINDINGS_DIR));
-                    serviceBuilder.addDependency(createDirectoryService(DEFAULT_JOURNAL_DIR, operation.get(JOURNAL_DIRECTORY), serviceTarget),
-                            String.class, hqService.getPathInjector(DEFAULT_JOURNAL_DIR));
-                    serviceBuilder.addDependency(createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, operation.get(LARGE_MESSAGES_DIRECTORY), serviceTarget),
-                            String.class, hqService.getPathInjector(DEFAULT_LARGE_MESSSAGE_DIR));
-                    serviceBuilder.addDependency(createDirectoryService(DEFAULT_PAGING_DIR, operation.get(PAGING_DIRECTORY), serviceTarget),
-                            String.class, hqService.getPathInjector(DEFAULT_PAGING_DIR));
+        // Add the HornetQ Service
+        final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(MessagingServices.JBOSS_MESSAGING, hqService)
+                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqService.getMBeanServer());
+        // Create path services
+        serviceBuilder.addDependency(createDirectoryService(DEFAULT_BINDINGS_DIR, operation.get(BINDINGS_DIRECTORY), serviceTarget),
+                String.class, hqService.getPathInjector(DEFAULT_BINDINGS_DIR));
+        serviceBuilder.addDependency(createDirectoryService(DEFAULT_JOURNAL_DIR, operation.get(JOURNAL_DIRECTORY), serviceTarget),
+                String.class, hqService.getPathInjector(DEFAULT_JOURNAL_DIR));
+        serviceBuilder.addDependency(createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, operation.get(LARGE_MESSAGES_DIRECTORY), serviceTarget),
+                String.class, hqService.getPathInjector(DEFAULT_LARGE_MESSSAGE_DIR));
+        serviceBuilder.addDependency(createDirectoryService(DEFAULT_PAGING_DIR, operation.get(PAGING_DIRECTORY), serviceTarget),
+                String.class, hqService.getPathInjector(DEFAULT_PAGING_DIR));
 
-                    // Proccess acceptors and connectors
-                    final Set<String> socketBindings = new HashSet<String>();
-                    processAcceptors(configuration, operation, socketBindings);
-                    processConnectors(configuration, operation, socketBindings);
-                    for (final String socketBinding : socketBindings) {
-                        final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
-                        serviceBuilder.addDependency(socketName, SocketBinding.class, hqService.getSocketBindingInjector(socketBinding));
-                    }
-                    hqService.setConfiguration(configuration);
-
-                    // Install the HornetQ Service
-                    serviceBuilder.install();
-
-                    JMSService.addService(serviceTarget);
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+        // Proccess acceptors and connectors
+        final Set<String> socketBindings = new HashSet<String>();
+        processAcceptors(configuration, operation, socketBindings);
+        processConnectors(configuration, operation, socketBindings);
+        for (final String socketBinding : socketBindings) {
+            final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
+            serviceBuilder.addDependency(socketName, SocketBinding.class, hqService.getSocketBindingInjector(socketBinding));
         }
-        return new BasicOperationResult(compensatingOperation);
+        hqService.setConfiguration(configuration);
+
+        serviceBuilder.addListener(verificationHandler);
+
+        // Install the HornetQ Service
+        newControllers.add(serviceBuilder.install());
+
+        newControllers.add(JMSService.addService(serviceTarget, verificationHandler));
     }
 
     /**
@@ -178,7 +219,7 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
         configuration.setEnabledAsyncConnectionExecution(params.get(ASYNC_CONNECTION_EXECUTION_ENABLED).asBoolean(ConfigurationImpl.DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED));
         configuration.setIDCacheSize(params.get(ID_CACHE_SIZE).asInt(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE));
         // TODO do we want to allow the jmx configuration ?
-        if(params.hasDefined(JMX_DOMAIN)) configuration.setJMXDomain(params.get(JMX_DOMAIN).asString());
+        if (params.hasDefined(JMX_DOMAIN)) configuration.setJMXDomain(params.get(JMX_DOMAIN).asString());
         configuration.setJMXManagementEnabled(params.get(JMX_MANAGEMENT_ENABLED).asBoolean(ConfigurationImpl.DEFAULT_JMX_MANAGEMENT_ENABLED));
         // Journal
         final JournalType journalType = params.hasDefined(JOURNAL_TYPE) ? JournalType.valueOf(params.get(JOURNAL_TYPE).asString()) : ConfigurationImpl.DEFAULT_JOURNAL_TYPE;
@@ -220,38 +261,41 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
      * Process the acceptor information.
      *
      * @param configuration the hornetQ configuration
-     * @param params the detyped operation parameters
-     * @param bindings the referenced socket bindings
+     * @param params        the detyped operation parameters
+     * @param bindings      the referenced socket bindings
      */
     static void processAcceptors(final Configuration configuration, final ModelNode params, final Set<String> bindings) {
-        if(params.hasDefined(ACCEPTOR)) {
+        if (params.hasDefined(ACCEPTOR)) {
             final Map<String, TransportConfiguration> acceptors = new HashMap<String, TransportConfiguration>();
-            for(final Property property : params.get(ACCEPTOR).asPropertyList()) {
+            for (final Property property : params.get(ACCEPTOR).asPropertyList()) {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = new HashMap<String, Object>();
-                if(config.get(PARAM).isDefined()) {
-                    for(final Property parameter : config.get(PARAM).asPropertyList()) {
+                if (config.get(PARAM).isDefined()) {
+                    for (final Property parameter : config.get(PARAM).asPropertyList()) {
                         parameters.put(parameter.getName(), parameter.getValue().asString());
                     }
                 }
                 final TransportConfigType type = TransportConfigType.valueOf(config.get(TYPE).asString());
                 final String clazz;
-                switch(type) {
+                switch (type) {
                     case Remote: {
                         clazz = NettyAcceptorFactory.class.getName();
                         final String binding = config.get(SOCKET_BINDING).asString();
                         parameters.put(SOCKET_BINDING, binding);
                         bindings.add(binding);
                         break;
-                    } case InVM: {
+                    }
+                    case InVM: {
                         clazz = InVMAcceptorFactory.class.getName();
                         parameters.put(SERVER_ID, config.get(SERVER_ID).asInt());
                         break;
-                    } case Generic: {
+                    }
+                    case Generic: {
                         clazz = config.get(FACTORY_CLASS).asString();
                         break;
-                    } default: {
+                    }
+                    default: {
                         clazz = null;
                         break;
                     }
@@ -266,38 +310,41 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
      * Process the connector information.
      *
      * @param configuration the hornetQ configuration
-     * @param params the detyped operation parameters
-     * @param bindings the referenced socket bindings
+     * @param params        the detyped operation parameters
+     * @param bindings      the referenced socket bindings
      */
     static void processConnectors(final Configuration configuration, final ModelNode params, final Set<String> bindings) {
-        if(params.hasDefined(CONNECTOR)) {
+        if (params.hasDefined(CONNECTOR)) {
             final Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-            for(final Property property : params.get(CONNECTOR).asPropertyList()) {
+            for (final Property property : params.get(CONNECTOR).asPropertyList()) {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = new HashMap<String, Object>();
-                if(config.get(PARAM).isDefined()) {
-                    for(final Property parameter : config.get(PARAM).asPropertyList()) {
+                if (config.get(PARAM).isDefined()) {
+                    for (final Property parameter : config.get(PARAM).asPropertyList()) {
                         parameters.put(parameter.getName(), parameter.getValue().asString());
                     }
                 }
                 final TransportConfigType type = TransportConfigType.valueOf(config.get(TYPE).asString());
                 final String clazz;
-                switch(type) {
+                switch (type) {
                     case Remote: {
                         clazz = NettyConnectorFactory.class.getName();
                         final String binding = config.get(SOCKET_BINDING).asString();
                         parameters.put(SOCKET_BINDING, binding);
                         bindings.add(binding);
                         break;
-                    } case InVM: {
+                    }
+                    case InVM: {
                         clazz = InVMConnectorFactory.class.getName();
                         parameters.put(SERVER_ID, config.get(SERVER_ID).asInt());
                         break;
-                    } case Generic: {
+                    }
+                    case Generic: {
                         clazz = config.get(FACTORY_CLASS).asString();
                         break;
-                    } default: {
+                    }
+                    default: {
                         clazz = null;
                         break;
                     }
@@ -312,12 +359,12 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
      * Process the HornetQ core queues.
      *
      * @param configuration the hornetQ configuration
-     * @param params the detyped operation parameters
+     * @param params        the detyped operation parameters
      */
     static void processCoreQueues(final Configuration configuration, final ModelNode params) {
-        if(params.get(QUEUE).isDefined()) {
+        if (params.get(QUEUE).isDefined()) {
             final List<CoreQueueConfiguration> queues = new ArrayList<CoreQueueConfiguration>();
-            for(final Property property : params.get(QUEUE).asPropertyList()) {
+            for (final Property property : params.get(QUEUE).asPropertyList()) {
                 final String queueName = property.getName();
                 final ModelNode config = property.getValue();
                boolean durable = config.get(DURABLE).isDefined()?config.get(DURABLE).asBoolean():true;
@@ -333,11 +380,11 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
      * Process the address settings.
      *
      * @param configuration the hornetQ configuration
-     * @param params the detyped operation parameters
+     * @param params        the detyped operation parameters
      */
     static void processAddressSettings(final Configuration configuration, final ModelNode params) {
-        if(params.get(ADDRESS_SETTING).isDefined()) {
-            for(final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
+        if (params.get(ADDRESS_SETTING).isDefined()) {
+            for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
                 final String match = property.getName();
                 final ModelNode config = property.getValue();
 
@@ -365,16 +412,16 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
      * Process the security settings.
      *
      * @param configuration the hornetQ configuration
-     * @param params the detyped operation parameters
+     * @param params        the detyped operation parameters
      */
     static void processSecuritySettings(final Configuration configuration, final ModelNode params) {
-        if(params.get(SECURITY_SETTING).isDefined()) {
-            for(final Property property : params.get(SECURITY_SETTING).asPropertyList()) {
+        if (params.get(SECURITY_SETTING).isDefined()) {
+            for (final Property property : params.get(SECURITY_SETTING).asPropertyList()) {
                 final String match = property.getName();
                 final ModelNode config = property.getValue();
-                if(config.getType() != ModelType.UNDEFINED) {
+                if (config.getType() != ModelType.UNDEFINED) {
                     final Set<Role> roles = new HashSet<Role>();
-                    for(final Property role : config.asPropertyList()) {
+                    for (final Property role : config.asPropertyList()) {
                         final String name = role.getName();
                         final ModelNode value = role.getValue();
                         roles.add(new Role(name, value.get(SEND_NAME).asBoolean(false),
@@ -391,8 +438,8 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
     /**
      * Create a path service for a given target.
      *
-     * @param name the path service name
-     * @param path the detyped path element
+     * @param name          the path service name
+     * @param path          the detyped path element
      * @param serviceTarget the service target
      * @return the created service name
      */

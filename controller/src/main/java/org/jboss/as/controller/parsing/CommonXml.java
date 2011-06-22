@@ -101,7 +101,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
 
-import javax.xml.stream.XMLStreamException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -111,6 +110,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.HashUtil;
@@ -1864,7 +1865,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         updates.add(update);
     }
 
-    protected String parseSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address, final String inheritedInterfaceName, final List<ModelNode> updates) throws XMLStreamException {
+    protected String parseSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.PORT);
         String name = null;
@@ -1898,7 +1899,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         break;
                     }
                     case PORT: {
-                        binding.get(PORT).set(parseBoundedIntegerAttribute(reader, i, 0, 65535));
+                        binding.get(PORT).set(parseBoundedIntegerAttribute(reader, i, 0, 65535, true));
                         break;
                     }
                     case FIXED_PORT: {
@@ -1906,24 +1907,28 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         break;
                     }
                     case MULTICAST_ADDRESS: {
-                        try {
-                            final InetAddress mcastAddr = InetAddress.getByName(value);
-                            if (!mcastAddr.isMulticastAddress()) {
+                        ModelNode mcastNode = parsePossibleExpression(value);
+                        if (mcastNode.getType() == ModelType.EXPRESSION) {
+                            binding.get(MULTICAST_ADDRESS).set(mcastNode);
+                        } else {
+                            try {
+                                final InetAddress mcastAddr = InetAddress.getByName(value);
+                                if (!mcastAddr.isMulticastAddress()) {
+                                    throw new XMLStreamException("Value " + value + " for attribute " +
+                                            attribute.getLocalName() + " is not a valid multicast address",
+                                            reader.getLocation());
+                                }
+                                binding.get(MULTICAST_ADDRESS).set(value);
+                            } catch (final UnknownHostException e) {
                                 throw new XMLStreamException("Value " + value + " for attribute " +
                                         attribute.getLocalName() + " is not a valid multicast address",
-                                        reader.getLocation());
+                                        reader.getLocation(), e);
                             }
-                            binding.get(MULTICAST_ADDRESS).set(value);
-                        } catch (final UnknownHostException e) {
-                            throw new XMLStreamException("Value " + value + " for attribute " +
-                                    attribute.getLocalName() + " is not a valid multicast address",
-                                    reader.getLocation(), e);
                         }
                         break;
                     }
                     case MULTICAST_PORT: {
-                        binding.get(MULTICAST_PORT).set(parseBoundedIntegerAttribute(reader, i, 1, 65535));
-                        required.remove(Attribute.PORT);
+                        binding.get(MULTICAST_PORT).set(parseBoundedIntegerAttribute(reader, i, 1, 65535, true));
                         break;
                     }
                     default:

@@ -74,12 +74,6 @@
         <extension module="org.jboss.as.weld" />
     </extensions>
 
-    <system-properties>
-        <property name="foo" value="bar"/>
-        <property name="key" value="value"/>
-        <property name="java.net.preferIPv4Stack" value="true"/>
-    </system-properties>
-
     <paths>
        <path name="absolute" path="tmp"/>
        <path name="relative" path="relative" relative-to="absolute"/>
@@ -166,6 +160,7 @@
                     <uuid />
                 </process-id>
             </core-environment>
+            <coordinator-environment default-timeout="300"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jca:1.0">
             <archive-validation enabled="false" />

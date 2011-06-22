@@ -28,6 +28,8 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -84,11 +86,12 @@ public final class EndpointRegistryService implements Service<EndpointRegistry> 
         return injectedMBeanServer;
     }
 
-    public static void install(final ServiceTarget serviceTarget) {
+    public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServiceListener<Object>... listeners) {
         final ServiceBuilder<EndpointRegistry> builder = serviceTarget.addService(WSServices.REGISTRY_SERVICE, INSTANCE);
         builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME, MBeanServer.class, INSTANCE.getMBeanServerInjector());
+        builder.addListener(listeners);
         builder.setInitialMode(Mode.ACTIVE);
-        builder.install();
+        return builder.install();
     }
 
 }

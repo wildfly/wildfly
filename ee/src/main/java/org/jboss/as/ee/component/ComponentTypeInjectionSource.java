@@ -63,11 +63,14 @@ public final class ComponentTypeInjectionSource extends InjectionSource {
         serviceBuilder.addDependency(description.getServiceName(), ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
     }
 
-    @Override
-    public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
+    public boolean equals(final Object other) {
         if (other instanceof ComponentTypeInjectionSource) {
             return ((ComponentTypeInjectionSource) other).typeName.equals(typeName);
         }
         return false;
+    }
+
+    public int hashCode() {
+        return typeName.hashCode();
     }
 }

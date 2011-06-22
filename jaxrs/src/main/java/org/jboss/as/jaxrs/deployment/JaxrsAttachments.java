@@ -22,6 +22,7 @@
 package org.jboss.as.jaxrs.deployment;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 
 /**
  * Jaxrs attachments
@@ -32,5 +33,6 @@ import org.jboss.as.server.deployment.AttachmentKey;
 public class JaxrsAttachments {
 
     public static final AttachmentKey<ResteasyDeploymentData> RESTEASY_DEPLOYMENT_DATA = AttachmentKey.create(ResteasyDeploymentData.class);
+    public static final AttachmentKey<AttachmentList<ResteasyDeploymentData>> ADDITIONAL_RESTEASY_DEPLOYMENT_DATA = AttachmentKey.createList(ResteasyDeploymentData.class);
 
 }

@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
+import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -87,18 +88,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
     public synchronized void start(StartContext arg0) throws StartException {
         log.debug("Starting NetworkInterfaceService\n");
         try {
-            if (anyLocalV4) {
-                this.interfaceBinding = getNetworkInterfaceBinding(IPV4_ANYLOCAL);
-            }
-            else if (anyLocalV6) {
-                this.interfaceBinding = getNetworkInterfaceBinding(IPV6_ANYLOCAL);
-            }
-            else if (anyLocal) {
-                this.interfaceBinding = getNetworkInterfaceBinding(preferIPv4Stack ? IPV4_ANYLOCAL : IPV6_ANYLOCAL);
-            }
-            else {
-                this.interfaceBinding = resolveInterface(criteria);
-            }
+            this.interfaceBinding = createBinding(name, anyLocalV4, anyLocalV6, anyLocal, criteria);
         } catch(Exception e) {
             throw new StartException(e);
         }
@@ -106,6 +96,25 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
             throw new StartException("failed to resolve interface " + name);
         }
         log.debugf("NetworkInterfaceService matched interface binding: %s\n", interfaceBinding);
+    }
+
+    public static NetworkInterfaceBinding createBinding(String name, ParsedInterfaceCriteria criteria)  throws SocketException, UnknownHostException {
+        return createBinding(name, criteria.isAnyLocalV4(), criteria.isAnyLocalV6(), criteria.isAnyLocal(), new OverallInterfaceCriteria(criteria.getCriteria()));
+    }
+
+    static NetworkInterfaceBinding createBinding(final String name, final boolean anyLocalV4, final boolean anyLocalV6, final boolean anyLocal, final InterfaceCriteria criteria) throws SocketException, UnknownHostException{
+        if (anyLocalV4) {
+            return getNetworkInterfaceBinding(IPV4_ANYLOCAL);
+        }
+        else if (anyLocalV6) {
+            return getNetworkInterfaceBinding(IPV6_ANYLOCAL);
+        }
+        else if (anyLocal) {
+            return getNetworkInterfaceBinding(preferIPv4Stack ? IPV4_ANYLOCAL : IPV6_ANYLOCAL);
+        }
+        else {
+            return resolveInterface(criteria);
+        }
     }
 
     public synchronized void stop(StopContext arg0) {
@@ -121,25 +130,38 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
     }
 
     static NetworkInterfaceBinding resolveInterface(final InterfaceCriteria criteria) throws SocketException {
+        NetworkInterfaceBinding result = null;
         final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
         log.tracef("resolveInterface, checking criteria: %s\n", criteria);
-        while (networkInterfaces.hasMoreElements()) {
+        while (result == null && networkInterfaces.hasMoreElements()) {
             final NetworkInterface networkInterface = networkInterfaces.nextElement();
-            log.tracef("resolveInterface, checking NetworkInterface: %s\n", toString(networkInterface));
-            final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
-            while (interfaceAddresses.hasMoreElements()) {
-                final InetAddress address = interfaceAddresses.nextElement();
-                if(preferIPv4Stack && ! preferIPv6Stack && ! (address instanceof Inet4Address)) {
-                    continue;
-                } else if(preferIPv6Stack && ! preferIPv4Stack && ! (address instanceof Inet6Address)) {
-                    continue;
+            result = resolveInterface(criteria, networkInterface);
+            if (result == null) {
+                final Enumeration<NetworkInterface> subInterfaces = networkInterface.getSubInterfaces();
+                while (result == null && subInterfaces.hasMoreElements()) {
+                    final NetworkInterface subInterface = subInterfaces.nextElement();
+                    result = resolveInterface(criteria, subInterface);
                 }
-                log.tracef("Checking interface(name=%s,address=%s), criteria=%s\n", networkInterface.getName(), address, criteria);
-                InetAddress bindAddress = criteria.isAcceptable(networkInterface, address);
-                if (bindAddress != null) {
-                    log.tracef("Criteria provided bind address: %s\n", bindAddress);
-                    return new NetworkInterfaceBinding(Collections.singleton(networkInterface), bindAddress);
-                }
+            }
+        }
+        return result;
+    }
+
+    private static NetworkInterfaceBinding resolveInterface(final InterfaceCriteria criteria, final NetworkInterface networkInterface) throws SocketException {
+        log.tracef("resolveInterface, checking NetworkInterface: %s\n", toString(networkInterface));
+        final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
+        while (interfaceAddresses.hasMoreElements()) {
+            final InetAddress address = interfaceAddresses.nextElement();
+            if(preferIPv4Stack && ! preferIPv6Stack && ! (address instanceof Inet4Address)) {
+                continue;
+            } else if(preferIPv6Stack && ! preferIPv4Stack && ! (address instanceof Inet6Address)) {
+                continue;
+            }
+            log.tracef("Checking interface(name=%s,address=%s), criteria=%s\n", networkInterface.getName(), address, criteria);
+            InetAddress bindAddress = criteria.isAcceptable(networkInterface, address);
+            if (bindAddress != null) {
+                log.tracef("Criteria provided bind address: %s\n", bindAddress);
+                return new NetworkInterfaceBinding(Collections.singleton(networkInterface), bindAddress);
             }
         }
         return null;

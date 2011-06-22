@@ -87,7 +87,7 @@ public class WebSecurityCERTTestCase {
      * @param name Name of the war file
      * @param servletClass a class that is the servlet
      * @param webxml {@link URL} to the web.xml. This can be null
-     * @return
+     * @return  the web archive
      */
     public static WebArchive create(String name, Class<?> servletClass, URL webxml) {
         WebArchive war = ShrinkWrap.create(WebArchive.class, name);
@@ -268,7 +268,7 @@ public class WebSecurityCERTTestCase {
     }
 
     public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
-        ModelNode result = client.execute(OperationBuilder.Factory.create(update).build());
+        ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));

@@ -21,29 +21,22 @@
  */
 package org.jboss.as.threads;
 
+import java.util.Locale;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.controller.operations.common.Util;
 import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
 import static org.jboss.as.threads.CommonAttributes.PRIORITY;
 import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -52,14 +45,16 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ThreadFactoryAdd implements ModelAddOperationHandler, DescriptionProvider {
+public class ThreadFactoryAdd implements NewStepHandler, DescriptionProvider {
 
     static final ThreadFactoryAdd INSTANCE = new ThreadFactoryAdd();
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    /**
+     * {@inheritDoc}
+     */
+    public void execute(NewOperationContext context, ModelNode operation) {
+        final ModelNode opAddr = operation.get(OP_ADDR);
 
-        final ModelNode opAddr = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
 
@@ -72,7 +67,7 @@ public class ThreadFactoryAdd implements ModelAddOperationHandler, DescriptionPr
         }
         final ModelNode properties = operation.hasDefined(PROPERTIES) ? operation.get(PROPERTIES) : null;
         //Apply to the model
-        final ModelNode model = context.getSubModel();
+        final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         model.get(NAME).set(name);
         if (groupName != null) {
             model.get(GROUP_NAME).set(groupName);
@@ -87,31 +82,32 @@ public class ThreadFactoryAdd implements ModelAddOperationHandler, DescriptionPr
             model.get(PROPERTIES).set(properties);
         }
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) {
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     final ServiceTarget target = context.getServiceTarget();
                     final ThreadFactoryService service = new ThreadFactoryService();
                     service.setNamePattern(threadNamePattern);
                     service.setPriority(priority);
                     service.setThreadGroupName(groupName);
                     //TODO What about the properties?
-                    try {
-                        target.addService(ThreadsServices.threadFactoryName(name), service)
-                                .setInitialMode(ServiceController.Mode.ACTIVE)
-                                .install();
-                        resultHandler.handleResultComplete();
-                    } catch (ServiceRegistryException e) {
-                        throw new OperationFailedException(new ModelNode().set(e.getMessage()));
+                    target.addService(ThreadsServices.threadFactoryName(name), service)
+                            .addListener(verificationHandler)
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .install();
+
+                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        context.removeService(ThreadsServices.threadFactoryName(name));
                     }
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
-        // Compensating is remove
-        final ModelNode compensating = Util.getResourceRemoveOperation(opAddr);
-        return new BasicOperationResult(compensating);
+
+        context.completeStep();
     }
 
     @Override

@@ -26,61 +26,62 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.jboss.as.protocol.old.ProtocolUtils;
+
 /**
  * DomainClientProtocol header used for management requests.  Provides the default header fields from
  * {@link ManagementProtocolHeader} as well as a field to identify who the
  * request should be handled by.
  *
  * @author John Bailey
+ * @author Kabir Khan
  */
 public class ManagementRequestHeader extends ManagementProtocolHeader {
-    private byte operationHandlerId;
     private int requestId;
-
-     /**
-     * Construct a new instance and read the header information from the input provided.
-     *
-     * @param input The input to read the header information from
-     * @throws IOException If any problem occur reading from the input
-     */
-    public ManagementRequestHeader(final DataInput input) throws IOException {
-        super(input);
-    }
+    private int batchId;
+    private byte operationId;
 
     /**
      * Construct an instance with the protocol version and operation handler for the header.
      *
      * @param version The protocol version
      * @param requestId The request id
-     * @param operationHandlerId The id of the expected operation handler
+     * @param batchId The batch id
+     * @param operationId The operation to invoke on the server
      */
-    public ManagementRequestHeader(final int version, final  int requestId, final byte operationHandlerId) {
+    ManagementRequestHeader(final int version, final  int requestId, final int batchId, final byte operationId) {
         super(version);
         this.requestId = requestId;
-        this.operationHandlerId = operationHandlerId;
+        this.batchId = batchId;
+        this.operationId = operationId;
+    }
+
+    ManagementRequestHeader(final int version, final DataInput input) throws IOException {
+        super(version);
+        read(input);
     }
 
     /** {@inheritDoc} */
     public void read(final DataInput input) throws IOException {
-        super.read(input);
+        ProtocolUtils.expectHeader(input, ManagementProtocol.REQUEST_ID);
         requestId = input.readInt();
-        operationHandlerId = input.readByte();
+        ProtocolUtils.expectHeader(input, ManagementProtocol.BATCH_ID);
+        batchId = input.readInt();
+        ProtocolUtils.expectHeader(input, ManagementProtocol.OPERATION_ID);
+        operationId = input.readByte();
+        ProtocolUtils.expectHeader(input, ManagementProtocol.REQUEST_BODY);
     }
 
     /** {@inheritDoc} */
     public void write(final DataOutput output) throws IOException {
         super.write(output);
+        output.write(ManagementProtocol.REQUEST_ID);
         output.writeInt(requestId);
-        output.writeByte(operationHandlerId);
-    }
-
-    /**
-     * Get the id of the operation handler for the request.
-     *
-     * @return The operation handler id
-     */
-    public byte getOperationHandlerId() {
-        return operationHandlerId;
+        output.write(ManagementProtocol.BATCH_ID);
+        output.writeInt(batchId);
+        output.write(ManagementProtocol.OPERATION_ID);
+        output.write(operationId);
+        output.write(ManagementProtocol.REQUEST_BODY);
     }
 
     /**
@@ -90,5 +91,33 @@ public class ManagementRequestHeader extends ManagementProtocolHeader {
      */
     public int getRequestId() {
         return requestId;
+    }
+
+    /**
+     * The ID of the batch this request belongs to
+     *
+     * @return the batch id
+     */
+    public int getBatchId() {
+        return batchId;
+    }
+
+    /**
+     * The id of the operation to be executed by this request
+     *
+     * @return the operation id;
+     */
+    public byte getOperationId() {
+        return operationId;
+    }
+
+    @Override
+    byte getType() {
+        return ManagementProtocol.TYPE_REQUEST;
+    }
+
+    @Override
+    boolean isRequest() {
+        return true;
     }
 }

@@ -163,8 +163,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? fieldInfo.type().name().toString() : type;
         final String localContextName = isEmpty(name) ? fieldInfo.declaringClass().name().toString() + "/" + fieldName : name;
-        final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
-        final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, fieldInfo.type().name().toString(), isEnvEntryType);
+        final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, fieldInfo.type().name().toString());
         process(phaseContext, classDescription, annotation, injectionType, localContextName, targetDescription, eeModuleDescription, module);
     }
 
@@ -178,8 +177,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final String localContextName = isEmpty(name) ? methodInfo.declaringClass().name().toString() + "/" + contextNameSuffix : name;
 
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : type;
-        final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
-        final InjectionTarget targetDescription = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.args()[0].name().toString(), isEnvEntryType);
+        final InjectionTarget targetDescription = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.args()[0].name().toString());
         process(phaseContext, classDescription, annotation, injectionType, localContextName, targetDescription, eeModuleDescription, module);
     }
 
@@ -235,30 +233,29 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         // the binding/injection is optional if it's a env-entry which doesn't a env-entry-value or a lookup value
         final boolean optionalEnvEntry = valueSource == null;
         // our injection comes from the local lookup, no matter what.
-        final InjectionSource injectionSource = new LookupInjectionSource(localContextName, optionalEnvEntry);
+        final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
         final ResourceInjectionConfiguration injectionConfiguration = targetDescription != null ?
                 new ResourceInjectionConfiguration(targetDescription, injectionSource) : null;
 
-        // Create the binding from whence our injection comes.
-        // Don't bind for env-entry since it's optional and depends on whether a value is set in the deployment descriptor
-        final BindingConfiguration bindingConfiguration;
         if (optionalEnvEntry) {
-            bindingConfiguration = null;
+            LazyResourceInjection lazyResourceInjection = new LazyResourceInjection(targetDescription, localContextName , classDescription);
+            eeModuleDescription.addLazyResourceInjection(lazyResourceInjection);
         } else {
-            bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
+            final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
+            // TODO: class hierarchies? shared bindings?
+            classDescription.getConfigurators().add(new ClassConfigurator() {
+                public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+                    if (bindingConfiguration != null) {
+                        configuration.getBindingConfigurations().add(bindingConfiguration);
+                    }
+                    if (injectionConfiguration != null && !optionalEnvEntry) {
+                        configuration.getInjectionConfigurations().add(injectionConfiguration);
+                    }
+                }
+            });
         }
 
-        // TODO: class hierarchies? shared bindings?
-        classDescription.getConfigurators().add(new ClassConfigurator() {
-            public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-                if (bindingConfiguration != null) {
-                    configuration.getBindingConfigurations().add(bindingConfiguration);
-                }
-                if (injectionConfiguration != null) {
-                    configuration.getInjectionConfigurations().add(injectionConfiguration);
-                }
-            }
-        });
+
     }
 
     private boolean isEmpty(final String string) {
@@ -270,7 +267,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             return true;
         }
         try {
-            return  module.getClassLoader().loadClass(type).isEnum();
+            return module.getClassLoader().loadClass(type).isEnum();
         } catch (ClassNotFoundException e) {
             return false;
         }

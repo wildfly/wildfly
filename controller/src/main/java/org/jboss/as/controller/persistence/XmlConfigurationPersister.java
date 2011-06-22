@@ -30,11 +30,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
@@ -71,8 +73,8 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
 
     /** {@inheritDoc} */
     @Override
-    public void store(final ModelNode model) throws ConfigurationPersistenceException {
-        store(model, fileName);
+    public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
+        return new FilePersistenceResource(model, fileName, this);
     }
 
     protected void store(final ModelNode model, final File file) throws ConfigurationPersistenceException {

@@ -18,21 +18,28 @@
  */
 package org.jboss.as.server.services.net;
 
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for changing the default interface on a socket binding group.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingGroupDefaultInterfaceHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
+public class BindingGroupDefaultInterfaceHandler extends ServerWriteAttributeOperationHandler {
 
     public static final BindingGroupDefaultInterfaceHandler INSTANCE = new BindingGroupDefaultInterfaceHandler();
 
     private BindingGroupDefaultInterfaceHandler() {
         super(new StringLengthValidator(1, Integer.MAX_VALUE, false, true));
+    }
+
+    @Override
+    protected boolean applyUpdateToRuntime(NewOperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
+        return true;
     }
 
 }

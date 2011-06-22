@@ -22,8 +22,13 @@
 
 package org.jboss.as.logging;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Handler;
 
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceController;
@@ -69,26 +74,26 @@ public final class LogServices {
         return HANDLER_FILE.append(handlerName);
     }
 
-    static void installLoggerHandlers(final ServiceTarget serviceTarget, final String loggerName, final ModelNode handlers) {
+    static Collection<ServiceController<?>> installLoggerHandlers(final ServiceTarget serviceTarget, final String loggerName, final ModelNode handlers, final ServiceVerificationHandler verificationHandler) {
+        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
         // Install logger handler services
         for(final ModelNode handler : handlers.asList()) {
             final String handlerName = handler.asString();
             final LoggerHandlerService service = new LoggerHandlerService(loggerName);
             final Injector<Handler> injector = service.getHandlerInjector();
-            serviceTarget.addService(LogServices.loggerHandlerName(loggerName, handlerName), service)
-                .addDependency(LogServices.loggerName(loggerName))
-                .addDependency(LogServices.handlerName(handlerName), Handler.class, injector)
-                .install();
+            controllers.add(serviceTarget.addService(LogServices.loggerHandlerName(loggerName, handlerName), service)
+                    .addDependency(LogServices.loggerName(loggerName))
+                    .addDependency(LogServices.handlerName(handlerName), Handler.class, injector)
+                    .addListener(verificationHandler)
+                    .install());
         }
+        return controllers;
     }
 
-    static void uninstallLoggerHandlers(final ServiceRegistry registry, final String loggerName, final ModelNode handlers) {
+    static void uninstallLoggerHandlers(final NewOperationContext context, final String loggerName, final ModelNode handlers) {
         for(final ModelNode handler : handlers.asList()) {
             final String handlerName = handler.asString();
-            final ServiceController<?> controller = registry.getService(LogServices.loggerHandlerName(loggerName, handlerName));
-            if(controller != null) {
-                controller.setMode(ServiceController.Mode.REMOVE);
-            }
+            context.removeService(LogServices.loggerHandlerName(loggerName, handlerName));
         }
     }
 

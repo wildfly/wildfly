@@ -22,36 +22,22 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class ServerGroupRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
+public class ServerGroupRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final ServerGroupRemoveHandler INSTANCE = new ServerGroupRemoveHandler();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-
-        final ModelNode compensatingOperation = Util.getEmptyOperation(ADD, operation.get(OP_ADDR));
-
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOperation);
+    protected boolean requiresRuntime(NewOperationContext context) {
+        return false;
     }
 
     @Override

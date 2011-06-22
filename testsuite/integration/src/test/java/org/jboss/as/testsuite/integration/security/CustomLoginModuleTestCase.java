@@ -54,9 +54,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.testsuite.integration.websecurity.SecuredServlet;
 import org.jboss.as.testsuite.integration.websecurity.WebSecurityPasswordBasedBase;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -243,7 +243,7 @@ public class CustomLoginModuleTestCase {
     }
 
     public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
-        ModelNode result = client.execute(OperationBuilder.Factory.create(update).build());
+        ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));

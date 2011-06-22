@@ -34,10 +34,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 
 /**
  * Encapsulates the configuration file and manages its history
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Brian Stansberry
  */
@@ -84,7 +85,12 @@ public class ConfigurationFile {
         this.historyRoot = new File(configurationDir, rawName.replace('.', '_') + "_history");
         this.currentHistory = new File(historyRoot, "current");
         this.snapshotsDirectory = new File(historyRoot, "snapshot");
-        this.mainFile = determineMainFile(configurationDir, rawName, name);
+        final File file = determineMainFile(configurationDir, rawName, name);
+        try {
+            this.mainFile = file.getCanonicalFile();
+        } catch (IOException ioe) {
+            throw new IllegalStateException("Could not get canonical file for main file: " + file, ioe);
+        }
         this.mainFileName = mainFile.getName();
     }
 
@@ -97,6 +103,11 @@ public class ConfigurationFile {
                         bootFile = mainFile;
                     } else {
                         bootFile = determineBootFile(configurationDir, bootFileName);
+                        try {
+                            bootFile = bootFile.getCanonicalFile();
+                        } catch (IOException ioe) {
+                            throw new RuntimeException("Could not get canonical file for boot file: " + bootFile, ioe);
+                        }
                     }
                 }
             }
@@ -110,8 +121,7 @@ public class ConfigurationFile {
 
         if (name == null) {
             mainName = rawName;
-        }
-        else if (name.equals(LAST) || name.equals(INITIAL) || name.equals(BOOT)) {
+        } else if (name.equals(LAST) || name.equals(INITIAL) || name.equals(BOOT)) {
             // Search for a *single* file in the configuration dir with suffix == name.xml
             mainName = findMainFileFromBackupSuffix(historyRoot, name);
         } else if (VERSION_PATTERN.matcher(name).matches()) {
@@ -127,18 +137,15 @@ public class ConfigurationFile {
             final File directoryFile = new File(configurationDir, name);
             if (directoryFile.exists()) {
                 mainName = stripPrefixSuffix(name);
-            }
-            else {
+            } else {
                 final File absoluteFile = new File(name);
                 if (absoluteFile.exists()) {
                     mainName = stripPrefixSuffix(absoluteFile.getName());
-                }
-                else {
+                } else {
                     throw new IllegalArgumentException("Neither " + directoryFile.getAbsolutePath() + " nor " + absoluteFile.getAbsolutePath() + " exist");
                 }
             }
         }
-
         return new File(configurationDir, mainName);
     }
 
@@ -146,12 +153,10 @@ public class ConfigurationFile {
      * Finds a single file in {@code searchDir} whose name ends with "{@code .backupType.xml}"
      * and returns its name with {@code .backupType} removed.
      *
-     * @param searchDir the directory to search
+     * @param searchDir  the directory to search
      * @param backupType the backup type; {@link #LAST}, {@link #BOOT}, {@link #INITIAL} or {@code v\d+}
-     *
      * @return the single file that meets the criteria. Will not return {@code null}
-     *
-     * @throws IllegalStateException if no files meet the criteria or more than one does
+     * @throws IllegalStateException    if no files meet the criteria or more than one does
      * @throws IllegalArgumentException if they file that meets the criteria's full name is "{@code backupType.xml}"
      */
     private String findMainFileFromBackupSuffix(File searchDir, String backupType) {
@@ -170,8 +175,7 @@ public class ConfigurationFile {
 
         if (files == null || files.length == 0) {
             throw new IllegalStateException(String.format("No configuration file ending in %s found in %s", suffix, searchDir));
-        }
-        else if (files.length > 1) {
+        } else if (files.length > 1) {
             throw new IllegalStateException(String.format("Ambiguous configuration file name '%s' as there are multiple files " +
                     "in %s that end in %s", backupType, searchDir, suffix));
         }
@@ -189,9 +193,7 @@ public class ConfigurationFile {
      * returns its name with the prefix removed.
      *
      * @param prefix the prefix
-     *
      * @return the single file that meets the criteriaor {@code null} if none do
-     *
      * @throws IllegalStateException if more than one file meets the criteria
      */
     private String findMainFileFromSnapshotPrefix(final String prefix) {
@@ -209,8 +211,7 @@ public class ConfigurationFile {
 
         if (files == null || files.length == 0) {
             return null;
-        }
-        else if (files.length > 1) {
+        } else if (files.length > 1) {
             throw new IllegalStateException(String.format("Ambiguous configuration file name '%s' as there are multiple files " +
                     "in %s that start with %s", prefix, snapshotsDirectory, prefix));
         }
@@ -226,14 +227,11 @@ public class ConfigurationFile {
         if (FILE_WITH_VERSION_PATTERN.matcher(name).matches()) {
             int last = name.lastIndexOf('v');
             name = name.substring(0, last) + "xml";
-        }
-        else if (name.endsWith(LAST_SUFFIX)) {
+        } else if (name.endsWith(LAST_SUFFIX)) {
             name = name.substring(0, name.length() - (LAST_SUFFIX).length()) + "xml";
-        }
-        else if (name.endsWith(ORIGINAL_SUFFIX)) {
+        } else if (name.endsWith(ORIGINAL_SUFFIX)) {
             name = name.substring(0, name.length() - (ORIGINAL_SUFFIX).length()) + "xml";
-        }
-        else if (name.endsWith(INITIAL_SUFFIX)) {
+        } else if (name.endsWith(INITIAL_SUFFIX)) {
             name = name.substring(0, name.length() - (INITIAL_SUFFIX).length()) + "xml";
         }
         return name;

@@ -23,23 +23,20 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
  * @author Paul Ferraro
  */
-public class JGroupsSubsystemDescribe implements ModelQueryOperationHandler, DescriptionProvider {
+public class JGroupsSubsystemDescribe implements NewStepHandler, DescriptionProvider {
 
     /**
      * {@inheritDoc}
@@ -50,15 +47,11 @@ public class JGroupsSubsystemDescribe implements ModelQueryOperationHandler, Des
         return LocalDescriptions.getSubsystemDescribeDescription(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.as.controller.ModelQueryOperationHandler#execute(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.as.controller.ResultHandler)
-     */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode result = new ModelNode();
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement());
-        final ModelNode subModel = context.getSubModel();
+        final ModelNode subModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         result.add(JGroupsSubsystemAdd.createOperation(rootAddress.toModelNode(), subModel));
 
@@ -70,8 +63,6 @@ public class JGroupsSubsystemDescribe implements ModelQueryOperationHandler, Des
             }
         }
 
-        resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult();
+        context.completeStep();
     }
 }

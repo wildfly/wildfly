@@ -156,6 +156,7 @@
                         <uuid />
                     </process-id>
                 </core-environment>
+                <coordinator-environment default-timeout="300"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
@@ -343,7 +344,7 @@
                      </entries>
                   </pooled-connection-factory>
                </jms-connection-factories>
-    
+
                <jms-destinations>
                   <jms-queue name="testQueue">
                      <entry name="queue/test"/>

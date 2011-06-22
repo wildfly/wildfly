@@ -22,20 +22,11 @@
 
 package org.jboss.as.controller.operations.common;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
 import java.util.Locale;
-
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.descriptions.common.JVMDescriptions;
 import org.jboss.dmr.ModelNode;
 
@@ -44,33 +35,21 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public final class JVMRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
+public final class JVMRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
     public static final JVMRemoveHandler INSTANCE = new JVMRemoveHandler();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(ADD);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
-        final ModelNode subModel = context.getSubModel();
-        if(subModel.hasDefined(JVM_TYPE)) {
-            compensatingOperation.get(JVM_TYPE).set(subModel.get(JVM_TYPE));
-        }
-
-        resultHandler.handleResultComplete();
-
-        return new BasicOperationResult(compensatingOperation);
+    protected boolean requiresRuntime(NewOperationContext context) {
+        return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModelNode getModelDescription(final Locale locale) {
         return JVMDescriptions.getJVMRemoveDescription(locale);
     }
-
 }

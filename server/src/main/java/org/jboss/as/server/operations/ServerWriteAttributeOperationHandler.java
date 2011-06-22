@@ -22,19 +22,16 @@
 
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.WriteAttributeOperationHandler;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.ServerOperationContext;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Abstract superclass for write-attribute operation handlers that run on the
  * server.
- *
+ * <p/>
  * TODO Get ServerOperationContext and BootOperationHandler concepts into
  * the controller module so the same handlers can apply to domain/host attributes.
  *
@@ -66,11 +63,11 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
      * to validate values before applying them to the model, and a separate
      * validator to validate the {@link ModelNode#resolve() resolved value} it
      * after it has been applied to the mode.
-     * <p>
+     * <p/>
      * Typically if this constructor is used the {@code valueValidator} would
      * allow expressions, while the {@code resolvedValueValidator} would not.
      *
-     * @param valueValidator the validator to use to validate the value before application to the model. May be {@code null}     *
+     * @param valueValidator         the validator to use to validate the value before application to the model. May be {@code null}     *
      * @param resolvedValueValidator the validator to use to validate the value before application to the model. May be {@code null}
      */
     public ServerWriteAttributeOperationHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator) {
@@ -79,18 +76,21 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
     }
 
     @Override
-    protected void modelChanged(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
-            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+    protected void modelChanged(final NewOperationContext context, final ModelNode operation,
+                                final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-        if (context.getRuntimeContext() != null) {
+        boolean restartRequired = false;
+        if (context.getType() == NewOperationContext.Type.SERVER) {
             validateResolvedValue(attributeName, newValue);
-            boolean restartRequired = applyUpdateToRuntime(context, operation, resultHandler, attributeName, newValue, currentValue);
-            if (restartRequired && context instanceof ServerOperationContext) {
-                ServerOperationContext.class.cast(context).restartRequired();
+            ModelNode resolvedValue = newValue.isDefined() ? newValue.resolve() : newValue;
+            restartRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue);
+            if (restartRequired) {
+                context.reloadRequired();
             }
         }
-        else {
-            resultHandler.handleResultComplete();
+
+        if (context.completeStep() != NewOperationContext.ResultAction.KEEP && restartRequired) {
+            context.revertReloadRequired();
         }
     }
 
@@ -106,21 +106,25 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
 
 
     /**
-     * Hook to allow subclasses to make runtime changes to effect the attribute value change.
-     * Any subclass that overrides MUST ensure
-     * one of the 3 terminating methods on {@code resultHandler} is invoked.
+     * Hook to allow subclasses to make runtime changes to effect the attribute value change. Runtime changes
+     * should be implemented by calling {@link NewOperationContext#addStep(org.jboss.as.controller.NewStepHandler, org.jboss.as.controller.NewOperationContext.Stage) adding a new step}
+     * with {@link org.jboss.as.controller.NewOperationContext.Stage#RUNTIME}.
      * <p>
-     * This default implementation simply invokes {@link ResultHandler#handleResultComplete()}
-     * and returns {@code true} if the subclass implements {@link BootOperationHandler}.
+     * This default implementation simply returns {@code false}.
+     * </p>
+     *
+     * @param context the context of the operation
+     * @param operation the operation
+     * @param attributeName the name of the attribute being modified
+     * @param newValue the new value for the attribute
+     * @param currentValue the existing value for the attribute
      *
      * @return {@code true} if the server requires restart to effect the attribute
      *         value change; {@code false} if not
      */
-    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
-            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-
-        resultHandler.handleResultComplete();
-        return (this instanceof BootOperationHandler);
+    protected boolean applyUpdateToRuntime(final NewOperationContext context, final ModelNode operation,
+                                           final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+        return false;
     }
 
 

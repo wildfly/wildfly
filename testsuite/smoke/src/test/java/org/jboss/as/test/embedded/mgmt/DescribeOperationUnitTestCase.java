@@ -40,14 +40,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
+import org.junit.After;
+import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -68,14 +69,23 @@ public class DescribeOperationUnitTestCase {
         ignored.add("deployment-scanner");
     }
 
-    @Deployment(testable = false)
+    private ModelControllerClient client;
+
+    @Deployment
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
 
     // [ARQ-458] @Before not called with @RunAsClient
     private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        return ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        StreamUtils.safeClose(client);
+        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        return client;
+    }
+
+    @After
+    public void tearDown() {
+        StreamUtils.safeClose(client);
     }
 
     @Test
@@ -121,12 +131,13 @@ public class DescribeOperationUnitTestCase {
 
     private ModelNode executeForResult(final ModelNode operation) throws Exception {
         final ModelNode result = getModelControllerClient().execute(operation);
-        checkSuccessful(result);
+        checkSuccessful(result, operation);
         return result.get(RESULT);
     }
 
-    static void checkSuccessful(final ModelNode result) {
+    static void checkSuccessful(final ModelNode result, final ModelNode operation) {
         if(! SUCCESS.equals(result.get(OUTCOME).asString())) {
+            System.out.println("Failed result:\n" + result + "\n for operation:\n" + operation);
             Assert.fail("operation failed: " + result.get(FAILURE_DESCRIPTION));
         }
     }

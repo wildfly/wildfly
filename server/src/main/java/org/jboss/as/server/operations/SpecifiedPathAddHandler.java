@@ -18,17 +18,18 @@
  */
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import java.util.List;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.common.PathDescription.RELATIVE_TO;
 import org.jboss.as.controller.operations.common.PathAddHandler;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -44,23 +45,23 @@ public class SpecifiedPathAddHandler extends PathAddHandler {
         super(true);
     }
 
-    @Override
-    protected OperationResult installPath(final String name, final String path, final String relativeTo, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget target = context.getServiceTarget().subTarget();
-                    if (relativeTo == null) {
-                        AbsolutePathService.addService(name, path, target);
-                    } else {
-                        RelativePathService.addService(name, path, relativeTo, target);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        String name = address.getLastElement().getValue();
+        ModelNode pathNode = operation.get(PATH);
+        ModelNode relNode = operation.get(RELATIVE_TO);
+        String path = pathNode.isDefined() ? pathNode.asString() : null;
+        String relativeTo = relNode.isDefined() ? relNode.asString() : null;
+
+        final ServiceTarget target = context.getServiceTarget();
+        if (relativeTo == null) {
+            newControllers.add(AbsolutePathService.addService(name, path, target));
         } else {
-            resultHandler.handleResultComplete();
+            newControllers.add(RelativePathService.addService(name, path, relativeTo, target));
         }
-        return new BasicOperationResult(compensatingOp);
+    }
+
+    protected boolean requiresRuntimeVerification() {
+        return false;
     }
 }

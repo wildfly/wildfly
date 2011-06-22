@@ -24,24 +24,18 @@ package org.jboss.as.server.services.net;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import java.net.InetAddress;
+
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.network.ManagedBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 
 /**
  * {@code SocketBinding} metric handlers.
@@ -53,69 +47,65 @@ public final class BindingMetricHandlers {
     private static final ServiceName SOCKET_BINDING = SocketBinding.JBOSS_BINDING_NAME;
     private static final ModelNode NO_METRICS = new ModelNode().set("no metrics available");
 
-    abstract static class AbstractBindingMetricsHandler implements ModelQueryOperationHandler {
+    abstract static class AbstractBindingMetricsHandler implements NewStepHandler {
 
         /** {@inheritDoc} */
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final PathElement element = address.getLastElement();
-            if(context.getRuntimeContext() != null) {
-                context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                    @Override
-                    public void execute(final RuntimeTaskContext context) throws OperationFailedException {
-                        final ServiceController<?> controller = context.getServiceRegistry().getRequiredService(SOCKET_BINDING.append(element.getValue()));
-                        if(controller != null) {
-                            final SocketBinding binding = SocketBinding.class.cast(controller.getValue());
-                            AbstractBindingMetricsHandler.this.execute(operation, binding, resultHandler);
-                            resultHandler.handleResultComplete();
-                        } else {
-                            resultHandler.handleResultFragment(Util.NO_LOCATION, NO_METRICS);
-                            resultHandler.handleResultComplete();
-                        }
+
+            context.addStep(new NewStepHandler() {
+                @Override
+                public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                    final ModelNode result = context.getResult();
+                    final ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(SOCKET_BINDING.append(element.getValue()));
+                    if(controller != null) {
+                        final SocketBinding binding = SocketBinding.class.cast(controller.getValue());
+                        AbstractBindingMetricsHandler.this.execute(operation, binding, result);
+                    } else {
+                        result.set(NO_METRICS);
                     }
-                });
-            } else {
-                resultHandler.handleResultFragment(Util.NO_LOCATION, NO_METRICS);
-                resultHandler.handleResultComplete();
-            }
-            return new BasicOperationResult();
+                    context.completeStep();
+                }
+            }, NewOperationContext.Stage.RUNTIME);
+            context.completeStep();
         }
 
-        abstract void execute(ModelNode operation, SocketBinding binding, ResultHandler handler);
+        abstract void execute(ModelNode operation, SocketBinding binding, ModelNode result);
     }
 
     public static class BoundHandler extends AbstractBindingMetricsHandler {
 
         public static final String ATTRIBUTE_NAME = "bound";
-        public static final OperationHandler INSTANCE = new BoundHandler();
+        public static final NewStepHandler INSTANCE = new BoundHandler();
 
         private BoundHandler() {
             //
         }
 
         @Override
-        void execute(final ModelNode operation, final SocketBinding binding, final ResultHandler handler) {
+        void execute(final ModelNode operation, final SocketBinding binding, final ModelNode result) {
             // The socket should be bound when it's registered at the SocketBindingManager
-            handler.handleResultFragment(Util.NO_LOCATION, new ModelNode().set(binding.isBound()));
+            result.set(binding.isBound());
         }
     }
 
     public static class BoundAddressHandler extends AbstractBindingMetricsHandler {
 
         public static final String ATTRIBUTE_NAME = "bound-address";
-        public static final OperationHandler INSTANCE = new BoundAddressHandler();
+        public static final NewStepHandler INSTANCE = new BoundAddressHandler();
 
         private BoundAddressHandler() {
             //
         }
 
         @Override
-        void execute(final ModelNode operation, final SocketBinding binding, final ResultHandler handler) {
+        void execute(final ModelNode operation, final SocketBinding binding, final ModelNode result) {
             ManagedBinding managedBinding = binding.getManagedBinding();
             if (managedBinding != null) {
                 InetAddress addr = managedBinding.getBindAddress().getAddress();
-                handler.handleResultFragment(Util.NO_LOCATION, new ModelNode().set(addr.getHostAddress()));
+                result.set(addr.getHostAddress());
             }
         }
     }
@@ -123,18 +113,18 @@ public final class BindingMetricHandlers {
     public static class BoundPortHandler extends AbstractBindingMetricsHandler {
 
         public static final String ATTRIBUTE_NAME = "bound-port";
-        public static final OperationHandler INSTANCE = new BoundPortHandler();
+        public static final NewStepHandler INSTANCE = new BoundPortHandler();
 
         private BoundPortHandler() {
             //
         }
 
         @Override
-        void execute(final ModelNode operation, final SocketBinding binding, final ResultHandler handler) {
+        void execute(final ModelNode operation, final SocketBinding binding, final ModelNode result) {
             ManagedBinding managedBinding = binding.getManagedBinding();
             if (managedBinding != null) {
                 int port = managedBinding.getBindAddress().getPort();
-                handler.handleResultFragment(Util.NO_LOCATION, new ModelNode().set(port));
+                result.set(port);
             }
         }
     }

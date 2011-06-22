@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,7 +21,9 @@
  */
 
 /**
- * Portion of the client API for managing deployments to JBoss AS that
- * is specific to operations on a single server.
+ * Convenience API built on top of the {@link org.jboss.as.controller.client.ModelControllerClient core management API}
+ * to make it easier to perform common managment tasks against a single standalone JBoss Application Server instance.
+ *
+ * @see org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager
  */
 package org.jboss.as.controller.client.helpers.standalone;

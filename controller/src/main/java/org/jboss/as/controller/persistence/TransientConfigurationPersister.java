@@ -21,12 +21,14 @@
  */
 package org.jboss.as.controller.persistence;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 
 import javax.xml.namespace.QName;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Do not store the new model.
@@ -47,7 +49,21 @@ public class TransientConfigurationPersister extends XmlConfigurationPersister {
     }
 
     @Override
-    public void store(ModelNode model) throws ConfigurationPersistenceException {
+    public PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
         // do not store the new model
+        return NullPersistenceResource.INSTANCE;
+    }
+
+    private static class NullPersistenceResource implements ConfigurationPersister.PersistenceResource {
+
+        private static final NullPersistenceResource INSTANCE = new NullPersistenceResource();
+
+        @Override
+        public void commit() {
+        }
+
+        @Override
+        public void rollback() {
+        }
     }
 }

@@ -22,62 +22,29 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class RootLoggerRemove implements ModelUpdateOperationHandler {
+class RootLoggerRemove extends AbstractRemoveStepHandler {
 
     static final RootLoggerRemove INSTANCE = new RootLoggerRemove();
 
     static final String OPERATION_NAME = "remove-root-logger";
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        final ModelNode subModel = context.getSubModel();
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(OP).set("set-root-logger");
-        compensatingOperation.get(CommonAttributes.LEVEL).set(subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.LEVEL));
-        compensatingOperation.get(CommonAttributes.HANDLERS).set(subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS));
-
-        subModel.get(CommonAttributes.ROOT_LOGGER).clear();
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceRegistry registry = context.getServiceRegistry();
-                    final ServiceController<?> controller = registry.getService(LogServices.ROOT_LOGGER);
-                    if (controller != null) {
-                        controller.setMode(ServiceController.Mode.REMOVE);
-                    }
-                    if (subModel.get(CommonAttributes.ROOT_LOGGER).has(CommonAttributes.HANDLERS)) {
-                        LogServices.uninstallLoggerHandlers(registry, "", subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS));
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensatingOperation);
+    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) {
+        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(CommonAttributes.ROOT_LOGGER).clear();
     }
 
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+        context.removeService(LogServices.ROOT_LOGGER);
+        if (model.get(CommonAttributes.ROOT_LOGGER).has(CommonAttributes.HANDLERS)) {
+            LogServices.uninstallLoggerHandlers(context, "", model.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS));
+        }
+    }
 }

@@ -22,25 +22,16 @@
 
 package org.jboss.as.test.integration.domain;
 
-import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
-import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfiguration;
-import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.io.IOException;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
@@ -48,6 +39,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
+
+import java.io.IOException;
+
+import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.dmr.ModelNode;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Test of various management operations involving core resources like system properties, paths, interfaces, socket bindings.
@@ -245,7 +246,7 @@ public class CoreResourceManagementTestCase {
         Assert.assertEquals("server1", returnVal.asString());
 
         // Remove from top down
-        request = Util.getResourceRemoveOperation(ROOT_PROP_ADDRESS);
+        request = getEmptyOperation(REMOVE, ROOT_PROP_ADDRESS);
         response = masterClient.execute(request);
         validateResponse(response);
 
@@ -257,7 +258,7 @@ public class CoreResourceManagementTestCase {
         returnVal = validateResponse(response);
         Assert.assertEquals("server1", returnVal.asString());
 
-        request = Util.getResourceRemoveOperation(SERVER_GROUP_PROP_ADDRESS);
+        request = getEmptyOperation(REMOVE, SERVER_GROUP_PROP_ADDRESS);
         response = masterClient.execute(request);
         validateResponse(response);
 
@@ -269,7 +270,7 @@ public class CoreResourceManagementTestCase {
         returnVal = validateResponse(response);
         Assert.assertEquals("server1", returnVal.asString());
 
-        request = Util.getResourceRemoveOperation(HOST_PROP_ADDRESS);
+        request = getEmptyOperation(REMOVE, HOST_PROP_ADDRESS);
         response = masterClient.execute(request);
         validateResponse(response);
 
@@ -281,7 +282,7 @@ public class CoreResourceManagementTestCase {
         returnVal = validateResponse(response);
         Assert.assertEquals("server1", returnVal.asString());
 
-        request = Util.getResourceRemoveOperation(SERVER_PROP_ADDRESS);
+        request = getEmptyOperation(REMOVE, SERVER_PROP_ADDRESS);
         response = masterClient.execute(request);
         validateResponse(response);
 
@@ -295,7 +296,7 @@ public class CoreResourceManagementTestCase {
     }
 
     private static ModelNode getSystemPropertyAddOperation(ModelNode address, String value, Boolean boottime) {
-        ModelNode result = Util.getEmptyOperation(ADD, address);
+        ModelNode result = getEmptyOperation(ADD, address);
         if (value != null) {
             result.get(VALUE).set(value);
         }
@@ -306,21 +307,34 @@ public class CoreResourceManagementTestCase {
     }
 
     private static ModelNode getReadAttributeOperation(ModelNode address, String attribute) {
-        ModelNode result = Util.getEmptyOperation(READ_ATTRIBUTE_OPERATION, address);
+        ModelNode result = getEmptyOperation(READ_ATTRIBUTE_OPERATION, address);
         result.get(NAME).set(attribute);
         return result;
     }
 
     private static ModelNode getWriteAttributeOperation(ModelNode address, String value) {
-        ModelNode result = Util.getEmptyOperation(WRITE_ATTRIBUTE_OPERATION, address);
+        ModelNode result = getEmptyOperation(WRITE_ATTRIBUTE_OPERATION, address);
         result.get(NAME).set(VALUE);
         result.get(VALUE).set(value);
         return result;
     }
 
     private static ModelNode getReadChildrenNamesOperation(ModelNode address, String type) {
-        ModelNode result = Util.getEmptyOperation(READ_CHILDREN_NAMES_OPERATION, address);
+        ModelNode result = getEmptyOperation(READ_CHILDREN_NAMES_OPERATION, address);
         result.get(CHILD_TYPE).set(type);
         return result;
+    }
+
+    private static ModelNode getEmptyOperation(String operationName, ModelNode address) {
+        ModelNode op = new ModelNode();
+        op.get(OP).set(operationName);
+        if (address != null) {
+            op.get(OP_ADDR).set(address);
+        }
+        else {
+            // Just establish the standard structure; caller can fill in address later
+            op.get(OP_ADDR);
+        }
+        return op;
     }
 }

@@ -18,20 +18,15 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -39,7 +34,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerGroupDeploymentRedeployHandler implements ModelQueryOperationHandler, DescriptionProvider {
+public class ServerGroupDeploymentRedeployHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REDEPLOY;
 
@@ -57,11 +52,8 @@ public class ServerGroupDeploymentRedeployHandler implements ModelQueryOperation
      * {@inheritDoc}
      */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
-        ModelNode compensatingOp = Util.getEmptyOperation(OPERATION_NAME, operation.get(OP_ADDR));
-        resultHandler.handleResultComplete();
-
-        return new BasicOperationResult(compensatingOp);
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        // We do nothing. This operation is really handled at the server level.
+        context.completeStep();
     }
 }

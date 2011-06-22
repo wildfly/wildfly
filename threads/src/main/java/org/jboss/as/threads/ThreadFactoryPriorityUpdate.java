@@ -22,17 +22,12 @@
 
 package org.jboss.as.threads;
 
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -43,25 +38,25 @@ import org.jboss.msc.service.ServiceController;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Brian Stansberry
  */
-public final class ThreadFactoryPriorityUpdate implements ModelUpdateOperationHandler {
+public final class ThreadFactoryPriorityUpdate implements NewStepHandler {
 
     private static final long serialVersionUID = 4253625376544201028L;
 
     public static final ThreadFactoryPriorityUpdate INSTANCE = new ThreadFactoryPriorityUpdate();
 
     private final ParametersValidator validator = new ParametersValidator();
+
     private ThreadFactoryPriorityUpdate() {
         validator.registerValidator(VALUE, new IntRangeValidator(1, 10, true, true));
     }
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
         validator.validate(operation);
 
         final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
 
-        ModelNode model = context.getSubModel();
+        ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         if (!model.isDefined()) {
             throw new OperationFailedException(notConfigured(name));
         }
@@ -72,19 +67,17 @@ public final class ThreadFactoryPriorityUpdate implements ModelUpdateOperationHa
         if (operation.hasDefined(VALUE)) {
             newValue = operation.get(VALUE);
             newPriority = Integer.valueOf(newValue.resolve().asInt()); // TODO validate resolved value
-        }
-        else {
+        } else {
             newValue = new ModelNode();
             newPriority = null;
         }
 
         model.get(CommonAttributes.PRIORITY).set(newValue);
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceController<?> service = context.getServiceRegistry()
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    final ServiceController<?> service = context.getServiceRegistry(false)
                             .getService(ThreadsServices.threadFactoryName(name));
                     if (service == null) {
                         throw new OperationFailedException(notConfigured(name));
@@ -92,16 +85,11 @@ public final class ThreadFactoryPriorityUpdate implements ModelUpdateOperationHa
                         final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getValue();
                         threadFactoryService.setPriority(newPriority);
                     }
-                    resultHandler.handleResultComplete();
+                    context.completeStep();
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
-
-        final ModelNode compensatingOp = operation.clone();
-        compensatingOp.get(VALUE).set(oldValue);
-        return new BasicOperationResult(compensatingOp);
+        context.completeStep();
     }
 
     private ModelNode notConfigured(String name) {

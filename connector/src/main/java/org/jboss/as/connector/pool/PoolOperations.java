@@ -1,20 +1,13 @@
 package org.jboss.as.connector.pool;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.api.connectionmanager.pool.Pool;
 import org.jboss.jca.core.api.management.Connector;
@@ -23,7 +16,7 @@ import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
-public abstract class PoolOperations implements ModelQueryOperationHandler {
+public abstract class PoolOperations implements NewStepHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.datasources");
 
@@ -34,19 +27,14 @@ public abstract class PoolOperations implements ModelQueryOperationHandler {
         this.matcher = matcher;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
-            throws OperationFailedException {
-
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String jndiName = address.getLastElement().getValue();
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext runtimeCtx) throws OperationFailedException {
-
-                    final ServiceController<?> managementRepoService = runtimeCtx.getServiceRegistry().getService(
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
                             ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
                     if (managementRepoService != null) {
                         ModelNode operationResult = null;
@@ -62,19 +50,14 @@ public abstract class PoolOperations implements ModelQueryOperationHandler {
                             throw new OperationFailedException(new ModelNode().set("failed to set attribute" + e.getMessage()));
                         }
                         if (operationResult != null) {
-                            resultHandler.handleResultFragment(new String[0], operationResult);
+                            context.getResult().set(operationResult);
                         }
-                        resultHandler.handleResultComplete();
-
-                    } else {
-                        resultHandler.handleResultComplete();
                     }
+                    context.completeStep();
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
-        return new BasicOperationResult();
+        context.completeStep();
     }
 
     protected abstract ModelNode invokeCommandOn(Pool pool);

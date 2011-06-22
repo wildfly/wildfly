@@ -21,12 +21,13 @@
  */
 package org.jboss.as.embedded;
 
-import org.jboss.as.controller.client.ModelControllerClient;
-
-import javax.naming.Context;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+
+import javax.naming.Context;
+
+import org.jboss.as.controller.client.ModelControllerClient;
 
 /**
  * The standalone server interface.

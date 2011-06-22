@@ -23,27 +23,23 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanSubsystemDescribe implements ModelQueryOperationHandler, DescriptionProvider {
+public class InfinispanSubsystemDescribe implements NewStepHandler, DescriptionProvider {
 
     /**
      * {@inheritDoc}
+     *
      * @see org.jboss.as.controller.descriptions.DescriptionProvider#getModelDescription(java.util.Locale)
      */
     @Override
@@ -51,28 +47,22 @@ public class InfinispanSubsystemDescribe implements ModelQueryOperationHandler, 
         return LocalDescriptions.getSubsystemDescribeDescription(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.as.controller.ModelQueryOperationHandler#execute(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.as.controller.ResultHandler)
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        ModelNode result = new ModelNode();
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        ModelNode result = context.getResult();
+
         PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement());
-        ModelNode subModel = context.getSubModel();
+        ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 
         result.add(InfinispanSubsystemAdd.createOperation(rootAddress.toModelNode(), subModel));
 
         if (subModel.hasDefined(ModelKeys.CACHE_CONTAINER)) {
-            for (Property container: subModel.get(ModelKeys.CACHE_CONTAINER).asPropertyList()) {
+            for (Property container : subModel.get(ModelKeys.CACHE_CONTAINER).asPropertyList()) {
                 ModelNode address = rootAddress.toModelNode();
                 address.add(ModelKeys.CACHE_CONTAINER, container.getName());
                 result.add(CacheContainerAdd.createOperation(address, container.getValue()));
             }
         }
 
-        resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult();
+        context.completeStep();
     }
 }

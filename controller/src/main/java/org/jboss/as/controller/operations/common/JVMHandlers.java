@@ -22,21 +22,15 @@
 
 package org.jboss.as.controller.operations.common;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-
 import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import org.jboss.as.controller.descriptions.common.JVMDescriptions;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -75,23 +69,25 @@ public final class JVMHandlers {
     public static final String MAX_SIZE = "max-size";
 
     static final String[] ATTRIBUTES = {JVM_AGENT_LIB, JVM_AGENT_PATH, JVM_ENV_CLASSPATH_IGNORED, JVM_ENV_VARIABLES,
-         JVM_HEAP, JVM_MAX_HEAP, JVM_JAVA_AGENT, JVM_JAVA_HOME, JVM_OPTIONS, JVM_PERMGEN, JVM_MAX_PERMGEN, JVM_STACK};
+            JVM_HEAP, JVM_MAX_HEAP, JVM_JAVA_AGENT, JVM_JAVA_HOME, JVM_OPTIONS, JVM_PERMGEN, JVM_MAX_PERMGEN, JVM_STACK};
 
     static final String[] SERVER_ATTRIBUTES = {JVM_DEBUG_ENABLED, JVM_DEBUG_OPTIONS};
 
-    private static final OperationHandler writeHandler = WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE;
-    private static final OperationHandler booleanWriteHandler = new ModelUpdateOperationHandler() {
+    private static final NewStepHandler writeHandler = WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE;
+    private static final NewStepHandler booleanWriteHandler = new NewStepHandler() {
+
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public void execute(NewOperationContext context, ModelNode operation) {
             try {
                 final String name = operation.require(NAME).asString();
                 final boolean value = operation.get(VALUE).asBoolean();
-                context.getSubModel().get(name).set(value);
-                resultHandler.handleResultComplete();
+                ModelNode valNode = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(name);
+                boolean oldVal = valNode.asBoolean();
+                valNode.set(value);
             } catch (Exception e) {
-                resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
+                context.getFailureDescription().set(e.toString());
             }
-            return new BasicOperationResult();
+            context.completeStep();
         }
     };
 
@@ -106,7 +102,7 @@ public final class JVMHandlers {
 
         registration.registerReadWriteAttribute(JVM_AGENT_LIB, null, writeHandler, Storage.CONFIGURATION);
         registration.registerReadWriteAttribute(JVM_AGENT_PATH, null, writeHandler, Storage.CONFIGURATION);
-        if(server) {
+        if (server) {
             registration.registerReadWriteAttribute(JVM_DEBUG_ENABLED, null, booleanWriteHandler, Storage.CONFIGURATION);
             registration.registerReadWriteAttribute(JVM_DEBUG_OPTIONS, null, booleanWriteHandler, Storage.CONFIGURATION);
         }
@@ -128,76 +124,59 @@ public final class JVMHandlers {
         //
     }
 
-    static final class JVMOptionAddHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    static final class JVMOptionAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
         static final String OPERATION_NAME = ADD_JVM_OPTION;
         static final JVMOptionAddHandler INSTANCE = new JVMOptionAddHandler();
 
-        /** {@inheritDoc} */
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
+        protected void populateModel(ModelNode operation, ModelNode model) {
             final ModelNode option = operation.require(JVM_OPTION);
-
-            final ModelNode compensatingOperation = new ModelNode();
-            compensatingOperation.get(OP).set(JVMOptionRemoveHandler.OPERATION_NAME);
-            compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-            compensatingOperation.get(JVM_OPTION).set(option);
-
-            context.getSubModel().get(JVM_OPTIONS).add(option);
-
-            resultHandler.handleResultComplete();
-
-            return new BasicOperationResult(compensatingOperation);
+            model.get(JVM_OPTIONS).add(option);
         }
 
-        /** {@inheritDoc} */
+        protected boolean requiresRuntime(NewOperationContext context) {
+            return false;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return JVMDescriptions.getOptionAddOperation(locale);
         }
-
     }
 
-    static final class JVMOptionRemoveHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    static final class JVMOptionRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
         static final String OPERATION_NAME = "remove-jvm-option";
         static final JVMOptionRemoveHandler INSTANCE = new JVMOptionRemoveHandler();
 
-        /** {@inheritDoc} */
-        @Override
-        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-
+        protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) {
             final ModelNode option = operation.require(JVM_OPTION);
+            if (model.hasDefined(JVM_OPTIONS)) {
+                final ModelNode values = model.get(JVM_OPTIONS);
+                model.get(JVM_OPTIONS).setEmptyList();
 
-            final ModelNode compensatingOperation = new ModelNode();
-            compensatingOperation.get(OP).set(JVMOptionAddHandler.OPERATION_NAME);
-            compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-            compensatingOperation.get(JVM_OPTION).set(option);
-            //
-            final ModelNode subModel = context.getSubModel();
-            if(subModel.hasDefined(JVM_OPTIONS)) {
-                final ModelNode values = subModel.get(JVM_OPTIONS);
-                context.getSubModel().get(JVM_OPTIONS).setEmptyList();
-
-                for(ModelNode value : values.asList()) {
-                    if(! value.equals(option)) {
-                        subModel.get(JVM_OPTIONS).add(value);
+                for (ModelNode value : values.asList()) {
+                    if (!value.equals(option)) {
+                        model.get(JVM_OPTIONS).add(value);
                     }
                 }
             }
-
-            resultHandler.handleResultComplete();
-
-            return new BasicOperationResult(compensatingOperation);
         }
 
-        /** {@inheritDoc} */
+        protected boolean requiresRuntime(NewOperationContext context) {
+            return false;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return JVMDescriptions.getOptionRemoveOperation(locale);
         }
-
     }
 
 }

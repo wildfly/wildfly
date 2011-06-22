@@ -22,12 +22,6 @@
 
 package org.jboss.as.remoting;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
 import static org.jboss.as.remoting.CommonAttributes.INCLUDE_MECHANISMS;
@@ -46,28 +40,22 @@ import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistryException;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.security.ServerAuthenticationProvider;
-import org.jboss.xnio.OptionMap;
-import org.jboss.xnio.Options;
-import org.jboss.xnio.SaslQop;
-import org.jboss.xnio.SaslStrength;
-import org.jboss.xnio.Sequence;
+import org.xnio.OptionMap;
+import org.xnio.Options;
+import org.xnio.Sequence;
+import org.xnio.sasl.SaslQop;
+import org.xnio.sasl.SaslStrength;
 
 /**
  * Add a connector to a remoting container.
@@ -75,79 +63,60 @@ import org.jboss.xnio.Sequence;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-public class ConnectorAdd implements ModelAddOperationHandler, DescriptionProvider {
+public class ConnectorAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     static final ConnectorAdd INSTANCE = new ConnectorAdd();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        // Apply to model
-        applyToModel(context.getSubModel(), operation);
-
-        // Create the service.
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget target = context.getServiceTarget();
-
-                    final ConnectorService connectorService = new ConnectorService();
-                    connectorService.setOptionMap(createOptionMap(operation));
-
-                    // Register the service with the container and inject dependencies.
-                    final ServiceName connectorName = RemotingServices.connectorServiceName(name);
-                    try {
-                        target.addService(connectorName, connectorService)
-                                .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
-                                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
-                                .setInitialMode(ServiceController.Mode.ACTIVE)
-                                .install();
-                        resultHandler.handleResultComplete();
-
-                        // TODO create XNIO connector service from socket-binding, with dependency on connectorName
-                    } catch (ServiceRegistryException e) {
-                        throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-                    }
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.get(SOCKET_BINDING).set(operation.require(SOCKET_BINDING));
+        if (operation.hasDefined(AUTHENTICATION_PROVIDER)) {
+            model.get(AUTHENTICATION_PROVIDER).set(operation.get(AUTHENTICATION_PROVIDER));
         }
-
-        // Compensating is remove
-        final ModelNode compensating = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
-        return new BasicOperationResult(compensating);
+        if (operation.hasDefined(SASL)) {
+            model.get(SASL).set(operation.get(SASL));
+        }
+        if (operation.hasDefined(PROPERTIES)) {
+            model.get(PROPERTIES).set(operation.get(PROPERTIES));
+        }
     }
 
-    static void applyToModel(final ModelNode subModel, final ModelNode parameters) {
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+//        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+//        final String name = address.getLastElement().getValue();
+//
+//        final ServiceTarget target = context.getServiceTarget();
+//
+//        final ConnectorService connectorService = new ConnectorService();
+//        connectorService.setOptionMap(createOptionMap(operation));
+//
+//        // Register the service with the container and inject dependencies.
+//        final ServiceName connectorName = RemotingServices.connectorServiceName(name);
+//        try {
+//            newControllers.add(target.addService(connectorName, connectorService)
+//                    .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
+//                    .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
+//                    .addListener(verificationHandler)
+//                    .setInitialMode(ServiceController.Mode.ACTIVE)
+//                    .install());
+//
+//            // TODO create XNIO connector service from socket-binding, with dependency on connectorName
+//        } catch (ServiceRegistryException e) {
+//            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+//        }
 
-        subModel.get(SOCKET_BINDING).set(parameters.require(SOCKET_BINDING));
-        if(parameters.hasDefined(AUTHENTICATION_PROVIDER)) {
-            subModel.get(AUTHENTICATION_PROVIDER).set(parameters.get(AUTHENTICATION_PROVIDER));
-        }
-        if(parameters.hasDefined(SASL)) {
-            subModel.get(SASL).set(parameters.get(SASL));
-        }
-        if(parameters.hasDefined(PROPERTIES)) {
-            subModel.get(PROPERTIES).set(parameters.get(PROPERTIES));
-        }
     }
 
     static OptionMap createOptionMap(final ModelNode parameters) {
         final OptionMap.Builder builder = OptionMap.builder();
 
-        if(parameters.hasDefined(SASL)) {
+        if (parameters.hasDefined(SASL)) {
             final ModelNode sasl = parameters.require(SASL);
             builder.set(Options.SASL_SERVER_AUTH, sasl.get(SERVER_AUTH).asBoolean());
             builder.set(Options.SASL_STRENGTH, SaslStrength.valueOf(sasl.get(STRENGTH).asString()));
             builder.set(Options.SASL_QOP, Sequence.of(asQopSet(sasl.get(QOP))));
             builder.set(Options.SASL_MECHANISMS, Sequence.of(asStringSet(sasl.get(INCLUDE_MECHANISMS))));
 
-            if(sasl.hasDefined(POLICY)) {
+            if (sasl.hasDefined(POLICY)) {
                 final ModelNode policy = sasl.require(POLICY);
                 builder.set(Options.SASL_POLICY_FORWARD_SECRECY, policy.get(FORWARD_SECRECY).asBoolean());
                 builder.set(Options.SASL_POLICY_NOACTIVE, policy.get(NO_ACTIVE).asBoolean());
@@ -162,7 +131,7 @@ public class ConnectorAdd implements ModelAddOperationHandler, DescriptionProvid
 
     static Collection<String> asStringSet(final ModelNode node) {
         final Set<String> set = new HashSet<String>();
-        for(final ModelNode element : node.asList()) {
+        for (final ModelNode element : node.asList()) {
             set.add(element.asString());
         }
         return set;
@@ -170,7 +139,7 @@ public class ConnectorAdd implements ModelAddOperationHandler, DescriptionProvid
 
     static Collection<SaslQop> asQopSet(final ModelNode node) {
         final Set<SaslQop> set = new HashSet<SaslQop>();
-        for(final ModelNode element : node.asList()) {
+        for (final ModelNode element : node.asList()) {
             set.add(SaslQop.valueOf(element.asString()));
         }
         return set;

@@ -22,31 +22,6 @@
 
 package org.jboss.as.test.integration.domain;
 
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Collections;
-import java.util.List;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
@@ -56,9 +31,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FUL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
@@ -72,6 +48,30 @@ import static org.jboss.as.test.integration.domain.DomainTestSupport.validateRes
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Collections;
+import java.util.List;
+
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * Test of various management operations involving deployment.
@@ -230,7 +230,7 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        OperationBuilder builder = OperationBuilder.Factory.create(composite);
+        OperationBuilder builder = new OperationBuilder(composite);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -244,7 +244,7 @@ public class DeploymentManagementTestCase {
     @Test
     public void testUploadURL() throws Exception {
         String url = new File(tmpDir, "archives/" + TEST).toURI().toURL().toString();
-        ModelNode op = Util.getEmptyOperation(UPLOAD_DEPLOYMENT_URL, ROOT_ADDRESS);
+        ModelNode op = getEmptyOperation(UPLOAD_DEPLOYMENT_URL, ROOT_ADDRESS);
         op.get("url").set(url);
 
         byte[] hash = executeOnMaster(op).asBytes();
@@ -255,9 +255,9 @@ public class DeploymentManagementTestCase {
 
     @Test
     public void testUploadStream() throws Exception {
-        ModelNode op = Util.getEmptyOperation(UPLOAD_DEPLOYMENT_STREAM, ROOT_ADDRESS);
+        ModelNode op = getEmptyOperation(UPLOAD_DEPLOYMENT_STREAM, ROOT_ADDRESS);
         op.get(INPUT_STREAM_INDEX).set(0);
-        OperationBuilder builder = OperationBuilder.Factory.create(op);
+        OperationBuilder builder = new OperationBuilder(op);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         byte[] hash = executeOnMaster(builder.build()).asBytes();
@@ -326,7 +326,7 @@ public class DeploymentManagementTestCase {
 
 
     private void undeployTest() throws Exception {
-        ModelNode op = Util.getEmptyOperation("undeploy", OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
+        ModelNode op = getEmptyOperation("undeploy", OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
         executeOnMaster(op);
 
         // TODO git rid of this once ops never return until service container is settled
@@ -365,7 +365,7 @@ public class DeploymentManagementTestCase {
     }
 
     private void redeployTest() throws IOException {
-        ModelNode op = Util.getEmptyOperation("redeploy", OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
+        ModelNode op = getEmptyOperation("redeploy", OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
         executeOnMaster(op);
 
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -379,7 +379,7 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         ModelNode op = createDeploymentReplaceOperation(content, MAIN_SERVER_GROUP_ADDRESS, OTHER_SERVER_GROUP_ADDRESS);
-        OperationBuilder builder = OperationBuilder.Factory.create(op);
+        OperationBuilder builder = new OperationBuilder(op);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -475,7 +475,7 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         ModelNode op = createDeploymentReplaceOperation(content, MAIN_SERVER_GROUP_ADDRESS, OTHER_SERVER_GROUP_ADDRESS);
-        OperationBuilder builder = OperationBuilder.Factory.create(op);
+        OperationBuilder builder = new OperationBuilder(op);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -494,7 +494,7 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         ModelNode op = createDeploymentFullReplaceOperation(content);
-        OperationBuilder builder = OperationBuilder.Factory.create(op);
+        OperationBuilder builder = new OperationBuilder(op);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -532,7 +532,7 @@ public class DeploymentManagementTestCase {
         testDeploymentViaStream();
 
         String url = new File(tmpDir, "archives/" + TEST).toURI().toURL().toString();
-        ModelNode op = Util.getEmptyOperation(UPLOAD_DEPLOYMENT_URL, ROOT_ADDRESS);
+        ModelNode op = getEmptyOperation(UPLOAD_DEPLOYMENT_URL, ROOT_ADDRESS);
         op.get("url").set(url);
 
         byte[] hash = executeOnMaster(op).asBytes();
@@ -635,7 +635,7 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         ModelNode op = createDeploymentFullReplaceOperation(content);
-        OperationBuilder builder = OperationBuilder.Factory.create(op);
+        OperationBuilder builder = new OperationBuilder(op);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -657,7 +657,7 @@ public class DeploymentManagementTestCase {
 
         System.out.println(composite);
 
-        OperationBuilder builder = OperationBuilder.Factory.create(composite);
+        OperationBuilder builder = new OperationBuilder(composite);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -669,7 +669,7 @@ public class DeploymentManagementTestCase {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         ModelNode composite = createDeploymentOperation(content, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        OperationBuilder builder = OperationBuilder.Factory.create(composite);
+        OperationBuilder builder = new OperationBuilder(composite);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
@@ -721,14 +721,14 @@ public class DeploymentManagementTestCase {
     }
 
     private static ModelNode createDeploymentOperation(ModelNode content, ModelNode... serverGroupAddressses) {
-        ModelNode composite = Util.getEmptyOperation(COMPOSITE, ROOT_ADDRESS);
+        ModelNode composite = getEmptyOperation(COMPOSITE, ROOT_ADDRESS);
         ModelNode steps = composite.get(STEPS);
         ModelNode step1 = steps.add();
-        step1.set(Util.getEmptyOperation(ADD, ROOT_DEPLOYMENT_ADDRESS));
+        step1.set(getEmptyOperation(ADD, ROOT_DEPLOYMENT_ADDRESS));
         step1.get(CONTENT).add(content);
         for (ModelNode serverGroup : serverGroupAddressses) {
             ModelNode sg = steps.add();
-            sg.set(Util.getEmptyOperation(ADD, serverGroup));
+            sg.set(getEmptyOperation(ADD, serverGroup));
             sg.get(ENABLED).set(true);
         }
 
@@ -736,15 +736,15 @@ public class DeploymentManagementTestCase {
     }
 
     private static ModelNode createDeploymentReplaceOperation(ModelNode content, ModelNode... serverGroupAddressses) {
-        ModelNode composite = Util.getEmptyOperation(COMPOSITE, ROOT_ADDRESS);
+        ModelNode composite = getEmptyOperation(COMPOSITE, ROOT_ADDRESS);
         ModelNode steps = composite.get(STEPS);
         ModelNode step1 = steps.add();
-        step1.set(Util.getEmptyOperation(ADD, ROOT_REPLACEMENT_ADDRESS));
+        step1.set(getEmptyOperation(ADD, ROOT_REPLACEMENT_ADDRESS));
         step1.get(RUNTIME_NAME).set(TEST);
         step1.get(CONTENT).add(content);
         for (ModelNode serverGroup : serverGroupAddressses) {
             ModelNode sgr = steps.add();
-            sgr.set(Util.getEmptyOperation(REPLACE_DEPLOYMENT, serverGroup));
+            sgr.set(getEmptyOperation(REPLACE_DEPLOYMENT, serverGroup));
             sgr.get(ENABLED).set(true);
             sgr.get(NAME).set(REPLACEMENT);
             sgr.get(TO_REPLACE).set(TEST);
@@ -754,14 +754,14 @@ public class DeploymentManagementTestCase {
     }
 
     private static ModelNode createDeploymentFullReplaceOperation(ModelNode content) {
-        ModelNode op = Util.getEmptyOperation(FULL_REPLACE_DEPLOYMENT, ROOT_ADDRESS);
+        ModelNode op = getEmptyOperation(FULL_REPLACE_DEPLOYMENT, ROOT_ADDRESS);
         op.get(NAME).set(TEST);
         op.get(CONTENT).add(content);
         return op;
     }
 
     private static List<ModelNode> getDeploymentList(ModelNode address) throws IOException {
-        ModelNode op = Util.getEmptyOperation("read-children-names", address);
+        ModelNode op = getEmptyOperation("read-children-names", address);
         op.get("child-type").set("deployment");
 
         ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
@@ -773,9 +773,22 @@ public class DeploymentManagementTestCase {
         ModelNode deplAddr = new ModelNode();
         deplAddr.set(address);
         deplAddr.add("deployment", deploymentName);
-        ModelNode op = Util.getResourceRemoveOperation(deplAddr);
+        ModelNode op = getEmptyOperation(REMOVE, deplAddr);
         ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
         validateResponse(response);
+    }
+
+    private static ModelNode getEmptyOperation(String operationName, ModelNode address) {
+        ModelNode op = new ModelNode();
+        op.get(OP).set(operationName);
+        if (address != null) {
+            op.get(OP_ADDR).set(address);
+        }
+        else {
+            // Just establish the standard structure; caller can fill in address later
+            op.get(OP_ADDR);
+        }
+        return op;
     }
 
     private static void performHttpCall(String host, int port) throws IOException {

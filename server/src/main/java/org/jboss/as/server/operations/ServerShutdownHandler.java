@@ -24,13 +24,10 @@ package org.jboss.as.server.operations;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.server.ServerOperationHandler;
 import org.jboss.as.server.controller.descriptions.ServerRootDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -39,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Jason T. Greene
  */
-public class ServerShutdownHandler implements ServerOperationHandler, DescriptionProvider {
+public class ServerShutdownHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "shutdown";
     public static final ServerShutdownHandler INSTANCE = new ServerShutdownHandler();
@@ -48,19 +45,24 @@ public class ServerShutdownHandler implements ServerOperationHandler, Descriptio
     }
 
     /** {@inheritDoc} */
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        Thread thread = new Thread(new Runnable() {
-            public void run() {
-                System.exit(0);
+    @Override
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new NewStepHandler() {
+            @Override
+            public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                final Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        System.exit(0);
+                    }
+                });
+                // The intention is that this shutdown is graceful, and so the client gets a reply.
+                // At the time of writing we did not yet have graceful shutdown.
+                thread.setName("Management Triggered Shutdown");
+                thread.run();
+                context.completeStep();
             }
-        });
-
-        // The intention is that this shutdown is graceful, and so the client gets a reply.
-        // At the time of writing we did not yet have graceful shutdown.
-        thread.setName("Management Triggered Shutdown");
-        thread.run();
-
-        return new BasicOperationResult(null);
+        }, NewOperationContext.Stage.RUNTIME);
+        context.completeStep();
     }
 
     /** {@inheritDoc} */

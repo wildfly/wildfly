@@ -23,60 +23,48 @@
 package org.jboss.as.domain.controller.operations;
 
 import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
-import org.jboss.dmr.ModelNode;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class ServerGroupAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class ServerGroupAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final ServerGroupAddHandler INSTANCE = new ServerGroupAddHandler();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-        final ModelNode subModel = context.getSubModel();
-        subModel.get(PROFILE).set(operation.require(PROFILE));
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.get(PROFILE).set(operation.require(PROFILE));
 
-        if(operation.hasDefined(SOCKET_BINDING_GROUP)) {
-            subModel.get(SOCKET_BINDING_GROUP).set(operation.get(SOCKET_BINDING_GROUP));
+        if (operation.hasDefined(SOCKET_BINDING_GROUP)) {
+            model.get(SOCKET_BINDING_GROUP).set(operation.get(SOCKET_BINDING_GROUP));
         }
 
-        if(operation.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
-            subModel.get(SOCKET_BINDING_PORT_OFFSET).set(operation.get(SOCKET_BINDING_PORT_OFFSET));
+        if (operation.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
+            model.get(SOCKET_BINDING_PORT_OFFSET).set(operation.get(SOCKET_BINDING_PORT_OFFSET));
         }
 
-        if(operation.hasDefined(JVM)) {
-            subModel.get(JVM).set(operation.get(JVM).asString(), new ModelNode());
+        if (operation.hasDefined(JVM)) {
+            model.get(JVM).set(operation.get(JVM).asString(), new ModelNode());
+        } else {
+            model.get(JVM);
         }
-        else {
-            subModel.get(JVM);
-        }
 
-        subModel.get(SYSTEM_PROPERTY);
-        subModel.get(DEPLOYMENT);
+        model.get(SYSTEM_PROPERTY);
+        model.get(DEPLOYMENT);
+    }
 
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOperation);
+    protected boolean requiresRuntime(NewOperationContext context) {
+        return false;
     }
 
     @Override

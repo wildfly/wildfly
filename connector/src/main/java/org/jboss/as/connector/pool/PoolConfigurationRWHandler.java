@@ -22,6 +22,9 @@
 
 package org.jboss.as.connector.pool;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.jboss.as.connector.ConnectorServices;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -31,23 +34,12 @@ import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
@@ -67,29 +59,23 @@ public class PoolConfigurationRWHandler {
 
     static final String[] NO_LOCATION = new String[0];
 
-    public static final String[] ATTRIBUTES = new String[] { MAX_POOL_SIZE, MIN_POOL_SIZE, BLOCKING_TIMEOUT_WAIT_MILLIS,
+    public static final String[] ATTRIBUTES = new String[]{MAX_POOL_SIZE, MIN_POOL_SIZE, BLOCKING_TIMEOUT_WAIT_MILLIS,
             IDLETIMEOUTMINUTES, BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMINUTES, POOL_PREFILL, POOL_USE_STRICT_MIN,
-            USE_FAST_FAIL };
+            USE_FAST_FAIL};
 
-    public static class PoolConfigurationReadHandler implements ModelQueryOperationHandler {
+    // TODO this seems to just do what the default handler does, so registering it is probably unnecessary
+    public static class PoolConfigurationReadHandler implements NewStepHandler {
         public static PoolConfigurationReadHandler INSTANCE = new PoolConfigurationReadHandler();
 
-        /** {@inheritDoc} */
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation,
-                final ResultHandler resultHandler) throws OperationFailedException {
-
-            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String jndiName = address.getLastElement().getValue();
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             final String parameterName = operation.require(NAME).asString();
 
-            final ModelNode submodel = context.getSubModel();
-            final ModelNode currentValue = submodel.get(parameterName).clone();
+            final ModelNode submodel = context.readModel(PathAddress.EMPTY_ADDRESS);
+            final ModelNode currentValue = submodel.hasDefined(parameterName) ? submodel.get(parameterName).clone() : new ModelNode();
 
-            resultHandler.handleResultFragment(new String[0], currentValue);
-            resultHandler.handleResultComplete();
+            context.getResult().set(currentValue);
 
-            return new BasicOperationResult();
+            context.completeStep();
         }
     }
 
@@ -100,57 +86,61 @@ public class PoolConfigurationRWHandler {
         }
 
         @Override
-        protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
-                final ResultHandler resultHandler, final String parameterName, final ModelNode newValue,
-                final ModelNode currentValue) throws OperationFailedException {
-            if (context.getRuntimeContext() != null) {
-                context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                    public void execute(RuntimeTaskContext runtimeCtx) throws OperationFailedException {
+        protected boolean applyUpdateToRuntime(final NewOperationContext context, final ModelNode operation,
+               final String parameterName, final ModelNode newValue,
+               final ModelNode currentValue) throws OperationFailedException {
+
+            if (context.getType() == NewOperationContext.Type.SERVER) {
+                context.addStep(new NewStepHandler() {
+                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                         final String jndiName = address.getLastElement().getValue();
 
-                        final ServiceController<?> managementRepoService = runtimeCtx.getServiceRegistry().getService(
+                        final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
                                 ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
+                        List<PoolConfiguration> poolConfigs = null;
                         if (managementRepoService != null) {
                             try {
                                 final ManagementRepository repository = (ManagementRepository) managementRepoService.getValue();
-                                List<PoolConfiguration> poolConfigs = getMatchingPoolConfigs(jndiName, repository);
-                                for (PoolConfiguration pc : poolConfigs) {
-                                    if (MAX_POOL_SIZE.equals(parameterName)) {
-                                        pc.setMaxSize(newValue.asInt());
-                                    }
-                                    if (MIN_POOL_SIZE.equals(parameterName)) {
-                                        pc.setMinSize(newValue.asInt());
-                                    }
-                                    if (BLOCKING_TIMEOUT_WAIT_MILLIS.equals(parameterName)) {
-                                        pc.setBlockingTimeout(newValue.asLong());
-                                    }
-                                    if (POOL_USE_STRICT_MIN.equals(parameterName)) {
-                                        pc.setStrictMin(newValue.asBoolean());
-                                    }
-                                    if (USE_FAST_FAIL.equals(parameterName)) {
-                                        pc.setUseFastFail(newValue.asBoolean());
-                                    }
-
-                                }
-
-                                resultHandler.handleResultComplete();
-
+                                poolConfigs = getMatchingPoolConfigs(jndiName, repository);
+                                updatePoolConfigs(poolConfigs, parameterName, newValue);
                             } catch (Exception e) {
-                                throw new OperationFailedException(new ModelNode().set("failed to set attribute"
-                                        + e.getMessage()));
+                                throw new OperationFailedException(new ModelNode().set("failed to set attribute" + e.getMessage()));
                             }
-                        } else {
-                            resultHandler.handleResultComplete();
                         }
+
+                        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK && poolConfigs != null) {
+                            updatePoolConfigs(poolConfigs, parameterName, currentValue);
+                        }
+
                     }
-                });
-            } else {
-                resultHandler.handleResultComplete();
+                }, NewOperationContext.Stage.RUNTIME);
             }
+
             return (IDLETIMEOUTMINUTES.equals(parameterName) || BACKGROUNDVALIDATION.equals(parameterName)
                     || BACKGROUNDVALIDATIONMINUTES.equals(parameterName) || POOL_PREFILL.equals(parameterName));
 
+        }
+
+        private void updatePoolConfigs(List<PoolConfiguration> poolConfigs, String parameterName, ModelNode newValue) {
+            for (PoolConfiguration pc : poolConfigs) {
+                if (MAX_POOL_SIZE.equals(parameterName)) {
+                    pc.setMaxSize(newValue.asInt());
+                }
+                if (MIN_POOL_SIZE.equals(parameterName)) {
+                    pc.setMinSize(newValue.asInt());
+                }
+                if (BLOCKING_TIMEOUT_WAIT_MILLIS.equals(parameterName)) {
+                    pc.setBlockingTimeout(newValue.asLong());
+                }
+                if (POOL_USE_STRICT_MIN.equals(parameterName)) {
+                    pc.setStrictMin(newValue.asBoolean());
+                }
+                if (USE_FAST_FAIL.equals(parameterName)) {
+                    pc.setUseFastFail(newValue.asBoolean());
+                }
+
+            }
         }
 
         protected abstract List<PoolConfiguration> getMatchingPoolConfigs(String jndiName, ManagementRepository repository);

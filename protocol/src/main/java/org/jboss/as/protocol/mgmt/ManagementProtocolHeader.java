@@ -22,38 +22,23 @@
 
 package org.jboss.as.protocol.mgmt;
 
+import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 
 /**
  * DomainClientProtocol header used to send the required information to establish a request with a remote host controller.  The primary
  * pieces of the request are the protocol signature and the protocol version being used.
  *
  * @author John Bailey
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public abstract class ManagementProtocolHeader {
+abstract class ManagementProtocolHeader {
 
-    protected int version;
-
-    /**
-     * Construct a new instance without setting the version.  Should be used if the input is not available at the time
-     * of creation.
-     */
-    protected ManagementProtocolHeader() {
-    }
-
-    /**
-     * Construct a new instance and read the header information from the input provided.
-     *
-     * @param input The input to read the header information from
-     * @throws IOException If any problem occur reading from the input
-     */
-    protected ManagementProtocolHeader(final DataInput input) throws IOException {
-        read(input);
-    }
+    private int version;
 
     /**
      * Construct an instance with the protocol version for the header.
@@ -63,19 +48,6 @@ public abstract class ManagementProtocolHeader {
     protected ManagementProtocolHeader(int version) {
         this.version = version;
     }
-
-    /**
-     * Read the header information from the provided {@link java.io.DataInput}.
-     *
-     * @param input The input to read from
-     * @throws IOException If any problems occur reading from the input
-     */
-    public void read(final DataInput input) throws IOException {
-        validateSignature(input);
-        expectHeader(input, ManagementProtocol.VERSION_FIELD);
-        this.version = input.readInt();
-    }
-
     /**
      * Write the header information to the provided {@link java.io.DataOutput}.
      *
@@ -86,6 +58,8 @@ public abstract class ManagementProtocolHeader {
         output.write(ManagementProtocol.SIGNATURE);
         output.writeByte(ManagementProtocol.VERSION_FIELD);
         output.writeInt(getVersion());
+        output.writeByte(ManagementProtocol.TYPE);
+        output.writeByte(getType());
     }
 
     /**
@@ -98,16 +72,53 @@ public abstract class ManagementProtocolHeader {
     }
 
     /**
+     * The type
+     *
+     * @return the protocol byte identifying the type
+     */
+    abstract byte getType();
+
+    /**
+     * Is this a request.
+     *
+     * @return true if this header is a request; false if it is a response
+     */
+    boolean isRequest() {
+        return getType() == ManagementProtocol.TYPE_REQUEST;
+    }
+
+    /**
      * Validate the header signature.
      *
      * @param input The input to read the signature from
      * @throws IOException If any read problems occur
      */
-    protected void validateSignature(final DataInput input) throws IOException {
+    protected static void validateSignature(final DataInput input) throws IOException {
         final byte[] signatureBytes = new byte[4];
         input.readFully(signatureBytes);
         if (!Arrays.equals(ManagementProtocol.SIGNATURE, signatureBytes)) {
             throw new IOException("Invalid signature [" + Arrays.toString(signatureBytes) + "]");
+        }
+    }
+
+
+    /**
+     * Parses the input stream to read the header
+     *
+     */
+    static ManagementProtocolHeader parse(DataInput input) throws IOException {
+        validateSignature(input);
+        expectHeader(input, ManagementProtocol.VERSION_FIELD);
+        int version = input.readInt();
+        expectHeader(input, ManagementProtocol.TYPE);
+        byte type = input.readByte();
+        switch (type) {
+            case ManagementProtocol.TYPE_REQUEST:
+                return new ManagementRequestHeader(version, input);
+            case ManagementProtocol.TYPE_RESPONSE:
+                return new ManagementResponseHeader(version, input);
+            default:
+                throw new IOException("Invalid type: " + type);
         }
     }
 }

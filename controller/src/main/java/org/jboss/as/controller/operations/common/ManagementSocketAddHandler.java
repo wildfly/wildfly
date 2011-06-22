@@ -22,16 +22,9 @@
 
 package org.jboss.as.controller.operations.common;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.util.Locale;
-
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -40,7 +33,7 @@ import org.jboss.dmr.ModelNode;
  * @author Emanuel Muckenhuber
  * @author Brian Stansberry
  */
-public class ManagementSocketAddHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class ManagementSocketAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "add-management-socket";
 
@@ -49,34 +42,24 @@ public class ManagementSocketAddHandler implements ModelUpdateOperationHandler, 
     protected ManagementSocketAddHandler() {
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove-management-socket");
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
+    protected void populateModel(ModelNode operation, ModelNode model) {
         final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
         final int port = operation.require(ModelDescriptionConstants.PORT).asInt();
 
-        final ModelNode subModel = context.getSubModel();
-        subModel.get(ModelDescriptionConstants.MANAGEMENT_INTERFACE, ModelDescriptionConstants.INTERFACE).set(interfaceName);
-        subModel.get(ModelDescriptionConstants.MANAGEMENT_INTERFACE, ModelDescriptionConstants.PORT).set(port);
-
-        return installManagementSocket(interfaceName, port, context, resultHandler, compensatingOperation);
+        model.get(ModelDescriptionConstants.MANAGEMENT_INTERFACE, ModelDescriptionConstants.INTERFACE).set(interfaceName);
+        model.get(ModelDescriptionConstants.MANAGEMENT_INTERFACE, ModelDescriptionConstants.PORT).set(port);
     }
 
-    /** {@inheritDoc} */
+    protected boolean requiresRuntime(NewOperationContext context) {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModelNode getModelDescription(Locale locale) {
         // TODO Auto-generated method stub
         return new ModelNode();
     }
-
-    protected OperationResult installManagementSocket(String interfaceName, int port, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOperation) {
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOperation);
-    }
-
 }

@@ -20,7 +20,7 @@ package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -28,16 +28,21 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingPortHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
+public class BindingPortHandler extends AbstractBindingWriteHandler {
 
     public static final BindingPortHandler INSTANCE = new BindingPortHandler();
 
     private BindingPortHandler() {
-        super(new IntRangeValidator(0, 65535, false, true));
+        super(new IntRangeValidator(0, 65535, false, true), new IntRangeValidator(0, 65535, false, false));
     }
 
     @Override
     void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) throws OperationFailedException {
+        binding.setPort(attributeValue.asInt());
+    }
+
+    @Override
+    void handleRuntimeRollback(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) {
         binding.setPort(attributeValue.asInt());
     }
 }

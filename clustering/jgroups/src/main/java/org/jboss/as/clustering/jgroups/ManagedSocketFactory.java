@@ -31,7 +31,7 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.Map;
 
-import org.jboss.as.server.services.net.SocketBindingManager;
+import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.util.SocketFactory;
 
 /**

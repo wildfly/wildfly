@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.version.Version;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.Level;
@@ -119,20 +119,20 @@ public final class Main {
     private Main() {
     }
 
-    private static HostControllerBootstrap create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
+    private static NewHostControllerBootstrap create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
         Main main = new Main();
         return main.boot(args, stdin, stdout, stderr, authCode);
     }
 
-    private HostControllerBootstrap boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
-        HostControllerBootstrap hc = null;
+    private NewHostControllerBootstrap boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
+        NewHostControllerBootstrap hc = null;
         try {
             HostControllerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
             if (config == null) {
                 abort(null);
                 return null;
             } else {
-                hc = new HostControllerBootstrap(config, authCode);
+                hc = new NewHostControllerBootstrap(config, authCode);
                 hc.start();
             }
         } catch (Throwable t) {

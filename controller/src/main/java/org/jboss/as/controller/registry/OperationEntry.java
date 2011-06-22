@@ -22,33 +22,48 @@
 
 package org.jboss.as.controller.registry;
 
-import org.jboss.as.controller.OperationHandler;
+import java.util.EnumSet;
+
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
- * Information about a registered {@code OperationHandler}.
+ * Information about a registered {@code NewStepHandler}.
  *
  * @author Emanuel Muckenhuber
  */
 public final class OperationEntry {
-
     public enum EntryType {
         PUBLIC, PRIVATE;
     }
 
-    private final OperationHandler operationHandler;
+    /** Flags to indicate special characteristics of an operation */
+    public enum Flag {
+        /** Operation only reads, does not modify */
+        READ_ONLY,
+        /** Operation only performs a deployment upload */
+        DEPLOYMENT_UPLOAD
+    }
+
+    private final NewStepHandler operationHandler;
     private final DescriptionProvider descriptionProvider;
     private final EntryType type;
+    private final EnumSet<Flag> flags;
     private final boolean inherited;
 
-    protected OperationEntry(final OperationHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type) {
+    protected OperationEntry(final NewStepHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type, final EnumSet<Flag> flags) {
         this.operationHandler = operationHandler;
         this.descriptionProvider = descriptionProvider;
         this.inherited = inherited;
         this.type = type;
+        this.flags = flags;
     }
 
-    OperationHandler getOperationHandler() {
+    protected OperationEntry(final NewStepHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type) {
+       this(operationHandler, descriptionProvider, inherited, type, EnumSet.noneOf(Flag.class));
+    }
+
+    public NewStepHandler getOperationHandler() {
         return operationHandler;
     }
 
@@ -62,6 +77,10 @@ public final class OperationEntry {
 
     public EntryType getType() {
         return type;
+    }
+
+    public EnumSet<Flag> getFlags() {
+        return flags == null ? EnumSet.noneOf(Flag.class) : flags.clone();
     }
 
 }

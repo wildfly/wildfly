@@ -292,17 +292,21 @@ public abstract class AbstractResourceAdapterDeploymentService {
                             binderService.getManagedObjectInjector())
                     .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
                             binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
-                        public void serviceStarted(ServiceController<?> controller) {
-                            log.infof("Bound JCA AdminObject [%s]", jndi);
-                        }
 
-                        public void serviceStopped(ServiceController<?> serviceController) {
-                            log.infof("Unbound JCA AdminObject [%s]", jndi);
-                        }
-
-                        public void serviceRemoved(ServiceController<?> serviceController) {
-                            log.debugf("Removed JCA AdminObject [%s]", jndi);
-                            serviceController.removeListener(this);
+                        public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                            switch (transition) {
+                                case STARTING_to_UP: {
+                                    log.infof("Bound JCA AdminObject [%s]", jndi);
+                                    break;
+                                }
+                                case STOPPING_to_DOWN: {
+                                    log.infof("Unbound JCA AdminObject [%s]", jndi);
+                                    break;
+                                }
+                                case REMOVING_to_REMOVED: {
+                                    log.debugf("Removed JCA AdminObject [%s]", jndi);
+                                }
+                            }
                         }
                     }).setInitialMode(ServiceController.Mode.ACTIVE).install();
 

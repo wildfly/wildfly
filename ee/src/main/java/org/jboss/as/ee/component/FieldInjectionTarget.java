@@ -42,20 +42,15 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
  */
 public final class FieldInjectionTarget extends InjectionTarget {
 
-    public FieldInjectionTarget(final String className, final String name, final String fieldType) {
-        this(className, name, fieldType, false);
-    }
 
     /**
      *
      * @param className
      * @param name
      * @param fieldType
-     * @param optionalInjection If the injection is optional (for example, in case of env-entry the injection is only done if
-     *  the env-entry has a env-entry-value)
      */
-    public FieldInjectionTarget(final String className, final String name, final String fieldType, final boolean optionalInjection) {
-        super(className, name, fieldType, optionalInjection);
+    public FieldInjectionTarget(final String className, final String name, final String fieldType) {
+        super(className, name, fieldType);
     }
 
     public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
@@ -74,6 +69,6 @@ public final class FieldInjectionTarget extends InjectionTarget {
         if (field == null) {
             throw new DeploymentUnitProcessingException("No matching field found for '" + name + "'");
         }
-        return new ManagedReferenceFieldInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, field, this.isOptionalInjection());
+        return new ManagedReferenceFieldInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, field);
     }
 }

@@ -18,13 +18,13 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
 import java.io.IOException;
@@ -42,8 +42,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DeploymentUploadURLHandler
-extends AbstractDeploymentUploadHandler
-implements DescriptionProvider {
+    extends AbstractDeploymentUploadHandler
+    implements DescriptionProvider {
 
     public static final String OPERATION_NAME = UPLOAD_DEPLOYMENT_URL;
 
@@ -63,7 +63,7 @@ implements DescriptionProvider {
      * {@inheritDoc}
      */
     @Override
-    protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
+    protected InputStream getContentInputStream(NewOperationContext operationContext, ModelNode operation) throws OperationFailedException {
         urlValidator.validate(operation);
 
         String urlSpec = operation.get(URL).asString();

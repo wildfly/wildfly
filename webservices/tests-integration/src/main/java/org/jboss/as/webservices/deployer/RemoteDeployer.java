@@ -39,7 +39,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
@@ -141,7 +140,7 @@ public final class RemoteDeployer implements Deployer {
                 moduleOptions.add(k, authenticationOptions.get(k));
             }
         }
-        return client.execute(OperationBuilder.Factory.create(op).build());
+        return client.execute(op);
     }
 
     private static ModelNode removeSecurityDomain(ModelControllerClient client, String name) throws IOException {
@@ -149,7 +148,7 @@ public final class RemoteDeployer implements Deployer {
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
         op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
-        return client.execute(OperationBuilder.Factory.create(op).build());
+        return client.execute(op);
     }
 
     private static void checkResult(ModelNode result) throws Exception {

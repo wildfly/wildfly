@@ -22,22 +22,14 @@
 
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 
 /**
  * Removes WS endpoint from webservices subsystem model.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class WSEndpointRemove implements ModelRemoveOperationHandler {
+final class WSEndpointRemove extends AbstractRemoveStepHandler {
 
     static final WSEndpointRemove INSTANCE = new WSEndpointRemove();
 
@@ -45,27 +37,15 @@ final class WSEndpointRemove implements ModelRemoveOperationHandler {
         // forbidden instantiation
     }
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-        final ModelNode opAddr = operation.require(OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
-        final String name = address.getLastElement().getValue();
-
-        final ModelNode endpoint = context.getSubModel();
-        endpoint.clear();
-
-        /*
-         * if (context.getRuntimeContext() != null) {
-         * context.getRuntimeContext().setRuntimeTask(new RuntimeTask() { public
-         * void execute(RuntimeTaskContext context) throws
-         * OperationFailedException { final ServiceController<?> controller =
-         * context.getServiceRegistry()
-         * .getService(ThreadsServices.threadFactoryName(name)); if (controller
-         * != null) { controller.setMode(ServiceController.Mode.REMOVE); }
-         * resultHandler.handleResultComplete(); } }); } else {
-         * resultHandler.handleResultComplete(); }
-         */
-        return new BasicOperationResult();
-    }
-
+    /*
+    * if (context.getRuntimeContext() != null) {
+    * context.getRuntimeContext().setRuntimeTask(new RuntimeTask() { public
+    * void execute(RuntimeTaskContext context) throws
+    * OperationFailedException { final ServiceController<?> controller =
+    * context.getServiceRegistry()
+    * .getService(ThreadsServices.threadFactoryName(name)); if (controller
+    * != null) { controller.setMode(ServiceController.Mode.REMOVE); }
+    * resultHandler.handleResultComplete(); } }); } else {
+    * resultHandler.handleResultComplete(); }
+    */
 }

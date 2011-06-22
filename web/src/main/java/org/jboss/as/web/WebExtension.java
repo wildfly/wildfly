@@ -22,6 +22,7 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -33,7 +34,11 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.web.deployment.ServletDeploymentStats;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+
+import java.util.Locale;
 
 /**
  * The web extension.
@@ -69,6 +74,16 @@ public class WebExtension implements Extension {
         final ModelNodeRegistration hosts = registration.registerSubModel(hostPath, WebSubsystemDescriptionProviders.VIRTUAL_SERVER);
         hosts.registerOperationHandler(ADD, WebVirtualHostAdd.INSTANCE, WebVirtualHostAdd.INSTANCE, false);
         hosts.registerOperationHandler(REMOVE, WebVirtualHostRemove.INSTANCE, WebVirtualHostRemove.INSTANCE, false);
+
+        DescriptionProvider NULL = new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                return new ModelNode();
+            }
+        };
+        final ModelNodeRegistration deployments = subsystem.registerDeploymentModel(NULL);
+        final ModelNodeRegistration servlets = deployments.registerSubModel(PathElement.pathElement("servlet"), NULL);
+        ServletDeploymentStats.register(servlets);
     }
 
     /** {@inheritDoc} */

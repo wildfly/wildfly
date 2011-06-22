@@ -21,34 +21,19 @@
  */
 package org.jboss.as.jpa.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
 import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.jpa.service.JPAService;
-import org.jboss.as.server.BootOperationHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * Removes the JPA subsystem.
- * <p/>
  *
  * @author Brian Stansberry
  */
-class JPASubSystemRemove implements ModelRemoveOperationHandler, BootOperationHandler, DescriptionProvider {
+class JPASubSystemRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     static final JPASubSystemRemove INSTANCE = new JPASubSystemRemove();
 
@@ -58,28 +43,12 @@ class JPASubSystemRemove implements ModelRemoveOperationHandler, BootOperationHa
         //
     }
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
-        throws OperationFailedException {
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+        context.reloadRequired();
+    }
 
-        ModelNode compensatingOperation = JPASubSystemAdd.getAddOperation(operation.require(OP_ADDR), context.getSubModel());
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceRegistry registry = context.getServiceRegistry();
-                    ServiceController<?> jpaService = registry.getService(JPAService.SERVICE_NAME);
-                    if (jpaService != null) {
-                        jpaService.setMode(Mode.REMOVE);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-
-        return new BasicOperationResult(compensatingOperation);
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        context.revertReloadRequired();
     }
 
     @Override

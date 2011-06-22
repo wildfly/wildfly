@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -54,6 +54,10 @@ final class NodeSubregistry {
         childRegistriesUpdater.clear(this);
     }
 
+    AbstractNodeRegistration getParent() {
+        return parent;
+    }
+
     Set<String> getChildNames(){
         final Map<String, AbstractNodeRegistration> snapshot = this.childRegistries;
         if (snapshot == null) {
@@ -62,8 +66,8 @@ final class NodeSubregistry {
         return new HashSet<String>(snapshot.keySet());
     }
 
-    ModelNodeRegistration register(final String elementValue, final DescriptionProvider provider) {
-        final AbstractNodeRegistration newRegistry = new ConcreteNodeRegistration(elementValue, this, provider);
+    ModelNodeRegistration register(final String elementValue, final DescriptionProvider provider, boolean runtimeOnly) {
+        final AbstractNodeRegistration newRegistry = new ConcreteNodeRegistration(elementValue, this, provider, runtimeOnly);
         register(elementValue, newRegistry);
         return newRegistry;
     }
@@ -82,27 +86,29 @@ final class NodeSubregistry {
         }
     }
 
-    void registerProxyController(final String elementValue, final ProxyController proxyController) {
-        final AbstractNodeRegistration newRegistry = new ProxyControllerRegistration(elementValue, this, proxyController);
+    ProxyControllerRegistration registerProxyController(final String elementValue, final NewProxyController proxyController) {
+        final ProxyControllerRegistration newRegistry = new ProxyControllerRegistration(elementValue, this, proxyController);
         final AbstractNodeRegistration appearingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
         if (appearingRegistry != null) {
             throw new IllegalArgumentException("A node is already registered at '" + getLocationString() + elementValue + ")'");
         }
+        //register(elementValue, newRegistry);
+        return newRegistry;
     }
 
     void unregisterProxyController(final String elementValue) {
         childRegistriesUpdater.remove(this, elementValue);
     }
 
-    OperationHandler getHandler(final ListIterator<PathElement> iterator, final String child, final String operationName) {
+    NewStepHandler getOperationHandler(final ListIterator<PathElement> iterator, final String child, final String operationName, NewStepHandler inherited) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistriesUpdater.get(this);
         final AbstractNodeRegistration childRegistry = snapshot.get(child);
         if (childRegistry != null) {
-            return childRegistry.getHandler(iterator, operationName);
+            return childRegistry.getOperationHandler(iterator, operationName, inherited);
         } else {
             final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");
             if (wildcardRegistry != null) {
-                return wildcardRegistry.getHandler(iterator, operationName);
+                return wildcardRegistry.getOperationHandler(iterator, operationName, inherited);
             } else {
                 return null;
             }
@@ -135,16 +141,34 @@ final class NodeSubregistry {
         return parent.getLocationString() + "(" + keyName + " => ";
     }
 
-    DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String child, final String operationName) {
+    DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String child, final String operationName, DescriptionProvider inherited) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
         AbstractNodeRegistration childRegistry = snapshot.get(child);
-        if (childRegistry == null) {
-            childRegistry = snapshot.get("*");
-            if (childRegistry == null) {
+        if (childRegistry != null) {
+            return childRegistry.getOperationDescription(iterator, operationName, inherited);
+        } else {
+            final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");
+            if (wildcardRegistry != null) {
+                return wildcardRegistry.getOperationDescription(iterator, operationName, inherited);
+            } else {
                 return null;
             }
         }
-        return childRegistry.getOperationDescription(iterator, operationName);
+    }
+
+    Set<OperationEntry.Flag> getOperationFlags(final ListIterator<PathElement> iterator, final String child, final String operationName, Set<OperationEntry.Flag> inherited) {
+        final Map<String, AbstractNodeRegistration> snapshot = childRegistriesUpdater.get(this);
+        final AbstractNodeRegistration childRegistry = snapshot.get(child);
+        if (childRegistry != null) {
+            return childRegistry.getOperationFlags(iterator, operationName, inherited);
+        } else {
+            final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");
+            if (wildcardRegistry != null) {
+                return wildcardRegistry.getOperationFlags(iterator, operationName, inherited);
+            } else {
+                return null;
+            }
+        }
     }
 
     DescriptionProvider getModelDescription(final Iterator<PathElement> iterator, final String child) {
@@ -211,7 +235,7 @@ final class NodeSubregistry {
         return childRegistry.getChildAddresses(iterator);
     }
 
-    ProxyController getProxyController(final Iterator<PathElement> iterator, final String child) {
+    NewProxyController getProxyController(final Iterator<PathElement> iterator, final String child) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
         AbstractNodeRegistration childRegistry = snapshot.get(child);
         if (childRegistry == null) {
@@ -225,12 +249,15 @@ final class NodeSubregistry {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
         AbstractNodeRegistration childRegistry = snapshot.get(child);
         if (childRegistry == null) {
-            return null;
+            childRegistry = snapshot.get("*");
+            if (childRegistry == null) {
+                return null;
+            }
         }
         return childRegistry.getNodeRegistration(iterator);
     }
 
-    void getProxyControllers(final Iterator<PathElement> iterator, final String child, Set<ProxyController> controllers) {
+    void getProxyControllers(final Iterator<PathElement> iterator, final String child, Set<NewProxyController> controllers) {
         final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
         if (child != null) {
             AbstractNodeRegistration childRegistry = snapshot.get(child);
@@ -246,17 +273,4 @@ final class NodeSubregistry {
         }
     }
 
-    void resolveAddress(final PathAddress address, final PathAddress base, final PathElement current, Set<PathAddress> addresses) {
-        final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
-        final AbstractNodeRegistration childRegistry = snapshot.get(current.getValue());
-        if(childRegistry == null) {
-            final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");
-            if(wildcardRegistry == null) {
-                return;
-            }
-            wildcardRegistry.resolveAddress(address, base.append(current), addresses);
-        } else {
-            childRegistry.resolveAddress(address, base.append(current), addresses);
-        }
-    }
 }

@@ -22,79 +22,57 @@
 
 package org.jboss.as.modcluster;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-
 import java.net.InetSocketAddress;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 // implements ModelQueryOperationHandler, DescriptionProvider
-public class ModClusterListProxies implements OperationHandler, DescriptionProvider{
+public class ModClusterListProxies implements NewStepHandler, DescriptionProvider{
 
     private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
 
-    static final String RESOURCE_NAME = ModClusterListProxies.class.getPackage().getName() + ".LocalDescriptions";
     static final ModClusterListProxies INSTANCE = new ModClusterListProxies();
 
     // private final InjectedValue<ModCluster> modcluster = new InjectedValue<ModCluster>();
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode node = new ModelNode();
-        node.get("list-proxies").set("list-proxies");
-        node.get(DESCRIPTION).set(bundle.getString("modcluster.list-proxies"));
-        // TODO Auto-generated method stub
-        return node;
+        return ModClusterSubsystemDescriptions.getListProxiesDescription(locale);
     }
 
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, final ResultHandler resultHandler)
+    public void execute(NewOperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ServiceController<?> controller = context.getServiceRegistry().getService(ModClusterService.NAME);
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
                     ModCluster modcluster = (ModCluster) controller.getValue();
-                    Map<InetSocketAddress, String>map = modcluster.getProxyInfo();
+                    Map<InetSocketAddress, String> map = modcluster.getProxyInfo();
                     log.debugf("Mod_cluster ListProxies " + map);
                     if (!map.isEmpty()) {
                         final ModelNode result = new ModelNode();
-                        Object [] addr = map.keySet().toArray();
-                        for (int i=0; i<addr.length; i++) {
+                        Object[] addr = map.keySet().toArray();
+                        for (int i = 0; i < addr.length; i++) {
                             InetSocketAddress address = (InetSocketAddress) addr[i];
                             result.add(address.getHostName() + ":" + address.getPort());
                         }
-                        resultHandler.handleResultFragment(new String[0], result);
+                        context.getResult().set(result);
                     }
-                    resultHandler.handleResultComplete();
 
+                    context.completeStep();
                 }
-            });
-            } else {
-                resultHandler.handleResultComplete();
-            }
-
-        return new BasicOperationResult();
-    }
-    private static ResourceBundle getResourceBundle(Locale locale) {
-        if (locale == null) {
-            locale = Locale.getDefault();
+            }, NewOperationContext.Stage.RUNTIME);
         }
-        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
+
+        context.completeStep();
     }
 }

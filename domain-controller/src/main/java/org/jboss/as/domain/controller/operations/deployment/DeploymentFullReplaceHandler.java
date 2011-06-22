@@ -18,31 +18,18 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
-import org.jboss.as.controller.operations.validation.ListValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersOfValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.deployment.api.ContentRepository;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
-
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
@@ -56,30 +43,42 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
+import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
 import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
+import org.jboss.as.controller.operations.validation.ListValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersOfValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.getInputStream;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
 
+import org.jboss.as.protocol.old.StreamUtils;
+import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 /**
  * Handles replacement in the runtime of one deployment by another.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class DeploymentFullReplaceHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = FULL_REPLACE_DEPLOYMENT;
 
     private final ContentRepository contentRepository;
-    private final boolean isMaster;
 
     private final ParametersValidator validator = new ParametersValidator();
     private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
     private final ParametersValidator managedContentValidator = new ParametersValidator();
 
-    public DeploymentFullReplaceHandler(final ContentRepository contentRepository, final boolean isMaster) {
+    public DeploymentFullReplaceHandler(final ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
         this.validator.registerValidator(NAME, new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
@@ -106,7 +105,6 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         this.managedContentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
         this.unmanagedContentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN));
         this.unmanagedContentValidator.registerValidator(PATH, new StringLengthValidator(1));
-        this.isMaster = isMaster;
     }
 
     @Override
@@ -114,12 +112,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         return DeploymentDescription.getFullReplaceDeploymentOperation(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
 
         String name = operation.require(NAME).asString();
@@ -135,10 +128,10 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
             // If we are the master, validate that we actually have this content. If we're not the master
             // we do not need the content until it's added to a server group we care about, so we defer
             // pulling it until then
-            if (isMaster && !contentRepository.hasContent(hash))
+            if (contentRepository != null && !contentRepository.hasContent(hash))
                 throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
-            if (!isMaster) {
+            if (contentRepository == null) {
                 // This is a slave DC. We can't handle this operation; it should have been fixed up on the master DC
                 throw createFailureException("A slave domain controller cannot accept deployment content uploads");
             }
@@ -154,6 +147,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
             } finally {
                 StreamUtils.safeClose(in);
             }
+            contentItemNode.clear(); // AS7-1029
             contentItemNode.get(HASH).set(hash);
         } else {
             // Unmanaged content, the user is responsible for replication
@@ -161,40 +155,32 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
             unmanagedContentValidator.validate(contentItemNode);
         }
 
-        ModelNode rootModel = context.getSubModel();
-        ModelNode deployments = rootModel.get(DEPLOYMENT);
-
-        ModelNode replaceNode = deployments.hasDefined(name) ? deployments.get(name) : null;
+        final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
+        final PathElement deploymentPath = PathElement.pathElement(DEPLOYMENT, name);
+        final Resource replaceNode = root.getChild(deploymentPath);
         if (replaceNode == null) {
             throw createFailureException("No deployment with name %s found", name);
         }
 
-        ModelNode deployNode = new ModelNode();
+        final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name)));
+        ModelNode deployNode = deployment.getModel();
         deployNode.get(NAME).set(name);
         deployNode.get(RUNTIME_NAME).set(runtimeName);
         deployNode.get(CONTENT).set(content);
 
-        deployments.get(name).set(deployNode);
-
-        if (rootModel.hasDefined(SERVER_GROUP)) {
-            for (Property server : rootModel.get(SERVER_GROUP).asPropertyList()) {
-                ModelNode serverConfig = server.getValue();
-                if (serverConfig.hasDefined(DEPLOYMENT) && serverConfig.get(DEPLOYMENT).hasDefined(name)) {
-                    ModelNode groupDeployNode = serverConfig.get(DEPLOYMENT, name);
-                    groupDeployNode.get(RUNTIME_NAME).set(runtimeName);
+        if(root.hasChild(PathElement.pathElement(SERVER_GROUP))) {
+            for(final Resource.ResourceEntry entry : root.getChildren(SERVER_GROUP)) {
+                if(entry.hasChild(deploymentPath)) {
+                    final PathAddress deploymentAddress = PathAddress.EMPTY_ADDRESS.append(entry.getPathElement());
+                    final Resource serverGroupDeployment = context.readResourceForUpdate(deploymentAddress);
+                    serverGroupDeployment.getModel().get(RUNTIME_NAME).set(runtimeName);
                 }
             }
         }
-
-        ModelNode compensatingOp = operation.clone();
-        compensatingOp.get(RUNTIME_NAME).set(replaceNode.get(RUNTIME_NAME).asString());
-        compensatingOp.get(CONTENT).set(replaceNode.require(CONTENT).clone());
         // the content repo will already have these, note that content should not be empty
-        removeContentAdditions(compensatingOp.require(CONTENT));
+        removeContentAdditions(replaceNode.getModel().require(CONTENT));
 
-        resultHandler.handleResultComplete();
-
-        return new BasicOperationResult(compensatingOp);
+        context.completeStep();
     }
 
     private static void removeAttributes(final ModelNode node, final Iterable<String> attributeNames) {

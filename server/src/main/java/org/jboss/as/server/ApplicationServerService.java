@@ -22,10 +22,9 @@
 
 package org.jboss.as.server;
 
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.server.Bootstrap.Configuration;
-import org.jboss.as.server.deployment.impl.ContentRepositoryImpl;
-import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
+import org.jboss.as.server.deployment.repository.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
@@ -39,24 +38,18 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.AsyncFuture;
-import org.jboss.threads.AsyncFutureTask;
-import org.jboss.threads.JBossExecutors;
 
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -67,14 +60,15 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
     private static final Logger configLog = Logger.getLogger("org.jboss.as.config");
     private final List<ServiceActivator> extraServices;
     private final Bootstrap.Configuration configuration;
+    private final ControlledProcessState processState;
     private volatile FutureServiceContainer futureContainer;
     private volatile long startTime;
-
 
     ApplicationServerService(final List<ServiceActivator> extraServices, final Bootstrap.Configuration configuration) {
         this.extraServices = extraServices;
         this.configuration = configuration;
         startTime = configuration.getStartTime();
+        processState = new ControlledProcessState(configuration.getServerEnvironment().isStandalone());
     }
 
     @Override
@@ -107,7 +101,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         final ServiceTarget serviceTarget = context.getChildTarget();
         final ServiceController<?> myController = context.getController();
         final ServiceContainer container = myController.getServiceContainer();
-        futureContainer = new FutureServiceContainer(container);
+        futureContainer = new FutureServiceContainer();
 
         long startTime = this.startTime;
         if (startTime == -1) {
@@ -119,14 +113,14 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         CurrentServiceRegistry.setServiceRegistry(context.getController().getServiceContainer());
 
         final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime, serviceTarget, futureContainer, configuration);
-        serviceTarget.addListener(bootstrapListener);
+        serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
         myController.addListener(bootstrapListener);
         ContentRepositoryImpl contentRepository = ContentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir());
         ServerDeploymentRepositoryImpl.addService(serviceTarget, contentRepository);
         ServiceModuleLoader.addService(serviceTarget, configuration);
         ExternalModuleService.addService(serviceTarget);
         ModuleIndexService.addService(serviceTarget);
-        ServerControllerService.addService(serviceTarget, configuration);
+        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override
             public ServiceTarget getServiceTarget() {
@@ -164,6 +158,9 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         AbsolutePathService.addService("user.home", System.getProperty("user.home"), serviceTarget);
         AbsolutePathService.addService("java.home", System.getProperty("java.home"), serviceTarget);
 
+        // BES 2011/06/11 -- moved this to AbstractControllerService.start()
+//        processState.setRunning();
+
         if (log.isDebugEnabled()) {
             final long nanos = context.getElapsedTime();
             log.debugf("JBoss AS root service started in %d.%06d ms", Long.valueOf(nanos / 1000000L), Long.valueOf(nanos % 1000000L));
@@ -172,6 +169,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
 
     @Override
     public synchronized void stop(final StopContext context) {
+        processState.setStopping();
         CurrentServiceRegistry.setServiceRegistry(null);
         log.infof("JBoss AS %s \"%s\" stopped in %dms", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
     }
@@ -179,47 +177,5 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
     @Override
     public AsyncFuture<ServiceContainer> getValue() throws IllegalStateException, IllegalArgumentException {
         return futureContainer;
-    }
-
-    private static class BootstrapListener extends org.jboss.as.controller.BootstrapListener {
-        final FutureServiceContainer futureContainer;
-        final Configuration configuration;
-
-        public BootstrapListener(final ServiceContainer serviceContainer, final long startTime, final ServiceTarget serviceTarget, final FutureServiceContainer futureContainer, Configuration configuration) {
-            super(serviceContainer, startTime, serviceTarget);
-            this.futureContainer = futureContainer;
-            this.configuration = configuration;
-        }
-
-        @Override
-        protected void done(ServiceContainer container, long elapsedTime, int started, int failed, EnumMap<Mode, AtomicInteger> map, Set<ServiceName> missingDepsSet) {
-            futureContainer.done(container);
-            final Logger log = Logger.getLogger("org.jboss.as");
-            final int active = map.get(ServiceController.Mode.ACTIVE).get();
-            final int passive = map.get(ServiceController.Mode.PASSIVE).get();
-            final int onDemand = map.get(ServiceController.Mode.ON_DEMAND).get();
-            final int never = map.get(ServiceController.Mode.NEVER).get();
-            if (failed == 0) {
-                log.infof("JBoss AS %s \"%s\" started in %dms - Started %d of %d services (%d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(onDemand + passive));
-                try {
-                    configuration.getConfigurationPersister().successfulBoot();
-                } catch (ConfigurationPersistenceException e) {
-                    log.error(e);
-                }
-            } else {
-                log.errorf("JBoss AS %s \"%s\" started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive));
-            }
-        }
-    }
-
-    private static class FutureServiceContainer extends AsyncFutureTask<ServiceContainer> {
-
-        public FutureServiceContainer(final ServiceContainer container) {
-            super(JBossExecutors.directExecutor());
-        }
-
-        void done(final ServiceContainer container) {
-            setResult(container);
-        }
     }
 }

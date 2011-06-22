@@ -22,8 +22,10 @@
 
 package org.jboss.as.txn;
 
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -42,14 +44,15 @@ public class TransactionManagerService extends AbstractService<TransactionManage
 
     private InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
 
-    public static void addService(final ServiceTarget target) {
+    public static ServiceController<TransactionManager> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
         TransactionManagerService service = new TransactionManagerService();
-        ServiceBuilder<?> serviceBuilder = target.addService(SERVICE_NAME, service);
+        ServiceBuilder<TransactionManager> serviceBuilder = target.addService(SERVICE_NAME, service);
         // The 'jbosgi' prefix followed by the FQN of the service interface allows the OSGi layer
         // to find the service using context.getServiceReference(TransactionManager.class.getName())
         serviceBuilder.addAliases(ServiceName.of("jbosgi", "xservice", TransactionManager.class.getName()));
         serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
-        serviceBuilder.install();
+        serviceBuilder.addListener(verificationHandler);
+        return serviceBuilder.install();
     }
 
     @Override

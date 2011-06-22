@@ -21,8 +21,12 @@
  */
 package org.jboss.as.demos;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,11 +42,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
@@ -99,7 +98,7 @@ public class DomainDeploymentUtils implements Closeable {
 
     public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException  {
         ModelNode op = new ModelNode();
-        OperationBuilder builder = OperationBuilder.Factory.create(op);
+        OperationBuilder builder = new OperationBuilder(op);
         op.get(ClientConstants.OP).set("composite");
         op.get(ClientConstants.OP_ADDR).setEmptyList();
         ModelNode steps = op.get("steps");
@@ -171,7 +170,7 @@ public class DomainDeploymentUtils implements Closeable {
     }
 
     private ModelNode execute(ModelNode op) throws IOException {
-        return execute(OperationBuilder.Factory.create(op).build());
+        return execute(new OperationBuilder(op).build());
     }
 
     private ModelNode execute(Operation op) throws IOException {

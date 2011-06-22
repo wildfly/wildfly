@@ -64,6 +64,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
+import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
@@ -260,7 +261,7 @@ public class DomainXml extends CommonXml {
         // Handle attributes
         final String[] attrValues = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.DEFAULT_INTERFACE.getLocalName());
         final String name = attrValues[0];
-        final String defaultInterface = attrValues[1];
+        final ModelNode defaultInterface = parsePossibleExpression(attrValues[1]);
 
         final ModelNode groupAddress = new ModelNode().set(address);
         groupAddress.add(SOCKET_BINDING_GROUP, name);
@@ -288,7 +289,7 @@ public class DomainXml extends CommonXml {
                             break;
                         }
                         case SOCKET_BINDING: {
-                            final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, defaultInterface, updates);
+                            final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                             if (!socketBindings.add(bindingName)) {
                                 throw new XMLStreamException("socket-binding " + bindingName + " already declared", reader.getLocation());
                             }

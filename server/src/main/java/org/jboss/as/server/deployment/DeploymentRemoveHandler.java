@@ -18,36 +18,26 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.server.controller.descriptions.ServerDescriptions;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
-
 import java.util.Locale;
-
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import org.jboss.as.server.controller.descriptions.ServerDescriptions;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Handles removal of a deployment from the model.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
+public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -61,21 +51,20 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
         return ServerDescriptions.getRemoveDeploymentOperation(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        final ModelNode model = context.getSubModel();
-        final ModelNode compensatingOp = DeploymentAddHandler.getOperation(operation.get(OP_ADDR), model);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
         boolean enabled = model.hasDefined(ENABLED) ? model.get(ENABLED).asBoolean() : true;
-        if (enabled) {
-            String deploymentUnitName = model.require(RUNTIME_NAME).asString();
-            DeploymentHandlerUtil.undeploy(context, deploymentUnitName, resultHandler);
-        } else {
-            resultHandler.handleResultComplete();
-        }
+        if (!enabled) return;
 
-        return new BasicOperationResult(compensatingOp);
+        final ModelNode opAddr = operation.get(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
+        final String deploymentUnitName = model.hasDefined(RUNTIME_NAME) ? model.get(RUNTIME_NAME).asString() : name;
+        final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+        context.removeService(deploymentUnitServiceName);
+        context.removeService(deploymentUnitServiceName.append("contents"));
+    }
+
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
     }
 }

@@ -22,13 +22,13 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.server.deployment.impl.ContentRepositoryImpl;
+import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
 import org.jboss.logging.Logger;
 
 import java.io.File;
 
 /**
- * Domain implementation of {@link org.jboss.as.server.deployment.impl.ContentRepositoryImpl}.
+ * Domain implementation of {@link org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl}.
  *
  * @author Brian Stansberry
  */

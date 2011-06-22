@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,28 +22,21 @@
 
 package org.jboss.as.remoting;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
 
+import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.threads.ThreadsServices;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.xnio.OptionMap;
+import org.xnio.OptionMap;
 
 /**
  * Add operation handler for the remoting subsystem.
@@ -51,41 +44,32 @@ import org.jboss.xnio.OptionMap;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class RemotingSubsystemAdd implements ModelAddOperationHandler {
+class RemotingSubsystemAdd extends AbstractAddStepHandler {
 
-    static final OperationHandler INSTANCE = new RemotingSubsystemAdd();
+    static final NewStepHandler INSTANCE = new RemotingSubsystemAdd();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
+    protected void populateModel(ModelNode operation, ModelNode model) {
         final String threadPoolName = operation.require(THREAD_POOL).asString();
-        context.getSubModel().get(THREAD_POOL).set(threadPoolName);
+        model.get(THREAD_POOL).set(threadPoolName);
         // initialize the connectors
-        context.getSubModel().get(CONNECTOR).setEmptyObject();
+        model.get(CONNECTOR);
+    }
 
-        // Compensating is remove
-        final ModelNode compensating = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final String threadPoolName = operation.require(THREAD_POOL).asString();
+        // create endpoint
+        final EndpointService endpointService = new EndpointService();
+        // todo configure option map
+        endpointService.setOptionMap(OptionMap.EMPTY);
+        final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
+        //TODO inject this from somewhere?
+        executorInjector.inject(Executors.newCachedThreadPool());
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    // create endpoint
-                    final EndpointService endpointService = new EndpointService();
-                    // todo configure option map
-                    endpointService.setOptionMap(OptionMap.EMPTY);
-                    final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
-
-                    context.getServiceTarget().addService(RemotingServices.ENDPOINT, endpointService)
-                            .addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
-                            .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .install();
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensating);
+        newControllers.add(context
+                .getServiceTarget()
+                .addService(RemotingServices.ENDPOINT, endpointService)
+                //.addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
+                .addListener(verificationHandler)
+                .install());
     }
 }

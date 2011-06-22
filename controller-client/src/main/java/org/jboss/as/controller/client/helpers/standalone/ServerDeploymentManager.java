@@ -52,10 +52,9 @@ public interface ServerDeploymentManager {
         }
 
         /**
-         * Create an {@link ServerDeploymentManager} instance using the given {@link ModelControllerClient}.
+         * Create an {@link ServerDeploymentManager} instance using the given {@link org.jboss.as.controller.client.ModelControllerClient}.
          *
-         * @param address The remote address to connect to
-         * @param port The remote port
+         * @param client the client
          * @return A domain client
          */
         public static ServerDeploymentManager create(final ModelControllerClient client) {

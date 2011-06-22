@@ -25,416 +25,541 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCALE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROXIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
- * Global {@code OperationHanlder}s.
+ * Global {@code OperationHandler}s.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class GlobalOperationHandlers {
 
-    public static final OperationHandler READ_RESOURCE = new ReadResourceHandler();
-    public static final OperationHandler READ_ATTRIBUTE = new ReadAttributeHandler();
-    public static final OperationHandler READ_CHILDREN_NAMES = new ReadChildrenNamesOperationHandler();
-    public static final OperationHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
-    public static final OperationHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
-    public static final ResolveAddressOperationHandler RESOLVE = new ResolveAddressOperationHandler();
+    public static final NewStepHandler READ_RESOURCE = new ReadResourceHandler();
+    public static final NewStepHandler READ_ATTRIBUTE = new ReadAttributeHandler();
+    public static final NewStepHandler READ_CHILDREN_NAMES = new ReadChildrenNamesOperationHandler();
+    public static final NewStepHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
+    public static final NewStepHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
 
     private GlobalOperationHandlers() {
         //
     }
 
     /**
-     * {@link OperationHandler} reading a part of the model. The result will only contain the current attributes of a node by default,
+     * {@link NewStepHandler} reading a part of the model. The result will only contain the current attributes of a node by default,
      * excluding all addressable children and runtime attributes. Setting the request parameter "recursive" to "true" will recursively include
      * all children and configuration attributes. Non-recursive queries can include runtime attributes by setting the request parameter
      * "include-runtime" to "true".
      */
-    public static class ReadResourceHandler implements ModelQueryOperationHandler {
+    public static class ReadResourceHandler extends AbstractMultiTargetHandler implements NewStepHandler {
 
-        static final String PROXIES = "proxies";
+        private final ParametersValidator validator = new ParametersValidator();
+
+        public ReadResourceHandler() {
+            validator.registerValidator(RECURSIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(INCLUDE_RUNTIME, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(PROXIES, new ModelTypeValidator(ModelType.BOOLEAN, true));
+        }
 
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+        public void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-            final ModelNode result = readModel(context, operation, resultHandler, address);
-            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
-        }
+            validator.validate(operation);
 
-        protected ModelNode readModel(final OperationContext context, final ModelNode readOperation,
-                final ResultHandler resultHandler, final PathAddress address) throws OperationFailedException {
-            final ModelNodeRegistration registry = context.getRegistry();
-            final ModelNode model = context.getSubModel(address);
-            final ModelNode result;
-                if (readOperation.get(RECURSIVE).asBoolean(false)) {
-                    // FIXME security checks JBAS-8842
-                    result = model.clone();
-                    if(readOperation.get(PROXIES).asBoolean(true)) {
-                        addProxyNodes(context, address, readOperation, result, registry);
+            final String opName = operation.require(OP).asString();
+            final ModelNode opAddr = operation.get(OP_ADDR);
+            final PathAddress address = PathAddress.pathAddress(opAddr);
+            final boolean recursive = operation.get(RECURSIVE).asBoolean(false);
+            final boolean queryRuntime = !recursive && operation.get(INCLUDE_RUNTIME).asBoolean(false);
+            final boolean proxies = operation.get(PROXIES).asBoolean(false);
+
+            // Attributes read directly from the model with no special read handler step in the middle
+            final Map<String, ModelNode> directAttributes = new HashMap<String, ModelNode>();
+            // Children names read directly from the model with no special read handler step in the middle
+            final Map<String, ModelNode> directChildren = new HashMap<String, ModelNode>();
+            // Attributes of AccessType.METRIC
+            final Map<String, ModelNode> metrics = queryRuntime ? new HashMap<String, ModelNode>() : Collections.<String, ModelNode>emptyMap();
+            // Non-AccessType.METRIC attributes with a special read handler registered
+            final Map<String, ModelNode> otherAttributes = new HashMap<String, ModelNode>();
+            // Child resources recursively read
+            final Map<PathElement, ModelNode> childResources = recursive ? new HashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
+
+            // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
+            // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
+
+            // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
+            final ReadResourceAssemblyHandler assemblyHandler = new ReadResourceAssemblyHandler(directAttributes, metrics, otherAttributes, directChildren, childResources);
+            context.addStep(assemblyHandler, NewOperationContext.Stage.IMMEDIATE);
+            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            // Get the model for this resource.
+            final ModelNode model = resource.getModel();
+
+            final Map<String, Set<String>> childrenByType = registry != null ? getChildAddresses(registry, resource, null): Collections.<String, Set<String>>emptyMap();
+
+            if(model.isDefined()) {
+                // Store direct attributes first
+                for (String key : model.keys()) {
+                    // In case someone put some garbage in it
+                    if(! childrenByType.containsKey(key)) {
+                        directAttributes.put(key, model.get(key));
                     }
+                }
+            }
+
+            // Next, process child resources
+            for (Map.Entry<String, Set<String>> entry : childrenByType.entrySet()) {
+                String childType = entry.getKey();
+                Set<String> children = entry.getValue();
+                if (children.isEmpty()) {
+                    // Just treat it like an undefined attribute
+                    directAttributes.put(childType, new ModelNode());
                 } else {
-                    result = new ModelNode();
-
-                    final Set<String> childNames = registry.getChildNames(address);
-
-                    final ModelNode subModel = model.clone();
-                    for (final String key : subModel.keys()) {
-                        final ModelNode child = subModel.get(key);
-                        if (childNames.contains(key)) {
-                            //Prune the value for this child
-                            if (subModel.get(key).isDefined()) {
-                                for (final String childKey : child.keys()) {
-                                    subModel.get(key, childKey).set(new ModelNode());
-                                }
+                    for (String child : children) {
+                        boolean storeDirect = !recursive;
+                        if (recursive) {
+                            PathElement childPE = PathElement.pathElement(childType, child);
+                            PathAddress relativeAddr = PathAddress.pathAddress(childPE);
+                            ImmutableModelNodeRegistration childReg = registry.getSubModel(relativeAddr);
+                            if(childReg == null) {
+                                throw new OperationFailedException(new ModelNode().set(String.format("no child registry for (%s, %s)", childType, child)));
                             }
+                            // We only invoke runtime resources if they are remote proxies
+                            if (childReg.isRuntimeOnly() && (!proxies || !childReg.isRemote())) {
+                                storeDirect = true;
+                            } else {
+                                // Add a step to read the child resource
+                                ModelNode rrOp = new ModelNode();
+                                rrOp.get(OP).set(opName);
+                                rrOp.get(OP_ADDR).set(PathAddress.pathAddress(address, childPE).toModelNode());
+                                rrOp.get(RECURSIVE).set(true);
+                                rrOp.get(PROXIES).set(proxies);
+                                rrOp.get(INCLUDE_RUNTIME).set(queryRuntime);
+                                ModelNode rrRsp = new ModelNode();
+                                childResources.put(childPE, rrRsp);
 
-                            result.get(key).set(child);
-                        } else {
-                            result.get(key).set(child);
-                        }
-                    }
-                    // Handle attributes
-                    final boolean queryRuntime = readOperation.get(INCLUDE_RUNTIME).asBoolean(false);
-                    final Set<String> attributeNames = registry.getAttributeNames(address);
-                    for(final String attributeName : attributeNames) {
-                        final AttributeAccess access = registry.getAttributeAccess(address, attributeName);
-                        if(access == null) {
-                            continue;
-                        } else {
-                            final AttributeAccess.Storage storage = access.getStorageType();
-                            if(! queryRuntime && storage != AttributeAccess.Storage.CONFIGURATION) {
-                                continue;
-                            }
-                            final AccessType type = access.getAccessType();
-                            final OperationHandler handler = access.getReadHandler();
-                            if(handler != null) {
-                                // Create the attribute operation
-                                final ModelNode attributeOperation = readOperation.clone();
-                                attributeOperation.get(NAME).set(attributeName);
-                                // TODO this assumes the ResultHandler is invoked synchronously
-                                handler.execute(context, attributeOperation, new ResultHandler() {
-                                    @Override
-                                    public void handleResultFragment(final String[] location, final ModelNode attributeResult) {
-                                        result.get(attributeName).set(attributeResult);
-                                    }
-                                    @Override
-                                    public void handleResultComplete() {
-                                        // TODO
-                                    }
-                                    @Override
-                                    public void handleFailed(ModelNode failureDescription) {
-                                        if(type != AccessType.METRIC) {
-                                            resultHandler.handleFailed(failureDescription);
-                                        }
-                                    }
-                                    @Override
-                                    public void handleCancellation() {
-                                        resultHandler.handleCancellation();
-                                    }
-                                });
+                                NewStepHandler rrHandler = childReg.getOperationHandler(relativeAddr, opName);
+                                context.addStep(rrRsp, rrOp, rrHandler, NewOperationContext.Stage.IMMEDIATE);
                             }
                         }
+                        if (storeDirect) {
+                            ModelNode childMap = directChildren.get(childType);
+                            if (childMap == null) {
+                                childMap = new ModelNode();
+                                childMap.setEmptyObject();
+                                directChildren.put(childType, childMap);
+                            }
+                            // Add a "child" => undefined
+                            childMap.get(child);
+                        }
                     }
-                    handleNonRecursiveProxyEntries(context, address, readOperation, result, registry);
-                }
-            return result;
-        }
-
-        protected void handleNonRecursiveProxyEntries(final OperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) {
-        }
-
-        protected void addProxyNodes(final OperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) {
-            Set<ProxyController> proxyControllers = registry.getProxyControllers(address);
-            if (proxyControllers.size() > 0) {
-                final ModelNode operation = new ModelNode();
-                operation.get(OP).set(READ_RESOURCE_OPERATION);
-                operation.get(RECURSIVE).set(true);
-                operation.get(OP_ADDR).set(new ModelNode());
-
-                for (ProxyController proxyController : proxyControllers) {
-                    final ModelNode proxyResult = proxyController.execute(OperationBuilder.Factory.copy(context, operation).build());
-
-                    //Trim the address to not include the host=>hostB part if this is a slave controller
-                    PathAddress proxyAddress = proxyController.getProxyNodeAddress();
-//                    if (proxyAddress.size() > 1) {
-//                        if (proxyAddress.getElement(0).getKey().equals(HOST)) {
-//                            proxyAddress = proxyAddress.subAddress(1);
-//                            proxyResult =
-//                        }
-//                    }
-
-                    addProxyResultToMainResult(proxyAddress, result, proxyResult);
                 }
             }
-        }
 
-        protected void addProxyResultToMainResult(final PathAddress address, final ModelNode mainResult, final ModelNode proxyResult) {
-            ModelNode resultNode = mainResult;
-            for (Iterator<PathElement> it = address.iterator() ; it.hasNext() ; ) {
-                PathElement element = it.next();
-                resultNode = resultNode.get(element.getKey()).get(element.getValue());
+            // Last, handle attributes with read handlers registered
+            final Set<String> attributeNames = registry != null ? registry.getAttributeNames(PathAddress.EMPTY_ADDRESS) : Collections.<String>emptySet();
+            for(final String attributeName : attributeNames) {
+                final AttributeAccess access = registry.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
+                if(access == null) {
+                    continue;
+                } else {
+                    final AttributeAccess.Storage storage = access.getStorageType();
+                    if(!queryRuntime && storage != AttributeAccess.Storage.CONFIGURATION) {
+                        continue;
+                    }
+                    final AccessType type = access.getAccessType();
+                    final NewStepHandler handler = access.getReadHandler();
+                    if (handler != null) {
+                        // Discard any directAttribute map entry for this, as the read handler takes precedence
+                        directAttributes.remove(attributeName);
+                        // Create the attribute operation
+                        final ModelNode attributeOperation = new ModelNode();
+                        attributeOperation.get(OP_ADDR).set(opAddr);
+                        attributeOperation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+                        attributeOperation.get(NAME).set(attributeName);
+
+                        final ModelNode attrResponse = new ModelNode();
+                        if (type == AccessType.METRIC) {
+                            metrics.put(attributeName, attrResponse);
+                        } else {
+                            otherAttributes.put(attributeName, attrResponse);
+                        }
+                        context.addStep(attrResponse, attributeOperation, handler, NewOperationContext.Stage.IMMEDIATE);
+                    }
+                }
             }
-            resultNode.set(proxyResult.get(RESULT).clone());
+            context.completeStep();
         }
-
     };
 
     /**
-     * {@link OperationHandler} reading a single attribute at the given operation address. The required request parameter "name" represents the attribute name.
+     * Assembles the response to a read-resource request from the components gathered by earlier steps.
      */
-    public static class ReadAttributeHandler implements ModelQueryOperationHandler {
+    private static class ReadResourceAssemblyHandler implements NewStepHandler {
+
+        private final Map<String, ModelNode> directAttributes;
+        private final Map<String, ModelNode> directChildren;
+        private final Map<String, ModelNode> metrics;
+        private final Map<String, ModelNode> otherAttributes;
+        private final Map<PathElement, ModelNode> childResources;
+
+        /**
+         * Creates a ReadResourceAssemblyHandler that will assemble the response using the contents
+         * of the given maps.
+         *
+         * @param directAttributes
+         * @param metrics map of attributes of AccessType.METRIC. Keys are the attribute names, values are the full
+         *                read-attribute response from invoking the attribute's read handler. Will not be {@code null}
+         * @param otherAttributes map of attributes not of AccessType.METRIC that have a read handler registered. Keys
+*                        are the attribute names, values are the full read-attribute response from invoking the
+*                        attribute's read handler. Will not be {@code null}
+         * @param directChildren
+         * @param childResources read-resource response from child resources, where the key is the PathAddress
+*                       relative to the address of the operation this handler is handling and the
+*                       value is the full read-resource response. Will not be {@code null}
+         */
+        private ReadResourceAssemblyHandler(final Map<String, ModelNode> directAttributes, final Map<String, ModelNode> metrics,
+                                            final Map<String, ModelNode> otherAttributes, Map<String, ModelNode> directChildren, final Map<PathElement, ModelNode> childResources) {
+            this.directAttributes = directAttributes;
+            this.metrics = metrics;
+            this.otherAttributes = otherAttributes;
+            this.directChildren = directChildren;
+            this.childResources = childResources;
+        }
+
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-            OperationResult handlerResult = new BasicOperationResult();
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+
+            Map<String, ModelNode> sortedAttributes = new TreeMap<String, ModelNode>();
+            Map<String, ModelNode> sortedChildren = new TreeMap<String, ModelNode>();
+            boolean failed = false;
+            for (Map.Entry<String, ModelNode> entry : otherAttributes.entrySet()) {
+                ModelNode value = entry.getValue();
+                if (!value.has(FAILURE_DESCRIPTION)) {
+                    sortedAttributes.put(entry.getKey(), value.get(RESULT));
+                } else if (!failed && value.hasDefined(FAILURE_DESCRIPTION)) {
+                    context.getFailureDescription().set(value.get(FAILURE_DESCRIPTION));
+                    failed = true;
+                    break;
+                }
+            }
+            if (!failed) {
+                for (Map.Entry<PathElement, ModelNode> entry : childResources.entrySet()) {
+                    PathElement path = entry.getKey();
+                    ModelNode value = entry.getValue();
+                    if (!value.has(FAILURE_DESCRIPTION)) {
+                        ModelNode childTypeNode = sortedChildren.get(path.getKey());
+                        if (childTypeNode == null) {
+                            childTypeNode = new ModelNode();
+                            sortedChildren.put(path.getKey(), childTypeNode);
+                        }
+                        childTypeNode.get(path.getValue()).set(value.get(RESULT));
+                    } else if (!failed && value.hasDefined(FAILURE_DESCRIPTION)) {
+                        context.getFailureDescription().set(value.get(FAILURE_DESCRIPTION));
+                        failed = true;
+                    }
+                }
+            }
+            if (!failed) {
+                for (Map.Entry<String, ModelNode> simpleAttribute : directAttributes.entrySet()) {
+                    sortedAttributes.put(simpleAttribute.getKey(), simpleAttribute.getValue());
+                }
+                for (Map.Entry<String, ModelNode> directChild : directChildren.entrySet()) {
+                    sortedChildren.put(directChild.getKey(), directChild.getValue());
+                }
+                for (Map.Entry<String, ModelNode> metric : metrics.entrySet()) {
+                    ModelNode value = metric.getValue();
+                    if (!value.has(FAILURE_DESCRIPTION)) {
+                        sortedAttributes.put(metric.getKey(), value.get(RESULT));
+                    }
+                    // we ignore metric failures
+                    // TODO how to prevent the metric failure screwing up the overall context?
+                }
+
+                final ModelNode result = context.getResult();
+                result.setEmptyObject();
+                for (Map.Entry<String, ModelNode> entry : sortedAttributes.entrySet()) {
+                    result.get(entry.getKey()).set(entry.getValue());
+                }
+
+                for (Map.Entry<String, ModelNode> entry : sortedChildren.entrySet()) {
+                    result.get(entry.getKey()).set(entry.getValue());
+                }
+            }
+
+            context.completeStep();
+        }
+    }
+
+    /**
+     * {@link NewStepHandler} reading a single attribute at the given operation address. The required request parameter "name" represents the attribute name.
+     */
+    public static class ReadAttributeHandler extends AbstractMultiTargetHandler implements NewStepHandler {
+
+        @Override
+        public void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
             final String attributeName = operation.require(NAME).asString();
-            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-            final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(address, attributeName);
+            final ModelNode subModel = safeReadModel(context);
+            final AttributeAccess attributeAccess = context.getModelNodeRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
             if (attributeAccess == null) {
-                final Set<String> children = context.getRegistry().getChildNames(address);
+                final Set<String> children = context.getModelNodeRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
                 if(children.contains(attributeName)) {
-                    throw new OperationFailedException(new ModelNode().set(String.format("'%s' is a registered child of resource (%s)", attributeName, address))); // TODO i18n
-                } else if(context.getSubModel().has(attributeName)) {
-                    final ModelNode result = context.getSubModel().get(attributeName).clone();
-                    resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-                    resultHandler.handleResultComplete();
+                    throw new OperationFailedException(new ModelNode().set(String.format("'%s' is a registered child of resource (%s)", attributeName, operation.get(OP_ADDR)))); // TODO i18n
+                } else if(subModel.has(attributeName)) {
+                    final ModelNode result = subModel.get(attributeName);
+                    context.getResult().set(result);
+                    context.completeStep();
                 } else {
-                    throw new OperationFailedException(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
+                    throw new OperationFailedException(new ModelNode().set(String.format("No known attribute %s", attributeName))); // TODO i18n
                 }
             } else if (attributeAccess.getReadHandler() == null) {
-                final ModelNode result = context.getSubModel().get(attributeName).clone();
-                resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-                resultHandler.handleResultComplete();
+                final ModelNode result = subModel.get(attributeName);
+                context.getResult().set(result);
+                context.completeStep();
             } else {
-                handlerResult = attributeAccess.getReadHandler().execute(context, operation, resultHandler);
+                attributeAccess.getReadHandler().execute(context, operation);
             }
-
-            return handlerResult;
         }
     };
 
     /**
-     * {@link OperationHandler} writing a single attribute. The required request parameter "name" represents the attribute name.
+     * {@link NewStepHandler} writing a single attribute. The required request parameter "name" represents the attribute name.
      */
-    public static class WriteAttributeHandler implements ModelUpdateOperationHandler {
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-            OperationResult handlerResult = null;
-
+    public static class WriteAttributeHandler implements NewStepHandler {
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             final String attributeName = operation.require(NAME).asString();
-            final AttributeAccess attributeAccess = context.getRegistry().getAttributeAccess(PathAddress.pathAddress(operation.get(OP_ADDR)), attributeName);
+            final AttributeAccess attributeAccess = context.getModelNodeRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
             if (attributeAccess == null) {
                 throw new OperationFailedException(new ModelNode().set("No known attribute called " + attributeName)); // TODO i18n
             } else if (attributeAccess.getAccessType() != AccessType.READ_WRITE) {
                 throw new OperationFailedException(new ModelNode().set("Attribute " + attributeName + " is not writeable")); // TODO i18n
             } else {
-                handlerResult = attributeAccess.getWriteHandler().execute(context, operation, resultHandler);
+                attributeAccess.getWriteHandler().execute(context, operation);
             }
-
-            return handlerResult;
         }
     };
 
     /**
-     * {@link OperationHandler} querying the children names of a given "child-type".
+     * {@link NewStepHandler} querying the children names of a given "child-type".
      */
-    public static class ReadChildrenNamesOperationHandler implements ModelQueryOperationHandler {
+    public static class ReadChildrenNamesOperationHandler implements NewStepHandler {
+
+        private final ParametersValidator validator = new ParametersValidator();
+
+        public ReadChildrenNamesOperationHandler() {
+            validator.registerValidator(CHILD_TYPE, new StringLengthValidator(1));
+        }
+
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-            String childName = operation.require(CHILD_TYPE).asString();
+            validator.validate(operation);
+            final String childType = operation.require(CHILD_TYPE).asString();
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            Map<String, Set<String>> childAddresses = getChildAddresses(registry, resource, childType);
+            Set<String> childNames = childAddresses.get(childType);
+            if (childNames == null) {
+                throw new OperationFailedException(new ModelNode().set(String.format("No known child type named %s", childType))); //TODO i18n
+            }
+            // Sort the result
+            childNames = new TreeSet<String>(childNames);
+            ModelNode result = context.getResult();
+            result.setEmptyList();
+            for (String childName : childNames) {
+                result.add(childName);
+            }
 
-            ModelNode subModel = context.getSubModel().clone();
-            if (!subModel.isDefined()) {
-                final ModelNode result = new ModelNode();
-                result.setEmptyList();
-                resultHandler.handleResultFragment(new String[0], result);
+            context.completeStep();
+        }
+    };
+
+    /**
+     * {@link NewStepHandler} querying the children resources of a given "child-type".
+     */
+    public static class ReadChildrenResourcesOperationHandler implements NewStepHandler {
+
+        private final ParametersValidator validator = new ParametersValidator();
+
+        public ReadChildrenResourcesOperationHandler() {
+            validator.registerValidator(CHILD_TYPE, new StringLengthValidator(1));
+            validator.registerValidator(RECURSIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(INCLUDE_RUNTIME, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(PROXIES, new ModelTypeValidator(ModelType.BOOLEAN, true));
+        }
+
+        @Override
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+
+            validator.validate(operation);
+            final String childType = operation.require(CHILD_TYPE).asString();
+
+            final Set<String> childNames = context.getModelNodeRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
+            if (!childNames.contains(childType)) {
+                throw new OperationFailedException(new ModelNode().set(String.format("No known child type named %s", childType))); //TODO i18n
+            }
+            final Map<PathElement, ModelNode> resources = new HashMap<PathElement, ModelNode>();
+
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            if (! resource.hasChildren(childType)) {
+                context.getResult().setEmptyObject();
             } else {
+                // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
+                // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
+
+                // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
+                final ReadChildrenResourcesAssemblyHandler assemblyHandler = new ReadChildrenResourcesAssemblyHandler(resources);
+                context.addStep(assemblyHandler, NewOperationContext.Stage.IMMEDIATE);
+
                 final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-                final Set<String> childNames = context.getRegistry().getChildNames(address);
-                if (!childNames.contains(childName)) {
-                    throw new OperationFailedException(new ModelNode().set("No known child called " + childName)); //TODO i18n
-                } else {
-                    final ModelNode result = new ModelNode();
-                    subModel = subModel.get(childName);
-                    if (!subModel.isDefined()) {
-                        result.setEmptyList();
-                    } else {
-                        for (final String key : subModel.keys()) {
-                            final ModelNode node = new ModelNode();
-                            node.set(key);
-                            result.add(node);
-                        }
+                for (final String key : resource.getChildrenNames(childType)) {
+                    final PathElement childPath =  PathElement.pathElement(childType, key);
+                    final PathAddress childAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(childType, key));
+
+                    final ModelNode readOp = new ModelNode();
+                    readOp.get(OP).set(READ_RESOURCE_OPERATION);
+                    readOp.get(OP_ADDR).set(PathAddress.pathAddress(address, childPath).toModelNode());
+
+                    if(operation.hasDefined(INCLUDE_RUNTIME)) {
+                        readOp.get(INCLUDE_RUNTIME).set(operation.get(INCLUDE_RUNTIME));
                     }
-                    resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+                    if (operation.hasDefined(RECURSIVE)) {
+                        readOp.get(RECURSIVE).set(operation.get(RECURSIVE));
+                    }
+                    if (operation.hasDefined(PROXIES)) {
+                        readOp.get(PROXIES).set(operation.get(PROXIES));
+                    }
+                    final NewStepHandler handler = context.getModelNodeRegistration().getOperationHandler(childAddress, READ_RESOURCE_OPERATION);
+                    if(handler == null) {
+                        throw new OperationFailedException(new ModelNode().set("no operation handler"));
+                    }
+                    ModelNode rrRsp = new ModelNode();
+                    resources.put(childPath, rrRsp);
+                    context.addStep(rrRsp, readOp, handler, NewOperationContext.Stage.IMMEDIATE);
                 }
             }
 
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+            context.completeStep();
         }
     };
 
     /**
-     * {@link OperationHandler} querying the children resources of a given "child-type".
+     * Assembles the response to a read-resource request from the components gathered by earlier steps.
      */
-    public static class ReadChildrenResourcesOperationHandler extends ReadResourceHandler {
+    private static class ReadChildrenResourcesAssemblyHandler implements NewStepHandler {
+
+        private final Map<PathElement, ModelNode> resources;
+
+        /**
+         * Creates a ReadResourceAssemblyHandler that will assemble the response using the contents
+         * of the given maps.
+         *
+         * @param resources read-resource response from child resources, where the key is the path of the resource
+*                       relative to the address of the operation this handler is handling and the
+*                       value is the full read-resource response. Will not be {@code null}
+         */
+        private ReadChildrenResourcesAssemblyHandler(final Map<PathElement, ModelNode> resources) {
+            this.resources = resources;
+        }
+
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-            String childName = operation.require(CHILD_TYPE).asString();
+            Map<String, ModelNode> sortedChildren = new TreeMap<String, ModelNode>();
+            boolean failed = false;
+            for (Map.Entry<PathElement, ModelNode> entry : resources.entrySet()) {
+                PathElement path = entry.getKey();
+                ModelNode value = entry.getValue();
+                if (!value.has(FAILURE_DESCRIPTION)) {
+                    sortedChildren.put(path.getValue(), value.get(RESULT));
+                } else if (!failed && value.hasDefined(FAILURE_DESCRIPTION)) {
+                    context.getFailureDescription().set(value.get(FAILURE_DESCRIPTION));
+                    failed = true;
+                }
+            }
+            if (!failed) {
+                final ModelNode result = context.getResult();
+                result.setEmptyObject();
 
-            ModelNode subModel = context.getSubModel().clone();
-            if (!subModel.isDefined()) {
-                final ModelNode result = new ModelNode();
-                result.setEmptyList();
-                resultHandler.handleResultFragment(new String[0], result);
-                resultHandler.handleResultComplete();
-            } else {
-                final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-                final Set<String> childNames = context.getRegistry().getChildNames(address);
-                if (!childNames.contains(childName)) {
-                    throw new OperationFailedException(new ModelNode().set("No known child called " + childName)); //TODO i18n
-                } else {
-                    final AtomicBoolean ok = new AtomicBoolean(true);
-                    final ModelNode result = new ModelNode();
-                    subModel = subModel.get(childName);
-                    if (!subModel.isDefined()) {
-                        result.setEmptyList();
-                    } else {
-
-                        for (final String key : subModel.keys()) {
-                            if (!ok.get()) {
-                                break;
-                            }
-                            final PathAddress childAddress = address.append(PathElement.pathElement(childName, key));
-
-                            final ModelNode readOp = operation.clone();
-                            readOp.get(OP_ADDR).set(childAddress.toModelNode());
-
-                            if(operation.hasDefined(INCLUDE_RUNTIME))
-                                readOp.get(INCLUDE_RUNTIME).set(operation.get(INCLUDE_RUNTIME).asBoolean());
-
-                            final ModelNode readResult = readModel(context, readOp, new ResultHandler() {
-                                public void handleResultFragment(String[] location, ModelNode result) {
-                                    // TODO
-                                }
-                                public void handleResultComplete() {
-                                    // TODO
-                                }
-                                public void handleFailed(ModelNode failureDescription) {
-                                    ok.set(false);
-                                    resultHandler.handleFailed(failureDescription);
-                                }
-                                public void handleCancellation() {
-                                    ok.set(false);
-                                    resultHandler.handleCancellation();
-                                }
-                            }, childAddress);
-                            result.add(key, readResult);
-                        }
-                    }
-
-                    if (ok.get()) {
-                        resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-                        resultHandler.handleResultComplete();
-                    }
+                for (Map.Entry<String, ModelNode> entry : sortedChildren.entrySet()) {
+                    result.get(entry.getKey()).set(entry.getValue());
                 }
             }
 
-            return new BasicOperationResult();
+            context.completeStep();
+        }
+    }
+
+    /**
+     * {@link NewStepHandler} querying the child types of a given node.
+     */
+    public static final NewStepHandler READ_CHILDREN_TYPES = new NewStepHandler() {
+        @Override
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            Set<String> childTypes = registry.getChildNames(PathAddress.EMPTY_ADDRESS);
+            final ModelNode result = context.getResult();
+            result.setEmptyList();
+            for (final String key : childTypes) {
+                result.add(key);
+            }
+            context.completeStep();
         }
     };
 
     /**
-     * {@link OperationHandler} querying the child types of a given node.
+     * {@link NewStepHandler} returning the names of the defined operations at a given model address.
      */
-    public static final ModelQueryOperationHandler READ_CHILDREN_TYPES = new ModelQueryOperationHandler() {
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
-            ModelNode subModel = context.getSubModel().clone();
-            if (!subModel.isDefined()) {
-                final ModelNode result = new ModelNode();
-                result.setEmptyList();
-                resultHandler.handleResultFragment(new String[0], result);
-            } else {
-
-                Set<String> childTypes = context.getRegistry().getChildNames(PathAddress.pathAddress(operation.get(OP_ADDR)));
-                final ModelNode result = new ModelNode();
-                for (final String key : childTypes) {
-                    final ModelNode node = new ModelNode();
-                    node.set(key);
-                    result.add(node);
-                }
-
-                resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            }
-
-            resultHandler.handleResultComplete();
-
-            return new BasicOperationResult();
-        }
-    };
-
-    /**
-     * {@link OperationHandler} returning the names of the defined operations at a given model address.
-     */
-    public static final ModelQueryOperationHandler READ_OPERATION_NAMES = new ModelQueryOperationHandler() {
+    public static final NewStepHandler READ_OPERATION_NAMES = new NewStepHandler() {
 
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-            final ModelNodeRegistration registry = context.getRegistry();
-            final Map<String, OperationEntry> operations = registry.getOperationDescriptions(PathAddress.pathAddress(operation.get(OP_ADDR)), true);
+            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            final Map<String, OperationEntry> operations = registry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, true);
 
             final ModelNode result = new ModelNode();
             if (operations.size() > 0) {
@@ -446,233 +571,433 @@ public class GlobalOperationHandlers {
             } else {
                 result.setEmptyList();
             }
-            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete();
-
-            return new BasicOperationResult();
+            context.getResult().set(result);
+            context.completeStep();
         }
     };
 
     /**
-     * {@link OperationHandler} returning the type description of a single operation description.
+     * {@link NewStepHandler} returning the type description of a single operation description.
      */
-    public static final ModelQueryOperationHandler READ_OPERATION_DESCRIPTION = new ModelQueryOperationHandler() {
+    public static final NewStepHandler READ_OPERATION_DESCRIPTION = new NewStepHandler() {
 
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
             String operationName = operation.require(NAME).asString();
 
-            final ModelNodeRegistration registry = context.getRegistry();
-            final DescriptionProvider descriptionProvider = registry.getOperationDescription(PathAddress.pathAddress(operation.get(OP_ADDR)), operationName);
+            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            final DescriptionProvider descriptionProvider = registry.getOperationDescription(PathAddress.EMPTY_ADDRESS, operationName);
 
             final ModelNode result = descriptionProvider == null ? new ModelNode() : descriptionProvider.getModelDescription(getLocale(operation));
 
-            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete();
-
-            return new BasicOperationResult();
+            context.getResult().set(result);
+            context.completeStep();
         }
     };
 
     /**
-     * {@link OperationHandler} querying the complete type description of a given model node.
+     * {@link NewStepHandler} querying the complete type description of a given model node.
      */
-    public static final ModelQueryOperationHandler READ_RESOURCE_DESCRIPTION = new ModelQueryOperationHandler() {
-
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
-            final boolean operations = operation.get(OPERATIONS).isDefined() ? operation.get(OPERATIONS).asBoolean() : false;
-            final boolean recursive = operation.get(RECURSIVE).isDefined() ? operation.get(RECURSIVE).asBoolean() : false;
-            final boolean inheritedOps = operation.get(INHERITED).isDefined() ? operation.get(INHERITED).asBoolean() : true;
-
-
-            final ModelNodeRegistration registry = context.getRegistry();
-            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-            final DescriptionProvider descriptionProvider = registry.getModelDescription(address);
-            final Locale locale = getLocale(operation);
-            final ModelNode result = descriptionProvider.getModelDescription(locale);
-
-            addDescription(context, result, recursive, operations, inheritedOps, registry, address, locale);
-
-            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete();
-
-            return new BasicOperationResult();
+    public static final NewStepHandler READ_RESOURCE_DESCRIPTION = new NewStepHandler() {
+        private final ParametersValidator validator = new ParametersValidator();
+        {
+            validator.registerValidator(RECURSIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(PROXIES, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(OPERATIONS, new ModelTypeValidator(ModelType.BOOLEAN, true));
+            validator.registerValidator(INHERITED, new ModelTypeValidator(ModelType.BOOLEAN, true));
         }
 
-        private void addDescription(final OperationContext context, final ModelNode result, final boolean recursive, final boolean operations, final boolean inheritedOps, final ModelNodeRegistration registry, final PathAddress address, final Locale locale) throws OperationFailedException {
-
-            if (operations) {
-                final Map<String, OperationEntry> ops = registry.getOperationDescriptions(address, inheritedOps);
-                if (ops.size() > 0) {
-
-                    for (final Map.Entry<String, OperationEntry> entry : ops.entrySet()) {
-                        if(entry.getValue().getType() == OperationEntry.EntryType.PUBLIC) {
-                            final DescriptionProvider provider = entry.getValue().getDescriptionProvider();
-                            result.get(OPERATIONS, entry.getKey()).set(provider.getModelDescription(locale));
-                        }
+        @Override
+        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+            if(address.isMultiTarget()) {
+                // Format wildcard queries as list
+                final ModelNode result = context.getResult().setEmptyList();
+                context.addStep(new ModelNode(), AbstractMultiTargetHandler.FAKE_OPERATION, new RegistrationAddressResolver(operation, result,
+                        new NewStepHandler() {
+                            @Override
+                            public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                                // step handler bypassing further wildcard resolution
+                                doExecute(context, operation);
+                            }
+                        }) , NewOperationContext.Stage.IMMEDIATE);
+                // Add a handler at the end of the chain to aggregate the result
+                context.addStep(new NewStepHandler() {
+                    @Override
+                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                        context.completeStep();
                     }
-
-                } else {
-                    result.get(OPERATIONS).setEmptyList();
-                }
+                }, NewOperationContext.Stage.VERIFY);
+                context.completeStep();
+            } else {
+                doExecute(context, operation);
             }
+        }
 
-            if (result.hasDefined(ATTRIBUTES)) {
-                for (final String attr : result.require(ATTRIBUTES).keys()) {
-                     final AttributeAccess access = registry.getAttributeAccess(address, attr);
-                     // If there is metadata for an attribute but no AttributeAccess, assume RO. Can't
-                     // be writable without a registered handler. This opens the possibility that out-of-date metadata
-                     // for attribute "foo" can lead to a read of non-existent-in-model "foo" with
-                     // an unexpected undefined value returned. But it removes the possibility of a
-                     // dev forgetting to call registry.registerReadOnlyAttribute("foo", null) resulting
-                     // in the valid attribute "foo" not being readable
-                     final AccessType accessType = access == null ? AccessType.READ_ONLY : access.getAccessType();
-                     final Storage storage = access == null ? Storage.CONFIGURATION : access.getStorageType();
-                     result.get(ATTRIBUTES, attr, ACCESS_TYPE).set(accessType.toString()); //TODO i18n
-                     result.get(ATTRIBUTES, attr, STORAGE).set(storage.toString());
-                }
-            }
-            if (recursive && result.hasDefined(CHILDREN)) {
-                for (final PathElement element : registry.getChildAddresses(address)) {
-                    final PathAddress childAddress = address.append(element);
-                    final DescriptionProvider provider = registry.getModelDescription(childAddress);
-                    final ModelNode child;
-                    if (provider == null) {
-                        //It is probably a proxy
-                        Set<ProxyController> proxyControllers = registry.getProxyControllers(childAddress);
-                        if (proxyControllers.size() != 1) {
-                            throw new IllegalStateException("No description provider found for " + childAddress +
-                                    ". Tried to search for proxies, expected to find 1 proxy controller, found: " + proxyControllers.size());
-                        }
+        void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-                        final ModelNode operation = new ModelNode();
-                        operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
-                        operation.get(OP_ADDR).set(new ModelNode());
-                        operation.get(RECURSIVE).set(true);
-                        operation.get(OPERATIONS).set(operations);
-                        if (locale != null) {
-                            operation.get(OPERATIONS).set(locale.toString());
-                        }
-                        child = proxyControllers.iterator().next().execute(OperationBuilder.Factory.copy(context, operation).build()).get(RESULT);
+            validator.validate(operation);
 
-                    } else {
-                        child = provider.getModelDescription(locale);
-                        addDescription(context, child, recursive, operations, inheritedOps, registry, childAddress, locale);
+            final String opName = operation.require(OP).asString();
+            final ModelNode opAddr = operation.get(OP_ADDR);
+            final PathAddress address = PathAddress.pathAddress(opAddr);
+            final boolean recursive = operation.get(RECURSIVE).asBoolean(false);
+            final boolean proxies = operation.get(PROXIES).asBoolean(false);
+            final boolean ops = operation.get(OPERATIONS).asBoolean(false);
+            final boolean inheritedOps = operation.get(INHERITED).asBoolean(true);
+
+            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
+            final Locale locale = getLocale(operation);
+
+            final ModelNode nodeDescription = descriptionProvider.getModelDescription(locale);
+            final Map<String, ModelNode> operations = new HashMap<String, ModelNode>();
+            final Map<PathElement, ModelNode> childResources = recursive ? new HashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
+
+            // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
+            // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
+
+            // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
+            final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, childResources);
+            context.addStep(assemblyHandler, NewOperationContext.Stage.IMMEDIATE);
+
+            if (ops) {
+                for (final Map.Entry<String, OperationEntry> entry : registry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, inheritedOps).entrySet()) {
+                    if(entry.getValue().getType() == OperationEntry.EntryType.PUBLIC) {
+                        final DescriptionProvider provider = entry.getValue().getDescriptionProvider();
+                        operations.put(entry.getKey(), provider.getModelDescription(locale));
                     }
-                    result.get(CHILDREN, element.getKey(),MODEL_DESCRIPTION, element.getValue()).set(child);
                 }
             }
+            if (nodeDescription.hasDefined(ATTRIBUTES)) {
+                for (final String attr : nodeDescription.require(ATTRIBUTES).keys()) {
+                    final AttributeAccess access = registry.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attr);
+                    // If there is metadata for an attribute but no AttributeAccess, assume RO. Can't
+                    // be writable without a registered handler. This opens the possibility that out-of-date metadata
+                    // for attribute "foo" can lead to a read of non-existent-in-model "foo" with
+                    // an unexpected undefined value returned. But it removes the possibility of a
+                    // dev forgetting to call registry.registerReadOnlyAttribute("foo", null) resulting
+                    // in the valid attribute "foo" not being readable
+                    final AccessType accessType = access == null ? AccessType.READ_ONLY : access.getAccessType();
+                    final Storage storage = access == null ? Storage.CONFIGURATION : access.getStorageType();
+                    nodeDescription.get(ATTRIBUTES, attr, ACCESS_TYPE).set(accessType.toString()); //TODO i18n
+                    nodeDescription.get(ATTRIBUTES, attr, STORAGE).set(storage.toString());
+                }
+            }
+
+            if (recursive) {
+                for (final PathElement element : registry.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
+                    PathAddress relativeAddr = PathAddress.pathAddress(element);
+                    ImmutableModelNodeRegistration childReg = registry.getSubModel(relativeAddr);
+
+                    boolean readChild = true;
+                    if (childReg.isRemote() && !proxies) {
+                        readChild = false;
+                    }
+                    if (readChild) {
+                        ModelNode rrOp = new ModelNode();
+                        rrOp.get(OP).set(opName);
+                        try {
+                            rrOp.get(OP_ADDR).set(PathAddress.pathAddress(address, element).toModelNode());
+                        } catch (Exception e) {
+                            continue;
+                        }
+                        rrOp.get(RECURSIVE).set(true);
+                        rrOp.get(PROXIES).set(proxies);
+                        rrOp.get(OPERATIONS).set(ops);
+                        rrOp.get(INHERITED).set(inheritedOps);
+                        ModelNode rrRsp = new ModelNode();
+                        childResources.put(element, rrRsp);
+
+                        final NewStepHandler handler = childReg.isRemote() ? childReg.getOperationHandler(relativeAddr, opName) :
+                                new NewStepHandler() {
+                                    @Override
+                                    public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                                        doExecute(context, operation);
+                                    }
+                                };
+                        context.addStep(rrRsp, rrOp, handler, NewOperationContext.Stage.IMMEDIATE);
+                    }
+                    //Add a "child" => undefined
+                    nodeDescription.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue());
+                }
+            }
+            context.completeStep();
         }
     };
 
+    /**
+     * Assembles the response to a read-resource request from the components gathered by earlier steps.
+     */
+    private static class ReadResourceDescriptionAssemblyHandler implements NewStepHandler {
 
-    public static final class ResolveAddressOperationHandler implements ModelQueryOperationHandler, DescriptionProvider {
+        private final ModelNode nodeDescription;
+        private final Map<String, ModelNode> operations;
+        private final Map<PathElement, ModelNode> childResources;
 
-        public static final String OPERATION_NAME = "resolve-address";
-        public static final String ADDRESS_PARAM = "address-to-resolve";
-        public static final String ORIGINAL_OPERATION = "original-operation";
+        /**
+         * Creates a ReadResourceAssemblyHandler that will assemble the response using the contents
+         * of the given maps.
+         *
+         * @param nodeDescription basic description of the node, of its attributes and of its child types
+         * @param operations descriptions of the resource's operations
+         * @param childResources read-resource-description response from child resources, where the key is the PathAddress
+*                       relative to the address of the operation this handler is handling and the
+*                       value is the full read-resource response. Will not be {@code null}
+         */
+        private ReadResourceDescriptionAssemblyHandler(final ModelNode nodeDescription, final Map<String, ModelNode> operations, final Map<PathElement, ModelNode> childResources) {
+            this.nodeDescription = nodeDescription;
+            this.operations = operations;
+            this.childResources = childResources;
+        }
 
-        /** {@inheritDoc} */
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-            final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS_PARAM));
-            final String operationName = operation.require(ORIGINAL_OPERATION).asString();
-            // First check if the address is handled by a proxy
-            final Collection<ProxyController> proxies = context.getRegistry().getProxyControllers(address);
-            final int size = proxies.size();
-            if(size > 0) {
-                final AtomicInteger count = new AtomicInteger(size);
-                final AtomicInteger status = new AtomicInteger();
-                final ModelNode failureResult = new ModelNode();
-                for(final ProxyController proxy : proxies) {
-                    final PathAddress proxyAddress = proxy.getProxyNodeAddress();
-                    final ModelNode newOperation = operation.clone();
-                    newOperation.get(OP_ADDR).set(address.subAddress(proxyAddress.size()).toModelNode());
-                    final Operation operationContext = OperationBuilder.Factory.create(newOperation).build();
-                    proxy.execute(operationContext, new ResultHandler() {
-                        @Override
-                        public void handleResultFragment(String[] location, ModelNode result) {
-                            synchronized(failureResult) {
-                                if(status.get() == 0) {
-                                    // Addresses are aggregated as list by the controller
-                                    final PathAddress resolved = PathAddress.pathAddress(result);
-                                    resultHandler.handleResultFragment(Util.NO_LOCATION, proxyAddress.append(resolved).toModelNode());
-                                }
-                            }
-                        }
-                        @Override
-                        public void handleResultComplete() {
-                            synchronized(failureResult) {
-                                status.compareAndSet(0, 1);
-                                if(count.decrementAndGet() == 0) {
-                                    handleComplete();
-                                }
-                            }
-                        }
-                        @Override
-                        public void handleFailed(ModelNode failureDescription) {
-                            synchronized(failureResult) {
-                                if(failureDescription != null)  {
-                                    failureResult.add(failureDescription);
-                                }
-                                status.compareAndSet(0, 2);
-                                if(count.decrementAndGet() == 0) {
-                                    handleComplete();
-                                }
-                            }
-                        }
-                        @Override
-                        public void handleCancellation() {
-                            synchronized(failureResult) {
-                                status.compareAndSet(0, 3);
-                                if(count.decrementAndGet() == 0) {
-                                    handleComplete();
-                                }
-                            }
-                        }
-                        private void handleComplete() {
-                            final int s = status.get();
-                            switch(s) {
-                                case 1: resultHandler.handleResultComplete(); break;
-                                case 2: resultHandler.handleFailed(new ModelNode()); break;
-                                case 3: resultHandler.handleCancellation(); break;
-                                default : throw new IllegalStateException();
-                            }
-                        }
-                    });
-                    return new BasicOperationResult();
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+
+            for (Map.Entry<PathElement, ModelNode> entry : childResources.entrySet()) {
+                final PathElement element = entry.getKey();
+                final ModelNode value = entry.getValue();
+                if (!value.has(FAILURE_DESCRIPTION)) {
+                    nodeDescription.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue()).set(value.get(RESULT));
+                } else if (value.hasDefined(FAILURE_DESCRIPTION)) {
+                    context.getFailureDescription().set(value.get(FAILURE_DESCRIPTION));
+                    break;
                 }
             }
-            final OperationHandler operationHandler = context.getRegistry().getOperationHandler(address, operationName);
-            if(operationHandler == null) {
-                resultHandler.handleFailed(new ModelNode().set("no operation handler" + operationName));
-                return new BasicOperationResult();
+
+            for (Map.Entry<String, ModelNode> entry : operations.entrySet()) {
+                nodeDescription.get(OPERATIONS, entry.getKey()).set(entry.getValue());
             }
-            final Collection<PathAddress> resolved;
-            if(operationHandler instanceof ModelQueryOperationHandler) {
-                resolved = PathAddress.resolve(address, context.getSubModel(), operationHandler instanceof ModelAddOperationHandler);
+
+            context.getResult().set(nodeDescription);
+            context.completeStep();
+        }
+    }
+
+    public abstract static class AbstractMultiTargetHandler implements NewStepHandler {
+
+        public static final ModelNode FAKE_OPERATION;
+        static {
+            final ModelNode resolve = new ModelNode();
+            resolve.get(OP).set("resolve");
+            resolve.get(OP_ADDR).setEmptyList();
+            resolve.protect();
+            FAKE_OPERATION = resolve;
+        }
+
+        @Override
+        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            // In case if it's a multiTarget operation, resolve the address first
+            // This only works for model resources, which can be resolved into a concrete addresses
+            if(address.isMultiTarget()) {
+                // The final result should be a list of executed operations
+                final ModelNode result = context.getResult().setEmptyList();
+                // Trick the context to give us the model-root
+                context.addStep(new ModelNode(), FAKE_OPERATION, new ModelAddressResolver(operation, result, new NewStepHandler() {
+                            @Override
+                            public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                                doExecute(context, operation);
+                            }
+                        }), NewOperationContext.Stage.IMMEDIATE);
+                // Add a handler at the end of the chain to aggregate the result
+                context.addStep(new NewStepHandler() {
+                    @Override
+                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                        context.completeStep();
+                    }
+                }, NewOperationContext.Stage.VERIFY);
+                context.completeStep();
             } else {
-                resolved = context.getRegistry().resolveAddress(address);
+                doExecute(context, operation);
             }
-            if(! resolved.isEmpty()) {
-                for(PathAddress a : resolved) {
-                    // Addresses are aggregated as list by the controller
-                    resultHandler.handleResultFragment(Util.NO_LOCATION, a.toModelNode());
-                }
-            }
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+        }
+
+        /**
+         * Execute the actual operation if it is not addressed to multiple targets.
+         *
+         * @param context the operation context
+         * @param operation the original operation
+         * @throws OperationFailedException
+         */
+        abstract void doExecute(NewOperationContext context, ModelNode operation) throws OperationFailedException;
+    }
+
+    public static final class ModelAddressResolver implements NewStepHandler {
+
+        private final ModelNode operation;
+        private final ModelNode result;
+        private final NewStepHandler handler; // handler bypassing further wildcard resolution
+        public ModelAddressResolver(final ModelNode operation, final ModelNode result, final NewStepHandler delegate) {
+            this.operation = operation;
+            this.result = result;
+            this.handler = delegate;
         }
 
         /** {@inheritDoc} */
         @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
+        public void execute(final NewOperationContext context, final ModelNode ignored) throws OperationFailedException {
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            execute(address, PathAddress.EMPTY_ADDRESS, context);
+            context.completeStep();
         }
 
+        void execute(final PathAddress address, final PathAddress base, final NewOperationContext context) {
+            final Resource resource = context.readResource(base);
+            final PathAddress current = address.subAddress(base.size());
+            final Iterator<PathElement> iterator = current.iterator();
+            if(iterator.hasNext()) {
+                final PathElement element = iterator.next();
+                if(element.isMultiTarget()) {
+                    final String childType = element.getKey().equals("*") ? null : element.getKey();
+                    final ImmutableModelNodeRegistration registration = context.getModelNodeRegistration().getSubModel(base);
+                    if(registration.isRemote() || registration.isRuntimeOnly()) {
+                        // At least for proxies it should use the proxy operation handler
+                        throw new IllegalStateException();
+                    }
+                    final Map<String, Set<String>> resolved = getChildAddresses(registration, resource, childType);
+                    for (Map.Entry<String, Set<String>> entry : resolved.entrySet()) {
+                        final String key = entry.getKey();
+                        final Set<String> children = entry.getValue();
+                        if(children.isEmpty()) {
+                            continue;
+                        }
+                        if(element.isWildcard()) {
+                            for(final String child : children) {
+                                // Double check if the child actually exists
+                                if(resource.hasChild(PathElement.pathElement(key, child))) {
+                                    execute(address, base.append(PathElement.pathElement(key, child)), context);
+                                }
+                            }
+                        } else {
+                            for(final String segment : element.getSegments()) {
+                                if(children.contains(segment)) {
+                                    // Double check if the child actually exists
+                                    if(resource.hasChild(PathElement.pathElement(key, segment))) {
+                                        execute(address, base.append(PathElement.pathElement(key, segment)), context);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Double check if the child actually exists
+                    if(resource.hasChild(element)) {
+                        execute(address, base.append(element), context);
+                    }
+                }
+            } else {
+                final String operationName = operation.require(OP).asString();
+                final ModelNode newOp = operation.clone();
+                newOp.get(OP_ADDR).set(base.toModelNode());
+
+                final ModelNode result = this.result.add();
+                result.get(OP_ADDR).set(base.toModelNode());
+                context.addStep(result, newOp, handler, NewOperationContext.Stage.IMMEDIATE);
+            }
+        }
+
+    }
+
+    static class RegistrationAddressResolver implements NewStepHandler {
+
+        private final ModelNode operation;
+        private final ModelNode result;
+        private final NewStepHandler handler; // handler bypassing further wildcard resolution
+        RegistrationAddressResolver(final ModelNode operation, final ModelNode result, final NewStepHandler delegate) {
+            this.operation = operation;
+            this.result = result;
+            this.handler = delegate;
+        }
+
+        @Override
+        public void execute(final NewOperationContext context, final ModelNode ignored) throws OperationFailedException {
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            execute(address, PathAddress.EMPTY_ADDRESS, context);
+            context.completeStep();
+        }
+
+        void execute(final PathAddress address, PathAddress base, final NewOperationContext context) {
+            final PathAddress current = address.subAddress(base.size());
+            final Iterator<PathElement> iterator = current.iterator();
+            if(iterator.hasNext()) {
+                final PathElement element = iterator.next();
+                if(element.isMultiTarget()) {
+                    final Set<PathElement> children = context.getModelNodeRegistration().getChildAddresses(base);
+                    if(children == null || children.isEmpty()) {
+                        return;
+                    }
+                    final String childType = element.getKey().equals("*") ? null : element.getKey();
+                    for(final PathElement path : children) {
+                        if(childType != null && ! childType.equals(path.getKey())) {
+                            continue;
+                        }
+                        execute(address, base.append(path), context);
+                    }
+                } else {
+                    execute(address, base.append(element), context);
+                }
+            } else {
+                final String operationName = operation.require(OP).asString();
+                final ModelNode newOp = operation.clone();
+                newOp.get(OP_ADDR).set(base.toModelNode());
+
+                final ModelNode result = this.result.add();
+                result.get(OP_ADDR).set(base.toModelNode());
+                context.addStep(result, newOp, handler, NewOperationContext.Stage.IMMEDIATE);
+            }
+        }
+    }
+
+    private static ModelNode safeReadModel(final NewOperationContext context) {
+        try {
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            final ModelNode result = resource.getModel();
+            if (result.isDefined()) {
+                return result;
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        return new ModelNode().setEmptyObject();
+    }
+
+    /**
+     * Gets the addresses of the child resources under the given resource.
+     *
+     * @param registry  registry entry representing the resource
+     * @param resource the current resource
+     * @param validChildType a single child type to which the results should be limited. If {@code null} the result
+     *                       should include all child types
+     * @return map where the keys are the child types and the values are a set of child names associated with a type
+     */
+    private static Map<String,Set<String>> getChildAddresses(final ImmutableModelNodeRegistration registry, Resource resource, final String validChildType) {
+
+        Map<String,Set<String>> result = new HashMap<String, Set<String>>();
+        Set<PathElement> elements = registry.getChildAddresses(PathAddress.EMPTY_ADDRESS);
+        for (PathElement element : elements) {
+            String childType = element.getKey();
+            if (validChildType != null && !validChildType.equals(childType)) {
+                continue;
+            }
+            Set<String> set = result.get(childType);
+            if (set == null) {
+                set = new HashSet<String>();
+                result.put(childType, set);
+                if(resource.hasChildren(childType)) {
+                    set.addAll(resource.getChildrenNames(childType));
+                }
+            }
+            if (!element.isWildcard()) {
+                ImmutableModelNodeRegistration childReg = registry.getSubModel(PathAddress.pathAddress(element));
+                if (childReg != null && childReg.isRuntimeOnly()) {
+                    set.add(element.getValue());
+                }
+            }
+        }
+
+        return result;
     }
 
     private static Locale getLocale(final ModelNode operation) {

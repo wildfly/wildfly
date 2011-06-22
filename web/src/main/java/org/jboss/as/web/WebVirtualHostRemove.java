@@ -22,27 +22,20 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import java.util.Locale;
+
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-
-import java.util.Locale;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class WebVirtualHostRemove implements ModelRemoveOperationHandler, DescriptionProvider {
+class WebVirtualHostRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     static final WebVirtualHostRemove INSTANCE = new WebVirtualHostRemove();
 
@@ -50,37 +43,16 @@ class WebVirtualHostRemove implements ModelRemoveOperationHandler, DescriptionPr
         //
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        final ModelNode subModel = context.getSubModel();
-        final ModelNode compensatingOperation = WebVirtualHostAdd.getAddOperation(operation.require(OP_ADDR), subModel);
+        context.removeService(WebSubsystemServices.JBOSS_WEB_HOST.append(name));
+        context.removeService(WebSubsystemServices.JBOSS_WEB_HOST.append(name).append("welcome"));
+    }
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ServiceController<?> service = context.getServiceRegistry()
-                            .getService(WebSubsystemServices.JBOSS_WEB_HOST.append(name));
-                    if (service != null) {
-                        service.setMode(ServiceController.Mode.REMOVE);
-                    }
-
-                    service = context.getServiceRegistry().getService(WebSubsystemServices.JBOSS_WEB_HOST.append(name).append("welcome"));
-                    if (service != null) {
-                        service.setMode(ServiceController.Mode.REMOVE);
-                    }
-
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensatingOperation);
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
     }
 
     @Override

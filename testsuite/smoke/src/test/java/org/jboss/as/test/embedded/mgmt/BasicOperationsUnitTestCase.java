@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.embedded.mgmt;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -29,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
@@ -38,7 +40,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -48,10 +49,11 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,14 +66,23 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class BasicOperationsUnitTestCase {
 
-    @Deployment(testable = false)
+    private ModelControllerClient client;
+
+    @Deployment
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
 
     // [ARQ-458] @Before not called with @RunAsClient
     private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        return ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        StreamUtils.safeClose(client);
+        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        return client;
+    }
+
+    @After
+    public void tearDown() {
+        StreamUtils.safeClose(client);
     }
 
     @Test
@@ -99,6 +110,31 @@ public class BasicOperationsUnitTestCase {
     }
 
     @Test
+    public void testReadAttributeWildcards() throws IOException {
+
+        final ModelNode address = new ModelNode();
+        address.add("socket-binding-group", "*");
+        address.add("socket-binding", "*");
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set(PORT);
+
+        final ModelNode result = getModelControllerClient().execute(operation);
+        Assert.assertTrue(result.hasDefined(RESULT));
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        final Collection<ModelNode> steps = getSteps(result.get(RESULT));
+        Assert.assertFalse(steps.isEmpty());
+        for(final ModelNode step : steps) {
+            Assert.assertTrue(step.hasDefined(OP_ADDR));
+            Assert.assertTrue(step.hasDefined(RESULT));
+            Assert.assertTrue(step.get(RESULT).asInt() > 0);
+        }
+    }
+
+    @Test
     public void testSocketBindingDescriptions() throws IOException {
 
         final ModelNode address = new ModelNode();
@@ -113,8 +149,9 @@ public class BasicOperationsUnitTestCase {
         final ModelNode result = getModelControllerClient().execute(operation);
         Assert.assertTrue(result.hasDefined(RESULT));
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        final Collection<ModelNode> steps = getSteps(result.get(RESULT));
+        final Collection<ModelNode> steps = result.get(RESULT).asList();
         Assert.assertFalse(steps.isEmpty());
+        Assert.assertEquals("should only contain a single type", 1, steps.size());
         for(final ModelNode step : steps) {
             Assert.assertTrue(step.hasDefined(OP_ADDR));
             Assert.assertTrue(step.hasDefined(RESULT));
@@ -122,6 +159,9 @@ public class BasicOperationsUnitTestCase {
             final ModelNode stepResult = step.get(RESULT);
             Assert.assertTrue(stepResult.hasDefined(DESCRIPTION));
             Assert.assertTrue(stepResult.hasDefined(ATTRIBUTES));
+            Assert.assertTrue(stepResult.get(ModelDescriptionConstants.ATTRIBUTES).hasDefined(ModelDescriptionConstants.NAME));
+            Assert.assertTrue(stepResult.get(ModelDescriptionConstants.ATTRIBUTES).hasDefined(ModelDescriptionConstants.INTERFACE));
+            Assert.assertTrue(stepResult.get(ModelDescriptionConstants.ATTRIBUTES).hasDefined(ModelDescriptionConstants.PORT));
         }
     }
 
@@ -195,10 +235,6 @@ public class BasicOperationsUnitTestCase {
 
     protected static List<ModelNode> getSteps(final ModelNode result) {
         Assert.assertTrue(result.isDefined());
-        final List<ModelNode> steps = new ArrayList<ModelNode>();
-        for(final Property property : result.asPropertyList()) {
-            steps.add(property.getValue());
-        }
-        return steps;
+        return result.asList();
     }
 }

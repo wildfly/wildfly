@@ -134,7 +134,7 @@ public class SeamProcessor implements DeploymentUnitProcessor {
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (deploymentUnit.getParent() == null) {
+        if (deploymentUnit.getParent() != null) {
             return;
         }
 

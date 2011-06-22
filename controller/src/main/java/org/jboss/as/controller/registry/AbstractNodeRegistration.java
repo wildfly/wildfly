@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.registry;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -29,10 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 
@@ -57,23 +58,27 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     /** {@inheritDoc} */
     @Override
-    public void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider) {
+    public void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider) {
         registerOperationHandler(operationName, handler, descriptionProvider, false);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
+    public void registerOperationHandler(final String operationName, final NewStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
         registerOperationHandler(operationName, handler, descriptionProvider, inherited, OperationEntry.EntryType.PUBLIC);
     }
 
     /** {@inheritDoc} */
     @Override
-    public abstract void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType);
+    public abstract void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType);
 
     /** {@inheritDoc} */
     @Override
-    public abstract void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException;
+    public abstract void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags);
+
+    /** {@inheritDoc} */
+    @Override
+    public abstract void registerProxyController(final PathElement address, final NewProxyController controller) throws IllegalArgumentException;
 
     /** {@inheritDoc} */
     @Override
@@ -87,11 +92,20 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
      * @return the operation handler, or {@code null} if none match
      */
     @Override
-    public final OperationHandler getOperationHandler(final PathAddress pathAddress, final String operationName) {
-        return getHandler(pathAddress.iterator(), operationName);
+    public final NewStepHandler getOperationHandler(final PathAddress pathAddress, final String operationName) {
+        NewStepHandler inheritable = getInheritableOperationHandler(operationName);
+        NewStepHandler result =  getOperationHandler(pathAddress.iterator(), operationName, inheritable);
+        NodeSubregistry ancestorSubregistry = parent;
+        while (result == null && ancestorSubregistry != null) {
+            AbstractNodeRegistration ancestor = ancestorSubregistry.getParent();
+            result = ancestor.getInheritableOperationHandler(operationName);
+            ancestorSubregistry = ancestor.parent;
+        }
+        return result;
     }
 
-    abstract OperationHandler getHandler(ListIterator<PathElement> iterator, String operationName);
+    abstract NewStepHandler getOperationHandler(ListIterator<PathElement> iterator, String operationName, NewStepHandler inherited);
+    abstract NewStepHandler getInheritableOperationHandler(String operationName);
 
     @Override
     public AttributeAccess getAttributeAccess(final PathAddress address, final String attributeName) {
@@ -119,10 +133,43 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
     /** {@inheritDoc} */
     @Override
     public DescriptionProvider getOperationDescription(final PathAddress address, final String operationName) {
-        return getOperationDescription(address.iterator(), operationName);
+        DescriptionProvider inheritable = getInheritableOperationDescription(operationName);
+        DescriptionProvider result = getOperationDescription(address.iterator(), operationName, inheritable);
+        NodeSubregistry ancestorSubregistry = parent;
+        while (result == null && ancestorSubregistry != null) {
+            AbstractNodeRegistration ancestor = ancestorSubregistry.getParent();
+            result = ancestor.getInheritableOperationDescription(operationName);
+            ancestorSubregistry = ancestor.parent;
+        }
+        return result;
     }
 
-    abstract DescriptionProvider getOperationDescription(Iterator<PathElement> iterator, String operationName);
+    abstract DescriptionProvider getOperationDescription(Iterator<PathElement> iterator, String operationName, DescriptionProvider inherited);
+    abstract DescriptionProvider getInheritableOperationDescription(String operationName);
+
+    /**
+     * Get a handler at a specific address.
+     *
+     * @param pathAddress the address
+     * @param operationName the operation name
+     * @return the operation handler, or {@code null} if none match
+     */
+    @Override
+    public final Set<OperationEntry.Flag> getOperationFlags(final PathAddress pathAddress, final String operationName) {
+        Set<OperationEntry.Flag> inheritable = getInheritableOperationFlags(operationName);
+        Set<OperationEntry.Flag> result =  getOperationFlags(pathAddress.iterator(), operationName, inheritable);
+        NodeSubregistry ancestorSubregistry = parent;
+        while (result == null && ancestorSubregistry != null) {
+            AbstractNodeRegistration ancestor = ancestorSubregistry.getParent();
+            result = ancestor.getInheritableOperationFlags(operationName);
+            ancestorSubregistry = ancestor.parent;
+        }
+        return result;
+    }
+
+    abstract Set<OperationEntry.Flag> getOperationFlags(ListIterator<PathElement> iterator, String operationName, Set<OperationEntry.Flag> inherited);
+
+    abstract Set<OperationEntry.Flag> getInheritableOperationFlags(String operationName);
 
     /** {@inheritDoc} */
     @Override
@@ -153,19 +200,19 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     abstract Set<PathElement> getChildAddresses(Iterator<PathElement> iterator);
 
-    public ProxyController getProxyController(final PathAddress address) {
+    public NewProxyController getProxyController(final PathAddress address) {
         return getProxyController(address.iterator());
     }
 
-    abstract ProxyController getProxyController(Iterator<PathElement> iterator);
+    abstract NewProxyController getProxyController(Iterator<PathElement> iterator);
 
-    public Set<ProxyController> getProxyControllers(PathAddress address){
-        Set<ProxyController> controllers = new HashSet<ProxyController>();
+    public Set<NewProxyController> getProxyControllers(PathAddress address){
+        Set<NewProxyController> controllers = new HashSet<NewProxyController>();
         getProxyControllers(address.iterator(), controllers);
         return controllers;
     }
 
-    abstract void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers);
+    abstract void getProxyControllers(Iterator<PathElement> iterator, Set<NewProxyController> controllers);
 
     /** {@inheritDoc} */
     @Override
@@ -175,15 +222,9 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     abstract ModelNodeRegistration getNodeRegistration(Iterator<PathElement> iterator);
 
-    /** {@inheritDoc} */
-    @Override
-    public Set<PathAddress> resolveAddress(final PathAddress address) {
-        final Set<PathAddress> addresses = new HashSet<PathAddress>();
-        resolveAddress(address, PathAddress.EMPTY_ADDRESS, addresses);
-        return addresses;
+    final String getValueString()  {
+        return valueString;
     }
-
-    abstract void resolveAddress(final PathAddress address, final PathAddress base, Set<PathAddress> addresses);
 
     final String getLocationString() {
         if (parent == null) {
@@ -192,4 +233,15 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
             return parent.getLocationString() + valueString + ")";
         }
     }
+
+    void getInheritedOperations(final Map<String, OperationEntry> providers, boolean skipSelf) {
+        if (!skipSelf) {
+            getInheritedOperationEntries(providers);
+        }
+        if (parent != null) {
+            parent.getParent().getInheritedOperations(providers, false);
+        }
+    }
+
+    abstract void getInheritedOperationEntries(final Map<String, OperationEntry> providers);
 }

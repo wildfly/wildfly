@@ -232,14 +232,18 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
     }
 
     private void writeContainerConfig(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        writer.writeStartElement(Element.CONTAINER_CONFIG.getLocalName());
+        boolean containerConfigStartWritten = false;
         if(config.hasDefined(STATIC_RESOURCES)) {
-            writeStaticResources(writer, config.get(STATIC_RESOURCES));
+            containerConfigStartWritten = writeStaticResources(writer, config.get(STATIC_RESOURCES));
         }
         if(config.hasDefined(JSP_CONFIGURATION)) {
-            writeJSPConfiguration(writer, config.get(JSP_CONFIGURATION));
+            containerConfigStartWritten = containerConfigStartWritten || writeJSPConfiguration(writer, config.get(JSP_CONFIGURATION), containerConfigStartWritten);
         }
         if(config.hasDefined(MIME_MAPPING)) {
+            if (!containerConfigStartWritten) {
+                writer.writeStartElement(Element.CONTAINER_CONFIG.getLocalName());
+                containerConfigStartWritten = true;
+            }
             for(final Property entry : config.get(MIME_MAPPING).asPropertyList()) {
                 writer.writeEmptyElement(Element.MIME_MAPPING.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), entry.getName());
@@ -247,53 +251,92 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             }
         }
         if(config.hasDefined(WELCOME_FILE)) {
+            if (!containerConfigStartWritten) {
+                writer.writeStartElement(Element.CONTAINER_CONFIG.getLocalName());
+                containerConfigStartWritten = true;
+            }
             for(final ModelNode file : config.get(WELCOME_FILE).asList()) {
                 writer.writeStartElement(Element.WELCOME_FILE.getLocalName());
                 writer.writeCharacters(file.asString());
                 writer.writeEndElement();
             }
         }
-        writer.writeEndElement();
+        if (containerConfigStartWritten) {
+            writer.writeEndElement();
+        }
     }
 
-    private void writeStaticResources(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        writer.writeStartElement(Element.STATIC_RESOURCES.getLocalName());
+    private boolean writeStaticResources(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
 
-        writeAttribute(writer, Attribute.LISTINGS.getLocalName(), config);
-        writeAttribute(writer, Attribute.SENDFILE.getLocalName(), config);
-        writeAttribute(writer, Attribute.FILE_ENCONDING.getLocalName(), config);
-        writeAttribute(writer, Attribute.READ_ONLY.getLocalName(), config);
-        writeAttribute(writer, Attribute.WEBDAV.getLocalName(), config);
-        writeAttribute(writer, Attribute.SECRET.getLocalName(), config);
-        writeAttribute(writer, Attribute.MAX_DEPTH.getLocalName(), config);
-        writeAttribute(writer, Attribute.DISABLED.getLocalName(), config);
+        boolean startWritten = writeStaticResourceAttribute(writer, Attribute.LISTINGS.getLocalName(), config, false);
+        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.SENDFILE.getLocalName(), config, startWritten);
+        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.FILE_ENCONDING.getLocalName(), config, startWritten);
+        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.READ_ONLY.getLocalName(), config, startWritten);
+        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.WEBDAV.getLocalName(), config, startWritten);
+        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.SECRET.getLocalName(), config, startWritten);
+        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.MAX_DEPTH.getLocalName(), config, startWritten);
+        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.DISABLED.getLocalName(), config, startWritten);
 
-        writer.writeEndElement();
+        if (startWritten) {
+            writer.writeEndElement();
+        }
+        return startWritten;
     }
 
-    private void writeJSPConfiguration(XMLExtendedStreamWriter writer, ModelNode jsp) throws XMLStreamException {
-        writer.writeStartElement(Element.JSP_CONFIGURATION.getLocalName());
+    private boolean writeStaticResourceAttribute(XMLExtendedStreamWriter writer, String attribute, ModelNode config, boolean startWritten) throws XMLStreamException {
+        if (DefaultStaticResources.hasNotDefault(config, attribute)) {
+            if (!startWritten) {
+                writer.writeStartElement(Element.CONTAINER_CONFIG.getLocalName());
+                writer.writeStartElement(Element.STATIC_RESOURCES.getLocalName());
+            }
+            writer.writeAttribute(attribute, config.get(attribute).asString());
+            return true;
+        }
+        return false;
+    }
 
-        writeAttribute(writer, Attribute.DEVELOPMENT.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.KEEP_GENERATED.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.TRIM_SPACES.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.TAG_POOLING.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.MAPPED_FILE.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.CHECK_INTERVAL.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.MODIFIFICATION_TEST_INTERVAL.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.RECOMPILE_ON_FAIL.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.SMAP.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.DUMP_SMAP.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.GENERATE_STRINGS_AS_CHAR_ARRAYS.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.SCRATCH_DIR.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.SOURCE_VM.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.TARGET_VM.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.JAVA_ENCODING.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.X_POWERED_BY.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.DISPLAY_SOURCE_FRAGMENT.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.DISABLED.getLocalName(), jsp);
-        writer.writeEndElement();
+    private boolean writeJSPConfiguration(XMLExtendedStreamWriter writer, ModelNode jsp, boolean containerConfigStartWritten) throws XMLStreamException {
+
+        boolean startWritten = writeJspConfigAttribute(writer, Attribute.DEVELOPMENT.getLocalName(), jsp, false, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.KEEP_GENERATED.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.TRIM_SPACES.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.TAG_POOLING.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.MAPPED_FILE.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.CHECK_INTERVAL.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.MODIFIFICATION_TEST_INTERVAL.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.RECOMPILE_ON_FAIL.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.SMAP.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.DUMP_SMAP.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.GENERATE_STRINGS_AS_CHAR_ARRAYS.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.SCRATCH_DIR.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.SOURCE_VM.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.TARGET_VM.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.JAVA_ENCODING.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.X_POWERED_BY.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.DISPLAY_SOURCE_FRAGMENT.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.DISABLED.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+
+        if (startWritten) {
+            writer.writeEndElement();
+        }
+
+        return startWritten;
+    }
+
+    private boolean writeJspConfigAttribute(XMLExtendedStreamWriter writer, String attribute, ModelNode config,
+                                            boolean startWritten, boolean containerConfigStartWritten) throws XMLStreamException {
+        if (DefaultJspConfig.hasNotDefault(config, attribute)) {
+            if (!startWritten) {
+                if (!containerConfigStartWritten) {
+                    writer.writeStartElement(Element.CONTAINER_CONFIG.getLocalName());
+                }
+                writer.writeStartElement(Element.JSP_CONFIGURATION.getLocalName());
+            }
+            writer.writeAttribute(attribute, config.get(attribute).asString());
+            return true;
+        }
+        return false;
     }
 
     /** {@inheritDoc} */

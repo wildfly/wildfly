@@ -45,8 +45,7 @@ public final class ServiceInjectionSource extends InjectionSource {
         serviceBuilder.addDependency(serviceName, ManagedReferenceFactory.class, injector);
     }
 
-    @Override
-    public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
+    public boolean equals(final Object other) {
         if (this == other) {
             return true;
         }
@@ -59,6 +58,10 @@ public final class ServiceInjectionSource extends InjectionSource {
 
     private boolean equalTo(final ServiceInjectionSource configuration) {
         return configuration != null && serviceName.equals(configuration.serviceName);
+    }
+
+    public int hashCode() {
+        return serviceName.hashCode();
     }
 
 }

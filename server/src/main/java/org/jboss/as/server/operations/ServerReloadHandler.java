@@ -22,29 +22,24 @@
 
 package org.jboss.as.server.operations;
 
-import java.util.Locale;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeOperationContext;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.server.ServerOperationHandler;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.Locale;
+
 /**
  * Server-reload operation handler.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class ServerReloadHandler implements ServerOperationHandler, DescriptionProvider {
+public class ServerReloadHandler implements NewStepHandler, DescriptionProvider {
 
     /**
      * The operation name.
@@ -59,26 +54,28 @@ public class ServerReloadHandler implements ServerOperationHandler, DescriptionP
     }
 
     /** {@inheritDoc} */
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        RuntimeOperationContext runtimeContext = context.getRuntimeContext();
-        if (runtimeContext != null) {
-            runtimeContext.setRuntimeTask(new RuntimeTask() {
-                public void execute(final RuntimeTaskContext context) throws OperationFailedException {
-                    ServiceController<?> service = context.getServiceRegistry().getRequiredService(Services.JBOSS_AS);
-                    service.addListener(new AbstractServiceListener<Object>() {
-                        public void listenerAdded(final ServiceController<?> controller) {
-                            controller.setMode(ServiceController.Mode.NEVER);
-                        }
+    @Override
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new NewStepHandler() {
+            @Override
+            public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(Services.JBOSS_AS);
+                service.addListener(new AbstractServiceListener<Object>() {
+                    public void listenerAdded(final ServiceController<?> controller) {
+                        controller.setMode(ServiceController.Mode.NEVER);
+                    }
 
-                        public void serviceStopped(final ServiceController<?> controller) {
+                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                        if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
                             controller.removeListener(this);
                             controller.setMode(ServiceController.Mode.ACTIVE);
                         }
-                    });
-                }
-            });
-        }
-        return new BasicOperationResult(null);
+                    }
+                });
+                context.completeStep();
+            }
+        }, NewOperationContext.Stage.RUNTIME);
+        context.completeStep();
     }
 
     /** {@inheritDoc} */

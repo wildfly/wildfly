@@ -29,6 +29,7 @@ import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -64,7 +65,7 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         this.listener = listener;
         log.infof("Starting deployment of \"%s\"", deploymentName);
         // Create the first phase deployer
-        target.addListener(listener);
+        target.addListener(ServiceListener.Inheritance.ALL, listener);
         deploymentUnit = createAndInitializeDeploymentUnit(context.getController().getServiceContainer());
         deploymentUnit.putAttachment(Attachments.STATUS_LISTENER, listener);
 
@@ -99,14 +100,19 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         listener.explainStatus();
     }
 
+    public DeploymentStatus getStatus() {
+        return listener.getStatus();
+    }
+
     Injector<DeployerChains> getDeployerChainsInjector() {
         return deployerChainsInjector;
     }
 
-    enum DeploymentStatus {
+    public enum DeploymentStatus {
         NEW,
-        OKAY,
+        OK,
         FAILED,
+        STOPPED
     }
 
     public static final class DeploymentServiceListener extends AbstractServiceListener<Object> {
@@ -120,11 +126,15 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
             this.deploymentName = deploymentName;
         }
 
+        public synchronized DeploymentStatus getStatus() {
+            return startFailedServices.isEmpty() && servicesMissingDependencies.isEmpty() ? DeploymentStatus.OK : DeploymentStatus.FAILED;
+        }
+
         public synchronized void explainStatus() {
             DeploymentStatus oldStatus = previous;
             boolean hasFailed = !startFailedServices.isEmpty();
             boolean hasMissing = !servicesMissingDependencies.isEmpty();
-            final DeploymentStatus newStatus = hasFailed || hasMissing ? DeploymentStatus.FAILED : DeploymentStatus.OKAY;
+            final DeploymentStatus newStatus = hasFailed || hasMissing ? DeploymentStatus.FAILED : DeploymentStatus.OK;
             if (oldStatus != newStatus) {
                 previous = newStatus;
                 if (hasFailed || hasMissing) {
@@ -173,21 +183,22 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
             servicesMissingDependencies.add(controller);
         }
 
-        public synchronized void failedServiceStarting(final ServiceController<? extends Object> controller) {
-            startFailedServices.remove(controller);
-        }
-
-        public synchronized void serviceStarting(final ServiceController<?> controller) {
-            startFailedServices.remove(controller);
-        }
-
-        public synchronized void serviceFailed(final ServiceController<?> controller, final StartException reason) {
-            startFailedServices.add(controller);
-        }
-
-        public synchronized void serviceRemoved(final ServiceController<?> controller) {
-            startFailedServices.remove(controller);
-            servicesMissingDependencies.remove(controller);
+        public synchronized void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+            switch (transition) {
+                case REMOVING_to_REMOVED: {
+                    servicesMissingDependencies.remove(controller);
+                    // fall through
+                }
+                case START_FAILED_to_DOWN:
+                case START_FAILED_to_STARTING: {
+                    startFailedServices.remove(controller);
+                    break;
+                }
+                case STARTING_to_START_FAILED: {
+                    startFailedServices.add(controller);
+                    break;
+                }
+            }
         }
     }
 }

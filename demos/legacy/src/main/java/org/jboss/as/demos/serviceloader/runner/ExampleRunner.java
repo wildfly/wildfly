@@ -21,13 +21,15 @@
  */
 package org.jboss.as.demos.serviceloader.runner;
 
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.serviceloader.archive.TestService;
 import org.jboss.as.demos.serviceloader.mbean.Test;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+
 
 /**
  *

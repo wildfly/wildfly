@@ -33,9 +33,8 @@ import org.jboss.logmanager.ExtHandler;
  * @author John Bailey
  */
 public class FlushingHandlerUpdateProperties extends HandlerUpdateProperties {
-    protected void updateModel(final ModelNode operation, final ModelNode compensating, ModelNode model) {
+    protected void updateModel(final ModelNode operation, ModelNode model) {
         if (operation.hasDefined(AUTOFLUSH)) {
-            apply(model, compensating, AUTOFLUSH);
             apply(operation, model, AUTOFLUSH);
         }
     }

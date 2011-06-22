@@ -30,6 +30,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -52,7 +53,8 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
         return service;
     }
 
-    protected void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
+    @Override
+    protected ServiceController<?> startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
             AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation)
             throws OperationFailedException {
         final XaDataSource dataSourceConfig;
@@ -65,10 +67,10 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
         final ServiceName dataSourceCongServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
         final XADataSourceConfigService configService = new XADataSourceConfigService(dataSourceConfig);
 
-        serviceTarget.addService(dataSourceCongServiceName, configService).setInitialMode(Mode.ACTIVE).install();
+        ServiceController<?> svcController = serviceTarget.addService(dataSourceCongServiceName, configService).setInitialMode(Mode.ACTIVE).install();
 
         dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, XaDataSource.class,
                 ((XaDataSourceService) dataSourceService).getDataSourceConfigInjector());
-
+        return svcController;
     }
 }

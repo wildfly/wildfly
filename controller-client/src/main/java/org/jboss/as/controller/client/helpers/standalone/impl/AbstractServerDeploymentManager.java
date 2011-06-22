@@ -22,16 +22,6 @@
 
 package org.jboss.as.controller.client.helpers.standalone.impl;
 
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
-import org.jboss.dmr.ModelNode;
-
-import java.util.concurrent.Future;
-
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.COMPOSITE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.CONTENT;
@@ -51,6 +41,16 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.ROLLBACK_ON
 import static org.jboss.as.controller.client.helpers.ClientConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.STEPS;
 import static org.jboss.as.controller.client.helpers.ClientConstants.TO_REPLACE;
+
+import java.util.concurrent.Future;
+
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
@@ -91,7 +91,7 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(plan.isGlobalRollback());
         // FIXME deal with shutdown params
 
-        OperationBuilder builder = OperationBuilder.Factory.create(op);
+        OperationBuilder builder = new OperationBuilder(op);
 
         int stream = 0;
         for (DeploymentActionImpl action : plan.getDeploymentActionImpls()) {

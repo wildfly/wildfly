@@ -18,17 +18,15 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.dmr.ModelNode;
 
@@ -48,7 +46,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerGroupDeploymentAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class ServerGroupDeploymentAddHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -74,14 +72,13 @@ public class ServerGroupDeploymentAddHandler implements ModelAddOperationHandler
     /**
      * {@inheritDoc}
      */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
-        ModelNode opAddr = operation.get(OP_ADDR);
+    public void execute(NewOperationContext context, ModelNode operation) {
+        final ModelNode opAddr = operation.get(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
         String name = address.getLastElement().getValue();
 
-        ModelNode deployment = context.getSubModel(PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name)));
+        final Resource deploymentResource = context.getRootResource().navigate(PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name)));
+        ModelNode deployment = deploymentResource.getModel();
 
         for (ModelNode content : deployment.require(CONTENT).asList()) {
             if ((content.hasDefined(HASH))) {
@@ -93,12 +90,11 @@ public class ServerGroupDeploymentAddHandler implements ModelAddOperationHandler
 
         final String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : deployment.get(RUNTIME_NAME).asString();
 
-        ModelNode subModel = context.getSubModel();
+        ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         subModel.get(NAME).set(name);
         subModel.get(RUNTIME_NAME).set(runtimeName);
         subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
 
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));
+        context.completeStep();
     }
 }

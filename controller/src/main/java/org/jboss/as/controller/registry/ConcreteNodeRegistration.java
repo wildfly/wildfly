@@ -25,6 +25,7 @@ package org.jboss.as.controller.registry;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -32,10 +33,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -44,25 +45,42 @@ import org.jboss.dmr.ModelNode;
 
 final class ConcreteNodeRegistration extends AbstractNodeRegistration {
 
+    @SuppressWarnings("unused")
     private volatile Map<String, NodeSubregistry> children;
 
+    @SuppressWarnings("unused")
     private volatile Map<String, OperationEntry> operations;
 
+    @SuppressWarnings("unused")
     private volatile DescriptionProvider descriptionProvider;
 
+    @SuppressWarnings("unused")
     private volatile Map<String, AttributeAccess> attributes;
+
+    private final boolean runtimeOnly;
 
     private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "children"));
     private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, OperationEntry> operationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "operations"));
     private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, AttributeAccess> attributesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "attributes"));
     private static final AtomicReferenceFieldUpdater<ConcreteNodeRegistration, DescriptionProvider> descriptionProviderUpdater = AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, DescriptionProvider.class, "descriptionProvider");
 
-    ConcreteNodeRegistration(final String valueString, final NodeSubregistry parent, final DescriptionProvider provider) {
+    ConcreteNodeRegistration(final String valueString, final NodeSubregistry parent, final DescriptionProvider provider, final boolean runtimeOnly) {
         super(valueString, parent);
         childrenUpdater.clear(this);
         operationsUpdater.clear(this);
         attributesUpdater.clear(this);
         descriptionProviderUpdater.set(this, provider);
+        this.runtimeOnly = runtimeOnly;
+    }
+
+    @Override
+    public boolean isRuntimeOnly() {
+        return runtimeOnly;
+    }
+
+    @Override
+    public boolean isRemote() {
+        return false;
     }
 
     @Override
@@ -73,9 +91,12 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         if (descriptionProvider == null) {
             throw new IllegalArgumentException("descriptionProvider is null");
         }
+        if (runtimeOnly) {
+            throw new IllegalStateException("Cannot register non-runtime-only submodels with a runtime-only parent");
+        }
         final String key = address.getKey();
         final NodeSubregistry child = getOrCreateSubregistry(key);
-        return child.register(address.getValue(), descriptionProvider);
+        return child.register(address.getValue(), descriptionProvider, false);
     }
 
     @Override
@@ -92,35 +113,40 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    OperationHandler getHandler(final ListIterator<PathElement> iterator, final String operationName) {
+    NewStepHandler getOperationHandler(final ListIterator<PathElement> iterator, final String operationName, NewStepHandler inherited) {
+        if (iterator.hasNext()) {
+            NewStepHandler ourInherited = getInheritableOperationHandler(operationName);
+            NewStepHandler inheritance = ourInherited == null ? inherited : ourInherited;
+            final PathElement next = iterator.next();
+            final NodeSubregistry subregistry = children.get(next.getKey());
+            if (subregistry == null) {
+                return null;
+            }
+            return subregistry.getOperationHandler(iterator, next.getValue(), operationName, inheritance);
+        } else {
+            final OperationEntry entry = operationsUpdater.get(this, operationName);
+            return entry == null ? inherited : entry.getOperationHandler();
+        }
+    }
+
+    @Override
+    NewStepHandler getInheritableOperationHandler(final String operationName) {
         final OperationEntry entry = operationsUpdater.get(this, operationName);
         if (entry != null && entry.isInherited()) {
             return entry.getOperationHandler();
         }
-        if (! iterator.hasNext()) {
-            return entry == null ? null : entry.getOperationHandler();
-        }
-        final PathElement next = iterator.next();
-        final String key = next.getKey();
-        final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
-        final NodeSubregistry subregistry = snapshot.get(key);
-        return subregistry == null ? null : subregistry.getHandler(iterator, next.getValue(), operationName);
+        return null;
     }
 
     @Override
     void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, OperationEntry> providers, final boolean inherited) {
 
-        if (!iterator.hasNext() || inherited) {
-            for (final Map.Entry<String, OperationEntry> entry : operationsUpdater.get(this).entrySet()) {
-                if (!providers.containsKey(entry.getKey())) {
-                    if (!iterator.hasNext() || (inherited && entry.getValue().isInherited())) {
-                        providers.put(entry.getKey(), entry.getValue());
-                    }
-                }
+        if (!iterator.hasNext() ) {
+            providers.putAll(operationsUpdater.get(this));
+            if (inherited) {
+                getInheritedOperations(providers, true);
             }
-            if (!iterator.hasNext()) {
-                return;
-            }
+            return;
         }
         final PathElement next = iterator.next();
         try {
@@ -136,35 +162,51 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
+    void getInheritedOperationEntries(final Map<String, OperationEntry> providers) {
+        for (final Map.Entry<String, OperationEntry> entry : operationsUpdater.get(this).entrySet()) {
+            if (entry.getValue().isInherited() && !providers.containsKey(entry.getKey())) {
+                providers.put(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    @Override
+    public void registerOperationHandler(final String operationName, final NewStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
         if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited, entryType)) != null) {
             throw new IllegalArgumentException("A handler named '" + operationName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerReadWriteAttribute(final String attributeName, final OperationHandler readHandler, final OperationHandler writeHandler, AttributeAccess.Storage storage) {
+    public void registerOperationHandler(final String operationName, final NewStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
+        if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited, entryType, flags)) != null) {
+            throw new IllegalArgumentException("A handler named '" + operationName + "' is already registered at location '" + getLocationString() + "'");
+        }
+    }
+
+    @Override
+    public void registerReadWriteAttribute(final String attributeName, final NewStepHandler readHandler, final NewStepHandler writeHandler, AttributeAccess.Storage storage) {
         if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerReadOnlyAttribute(final String attributeName, final OperationHandler readHandler, AttributeAccess.Storage storage) {
+    public void registerReadOnlyAttribute(final String attributeName, final NewStepHandler readHandler, AttributeAccess.Storage storage) {
         if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerMetric(String attributeName, OperationHandler metricHandler) {
+    public void registerMetric(String attributeName, NewStepHandler metricHandler) {
         if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException {
+    public void registerProxyController(final PathElement address, final NewProxyController controller) throws IllegalArgumentException {
         getOrCreateSubregistry(address.getKey()).registerProxyController(address.getValue(), controller);
     }
 
@@ -206,18 +248,55 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
 //    }
 
     @Override
-    DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String operationName) {
+    DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String operationName, DescriptionProvider inherited) {
         if (iterator.hasNext()) {
+            DescriptionProvider ourInherited = getInheritableOperationDescription(operationName);
+            DescriptionProvider inheritance = ourInherited == null ? inherited : ourInherited;
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());
             if (subregistry == null) {
                 return null;
             }
-            return subregistry.getOperationDescription(iterator, next.getValue(), operationName);
+            return subregistry.getOperationDescription(iterator, next.getValue(), operationName, inheritance);
         } else {
-            final OperationEntry entry = operations.get(operationName);
+            final OperationEntry entry = operationsUpdater.get(this, operationName);
             return entry == null ? null : entry.getDescriptionProvider();
         }
+    }
+
+    @Override
+    DescriptionProvider getInheritableOperationDescription(final String operationName) {
+        final OperationEntry entry = operationsUpdater.get(this, operationName);
+        if (entry != null && entry.isInherited()) {
+            return entry.getDescriptionProvider();
+        }
+        return null;
+    }
+
+    @Override
+    Set<OperationEntry.Flag> getOperationFlags(ListIterator<PathElement> iterator, String operationName, Set<OperationEntry.Flag> inherited) {
+        if (iterator.hasNext()) {
+            Set<OperationEntry.Flag> ourInherited = getInheritableOperationFlags(operationName);
+            Set<OperationEntry.Flag> inheritance = ourInherited == null ? inherited : ourInherited;
+            final PathElement next = iterator.next();
+            final NodeSubregistry subregistry = children.get(next.getKey());
+            if (subregistry == null) {
+                return null;
+            }
+            return subregistry.getOperationFlags(iterator, next.getValue(), operationName, inheritance);
+        } else {
+            final OperationEntry entry = operationsUpdater.get(this, operationName);
+            return entry == null ? inherited : entry.getFlags();
+        }
+    }
+
+    @Override
+    Set<OperationEntry.Flag> getInheritableOperationFlags(String operationName) {
+        final OperationEntry entry = operationsUpdater.get(this, operationName);
+        if (entry != null && entry.isInherited()) {
+            return entry.getFlags();
+        }
+        return null;
     }
 
     @Override
@@ -321,7 +400,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    ProxyController getProxyController(Iterator<PathElement> iterator) {
+    NewProxyController getProxyController(Iterator<PathElement> iterator) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());
@@ -335,7 +414,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers) {
+    void getProxyControllers(Iterator<PathElement> iterator, Set<NewProxyController> controllers) {
         if (iterator.hasNext()) {
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());
@@ -374,34 +453,6 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         }
     }
 
-    @Override
-    void resolveAddress(PathAddress address, PathAddress base, Set<PathAddress> addresses) {
-        final PathAddress current = address.subAddress(base.size());
-        final Iterator<PathElement> iterator = current.iterator();
-        if(iterator.hasNext()) {
-            final PathElement next = iterator.next();
-            final NodeSubregistry subregistry = children.get(next.getKey());
-            if(subregistry == null) {
-                return;
-            }
-            if(next.isWildcard()) {
-                for(final String key : subregistry.getChildNames()) {
-                    final PathElement element = PathElement.pathElement(next.getKey(), key);
-                    subregistry.resolveAddress(address, base, element, addresses);
-                }
-            } else if (next.isMultiTarget()) {
-                for(final String value : next.getSegments()) {
-                    final PathElement element = PathElement.pathElement(next.getKey(), value);
-                    subregistry.resolveAddress(address, base, element, addresses);
-                }
-            } else {
-                final PathElement element = PathElement.pathElement(next.getKey(), next.getValue());
-                subregistry.resolveAddress(address, base, element, addresses);
-            }
-        } else {
-            addresses.add(base);
-        }
-    }
 
 }
 

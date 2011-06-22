@@ -21,9 +21,9 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -33,9 +33,9 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -64,17 +64,13 @@ abstract class AbstractDeploymentHandler {
         return new OperationFailedException(cause, new ModelNode().set(msg));
     }
 
-    protected static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
+    protected static InputStream getInputStream(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         InputStream in = null;
         String message = "";
         if (operation.hasDefined(INPUT_STREAM_INDEX)) {
             int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-            if (streamIndex > context.getInputStreams().size() - 1) {
-                IllegalArgumentException e = new IllegalArgumentException("Invalid " + INPUT_STREAM_INDEX + "=" + streamIndex + ", the maximum index is " + (context.getInputStreams().size() - 1));
-                throw createFailureException(e, e.getMessage());
-            }
             message = "Null stream at index " + streamIndex;
-            in = context.getInputStreams().get(streamIndex);
+            in = context.getAttachmentStream(streamIndex);
         } else if (operation.hasDefined(BYTES)) {
             message = "Invalid byte stream.";
             in = new ByteArrayInputStream(operation.get(BYTES).asBytes());

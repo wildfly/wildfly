@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.embedded.demos.client.jms;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -71,7 +71,7 @@ public class JmsClientTestCase {
 
     private static final String QUEUE_NAME = "createdTestQueue";
 
-    @Deployment(testable = false)
+    @Deployment
     public static Archive<?> createDeployment(){
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
         return ShrinkWrapUtils.createJavaArchive("demos/fakejndi.sar", FakeJndi.class.getPackage());
@@ -161,7 +161,7 @@ public class JmsClientTestCase {
     }
 
     static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
-        ModelNode result = client.execute(OperationBuilder.Factory.create(update).build());
+        ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));

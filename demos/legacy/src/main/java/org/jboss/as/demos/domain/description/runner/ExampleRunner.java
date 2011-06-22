@@ -24,10 +24,11 @@ package org.jboss.as.demos.domain.description.runner;
 
 import java.net.InetAddress;
 
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
+
+//import org.jboss.as.controller.client.ModelControllerClient;
 
 /**
  *
@@ -52,7 +53,7 @@ public class ExampleRunner {
             //request.get("address").set(PathAddress.pathAddress(PathElement.pathElement("host", "undefined")).toModelNode()); //2
             //request.get("address").set(PathAddress.pathAddress(PathElement.pathElement("host", "undefined"), PathElement.pathElement("running-server", "Server:server-two")).toModelNode()); //3
             request.get("recursive").set(true);
-            ModelNode r = client.execute(OperationBuilder.Factory.create(request).build());
+            ModelNode r = client.execute(request);
             System.out.println(r);
 
             System.out.println("Dumping resource description tree\n");
@@ -62,7 +63,7 @@ public class ExampleRunner {
             //request.get("address").set(PathAddress.pathAddress(PathElement.pathElement("host", "undefined")).toModelNode());
             request.get("operations").set(true);
             request.get("recursive").set(true);
-            r = client.execute(OperationBuilder.Factory.create(request).build());
+            r = client.execute(request);
             System.out.println(r);
 
             // wildcards(client);

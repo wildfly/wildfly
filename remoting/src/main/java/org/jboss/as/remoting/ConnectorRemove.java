@@ -22,29 +22,15 @@
 
 package org.jboss.as.remoting;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.Locale;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
-import static org.jboss.as.remoting.CommonAttributes.PROPERTIES;
-import static org.jboss.as.remoting.CommonAttributes.SASL;
-
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * Removes a connector from the remoting container.
@@ -52,43 +38,18 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-public class ConnectorRemove implements ModelRemoveOperationHandler, DescriptionProvider {
+public class ConnectorRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     static final ConnectorRemove INSTANCE = new ConnectorRemove();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final ModelNode connector = context.getSubModel();
+        context.removeService(RemotingServices.connectorServiceName(name));
+    }
 
-        final ModelNode compensating = new ModelNode();
-        compensating.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensating.get(OP).set(ADD);
-        // compensating.get(REQUEST_PROPERTIES, NAME).set(connectorName);
-        compensating.get(SASL).set(connector.get(SASL));
-        compensating.get(AUTHENTICATION_PROVIDER).set(connector.get(AUTHENTICATION_PROVIDER));
-        compensating.get(PROPERTIES).set(connector.get(PROPERTIES));
-
-        // connector.clear();
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ServiceName connectorServiceName = RemotingServices.connectorServiceName(name);
-                    final ServiceController<?> controller = context.getServiceRegistry().getService(connectorServiceName);
-                    if (controller != null) {
-                        controller.setMode(ServiceController.Mode.REMOVE);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensating);
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
     }
 
     @Override

@@ -22,12 +22,9 @@
 
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 
@@ -36,7 +33,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class LaunchTypeHandler implements OperationHandler {
+public class LaunchTypeHandler implements NewStepHandler {
 
     private final ServerEnvironment.LaunchType launchType;
 
@@ -45,10 +42,8 @@ public class LaunchTypeHandler implements OperationHandler {
     }
 
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, new ModelNode().set(launchType.toString()));
-        resultHandler.handleResultComplete();
-
-        return new BasicOperationResult();
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        context.getResult().set(launchType.toString());
+        context.completeStep();
     }
 }

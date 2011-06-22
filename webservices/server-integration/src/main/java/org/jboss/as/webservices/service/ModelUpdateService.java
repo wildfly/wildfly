@@ -36,17 +36,22 @@ import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
 import static org.jboss.msc.service.ServiceBuilder.DependencyType.OPTIONAL;
 
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.server.ServerController;
+import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.webservices.dmr.WSExtension;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
@@ -58,46 +63,76 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  */
 public final class ModelUpdateService extends AbstractService<Void> {
 
-    private final InjectedValue<ServerController> serverControllerValue = new InjectedValue<ServerController>();
+    private static final Logger log = Logger.getLogger(ModelUpdateService.class);
+
+    private final InjectedValue<NewModelController> controllerValue = new InjectedValue<NewModelController>();
     private static final ModelUpdateService INSTANCE = new ModelUpdateService();
+    private volatile ModelControllerClient client;
 
     private ModelUpdateService() {
         super();
     }
 
-    private InjectedValue<ServerController> getServerControllerInjector() {
-        return serverControllerValue;
+    private InjectedValue<NewModelController> getServerControllerInjector() {
+        return controllerValue;
     }
 
     public static ModelUpdateService getInstance() {
         return INSTANCE;
     }
 
-    public static void install(final ServiceTarget serviceTarget) {
-        final Injector<ServerController> controllerInjector = INSTANCE.getServerControllerInjector();
+    @Override
+    public void start(StartContext context) throws StartException {
+        super.start(context);
+        // client = controllerValue.getValue().createClient(Executors.newCachedThreadPool());
+
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        // StreamUtils.safeClose(client);
+        client = null;
+        super.stop(context);
+    }
+
+    public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServiceListener<Object>... listeners) {
+        final Injector<NewModelController> controllerInjector = INSTANCE.getServerControllerInjector();
         final ServiceBuilder<Void> builder = serviceTarget.addService(WSServices.MODEL_SERVICE, INSTANCE);
-        builder.addDependency(OPTIONAL, JBOSS_SERVER_CONTROLLER, ServerController.class, controllerInjector);
+        builder.addDependency(OPTIONAL, JBOSS_SERVER_CONTROLLER, NewModelController.class, controllerInjector);
+        builder.addListener(listeners);
         builder.setInitialMode(Mode.ACTIVE);
-        builder.install();
+        return builder.install();
     }
 
     public void add(final Endpoint endpoint) {
-        final ServerController controller = serverControllerValue.getOptionalValue();
+        final NewModelController controller = controllerValue.getOptionalValue();
         if (controller != null) {
-            final Operation addOperation = newAddOperation(endpoint);
-            controller.execute(addOperation);
+            // TODO AS7-855
+            log.warn("Registering webservice endpoints in the management model is temporarily disabled (AS7-855)");
+//            final ModelNode addOperation = newAddOperation(endpoint);
+//            try {
+//                client.execute(addOperation);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
         }
     }
 
     public void remove(final Endpoint endpoint) {
-        final ServerController controller = serverControllerValue.getOptionalValue();
+        final NewModelController controller = controllerValue.getOptionalValue();
         if (controller != null) {
-            final Operation removeOperation = newRemoveOperation(endpoint);
-            controller.execute(removeOperation);
+            // TODO AS7-855
+            log.warn("Registering webservice endpoints in the management model is temporarily disabled (AS7-855)");
+//            final ModelNode removeOperation = newRemoveOperation(endpoint);
+//            try {
+//                client.execute(removeOperation);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
         }
     }
 
-    private Operation newAddOperation(final Endpoint endpoint) {
+    private ModelNode newAddOperation(final Endpoint endpoint) {
         final ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
         final ModelNode address = op.get(OP_ADDR);
@@ -108,16 +143,16 @@ public final class ModelUpdateService extends AbstractService<Void> {
         op.get(ENDPOINT_CLASS).set(endpoint.getTargetBeanName());
         op.get(ENDPOINT_TYPE).set(getType(endpoint));
         op.get(ENDPOINT_WSDL).set(endpoint.getAddress() + "?wsdl");
-        return OperationBuilder.Factory.create(op).build();
+        return op;
     }
 
-    private Operation newRemoveOperation(final Endpoint endpoint) {
+    private ModelNode newRemoveOperation(final Endpoint endpoint) {
         final ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
         final ModelNode address = op.get(OP_ADDR);
         address.add(SUBSYSTEM, WSExtension.SUBSYSTEM_NAME);
         address.add(ENDPOINT, getId(endpoint));
-        return OperationBuilder.Factory.create(op).build();
+        return op;
     }
 
     private String getType(final Endpoint endpoint) {

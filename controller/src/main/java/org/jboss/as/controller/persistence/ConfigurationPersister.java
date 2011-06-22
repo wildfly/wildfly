@@ -22,11 +22,12 @@
 
 package org.jboss.as.controller.persistence;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -37,11 +38,31 @@ import org.jboss.dmr.ModelNode;
 public interface ConfigurationPersister {
 
     /**
+     * Callback for use by callers to {@link ConfigurationPersister#store(org.jboss.dmr.ModelNode, java.util.Set)}
+     * to control whether the stored model should be flushed to permanent storage.
+     */
+    interface PersistenceResource {
+
+        /**
+         * Flush the stored model to permanent storage.
+         */
+        void commit();
+
+        /**
+         * Discard the changes.
+         */
+        void rollback();
+    }
+
+    /**
      * Persist the given configuration model.
      *
      * @param model the model to persist
+     * @param affectedAddresses
+     *
+     * @return callback to use to control whether the stored model should be flushed to persistent storage
      */
-    void store(ModelNode model) throws ConfigurationPersistenceException;
+    PersistenceResource store(ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException;
 
     /**
      * Marshals the given configuration model to XML, writing to the given stream.
@@ -83,7 +104,7 @@ public interface ConfigurationPersister {
     /**
      * Deletes a snapshot using its name.
      *
-     * @param The name of the snapshot (as returned by {@link SnapshotInfo#names()} returned from {@link #listSnapshots()}. The whole name is not
+     * @param name the name of the snapshot (as returned by {@link SnapshotInfo#names()} returned from {@link #listSnapshots()}. The whole name is not
      * needed, just enough to uniquely identify it.
      * @throws IllegalArgumentException if there is no snapshot with the given name, or if the name resolves to more than one snapshot.
      */

@@ -40,6 +40,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-network</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling</artifactId>
         </dependency>
@@ -54,10 +58,6 @@
         <dependency>
             <groupId>org.jboss.xnio</groupId>
             <artifactId>xnio-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>

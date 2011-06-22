@@ -19,20 +19,15 @@
 package org.jboss.as.controller.operations.common;
 
 
+import java.util.Locale;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -45,7 +40,7 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NamespaceAddHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class NamespaceAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "add-namespace";
 
@@ -67,20 +62,16 @@ public class NamespaceAddHandler implements ModelUpdateOperationHandler, Descrip
     private NamespaceAddHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         ModelNode param = operation.get(NAMESPACE);
-        ModelNode namespaces = context.getSubModel().get(NAMESPACES);
+        ModelNode namespaces = model.get(NAMESPACES);
         validate(param, namespaces);
-
         Property prop = param.asProperty();
         namespaces.add(prop.getName(), prop.getValue());
-        ModelNode compensating = NamespaceRemoveHandler.getRemoveNamespaceOperation(operation.get(OP_ADDR), param.asProperty().getName());
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensating);
+    }
+
+    protected boolean requiresRuntime(NewOperationContext context) {
+        return false;
     }
 
     @Override

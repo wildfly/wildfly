@@ -22,10 +22,7 @@
 
 package org.jboss.as.demos.client.jms.runner;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
-
-import java.io.IOException;
-import java.net.InetAddress;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -39,8 +36,9 @@ import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import java.io.IOException;
+import java.net.InetAddress;
 
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.fakejndi.FakeJndi;
@@ -137,7 +135,7 @@ public class ExampleRunner {
     }
 
     static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
-        ModelNode result = client.execute(OperationBuilder.Factory.create(update).build());
+        ModelNode result = client.execute(update);
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));

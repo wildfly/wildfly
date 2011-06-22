@@ -60,7 +60,6 @@ abstract class AbstractServerUpdateTask implements Runnable {
      * Create a new update task.
      *
      * @param serverId the id of the server being updated. Cannot be <code>null</code>
-     * @param updateSet the updates. Cannot be <code>null</code>
      * @param updatePolicy the policy that controls whether the updates should be applied. Cannot be <code>null</code>
      * @param resultHandler handler for the result of the update. Cannot be <code>null</code>
      */

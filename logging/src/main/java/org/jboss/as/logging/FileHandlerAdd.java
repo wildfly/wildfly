@@ -22,30 +22,22 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.BasicOperationResult;
+import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
-
-import java.util.logging.Handler;
-import java.util.logging.Level;
-
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -56,64 +48,48 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class FileHandlerAdd implements ModelAddOperationHandler {
+class FileHandlerAdd extends AbstractAddStepHandler {
 
     static final FileHandlerAdd INSTANCE = new FileHandlerAdd();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
+        model.get(ENCODING).set(operation.get(ENCODING));
+        model.get(FORMATTER).set(operation.get(FORMATTER));
+        model.get(LEVEL).set(operation.get(LEVEL));
+        model.get(FILE).set(operation.get(FILE));
+    }
 
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(OP).set(REMOVE);
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        try {
+            final FileHandlerService service = new FileHandlerService();
 
-        final ModelNode subModel = context.getSubModel();
-        subModel.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
-        subModel.get(ENCODING).set(operation.get(ENCODING));
-        subModel.get(FORMATTER).set(operation.get(FORMATTER));
-        subModel.get(LEVEL).set(operation.get(LEVEL));
-        subModel.get(FILE).set(operation.get(FILE));
-
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-                    try {
-                        final FileHandlerService service = new FileHandlerService();
-
-                        final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-                        if (operation.hasDefined(FILE)) {
-                            final HandlerFileService fileService = new HandlerFileService(operation.get(FILE, PATH).asString());
-                            final ServiceBuilder<?> fileBuilder = serviceTarget.addService(LogServices.handlerFileName(name), fileService);
-                            if (operation.get(FILE).hasDefined(CommonAttributes.RELATIVE_TO)) {
-                                fileBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, fileService.getRelativeToInjector());
-                            }
-                            fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-                            serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
-                        }
-                        service.setLevel(Level.parse(operation.get(LEVEL).asString()));
-                        final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
-                        if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-                        if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-                        if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
-                        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-                        serviceBuilder.install();
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-                    }
-                    resultHandler.handleResultComplete();
+            final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+            if (operation.hasDefined(FILE)) {
+                final HandlerFileService fileService = new HandlerFileService(operation.get(FILE, PATH).asString());
+                final ServiceBuilder<?> fileBuilder = serviceTarget.addService(LogServices.handlerFileName(name), fileService);
+                if (operation.get(FILE).hasDefined(CommonAttributes.RELATIVE_TO)) {
+                    fileBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, fileService.getRelativeToInjector());
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+                fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+                serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
+            }
+            service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+            final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
+            if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
+            if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
+            if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+            serviceBuilder.addListener(verificationHandler);
+            serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+            newControllers.add(serviceBuilder.install());
+        } catch (Throwable t) {
+            throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
         }
 
-        return new BasicOperationResult(compensatingOperation);
     }
 
     static AbstractFormatterSpec createFormatterSpec(final ModelNode operation) {

@@ -35,6 +35,7 @@ import org.jboss.threads.JBossThreadPoolExecutor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service responsible for creating, starting and stopping a thread pool executor with an unbounded queue.
@@ -56,7 +57,9 @@ public class UnboundedQueueThreadPoolService implements Service<ExecutorService>
     }
 
     public synchronized void start(final StartContext context) throws StartException {
-        executor = new JBossThreadPoolExecutor(maxThreads, maxThreads, keepAlive.getDuration(), keepAlive.getUnit(), new LinkedBlockingQueue<Runnable>(), threadFactoryValue.getValue());
+        final TimeSpec keepAliveSpec = keepAlive;
+        long keepAliveTime = keepAliveSpec == null ? Long.MAX_VALUE : keepAliveSpec.getUnit().toNanos(keepAliveSpec.getDuration());
+        executor = new JBossThreadPoolExecutor(maxThreads, maxThreads, keepAliveTime, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>(), threadFactoryValue.getValue());
         value = JBossExecutors.protectedExecutorService(executor);
     }
 

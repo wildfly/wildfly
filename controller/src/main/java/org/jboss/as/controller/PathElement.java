@@ -43,7 +43,7 @@ public class PathElement {
      * A valid key contains alphanumerics and underscores, cannot start with a
      * number, and cannot start or end with {@code -}.
      */
-    private static final Pattern VALID_KEY_PATTERN = Pattern.compile("[_a-zA-Z](?:[-_a-zA-Z0-9]*[_a-zA-Z0-9])?");
+    private static final Pattern VALID_KEY_PATTERN = Pattern.compile("\\*|[_a-zA-Z](?:[-_a-zA-Z0-9]*[_a-zA-Z0-9])?");
 
     private static final Pattern VALID_VALUE_PATTERN = Pattern.compile("\\*|[^*\\p{Space}\\p{Cntrl}]+");
 
@@ -81,22 +81,28 @@ public class PathElement {
      */
     PathElement(final String key, final String value) {
         if (key == null || !VALID_KEY_PATTERN.matcher(key).matches()) {
-            throw new IllegalArgumentException("Invalid key specification");
+            throw new IllegalArgumentException("Invalid key specification" + key);
         }
         if (value == null || !VALID_VALUE_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException("Invalid value specification");
+            throw new IllegalArgumentException("Invalid value specification " + value);
         }
-        this.key = key;
+        boolean multiTarget = false;
+        if(key.equals(WILDCARD_VALUE)) {
+            this.key = WILDCARD_VALUE;
+            multiTarget = true;
+        } else {
+            this.key = key;
+        }
         if (value.equals(WILDCARD_VALUE)) {
             this.value = WILDCARD_VALUE;
-            this.multiTarget = true;
+            multiTarget = true;
         } else if (value.charAt(0) == '[' && value.charAt(value.length() - 1) == ']') {
             this.value = value.substring(1, value.length() - 1);
-            this.multiTarget = value.indexOf(',') != -1;
+            multiTarget |= value.indexOf(',') != -1;
         } else {
             this.value = value;
-            this.multiTarget = false;
         }
+        this.multiTarget = multiTarget;
         hashCode = key.hashCode() * 19 + value.hashCode();
     }
 

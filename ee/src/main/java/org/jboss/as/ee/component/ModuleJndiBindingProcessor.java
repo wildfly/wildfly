@@ -21,22 +21,19 @@
  */
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.naming.service.BindingHandleService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.Value;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,7 +41,7 @@ import java.util.Set;
  * Processor that sets up JNDI bindings that are owned by the module. It also handles class level jndi bindings
  * that belong to components that do not have their own java:comp namespace, and class level bindings declared in
  * namespaces above java:comp.
- *
+ * <p/>
  * This processor is also responsible for throwing an exception if any ee component classes have been marked as invalid.
  *
  * @author Stuart Douglas
@@ -54,6 +51,10 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
     private static final Logger logger = Logger.getLogger(ModuleJndiBindingProcessor.class);
 
+    private static class IntHolder {
+        private int value = 0;
+    }
+
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
@@ -62,35 +63,26 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final Map<ServiceName, BindingConfiguration> existingBindings = new HashMap<ServiceName, BindingConfiguration>();
         final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings = new HashMap<ServiceName, BindingConfiguration>();
 
         // bindings
         // Handle duplicates binding from the same source
         // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
         // handle these duplicates?
-        final Set<BindingConfiguration> bindingConfigurations = new HashSet<BindingConfiguration>(moduleConfiguration.getBindingConfigurations());
+        IntHolder moduleCount = new IntHolder();
+        final List<BindingConfiguration> bindingConfigurations = moduleConfiguration.getBindingConfigurations();
+        final ServiceName moduleOwnerName = deploymentUnit.getServiceName().append("module").append(moduleConfiguration.getApplicationName()).append(moduleConfiguration.getModuleName());
         for (BindingConfiguration binding : bindingConfigurations) {
 
             final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
-            final BindingConfiguration existingConfiguration = existingBindings.get(serviceName);
-            if (existingConfiguration != null) {
-                if (!existingConfiguration.equalTo(binding, phaseContext)) {
-                    throw new DeploymentUnitProcessingException("Bindings with the same name at " + binding.getName() + " " + binding + " and " + existingConfiguration);
-                } else {
-                    continue;
-                }
-            }
-            existingBindings.put(serviceName, binding);
             deploymentDescriptorBindings.put(serviceName, binding);
-            addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName);
+            addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, moduleOwnerName, moduleCount);
         }
 
         //now we process all component level bindings, for components that do not have their own java:comp namespace.
         // these are bindings that have been added via a deployment descriptor
         for (final ComponentConfiguration componentConfiguration : moduleConfiguration.getComponentConfigurations()) {
-
             // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
             // handle these duplicates?
             for (BindingConfiguration binding : componentConfiguration.getComponentDescription().getBindingConfigurations()) {
@@ -103,17 +95,8 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
                 final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
-                final BindingConfiguration existingConfiguration = existingBindings.get(serviceName);
-                if (existingConfiguration != null) {
-                    if (!existingConfiguration.equalTo(binding, phaseContext)) {
-                        throw new DeploymentUnitProcessingException("Bindings with the same name at " + binding.getName() + " " + binding + " and " + existingConfiguration);
-                    } else {
-                        continue;
-                    }
-                }
-                existingBindings.put(serviceName, binding);
                 deploymentDescriptorBindings.put(serviceName, binding);
-                addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName);
+                addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, moduleOwnerName, moduleCount);
             }
         }
 
@@ -130,13 +113,12 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     classConfigurations.add(interceptorClass);
                 }
             }
-            processClassConfigurations(phaseContext, applicationDescription, moduleConfiguration, existingBindings, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations, componentConfiguration.getComponentName());
-
+            processClassConfigurations(phaseContext, applicationDescription, moduleConfiguration, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations, componentConfiguration.getComponentName(), moduleOwnerName, moduleCount);
         }
 
     }
 
-    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> existingBindings, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<EEModuleClassConfiguration> classConfigurations, final String componentName) throws DeploymentUnitProcessingException {
+    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<EEModuleClassConfiguration> classConfigurations, final String componentName, final ServiceName ownerName, final IntHolder handleCount) throws DeploymentUnitProcessingException {
         for (final EEModuleClassConfiguration classConfiguration : classConfigurations) {
             new ClassDescriptionTraversal(classConfiguration, applicationDescription) {
 
@@ -167,16 +149,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                         if (deploymentDescriptorBindings.containsKey(serviceName)) {
                             continue; //this has been overridden by a DD binding
                         }
-                        final BindingConfiguration existingConfiguration = existingBindings.get(serviceName);
-                        if (existingConfiguration != null) {
-                            if (!existingConfiguration.equalTo(binding, phaseContext)) {
-                                throw new DeploymentUnitProcessingException("Bindings with the same name at " + binding.getName() + " " + binding + " and " + existingConfiguration);
-                            } else {
-                                continue;
-                            }
-                        }
-                        existingBindings.put(serviceName, binding);
-                        addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName);
+                        addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, ownerName, handleCount);
                     }
                 }
             }.run();
@@ -184,20 +157,20 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
     }
 
 
-    protected void addJndiBinding(final EEModuleConfiguration module, final BindingConfiguration bindingConfiguration, final DeploymentPhaseContext phaseContext, ServiceName serviceName) throws DeploymentUnitProcessingException {
+    protected void addJndiBinding(final EEModuleConfiguration module, final BindingConfiguration bindingConfiguration, final DeploymentPhaseContext phaseContext, ServiceName serviceName, ServiceName ownerName, IntHolder handleCount) throws DeploymentUnitProcessingException {
         // Gather information about the dependency
         final String bindingName = bindingConfiguration.getName().startsWith("java:") ? bindingConfiguration.getName() : "java:module/env/" + bindingConfiguration.getName();
 
-        Value<ManagedReferenceFactory> resourceValue;
-
         // Check to see if this entry should actually be bound into JNDI.
         if (bindingName != null) {
-            final BinderService service = new BinderService(bindingName);
             if (serviceName == null) {
                 throw new IllegalArgumentException("Invalid context name '" + bindingName + "' for binding");
             }
+
+            final BindingHandleService service = new BindingHandleService(bindingName, serviceName, bindingConfiguration.getSource(), serviceName.getParent());
+            final ServiceName handleServiceName = serviceName.append(ownerName).append(String.valueOf(handleCount.value++));
             // The service builder for the binding
-            ServiceBuilder<ManagedReferenceFactory> sourceServiceBuilder = phaseContext.getServiceTarget().addService(serviceName, service);
+            ServiceBuilder<Void> sourceServiceBuilder = phaseContext.getServiceTarget().addService(handleServiceName, service);
             InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
                     true,
                     module.getModuleName(),
@@ -206,14 +179,8 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             );
             // The resource value is determined by the reference source, which may add a dependency on the original value to the binding
             bindingConfiguration.getSource().getResourceValue(resolutionContext, sourceServiceBuilder, phaseContext, service.getManagedObjectInjector());
-            try {
-            resourceValue = sourceServiceBuilder
-                    .addDependency(serviceName.getParent(), NamingStore.class, service.getNamingStoreInjector())
-                    .install();
-            } catch (DuplicateServiceException e) {
-                //TODO: reference counted global JNDI bindings
-                logger.error("Duplicate global jndi binding: " + bindingName, e);
-            }
+            sourceServiceBuilder.install();
+
         } else {
             throw new DeploymentUnitProcessingException("Binding name must not be null: " + bindingConfiguration);
         }

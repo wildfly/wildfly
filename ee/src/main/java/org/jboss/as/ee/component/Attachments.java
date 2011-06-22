@@ -23,7 +23,6 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.AttachmentList;
 
 /**
  * @author John Bailey
@@ -37,4 +36,5 @@ public class Attachments {
     public static final AttachmentKey<EEModuleConfiguration> EE_MODULE_CONFIGURATION = AttachmentKey.create(EEModuleConfiguration.class);
 
     public static final AttachmentKey<DeploymentDescriptorEnvironment> MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT = AttachmentKey.create(DeploymentDescriptorEnvironment.class);
+
 }

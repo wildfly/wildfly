@@ -66,12 +66,12 @@ public class BundleStartTracker implements Service<BundleStartTracker> {
     private final Map<ServiceName, Tuple> startedServices = new ConcurrentHashMap<ServiceName, Tuple>();
     private ServiceContainer serviceContainer;
 
-    public static void addService(ServiceTarget serviceTarget) {
+    public static final ServiceController<?> addService(ServiceTarget serviceTarget) {
         BundleStartTracker service = new BundleStartTracker();
         ServiceBuilder<BundleStartTracker> builder = serviceTarget.addService(SERVICE_NAME, service);
         builder.addDependency(Services.PACKAGE_ADMIN, PackageAdmin.class, service.injectedPackageAdmin);
         builder.setInitialMode(Mode.PASSIVE);
-        builder.install();
+        return builder.install();
     }
 
     private BundleStartTracker() {
@@ -109,16 +109,18 @@ public class BundleStartTracker implements Service<BundleStartTracker> {
             }
 
             @Override
-            public void serviceStarted(ServiceController<? extends Bundle> controller) {
-                ServiceName key = controller.getName();
-                Tuple value = pendingServices.get(key);
-                startedServices.put(key, value);
-                processService(controller);
-            }
-
-            @Override
-            public void serviceFailed(ServiceController<? extends Bundle> controller, StartException reason) {
-                processService(controller);
+            public void transition(final ServiceController<? extends Bundle> controller, final ServiceController.Transition transition) {
+                if (transition.getBefore() == ServiceController.Substate.STARTING) {
+                    switch (transition.getAfter()) {
+                        case UP:
+                            ServiceName key = controller.getName();
+                            Tuple value = pendingServices.get(key);
+                            startedServices.put(key, value);
+                            // fall thru
+                        case START_FAILED:
+                            processService(controller);
+                    }
+                }
             }
 
             private void processService(ServiceController<? extends Bundle> controller) {

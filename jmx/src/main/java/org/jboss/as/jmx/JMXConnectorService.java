@@ -39,10 +39,11 @@ import javax.management.remote.JMXServiceURL;
 import javax.management.remote.rmi.RMIConnectorServer;
 import javax.management.remote.rmi.RMIJRMPServerImpl;
 
-import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -72,12 +73,13 @@ public class JMXConnectorService implements Service<Void> {
     private RMIJRMPServerImpl rmiServer;
     private Registry registry;
 
-    public static void addService(final ServiceTarget target, final String serverBinding, final String registryBinding) {
+    public static ServiceController<?> addService(final ServiceTarget target, final String serverBinding, final String registryBinding, final ServiceListener<Object>... listeners) {
         JMXConnectorService jmxConnectorService = new JMXConnectorService();
-        target.addService(JMXConnectorService.SERVICE_NAME, jmxConnectorService)
+        return target.addService(JMXConnectorService.SERVICE_NAME, jmxConnectorService)
                 .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, jmxConnectorService.getMBeanServerServiceInjector())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(registryBinding), SocketBinding.class, jmxConnectorService.getRegistryPortBinding())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(serverBinding), SocketBinding.class, jmxConnectorService.getServerPortBinding())
+                .addListener(listeners)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }

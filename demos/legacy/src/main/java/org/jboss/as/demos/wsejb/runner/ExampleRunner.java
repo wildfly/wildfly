@@ -21,7 +21,7 @@
  */
 package org.jboss.as.demos.wsejb.runner;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;

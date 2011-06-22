@@ -22,7 +22,7 @@
 
 package org.jboss.as.demos.ear.runner;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.sar.archive.ConfigService;

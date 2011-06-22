@@ -21,18 +21,12 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.List;
 import java.util.Locale;
-
 import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeOperationContext;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -45,9 +39,10 @@ import org.jboss.msc.value.InjectedValue;
 
 /**
  * Handler for JGroups subsystem add operations.
+ *
  * @author Paul Ferraro
  */
-public class JGroupsSubsystemAdd implements ModelAddOperationHandler, DescriptionProvider {
+public class JGroupsSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
     private static final Logger log = Logger.getLogger(JGroupsSubsystemAdd.class.getPackage().getName());
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
@@ -63,6 +58,7 @@ public class JGroupsSubsystemAdd implements ModelAddOperationHandler, Descriptio
 
     /**
      * {@inheritDoc}
+     *
      * @see org.jboss.as.controller.descriptions.DescriptionProvider#getModelDescription(java.util.Locale)
      */
     @Override
@@ -70,42 +66,28 @@ public class JGroupsSubsystemAdd implements ModelAddOperationHandler, Descriptio
         return LocalDescriptions.getSubsystemAddDescription(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.as.controller.ModelAddOperationHandler#execute(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.as.controller.ResultHandler)
-     */
-    @Override
-    public OperationResult execute(OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        populate(operation, model);
+    }
+
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         log.info("Activating JGroups subsystem.");
 
-        populate(operation, context.getSubModel());
+        ServiceTarget target = context.getServiceTarget();
+        newControllers.add(target.addService(ProtocolDefaultsService.SERVICE_NAME, new ProtocolDefaultsService())
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install());
+        String stack = operation.require(ModelKeys.DEFAULT_STACK).asString();
+        InjectedValue<ChannelFactory> factory = new InjectedValue<ChannelFactory>();
+        ValueService<ChannelFactory> service = new ValueService<ChannelFactory>(factory);
+        newControllers.add(target.addService(ChannelFactoryService.getServiceName(null), service)
+                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, factory)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install());
 
-        RuntimeOperationContext runtime = context.getRuntimeContext();
-        if (runtime != null) {
-            RuntimeTask task = new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ServiceTarget target = context.getServiceTarget();
-                    target.addService(ProtocolDefaultsService.SERVICE_NAME, new ProtocolDefaultsService())
-                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                        .install()
-                        ;
-                    String stack = operation.require(ModelKeys.DEFAULT_STACK).asString();
-                    InjectedValue<ChannelFactory> factory = new InjectedValue<ChannelFactory>();
-                    ValueService<ChannelFactory> service = new ValueService<ChannelFactory>(factory);
-                    target.addService(ChannelFactoryService.getServiceName(), service)
-                        .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, factory)
-                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                        .install()
-                        ;
-                }
-            };
+    }
 
-            runtime.setRuntimeTask(task);
-        }
-
-        BasicOperationResult operationResult = new BasicOperationResult(Util.getResourceRemoveOperation(operation.require(ModelDescriptionConstants.OP_ADDR)));
-        resultHandler.handleResultComplete();
-        return operationResult;
+    protected boolean requiresRuntimeVerification() {
+        return false;
     }
 }

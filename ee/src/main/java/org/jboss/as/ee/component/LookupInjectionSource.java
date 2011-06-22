@@ -37,23 +37,11 @@ import org.jboss.msc.service.ServiceName;
 public final class LookupInjectionSource extends InjectionSource {
     private final String lookupName;
 
-    private final boolean optionalInjection;
-
-    /**
-     * Construct a new instance.
-     *
-     * @param lookupName the name of the JNDI context to look up
-     */
     public LookupInjectionSource(final String lookupName) {
-        this(lookupName, false);
-    }
-
-    public LookupInjectionSource(final String lookupName, final boolean optionalInjection) {
         if (lookupName == null) {
             throw new IllegalArgumentException("lookupName is null");
         }
         this.lookupName = lookupName;
-        this.optionalInjection = optionalInjection;
     }
 
     /**
@@ -79,21 +67,20 @@ public final class LookupInjectionSource extends InjectionSource {
             lookupName = this.lookupName;
         }
         final ServiceName serviceName = ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, lookupName);
-        if (optionalInjection) {
-            serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, serviceName, ManagedReferenceFactory.class, injector);
-        } else {
-            serviceBuilder.addDependency(serviceName, ManagedReferenceFactory.class, injector);
-        }
-
+        serviceBuilder.addDependency(serviceName, ManagedReferenceFactory.class, injector);
     }
 
 
-    public boolean equalTo(InjectionSource configuration, DeploymentPhaseContext context) {
+    public boolean equals(Object configuration) {
         if (configuration instanceof LookupInjectionSource) {
             LookupInjectionSource lookup = (LookupInjectionSource) configuration;
             return lookupName.equals(lookup.lookupName);
         }
         return false;
+    }
+
+    public int hashCode() {
+        return lookupName.hashCode();
     }
 
 }

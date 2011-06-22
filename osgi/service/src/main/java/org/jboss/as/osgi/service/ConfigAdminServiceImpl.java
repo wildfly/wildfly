@@ -35,6 +35,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -61,11 +62,12 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
         this.subsystemState = subsystemState;
     }
 
-    public static void addService(final ServiceTarget target, SubsystemState subsystemState) {
+    public static ServiceController<?> addService(final ServiceTarget target, SubsystemState subsystemState, final ServiceListener<Object>... listeners) {
         ConfigAdminServiceImpl service = new ConfigAdminServiceImpl(subsystemState);
         ServiceBuilder<?> builder = target.addService(ConfigAdminService.SERVICE_NAME, service);
         //builder.addSystemDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, service.injectedConfigPersister);
-        builder.install();
+        builder.addListener(listeners);
+        return builder.install();
     }
 
     @Override

@@ -36,18 +36,7 @@ public abstract class FilenameTabCompleter implements CommandLineCompleter {
 
     protected int getCandidates(String buffer, List<String> candidates) {
 
-        final String translated;
-        // special character: ~ maps to the user's home directory
-        if (buffer.startsWith("~" + File.separator)) {
-            translated = System.getProperty("user.home") + buffer.substring(1);
-        } else if (buffer.startsWith("~")) {
-            translated = new File(System.getProperty("user.home"))
-                    .getParentFile().getAbsolutePath();
-        } else if (!startsWithRoot(buffer)) {
-            translated = new File("").getAbsolutePath() + File.separator + buffer;
-        } else {
-            translated = buffer;
-        }
+        final String translated = translatePath(buffer);
 
         final File f = new File(translated);
         final File dir;
@@ -59,6 +48,22 @@ public abstract class FilenameTabCompleter implements CommandLineCompleter {
 
         final File[] entries = (dir == null) ? new File[0] : dir.listFiles();
         return matchFiles(buffer, translated, entries, candidates);
+    }
+
+    public String translatePath(String path) {
+        final String translated;
+        // special character: ~ maps to the user's home directory
+        if (path.startsWith("~" + File.separator)) {
+            translated = System.getProperty("user.home") + path.substring(1);
+        } else if (path.startsWith("~")) {
+            translated = new File(System.getProperty("user.home"))
+                    .getParentFile().getAbsolutePath();
+        } else if (!startsWithRoot(path)) {
+            translated = new File("").getAbsolutePath() + File.separator + path;
+        } else {
+            translated = path;
+        }
+        return translated;
     }
 
    private static String unescapeName(String name) {

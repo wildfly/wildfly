@@ -18,12 +18,10 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
@@ -31,12 +29,7 @@ import org.jboss.dmr.ModelNode;
 
 import java.util.Locale;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 
 /**
@@ -44,7 +37,7 @@ import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getConten
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentDeployHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class DeploymentDeployHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = DEPLOY;
 
@@ -62,19 +55,16 @@ public class DeploymentDeployHandler implements ModelUpdateOperationHandler, Des
         return DeploymentDescription.getDeployDeploymentOperation(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
-        ModelNode model = context.getSubModel();
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         model.get(ENABLED).set(true);
-        ModelNode compensatingOp = DeploymentUndeployHandler.getOperation(operation.get(OP_ADDR));
-        final String name = model.require(NAME).asString();
+
+        final ModelNode opAddr = operation.get(OP_ADDR);
+        PathAddress address = PathAddress.pathAddress(opAddr);
+        final String name = address.getLastElement().getValue();
         final String runtimeName = model.require(RUNTIME_NAME).asString();
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
-        DeploymentHandlerUtil.deploy(context, runtimeName, name, resultHandler, contents);
-        return new BasicOperationResult(compensatingOp);
+        DeploymentHandlerUtil.deploy(context, runtimeName, name, contents);
+        context.completeStep();
     }
 }

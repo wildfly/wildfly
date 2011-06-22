@@ -70,8 +70,4 @@ public class ServerDescriptions {
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
-
-    public static void main(String[] args) {
-        System.out.println(getRemoveDeploymentOperation(null));
-    }
 }

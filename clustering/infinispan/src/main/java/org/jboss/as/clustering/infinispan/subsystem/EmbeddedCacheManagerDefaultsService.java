@@ -91,9 +91,9 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
             defaults.add(mode, configuration);
         }
 */
-        GlobalConfiguration global = new GlobalConfiguration();
+        GlobalConfiguration global = new GlobalConfiguration(this.getClass().getClassLoader());
         global.fluent()
-            .transport().strictPeerToPeer(false)
+            .transport().strictPeerToPeer(false).distributedSyncTimeout(60000L)
             .shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER)
             ;
         Defaults defaults = new Defaults(global);

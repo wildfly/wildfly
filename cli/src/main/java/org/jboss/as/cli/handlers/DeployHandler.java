@@ -39,7 +39,7 @@ import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -63,7 +63,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         l = new ArgumentWithoutValue(this, "-l");
         l.setExclusive(true);
 
-        FilenameTabCompleter pathCompleter = Util.isWindows() ? WindowsFilenameTabCompleter.INSTANCE : DefaultFilenameTabCompleter.INSTANCE;
+        final FilenameTabCompleter pathCompleter = Util.isWindows() ? WindowsFilenameTabCompleter.INSTANCE : DefaultFilenameTabCompleter.INSTANCE;
         path = new ArgumentWithValue(this, pathCompleter, 0, "--path") {
             @Override
             public String getValue(ParsedArguments args) {
@@ -72,6 +72,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                     if(value.length() >= 0 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
                         value = value.substring(1, value.length() - 1);
                     }
+                    value = pathCompleter.translatePath(value);
                 }
                 return value;
             }
@@ -125,7 +126,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                 }
 
             }}, "--name");
-        path.addCantAppearAfter(l);
+        name.addCantAppearAfter(l);
         path.addCantAppearAfter(name);
         //name.addRequiredPreceding(path);
 
@@ -261,7 +262,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                 try {
                     is = new FileInputStream(f);
                     ModelNode request = builder.buildRequest();
-                    OperationBuilder op = OperationBuilder.Factory.create(request);
+                    OperationBuilder op = new OperationBuilder(request);
                     op.addInputStream(is);
                     request.get("content").get(0).get("input-stream-index").set(0);
                     result = client.execute(op.build());
@@ -300,7 +301,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                 try {
                     is = new FileInputStream(f);
                     ModelNode request = builder.buildRequest();
-                    OperationBuilder op = OperationBuilder.Factory.create(request);
+                    OperationBuilder op = new OperationBuilder(request);
                     op.addInputStream(is);
                     request.get("content").get(0).get("input-stream-index").set(0);
                     result = client.execute(op.build());

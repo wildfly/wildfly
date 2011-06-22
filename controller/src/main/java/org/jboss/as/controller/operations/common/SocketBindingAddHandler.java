@@ -19,6 +19,8 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -31,13 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 
 import java.util.Locale;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
@@ -53,7 +49,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SocketBindingAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class SocketBindingAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -92,35 +88,21 @@ public class SocketBindingAddHandler implements ModelAddOperationHandler, Descri
         validator.registerValidator(MULTICAST_PORT, new IntRangeValidator(0, 65535, true, true));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         validator.validate(operation);
 
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
-        ModelNode model = context.getSubModel();
         model.get(NAME).set(name);
         model.get(INTERFACE).set(operation.get(INTERFACE));
         model.get(PORT).set(operation.get(PORT));
         model.get(FIXED_PORT).set(operation.get(FIXED_PORT));
         model.get(MULTICAST_ADDRESS).set(operation.get(MULTICAST_ADDRESS));
         model.get(MULTICAST_PORT).set(operation.get(MULTICAST_PORT));
-
-        ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-        return installSocketBinding(name, operation, context, resultHandler, compensating);
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return SocketBindingGroupDescription.getSocketBindingAddOperation(locale);
     }
-
-    protected OperationResult installSocketBinding(String name, ModelNode operation, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) throws OperationFailedException {
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOp);
-    }
-
 }
