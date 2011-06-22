@@ -95,4 +95,14 @@ public class DataSourceDefinitionTestCase {
         Assert.assertTrue(result.next());
     }
 
+    @Test
+    public void testResourceInjectionWithSameName() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+        Assert.assertNotNull(bean.getDataSource2());
+        Assert.assertNotNull(bean.getDataSource3());
+        Assert.assertNotNull(bean.getDataSource4());
+
+    }
+
 }

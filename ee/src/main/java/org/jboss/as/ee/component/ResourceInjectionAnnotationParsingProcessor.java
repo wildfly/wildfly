@@ -228,6 +228,9 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
                         " of type: %s from resource reference processor: %s", localContextName, classDescription.getClassName(), injectionType, resourceReferenceProcessor);
                 return;
             }
+        } else {
+            //handle resource reference types
+            valueSource = new LookupInjectionSource(localContextName);
         }
 
         // the binding/injection is optional if it's a env-entry which doesn't a env-entry-value or a lookup value
@@ -245,9 +248,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             // TODO: class hierarchies? shared bindings?
             classDescription.getConfigurators().add(new ClassConfigurator() {
                 public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-                    if (bindingConfiguration != null) {
-                        configuration.getBindingConfigurations().add(bindingConfiguration);
-                    }
+                    configuration.getBindingConfigurations().add(bindingConfiguration);
                     if (injectionConfiguration != null && !optionalEnvEntry) {
                         configuration.getInjectionConfigurations().add(injectionConfiguration);
                     }

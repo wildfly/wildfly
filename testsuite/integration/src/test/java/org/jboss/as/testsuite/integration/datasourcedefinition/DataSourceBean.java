@@ -41,8 +41,21 @@ import java.sql.SQLException;
 @Stateless
 public class DataSourceBean {
 
-    @Resource(lookup = "java:app/DataSource")
+    @Resource(lookup = "java:app/DataSource", name="java:comp/ds")
     private DataSource dataSource;
+
+    /**
+     * This should be injected with the same datasource as above, as they both have the same name
+     */
+    @Resource(name="java:comp/ds")
+    private DataSource dataSource2;
+
+    @Resource(lookup = "java:app/DataSource")
+    private DataSource dataSource3;
+
+    @Resource(name="org.jboss.as.testsuite.integration.datasourcedefinition.DataSourceBean/dataSource3")
+    private DataSource dataSource4;
+
 
     public void createTable() throws SQLException {
         dataSource.getConnection().createStatement().execute("create table if not exists coffee(id int not null);");
@@ -59,5 +72,17 @@ public class DataSourceBean {
 
     public DataSource getDataSource() {
         return dataSource;
+    }
+
+    public DataSource getDataSource2() {
+        return dataSource2;
+    }
+
+    public DataSource getDataSource3() {
+        return dataSource3;
+    }
+
+    public DataSource getDataSource4() {
+        return dataSource4;
     }
 }
