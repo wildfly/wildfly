@@ -19,30 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.jaxrs.deployment;
+package org.jboss.as.testsuite.integration.jaxrs.packaging.ear;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnit;
+import javax.ws.rs.core.Application;
 
 /**
- * Marker for JAX-RS deployments
- *
- * @author Stuart Douglas
+ * Application with no path
+ *@author Stuart Douglas
  */
-public class JaxrsDeploymentMarker {
-    private static final AttachmentKey<Boolean> ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
-
-    public static void mark(DeploymentUnit deployment) {
-        if (deployment.getParent() != null) {
-            deployment.getParent().putAttachment(ATTACHMENT_KEY, true);
-        } else {
-            deployment.putAttachment(ATTACHMENT_KEY, true);
-        }
-    }
-
-    public static boolean isJaxrsDeployment(DeploymentUnit deploymentUnit) {
-        DeploymentUnit deployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
-        Boolean val = deployment.getAttachment(ATTACHMENT_KEY);
-        return val != null && val;
-    }
+public class HelloWorldApplication extends Application {
 }

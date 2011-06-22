@@ -1,9 +1,11 @@
 package org.jboss.as.jaxrs.deployment;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
 import javax.ws.rs.core.Application;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -13,19 +15,45 @@ public class ResteasyDeploymentData {
     private boolean scanResources;
     private boolean scanProviders;
     private boolean dispatcherCreated;
-    private Set<String> scannedResourceClasses = new LinkedHashSet<String>();
-    private Set<String> scannedProviderClasses = new LinkedHashSet<String>();
+    private final Set<String> scannedResourceClasses = new LinkedHashSet<String>();
+    private final Set<String> scannedProviderClasses = new LinkedHashSet<String>();
     private Class<? extends Application> scannedApplicationClass;
     private boolean bootClasses;
     private boolean unwrappedExceptionsParameterSet;
-    private Set<String> scannedJndiComponentResources = new LinkedHashSet<String>();
+    private final Set<String> scannedJndiComponentResources = new LinkedHashSet<String>();
+
+    /**
+     * Merges a list of additional JAX-RS deployment data with this lot of deployment data.
+     *
+     * @param deploymentData
+     */
+    public void merge(final List<ResteasyDeploymentData> deploymentData) throws DeploymentUnitProcessingException {
+        Class<? extends Application> application = null;
+        for (ResteasyDeploymentData data : deploymentData) {
+            if (!dispatcherCreated && scannedApplicationClass == null) {
+                if (data.getScannedApplicationClass() != null) {
+                    if (application != null) {
+                        throw new DeploymentUnitProcessingException("More than one Application class found in deployment " + application + " and " + data.getScannedApplicationClass());
+                    }
+                    application = data.getScannedApplicationClass();
+                }
+            }
+            if (scanResources) {
+                scannedResourceClasses.addAll(data.getScannedResourceClasses());
+                scannedJndiComponentResources.addAll(data.getScannedJndiComponentResources());
+            }
+            if (scanProviders) {
+                scannedProviderClasses.addAll(data.getScannedProviderClasses());
+            }
+        }
+        if (scannedApplicationClass == null) {
+            scannedApplicationClass = application;
+        }
+    }
+
 
     public Set<String> getScannedJndiComponentResources() {
         return scannedJndiComponentResources;
-    }
-
-    public void setScannedJndiComponentResources(Set<String> scannedJndiComponentResources) {
-        this.scannedJndiComponentResources = scannedJndiComponentResources;
     }
 
     public boolean isDispatcherCreated() {
@@ -88,16 +116,8 @@ public class ResteasyDeploymentData {
         return scannedResourceClasses;
     }
 
-    public void setScannedResourceClasses(Set<String> scannedResourceClasses) {
-        this.scannedResourceClasses = scannedResourceClasses;
-    }
-
     public Set<String> getScannedProviderClasses() {
         return scannedProviderClasses;
-    }
-
-    public void setScannedProviderClasses(Set<String> scannedProviderClasses) {
-        this.scannedProviderClasses = scannedProviderClasses;
     }
 
     public boolean isUnwrappedExceptionsParameterSet() {

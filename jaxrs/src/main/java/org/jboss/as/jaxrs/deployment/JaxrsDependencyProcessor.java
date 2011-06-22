@@ -77,7 +77,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
     private void addDepdenency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                ModuleIdentifier moduleIdentifier) {
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true));
     }
 
     @Override

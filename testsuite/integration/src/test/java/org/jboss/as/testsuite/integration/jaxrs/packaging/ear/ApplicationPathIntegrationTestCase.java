@@ -19,51 +19,65 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.jaxrs.atom;
-
-import java.util.concurrent.TimeUnit;
+package org.jboss.as.testsuite.integration.jaxrs.packaging.ear;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
-import org.jboss.as.testsuite.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
+
 /**
- * Tests the resteasy multipart provider
+ * Tests a JAX-RS deployment with an application bundled, that has no @ApplicationPath annotation.
+ * <p/>
+ * The container should register a servlet with the name that matches the application name
+ * <p/>
+ * It is the app providers responsibility to provide a mapping for the servlet
+ * <p/>
+ * JAX-RS 1.1 2.3.2 bullet point 3
  *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-public class JaxrsAtomProviderTestCase {
+@RunAsClient
+public class ApplicationPathIntegrationTestCase {
 
-      @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war");
-        war.addPackage(HttpRequest.class.getPackage());
-        war.addPackage(JaxrsAtomProviderTestCase.class.getPackage());
-        war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
-                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
-                "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
-                "    </servlet-mapping>\n" +
-                "\n"),"web.xml");
-        return war;
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "jaxrsapp.ear");
+
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
+        jar.addPackage(HttpRequest.class.getPackage());
+        jar.addClasses(ApplicationPathIntegrationTestCase.class, HelloWorldResource.class, HelloWorldPathApplication.class);
+        ear.addAsModule(jar);
+
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsapp.war");
+        war.addAsWebInfResource(WebXml.get(""), "web.xml");
+        ear.addAsModule(war);
+        return ear;
     }
 
 
     private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/jaxrsnoap/" + urlPattern, 5, TimeUnit.SECONDS);
+        return HttpRequest.get("http://localhost:8080/jaxrsapp/" + urlPattern, 5, TimeUnit.SECONDS);
     }
 
     @Test
     public void testJaxRsWithNoApplication() throws Exception {
-        String result = performCall("myjaxrs/atom");
-        Assert.assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><customer><first>John</first><last>Citizen</last></customer>", result);
+        String result = performCall("hellopath/helloworld");
+        assertEquals("Hello World!", result);
     }
+
 
 }

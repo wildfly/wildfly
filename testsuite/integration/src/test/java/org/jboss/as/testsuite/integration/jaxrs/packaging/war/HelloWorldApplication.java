@@ -19,15 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.jaxrs.servletintegration;
+package org.jboss.as.testsuite.integration.jaxrs.packaging.war;
 
-import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 /**
- * Application with a predefined path
+ * Application with no path
  *@author Stuart Douglas
  */
-@ApplicationPath("/hellopath")
-public class HelloWorldPathApplication extends Application {
+public class HelloWorldApplication extends Application {
 }

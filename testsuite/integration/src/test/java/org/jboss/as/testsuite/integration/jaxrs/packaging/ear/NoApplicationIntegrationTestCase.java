@@ -19,11 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.jaxrs.servletintegration;
-
-import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.TimeUnit;
+package org.jboss.as.testsuite.integration.jaxrs.packaging.ear;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -31,46 +27,61 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
+
 /**
- * Tests a JAX-RS deployment with an application bundled, that has no @ApplicationPath annotation.
- *
- * The container should register a servlet with the name that matches the application name
- *
+ * Tests a JAX-RS deployment without an application bundled.
+ * <p/>
+ * The container should register a servlet with the name
+ * <p/>
+ * javax.ws.rs.core.Application
+ * <p/>
  * It is the app providers responsibility to provide a mapping for the servlet
- *
- * JAX-RS 1.1 2.3.2 bullet point 3
+ * <p/>
+ * JAX-RS 1.1 2.3.2 bullet point 1
  *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ApplicationIntegrationTestCase {
+public class NoApplicationIntegrationTestCase {
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsapp.war");
-        war.addPackage(HttpRequest.class.getPackage());
-        war.addClasses(ApplicationIntegrationTestCase.class, HelloWorldResource.class,HelloWorldApplication.class);
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "jaxrsapp.ear");
+
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
+        jar.addPackage(HttpRequest.class.getPackage());
+        jar.addClasses(NoApplicationIntegrationTestCase.class, HelloWorldResource.class);
+        ear.addAsModule(jar);
+
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war");
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
-                "        <servlet-name>"+HelloWorldApplication.class.getName()+"</servlet-name>\n" +
-                "        <url-pattern>/hello/*</url-pattern>\n" +
+                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +
-                "\n"),"web.xml");
-        return war;
+                    "\n"), "web.xml");
+
+        ear.addAsModule(war);
+        return ear;
     }
 
 
     private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/jaxrsapp/" + urlPattern, 5, TimeUnit.SECONDS);
+        return HttpRequest.get("http://localhost:8080/jaxrsnoap/" + urlPattern, 5, TimeUnit.SECONDS);
     }
 
     @Test
     public void testJaxRsWithNoApplication() throws Exception {
-        String result = performCall("hello/helloworld");
+        String result = performCall("myjaxrs/helloworld");
         assertEquals("Hello World!", result);
     }
 

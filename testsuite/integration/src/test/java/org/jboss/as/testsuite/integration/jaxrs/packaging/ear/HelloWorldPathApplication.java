@@ -19,17 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.jaxrs.servletintegration;
+package org.jboss.as.testsuite.integration.jaxrs.packaging.ear;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
 
-@Path("helloworld")
-@Produces({"text/plain"})
-public class HelloWorldResource {
-    @GET
-    public String getMessage() {
-        return "Hello World!";
-    }
+/**
+ * Application with a predefined path
+ *@author Stuart Douglas
+ */
+@ApplicationPath("/hellopath")
+public class HelloWorldPathApplication extends Application {
 }

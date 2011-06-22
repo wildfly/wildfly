@@ -34,6 +34,7 @@
         <module name="javax.ws.rs.api"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.ejb3"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.web"/>
         <module name="org.jboss.as.weld"/>

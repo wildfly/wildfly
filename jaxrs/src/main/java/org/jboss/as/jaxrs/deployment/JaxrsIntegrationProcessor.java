@@ -1,5 +1,7 @@
 package org.jboss.as.jaxrs.deployment;
 
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -45,12 +47,22 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             return;
         }
 
+        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            return;
+        }
+
+        final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         final JBossWebMetaData webdata = warMetaData.getMergedJBossWebMetaData();
 
         final ResteasyDeploymentData resteasy = deploymentUnit.getAttachment(JaxrsAttachments.RESTEASY_DEPLOYMENT_DATA);
+
+
         if (resteasy == null)
             return;
+
+
+        resteasy.merge(parent.getAttachmentList(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA));
 
         if (!resteasy.getScannedResourceClasses().isEmpty()) {
             StringBuffer buf = null;
@@ -105,7 +117,6 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 setContextParameter(webdata, "resteasy.injector.factory", CDI_INJECTOR_FACTORY_CLASS);
                 //now we need to add the CDI extension, if it has not
                 //already been added
-                final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
                 synchronized (parent) {
                     boolean found = false;
                     final List<Metadata<Extension>> extensions = parent.getAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS);
@@ -225,30 +236,30 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 ServletMappingMetaData mapping = new ServletMappingMetaData();
                 mapping.setServletName(servletName);
                 mapping.setUrlPatterns(patterns);
-                if(webdata.getServletMappings() == null) {
+                if (webdata.getServletMappings() == null) {
                     webdata.setServletMappings(new ArrayList<ServletMappingMetaData>());
                 }
                 webdata.getServletMappings().add(mapping);
             }
         }
 
-        if(!mappingSet) {
+        if (!mappingSet) {
             //now we need tell resteasy it's relative path
             final List<ServletMappingMetaData> mappings = webdata.getServletMappings();
-            if(mappings != null) {
-                for(final ServletMappingMetaData mapping : mappings) {
-                    if(mapping.getServletName().equals(servletName)) {
-                        if(mapping.getUrlPatterns() != null) {
-                            for(String pattern : mapping.getUrlPatterns()) {
-                                if(mappingSet) {
-                                    log.errorf("More than one mapping found for JAX-RS servlet: %s the second mapping %s will not work",servletName,pattern);
+            if (mappings != null) {
+                for (final ServletMappingMetaData mapping : mappings) {
+                    if (mapping.getServletName().equals(servletName)) {
+                        if (mapping.getUrlPatterns() != null) {
+                            for (String pattern : mapping.getUrlPatterns()) {
+                                if (mappingSet) {
+                                    log.errorf("More than one mapping found for JAX-RS servlet: %s the second mapping %s will not work", servletName, pattern);
                                 } else {
                                     mappingSet = true;
                                     String realPattern = pattern;
-                                    if(realPattern.endsWith("*")) {
-                                        realPattern = realPattern.substring(0,realPattern.length()-1);
+                                    if (realPattern.endsWith("*")) {
+                                        realPattern = realPattern.substring(0, realPattern.length() - 1);
                                     }
-                                    setContextParameter(webdata, "resteasy.servlet.mapping.prefix",realPattern);
+                                    setContextParameter(webdata, "resteasy.servlet.mapping.prefix", realPattern);
                                 }
                             }
                         }

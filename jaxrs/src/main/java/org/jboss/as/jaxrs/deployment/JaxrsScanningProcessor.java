@@ -60,7 +60,6 @@ import java.util.Set;
  * Processor that finds jax-rs classes in the deployment
  *
  * @author Stuart Douglas
- *
  */
 public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
@@ -85,12 +84,24 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         if (!JaxrsDeploymentMarker.isJaxrsDeployment(deploymentUnit)) {
             return;
         }
+        final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+
+        ResteasyDeploymentData resteasyDeploymentData = new ResteasyDeploymentData();
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final ServiceController<ModuleIndexService> serviceController = (ServiceController<ModuleIndexService>) phaseContext.getServiceRegistry().getRequiredService(Services.JBOSS_MODULE_INDEX_SERVICE);
 
         try {
-            scan(deploymentUnit, warMetaData.getMergedJBossWebMetaData(), module.getClassLoader(),serviceController.getValue());
+
+            if (warMetaData == null) {
+                resteasyDeploymentData.setScanAll(true);
+                scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData, serviceController.getValue(), false);
+                parent.addToAttachmentList(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA, resteasyDeploymentData);
+            } else {
+                scanWebDeployment(deploymentUnit, warMetaData.getMergedJBossWebMetaData(), module.getClassLoader(), resteasyDeploymentData);
+                scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData, serviceController.getValue(), true);
+            }
+            deploymentUnit.putAttachment(JaxrsAttachments.RESTEASY_DEPLOYMENT_DATA, resteasyDeploymentData);
         } catch (ModuleLoadException e) {
             throw new DeploymentUnitProcessingException(e);
         }
@@ -130,31 +141,19 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
     }
 
-    protected void scan(final DeploymentUnit du,final JBossWebMetaData webdata,final ClassLoader classLoader, final ModuleIndexService moduleIndexService)
-            throws DeploymentUnitProcessingException, ModuleLoadException {
-        ResteasyDeploymentData resteasyDeploymentData = new ResteasyDeploymentData();
-        du.putAttachment(JaxrsAttachments.RESTEASY_DEPLOYMENT_DATA, resteasyDeploymentData);
+    protected void scanWebDeployment(final DeploymentUnit du, final JBossWebMetaData webdata, final ClassLoader classLoader, final ResteasyDeploymentData resteasyDeploymentData) throws DeploymentUnitProcessingException {
 
-        ServiceModuleLoader moduleLoader = du.getAttachment(Attachments.SERVICE_MODULE_LOADER);
-
-        final List<CompositeIndex> indexes = new ArrayList<CompositeIndex>();
-        for(ModuleIdentifier moduleIdentifier : JAXRS_MODULES_TO_SCAN) {
-            final Module resteasy = moduleLoader.loadModule(moduleIdentifier);
-            indexes.add(moduleIndexService.getIndex(resteasy));
-        }
 
         // If there is a resteasy boot class in web.xml, then the default should be to not scan
         // make sure this call happens before checkDeclaredApplicationClassAsServlet!!!
         boolean hasBoot = hasBootClasses(webdata);
         resteasyDeploymentData.setBootClasses(hasBoot);
 
-        // Looked for annotated resources and providers
-        indexes.add(du.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX));
-        CompositeIndex index = new CompositeIndex(indexes.toArray(EMPTY_INDEXES));
         Class<?> declaredApplicationClass = checkDeclaredApplicationClassAsServlet(du, webdata, classLoader);
         // Assume that checkDeclaredApplicationClassAsServlet created the dispatcher
-        if (declaredApplicationClass != null)
+        if (declaredApplicationClass != null) {
             resteasyDeploymentData.setDispatcherCreated(true);
+        }
 
         // set scanning on only if there are no boot classes
         if (hasBoot == false && !webdata.isMetadataComplete()) {
@@ -181,38 +180,56 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             }
         }
 
+    }
+
+    protected void scan(final DeploymentUnit du, final ClassLoader classLoader, final ResteasyDeploymentData resteasyDeploymentData, final ModuleIndexService moduleIndexService, boolean webDeployment)
+            throws DeploymentUnitProcessingException, ModuleLoadException {
+
+        ServiceModuleLoader moduleLoader = du.getAttachment(Attachments.SERVICE_MODULE_LOADER);
+
+        final List<CompositeIndex> indexes = new ArrayList<CompositeIndex>();
+        if (webDeployment) {
+            for (ModuleIdentifier moduleIdentifier : JAXRS_MODULES_TO_SCAN) {
+                final Module resteasy = moduleLoader.loadModule(moduleIdentifier);
+                indexes.add(moduleIndexService.getIndex(resteasy));
+            }
+        }
+
+
+        // Looked for annotated resources and providers
+        indexes.add(du.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX));
+        CompositeIndex index = new CompositeIndex(indexes.toArray(EMPTY_INDEXES));
+
+
         if (!resteasyDeploymentData.shouldScan()) {
             return;
         }
 
-        // look for Application class. Don't scan for one if there is a declared one.
-        if (declaredApplicationClass == null) {
-            final Set<ClassInfo> applicationClass = index.getAllKnownSubclasses(APPLICATION);
-            try {
-                if (applicationClass.size() > 1) {
-                    StringBuilder builder = new StringBuilder("Only one JAX-RS Application Class allowed.");
-                    Set<ClassInfo> aClasses = new HashSet<ClassInfo>();
-                    for (ClassInfo c : applicationClass) {
-                        if (!Modifier.isAbstract(c.flags())) {
-                            aClasses.add(c);
-                        }
-                        builder.append(" ").append(c.name().toString());
+        final Set<ClassInfo> applicationClass = index.getAllKnownSubclasses(APPLICATION);
+        try {
+            if (applicationClass.size() > 1) {
+                StringBuilder builder = new StringBuilder("Only one JAX-RS Application Class allowed.");
+                Set<ClassInfo> aClasses = new HashSet<ClassInfo>();
+                for (ClassInfo c : applicationClass) {
+                    if (!Modifier.isAbstract(c.flags())) {
+                        aClasses.add(c);
                     }
-                    if (aClasses.size() > 1) {
-                        throw new DeploymentUnitProcessingException(builder.toString());
-                    } else if (aClasses.size() == 1) {
-                        ClassInfo aClass = applicationClass.iterator().next();
-                        resteasyDeploymentData.setScannedApplicationClass((Class<? extends Application>) classLoader
-                                .loadClass(aClass.name().toString()));
-                    }
-                } else if (applicationClass.size() == 1) {
+                    builder.append(" ").append(c.name().toString());
+                }
+                if (aClasses.size() > 1) {
+                    throw new DeploymentUnitProcessingException(builder.toString());
+                } else if (aClasses.size() == 1) {
                     ClassInfo aClass = applicationClass.iterator().next();
                     resteasyDeploymentData.setScannedApplicationClass((Class<? extends Application>) classLoader
                             .loadClass(aClass.name().toString()));
                 }
-            } catch (ClassNotFoundException e) {
-                throw new DeploymentUnitProcessingException("Could not load JAX-RS Application class:", e);
+            } else if (applicationClass.size() == 1) {
+                ClassInfo aClass = applicationClass.iterator().next();
+                resteasyDeploymentData.setScannedApplicationClass((Class<? extends Application>) classLoader
+                        .loadClass(aClass.name().toString()));
             }
+        } catch (ClassNotFoundException e) {
+            throw new DeploymentUnitProcessingException("Could not load JAX-RS Application class:", e);
         }
 
         List<AnnotationInstance> resources = null;
@@ -268,7 +285,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
     }
 
     protected Class<?> checkDeclaredApplicationClassAsServlet(DeploymentUnit du, JBossWebMetaData webData,
-            ClassLoader classLoader) throws DeploymentUnitProcessingException {
+                                                              ClassLoader classLoader) throws DeploymentUnitProcessingException {
         if (webData.getServlets() == null)
             return null;
 

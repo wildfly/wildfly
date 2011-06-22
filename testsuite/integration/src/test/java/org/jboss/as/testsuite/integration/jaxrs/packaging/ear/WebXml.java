@@ -19,30 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.jaxrs.deployment;
+package org.jboss.as.testsuite.integration.jaxrs.packaging.ear;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 
 /**
- * Marker for JAX-RS deployments
+ * Utility class that generates a web.xml file
  *
+ * TODO: replace with the SW descriptors project when it becomes available
  * @author Stuart Douglas
  */
-public class JaxrsDeploymentMarker {
-    private static final AttachmentKey<Boolean> ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
+public class WebXml {
 
-    public static void mark(DeploymentUnit deployment) {
-        if (deployment.getParent() != null) {
-            deployment.getParent().putAttachment(ATTACHMENT_KEY, true);
-        } else {
-            deployment.putAttachment(ATTACHMENT_KEY, true);
-        }
+    public static StringAsset get(String contents) {
+        return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "\n" +
+                "<web-app version=\"3.0\"\n" +
+                "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
+                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
+                "         metadata-complete=\"false\">\n" +
+                contents +
+                "</web-app>");
     }
 
-    public static boolean isJaxrsDeployment(DeploymentUnit deploymentUnit) {
-        DeploymentUnit deployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
-        Boolean val = deployment.getAttachment(ATTACHMENT_KEY);
-        return val != null && val;
-    }
 }

@@ -21,8 +21,6 @@
  */
 package org.jboss.as.jaxrs.deployment;
 
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jaxrs.JaxrsAnnotations;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
@@ -43,10 +41,6 @@ public class JaxrsAnnotationProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
-        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
-            return;
-        }
 
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
 

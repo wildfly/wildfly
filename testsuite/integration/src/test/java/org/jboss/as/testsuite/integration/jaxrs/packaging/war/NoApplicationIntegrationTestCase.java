@@ -19,11 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.jaxrs.servletintegration;
-
-import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.TimeUnit;
+package org.jboss.as.testsuite.integration.jaxrs.packaging.war;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -35,27 +31,35 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
+
 /**
- * Tests a JAX-RS deployment with an application bundled, that has an @ApplicationPath annotation.
+ * Tests a JAX-RS deployment without an application bundled.
  *
- * This annotation is overridden by a mapping in web.xml
+ * The container should register a servlet with the name
  *
- * JAX-RS 1.1 2.3.2 bullet point 3
+ * javax.ws.rs.core.Application
+ *
+ * It is the app providers responsibility to provide a mapping for the servlet
+ *
+ * JAX-RS 1.1 2.3.2 bullet point 1
  *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ApplicationPathOverrideIntegrationTestCase {
+public class NoApplicationIntegrationTestCase {
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsapp.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
-        war.addClasses(ApplicationPathOverrideIntegrationTestCase.class, HelloWorldResource.class,HelloWorldPathApplication.class);
+        war.addClasses(NoApplicationIntegrationTestCase.class, HelloWorldResource.class);
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
-                "        <servlet-name>"+HelloWorldPathApplication.class.getName()+"</servlet-name>\n" +
-                "        <url-pattern>/override/*</url-pattern>\n" +
+                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +
                 "\n"),"web.xml");
         return war;
@@ -63,12 +67,12 @@ public class ApplicationPathOverrideIntegrationTestCase {
 
 
     private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/jaxrsapp/" + urlPattern, 5, TimeUnit.SECONDS);
+        return HttpRequest.get("http://localhost:8080/jaxrsnoap/" + urlPattern, 5, TimeUnit.SECONDS);
     }
 
     @Test
     public void testJaxRsWithNoApplication() throws Exception {
-        String result = performCall("override/helloworld");
+        String result = performCall("myjaxrs/helloworld");
         assertEquals("Hello World!", result);
     }
 
