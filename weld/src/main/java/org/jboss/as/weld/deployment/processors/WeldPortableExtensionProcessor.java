@@ -21,10 +21,6 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import java.util.Iterator;
-
-import javax.enterprise.inject.spi.Extension;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -38,11 +34,13 @@ import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.util.ServiceLoader;
 
+import javax.enterprise.inject.spi.Extension;
+import java.util.Iterator;
+
 /**
  * Deployment processor that loads CDI portable extensions.
  *
  * @author Stuart Douglas
- *
  */
 public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
 
@@ -75,7 +73,13 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
                 .getParent();
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        loadAttachments(module, topLevelDeployment);
+        ClassLoader oldCl = SecurityActions.getContextClassLoader();
+        try {
+            SecurityActions.setContextClassLoader(module.getClassLoader());
+            loadAttachments(module, topLevelDeployment);
+        } finally {
+            SecurityActions.setContextClassLoader(oldCl);
+        }
     }
 
     private void loadAttachments(Module module, DeploymentUnit deploymentUnit) {
