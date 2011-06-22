@@ -29,6 +29,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
+import org.jboss.logging.Logger;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 
@@ -51,7 +52,7 @@ import java.util.Set;
 public class HibernateAnnotationScanner implements Scanner {
 
     private static ThreadLocal<PersistenceUnitMetadata> persistenceUnitMetadataTLS = new ThreadLocal<PersistenceUnitMetadata>();
-
+    private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
     public static void setThreadLocalPersistenceUnitMetadata(final PersistenceUnitMetadata pu) {
         persistenceUnitMetadataTLS.set(pu);
@@ -64,6 +65,7 @@ public class HibernateAnnotationScanner implements Scanner {
     @Override
     public Set<Package> getPackagesInJar(URL jartoScan, Set<Class<? extends Annotation>> annotationsToLookFor) {
 
+        log.tracef("getPackagesInJar url=%s annotations=%s", jartoScan.getPath(), annotationsToLookFor);
         Set<Class<?>> resultClasses = new HashSet<Class<?>>();
 
         if (annotationsToLookFor.size() > 0) {  // Hibernate doesn't pass any annotations currently
@@ -98,6 +100,7 @@ public class HibernateAnnotationScanner implements Scanner {
         for (Class classWithAnnotation : resultClasses) {
             Package classPackage = classWithAnnotation.getPackage();
             if (classPackage != null) {
+                log.tracef("getPackagesInJar found package %s", classPackage);
                 uniquePackages.put(classPackage.getName(), classPackage);
             }
         }
@@ -110,6 +113,7 @@ public class HibernateAnnotationScanner implements Scanner {
 
     @Override
     public Set<Class<?>> getClassesInJar(URL jartoScan, Set<Class<? extends Annotation>> annotationsToLookFor) {
+        log.tracef("getClassesInJar url=%s annotations=%s", jartoScan.getPath(), annotationsToLookFor);
         PersistenceUnitMetadata pu = persistenceUnitMetadataTLS.get();
         if (pu == null) {
             throw new RuntimeException("Missing PersistenceUnitMetadata (thread local wasn't set)");
@@ -136,6 +140,7 @@ public class HibernateAnnotationScanner implements Scanner {
             for (AnnotationInstance annotationInstance : classesWithAnnotation) {
                 String className = annotationInstance.target().toString();
                 try {
+                    log.tracef("getClassesInJar found class %s with annotation %s", className, annClass.getName());
                     result.add(pu.getClassLoader().loadClass(className));
                     // TODO:  fix temp classloader (get CFNE on entity class)
                     //result.add(pu.getNewTempClassLoader().loadClass(className));

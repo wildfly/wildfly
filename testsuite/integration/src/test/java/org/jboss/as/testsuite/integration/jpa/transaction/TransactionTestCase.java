@@ -22,20 +22,25 @@
 
 package org.jboss.as.testsuite.integration.jpa.transaction;
 
-import static org.junit.Assert.assertEquals;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.persistence.TransactionRequiredException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Transaction tests
@@ -66,13 +71,20 @@ public class TransactionTestCase {
         iniCtx = new InitialContext();
     }
 
+    @AfterClass
+    public static void afterClass() throws NamingException {
+        iniCtx.close();
+    }
+
     @Deployment
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(TransactionTestCase.class,
             Employee.class,
-            SFSB1.class
+            SFSB1.class,
+            SFSBXPC.class,
+            SFSBCMT.class
         );
 
         jar.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
@@ -85,28 +97,6 @@ public class TransactionTestCase {
 
     protected static <T> T rawLookup(String name, Class<T> interfaceType) throws NamingException {
         return interfaceType.cast(iniCtx.lookup(name));
-    }
-
-    /**
-     * Ensure that calling entityManager.flush outside of a transaction, throws a TransactionRequiredException
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testTransactionRequiredException() throws Exception {
-// uncomment after JBCTS-1103 is fixed.
-//        Exception error = null;
-//        try {
-//            SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-//            sfsb1.createEmployeeNoTx("Sally", "1 home street", 1);
-//        } catch (TransactionRequiredException e) {
-//            error = e;
-//        } catch (Exception failed) {
-//            error = failed;
-//        }
-//        assertTrue(
-//            "attempting to persist entity with transactional entity manager and no transaction, should fail with a TransactionRequiredException"
-//                + " but we instead got a " + error, error instanceof TransactionRequiredException);
     }
 
     @Test
@@ -123,6 +113,53 @@ public class TransactionTestCase {
     public void testQueryNonTXTransactionalEntityManagerInvocations() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         String name = sfsb1.queryEmployeeNameNoTX(1);
-        assertEquals("Query should of thrown NoResultException, which we indicate by returning 'success'","success", name);
+        assertEquals("Query should of thrown NoResultException, which we indicate by returning 'success'", "success", name);
     }
+
+    /**
+     * Ensure that calling entityManager.flush outside of a transaction, throws a TransactionRequiredException
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testTransactionRequiredException() throws Exception {
+        Throwable error = null;
+        try {
+            SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+            sfsb1.createEmployeeNoTx("Sally", "1 home street", 1);
+        } catch (TransactionRequiredException e) {
+            error = e;
+        } catch (Exception failed) {
+            error = failed;
+        }
+        // javax.ejb.EJBException: javax.persistence.TransactionRequiredException: no transaction is in progress
+        while (error != null && !(error instanceof TransactionRequiredException) && error.getCause() != null) {
+            error = error.getCause();
+        }
+        assertTrue(
+            "attempting to persist entity with transactional entity manager and no transaction, should fail with a TransactionRequiredException"
+                + " but we instead got a " + error, error instanceof TransactionRequiredException);
+    }
+
+
+    /**
+     * If a stateful session bean with an extended persistence context calls a stateless or stateful session bean
+     * in a different JTA transaction context, the persistence context is not propagated.
+     *
+     * This test is disabled since it is not a JPA specification requirement to prevent the same
+     * persistence context from being shared between transactions.  If that ever changes or we implement
+     * safeguards against that, we can enable this test again.  I want to have this test around in case we
+     * need to quickly reproduce leaking the PC between TXs.
+     */
+    @Test
+    @Ignore
+    public void testTransactionsDontLeakDirtyData() throws Exception {
+        SFSBXPC sfsbxpc = lookup("SFSBXPC", SFSBXPC.class);
+        SFSBCMT sfsbcmt = lookup("SFSBCMT", SFSBCMT.class);
+        sfsbxpc.createEmployeeNoTx("Amory Lorch", "Lannister House", 10);  // create the employee but leave in xpc
+        Employee emp = sfsbxpc.persistAfterLookupInDifferentTX(sfsbcmt, 10);
+        assertNull("should not leak dirty data from one TX to another", emp);
+
+    }
+
 }

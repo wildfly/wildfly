@@ -25,71 +25,51 @@ package org.jboss.as.testsuite.integration.jpa.transaction;
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.transaction.UserTransaction;
+import javax.persistence.PersistenceContextType;
 
 /**
- * stateful session bean
+ * stateful session bean with an extended persistence context
  *
  * @author Scott Marlow
  */
 @Stateful
-@TransactionManagement(TransactionManagementType.BEAN)
-public class SFSB1 {
-    @PersistenceContext(unitName = "mypc")
-        EntityManager em;
+@TransactionManagement(TransactionManagementType.CONTAINER)
+public class SFSBXPC {
+    @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
+        EntityManager extendedEm;
 
     @Resource
     SessionContext sessionContext;
 
-    // always throws a TransactionRequiredException
     public void createEmployeeNoTx(String name, String address, int id) {
-
 
         Employee emp = new Employee();
         emp.setId(id);
         emp.setAddress(address);
         emp.setName(name);
-
-        UserTransaction tx1 = sessionContext.getUserTransaction();
-        try {
-            tx1.begin();
-            em.joinTransaction();
-            em.persist(emp);
-            tx1.commit();
-        }
-        catch (Exception e) {
-            throw new RuntimeException("couldn't start tx" , e);
-        }
-
-        em.flush();         // should throw TransactionRequiredException
+        extendedEm.persist(emp);
     }
 
+    /**
+     * createEmployeeNoTx is expected to be called previously and
+     * this method will persist the new employee after invoking a method on SFSB1 that requires
+     * yet a different TX.  The called method will look for the new Employee but shouldn't see it since the owning TX
+     * hasn't been committed yet.
+     *
+     * @param sfsbcmt
+     * @param empid
+     * @return should be null but if its the Employee the new TX saw dirty data from the original TX
+     */
 
-    public Employee getEmployeeNoTX(int id) {
-
-        return em.find(Employee.class, id);
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public Employee persistAfterLookupInDifferentTX(SFSBCMT sfsbcmt, int empid) {
+        return sfsbcmt.queryEmployeeNameRequireNewTX(empid);
     }
-
-    public String queryEmployeeNameNoTX(int id) {
-        Query q = em.createQuery("SELECT e.name FROM Employee e");
-        try {
-            String name = (String)q.getSingleResult();
-            return name;
-        }
-        catch (NoResultException expected) {
-            return "success";
-        }
-        catch (Exception unexpected) {
-            return unexpected.getMessage();
-        }
-
-    }
-
 
 }
