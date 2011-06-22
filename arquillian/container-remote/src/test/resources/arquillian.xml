@@ -4,9 +4,7 @@
 
 	<container qualifier="jboss" default="true">
         <protocol type="jmx-as7">
-        	<configuration>
-				<property name="executionType">REMOTE</property>
-			</configuration>
+		<property name="executionType">REMOTE</property>
         </protocol>
 	</container>
 </arquillian>
