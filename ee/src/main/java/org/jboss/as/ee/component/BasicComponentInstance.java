@@ -43,7 +43,7 @@ public class BasicComponentInstance implements ComponentInstance {
 
     private static final long serialVersionUID = -8099216228976950066L;
 
-    private static final Logger logger = Logger.getLogger(BasicComponentInstance.class);
+    private static final Logger log = Logger.getLogger(BasicComponentInstance.class);
 
     public static final Object INSTANCE_KEY = new Object();
 
@@ -113,7 +113,7 @@ public class BasicComponentInstance implements ComponentInstance {
             interceptorContext.putPrivateData(ComponentInstance.class, this);
             preDestroy.processInvocation(interceptorContext);
         } catch (Exception e) {
-            logger.warn("Exception while destroying component instance " + this + " for component " + this.getComponent().getComponentClass(), e);
+            log.warn("Failed to destroy component instance " + this, e);
         } finally {
             component.finishDestroy();
         }
