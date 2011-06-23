@@ -108,6 +108,11 @@ public class ComponentDescription {
     private final Deque<ComponentConfigurator> configurators = new ArrayDeque<ComponentConfigurator>();
 
     /**
+     * If this component is deployed in a bean deployment archive this stores the id of the BDA
+     */
+    private String beanDeploymentArchiveId;
+
+    /**
      * Construct a new instance.
      *
      * @param componentName             the component name
@@ -813,5 +818,11 @@ public class ComponentDescription {
         }
     }
 
+    public String getBeanDeploymentArchiveId() {
+        return beanDeploymentArchiveId;
+    }
 
+    public void setBeanDeploymentArchiveId(final String beanDeploymentArchiveId) {
+        this.beanDeploymentArchiveId = beanDeploymentArchiveId;
+    }
 }
