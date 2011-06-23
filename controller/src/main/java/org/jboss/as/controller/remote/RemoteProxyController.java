@@ -272,6 +272,11 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
         protected void setError(Exception e) {
             super.setError(e);
         }
+
+        @Override
+        protected CloseHandler<Channel> getRequestCloseHandler(){
+            return executeRequestContext.getRequestCloseHandler();
+        }
     }
 
     /**
@@ -411,7 +416,6 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
      * method calls done in the remote target controller
      */
     private class OperationPreparedRequestHandler extends ProxyOperationControlRequestHandler {
-        volatile int status;
 
         @Override
         void handle(final int batchId, final ProxyOperationControl control, final ModelNode response){
@@ -428,8 +432,29 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
                 }
 
                 private void done(boolean commit){
-                    status = commit ? ModelControllerProtocol.PARAM_COMMIT : ModelControllerProtocol.PARAM_ROLLBACK;
-                    requestContext.setTxCommittedOrRolledBack();
+                    final byte status = commit ? ModelControllerProtocol.PARAM_COMMIT : ModelControllerProtocol.PARAM_ROLLBACK;
+                    try {
+                        new ManagementRequest<Void>(batchId) {
+
+                            @Override
+                            protected byte getRequestCode() {
+                                return ModelControllerProtocol.COMPLETE_TX_REQUEST;
+                            }
+
+                            @Override
+                            protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
+                                output.write(status);
+                            }
+
+                            @Override
+                            protected ManagementResponseHandler<Void> getResponseHandler() {
+                                return ManagementResponseHandler.EMPTY_RESPONSE;
+                            }
+
+                        }.executeForResult(executorService, getChannelStrategy());
+                    } catch (Exception e) {
+                        requestContext.setError(e.getMessage());
+                    }
                     try {
                         requestContext.awaitControlCompleted();
                     } catch (InterruptedException e) {
@@ -439,19 +464,6 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
                 }
             }, response);
         }
-
-        @Override
-        protected void writeResponse(final FlushableDataOutput output) throws  IOException {
-            output.write(ModelControllerProtocol.PARAM_PREPARED);
-            output.flush();
-            try {
-                requestContext.awaitTxCommittedOrRolledBack();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IOException("Thread was interrupted waiting for Tx commit/rollback");
-            }
-            output.write(status);
-        }
     }
 
     private static class ExecuteRequestContext {
@@ -460,8 +472,6 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
         final ProxyOperationControl control;
         final OperationAttachments attachments;
         final CountDownLatch controlCompletedLatch = new CountDownLatch(1);
-        final CountDownLatch txCommittedOrRolledBackLatch = new CountDownLatch(1);
-        volatile String error;
 
         public ExecuteRequestContext(final ExecuteRequest request, final OperationMessageHandler messageHandler, final ProxyOperationControl control, final OperationAttachments attachments) {
             this.request = request;
@@ -490,25 +500,18 @@ public class RemoteProxyController implements ProxyController, ManagementOperati
             controlCompletedLatch.countDown();
         }
 
-        void awaitTxCommittedOrRolledBack() throws InterruptedException {
-            txCommittedOrRolledBackLatch.await();
-            if (error != null) {
-                throw new RuntimeException(error);
-            }
-        }
-
-        void setTxCommittedOrRolledBack() {
-            txCommittedOrRolledBackLatch.countDown();
-            if (error != null) {
-                throw new RuntimeException(error);
-            }
-        }
-
         synchronized void setError(String error) {
-            this.error = error;
-            txCommittedOrRolledBackLatch.countDown();
             controlCompletedLatch.countDown();
             request.setError(new Exception(error));
+        }
+
+        CloseHandler<Channel> getRequestCloseHandler(){
+            return new CloseHandler<Channel>() {
+                @Override
+                public void handleClose(Channel closed) {
+                    setError("Channel Closed");
+                }
+            };
         }
     }
 

@@ -40,6 +40,9 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.HandleableCloseable.Key;
 
 /**
  * Operation handlers for the remote implementation of {@link org.jboss.as.controller.client.ModelControllerClient}
@@ -97,6 +100,11 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
         }
 
         protected void processRequest() throws RequestProcessingException {
+            final Key closeKey = getChannel().addCloseHandler(new CloseHandler<Channel>() {
+                public void handleClose(Channel closed) {
+                    asynchRequests.remove(getHeader().getBatchId());
+                }
+            });
             OperationAttachmentsProxy attachmentsProxy = new OperationAttachmentsProxy(getChannel(), batchId, attachmentsLength);
             try {
                 try {
@@ -123,6 +131,7 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
                 if (asynch) {
                     asynchRequests.remove(batchId);
                 }
+                closeKey.remove();
             }
         }
 
