@@ -25,6 +25,7 @@ package org.jboss.as.jpa.service;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -58,6 +59,8 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
     private final InjectedValue<DataSource> jtaDataSource = new InjectedValue<DataSource>();
     private final InjectedValue<DataSource> nonJtaDataSource = new InjectedValue<DataSource>();
 
+    private static final Logger log = Logger.getLogger("org.jboss.jpa");
+
     private EntityManagerFactory entityManagerFactory;
     private PersistenceUnitMetadata pu;
 
@@ -68,6 +71,8 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
     @Override
     public void start(StartContext context) throws StartException {
         try {
+            log.debugf("starting Persistence Unit Service '%s' ", pu.getScopedPersistenceUnitName() );
+
             PersistenceProvider provider = lookupProvider(pu.getPersistenceProviderClassName());
 
             pu.setJtaDataSource(jtaDataSource.getOptionalValue());
@@ -81,6 +86,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     @Override
     public void stop(StopContext context) {
+        log.debugf("stopping Persistence Unit Service '%s' ", pu.getScopedPersistenceUnitName() );
         if (entityManagerFactory != null) {
             entityManagerFactory.close();
             entityManagerFactory = null;

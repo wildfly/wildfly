@@ -215,7 +215,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
             CommonConnDef common = createConnDef(jndiName);
             IronJacamar ijmd = createIron(common, txSupport);
 
-
             ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, ijmd,
                     PooledConnectionFactoryService.class.getClassLoader(), name);
 
@@ -239,6 +238,9 @@ public class PooledConnectionFactoryService implements Service<Void> {
                             activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            // Mock the deployment service to allow it to start
+            serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(name), Service.NULL).install();
         }
         finally {
             if (is != null)
