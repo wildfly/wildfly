@@ -951,6 +951,7 @@
             <xs:choice maxOccurs="unbounded">
                 <xs:element name="inet-address" type="inet-addressType"/>
                 <xs:element name="loopback" type="loopbackType"/>
+                <xs:element name="loopback-address" type="loopback-addressType"/>
                 <xs:element name="multicast" type="multicastType"/>
                 <xs:element name="point-to-point" type="point-to-pointType"/>
                 <xs:element name="virtual" type="interface-virtualType"/>
@@ -1016,6 +1017,7 @@
         <xs:choice>
             <xs:element name="inet-address" type="inet-addressType"/>
             <xs:element name="loopback" type="loopbackType"/>
+            <xs:element name="loopback-address" type="loopback-addressType"/>
             <xs:element name="multicast" type="multicastType"/>
             <xs:element name="point-to-point" type="point-to-pointType"/>
             <xs:element name="virtual" type="interface-virtualType"/>
@@ -1037,6 +1039,23 @@
                 interface.
             </xs:documentation>
         </xs:annotation>
+    </xs:complexType>
+
+    <xs:complexType name="loopback-addressType">
+        <xs:annotation>
+            <xs:documentation>
+                A loopback address that may not actually configured on the machine's loopback interface.
+                Differs from inet-addressType in that the given value will be used even if no NIC can
+                be found that has the IP address associated with it.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="value" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    An IP address in IPv6 or IPv4 dotted decimal notation.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="multicastType">
