@@ -80,14 +80,23 @@ public class CommandLineParser {
                 final String id = ctx.getState().getId();
                 if(ArgumentState.ID.equals(id)) {
                     if(buffer.length() > 0) {
-                        final int endIndex = ctx.getLocation(); //ctx.getCharacter() == ' ' ? ctx.getLocation() : ctx.getLocation() + 1;
+                        final int endIndex = ctx.getLocation();
+                        name = buffer.toString();
+                        if(name.endsWith("-")) {
+                            // this might be not the best way to check for an empty name, e.g. '--'.
+                            throw new CommandFormatException("Argument name is not complete: '" + name + "'");
+                        }
                         argHandler.argument(buffer.toString(), nameStart, null, -1, endIndex);
                     }
                     buffer.setLength(0);
                     name = null;
                     nameStart = -1;
                 } else if(ArgumentValueState.ID.equals(id)) {
-                    final int endIndex = ctx.getLocation(); //ctx.getCharacter() == ' ' ? ctx.getLocation() : ctx.getLocation() + 1;
+                    final int endIndex = ctx.getLocation();
+                    if(name != null && name.endsWith("-")) {
+                        // this might be not the best way to check for an empty name, e.g. '--'.
+                        throw new CommandFormatException("Argument name is not complete: '" + name + "'");
+                    }
                     argHandler.argument(name, nameStart, buffer.toString(), valueStart, endIndex);
                     buffer.setLength(0);
                     valueStart = -1;

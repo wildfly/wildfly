@@ -192,20 +192,12 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                     for(OperationRequestAddress.Node node : nodePath) {
                         address.add(node.getType(), node.getName());
                     }
-                    address.add(type, "*");
+                    address.add(type, "?");
                     request.get("operation").set("read-operation-description");
                     request.get("name").set(op);
 
                     try {
                         ModelNode result = ctx.getModelControllerClient().execute(request);
-                        if(!result.hasDefined("result")) {
-                            return Collections.emptyList();
-                        }
-                        result = result.get("result");
-                        if(!result.hasDefined("step-1")) {
-                            return Collections.emptyList();
-                        }
-                        result = result.get("step-1");
                         if(!result.hasDefined("result")) {
                             return Collections.emptyList();
                         }
