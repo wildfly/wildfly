@@ -30,15 +30,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.dmr.ModelNode;
@@ -51,7 +49,7 @@ import org.jboss.dmr.ModelNode;
 public class OperationRouting {
 
     public static OperationRouting determineRouting(final ModelNode operation, final LocalHostControllerInfo localHostControllerInfo,
-                                                    final ImmutableModelNodeRegistration registry)
+                                                    final ImmutableManagementResourceRegistration registry)
                                                         throws OperationFailedException {
 
         checkNull(operation, registry);
@@ -113,7 +111,7 @@ public class OperationRouting {
                     Set<String> allHosts = new HashSet<String>();
                     boolean twoStep = false;
                     for (ModelNode step : operation.get(STEPS).asList()) {
-                        ImmutableModelNodeRegistration stepRegistry = registry.getSubModel(PathAddress.pathAddress(step.get(OP_ADDR)));
+                        ImmutableManagementResourceRegistration stepRegistry = registry.getSubModel(PathAddress.pathAddress(step.get(OP_ADDR)));
                         OperationRouting stepRouting = determineRouting(step, localHostControllerInfo, stepRegistry);
                         if (stepRouting.isTwoStep()) {
                             twoStep = true;

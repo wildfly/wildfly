@@ -26,7 +26,7 @@
       name="local">
 
     <management-interfaces>
-       <native-interface interface="management" port="9999"/>
+       <native-interface interface="management" port="9999" />
        <http-interface interface="management" port="9990"/>
     </management-interfaces>
 

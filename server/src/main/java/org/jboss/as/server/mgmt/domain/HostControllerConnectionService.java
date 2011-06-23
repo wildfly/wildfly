@@ -24,9 +24,17 @@ package org.jboss.as.server.mgmt.domain;
 
 import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.RealmCallback;
+import javax.security.sasl.RealmChoiceCallback;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.security.Security;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -41,6 +49,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.sasl.JBossSaslProvider;
 
 /**
  * Service used to connect to the host controller.  Will maintain the connection for the length of the service life.
@@ -55,21 +64,26 @@ public class HostControllerConnectionService implements Service<ManagementChanne
     private volatile ManagementChannel channel;
     private volatile ProtocolChannelClient<ManagementChannel> client;
 
+    private final String serverName;
+    private final byte[] authKey;
 
-    private HostControllerConnectionService() {
+    private HostControllerConnectionService(final String serverName, final byte[] authKey) {
+        this.serverName = serverName;
+        this.authKey = authKey;
     }
 
-    public static void install(ServiceTarget serviceTarget, final InetSocketAddress managementSocket) {
-        final HostControllerConnectionService hcConnection = new HostControllerConnectionService();
+    public static void install(ServiceTarget serviceTarget, final InetSocketAddress managementSocket, final String serverName, final byte[] authKey) {
+        final HostControllerConnectionService hcConnection = new HostControllerConnectionService(serverName, authKey);
         serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, hcConnection)
-            .addInjection(hcConnection.hcAddressInjector, managementSocket)
-            .addDependency(RemotingServices.ENDPOINT, Endpoint.class, hcConnection.endpointInjector)
-            .setInitialMode(ServiceController.Mode.ACTIVE)
-            .install();
+                .addInjection(hcConnection.hcAddressInjector, managementSocket)
+                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, hcConnection.endpointInjector)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
+        Security.addProvider(new JBossSaslProvider());
 
         ProtocolChannelClient<ManagementChannel> client;
         try {
@@ -83,7 +97,7 @@ public class HostControllerConnectionService implements Service<ManagementChanne
         }
 
         try {
-            client.connect();
+            client.connect(new ClientCallbackHandler());
             channel = client.openChannel(RemotingServices.SERVER_CHANNEL);
             channel.startReceiving();
         } catch (IOException e) {
@@ -93,7 +107,6 @@ public class HostControllerConnectionService implements Service<ManagementChanne
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
-        safeClose(channel);
         safeClose(client);
         client = null;
         channel = null;
@@ -103,4 +116,28 @@ public class HostControllerConnectionService implements Service<ManagementChanne
     public synchronized ManagementChannel getValue() throws IllegalStateException {
         return channel;
     }
+
+    private class ClientCallbackHandler implements CallbackHandler {
+
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            for (Callback current : callbacks) {
+                if (current instanceof RealmCallback) {
+                    RealmCallback rcb = (RealmCallback) current;
+                    String defaultText = rcb.getDefaultText();
+                    rcb.setText(defaultText); // For now just use the realm suggested.
+                } else if (current instanceof RealmChoiceCallback) {
+                    throw new UnsupportedCallbackException(current, "Realm choice not currently supported.");
+                } else if (current instanceof NameCallback) {
+                    NameCallback ncb = (NameCallback) current;
+                    ncb.setName(serverName);
+                } else if (current instanceof PasswordCallback) {
+                    PasswordCallback pcb = (PasswordCallback) current;
+                    pcb.setPassword(new String(authKey).toCharArray());
+                } else {
+                    throw new UnsupportedCallbackException(current);
+                }
+            }
+        }
+    }
+
 }

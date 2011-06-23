@@ -23,16 +23,12 @@ package org.jboss.as.threads;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.controller.operations.common.Util;
-import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
-import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
-import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
-import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -45,13 +41,13 @@ public class ScheduledThreadPoolRemove extends AbstractRemoveStepHandler impleme
 
     static final ScheduledThreadPoolRemove INSTANCE = new ScheduledThreadPoolRemove();
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         context.removeService(ThreadsServices.threadFactoryName(name));
     }
 
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
 

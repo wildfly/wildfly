@@ -24,11 +24,14 @@ package org.jboss.as.webservices.dmr;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.webservices.util.WSServices;
@@ -44,7 +47,7 @@ import org.jboss.wsf.spi.management.EndpointRegistry;
  * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class WSEndpointMetrics implements NewStepHandler {
+final class WSEndpointMetrics implements OperationStepHandler {
 
     static final WSEndpointMetrics INSTANCE = new WSEndpointMetrics();
     static final String[] ATTRIBUTES;
@@ -71,10 +74,10 @@ final class WSEndpointMetrics implements NewStepHandler {
     }
 
     /** {@inheritDoc} */
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceController<?> controller = context.getServiceRegistry(false).getService(WSServices.REGISTRY_SERVICE);
                     if (controller != null) {
                         try {
@@ -87,7 +90,7 @@ final class WSEndpointMetrics implements NewStepHandler {
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         } else {
             context.getResult().set(getFallbackMessage());
         }
@@ -96,7 +99,12 @@ final class WSEndpointMetrics implements NewStepHandler {
 
     private ModelNode getEndpointMetricsFragment(final ModelNode operation, final ServiceController<?> controller) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String endpointId = address.getLastElement().getValue();
+        String endpointId = null;
+        try {
+            endpointId = URLDecoder.decode(address.getLastElement().getValue(), "UTF-8");
+        } catch (final UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
         final String metricName = operation.require(NAME).asString();
         final String webContext = endpointId.substring(0, endpointId.indexOf(":"));
         final String endpointName = endpointId.substring(endpointId.indexOf(":") + 1);

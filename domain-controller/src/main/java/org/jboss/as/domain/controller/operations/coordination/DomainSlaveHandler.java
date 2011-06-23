@@ -32,12 +32,10 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -47,15 +45,15 @@ import org.jboss.logging.Logger;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DomainSlaveHandler implements NewStepHandler {
+public class DomainSlaveHandler implements OperationStepHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final ExecutorService executorService;
     private final DomainOperationContext domainOperationContext;
-    private final Map<String, NewProxyController> hostProxies;
+    private final Map<String, ProxyController> hostProxies;
 
-    public DomainSlaveHandler(final Map<String, NewProxyController> hostProxies,
+    public DomainSlaveHandler(final Map<String, ProxyController> hostProxies,
                               final DomainOperationContext domainOperationContext,
                               final ExecutorService executorService) {
         this.hostProxies = hostProxies;
@@ -64,7 +62,7 @@ public class DomainSlaveHandler implements NewStepHandler {
     }
 
     @Override
-    public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
 
         if (context.hasFailureDescription()) {
             // abort
@@ -76,7 +74,7 @@ public class DomainSlaveHandler implements NewStepHandler {
         final Map<String, ProxyTask> tasks = new HashMap<String, ProxyTask>();
         final Map<String, Future<ModelNode>> futures = new HashMap<String, Future<ModelNode>>();
 
-        for (Map.Entry<String, NewProxyController> entry : hostProxies.entrySet()) {
+        for (Map.Entry<String, ProxyController> entry : hostProxies.entrySet()) {
             String host = entry.getKey();
             ProxyTask task = new ProxyTask(host, operation.clone(), context, entry.getValue());
             tasks.put(host, task);

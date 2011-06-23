@@ -16,25 +16,6 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
-import javax.management.MBeanServerConnection;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeoutException;
-import java.util.logging.Logger;
-
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
@@ -45,6 +26,24 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.jboss.sasl.JBossSaslProvider;
+
+import javax.management.MBeanServerConnection;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.Provider;
+import java.security.Security;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * JBossAsManagedContainer
@@ -58,6 +57,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     private MBeanServerConnectionProvider provider;
     private Thread shutdownThread;
     private Process process;
+    private Provider saslProvider = new JBossSaslProvider();
 
     @Inject
     @ContainerScoped
@@ -87,7 +87,15 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
     @Override
     protected void startInternal() throws LifecycleException {
+        Security.addProvider(saslProvider);
         try {
+            //if there is aleady an instance running we do not bother starting a new one
+            //as it will not be able to bind the ports it needs anyway
+            if(isServerStarted()) {
+                mbeanServerInst.set(getMBeanServerConnection(5000));
+                return;
+            }
+
             ManagedContainerConfiguration config = getContainerConfiguration();
             final String jbossHomeDir = config.getJbossHome();
             final String additionalJavaOpts = System.getProperty("jboss.options");
@@ -173,6 +181,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         } catch (Exception e) {
             throw new LifecycleException("Could not stop container", e);
         }
+        Security.removeProvider(saslProvider.getName());
     }
 
     @Override

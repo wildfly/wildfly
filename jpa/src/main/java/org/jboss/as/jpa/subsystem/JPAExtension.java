@@ -28,8 +28,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -44,7 +44,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -82,7 +82,7 @@ public class JPAExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
+        final ManagementResourceRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
         nodeRegistration.registerOperationHandler(JPASubSystemAdd.OPERATION_NAME, JPASubSystemAdd.INSTANCE, JPASubSystemAdd.INSTANCE, false);
         nodeRegistration.registerOperationHandler(JPASubSystemRemove.OPERATION_NAME, JPASubSystemRemove.INSTANCE, JPASubSystemRemove.INSTANCE, false);
         nodeRegistration.registerOperationHandler(DESCRIBE, JPADescribeHandler.INSTANCE, JPADescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
@@ -96,10 +96,10 @@ public class JPAExtension implements Extension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
     }
 
-    private static class JPADescribeHandler implements NewStepHandler, DescriptionProvider {
+    private static class JPADescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final JPADescribeHandler INSTANCE = new JPADescribeHandler();
 
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
             context.getResult().add(createAddOperation(model.require(CommonAttributes.DEFAULT_DATASOURCE).asString()));
             context.completeStep();

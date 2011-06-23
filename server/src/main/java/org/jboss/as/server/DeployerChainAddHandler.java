@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -39,12 +39,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author John Bailey
  */
-public class DeployerChainAddHandler implements NewStepHandler, DescriptionProvider {
+public class DeployerChainAddHandler implements OperationStepHandler, DescriptionProvider {
     static final String NAME = "add-deployer-chains";
     static final DeployerChainAddHandler INSTANCE = new DeployerChainAddHandler();
 
@@ -72,10 +73,10 @@ public class DeployerChainAddHandler implements NewStepHandler, DescriptionProvi
         OPERATION.get(ADDRESS).setEmptyList();
     }
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        if(context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        if(context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final EnumMap<Phase, Set<RegisteredProcessor>> deployerMap = DEPLOYERS.get();
                     if (deployerMap == null) {
                         throw new IllegalStateException("No deployers set");
@@ -93,13 +94,13 @@ public class DeployerChainAddHandler implements NewStepHandler, DescriptionProvi
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     DeployerChainsService.addService(context.getServiceTarget(), finalDeployers, verificationHandler);
 
-                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-                    if(context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(Services.JBOSS_DEPLOYER_CHAINS);
+                    if(context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                        context.removeService(Services.JBOSS_DEPLOYMENT_CHAINS);
                     }
                 }
-            }, NewOperationContext.Stage.VERIFY);
+            }, OperationContext.Stage.VERIFY);
         }
         context.completeStep();
     }

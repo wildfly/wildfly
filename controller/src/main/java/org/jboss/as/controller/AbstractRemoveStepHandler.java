@@ -27,40 +27,40 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author John Bailey
  */
-public abstract class AbstractRemoveStepHandler implements NewStepHandler {
+public abstract class AbstractRemoveStepHandler implements OperationStepHandler {
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
         performRemove(context, operation, model);
 
         if (requiresRuntime(context)) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     performRuntime(context, operation, model
                     );
 
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         recoverServices(context, operation, model);
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }
 
-    protected void performRemove(NewOperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void performRemove(OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         context.removeResource(PathAddress.EMPTY_ADDRESS);
     }
 
-    protected void performRuntime(final NewOperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
     }
 
-    protected void recoverServices(final NewOperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
     }
 
-    protected boolean requiresRuntime(NewOperationContext context) {
-        return context.getType() == NewOperationContext.Type.SERVER;
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getType() == OperationContext.Type.SERVER;
     }
 
 

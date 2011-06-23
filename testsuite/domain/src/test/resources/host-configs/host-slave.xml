@@ -26,10 +26,9 @@
       name="slave">
 
     <management-interfaces>
-       <native-interface interface="public" port="19999"/>
+       <native-interface interface="public" port="19999" />
        <http-interface interface="public" port="19990"/>
     </management-interfaces>
-
 
     <domain-controller>
        <!-- Remote domain controller configuration with a host and port -->

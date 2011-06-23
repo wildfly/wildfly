@@ -22,6 +22,11 @@
 
 package org.jboss.as.remoting;
 
+
+import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
+import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
+
+import javax.security.auth.callback.CallbackHandler;
 import java.security.AccessController;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -30,20 +35,20 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
-import org.jboss.as.controller.remote.NewAbstractModelControllerOperationHandlerFactoryService;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerFactoryService;
+import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.security.SimpleServerAuthenticationProvider;
+import org.jboss.remoting3.security.ServerAuthenticationProvider;
 import org.jboss.threads.JBossExecutors;
 import org.jboss.threads.JBossThreadFactory;
 import org.jboss.threads.QueueExecutor;
@@ -61,6 +66,12 @@ public final class RemotingServices {
 
     /** The name of the remoting service */
     public static final ServiceName REMOTING = ServiceName.JBOSS.append("remoting");
+
+    /** The name of the AuthenticationProvider service */
+    public static final ServiceName AUTHENTICATION_PROVIDER = REMOTING.append("authentication_provider");
+
+    /** The name of the service which provides the OptionMap */
+    public static final ServiceName OPTION_MAP = AUTHENTICATION_PROVIDER.append("option_map");
 
     /** The name of the endpoint service */
     public static final ServiceName ENDPOINT = REMOTING.append("endpoint");
@@ -133,7 +144,7 @@ public final class RemotingServices {
      * @return the service name
      */
     public static ServiceName operationHandlerName(ServiceName controllerName, String channelName) {
-        return controllerName.append(channelName).append(NewModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
+        return controllerName.append(channelName).append(ModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
     }
 
     /**
@@ -151,7 +162,7 @@ public final class RemotingServices {
         serviceTarget.addService(RemotingServices.ENDPOINT, endpointService)
                 //.addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
                 //.addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .setInitialMode(ACTIVE)
                 .install();
     }
 
@@ -164,8 +175,10 @@ public final class RemotingServices {
      */
     public static void installDomainConnectorServices(ServiceTarget serviceTarget,
             final NetworkInterfaceBinding networkInterfaceBinding,
-            final int port) {
-        installConnectorServices(serviceTarget, null, networkInterfaceBinding, port, null, null);
+            final int port,
+            final ServiceName securityRealmName) {
+        ServiceName serverCallbackService = ServiceName.JBOSS.append("host", "controller", "server-inventory", "callback");
+        installConnectorServices(serviceTarget, null, networkInterfaceBinding, port, securityRealmName, serverCallbackService, null, null);
     }
 
     /**
@@ -180,9 +193,10 @@ public final class RemotingServices {
     public static void installStandaloneConnectorServices(ServiceTarget serviceTarget,
             final ServiceName networkInterfaceBindingName,
             final int port,
+            final ServiceName securityRealmName,
             final ServiceVerificationHandler verificationHandler,
             final List<ServiceController<?>> newControllers) {
-        installConnectorServices(serviceTarget, networkInterfaceBindingName, null, port, verificationHandler, newControllers);
+        installConnectorServices(serviceTarget, networkInterfaceBindingName, null, port, securityRealmName, null, verificationHandler, newControllers);
     }
 
     /**
@@ -205,7 +219,7 @@ public final class RemotingServices {
         ServiceBuilder<?> builder = serviceTarget.addService(channelOpenListenerService.getServiceName(), channelOpenListenerService)
             .addDependency(RemotingServices.ENDPOINT, Endpoint.class, channelOpenListenerService.getEndpointInjector())
             .addDependency(operationHandlerName, ManagementOperationHandlerFactory.class, channelOpenListenerService.getOperationHandlerInjector())
-            .setInitialMode(Mode.ACTIVE);
+            .setInitialMode(ACTIVE);
          addController(newControllers, verificationHandler, builder);
     }
 
@@ -219,7 +233,7 @@ public final class RemotingServices {
      */
     public static void installChannelServices(
             final ServiceTarget serviceTarget,
-            final NewAbstractModelControllerOperationHandlerFactoryService<?> operationHandlerService,
+            final AbstractModelControllerOperationHandlerFactoryService<?> operationHandlerService,
             final ServiceName modelControllerName,
             final String channelName,
             final ServiceVerificationHandler verificationHandler,
@@ -228,8 +242,8 @@ public final class RemotingServices {
         final ServiceName operationHandlerName = operationHandlerName(modelControllerName, channelName);
 
         ServiceBuilder<?> builder = serviceTarget.addService(operationHandlerName, operationHandlerService)
-            .addDependency(modelControllerName, NewModelController.class, operationHandlerService.getModelControllerInjector())
-            .setInitialMode(Mode.ACTIVE);
+            .addDependency(modelControllerName, ModelController.class, operationHandlerService.getModelControllerInjector())
+            .setInitialMode(ACTIVE);
         addController(newControllers, verificationHandler, builder);
 
         installChannelOpenListenerService(serviceTarget, channelName, operationHandlerName, verificationHandler, newControllers);
@@ -246,41 +260,47 @@ public final class RemotingServices {
     }
 
     private static void installConnectorServices(ServiceTarget serviceTarget,
-            final ServiceName networkInterfaceBindingName,
-            final NetworkInterfaceBinding networkInterfaceBinding,
-            final int port,
-            final ServiceVerificationHandler verificationHandler,
-            final List<ServiceController<?>> newControllers) {
-        //FIXME get this provider from somewhere
-        //There is currently a probable bug in jboss remoting, so the user realm name MUST be the same as
-        //the endpoint name.
-        final SimpleServerAuthenticationProvider provider = new SimpleServerAuthenticationProvider();
-        provider.addUser("bob", RemotingServices.ENDPOINT.getSimpleName(), "pass".toCharArray());
+                                                 final ServiceName networkInterfaceBindingName,
+                                                 final NetworkInterfaceBinding networkInterfaceBinding,
+                                                 final int port,
+                                                 final ServiceName securityRealmName,
+                                                 final ServiceName serverCallbackService,
+                                                 final ServiceVerificationHandler verificationHandler,
+                                                 final List<ServiceController<?>> newControllers) {
 
-//        final ConnectorService connectorService = new ConnectorService();
-//        //TODO replace these options with something better
-//        connectorService.setOptionMap(OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("DIGEST-MD5")));
-//
-//        ServiceBuilder<?> builder = serviceTarget.addService(RemotingServices.connectorServiceName(MANAGEMENT_CHANNEL), connectorService)
-//            .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
-//            .addInjection(connectorService.getAuthenticationProviderInjector(), provider)
-//            .setInitialMode(Mode.ACTIVE);
-//        addController(newControllers, verificationHandler, builder);
+        RealmAuthenticationProviderService raps = new RealmAuthenticationProviderService();
+        ServiceBuilder<?> builder = serviceTarget.addService(AUTHENTICATION_PROVIDER, raps);
+        if (securityRealmName != null) {
+            builder.addDependency(securityRealmName, SecurityRealm.class, raps.getSecurityRealmInjectedValue());
+        }
+        if (serverCallbackService != null) {
+            builder.addDependency(serverCallbackService, CallbackHandler.class, raps.getServerCallbackValue());
+        }
+        builder.setInitialMode(ON_DEMAND)
+                .install();
 
-        if(networkInterfaceBindingName != null) {
+        RealmOptionMapService roms = new RealmOptionMapService();
+        serviceTarget.addService(OPTION_MAP, roms)
+                .addDependency(AUTHENTICATION_PROVIDER, RealmAuthenticationProvider.class, roms.getRealmAuthenticationProviderInjectedValue())
+                .setInitialMode(ON_DEMAND)
+                .install();
+
+        if (networkInterfaceBindingName != null) {
             final InjectedNetworkBindingStreamServerService streamServerService = new InjectedNetworkBindingStreamServerService(port);
-            ServiceBuilder<?> builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
-                .addInjection(streamServerService.getAuthenticationProviderInjector(), provider)
-                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, streamServerService.getEndpointInjector())
-                .addDependency(networkInterfaceBindingName, NetworkInterfaceBinding.class, streamServerService.getInterfaceBindingInjector())
-                .setInitialMode(Mode.ACTIVE);
+            builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
+                    .addDependency(AUTHENTICATION_PROVIDER, ServerAuthenticationProvider.class, streamServerService.getAuthenticationProviderInjector())
+                    .addDependency(OPTION_MAP, OptionMap.class, streamServerService.getOptionMapInjectedValue())
+                    .addDependency(RemotingServices.ENDPOINT, Endpoint.class, streamServerService.getEndpointInjector())
+                    .addDependency(networkInterfaceBindingName, NetworkInterfaceBinding.class, streamServerService.getInterfaceBindingInjector())
+                    .setInitialMode(ACTIVE);
             addController(newControllers, verificationHandler, builder);
         } else {
             final NetworkBindingStreamServerService streamServerService = new NetworkBindingStreamServerService(networkInterfaceBinding, port);
-            ServiceBuilder<?> builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
-                .addInjection(streamServerService.getAuthenticationProviderInjector(), provider)
-                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, streamServerService.getEndpointInjector())
-                .setInitialMode(Mode.ACTIVE);
+            builder = serviceTarget.addService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port), streamServerService)
+                    .addDependency(AUTHENTICATION_PROVIDER, ServerAuthenticationProvider.class, streamServerService.getAuthenticationProviderInjector())
+                    .addDependency(OPTION_MAP, OptionMap.class, streamServerService.getOptionMapInjectedValue())
+                    .addDependency(RemotingServices.ENDPOINT, Endpoint.class, streamServerService.getEndpointInjector())
+                    .setInitialMode(ACTIVE);
             addController(newControllers, verificationHandler, builder);
         }
     }

@@ -24,7 +24,7 @@ package org.jboss.as.jmx;
 
 import java.util.List;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -51,7 +51,7 @@ class JMXConnectorAdd extends AbstractAddStepHandler {
         model.get(CommonAttributes.REGISTRY_BINDING).set(registryBinding);
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final String serverBinding = operation.require(CommonAttributes.SERVER_BINDING).asString();
         final String registryBinding = operation.require(CommonAttributes.REGISTRY_BINDING).asString();
         final ServiceTarget target = context.getServiceTarget();

@@ -24,8 +24,8 @@ package org.jboss.as.server.deployment.scanner;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -46,12 +46,12 @@ abstract class AbstractWriteAttributeHandler extends ServerWriteAttributeOperati
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(final NewOperationContext context, final ModelNode operation,
+    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
             final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                     final String name = address.getLastElement().getValue();
                     final ServiceController<?> controller = context.getServiceRegistry(false).getService(DeploymentScannerService.getServiceName(name));
@@ -63,11 +63,11 @@ abstract class AbstractWriteAttributeHandler extends ServerWriteAttributeOperati
                         updateScanner(scanner, newValue);
                     }
 
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK && scanner != null) {
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK && scanner != null) {
                         updateScanner(scanner, currentValue);
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         return false;
     }

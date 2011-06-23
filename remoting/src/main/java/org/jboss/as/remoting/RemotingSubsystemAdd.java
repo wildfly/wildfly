@@ -30,8 +30,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
@@ -46,7 +46,7 @@ import org.xnio.OptionMap;
  */
 class RemotingSubsystemAdd extends AbstractAddStepHandler {
 
-    static final NewStepHandler INSTANCE = new RemotingSubsystemAdd();
+    static final OperationStepHandler INSTANCE = new RemotingSubsystemAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) {
         final String threadPoolName = operation.require(THREAD_POOL).asString();
@@ -55,7 +55,7 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
         model.get(CONNECTOR);
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final String threadPoolName = operation.require(THREAD_POOL).asString();
         // create endpoint
         final EndpointService endpointService = new EndpointService();

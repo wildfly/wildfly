@@ -20,7 +20,7 @@ package org.jboss.as.server.services.net;
 
 import java.util.List;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
@@ -45,7 +45,7 @@ public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler {
         super(true);
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, String name, ParsedInterfaceCriteria criteria) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, String name, ParsedInterfaceCriteria criteria) {
         final ServiceTarget target = context.getServiceTarget();
         ServiceBuilder<NetworkInterfaceBinding> builder = target.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name), createInterfaceService(name, criteria));
         newControllers.add(builder.setInitialMode(Mode.ON_DEMAND)

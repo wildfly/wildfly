@@ -36,15 +36,15 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.weld.WeldContainer;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.injection.WeldInjectionInterceptor;
 import org.jboss.as.weld.injection.WeldManagedReferenceFactory;
-import org.jboss.as.weld.services.BeanManagerService;
+import org.jboss.as.weld.services.WeldService;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.weld.manager.BeanManagerImpl;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -66,8 +66,9 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         }
 
 
+        final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        final ServiceName beanManagerServiceName = BeanManagerService.serviceName(deploymentUnit);
+        final ServiceName weldServiceName = topLevelDeployment.getServiceName().append(WeldService.SERVICE_NAME);
 
         for (ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
             final String beanName;
@@ -95,7 +96,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
                     }
 
 
-                    addWeldInstantiator(context.getServiceTarget(), configuration, componentClass, beanName, deploymentUnit.getServiceName(), beanManagerServiceName, interceptorClasses, classLoader);
+                    addWeldInstantiator(context.getServiceTarget(), configuration, componentClass, beanName, weldServiceName, interceptorClasses, classLoader, description.getBeanDeploymentArchiveId());
 
                     configuration.addPostConstructInterceptor(new WeldInjectionInterceptor.Factory(configuration, interceptorClasses), InterceptorOrder.ComponentPostConstruct.WELD_INJECTION);
                 }
@@ -108,14 +109,14 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
     /**
      * As the weld based instantiator needs access to the bean manager it is installed as a service.
      */
-    private void addWeldInstantiator(final ServiceTarget target, final ComponentConfiguration configuration, final Class<?> componentClass, final String beanName, final ServiceName deploymentServiceName, final ServiceName beanManagerServiceName, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader) {
+    private void addWeldInstantiator(final ServiceTarget target, final ComponentConfiguration configuration, final Class<?> componentClass, final String beanName, final ServiceName weldServiceName, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader, final String beanDeploymentArchiveId) {
 
         final ServiceName serviceName = configuration.getComponentDescription().getServiceName().append("WeldInstantiator");
 
-        final WeldManagedReferenceFactory factory = new WeldManagedReferenceFactory(componentClass, beanName, interceptorClasses, classLoader);
+        final WeldManagedReferenceFactory factory = new WeldManagedReferenceFactory(componentClass, beanName, interceptorClasses, classLoader, beanDeploymentArchiveId);
 
         target.addService(serviceName, factory)
-                .addDependency(beanManagerServiceName, BeanManagerImpl.class, factory.getBeanManager())
+                .addDependency(weldServiceName, WeldContainer.class, factory.getWeldContainer())
                 .install();
 
         configuration.setInstanceFactory(factory);
@@ -126,7 +127,6 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
             }
         });
     }
-
 
     @Override
     public void undeploy(DeploymentUnit context) {

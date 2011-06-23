@@ -24,7 +24,7 @@ package org.jboss.as.threads;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -97,8 +97,8 @@ import junit.framework.Assert;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -110,7 +110,7 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -165,7 +165,7 @@ public class ThreadsSubsystemTestCase {
     private ModelNode model;
 
     private ServiceContainer container;
-    private NewModelController controller;
+    private ModelController controller;
 
     @Before
     public void setupController() throws InterruptedException {
@@ -173,7 +173,7 @@ public class ThreadsSubsystemTestCase {
         ServiceTarget target = container.subTarget();
         ControlledProcessState processState = new ControlledProcessState(true);
         ModelControllerService svc = new ModelControllerService(container, processState);
-        ServiceBuilder<NewModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
+        ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         svc.latch.await();
         controller = svc.getValue();
@@ -790,10 +790,10 @@ public class ThreadsSubsystemTestCase {
     }
 
     static class TestNewExtensionContext implements ExtensionContext {
-        final ModelNodeRegistration testProfileRegistration;
-        ModelNodeRegistration createdRegistration;
+        final ManagementResourceRegistration testProfileRegistration;
+        ManagementResourceRegistration createdRegistration;
 
-        TestNewExtensionContext(ModelNodeRegistration testProfileRegistration) {
+        TestNewExtensionContext(ManagementResourceRegistration testProfileRegistration) {
             this.testProfileRegistration = testProfileRegistration;
         }
 
@@ -801,7 +801,7 @@ public class ThreadsSubsystemTestCase {
         public SubsystemRegistration registerSubsystem(final String name) throws IllegalArgumentException {
             return new SubsystemRegistration() {
                 @Override
-                public ModelNodeRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
+                public ManagementResourceRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
                     if (descriptionProvider == null) {
                         throw new IllegalArgumentException("descriptionProvider is null");
                     }
@@ -812,7 +812,7 @@ public class ThreadsSubsystemTestCase {
                 }
 
                 @Override
-                public ModelNodeRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
+                public ManagementResourceRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
                     throw new IllegalStateException("Not implemented");
                 }
 
@@ -883,7 +883,7 @@ public class ThreadsSubsystemTestCase {
         private final CountDownLatch latch = new CountDownLatch(1);
 
         ModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
-            super(NewOperationContext.Type.SERVER, new TestConfigurationPersister(), processState, NULL_PROVIDER, null);
+            super(OperationContext.Type.SERVER, new TestConfigurationPersister(), processState, NULL_PROVIDER, null);
         }
 
         @Override
@@ -892,7 +892,7 @@ public class ThreadsSubsystemTestCase {
             latch.countDown();
         }
 
-        protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
@@ -903,9 +903,9 @@ public class ThreadsSubsystemTestCase {
             rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
-            rootRegistration.registerOperationHandler("setup", new NewStepHandler() {
+            rootRegistration.registerOperationHandler("setup", new OperationStepHandler() {
                 @Override
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("profile", "test")));
                     context.completeStep();
                 }
@@ -916,7 +916,7 @@ public class ThreadsSubsystemTestCase {
                 }
             });
 
-            ModelNodeRegistration profileRegistration = rootRegistration.registerSubModel(PathElement.pathElement("profile"), profileDescriptionProvider);
+            ManagementResourceRegistration profileRegistration = rootRegistration.registerSubModel(PathElement.pathElement("profile"), profileDescriptionProvider);
             TestNewExtensionContext context = new TestNewExtensionContext(profileRegistration);
             ThreadsExtension extension = new ThreadsExtension();
             extension.initialize(context);

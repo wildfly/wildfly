@@ -18,7 +18,7 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
@@ -63,7 +63,7 @@ implements DescriptionProvider {
      * {@inheritDoc}
      */
     @Override
-    protected InputStream getContentInputStream(NewOperationContext operationContext, ModelNode operation) throws OperationFailedException {
+    protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
         urlValidator.validate(operation);
 
         String urlSpec = operation.get(URL).asString();

@@ -21,7 +21,7 @@ package org.jboss.as.host.controller.operations;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import org.jboss.dmr.ModelNode;
@@ -42,7 +42,7 @@ public class RemoteDomainControllerRemoveHandler extends AbstractRemoveStepHandl
     protected RemoteDomainControllerRemoveHandler() {
     }
 
-    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) {
         model.get(DOMAIN_CONTROLLER).setEmptyObject();
         context.completeStep();
     }

@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.WriteAttributeOperationHandler;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -76,11 +76,11 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
     }
 
     @Override
-    protected void modelChanged(final NewOperationContext context, final ModelNode operation,
+    protected void modelChanged(final OperationContext context, final ModelNode operation,
                                 final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
         boolean restartRequired = false;
-        if (context.getType() == NewOperationContext.Type.SERVER) {
+        if (context.getType() == OperationContext.Type.SERVER) {
             validateResolvedValue(attributeName, newValue);
             ModelNode resolvedValue = newValue.isDefined() ? newValue.resolve() : newValue;
             restartRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue);
@@ -89,7 +89,7 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
             }
         }
 
-        if (context.completeStep() != NewOperationContext.ResultAction.KEEP && restartRequired) {
+        if (context.completeStep() != OperationContext.ResultAction.KEEP && restartRequired) {
             context.revertReloadRequired();
         }
     }
@@ -107,8 +107,8 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
 
     /**
      * Hook to allow subclasses to make runtime changes to effect the attribute value change. Runtime changes
-     * should be implemented by calling {@link NewOperationContext#addStep(org.jboss.as.controller.NewStepHandler, org.jboss.as.controller.NewOperationContext.Stage) adding a new step}
-     * with {@link org.jboss.as.controller.NewOperationContext.Stage#RUNTIME}.
+     * should be implemented by calling {@link org.jboss.as.controller.OperationContext#addStep(org.jboss.as.controller.OperationStepHandler, org.jboss.as.controller.OperationContext.Stage) adding a new step}
+     * with {@link org.jboss.as.controller.OperationContext.Stage#RUNTIME}.
      * <p>
      * This default implementation simply returns {@code false}.
      * </p>
@@ -122,7 +122,7 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
      * @return {@code true} if the server requires restart to effect the attribute
      *         value change; {@code false} if not
      */
-    protected boolean applyUpdateToRuntime(final NewOperationContext context, final ModelNode operation,
+    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
         return false;
     }

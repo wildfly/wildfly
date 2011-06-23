@@ -5,7 +5,7 @@ package org.jboss.as.messaging;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -26,13 +26,13 @@ public class QueueRemove extends AbstractRemoveStepHandler implements Descriptio
     private QueueRemove() {
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         context.removeService(MessagingServices.CORE_QUEUE_BASE.append(name));
     }
 
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
 

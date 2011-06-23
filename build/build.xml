@@ -31,6 +31,9 @@
                 <include name="bin/**"/>
             </fileset>
             <fileset dir="src/main/resources">
+                <include name="docs/**"/>
+            </fileset>
+            <fileset dir="src/main/resources">
                 <include name="domain/**"/>
             </fileset>
             <fileset dir="src/main/resources">
@@ -96,6 +99,10 @@
             <maven-resource group="com.sun.faces" artifact="jsf-impl"/>
         </module-def>
 
+        <module-def name="com.sun.jsf-impl" slot="1.2">
+            <maven-resource group="javax.faces" artifact="jsf-impl"/>
+        </module-def>
+
         <module-def name="com.sun.security" />
 
         <module-def name="com.sun.xml.bind">
@@ -145,6 +152,10 @@
 
         <module-def name="javax.faces.api">
             <maven-resource group="org.jboss.spec.javax.faces" artifact="jboss-jsf-api_2.0_spec"/>
+        </module-def>
+
+        <module-def name="javax.faces.api" slot="1.2">
+            <maven-resource group="javax.faces" artifact="jsf-api"/>
         </module-def>
 
         <module-def name="javax.inject.api">
@@ -410,7 +421,7 @@
         </module-def>
 
         <module-def name="org.jboss.as.aggregate" />
-    	
+
         <module-def name="org.jboss.as.cli">
             <maven-resource group="org.jboss.as" artifact="jboss-as-cli"/>
         </module-def>
@@ -781,6 +792,10 @@
 
         <module-def name="org.jboss.resteasy.resteasy-multipart-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-multipart-provider" jandex="true"/>
+        </module-def>
+
+        <module-def name="org.jboss.sasl">
+            <maven-resource group="org.jboss.sasl" artifact="jboss-sasl" />
         </module-def>
 
         <module-def name="org.jboss.security.negotiation">

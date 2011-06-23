@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -114,7 +114,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model,
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> newControllers) throws OperationFailedException {
 

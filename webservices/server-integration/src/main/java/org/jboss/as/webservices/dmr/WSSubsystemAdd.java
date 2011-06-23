@@ -21,7 +21,6 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
@@ -31,9 +30,9 @@ import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
 import java.net.UnknownHostException;
 import java.util.List;
-import org.jboss.as.controller.AbstractAddStepHandler;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -44,7 +43,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.deployers.WebServiceRefAnnotationParsingProcessor;
 import org.jboss.as.webservices.service.EndpointRegistryService;
-import org.jboss.as.webservices.service.ModelUpdateService;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.as.webservices.util.WSServices;
@@ -89,7 +87,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         submodel.get(ENDPOINT).setEmptyObject();
     }
 
-    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -97,7 +95,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 WSDeploymentActivator.activate(processorTarget);
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_SERVICE_INJECTION_ANNOTATION, new WebServiceRefAnnotationParsingProcessor());
             }
-        }, NewOperationContext.Stage.RUNTIME);
+        }, OperationContext.Stage.RUNTIME);
 
         log.info("Activating WebServices Extension");
         ModuleClassLoaderProvider.register();
@@ -107,7 +105,6 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ServerConfigImpl serverConfig = createServerConfig(operation);
         newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
-        newControllers.add(ModelUpdateService.install(serviceTarget, verificationHandler));
         newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
     }
 

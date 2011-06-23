@@ -110,7 +110,7 @@ public class CloseChannels {
                 clientConfig.setChannelFactory(new ManagementChannelFactory());
                 ProtocolChannelClient<ManagementChannel> client = ProtocolChannelClient.create(clientConfig);
                 final int val = i;
-                client.connect();
+                client.connect(null); // TODO - FIXME
                 System.out.println("Opening channel");
                 final ManagementChannel clientChannel = client.openChannel("channel");
                 clientChannel.addCloseHandler(new CloseHandler<Channel>() {

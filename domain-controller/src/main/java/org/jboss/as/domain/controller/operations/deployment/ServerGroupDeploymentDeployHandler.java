@@ -19,8 +19,8 @@
 package org.jboss.as.domain.controller.operations.deployment;
 
 import java.util.Locale;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerGroupDeploymentDeployHandler implements NewStepHandler, DescriptionProvider {
+public class ServerGroupDeploymentDeployHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = DEPLOY;
 
@@ -52,7 +52,7 @@ public class ServerGroupDeploymentDeployHandler implements NewStepHandler, Descr
         return DeploymentDescription.getDeployDeploymentOperation(locale);
     }
 
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
         context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED).set(true);
         context.completeStep();
     }

@@ -21,7 +21,7 @@ package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -51,12 +51,12 @@ public class ExtensionRemoveHandler extends AbstractRemoveStepHandler implements
     }
 
     @Override
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         context.reloadRequired();
     }
 
     @Override
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         super.recoverServices(context, operation, model);
         context.revertReloadRequired();
     }

@@ -29,11 +29,11 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.ServerIdentity;
@@ -46,7 +46,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerOperationsResolverHandler implements NewStepHandler {
+public class ServerOperationsResolverHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "server-operation-resolver";
 
@@ -54,12 +54,12 @@ public class ServerOperationsResolverHandler implements NewStepHandler {
     private final ServerOperationResolver resolver;
     private final ParsedOp parsedOp;
     private final PathAddress originalAddress;
-    private final ImmutableModelNodeRegistration originalRegistration;
+    private final ImmutableManagementResourceRegistration originalRegistration;
     private final ModelNode localResponse;
     private final boolean recordResponse;
 
     ServerOperationsResolverHandler(final String localHostName, final ServerOperationResolver resolver, final ParsedOp parsedOp,
-                                    final PathAddress originalAddress, final ImmutableModelNodeRegistration originalRegistration,
+                                    final PathAddress originalAddress, final ImmutableManagementResourceRegistration originalRegistration,
                                     final ModelNode response, final boolean recordResponse) {
         this.localHostName = localHostName;
         this.resolver = resolver;
@@ -71,7 +71,7 @@ public class ServerOperationsResolverHandler implements NewStepHandler {
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         // Read out what was added by any MODEL/RUNTIME/VERIFY handlers and publish it to the overall context
         if (context.hasResult()) {

@@ -30,9 +30,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -42,22 +41,22 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ProxyControllerRegistration extends AbstractNodeRegistration implements DescriptionProvider {
+final class ProxyControllerRegistration extends AbstractResourceRegistration implements DescriptionProvider {
 
-    private final NewProxyController proxyController;
+    private final ProxyController proxyController;
 
-    ProxyControllerRegistration(final String valueString, final NodeSubregistry parent, final NewProxyController proxyController) {
+    ProxyControllerRegistration(final String valueString, final NodeSubregistry parent, final ProxyController proxyController) {
         super(valueString, parent);
         this.proxyController = proxyController;
     }
 
     @Override
-    NewStepHandler getOperationHandler(final ListIterator<PathElement> iterator, final String operationName, NewStepHandler inherited) {
+    OperationStepHandler getOperationHandler(final ListIterator<PathElement> iterator, final String operationName, OperationStepHandler inherited) {
         return new ProxyStepHandler(proxyController);
     }
 
     @Override
-    NewStepHandler getInheritableOperationHandler(String operationName) {
+    OperationStepHandler getInheritableOperationHandler(String operationName) {
         return null;
     }
 
@@ -72,42 +71,42 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
     }
 
     @Override
-    public ModelNodeRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
+    public ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerSubModel(final PathElement address, final ModelNodeRegistration subModel) {
+    public void registerSubModel(final PathElement address, final ManagementResourceRegistration subModel) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerOperationHandler(final String operationName, final NewStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
+    public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerOperationHandler(final String operationName, final NewStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
+    public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerReadWriteAttribute(final String attributeName, final NewStepHandler readHandler, final NewStepHandler writeHandler, AttributeAccess.Storage storage) {
+    public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerReadOnlyAttribute(final String attributeName, final NewStepHandler readHandler, AttributeAccess.Storage storage) {
+    public void registerReadOnlyAttribute(final String attributeName, final OperationStepHandler readHandler, AttributeAccess.Storage storage) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerMetric(final String attributeName, final NewStepHandler metricHandler) {
+    public void registerMetric(final String attributeName, final OperationStepHandler metricHandler) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerProxyController(final PathElement address, final NewProxyController proxyController) throws IllegalArgumentException {
+    public void registerProxyController(final PathElement address, final ProxyController proxyController) throws IllegalArgumentException {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
@@ -171,17 +170,17 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
     }
 
     @Override
-    NewProxyController getProxyController(Iterator<PathElement> iterator) {
+    ProxyController getProxyController(Iterator<PathElement> iterator) {
         return proxyController;
     }
 
     @Override
-    void getProxyControllers(Iterator<PathElement> iterator, Set<NewProxyController> controllers) {
+    void getProxyControllers(Iterator<PathElement> iterator, Set<ProxyController> controllers) {
         controllers.add(proxyController);
     }
 
     @Override
-    ModelNodeRegistration getNodeRegistration(Iterator<PathElement> iterator) {
+    ManagementResourceRegistration getResourceRegistration(Iterator<PathElement> iterator) {
         // BES 2011/06/14 I do not see why the IAE makes sense, so...
 //        if (!iterator.hasNext()) {
 //            return this;

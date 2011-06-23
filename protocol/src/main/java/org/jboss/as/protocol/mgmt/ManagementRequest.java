@@ -31,6 +31,7 @@ import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.HandleableCloseable.Key;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 
@@ -50,6 +51,7 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
     private final int currentRequestId = requestId.incrementAndGet();
     private final ManagementFuture<T> future = new ManagementFuture<T>();
     private final int batchId;
+    private volatile Key closeKey;
 
     /**
      * Create a new ManagementRequest that is not part of an 'execution', i.e. this is a standalone request.
@@ -81,6 +83,14 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
 
     protected int getBatchId() {
         return batchId;
+    }
+
+    void setCloseKey(Key closeKey) {
+        this.closeKey = closeKey;
+    }
+
+    Key getCloseKey() {
+        return closeKey;
     }
 
     /**

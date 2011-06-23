@@ -78,12 +78,13 @@ public class ManagementChannel extends ProtocolChannel {
 
     void executeRequest(ManagementRequest<?> request, ManagementResponseHandler<?> responseHandler) throws IOException {
         responseReceiver.registerResponseHandler(request.getCurrentRequestId(), responseHandler);
-        FlushableDataOutputImpl output = FlushableDataOutputImpl.create(this.writeMessage());
-        Key closeKey = null;
+        final FlushableDataOutputImpl output = FlushableDataOutputImpl.create(this.writeMessage());
+
         try {
-            CloseHandler<Channel> closeHandler = request.getRequestCloseHandler();
+            final CloseHandler<Channel> closeHandler = request.getRequestCloseHandler();
             if (closeHandler != null) {
-                closeKey = addCloseHandler(closeHandler);
+                final Key closeKey = addCloseHandler(closeHandler);
+                request.setCloseKey(closeKey);
             }
             final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, request.getCurrentRequestId(), request.getBatchId(), request.getRequestCode());
             managementRequestHeader.write(output);
@@ -91,9 +92,6 @@ public class ManagementChannel extends ProtocolChannel {
             request.writeRequest(this, output);
         } finally {
             IoUtils.safeClose(output);
-            if (closeKey != null) {
-                closeKey.remove();
-            }
         }
     }
 
@@ -200,18 +198,24 @@ public class ManagementChannel extends ProtocolChannel {
 
         private void handleResponse(ManagementResponseHeader header, DataInput input) throws IOException {
             log.tracef("%s handling response %d", ManagementChannel.this, header.getResponseId());
-            ManagementResponseHandler<?> responseHandler = responseHandlers.get(header.getResponseId());
+            ManagementResponseHandler<?> responseHandler = responseHandlers.remove(header.getResponseId());
             if (responseHandler == null) {
                 throw new IOException("No response handler for request " + header.getResponseId());
             }
-            responseHandler.setResponseContext(new ManagementResponseContext(header, ManagementChannel.this));
-
             try {
+                responseHandler.setResponseContext(new ManagementResponseContext(header, ManagementChannel.this));
                 responseHandler.readResponse(input);
                 expectHeader(input, ManagementProtocol.RESPONSE_END);
             } catch (Exception e) {
                 throwFormattedException(e);
             } finally {
+                if (responseHandler instanceof ManagementRequest) {
+                    final Key closeKey = ((ManagementRequest<?>)responseHandler).getCloseKey();
+                    if (closeKey != null) {
+                        closeKey.remove();
+                    }
+                }
+
                 log.tracef("%s handled response %d", ManagementChannel.this, header.getResponseId());
             }
         }

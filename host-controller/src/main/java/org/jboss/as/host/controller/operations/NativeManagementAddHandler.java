@@ -22,6 +22,8 @@
 
 package org.jboss.as.host.controller.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -45,16 +47,20 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler implement
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
+        // TODO - We really need to get this inline with the HTTP interface when in a managed domain.
         final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
         final int port = operation.require(ModelDescriptionConstants.PORT).asInt();
+        final String securityRealm = operation.hasDefined(SECURITY_REALM) ? operation.require(SECURITY_REALM).asString() : null;
 
         model.get(ModelDescriptionConstants.INTERFACE).set(interfaceName);
         model.get(ModelDescriptionConstants.PORT).set(port);
+        if (securityRealm != null) {
+            model.get(SECURITY_REALM).set(securityRealm);
+        }
 
         hostControllerInfo.setNativeManagementInterface(interfaceName);
         hostControllerInfo.setNativeManagementPort(port);
-
-        // TODO security realm
+        hostControllerInfo.setNativeManagementSecurityRealm(securityRealm);
     }
 
     /**

@@ -24,8 +24,8 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -35,19 +35,19 @@ import org.jboss.msc.service.ServiceController;
 /**
  * @author Jason T. Greene
  */
-public class DeploymentStatusHandler implements NewStepHandler {
+public class DeploymentStatusHandler implements OperationStepHandler {
     public static final String ATTRIBUTE_NAME = "status";
-    public static final NewStepHandler INSTANCE = new DeploymentStatusHandler();
+    public static final OperationStepHandler INSTANCE = new DeploymentStatusHandler();
     private static final ModelNode NO_METRICS = new ModelNode().set("no metrics available");
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final PathElement element = address.getLastElement();
 
-        context.addStep(new NewStepHandler() {
+        context.addStep(new OperationStepHandler() {
                     @Override
-                    public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         final ModelNode result = context.getResult();
                         final ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.deploymentUnitName(element.getValue()));
                         if(controller != null) {
@@ -62,7 +62,7 @@ public class DeploymentStatusHandler implements NewStepHandler {
                         }
                         context.completeStep();
                     }
-                }, NewOperationContext.Stage.RUNTIME);
+                }, OperationContext.Stage.RUNTIME);
         context.completeStep();
     }
 }

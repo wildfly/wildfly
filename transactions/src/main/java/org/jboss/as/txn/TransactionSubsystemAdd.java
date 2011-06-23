@@ -23,8 +23,8 @@
 package org.jboss.as.txn;
 
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -66,7 +66,7 @@ import static org.jboss.as.txn.CommonAttributes.*;
  * @author Emanuel Muckenhuber
  * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
-class TransactionSubsystemAdd implements NewStepHandler {
+class TransactionSubsystemAdd implements OperationStepHandler {
 
     static final TransactionSubsystemAdd INSTANCE = new TransactionSubsystemAdd();
     private static final ServiceName INTERNAL_OBJECTSTORE_PATH = TxnServices.JBOSS_TXN_PATHS.append("object-store");
@@ -81,7 +81,7 @@ class TransactionSubsystemAdd implements NewStepHandler {
     /**
      * {@inheritDoc}
      */
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
         final ModelNode opAddr = operation.get(OP_ADDR);
 
         final String nodeIdentifier = operation.get(CORE_ENVIRONMENT).hasDefined(NODE_IDENTIFIER) ? operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).asString() : "1";
@@ -121,7 +121,7 @@ class TransactionSubsystemAdd implements NewStepHandler {
         subModel.get(OBJECT_STORE,PATH).set(operation.get(OBJECT_STORE, PATH));
 
         boolean setReload = false;
-        if (context.getType() == NewOperationContext.Type.SERVER) {
+        if (context.getType() == OperationContext.Type.SERVER) {
             if(!context.isBooting()) {
                 context.reloadRequired();
                 setReload = true;
@@ -130,11 +130,11 @@ class TransactionSubsystemAdd implements NewStepHandler {
                     protected void execute(DeploymentProcessorTarget processorTarget) {
                         processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_TRANSACTION_BINDINGS, new TransactionJndiBindingProcessor());
                     }
-                }, NewOperationContext.Stage.RUNTIME);
+                }, OperationContext.Stage.RUNTIME);
 
 
-                context.addStep(new NewStepHandler() {
-                        public void execute(NewOperationContext context, ModelNode operation) {
+                context.addStep(new OperationStepHandler() {
+                        public void execute(OperationContext context, ModelNode operation) {
                             final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
                             final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                             final ServiceTarget target = context.getServiceTarget();
@@ -257,19 +257,19 @@ class TransactionSubsystemAdd implements NewStepHandler {
                                 log.warn("Could not load com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple", e);
                             }
 
-                            context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+                            context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-                            if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                            if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                                 for (ServiceController<?> controller : controllers) {
                                     context.removeService(controller.getName());
                                 }
                             }
                         }
-                    }, NewOperationContext.Stage.RUNTIME);
+                    }, OperationContext.Stage.RUNTIME);
             }
         }
 
-        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK && setReload) {
+        if (context.completeStep() == OperationContext.ResultAction.ROLLBACK && setReload) {
             context.revertReloadRequired();
         }
     }

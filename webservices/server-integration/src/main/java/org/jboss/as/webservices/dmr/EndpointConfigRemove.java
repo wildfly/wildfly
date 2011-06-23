@@ -24,7 +24,7 @@ package org.jboss.as.webservices.dmr;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.webservices.util.WSServices;
@@ -43,7 +43,7 @@ public class EndpointConfigRemove extends AbstractRemoveStepHandler {
     static final EndpointConfigRemove INSTANCE = new EndpointConfigRemove();
 
     @Override
-    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
         if (configService != null) {

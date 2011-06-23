@@ -25,11 +25,9 @@ package org.jboss.as.server.services.net;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.net.UnknownHostException;
-import java.util.LinkedList;
-import java.util.List;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -39,7 +37,6 @@ import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Basic {@code OperationHandler} triggering a 'requireRestart' if a binding attribute is
@@ -96,18 +93,18 @@ abstract class AbstractBindingWriteHandler extends ServerWriteAttributeOperation
     abstract void handleRuntimeRollback(final ModelNode operation, final String attributeName, final ModelNode previousValue, final SocketBinding binding);
 
     @Override
-    protected void modelChanged(final NewOperationContext context, final ModelNode operation,
+    protected void modelChanged(final OperationContext context, final ModelNode operation,
                                 final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
         final boolean restartRequired = requiresRestart();
         boolean setReload = false;
-        if (context.getType() == NewOperationContext.Type.SERVER) {
+        if (context.getType() == OperationContext.Type.SERVER) {
             if (restartRequired) {
                 context.reloadRequired();
                 setReload = true;
             } else {
-                context.addStep(new NewStepHandler() {
-                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                context.addStep(new OperationStepHandler() {
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         validateResolvedValue(attributeName, newValue);
                         final ModelNode resolvedValue = newValue.isDefined() ? newValue.resolve() : newValue;
                         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
@@ -128,7 +125,7 @@ abstract class AbstractBindingWriteHandler extends ServerWriteAttributeOperation
                             handleRuntimeChange(operation, attributeName, resolvedValue, binding);
                         }
 
-                        if (context.completeStep() != NewOperationContext.ResultAction.KEEP ) {
+                        if (context.completeStep() != OperationContext.ResultAction.KEEP ) {
                             if (binding == null) {
                                 // Back to the old service
                                 revertBindingReinstall(context, bindingName, bindingModel, attributeName, currentValue);
@@ -140,15 +137,15 @@ abstract class AbstractBindingWriteHandler extends ServerWriteAttributeOperation
                             }
                         }
                     }
-                }, NewOperationContext.Stage.RUNTIME);
+                }, OperationContext.Stage.RUNTIME);
             }
         }
-        if (context.completeStep() != NewOperationContext.ResultAction.KEEP && setReload) {
+        if (context.completeStep() != OperationContext.ResultAction.KEEP && setReload) {
             context.revertReloadRequired();
         }
     }
 
-    private void handleBindingReinstall(NewOperationContext context, String bindingName, ModelNode bindingModel) throws OperationFailedException {
+    private void handleBindingReinstall(OperationContext context, String bindingName, ModelNode bindingModel) throws OperationFailedException {
         context.removeService(SOCKET_BINDING.append(bindingName));
         ModelNode resolvedConfig = bindingModel.resolve();
         try {
@@ -158,7 +155,7 @@ abstract class AbstractBindingWriteHandler extends ServerWriteAttributeOperation
         }
     }
 
-    private void revertBindingReinstall(NewOperationContext context, String bindingName, ModelNode bindingModel,
+    private void revertBindingReinstall(OperationContext context, String bindingName, ModelNode bindingModel,
                                         String attributeName, ModelNode previousValue) {
         context.removeService(SOCKET_BINDING.append(bindingName));
         ModelNode unresolvedConfig = bindingModel.clone();

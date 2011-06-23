@@ -23,34 +23,20 @@
 package org.jboss.as.domain.controller.operations;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 
-import java.util.HashSet;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
+
 import java.util.Locale;
-import java.util.Set;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewOperationContext.Stage;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -60,7 +46,7 @@ import org.jboss.modules.ModuleLoadException;
  *
  * @author John Bailey
  */
-public class ApplyRemoteMasterDomainModelHandler implements NewStepHandler, DescriptionProvider {
+public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler, DescriptionProvider {
     public static final String OPERATION_NAME = "apply-remote-domain-model";
 
     private final ExtensionContext extensionContext;
@@ -69,7 +55,7 @@ public class ApplyRemoteMasterDomainModelHandler implements NewStepHandler, Desc
         this.extensionContext = extensionContext;
     }
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode domainModel = operation.get(DOMAIN_MODEL);
         // We get the model as a list of resources descriptions
         for(final ModelNode resourceDescription : domainModel.asList()) {

@@ -46,7 +46,7 @@ import org.jboss.as.connector.services.CcmService;
 import org.jboss.as.connector.transactionintegration.TransactionIntegrationService;
 import org.jboss.as.connector.workmanager.WorkManagerService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -108,14 +108,14 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
     }
 
-    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final RaDeploymentActivator deploymentActivator = new RaDeploymentActivator();
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 deploymentActivator.activateProcessors(processorTarget);
             }
-        }, NewOperationContext.Stage.RUNTIME);
+        }, OperationContext.Stage.RUNTIME);
 
         final boolean archiveValidationEnabled = ParamsUtils
                 .parseBooleanParameter(operation, ARCHIVE_VALIDATION_ENABLED, false);

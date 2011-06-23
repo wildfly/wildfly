@@ -26,7 +26,7 @@ import java.util.List;
 import javax.management.MBeanServer;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.InMemoryNamingStore;
 import org.jboss.as.naming.InitialContextFactoryService;
@@ -55,7 +55,7 @@ public class NamingSubsystemAdd extends AbstractAddStepHandler {
         model.setEmptyObject();
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 
         log.info("Activating Naming Subsystem");
 

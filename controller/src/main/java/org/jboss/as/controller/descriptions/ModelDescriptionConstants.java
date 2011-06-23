@@ -188,6 +188,7 @@ public class ModelDescriptionConstants {
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SEARCH_CREDENTIAL = "search-credential";
     public static final String SEARCH_DN = "search-dn";
+    public static final String SECRET = "secret";
     public static final String SECURE_PORT = "secure-port";
     public static final String SECURITY_REALM = "security-realm";
     public static final String SECURITY_REALMS = "security-realms";

@@ -25,19 +25,15 @@ package org.jboss.as.web.deployment;
 import org.apache.catalina.Context;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardWrapper;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.metadata.web.jboss.JBossServletMetaData;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.ServiceController;
 
 import java.util.Locale;
@@ -54,7 +50,7 @@ public class ServletDeploymentStats {
         }
     };
 
-    public static void register(final ModelNodeRegistration registration) {
+    public static void register(final ManagementResourceRegistration registration) {
 
         registration.registerMetric("load-time", new AbstractMetricsHandler() {
             @Override
@@ -88,18 +84,18 @@ public class ServletDeploymentStats {
         });
     }
 
-    abstract static class AbstractMetricsHandler implements NewStepHandler {
+    abstract static class AbstractMetricsHandler implements OperationStepHandler {
 
         abstract void handle(ModelNode response, String name, Wrapper wrapper);
 
         @Override
-        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
             final String deploymentName = address.getElement(address.size() -3).getValue();
             final ModelNode node  = context.readModel(PathAddress.EMPTY_ADDRESS);
-            context.addStep(new NewStepHandler() {
+            context.addStep(new OperationStepHandler() {
                 @Override
-                public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
+                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(WebSubsystemServices.JBOSS_WEB.append(deploymentName));
                     if(controller != null) {
                         final String name = node.get("servlet-name").asString();
@@ -109,7 +105,7 @@ public class ServletDeploymentStats {
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
             context.completeStep();
         }
     }

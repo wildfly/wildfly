@@ -22,21 +22,21 @@
 
 package org.jboss.as.controller.test;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -59,7 +59,7 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
 
     @Test
     public void test() throws Exception {
-        final NewModelController controller = getController();
+        final ModelController controller = getController();
 
         final ModelNode address = new ModelNode();
         address.add("host", "*");
@@ -91,13 +91,13 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
     }
 
     @Override
-    void initModel(ModelNodeRegistration root) {
+    void initModel(ManagementResourceRegistration root) {
             root.registerOperationHandler("read-resource", GlobalOperationHandlers.READ_RESOURCE, NULL, true);
             root.registerOperationHandler("describe", new DescribeHandler(), NULL, true);
 
-            root.registerOperationHandler("setup", new NewStepHandler() {
+            root.registerOperationHandler("setup", new OperationStepHandler() {
                 @Override
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
                     final ModelNode model = new ModelNode();
 
@@ -116,18 +116,18 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
 
 
 
-            final ModelNodeRegistration hosts = root.registerSubModel(host, NULL);
-            final ModelNodeRegistration servers = hosts.registerSubModel(server, NULL);
-            final ModelNodeRegistration subsystems = servers.registerSubModel(subsystem, NULL);
-            final ModelNodeRegistration connectors = subsystems.registerSubModel(connector, NULL);
+            final ManagementResourceRegistration hosts = root.registerSubModel(host, NULL);
+            final ManagementResourceRegistration servers = hosts.registerSubModel(server, NULL);
+            final ManagementResourceRegistration subsystems = servers.registerSubModel(subsystem, NULL);
+            final ManagementResourceRegistration connectors = subsystems.registerSubModel(connector, NULL);
     }
 
-    private static class DescribeHandler implements NewStepHandler {
+    private static class DescribeHandler implements OperationStepHandler {
 
         /** {@inheritDoc} */
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
 
-            final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
+            final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final DescriptionProvider descriptionProvider = registry.getModelDescription(address);
             if(descriptionProvider == null) {

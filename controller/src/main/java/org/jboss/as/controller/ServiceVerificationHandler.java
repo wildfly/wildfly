@@ -33,13 +33,13 @@ import org.jboss.msc.service.ServiceListener;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ServiceVerificationHandler extends AbstractServiceListener<Object> implements ServiceListener<Object>, NewStepHandler {
+public final class ServiceVerificationHandler extends AbstractServiceListener<Object> implements ServiceListener<Object>, OperationStepHandler {
     private final Set<ServiceController<?>> set = new HashSet<ServiceController<?>>();
     private final Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
     private final Set<ServiceController<?>> problem = new HashSet<ServiceController<?>>();
     private int outstanding;
 
-    public synchronized void execute(final NewOperationContext context, final ModelNode operation) {
+    public synchronized void execute(final OperationContext context, final ModelNode operation) {
         while (outstanding > 0) {
             try {
                 wait();
@@ -66,7 +66,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                 }
                 problemList.add(controller.getName().getCanonicalName());
             }
-            if (NewModelControllerImpl.RB_ON_RT_FAILURE.get() == Boolean.TRUE) {
+            if (ModelControllerImpl.RB_ON_RT_FAILURE.get() == Boolean.TRUE) {
                 context.setRollbackOnly();
             }
         }

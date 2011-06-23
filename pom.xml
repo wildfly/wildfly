@@ -68,7 +68,9 @@
         <version.jacorb>2.3.1jboss.patch01-brew</version.jacorb>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
         <version.javax.enterprise.cdi-api>1.0-SP4</version.javax.enterprise.cdi-api>
+        <version.javax.faces.jsf-api.1.2>1.2_13</version.javax.faces.jsf-api.1.2>
         <version.javax.faces.jsf-impl>2.0.4-b09</version.javax.faces.jsf-impl>
+        <version.javax.faces.jsf-impl.1.2>1.2_13</version.javax.faces.jsf-impl.1.2>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail.mail>1.4.4</version.javax.mail.mail>
@@ -103,7 +105,7 @@
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.hibernate.commons.annotations>3.2.0.Final</version.org.hibernate.commons.annotations>
-        <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
+        <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
         <version.org.hornetq.hornetq-jms>2.2.6.Final</version.org.hornetq.hornetq-jms>
         <version.org.infinispan>5.0.0.CR6</version.org.infinispan>
@@ -138,7 +140,7 @@
         <version.org.jboss.metadata.web>7.0.0.Beta5</version.org.jboss.metadata.web>
         <version.org.jboss.mod_cluster>1.1.2.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.0.0.CR3</version.org.jboss.modules.jboss-modules>
-        <version.org.jboss.msc.jboss-msc>1.0.0.CR1</version.org.jboss.msc.jboss-msc>
+        <version.org.jboss.msc.jboss-msc>1.0.0.CR2</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.netty>3.2.3.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.blueprint>1.0.2</version.org.jboss.osgi.blueprint>
         <version.org.jboss.osgi.deployment>1.0.10</version.org.jboss.osgi.deployment>
@@ -154,6 +156,7 @@
         <version.org.jboss.osgi.xerces>2.9.1.SP7</version.org.jboss.osgi.xerces>
         <version.org.jboss.remoting3.jboss-remoting>3.2.0.Beta1</version.org.jboss.remoting3.jboss-remoting>
         <version.org.jboss.resteasy.resteasy-jaxrs>2.1.0.GA</version.org.jboss.resteasy.resteasy-jaxrs>
+        <version.org.jboss.sasl>1.0.0.Beta1</version.org.jboss.sasl>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>2.2.0.Beta2</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-beta-2</version.org.jboss.shrinkwrap.shrinkwrap>
@@ -2608,6 +2611,18 @@
             </dependency>
 
             <dependency>
+                <groupId>javax.faces</groupId>
+                <artifactId>jsf-api</artifactId>
+                <version>${version.javax.faces.jsf-api.1.2}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.faces</groupId>
+                <artifactId>jsf-impl</artifactId>
+                <version>${version.javax.faces.jsf-impl.1.2}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>javax.inject</groupId>
                 <artifactId>javax.inject</artifactId>
                 <version>${version.javax.inject.javax.inject}</version>
@@ -3818,6 +3833,12 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-multipart-provider</artifactId>
                 <version>${version.org.jboss.resteasy.resteasy-jaxrs}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.sasl</groupId>
+                <artifactId>jboss-sasl</artifactId>
+                <version>${version.org.jboss.sasl}</version>
             </dependency>
 
             <dependency>

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.controller.registry;
 
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationStepHandler;
 
 /**
  * Information about handling an attribute in a sub-model.
@@ -83,10 +83,10 @@ public final class AttributeAccess {
 
     private final AccessType access;
     private final Storage storage;
-    private final NewStepHandler readHandler;
-    private final NewStepHandler writeHandler;
+    private final OperationStepHandler readHandler;
+    private final OperationStepHandler writeHandler;
 
-    public AttributeAccess(final AccessType access, final Storage storage, final NewStepHandler readHandler, final NewStepHandler writeHandler) {
+    public AttributeAccess(final AccessType access, final Storage storage, final OperationStepHandler readHandler, final OperationStepHandler writeHandler) {
         assert access != null : "access is null";
         assert storage != null : "storage is null";
         this.access = access;
@@ -121,7 +121,7 @@ public final class AttributeAccess {
      *
      * @return the read handler, <code>null</code> if not defined
      */
-    public NewStepHandler getReadHandler() {
+    public OperationStepHandler getReadHandler() {
         return readHandler;
     }
 
@@ -130,7 +130,7 @@ public final class AttributeAccess {
      *
      * @return the write handler, <code>null</code> if not defined.
      */
-    public NewStepHandler getWriteHandler() {
+    public OperationStepHandler getWriteHandler() {
         return writeHandler;
     }
 

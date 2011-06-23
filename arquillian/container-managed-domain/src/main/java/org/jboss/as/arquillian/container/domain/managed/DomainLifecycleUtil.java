@@ -31,6 +31,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.Provider;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +54,7 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.dmr.ModelNode;
+import org.jboss.sasl.JBossSaslProvider;
 
 /**
  * Utility for controlling the lifecycle of a domain.
@@ -66,6 +69,7 @@ public class DomainLifecycleUtil {
 
     private Process process;
     private Thread shutdownThread;
+    private Provider saslProvider = new JBossSaslProvider();
 
     private final JBossAsManagedConfiguration configuration;
     private DomainClient domainClient;
@@ -81,6 +85,7 @@ public class DomainLifecycleUtil {
     }
 
     public void start() {
+        Security.addProvider(saslProvider);
         try {
             configuration.validate();
 
@@ -277,6 +282,7 @@ public class DomainLifecycleUtil {
                 executor = null;
             }
         }
+        Security.removeProvider(saslProvider.getName());
     }
 
     public Future<Void> stopAsync() {

@@ -20,11 +20,10 @@ package org.jboss.as.server.deployment;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
@@ -51,7 +50,7 @@ public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implement
         return ServerDescriptions.getRemoveDeploymentOperation(locale);
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         boolean enabled = model.hasDefined(ENABLED) ? model.get(ENABLED).asBoolean() : true;
         if (!enabled) return;
 
@@ -64,7 +63,7 @@ public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implement
         context.removeService(deploymentUnitServiceName.append("contents"));
     }
 
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
 }

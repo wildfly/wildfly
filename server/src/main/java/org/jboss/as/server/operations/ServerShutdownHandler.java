@@ -24,8 +24,8 @@ package org.jboss.as.server.operations;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.controller.descriptions.ServerRootDescription;
@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Jason T. Greene
  */
-public class ServerShutdownHandler implements NewStepHandler, DescriptionProvider {
+public class ServerShutdownHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "shutdown";
     public static final ServerShutdownHandler INSTANCE = new ServerShutdownHandler();
@@ -46,10 +46,10 @@ public class ServerShutdownHandler implements NewStepHandler, DescriptionProvide
 
     /** {@inheritDoc} */
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        context.addStep(new NewStepHandler() {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new OperationStepHandler() {
             @Override
-            public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final Thread thread = new Thread(new Runnable() {
                     public void run() {
                         System.exit(0);
@@ -61,7 +61,7 @@ public class ServerShutdownHandler implements NewStepHandler, DescriptionProvide
                 thread.run();
                 context.completeStep();
             }
-        }, NewOperationContext.Stage.RUNTIME);
+        }, OperationContext.Stage.RUNTIME);
         context.completeStep();
     }
 

@@ -26,7 +26,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURC
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SOURCE;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -49,7 +49,7 @@ class DataSourcesSubsystemAdd extends AbstractAddStepHandler {
         model.get(JDBC_DRIVER);
     }
 
-    protected boolean requiresRuntime(NewOperationContext context) {
+    protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
 }

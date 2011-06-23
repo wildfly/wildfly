@@ -32,7 +32,7 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.ConnectionFactoryRemove;
@@ -60,30 +60,30 @@ public class MessagingExtension implements Extension {
 
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(MessagingSubsystemProviders.SUBSYSTEM);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(MessagingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, MessagingSubsystemAdd.INSTANCE, MessagingSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, MessagingSubsystemDescribeHandler.INSTANCE, MessagingSubsystemProviders.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
 
         subsystem.registerXMLElementWriter(MessagingSubsystemParser.getInstance());
 
-        final ModelNodeRegistration queue = registration.registerSubModel(PathElement.pathElement(QUEUE), MessagingSubsystemProviders.QUEUE_RESOURCE);
+        final ManagementResourceRegistration queue = registration.registerSubModel(PathElement.pathElement(QUEUE), MessagingSubsystemProviders.QUEUE_RESOURCE);
         queue.registerOperationHandler(ADD, QueueAdd.INSTANCE, QueueAdd.INSTANCE, false);
         queue.registerOperationHandler(REMOVE, QueueRemove.INSTANCE, QueueRemove.INSTANCE, false);
 
         // Connection factories
-        final ModelNodeRegistration cfs = registration.registerSubModel(CFS_PATH, MessagingSubsystemProviders.CF);
+        final ManagementResourceRegistration cfs = registration.registerSubModel(CFS_PATH, MessagingSubsystemProviders.CF);
         cfs.registerOperationHandler(ADD, ConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.CF_ADD, false);
         cfs.registerOperationHandler(REMOVE, ConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.CF_REMOVE, false);
         // JMS Queues
-        final ModelNodeRegistration queues = registration.registerSubModel(JMS_QUEUE_PATH, MessagingSubsystemProviders.JMS_QUEUE_RESOURCE);
+        final ManagementResourceRegistration queues = registration.registerSubModel(JMS_QUEUE_PATH, MessagingSubsystemProviders.JMS_QUEUE_RESOURCE);
         queues.registerOperationHandler(ADD, JMSQueueAdd.INSTANCE, MessagingSubsystemProviders.JMS_QUEUE_ADD, false);
         queues.registerOperationHandler(REMOVE, JMSQueueRemove.INSTANCE, MessagingSubsystemProviders.JMS_QUEUE_REMOVE, false);
         // JMS Topics
-        final ModelNodeRegistration topics = registration.registerSubModel(TOPIC_PATH, MessagingSubsystemProviders.JMS_TOPIC_RESOURCE);
+        final ManagementResourceRegistration topics = registration.registerSubModel(TOPIC_PATH, MessagingSubsystemProviders.JMS_TOPIC_RESOURCE);
         topics.registerOperationHandler(ADD, JMSTopicAdd.INSTANCE, MessagingSubsystemProviders.JMS_TOPIC_ADD, false);
         topics.registerOperationHandler(REMOVE, JMSTopicRemove.INSTANCE, MessagingSubsystemProviders.JMS_TOPIC_REMOVE, false);
         // Resource Adapter Pooled connection factories
-        final ModelNodeRegistration resourceAdapters = registration.registerSubModel(RA_PATH, MessagingSubsystemProviders.RA);
+        final ManagementResourceRegistration resourceAdapters = registration.registerSubModel(RA_PATH, MessagingSubsystemProviders.RA);
         resourceAdapters.registerOperationHandler(ADD, PooledConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.RA_ADD, false);
         resourceAdapters.registerOperationHandler(REMOVE, PooledConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.RA_REMOVE);
     }

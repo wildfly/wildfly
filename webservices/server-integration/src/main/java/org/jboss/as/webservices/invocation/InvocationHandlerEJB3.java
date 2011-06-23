@@ -22,15 +22,12 @@
 package org.jboss.as.webservices.invocation;
 
 import java.lang.reflect.Method;
-import java.security.Principal;
 import java.util.Collection;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.xml.ws.EndpointReference;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.WebServiceException;
-import javax.xml.ws.handler.MessageContext;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
@@ -44,16 +41,13 @@ import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.invocation.Invocation;
 import org.jboss.wsf.spi.invocation.InvocationContext;
-import org.jboss.wsf.spi.invocation.integration.InvocationContextCallback;
 import org.jboss.wsf.spi.ioc.IoCContainerProxy;
 import org.jboss.wsf.spi.ioc.IoCContainerProxyFactory;
-import org.w3c.dom.Element;
 
 /**
  * Handles invocations on EJB3 endpoints.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
- * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
  */
 final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
    /** EJB3 JNDI context. */
@@ -191,64 +185,7 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
    private WebServiceContext getWebServiceContext(final Invocation invocation) {
       final InvocationContext invocationContext = invocation.getInvocationContext();
 
-      return new WebServiceContextAdapter(invocationContext.getAttachment(WebServiceContext.class));
+      return invocationContext.getAttachment(WebServiceContext.class);
    }
 
-   private static final class WebServiceContextAdapter implements WebServiceContext {
-      private final WebServiceContext delegate;
-
-      private WebServiceContextAdapter(final WebServiceContext delegate) {
-         this.delegate = delegate;
-      }
-
-      public MessageContext getMessageContext() {
-         return delegate.getMessageContext();
-      }
-
-      public Principal getUserPrincipal() {
-         throw new UnsupportedOperationException();
-         // return CurrentEJBContext.get().getCallerPrincipal();
-      }
-
-      public boolean isUserInRole(final String role) {
-         throw new UnsupportedOperationException();
-         //return CurrentEJBContext.get().isCallerInRole(role);
-      }
-
-      public EndpointReference getEndpointReference(final Element... referenceParameters) {
-         return delegate.getEndpointReference(referenceParameters);
-      }
-
-      public <T extends EndpointReference> T getEndpointReference(final Class<T> clazz, final Element... referenceParameters) {
-         return delegate.getEndpointReference(clazz, referenceParameters);
-      }
-   }
-
-   /**
-    * EJB3 invocation callback allowing EJB 3 beans to access Web Service invocation properties.
-    */
-   private static final class EJB3InvocationContextCallback implements InvocationContextCallback {
-      /** WebService invocation. */
-      private Invocation wsInvocation;
-
-      /**
-       * Constructor.
-       *
-       * @param wsInvocation delegee
-       */
-      public EJB3InvocationContextCallback(final Invocation wsInvocation) {
-         this.wsInvocation = wsInvocation;
-      }
-
-      /**
-       * Retrieves attachment type from Web Service invocation context attachments.
-       *
-       * @param <T> attachment type
-       * @param attachmentType attachment class
-       * @return attachment value
-       */
-      public <T> T get(final Class<T> attachmentType) {
-         return wsInvocation.getInvocationContext().getAttachment(attachmentType);
-      }
-   }
 }

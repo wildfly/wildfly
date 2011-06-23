@@ -23,7 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
@@ -39,13 +39,13 @@ public class JMSTopicRemove extends AbstractRemoveStepHandler {
 
     public static final JMSTopicRemove INSTANCE = new JMSTopicRemove();
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         context.removeService(JMSServices.JMS_TOPIC_BASE.append(name));
     }
 
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
 }

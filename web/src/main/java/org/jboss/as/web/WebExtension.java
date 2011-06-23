@@ -32,7 +32,7 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.web.deployment.ServletDeploymentStats;
 import org.jboss.dmr.ModelNode;
@@ -59,19 +59,19 @@ public class WebExtension implements Extension {
         log.debugf("Activating Web Extension");
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(WebSubsystemDescriptionProviders.SUBSYSTEM);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WebSubsystemDescriptionProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, WebSubsystemAdd.INSTANCE, WebSubsystemAdd.INSTANCE, false);
         registration.registerOperationHandler(DESCRIBE, WebSubsystemDescribe.INSTANCE, WebSubsystemDescribe.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(WebSubsystemParser.getInstance());
         // connector
-        final ModelNodeRegistration connectors = registration.registerSubModel(connectorPath, WebSubsystemDescriptionProviders.CONNECTOR);
+        final ManagementResourceRegistration connectors = registration.registerSubModel(connectorPath, WebSubsystemDescriptionProviders.CONNECTOR);
         connectors.registerOperationHandler(ADD, WebConnectorAdd.INSTANCE, WebConnectorAdd.INSTANCE, false);
         connectors.registerOperationHandler(REMOVE, WebConnectorRemove.INSTANCE, WebConnectorRemove.INSTANCE, false);
         for(final String attributeName : WebConnectorMetrics.ATTRIBUTES) {
             connectors.registerMetric(attributeName, WebConnectorMetrics.INSTANCE);
         }
         //hosts
-        final ModelNodeRegistration hosts = registration.registerSubModel(hostPath, WebSubsystemDescriptionProviders.VIRTUAL_SERVER);
+        final ManagementResourceRegistration hosts = registration.registerSubModel(hostPath, WebSubsystemDescriptionProviders.VIRTUAL_SERVER);
         hosts.registerOperationHandler(ADD, WebVirtualHostAdd.INSTANCE, WebVirtualHostAdd.INSTANCE, false);
         hosts.registerOperationHandler(REMOVE, WebVirtualHostRemove.INSTANCE, WebVirtualHostRemove.INSTANCE, false);
 
@@ -81,8 +81,8 @@ public class WebExtension implements Extension {
                 return new ModelNode();
             }
         };
-        final ModelNodeRegistration deployments = subsystem.registerDeploymentModel(NULL);
-        final ModelNodeRegistration servlets = deployments.registerSubModel(PathElement.pathElement("servlet"), NULL);
+        final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(NULL);
+        final ManagementResourceRegistration servlets = deployments.registerSubModel(PathElement.pathElement("servlet"), NULL);
         ServletDeploymentStats.register(servlets);
     }
 

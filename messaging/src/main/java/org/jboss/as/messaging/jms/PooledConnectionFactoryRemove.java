@@ -25,7 +25,7 @@ package org.jboss.as.messaging.jms;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
@@ -41,7 +41,7 @@ public class PooledConnectionFactoryRemove extends AbstractRemoveStepHandler {
 
 
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final ModelNode operationAddress = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(operationAddress);
         final String name = address.getLastElement().getValue();
@@ -49,7 +49,7 @@ public class PooledConnectionFactoryRemove extends AbstractRemoveStepHandler {
         context.removeService(MessagingServices.POOLED_CONNECTION_FACTORY_BASE.append(name));
     }
 
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
 }

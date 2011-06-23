@@ -25,7 +25,7 @@ package org.jboss.as.controller;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemXmlWriterRegistry;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.staxmapper.XMLElementWriter;
 
 /**
@@ -34,8 +34,8 @@ import org.jboss.staxmapper.XMLElementWriter;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ExtensionContextImpl implements ExtensionContext {
-    private final ModelNodeRegistration profileRegistration;
-    private final ModelNodeRegistration deploymentOverrideRegistration;
+    private final ManagementResourceRegistration profileRegistration;
+    private final ManagementResourceRegistration deploymentOverrideRegistration;
     private final SubsystemXmlWriterRegistry writerRegistry;
 
     /**
@@ -44,8 +44,8 @@ public final class ExtensionContextImpl implements ExtensionContext {
      * @param profileRegistration the profile registration
      * @param deploymentOverrideRegistration the deployment override registration
      */
-    public ExtensionContextImpl(final ModelNodeRegistration profileRegistration,
-            final ModelNodeRegistration deploymentOverrideRegistration,
+    public ExtensionContextImpl(final ManagementResourceRegistration profileRegistration,
+            final ManagementResourceRegistration deploymentOverrideRegistration,
             final SubsystemXmlWriterRegistry writerRegistry) {
         if (profileRegistration == null) {
             throw new IllegalArgumentException("profileRegistration is null");
@@ -69,7 +69,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
         return new SubsystemRegistration() {
             @Override
-            public ModelNodeRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
+            public ManagementResourceRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
                 if (descriptionProvider == null) {
                     throw new IllegalArgumentException("descriptionProvider is null");
                 }
@@ -77,7 +77,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
             }
 
             @Override
-            public ModelNodeRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
+            public ManagementResourceRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
                 if (descriptionProvider == null) {
                     throw new IllegalArgumentException("descriptionProvider is null");
                 }

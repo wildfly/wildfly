@@ -27,8 +27,8 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
@@ -54,18 +54,20 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
 
     private final InjectedValue<ManagementChannel> hcChannel = new InjectedValue<ManagementChannel>();
-    private final InjectedValue<NewModelController> controller = new InjectedValue<NewModelController>();
+    private final InjectedValue<ModelController> controller = new InjectedValue<ModelController>();
 
     private final String serverName;
+    private final String serverProcessName;
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    public HostControllerServerClient(final String serverName) {
+    public HostControllerServerClient(final String serverName, final String serverProcessName) {
         this.serverName = serverName;
+        this.serverProcessName = serverProcessName;
     }
 
     /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
-        hcChannel.getValue().setOperationHandler(new NewTransactionalModelControllerOperationHandler(executor, controller.getValue()));
+        hcChannel.getValue().setOperationHandler(new TransactionalModelControllerOperationHandler(executor, controller.getValue()));
 
         try {
             new ServerRegisterRequest().executeForResult(executor, ManagementClientChannelStrategy.create(hcChannel.getValue()));
@@ -82,6 +84,10 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return serverName;
     }
 
+    public String getServerProcessName() {
+        return serverProcessName;
+    }
+
     /** {@inheritDoc} */
     public HostControllerServerClient getValue() throws IllegalStateException {
         return this;
@@ -91,7 +97,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return hcChannel;
     }
 
-    public Injector<NewModelController> getServerControllerInjector() {
+    public Injector<ModelController> getServerControllerInjector() {
         return controller;
     }
 
@@ -105,7 +111,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         @Override
         protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
             output.write(DomainServerProtocol.PARAM_SERVER_NAME);
-            output.writeUTF(serverName);
+            output.writeUTF(serverProcessName);
         }
 
         @Override

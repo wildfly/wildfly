@@ -22,8 +22,8 @@
 
 package org.jboss.as.threads;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -39,7 +39,7 @@ import org.jboss.msc.service.ServiceController;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Brian Stansberry
  */
-public final class ThreadFactoryGroupNameUpdate implements NewStepHandler {
+public final class ThreadFactoryGroupNameUpdate implements OperationStepHandler {
 
     private static final long serialVersionUID = 4253625376544201028L;
 
@@ -51,7 +51,7 @@ public final class ThreadFactoryGroupNameUpdate implements NewStepHandler {
         validator.registerValidator(VALUE, new ModelTypeValidator(ModelType.STRING, true, true));
     }
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
 
         final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
@@ -72,9 +72,9 @@ public final class ThreadFactoryGroupNameUpdate implements NewStepHandler {
         }
         model.get(CommonAttributes.GROUP_NAME).set(newValue);
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceController<?> service = context.getServiceRegistry(false)
                             .getService(ThreadsServices.threadFactoryName(name));
                     if (service == null) {
@@ -85,7 +85,7 @@ public final class ThreadFactoryGroupNameUpdate implements NewStepHandler {
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }

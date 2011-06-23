@@ -18,7 +18,7 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
@@ -61,7 +61,7 @@ public class DeploymentUploadStreamAttachmentHandler
      * {@inheritDoc}
      */
     @Override
-    protected InputStream getContentInputStream(NewOperationContext operationContext, ModelNode operation) throws IOException, OperationFailedException {
+    protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws IOException, OperationFailedException {
         // Validate the operation
         streamValidator.validate(operation);
         // Get the attached stream

@@ -23,8 +23,8 @@
 package org.jboss.as.modcluster;
 
 import java.util.Locale;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -36,12 +36,12 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Jean-Frederic Clere
  */
-class ModClusterSubsystemDescribe implements NewStepHandler, DescriptionProvider {
+class ModClusterSubsystemDescribe implements OperationStepHandler, DescriptionProvider {
 
     static final ModClusterSubsystemDescribe INSTANCE = new ModClusterSubsystemDescribe();
 
     /** {@inheritDoc} */
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
         final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 

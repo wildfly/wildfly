@@ -44,7 +44,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
@@ -149,8 +149,8 @@ public class EmbeddedStandAloneServerFactory {
 
                     serviceContainer = future.get();
 
-                    final Value<NewModelController> controllerService = (Value<NewModelController>) serviceContainer.getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
-                    final NewModelController controller = controllerService.getValue();
+                    final Value<ModelController> controllerService = (Value<ModelController>) serviceContainer.getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
+                    final ModelController controller = controllerService.getValue();
                     serverDeploymentManager = new ModelControllerServerDeploymentManager(controller);
                     modelControllerClient = controller.createClient(Executors.newCachedThreadPool());
 

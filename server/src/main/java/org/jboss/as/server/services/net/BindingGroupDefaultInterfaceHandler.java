@@ -18,7 +18,7 @@
  */
 package org.jboss.as.server.services.net;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
@@ -38,7 +38,7 @@ public class BindingGroupDefaultInterfaceHandler extends ServerWriteAttributeOpe
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(NewOperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
+    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
         return true;
     }
 

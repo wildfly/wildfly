@@ -24,8 +24,8 @@ package org.jboss.as.web;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.RequestGroupInfo;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -36,7 +36,7 @@ import org.jboss.msc.service.ServiceController;
 /**
  * @author Emanuel Muckenhuber
  */
-class WebConnectorMetrics implements NewStepHandler {
+class WebConnectorMetrics implements OperationStepHandler {
 
     static WebConnectorMetrics INSTANCE = new WebConnectorMetrics();
 
@@ -49,10 +49,10 @@ class WebConnectorMetrics implements NewStepHandler {
     private static final String REQUEST_COUNT = "requestCount";
     static final String[] ATTRIBUTES = new String[] {BYTES_SENT, BYTES_RECEIVED, PROCESSING_TIME, ERROR_COUNT, MAX_TIME, REQUEST_COUNT};
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                     final String name = address.getLastElement().getValue();
                     final String attributeName = operation.require(NAME).asString();
@@ -87,7 +87,7 @@ class WebConnectorMetrics implements NewStepHandler {
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         } else {
             context.getResult().set("no metrics available");
         }

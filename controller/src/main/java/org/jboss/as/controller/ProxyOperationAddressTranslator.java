@@ -24,7 +24,7 @@ package org.jboss.as.controller;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
 /**
- * Used by {@link NewProxyController} implementations to translate addresses to the
+ * Used by {@link ProxyController} implementations to translate addresses to the
  * target controller's address space.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

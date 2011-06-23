@@ -29,6 +29,7 @@ import java.net.URL;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -42,6 +43,7 @@ import org.xml.sax.XMLReader;
  * @author Thomas.Diesler@jboss.com
  * @since 14-Oct-2010
  */
+@Ignore
 public class XMLValidationTestCase extends AbstractValidationTest {
 
     @Test

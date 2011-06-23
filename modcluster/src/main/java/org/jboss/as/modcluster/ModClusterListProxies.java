@@ -26,8 +26,8 @@ import java.net.InetSocketAddress;
 import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
@@ -35,7 +35,7 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 // implements ModelQueryOperationHandler, DescriptionProvider
-public class ModClusterListProxies implements NewStepHandler, DescriptionProvider{
+public class ModClusterListProxies implements OperationStepHandler, DescriptionProvider{
 
     private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
 
@@ -49,11 +49,11 @@ public class ModClusterListProxies implements NewStepHandler, DescriptionProvide
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation)
+    public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
                     ModCluster modcluster = (ModCluster) controller.getValue();
                     Map<InetSocketAddress, String> map = modcluster.getProxyInfo();
@@ -70,7 +70,7 @@ public class ModClusterListProxies implements NewStepHandler, DescriptionProvide
 
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
 
         context.completeStep();

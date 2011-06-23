@@ -29,7 +29,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
@@ -73,7 +73,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
 
     private final InjectedValue<String> relativePathValue = new InjectedValue<String>();
     private final InjectedValue<String> pathValue = new InjectedValue<String>();
-    private final InjectedValue<NewModelController> controllerValue = new InjectedValue<NewModelController>();
+    private final InjectedValue<ModelController> controllerValue = new InjectedValue<ModelController>();
     private final InjectedValue<ServerDeploymentRepository> deploymentRepositoryValue = new InjectedValue<ServerDeploymentRepository>();
     private final InjectedValue<ContentRepository> contentRepositoryValue = new InjectedValue<ContentRepository>();
     private final InjectedValue<ScheduledExecutorService> scheduledExecutorValue = new InjectedValue<ScheduledExecutorService>();
@@ -111,9 +111,10 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
 
         ServiceBuilder builder = serviceTarget.addService(serviceName, service)
                 .addDependency(pathService, String.class, service.pathValue)
-                .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewModelController.class, service.controllerValue)
+                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.controllerValue)
                 .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.deploymentRepositoryValue)
                 .addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.contentRepositoryValue)
+                .addDependency(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_CHAINS)
                 .addInjection(service.scheduledExecutorValue, scheduledExecutorService);
         if (relativePathService != null) {
             builder.addDependency(relativePathService, String.class, service.relativePathValue);

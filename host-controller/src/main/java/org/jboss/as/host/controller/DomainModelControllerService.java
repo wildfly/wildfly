@@ -34,6 +34,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.IOException;
+import javax.security.auth.callback.CallbackHandler;
+
 import java.security.AccessController;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,9 +49,9 @@ import java.util.concurrent.ThreadFactory;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewProxyController;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
@@ -58,24 +60,24 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerFactoryService;
-import org.jboss.as.controller.remote.NewRemoteProxyController;
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
+import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.domain.controller.NewDomainController;
-import org.jboss.as.domain.controller.NewDomainModelUtil;
-import org.jboss.as.domain.controller.NewMasterDomainControllerClient;
+import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.DomainModelUtil;
+import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
 import org.jboss.as.domain.management.security.SecurityRealmService;
-import org.jboss.as.host.controller.NewRemoteDomainConnectionService.RemoteFileRepository;
-import org.jboss.as.host.controller.mgmt.NewMasterDomainControllerOperationHandlerService;
+import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
+import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
-import org.jboss.as.host.controller.operations.NewStartServersHandler;
+import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
@@ -98,13 +100,13 @@ import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.JBossThreadFactory;
 
 /**
- * Creates the service that acts as the {@link org.jboss.as.controller.NewModelController} for a host.
+ * Creates the service that acts as the {@link org.jboss.as.controller.ModelController} for a host.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DomainModelControllerService extends AbstractControllerService implements NewDomainController, UnregisteredHostChannelRegistry {
+public class DomainModelControllerService extends AbstractControllerService implements DomainController, UnregisteredHostChannelRegistry {
 
-    public static final ServiceName SERVICE_NAME = NewHostControllerBootstrap.SERVICE_NAME_BASE.append("model", "controller");
+    public static final ServiceName SERVICE_NAME = HostControllerBootstrap.SERVICE_NAME_BASE.append("model", "controller");
 
     private final HostControllerConfigurationPersister configurationPersister;
     private final HostControllerEnvironment environment;
@@ -112,33 +114,33 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final FileRepository localFileRepository;
     private final RemoteFileRepository remoteFileRepository;
     private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<ExecutorService>();
-    private final InjectedValue<NewProcessControllerConnectionService> injectedProcessControllerConnection = new InjectedValue<NewProcessControllerConnectionService>();
-    private final Map<String, NewProxyController> hostProxies;
-    private final Map<String, NewProxyController> serverProxies;
+    private final InjectedValue<ProcessControllerConnectionService> injectedProcessControllerConnection = new InjectedValue<ProcessControllerConnectionService>();
+    private final Map<String, ProxyController> hostProxies;
+    private final Map<String, ProxyController> serverProxies;
     private final PrepareStepHandler prepareStepHandler;
-    private ModelNodeRegistration modelNodeRegistration;
-    private volatile NewMasterDomainControllerClient masterDomainControllerClient;
+    private ManagementResourceRegistration modelNodeRegistration;
+    private volatile MasterDomainControllerClient masterDomainControllerClient;
 
     private final Map<String, ManagementChannel> unregisteredHostChannels = new HashMap<String, ManagementChannel>();
     private final Map<String, ProxyCreatedCallback> proxyCreatedCallbacks = new HashMap<String, ProxyCreatedCallback>();
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool();
 
-    private volatile NewServerInventory serverInventory;
+    private volatile ServerInventory serverInventory;
 
 
-    public static ServiceController<NewModelController> addService(final ServiceTarget serviceTarget,
+    public static ServiceController<ModelController> addService(final ServiceTarget serviceTarget,
                                                             final HostControllerEnvironment environment,
                                                             final ControlledProcessState processState) {
-        final Map<String, NewProxyController> hostProxies = new ConcurrentHashMap<String, NewProxyController>();
-        final Map<String, NewProxyController> serverProxies = new ConcurrentHashMap<String, NewProxyController>();
+        final Map<String, ProxyController> hostProxies = new ConcurrentHashMap<String, ProxyController>();
+        final Map<String, ProxyController> serverProxies = new ConcurrentHashMap<String, ProxyController>();
         final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState);
         final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, hostProxies, serverProxies);
         DomainModelControllerService service = new DomainModelControllerService(environment, processState,
                 hostControllerInfo, new HostControllerConfigurationPersister(environment, hostControllerInfo),
                 hostProxies, serverProxies, prepareStepHandler);
         return serviceTarget.addService(SERVICE_NAME, service)
-                .addDependency(NewHostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.injectedExecutorService)
-                .addDependency(NewProcessControllerConnectionService.SERVICE_NAME, NewProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
+                .addDependency(HostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.injectedExecutorService)
+                .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }
@@ -147,10 +149,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final ControlledProcessState processState,
                                          final LocalHostControllerInfoImpl hostControllerInfo,
                                          final HostControllerConfigurationPersister configurationPersister,
-                                         final Map<String, NewProxyController> hostProxies,
-                                         final Map<String, NewProxyController> serverProxies,
+                                         final Map<String, ProxyController> hostProxies,
+                                         final Map<String, ProxyController> serverProxies,
                                          final PrepareStepHandler prepareStepHandler) {
-        super(NewOperationContext.Type.HOST, configurationPersister, processState, DomainDescriptionProviders.ROOT_PROVIDER,
+        super(OperationContext.Type.HOST, configurationPersister, processState, DomainDescriptionProviders.ROOT_PROVIDER,
                 prepareStepHandler);
         this.configurationPersister = configurationPersister;
         this.environment = environment;
@@ -168,17 +170,17 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public void registerRemoteHost(NewProxyController hostControllerClient) {
+    public void registerRemoteHost(ProxyController hostControllerClient) {
         if (!hostControllerInfo.isMasterDomainController()) {
             throw new UnsupportedOperationException("Registration of remote hosts is not supported on slave host controllers");
         }
         PathAddress pa = hostControllerClient.getProxyNodeAddress();
         PathElement pe = pa.getElement(0);
-        NewProxyController existingController = modelNodeRegistration.getProxyController(pa);
+        ProxyController existingController = modelNodeRegistration.getProxyController(pa);
         if (existingController != null || hostControllerInfo.getLocalHostName().equals(pe.getValue())){
             //This horrible hack is there to make sure that the slave has not crashed since we don't get notifications due to REM3-121
-            if ((existingController instanceof NewRemoteProxyController)) {
-                if (((NewRemoteProxyController)existingController).ping(3000)) {
+            if ((existingController instanceof RemoteProxyController)) {
+                if (((RemoteProxyController)existingController).ping(3000)) {
                     throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
                 }
                 unregisterRemoteHost(pe.getValue());
@@ -200,14 +202,14 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public void registerRunningServer(NewProxyController serverControllerClient) {
+    public void registerRunningServer(ProxyController serverControllerClient) {
         PathAddress pa = serverControllerClient.getProxyNodeAddress();
         PathElement pe = pa.getElement(1);
         if (modelNodeRegistration.getProxyController(pa) != null) {
             throw new IllegalArgumentException("There is already a registered server named '" + pe.getValue() + "'");
         }
         Logger.getLogger("org.jboss.host.controller").info("Registering server " + pe.getValue());
-        ModelNodeRegistration hostRegistration = modelNodeRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST)));
+        ManagementResourceRegistration hostRegistration = modelNodeRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST)));
         hostRegistration.registerProxyController(pe, serverControllerClient);
         serverProxies.put(pe.getValue(), serverControllerClient);
     }
@@ -217,7 +219,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerInfo.getLocalHostName()));
         PathElement pe = PathElement.pathElement(RUNNING_SERVER, serverName);
         Logger.getLogger("org.jboss.host.controller").info("Unregistering server " + serverName);
-        ModelNodeRegistration hostRegistration = modelNodeRegistration.getSubModel(pa);
+        ManagementResourceRegistration hostRegistration = modelNodeRegistration.getSubModel(pa);
         hostRegistration.unregisterProxyController(pe);
         serverProxies.remove(serverName);
     }
@@ -244,9 +246,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
-        NewDomainModelUtil.updateCoreModel(rootResource.getModel());
-        NewHostModelUtil.createHostRegistry(rootRegistration, configurationPersister, environment, localFileRepository,
+    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        DomainModelUtil.updateCoreModel(rootResource.getModel());
+        HostModelUtil.createHostRegistry(rootRegistration, configurationPersister, environment, localFileRepository,
                 hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, this, this);
         this.modelNodeRegistration = rootRegistration;
     }
@@ -267,7 +269,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
             //Install the server inventory
             NetworkInterfaceBinding nativeManagementInterfaceBinding = getNativeManagementNetworkInterfaceBinding();
-            Future<NewServerInventory> inventoryFuture = NewServerInventoryService.install(serviceTarget, this, environment,
+            Future<ServerInventory> inventoryFuture = NewServerInventoryService.install(serviceTarget, this, environment,
                     nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort());
 
             //Install the core remoting endpoint and listener
@@ -276,11 +278,12 @@ public class DomainModelControllerService extends AbstractControllerService impl
             if (!hostControllerInfo.isMasterDomainController()) {
                 serverInventory = getFuture(inventoryFuture);
 
-                Future<NewMasterDomainControllerClient> clientFuture = NewRemoteDomainConnectionService.install(serviceTarget,
+                Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
                         getValue(),
                         hostControllerInfo.getLocalHostName(),
                         hostControllerInfo.getRemoteDomainControllerHost(),
                         hostControllerInfo.getRemoteDomainControllertPort(),
+                        hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
                         remoteFileRepository);
                 masterDomainControllerClient = getFuture(clientFuture);
                 //Registers us with the master and gets down the master copy of the domain model to our DC
@@ -291,19 +294,23 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 // parse the domain.xml and load the steps
                 ConfigurationPersister domainPersister = configurationPersister.getDomainPersister();
                 super.boot(domainPersister.load());
-                RemotingServices.installChannelServices(serviceTarget, new NewMasterDomainControllerOperationHandlerService(this, this),
+                RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(this, this),
                         DomainModelControllerService.SERVICE_NAME, RemotingServices.DOMAIN_CHANNEL, null, null);
                 serverInventory = getFuture(inventoryFuture);
             }
 
             // TODO look into adding some of these services in the handlers, but ON-DEMAND. Then here just add some
             // simple service that demands them
-
-            RemotingServices.installDomainConnectorServices(serviceTarget, nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort());
+            ServiceName realmSvcName = null;
+            String nativeSecurityRealm = hostControllerInfo.getNativeManagementSecurityRealm();
+            if (nativeSecurityRealm != null) {
+                realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(nativeSecurityRealm);
+            }
+            RemotingServices.installDomainConnectorServices(serviceTarget, nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName);
             ServerToHostOperationHandlerFactoryService.install(serviceTarget, NewServerInventoryService.SERVICE_NAME);
             RemotingServices.installChannelOpenListenerService(serviceTarget, RemotingServices.SERVER_CHANNEL,
                     ServerToHostOperationHandlerFactoryService.SERVICE_NAME, null, null);
-            RemotingServices.installChannelServices(serviceTarget, new NewModelControllerClientOperationHandlerFactoryService(),
+            RemotingServices.installChannelServices(serviceTarget, new ModelControllerClientOperationHandlerFactoryService(),
                     DomainModelControllerService.SERVICE_NAME, RemotingServices.MANAGEMENT_CHANNEL, null, null);
 
             if (hostControllerInfo.getHttpManagementInterface() != null) {
@@ -334,7 +341,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 .addDependency(
                         NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
                         NetworkInterfaceBinding.class, service.getInterfaceInjector())
-                .addDependency(SERVICE_NAME, NewModelController.class, service.getModelControllerInjector())
+                .addDependency(SERVICE_NAME, ModelController.class, service.getModelControllerInjector())
                 .addInjection(service.getTempDirInjector(), environment.getDomainTempDir().getAbsolutePath())
                 .addInjection(service.getPortInjector(), port)
                 .addInjection(service.getSecurePortInjector(), securePort)
@@ -374,7 +381,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private void startServers() {
         ModelNode addr = new ModelNode();
         addr.add(HOST, hostControllerInfo.getLocalHostName());
-        ModelNode op = Util.getEmptyOperation(NewStartServersHandler.OPERATION_NAME, addr);
+        ModelNode op = Util.getEmptyOperation(StartServersHandler.OPERATION_NAME, addr);
 
         getValue().execute(op, null, null, null);
     }
@@ -420,7 +427,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public synchronized NewProxyController popChannelAndCreateProxy(final String hostName) {
+    public synchronized ProxyController popChannelAndCreateProxy(final String hostName) {
         ManagementChannel channel = unregisteredHostChannels.remove(hostName);
         if (channel == null) {
             throw new IllegalArgumentException("No channel for host " + hostName);
@@ -433,7 +440,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             }
         });
         final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, hostName));
-        NewRemoteProxyController proxy = NewRemoteProxyController.create(proxyExecutor, addr, ProxyOperationAddressTranslator.HOST, channel);
+        RemoteProxyController proxy = RemoteProxyController.create(proxyExecutor, addr, ProxyOperationAddressTranslator.HOST, channel);
         ProxyCreatedCallback callback = proxyCreatedCallbacks.remove(hostName);
         if (callback != null) {
             callback.proxyCreated(proxy);
@@ -441,7 +448,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         return proxy;
     }
 
-    private class DelegatingServerInventory implements NewServerInventory {
+    private class DelegatingServerInventory implements ServerInventory {
         public void serverRegistered(String serverProcessName, ManagementChannel channel, ProxyCreatedCallback callback) {
             serverInventory.serverRegistered(serverProcessName, channel, callback);
         }
@@ -488,6 +495,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
         public ServerStatus stopServer(String serverName, int gracefulTimeout) {
             return serverInventory.stopServer(serverName, gracefulTimeout);
+        }
+
+        public CallbackHandler getServerCallbackHandler() {
+            return serverInventory.getServerCallbackHandler();
         }
 
         public boolean equals(Object obj) {

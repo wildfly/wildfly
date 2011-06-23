@@ -49,7 +49,7 @@ import org.junit.Test;
 public class CompositeOperationHandlerUnitTestCase {
 
     private ServiceContainer container;
-    private NewModelController controller;
+    private ModelController controller;
     private AtomicBoolean sharedState;
 
     @Before
@@ -59,7 +59,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ServiceTarget target = container.subTarget();
         ControlledProcessState processState = new ControlledProcessState(true);
         ModelControllerImplUnitTestCase.ModelControllerService svc = new ModelControllerImplUnitTestCase.ModelControllerService(processState);
-        ServiceBuilder<NewModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
+        ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         sharedState = svc.state;
         svc.latch.await();

@@ -110,6 +110,7 @@ public enum Element {
     REMOTE("remote"),
 
     SCANNING("scanning"),
+    SECRET("secret"),
     SECURITY_REALM("security-realm"),
     SECURITY_REALMS("security-realms"),
     SERVER("server"),

@@ -84,8 +84,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapter
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.TEST_CONNECTION_DESC;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -102,7 +102,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -141,12 +141,12 @@ public class ResourceAdaptersExtension implements Extension {
         registration.registerXMLElementWriter(ResourceAdapterSubsystemParser.INSTANCE);
 
         // Remoting subsystem description and operation handlers
-        final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
+        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, ResourceAdaptersSubSystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
         subsystem.registerOperationHandler(DESCRIBE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE,
                 ResourceAdaptersSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-        final ModelNodeRegistration resourceadapter = subsystem.registerSubModel(PathElement.pathElement(RESOURCEADAPTER),
+        final ManagementResourceRegistration resourceadapter = subsystem.registerSubModel(PathElement.pathElement(RESOURCEADAPTER),
                 RESOURCEADAPTER_DESC);
         resourceadapter.registerOperationHandler(ADD, RaAdd.INSTANCE, ADD_RESOURCEADAPTER_DESC, false);
         resourceadapter.registerOperationHandler(REMOVE, RaRemove.INSTANCE, REMOVE_RESOURCEADAPTER_DESC, false);
@@ -635,10 +635,10 @@ public class ResourceAdaptersExtension implements Extension {
         }
     }
 
-    private static class ResourceAdaptersSubsystemDescribeHandler implements NewStepHandler, DescriptionProvider {
+    private static class ResourceAdaptersSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final ResourceAdaptersSubsystemDescribeHandler INSTANCE = new ResourceAdaptersSubsystemDescribeHandler();
 
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final ModelNode address = new ModelNode();
             address.add(ModelDescriptionConstants.SUBSYSTEM, RESOURCEADAPTERS);
             address.protect();

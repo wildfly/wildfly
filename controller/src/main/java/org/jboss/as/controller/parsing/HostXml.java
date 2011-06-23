@@ -40,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
@@ -194,7 +195,7 @@ public class HostXml extends CommonXml {
         // The namespace operations were created before the host name was known, the address can now be updated
         // to the local host specific address.
         for (ModelNode operation : namespaceOperations) {
-           operation.get(OP_ADDR).set(address);
+            operation.get(OP_ADDR).set(address);
             list.add(operation);
         }
 
@@ -343,6 +344,7 @@ public class HostXml extends CommonXml {
         // Handle attributes
         String host = null;
         Integer port = null;
+        String securityRealm = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
@@ -364,6 +366,10 @@ public class HostXml extends CommonXml {
                         }
                         break;
                     }
+                    case SECURITY_REALM: {
+                        securityRealm = value;
+                        break;
+                    }
                     default: throw unexpectedAttribute(reader, i);
                 }
             }
@@ -380,6 +386,9 @@ public class HostXml extends CommonXml {
         update.get(OP).set("write-remote-domain-controller");
         update.get(HOST).set(parsePossibleExpression(host));
         update.get(PORT).set(port);
+        if (securityRealm != null) {
+            update.get(SECURITY_REALM).set(securityRealm);
+        }
         list.add(update);
 
         reader.discardRemainder();
@@ -549,6 +558,9 @@ public class HostXml extends CommonXml {
             }
             if (remote.has(PORT)) {
                 writeAttribute(writer, Attribute.PORT, remote.get(PORT).asString());
+            }
+            if (remote.hasDefined(SECURITY_REALM)) {
+                writeAttribute(writer, Attribute.SECURITY_REALM, remote.require(SECURITY_REALM).asString());
             }
             writer.writeEndElement();
         }

@@ -27,27 +27,26 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewProxyController;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 /**
- * Initial step handler for a {@link org.jboss.as.controller.NewModelController} that is the model controller for a host controller.
+ * Initial step handler for a {@link org.jboss.as.controller.ModelController} that is the model controller for a host controller.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class PrepareStepHandler  implements NewStepHandler {
+public class PrepareStepHandler  implements OperationStepHandler {
 
     public static final String EXECUTE_FOR_COORDINATOR = "execute-for-coordinator";
 
@@ -64,15 +63,15 @@ public class PrepareStepHandler  implements NewStepHandler {
     private final OperationSlaveStepHandler slaveHandler;
 
     public PrepareStepHandler(final LocalHostControllerInfo localHostControllerInfo,
-                              final Map<String, NewProxyController> hostProxies,
-                              final Map<String, NewProxyController> serverProxies) {
+                              final Map<String, ProxyController> hostProxies,
+                              final Map<String, ProxyController> serverProxies) {
         this.localHostControllerInfo = localHostControllerInfo;
         this.slaveHandler = new OperationSlaveStepHandler(localHostControllerInfo);
         this.coordinatorHandler = new OperationCoordinatorStepHandler(localHostControllerInfo, hostProxies, serverProxies, slaveHandler);
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         trace = log.isTraceEnabled();
 
@@ -110,18 +109,18 @@ public class PrepareStepHandler  implements NewStepHandler {
      * @param operation the operation
      * @throws OperationFailedException
      */
-    private void executeDirect(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    private void executeDirect(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (trace) {
             log.trace(getClass().getSimpleName() + " executing direct");
         }
         final String operationName =  operation.require(OP).asString();
-        NewStepHandler stepHandler = null;
-        final ImmutableModelNodeRegistration registration = context.getModelNodeRegistration();
+        OperationStepHandler stepHandler = null;
+        final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
         if (registration != null) {
             stepHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
         }
         if(stepHandler != null) {
-            context.addStep(stepHandler, NewOperationContext.Stage.MODEL);
+            context.addStep(stepHandler, OperationContext.Stage.MODEL);
         } else {
             context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, PathAddress.pathAddress(operation.get(OP_ADDR))));
         }

@@ -21,7 +21,7 @@ package org.jboss.as.host.controller.operations;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.host.controller.descriptions.HostServerDescription;
@@ -44,7 +44,7 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler implements De
     protected ServerRemoveHandler() {
     }
 
-    protected boolean requiresRuntime(NewOperationContext context) {
+    protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
 

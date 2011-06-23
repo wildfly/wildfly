@@ -22,8 +22,8 @@
 
 package org.jboss.as.server;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
@@ -33,7 +33,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractDeploymentChainStep implements NewStepHandler {
+public abstract class AbstractDeploymentChainStep implements OperationStepHandler {
 
     private static DeploymentProcessorTarget TARGET = new DeploymentProcessorTarget() {
         public void addDeploymentProcessor(final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
@@ -41,7 +41,7 @@ public abstract class AbstractDeploymentChainStep implements NewStepHandler {
         }
     };
 
-    public final void execute(final NewOperationContext context, final ModelNode operation) {
+    public final void execute(final OperationContext context, final ModelNode operation) {
         execute(TARGET);
         context.completeStep();
     }

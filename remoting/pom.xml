@@ -41,6 +41,10 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-domain-management</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-network</artifactId>
         </dependency>
         <dependency>
@@ -54,6 +58,10 @@
         <dependency>
             <groupId>org.jboss.remoting3</groupId>
             <artifactId>jboss-remoting</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.sasl</groupId>
+            <artifactId>jboss-sasl</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.xnio</groupId>

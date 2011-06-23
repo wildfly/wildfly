@@ -40,8 +40,6 @@ import javax.enterprise.inject.spi.Interceptor;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * the other existing interceptors.
  *
  * @author Marius Bogoevici
+ * @author Stuart Douglas
  */
 public class Jsr299BindingsInterceptor implements Serializable {
 
@@ -71,14 +70,9 @@ public class Jsr299BindingsInterceptor implements Serializable {
 
     @PostConstruct
     public void doPostConstruct(InvocationContext invocationContext) throws Exception {
-        final BeanManagerImpl beanManager;
+        final BeanManagerImpl beanManager = (BeanManagerImpl) this.beanManager;
 
         try {
-            try {
-                beanManager = (BeanManagerImpl) new InitialContext().lookup("java:comp/BeanManager");
-            } catch (NamingException e) {
-                return;
-            }
             init(beanManager);
             doLifecycleInterception(invocationContext, InterceptionType.POST_CONSTRUCT);
         } finally {

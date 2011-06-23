@@ -22,8 +22,8 @@
 
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ProcessTypeHandler implements NewStepHandler {
+public class ProcessTypeHandler implements OperationStepHandler {
 
     public static final ProcessTypeHandler INSTANCE = new ProcessTypeHandler();
 
@@ -41,7 +41,7 @@ public class ProcessTypeHandler implements NewStepHandler {
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         context.getResult().set("Server");
         context.completeStep();
     }

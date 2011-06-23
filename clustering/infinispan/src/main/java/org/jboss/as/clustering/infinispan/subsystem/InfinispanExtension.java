@@ -42,7 +42,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -79,11 +79,11 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         subsystem.registerXMLElementWriter(this);
 
-        ModelNodeRegistration registration = subsystem.registerSubsystemModel(this);
+        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(this);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, add, add, false);
         registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, describe, describe, false, EntryType.PRIVATE);
 
-        ModelNodeRegistration containers = registration.registerSubModel(containerPath, containerDescription);
+        ManagementResourceRegistration containers = registration.registerSubModel(containerPath, containerDescription);
         containers.registerOperationHandler(ModelDescriptionConstants.ADD, containerAdd, containerAdd, false);
         containers.registerOperationHandler(ModelDescriptionConstants.REMOVE, containerRemove, containerRemove, false);
     }

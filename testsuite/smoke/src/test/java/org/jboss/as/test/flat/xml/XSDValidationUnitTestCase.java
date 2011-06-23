@@ -21,18 +21,7 @@
  */
 package org.jboss.as.test.flat.xml;
 
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.xerces.dom.DOMInputImpl;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.net.URL;
-
-import javax.xml.XMLConstants;
-import javax.xml.validation.SchemaFactory;
-
 import org.junit.Test;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
@@ -40,8 +29,19 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import javax.xml.XMLConstants;
+import javax.xml.validation.SchemaFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.*;
+
 /**
  * A XSDValidationUnitTestCase.
+ *
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
  * @version $Revision: 1.1 $
  */
@@ -179,23 +179,26 @@ public class XSDValidationUnitTestCase {
             public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
                 LSInput input = new DOMInputImpl();
 
-                    final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-
-                final InputStream is;
-                if(NAMESPACE_MAP.containsKey(systemId)) {
-                    is = cl.getResourceAsStream(NAMESPACE_MAP.get(systemId));
+                final URL url;
+                if (NAMESPACE_MAP.containsKey(systemId)) {
+                    url = XsdUtil.discover(NAMESPACE_MAP.get(systemId));
                 } else {
-                    is = cl.getResourceAsStream(systemId);
+                    url = XsdUtil.discover(systemId);
                 }
-                input.setByteStream(is);
-               return input;
+                try {
+                    input.setByteStream(url.openStream());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                return input;
             }
         });
         schemaFactory.newSchema(jbossDomain);
     }
 
     private URL getXsdUrl(String xsdName) {
-        URL url = Thread.currentThread().getContextClassLoader().getResource("schema/" + xsdName);
+        final URL url = XsdUtil.discover(xsdName);
         assertNotNull(url);
         return url;
     }

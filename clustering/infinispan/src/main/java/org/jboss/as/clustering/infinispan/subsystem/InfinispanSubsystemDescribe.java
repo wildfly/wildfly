@@ -23,8 +23,8 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Locale;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -35,7 +35,7 @@ import org.jboss.dmr.Property;
 /**
  * @author Paul Ferraro
  */
-public class InfinispanSubsystemDescribe implements NewStepHandler, DescriptionProvider {
+public class InfinispanSubsystemDescribe implements OperationStepHandler, DescriptionProvider {
 
     /**
      * {@inheritDoc}
@@ -47,7 +47,7 @@ public class InfinispanSubsystemDescribe implements NewStepHandler, DescriptionP
         return LocalDescriptions.getSubsystemDescribeDescription(locale);
     }
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         ModelNode result = context.getResult();
 
         PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement());

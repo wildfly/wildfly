@@ -28,7 +28,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -44,13 +44,13 @@ import org.jboss.msc.service.StopContext;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractControllerService implements Service<NewModelController> {
-    private final NewOperationContext.Type controllerType;
+public abstract class AbstractControllerService implements Service<ModelController> {
+    private final OperationContext.Type controllerType;
     private final ConfigurationPersister configurationPersister;
     private final DescriptionProvider rootDescriptionProvider;
     private final ControlledProcessState processState;
-    private final NewStepHandler prepareStep;
-    private volatile NewModelControllerImpl controller;
+    private final OperationStepHandler prepareStep;
+    private volatile ModelControllerImpl controller;
 
     /**
      * Construct a new instance.
@@ -60,8 +60,8 @@ public abstract class AbstractControllerService implements Service<NewModelContr
      * @param rootDescriptionProvider the root description provider
      * @param prepareStep the prepare step to prepend to operation execution
      */
-    protected AbstractControllerService(final NewOperationContext.Type controllerType, final ConfigurationPersister configurationPersister,
-                                        final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider, final NewStepHandler prepareStep) {
+    protected AbstractControllerService(final OperationContext.Type controllerType, final ConfigurationPersister configurationPersister,
+                                        final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider, final OperationStepHandler prepareStep) {
         this.controllerType = controllerType;
         this.configurationPersister = configurationPersister;
         this.rootDescriptionProvider = rootDescriptionProvider;
@@ -72,7 +72,7 @@ public abstract class AbstractControllerService implements Service<NewModelContr
     public void start(final StartContext context) throws StartException {
         final ServiceController<?> serviceController = context.getController();
         final ServiceContainer container = serviceController.getServiceContainer();
-        final NewModelControllerImpl controller = new NewModelControllerImpl(container, context.getChildTarget(), ModelNodeRegistration.Factory.create(rootDescriptionProvider), new ContainerStateMonitor(container, serviceController), configurationPersister, controllerType, prepareStep, processState);
+        final ModelControllerImpl controller = new ModelControllerImpl(container, context.getChildTarget(), ManagementResourceRegistration.Factory.create(rootDescriptionProvider), new ContainerStateMonitor(container, serviceController), configurationPersister, controllerType, prepareStep, processState);
         initModel(controller.getRootResource(), controller.getRootRegistration());
         this.controller = controller;
 
@@ -106,7 +106,7 @@ public abstract class AbstractControllerService implements Service<NewModelContr
     }
 
     protected void boot(List<ModelNode> bootOperations) throws ConfigurationPersistenceException {
-        controller.boot(bootOperations, OperationMessageHandler.logging, NewModelController.OperationTransactionControl.COMMIT);
+        controller.boot(bootOperations, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT);
     }
 
     protected void finishBoot() throws ConfigurationPersistenceException {
@@ -118,13 +118,13 @@ public abstract class AbstractControllerService implements Service<NewModelContr
         controller = null;
     }
 
-    public NewModelController getValue() throws IllegalStateException, IllegalArgumentException {
-        final NewModelController controller = this.controller;
+    public ModelController getValue() throws IllegalStateException, IllegalArgumentException {
+        final ModelController controller = this.controller;
         if (controller == null) {
             throw new IllegalStateException();
         }
         return controller;
     }
 
-    protected abstract void initModel(Resource rootResource, ModelNodeRegistration rootRegistration);
+    protected abstract void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration);
 }

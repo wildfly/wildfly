@@ -53,6 +53,7 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
 
     private String remoteDcHost;
     private int remoteDcPort;
+    private String remoteSecurityRealm;
     private String httpManagementInterface;
     private int httpManagementPort;
     private int httpManagementSecurePort;
@@ -131,6 +132,10 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
         return remoteDcPort;
     }
 
+    public String getRemoteDomainControllerSecurityRealm() {
+        return remoteSecurityRealm;
+    }
+
     void setContentRepository(ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
     }
@@ -187,4 +192,7 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
         remoteDcPort = port;
     }
 
+    public void setRemoteDomainControllerSecurityRealm(String remoteSecurityRealm) {
+        this.remoteSecurityRealm = remoteSecurityRealm;
+    }
 }

@@ -33,7 +33,7 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
@@ -141,6 +141,7 @@ public final class DomainServerMain {
             final ServiceContainer container = containerFuture.get();
             final ServiceController<?> client = container.getRequiredService(HostControllerServerClient.SERVICE_NAME);
             final String name = ((HostControllerServerClient)client.getValue()).getServerName();
+            final String processName = ((HostControllerServerClient)client.getValue()).getServerProcessName();
             client.addListener(clientListener);
             client.setMode(ServiceController.Mode.REMOVE);
 
@@ -154,7 +155,7 @@ public final class DomainServerMain {
             connection.removeListener(connectionListener);
 
             //Connect to the new HC address
-            addCommunicationServices(container, name, new InetSocketAddress(InetAddress.getByName(hostName), port));
+            addCommunicationServices(container, name, processName, authKey, new InetSocketAddress(InetAddress.getByName(hostName), port));
 
         } catch (InterruptedIOException e) {
             Thread.interrupted();
@@ -172,31 +173,36 @@ public final class DomainServerMain {
         throw new IllegalStateException(); // not reached
     }
 
-    private static void addCommunicationServices(final ServiceTarget serviceTarget, final String serverName, final InetSocketAddress managementSocket) {
-        HostControllerConnectionService.install(serviceTarget, managementSocket);
+    private static void addCommunicationServices(final ServiceTarget serviceTarget, final String serverName, final String serverProcessName, final byte[] authKey, final InetSocketAddress managementSocket) {
+        HostControllerConnectionService.install(serviceTarget, managementSocket, serverName, authKey);
 
-        final HostControllerServerClient client = new HostControllerServerClient(serverName);
+        final HostControllerServerClient client = new HostControllerServerClient(serverName, serverProcessName);
         serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
             .addDependency(HostControllerConnectionService.SERVICE_NAME, ManagementChannel.class, client.getHcChannelInjector())
-            .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewModelController.class, client.getServerControllerInjector())
+            .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, client.getServerControllerInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
     }
 
     public static final class HostControllerCommunicationActivator implements ServiceActivator, Serializable {
         private static final long serialVersionUID = 6671220116719309952L;
-        private final String serverName;
         private final InetSocketAddress managementSocket;
+        private final String serverName;
+        private final String serverProcessName;
+        private final byte[] authKey;
 
-        public HostControllerCommunicationActivator(final String serverName, final InetSocketAddress managementSocket) {
-            this.serverName = serverName;
+        public HostControllerCommunicationActivator(final InetSocketAddress managementSocket, final String serverName, final String serverProcessName, final byte[] authKey) {
             this.managementSocket = managementSocket;
+            this.serverName = serverName;
+            this.serverProcessName = serverProcessName;
+            this.authKey = authKey;
         }
 
         @Override
         public void activate(final ServiceActivatorContext serviceActivatorContext) {
             final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
-            addCommunicationServices(serviceTarget, serverName, managementSocket);
+            // TODO - Correct the authKey propagation.
+            addCommunicationServices(serviceTarget, serverName, serverProcessName, authKey, managementSocket);
         }
     }
 

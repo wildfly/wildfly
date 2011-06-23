@@ -22,8 +22,8 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.Level;
@@ -36,18 +36,18 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author John Bailey
  */
-public class RootLoggerLevelChange implements NewStepHandler {
+public class RootLoggerLevelChange implements OperationStepHandler {
     static final String OPERATION_NAME = "change-root-log-level";
     static final RootLoggerLevelChange INSTANCE = new RootLoggerLevelChange();
 
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
         final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         final String level = operation.get(CommonAttributes.LEVEL).asString();
         model.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.LEVEL).set(level);
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) {
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.ROOT_LOGGER);
                     if (controller != null) {
@@ -55,7 +55,7 @@ public class RootLoggerLevelChange implements NewStepHandler {
                     }
                     context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }

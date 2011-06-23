@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -34,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * Handles removal of a deployment from the model. This can be used at either the domain deployments level
@@ -51,7 +50,7 @@ public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implement
     private DeploymentRemoveHandler() {
     }
 
-    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String deploymentName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
 
         final Resource root = context.getRootResource();
@@ -73,7 +72,7 @@ public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implement
         super.performRemove(context, operation, model);
     }
 
-    protected boolean requiresRuntime(NewOperationContext context) {
+    protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
 

@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -43,16 +43,16 @@ import org.jboss.msc.service.ServiceController;
 /**
  * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
  */
-public abstract class PoolMetrics implements NewStepHandler {
+public abstract class PoolMetrics implements OperationStepHandler {
 
     static final String[] NO_LOCATION = new String[0];
 
     public static final Set<String> ATTRIBUTES = (new ManagedConnectionPoolStatisticsImpl(1)).getNames();
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                     final String jndiName = address.getLastElement().getValue();
                     final String attributeName = operation.require(NAME).asString();
@@ -75,7 +75,7 @@ public abstract class PoolMetrics implements NewStepHandler {
                     }
                    context.completeStep();
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         } else {
             context.getResult().set("no metrics available");
         }

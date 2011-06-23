@@ -18,8 +18,8 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
@@ -33,7 +33,7 @@ import java.io.InputStream;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public abstract class AbstractDeploymentUploadHandler implements NewStepHandler {
+public abstract class AbstractDeploymentUploadHandler implements OperationStepHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
@@ -48,7 +48,7 @@ public abstract class AbstractDeploymentUploadHandler implements NewStepHandler 
      * {@inheritDoc}
      */
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (contentRepository != null) {
             try {
@@ -70,7 +70,7 @@ public abstract class AbstractDeploymentUploadHandler implements NewStepHandler 
         context.completeStep();
     }
 
-    protected abstract InputStream getContentInputStream(NewOperationContext context, ModelNode operation) throws OperationFailedException;
+    protected abstract InputStream getContentInputStream(OperationContext context, ModelNode operation) throws OperationFailedException;
 
     private static void safeClose(InputStream is) {
         if (is != null) {

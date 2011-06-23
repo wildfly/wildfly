@@ -22,8 +22,8 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
@@ -36,16 +36,16 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author John Bailey
  */
-public class HandlerDisable implements NewStepHandler {
+public class HandlerDisable implements OperationStepHandler {
     static final HandlerDisable INSTANCE = new HandlerDisable();
 
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(final NewOperationContext context, ModelNode operation) {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(final OperationContext context, ModelNode operation) {
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     final ServiceController<?> controller = serviceRegistry.getService(LogServices.handlerName(name));
                     if (controller != null) {
@@ -62,7 +62,7 @@ public class HandlerDisable implements NewStepHandler {
                         context.completeStep();
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
     }

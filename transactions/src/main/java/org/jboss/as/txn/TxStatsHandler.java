@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.arjuna.ats.arjuna.coordinator.TxStats;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -40,7 +40,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class TxStatsHandler implements NewStepHandler {
+public class TxStatsHandler implements OperationStepHandler {
 
     public enum TxStat {
 
@@ -86,7 +86,7 @@ public class TxStatsHandler implements NewStepHandler {
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
 
         TxStat stat = TxStat.getStat(operation.require(ModelDescriptionConstants.NAME).asString());

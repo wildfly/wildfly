@@ -54,6 +54,7 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
     @SuppressWarnings("rawtypes")
     //private final InjectedValue<ChannelListener> connectorValue = new InjectedValue<ChannelListener>();
     private final InjectedValue<ServerAuthenticationProvider> authenticationProviderValue = new InjectedValue<ServerAuthenticationProvider>();
+    private final InjectedValue<OptionMap> optionMapInjectedValue = new InjectedValue<OptionMap>();
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
 
     private final int port;
@@ -78,6 +79,10 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
         return authenticationProviderValue;
     }
 
+    public InjectedValue<OptionMap> getOptionMapInjectedValue() {
+        return optionMapInjectedValue;
+    }
+
     public InjectedValue<Endpoint> getEndpointInjector() {
         return endpointValue;
     }
@@ -86,9 +91,9 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
     public void start(final StartContext context) throws StartException {
         try {
             NetworkServerProvider networkServerProvider = endpointValue.getValue().getConnectionProviderInterface("remote", NetworkServerProvider.class);
-            SimpleServerAuthenticationProvider provider = new SimpleServerAuthenticationProvider();
-            provider.addUser("bob", "test", "pass".toCharArray());
-            streamServer = networkServerProvider.createServer(getSocketAddress(), OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("CRAM-MD5")), provider);
+            ServerAuthenticationProvider sap = authenticationProviderValue.getValue();
+            OptionMap options = optionMapInjectedValue.getValue();
+            streamServer = networkServerProvider.createServer(getSocketAddress(), options, sap);
             log.infof("Listening on %s", getSocketAddress());
 
         } catch (Exception e) {

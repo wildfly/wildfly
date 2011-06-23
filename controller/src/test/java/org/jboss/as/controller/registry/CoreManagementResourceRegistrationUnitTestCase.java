@@ -28,8 +28,8 @@ import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -45,7 +45,7 @@ import org.junit.Test;
  */
 public class CoreManagementResourceRegistrationUnitTestCase {
 
-    private ModelNodeRegistration rootRegistration;
+    private ManagementResourceRegistration rootRegistration;
     private final PathElement childElement = PathElement.pathElement("child");
     private final PathElement fullChildElement = PathElement.pathElement("child", "a");
     private final PathAddress childAddress = PathAddress.pathAddress(childElement);
@@ -57,7 +57,7 @@ public class CoreManagementResourceRegistrationUnitTestCase {
 
     @Before
     public void setup() {
-        rootRegistration = ModelNodeRegistration.Factory.create(new TestDescriptionProvider("RootResource"));
+        rootRegistration = ManagementResourceRegistration.Factory.create(new TestDescriptionProvider("RootResource"));
     }
 
     @Test
@@ -67,25 +67,25 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         rootRegistration.registerOperationHandler("two", TestHandler.TWO, new TestDescriptionProvider("two"), false,
                 OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
 
-        NewStepHandler oneHandler = rootRegistration.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
+        OperationStepHandler oneHandler = rootRegistration.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
         assertSame(TestHandler.ONE, oneHandler);
 
-        NewStepHandler twoHandler = rootRegistration.getOperationHandler(PathAddress.EMPTY_ADDRESS, "two");
+        OperationStepHandler twoHandler = rootRegistration.getOperationHandler(PathAddress.EMPTY_ADDRESS, "two");
         assertSame(TestHandler.TWO, twoHandler);
     }
 
     @Test
     public void testHandlersOnChildResource() throws Exception {
 
-        ModelNodeRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
+        ManagementResourceRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
         child.registerOperationHandler("one", TestHandler.ONE, new TestDescriptionProvider("one"));
         child.registerOperationHandler("two", TestHandler.TWO, new TestDescriptionProvider("two"), false,
                 OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
 
-        NewStepHandler oneHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
+        OperationStepHandler oneHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
         assertSame(TestHandler.ONE, oneHandler);
 
-        NewStepHandler twoHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "two");
+        OperationStepHandler twoHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "two");
         assertSame(TestHandler.TWO, twoHandler);
 
         oneHandler = rootRegistration.getOperationHandler(childAddress, "one");
@@ -119,20 +119,20 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         rootRegistration.registerOperationHandler("four", TestHandler.PARENT, new TestDescriptionProvider("four"), false,
                 OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
 
-        ModelNodeRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
+        ManagementResourceRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
         child.registerOperationHandler("one", TestHandler.CHILD, new TestDescriptionProvider("one"), true);
         child.registerOperationHandler("two", TestHandler.CHILD, new TestDescriptionProvider("two"), true,
                 OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
 
-        ModelNodeRegistration grandchild = child.registerSubModel(grandchildElement, new TestDescriptionProvider("grandchild"));
+        ManagementResourceRegistration grandchild = child.registerSubModel(grandchildElement, new TestDescriptionProvider("grandchild"));
 
-        NewStepHandler oneHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
+        OperationStepHandler oneHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
         assertSame(TestHandler.CHILD, oneHandler);
 
-        NewStepHandler twoHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "two");
+        OperationStepHandler twoHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "two");
         assertSame(TestHandler.CHILD, twoHandler);
 
-        NewStepHandler threeHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "three");
+        OperationStepHandler threeHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "three");
         assertSame(TestHandler.PARENT, threeHandler);
 
         oneHandler = rootRegistration.getOperationHandler(childAddress, "one");
@@ -144,7 +144,7 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         threeHandler = child.getOperationHandler(childAddress, "three");
         assertSame(TestHandler.PARENT, threeHandler);
 
-        NewStepHandler fourHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "four");
+        OperationStepHandler fourHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "four");
         assertNull(fourHandler);
 
         fourHandler = rootRegistration.getOperationHandler(childAddress, "four");
@@ -201,7 +201,7 @@ public class CoreManagementResourceRegistrationUnitTestCase {
     @Test
     public void testFlagsOnChildResource() throws Exception {
 
-        ModelNodeRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
+        ManagementResourceRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
         child.registerOperationHandler("one", TestHandler.INSTANCE, new TestDescriptionProvider("one"));
         child.registerOperationHandler("two", TestHandler.INSTANCE, new TestDescriptionProvider("two"), false,
                 OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
@@ -243,12 +243,12 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         rootRegistration.registerOperationHandler("four", TestHandler.INSTANCE, new TestDescriptionProvider("four"), false,
                 OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
 
-        ModelNodeRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
+        ManagementResourceRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
         child.registerOperationHandler("one", TestHandler.INSTANCE, new TestDescriptionProvider("one"), true);
         child.registerOperationHandler("two", TestHandler.INSTANCE, new TestDescriptionProvider("two"), true,
                 OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.DEPLOYMENT_UPLOAD));
 
-        ModelNodeRegistration grandchild = child.registerSubModel(grandchildElement, new TestDescriptionProvider("grandchild"));
+        ManagementResourceRegistration grandchild = child.registerSubModel(grandchildElement, new TestDescriptionProvider("grandchild"));
 
         Set<OperationEntry.Flag> oneFlags = child.getOperationFlags(PathAddress.EMPTY_ADDRESS, "one");
         assertNotNull(oneFlags);
@@ -333,7 +333,7 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         assertTrue(threeFlags.contains(OperationEntry.Flag.READ_ONLY));
     }
 
-    private static class TestHandler implements NewStepHandler {
+    private static class TestHandler implements OperationStepHandler {
 
         private static TestHandler INSTANCE = new TestHandler();
 
@@ -347,7 +347,7 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         private static TestHandler GRANDCHILD = new TestHandler();
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             context.completeStep();
         }
     }

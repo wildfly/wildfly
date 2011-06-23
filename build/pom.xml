@@ -174,6 +174,16 @@
         </dependency>
 
         <dependency>
+            <groupId>javax.faces</groupId>
+            <artifactId>jsf-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.faces</groupId>
+            <artifactId>jsf-impl</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
         </dependency>
@@ -412,17 +422,17 @@
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.eventadmin</artifactId>
         </dependency>
-    
+
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.log</artifactId>
         </dependency>
-    
+
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.metatype</artifactId>
         </dependency>
-    
+
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.webconsole</artifactId>
@@ -447,7 +457,7 @@
             <groupId>org.apache.james</groupId>
             <artifactId>apache-mime4j</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.neethi</groupId>
             <artifactId>neethi</artifactId>
@@ -1028,7 +1038,7 @@
             <groupId>org.jboss.osgi.deployment</groupId>
             <artifactId>jbosgi-deployment</artifactId>
         </dependency>
-            
+
         <dependency>
             <groupId>org.jboss.osgi.framework</groupId>
             <artifactId>jbosgi-framework-core</artifactId>
@@ -1038,7 +1048,7 @@
             <groupId>org.jboss.osgi.http</groupId>
             <artifactId>jboss-osgi-http</artifactId>
         </dependency>
-            
+
         <dependency>
             <groupId>org.jboss.osgi.jmx</groupId>
             <artifactId>jboss-osgi-jmx</artifactId>
@@ -1088,17 +1098,17 @@
             <groupId>org.jboss.osgi.webapp</groupId>
             <artifactId>jbosgi-webapp</artifactId>
         </dependency>
-    
+
         <dependency>
             <groupId>org.jboss.osgi.webconsole</groupId>
             <artifactId>jbosgi-webconsole</artifactId>
         </dependency>
-    
+
         <dependency>
             <groupId>org.jboss.osgi.xerces</groupId>
             <artifactId>jboss-osgi-xerces</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.remoting3</groupId>
             <artifactId>jboss-remoting</artifactId>
@@ -1147,6 +1157,11 @@
         <dependency>
             <groupId>org.jboss.seam.integration</groupId>
             <artifactId>jboss-seam-int-jbossas</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.sasl</groupId>
+            <artifactId>jboss-sasl</artifactId>
         </dependency>
 
         <dependency>

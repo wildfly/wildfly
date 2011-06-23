@@ -24,7 +24,7 @@ package org.jboss.as.domain.controller.operations.coordination;
 
 import java.util.concurrent.Callable;
 
-import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.ModelController;
 
 /**
  * Task to asynchronously commit or roll back a remote proxy's transaction.
@@ -33,10 +33,10 @@ import org.jboss.as.controller.NewModelController;
  */
 public class ProxyCommitRollbackTask implements Callable<Void> {
 
-    private final NewModelController.OperationTransaction transaction;
+    private final ModelController.OperationTransaction transaction;
     private final boolean rollback;
 
-    public ProxyCommitRollbackTask(NewModelController.OperationTransaction transaction, boolean rollback) {
+    public ProxyCommitRollbackTask(ModelController.OperationTransaction transaction, boolean rollback) {
         this.transaction = transaction;
         this.rollback = rollback;
     }

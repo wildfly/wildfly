@@ -21,10 +21,10 @@ package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -55,13 +55,13 @@ public class SystemPropertyRemoveHandler extends AbstractRemoveStepHandler imple
     private SystemPropertyRemoveHandler() {
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         ModelNode opAddr = operation.require(OP_ADDR);
         String name = PathAddress.pathAddress(opAddr).getLastElement().getValue();
         SecurityActions.clearSystemProperty(name);
     }
 
-    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         ModelNode opAddr = operation.require(OP_ADDR);
         String name = PathAddress.pathAddress(opAddr).getLastElement().getValue();
         SecurityActions.setSystemProperty(name, model.get(VALUE).asString());

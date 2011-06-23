@@ -28,7 +28,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.processors.AccessTimeoutAnnotationProcessor;
@@ -99,7 +99,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         model.setEmptyObject();
     }
 
-    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                     // add the metadata parser deployment processor
@@ -159,7 +159,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     // TODO: add the proper deployment processors
                     // processorTarget.addDeploymentProcessor(processor, priority);
             }
-        }, NewOperationContext.Stage.RUNTIME);
+        }, OperationContext.Stage.RUNTIME);
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final EJBUtilities utilities = new EJBUtilities();

@@ -42,7 +42,7 @@ public final class Services {
     public static final ServiceName JBOSS_AS = ServiceName.JBOSS.append("as");
 
     /**
-     * The service corresponding to the {@link org.jboss.as.controller.NewModelController} for this instance.
+     * The service corresponding to the {@link org.jboss.as.controller.ModelController} for this instance.
      */
     public static final ServiceName JBOSS_SERVER_CONTROLLER = JBOSS_AS.append("server-controller");
 
@@ -56,10 +56,6 @@ public final class Services {
      */
     public static final ServiceName JBOSS_EXTERNAL_MODULE_SERVICE = JBOSS_AS.append("external-module-service");
 
-    /**
-     * The internal deployer chains service used by all deployments.
-     */
-    public static final ServiceName JBOSS_DEPLOYER_CHAINS = JBOSS_AS.append("deployer-chains");
     /**
      * The service that caches system module jandex indexes
      */

@@ -23,6 +23,7 @@ package org.jboss.as.weld.injection;
 
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.weld.WeldContainer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -45,26 +46,28 @@ import java.util.Set;
 public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Service<WeldManagedReferenceFactory> {
 
     private final Class<?> componentClass;
-    private final InjectedValue<BeanManagerImpl> beanManager;
+    private final InjectedValue<WeldContainer> weldContainer;
     private final String ejbName;
     private final Set<Class<?>> interceptorClasses;
     private final Map<Class<?>, WeldEEInjection> interceptorInjections = new HashMap<Class<?>, WeldEEInjection>();
     private final ClassLoader classLoader;
+    private final String beanDeploymentArchiveId;
 
-    private volatile WeldEEInjection injectionTarget;
-    private volatile Bean<?> bean;
+    private WeldEEInjection injectionTarget;
+    private Bean<?> bean;
+    private BeanManagerImpl beanManager;
 
-    public WeldManagedReferenceFactory(Class<?> componentClass, String ejbName, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader) {
+    public WeldManagedReferenceFactory(Class<?> componentClass, String ejbName, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader, final String beanDeploymentArchiveId) {
         this.componentClass = componentClass;
         this.ejbName = ejbName;
-        this.beanManager = new InjectedValue<BeanManagerImpl>();
+        this.beanDeploymentArchiveId = beanDeploymentArchiveId;
+        this.weldContainer = new InjectedValue<WeldContainer>();
         this.interceptorClasses = interceptorClasses;
         this.classLoader = classLoader;
     }
 
     @Override
     public ManagedReference getReference() {
-        final BeanManagerImpl beanManager = this.beanManager.getValue();
         final CreationalContext<?> ctx;
         if (bean == null) {
             ctx = beanManager.createCreationalContext(null);
@@ -76,7 +79,6 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
     }
 
     public ManagedReference injectExistingReference(final ManagedReference existing) {
-        final BeanManagerImpl beanManager = this.beanManager.getValue();
         final CreationalContext<?> ctx;
         if (bean == null) {
             ctx = beanManager.createCreationalContext(null);
@@ -105,18 +107,22 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
     }
 
     @Override
-    public void start(final StartContext context) throws StartException {
+    public synchronized void start(final StartContext context) throws StartException {
         final ClassLoader cl = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(classLoader);
-            final BeanManagerImpl beanManager = this.beanManager.getValue();
+            beanManager = (BeanManagerImpl) weldContainer.getValue().getBeanManager(beanDeploymentArchiveId);
+
             for (final Class<?> interceptor : interceptorClasses) {
                 interceptorInjections.put(interceptor, WeldEEInjection.createWeldEEInjection(interceptor, null, beanManager));
             }
 
             if (ejbName != null) {
                 EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(ejbName);
-                bean = beanManager.getBean(descriptor);
+                //may happen if the EJB was vetoed
+                if (descriptor != null) {
+                    bean = beanManager.getBean(descriptor);
+                }
             }
             injectionTarget = WeldEEInjection.createWeldEEInjection(componentClass, bean, beanManager);
         } finally {
@@ -126,7 +132,7 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
     }
 
     @Override
-    public void stop(final StopContext context) {
+    public synchronized void stop(final StopContext context) {
         injectionTarget = null;
         interceptorInjections.clear();
         bean = null;
@@ -137,7 +143,7 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
         return this;
     }
 
-    public InjectedValue<BeanManagerImpl> getBeanManager() {
-        return beanManager;
+    public InjectedValue<WeldContainer> getWeldContainer() {
+        return weldContainer;
     }
 }

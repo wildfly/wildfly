@@ -51,8 +51,8 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -62,7 +62,7 @@ import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -87,12 +87,12 @@ public class ThreadsExtension implements Extension {
         final SubsystemRegistration registration = context.registerSubsystem(THREADS);
         registration.registerXMLElementWriter(ThreadsParser.INSTANCE);
         // Remoting subsystem description and operation handlers
-        final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM_PROVIDER);
+        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM_PROVIDER);
         subsystem.registerOperationHandler(ADD, ThreadsSubsystemAdd.INSTANCE, ThreadsSubsystemAdd.INSTANCE, false);
         subsystem.registerOperationHandler(DESCRIBE, ThreadsSubsystemDescribeHandler.INSTANCE,
                 ThreadsSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-        final ModelNodeRegistration threadFactories = subsystem.registerSubModel(PathElement.pathElement(THREAD_FACTORY),
+        final ManagementResourceRegistration threadFactories = subsystem.registerSubModel(PathElement.pathElement(THREAD_FACTORY),
                 THREAD_FACTORY_DESC);
         threadFactories.registerOperationHandler(ADD, ThreadFactoryAdd.INSTANCE, ThreadFactoryAdd.INSTANCE, false);
         threadFactories.registerOperationHandler(REMOVE, ThreadFactoryRemove.INSTANCE, ThreadFactoryRemove.INSTANCE, false);
@@ -102,28 +102,28 @@ public class ThreadsExtension implements Extension {
                 AttributeAccess.Storage.CONFIGURATION);
         threadFactories.registerReadWriteAttribute(PRIORITY, null, ThreadFactoryPriorityUpdate.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
 
-        final ModelNodeRegistration boundedQueueThreadPools = subsystem.registerSubModel(
+        final ManagementResourceRegistration boundedQueueThreadPools = subsystem.registerSubModel(
                 PathElement.pathElement(BOUNDED_QUEUE_THREAD_POOL), BOUNDED_QUEUE_THREAD_POOL_DESC);
         boundedQueueThreadPools.registerOperationHandler(ADD, BoundedQueueThreadPoolAdd.INSTANCE,
                 BoundedQueueThreadPoolAdd.INSTANCE, false);
         boundedQueueThreadPools.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE,
                 BoundedQueueThreadPoolRemove.INSTANCE, false);
 
-        final ModelNodeRegistration unboundedQueueThreadPools = subsystem.registerSubModel(
+        final ManagementResourceRegistration unboundedQueueThreadPools = subsystem.registerSubModel(
                 PathElement.pathElement(UNBOUNDED_QUEUE_THREAD_POOL), UNBOUNDED_QUEUE_THREAD_POOL_DESC);
         unboundedQueueThreadPools.registerOperationHandler(ADD, UnboundedQueueThreadPoolAdd.INSTANCE,
                 UnboundedQueueThreadPoolAdd.INSTANCE, false);
         unboundedQueueThreadPools.registerOperationHandler(REMOVE, UnboundedQueueThreadPoolRemove.INSTANCE,
                 UnboundedQueueThreadPoolRemove.INSTANCE, false);
 
-        final ModelNodeRegistration queuelessThreadPools = subsystem.registerSubModel(
+        final ManagementResourceRegistration queuelessThreadPools = subsystem.registerSubModel(
                 PathElement.pathElement(QUEUELESS_THREAD_POOL), QUEUELESS_THREAD_POOL_DESC);
         queuelessThreadPools.registerOperationHandler(ADD, QueuelessThreadPoolAdd.INSTANCE, QueuelessThreadPoolAdd.INSTANCE,
                 false);
         queuelessThreadPools.registerOperationHandler(REMOVE, QueuelessThreadPoolRemove.INSTANCE,
                 QueuelessThreadPoolRemove.INSTANCE, false);
 
-        final ModelNodeRegistration scheduledThreadPools = subsystem.registerSubModel(
+        final ManagementResourceRegistration scheduledThreadPools = subsystem.registerSubModel(
                 PathElement.pathElement(SCHEDULED_THREAD_POOL), SCHEDULED_THREAD_POOL_DESC);
         scheduledThreadPools.registerOperationHandler(ADD, ScheduledThreadPoolAdd.INSTANCE, ScheduledThreadPoolAdd.INSTANCE,
                 false);
@@ -136,10 +136,10 @@ public class ThreadsExtension implements Extension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), ThreadsParser.INSTANCE);
     }
 
-    private static class ThreadsSubsystemDescribeHandler implements NewStepHandler, DescriptionProvider {
+    private static class ThreadsSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final ThreadsSubsystemDescribeHandler INSTANCE = new ThreadsSubsystemDescribeHandler();
 
-        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode result = context.getResult();
 
             result.add(Util.getEmptyOperation(ADD, pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME))));

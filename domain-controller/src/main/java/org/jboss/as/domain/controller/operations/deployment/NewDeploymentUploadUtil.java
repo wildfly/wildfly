@@ -14,7 +14,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
@@ -29,19 +29,19 @@ public class NewDeploymentUploadUtil {
     private NewDeploymentUploadUtil() {
     }
 
-    public static byte[] storeDeploymentContent(NewOperationContext context, ModelNode operation, ContentRepository contentRepository) throws IOException, OperationFailedException {
+    public static byte[] storeDeploymentContent(OperationContext context, ModelNode operation, ContentRepository contentRepository) throws IOException, OperationFailedException {
         InputStream in = getContents(context, operation);
         return contentRepository.addContent(in);
     }
 
-    private static InputStream getContents(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    private static InputStream getContents(OperationContext context, ModelNode operation) throws OperationFailedException {
         if(! operation.hasDefined(CONTENT)) {
             createFailureException("invalid content declaration");
         }
         return getInputStream(context, operation.require(CONTENT).get(0));
     }
 
-    private static InputStream getInputStream(NewOperationContext context, ModelNode content) throws OperationFailedException {
+    private static InputStream getInputStream(OperationContext context, ModelNode content) throws OperationFailedException {
         InputStream in = null;
         String message = "";
         if (content.hasDefined(INPUT_STREAM_INDEX)) {

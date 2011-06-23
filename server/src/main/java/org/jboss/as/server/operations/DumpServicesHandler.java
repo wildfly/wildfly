@@ -26,8 +26,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Locale;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.Services;
@@ -40,7 +40,7 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author Jason T. Greene
  */
-public class DumpServicesHandler implements NewStepHandler, DescriptionProvider {
+public class DumpServicesHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "dump-services";
     public static final DumpServicesHandler INSTANCE = new DumpServicesHandler();
@@ -50,10 +50,10 @@ public class DumpServicesHandler implements NewStepHandler, DescriptionProvider 
 
     /** {@inheritDoc} */
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        context.addStep(new NewStepHandler() {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new OperationStepHandler() {
             @Override
-            public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(Services.JBOSS_AS);
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 PrintStream print = new PrintStream(out);
@@ -62,7 +62,7 @@ public class DumpServicesHandler implements NewStepHandler, DescriptionProvider 
                 context.getResult().set(new String(out.toByteArray()));
                 context.completeStep();
             }
-        }, NewOperationContext.Stage.RUNTIME);
+        }, OperationContext.Stage.RUNTIME);
         context.completeStep();
     }
 

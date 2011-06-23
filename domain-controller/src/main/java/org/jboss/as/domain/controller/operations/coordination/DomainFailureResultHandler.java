@@ -22,36 +22,26 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_FAILURE_DESCRIPTIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
-import org.jboss.as.domain.controller.ServerIdentity;
+
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Assembles the overall result for a domain operation from individual host and server results.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DomainFailureResultHandler implements NewStepHandler {
+public class DomainFailureResultHandler implements OperationStepHandler {
 
     private final DomainOperationContext domainOperationContext;
 
@@ -60,7 +50,7 @@ public class DomainFailureResultHandler implements NewStepHandler {
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         // Wipe out any result that may have accumulated from previous handlers
         context.getResult().set(new ModelNode());
@@ -73,7 +63,7 @@ public class DomainFailureResultHandler implements NewStepHandler {
         context.completeStep();
     }
 
-    private boolean collectDomainFailure(NewOperationContext context, final boolean isDomain) {
+    private boolean collectDomainFailure(OperationContext context, final boolean isDomain) {
         final ModelNode coordinator = domainOperationContext.getCoordinatorResult();
         ModelNode domainFailure = null;
         if (isDomain &&  coordinator != null && coordinator.has(FAILURE_DESCRIPTION)) {
@@ -86,7 +76,7 @@ public class DomainFailureResultHandler implements NewStepHandler {
         return false;
     }
 
-    private boolean collectHostFailures(final NewOperationContext context, final boolean isDomain) {
+    private boolean collectHostFailures(final OperationContext context, final boolean isDomain) {
         ModelNode hostFailureResults = null;
         for (Map.Entry<String, ModelNode> entry : domainOperationContext.getHostControllerResults().entrySet()) {
             ModelNode hostResult = entry.getValue();

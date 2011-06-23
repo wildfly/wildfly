@@ -22,8 +22,8 @@
 
 package org.jboss.as.webservices.dmr;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Emanuel Muckenhuber
  */
-final class WSSubsystemDescribe implements NewStepHandler {
+final class WSSubsystemDescribe implements OperationStepHandler {
 
     static final WSSubsystemDescribe INSTANCE = new WSSubsystemDescribe();
 
@@ -47,7 +47,7 @@ final class WSSubsystemDescribe implements NewStepHandler {
     }
 
     /** {@inheritDoc} */
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR))
                 .getLastElement());
         final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);

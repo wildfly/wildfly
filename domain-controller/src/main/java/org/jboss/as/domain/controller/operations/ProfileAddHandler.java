@@ -22,7 +22,7 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
@@ -48,7 +48,7 @@ public class ProfileAddHandler extends AbstractAddStepHandler implements Descrip
 
     }
 
-    protected boolean requiresRuntime(NewOperationContext context) {
+    protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
 

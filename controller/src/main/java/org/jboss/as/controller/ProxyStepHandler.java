@@ -36,29 +36,29 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Step handler that uses a proxied {@link NewModelController} to execute the step.
+ * Step handler that uses a proxied {@link ModelController} to execute the step.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ProxyStepHandler implements NewStepHandler {
+public class ProxyStepHandler implements OperationStepHandler {
 
-    private final NewProxyController proxyController;
+    private final ProxyController proxyController;
 
-    public ProxyStepHandler(final NewProxyController proxyController) {
+    public ProxyStepHandler(final ProxyController proxyController) {
         this.proxyController = proxyController;
     }
 
     @Override
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
         OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
 
-        final AtomicReference<NewModelController.OperationTransaction> txRef = new AtomicReference<NewModelController.OperationTransaction>();
+        final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<ModelController.OperationTransaction>();
         final AtomicReference<ModelNode> preparedResultRef = new AtomicReference<ModelNode>();
         final AtomicReference<ModelNode> finalResultRef = new AtomicReference<ModelNode>();
-        final NewProxyController.ProxyOperationControl proxyControl = new NewProxyController.ProxyOperationControl() {
+        final ProxyController.ProxyOperationControl proxyControl = new ProxyController.ProxyOperationControl() {
 
             @Override
-            public void operationPrepared(NewModelController.OperationTransaction transaction, ModelNode result) {
+            public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode result) {
                 txRef.set(transaction);
                 preparedResultRef.set(result);
             }
@@ -88,10 +88,10 @@ public class ProxyStepHandler implements NewStepHandler {
                 context.getFailureDescription().set(preparedResult.get(FAILURE_DESCRIPTION));
             }
 
-            NewOperationContext.ResultAction resultAction = context.completeStep();
-            NewModelController.OperationTransaction tx = txRef.get();
+            OperationContext.ResultAction resultAction = context.completeStep();
+            ModelController.OperationTransaction tx = txRef.get();
             if (tx != null) {
-                if (resultAction == NewOperationContext.ResultAction.KEEP) {
+                if (resultAction == OperationContext.ResultAction.KEEP) {
                     tx.commit();
                 } else {
                     tx.rollback();
@@ -107,9 +107,9 @@ public class ProxyStepHandler implements NewStepHandler {
 
     private static class DelegatingMessageHandler implements OperationMessageHandler {
 
-        private final NewOperationContext context;
+        private final OperationContext context;
 
-        DelegatingMessageHandler(final NewOperationContext context) {
+        DelegatingMessageHandler(final OperationContext context) {
             this.context = context;
         }
 
@@ -121,8 +121,8 @@ public class ProxyStepHandler implements NewStepHandler {
 
     private static class DelegatingOperationAttachments implements OperationAttachments {
 
-        private final NewOperationContext context;
-        private DelegatingOperationAttachments(final NewOperationContext context) {
+        private final OperationContext context;
+        private DelegatingOperationAttachments(final OperationContext context) {
             this.context = context;
         }
 

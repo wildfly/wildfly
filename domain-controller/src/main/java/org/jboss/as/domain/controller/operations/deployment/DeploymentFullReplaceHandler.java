@@ -18,18 +18,6 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
@@ -43,21 +31,33 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
 import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
-import org.jboss.as.controller.operations.validation.ListValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersOfValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.Resource;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.getInputStream;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Locale;
+
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
+import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
+import org.jboss.as.controller.operations.validation.ListValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersOfValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
@@ -68,11 +68,12 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentFullReplaceHandler implements NewStepHandler, DescriptionProvider {
+public class DeploymentFullReplaceHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = FULL_REPLACE_DEPLOYMENT;
 
     private final ContentRepository contentRepository;
+    private final FileRepository fileRepository;
 
     private final ParametersValidator validator = new ParametersValidator();
     private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
@@ -80,6 +81,17 @@ public class DeploymentFullReplaceHandler implements NewStepHandler, Description
 
     public DeploymentFullReplaceHandler(final ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
+        this.fileRepository = null;
+        init();
+    }
+
+    public DeploymentFullReplaceHandler(final FileRepository fileRepository) {
+        this.contentRepository = null;
+        this.fileRepository = fileRepository;
+        init();
+    }
+
+    private void init() {
         this.validator.registerValidator(NAME, new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         // TODO: can we force enablement on replace?
@@ -112,7 +124,7 @@ public class DeploymentFullReplaceHandler implements NewStepHandler, Description
         return DeploymentDescription.getFullReplaceDeploymentOperation(locale);
     }
 
-    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
 
         String name = operation.require(NAME).asString();
@@ -125,11 +137,16 @@ public class DeploymentFullReplaceHandler implements NewStepHandler, Description
         if (contentItemNode.hasDefined(HASH)) {
             managedContentValidator.validate(contentItemNode);
             hash = contentItemNode.require(HASH).asBytes();
-            // If we are the master, validate that we actually have this content. If we're not the master
-            // we do not need the content until it's added to a server group we care about, so we defer
-            // pulling it until then
-            if (contentRepository != null && !contentRepository.hasContent(hash))
-                throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
+            if (contentRepository != null) {
+                // We are the master DC. Validate that we actually have this content.
+                if (!contentRepository.hasContent(hash)) {
+                    throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
+                }
+            } else {
+                // We are a slave controller
+                // Ensure the local repo has the files
+                fileRepository.getDeploymentFiles(hash);
+            }
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
             if (contentRepository == null) {
                 // This is a slave DC. We can't handle this operation; it should have been fixed up on the master DC
@@ -169,11 +186,10 @@ public class DeploymentFullReplaceHandler implements NewStepHandler, Description
         deployNode.get(CONTENT).set(content);
 
         if(root.hasChild(PathElement.pathElement(SERVER_GROUP))) {
-            for(final Resource.ResourceEntry entry : root.getChildren(SERVER_GROUP)) {
-                if(entry.hasChild(deploymentPath)) {
-                    final PathAddress deploymentAddress = PathAddress.EMPTY_ADDRESS.append(entry.getPathElement());
-                    final Resource serverGroupDeployment = context.readResourceForUpdate(deploymentAddress);
-                    serverGroupDeployment.getModel().get(RUNTIME_NAME).set(runtimeName);
+            for(final Resource.ResourceEntry serverGroupResource : root.getChildren(SERVER_GROUP)) {
+                Resource deploymentResource = serverGroupResource.getChild(deploymentPath);
+                if(deploymentResource != null) {
+                    deploymentResource.getModel().get(RUNTIME_NAME).set(runtimeName);
                 }
             }
         }

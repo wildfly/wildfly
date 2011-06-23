@@ -32,6 +32,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import junit.framework.Assert;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
@@ -112,9 +113,8 @@ public class StandardConfigsXMLValidationUnitTestCase {
     }
 
     private URL getXsdUrl(String xsdName) {
-        System.out.println("resolving " + xsdName);
-        String resourceName = "schema/" + xsdName;
-        URL url = Thread.currentThread().getContextClassLoader().getResource(resourceName);
+        String resourceName = xsdName;
+        URL url = XsdUtil.discover(xsdName);
         if (url == null)
             url = Thread.currentThread().getContextClassLoader().getResource(xsdName);
         Assert.assertNotNull(resourceName + " not found", url);

@@ -30,7 +30,6 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -119,20 +118,20 @@ public final class Main {
     private Main() {
     }
 
-    private static NewHostControllerBootstrap create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
+    private static HostControllerBootstrap create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
         Main main = new Main();
         return main.boot(args, stdin, stdout, stderr, authCode);
     }
 
-    private NewHostControllerBootstrap boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
-        NewHostControllerBootstrap hc = null;
+    private HostControllerBootstrap boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
+        HostControllerBootstrap hc = null;
         try {
             HostControllerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
             if (config == null) {
                 abort(null);
                 return null;
             } else {
-                hc = new NewHostControllerBootstrap(config, authCode);
+                hc = new HostControllerBootstrap(config, authCode);
                 hc.start();
             }
         } catch (Throwable t) {

@@ -24,6 +24,8 @@ package org.jboss.as.weld.deployment.processors;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -40,6 +42,7 @@ import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.as.weld.services.WeldService;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -50,9 +53,10 @@ import javax.enterprise.inject.spi.BeanManager;
  * {@link DeploymentUnitProcessor} that binds the bean manager to JNDI
  *
  * @author Stuart Douglas
- *
  */
 public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor {
+
+    private static final Logger logger = Logger.getLogger("org.jboss.as.weld");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -60,18 +64,11 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         if (!WeldDeploymentMarker.isPartOfWeldDeployment(topLevelDeployment)) {
             return;
         }
-        //hack to set up a java:comp binding for jar deployments as well as wars
-        if(!deploymentUnit.getName().endsWith(".war") && !deploymentUnit.getName().endsWith(".jar")) {
-            return;
-        }
 
-        if(moduleDescription == null) {
-            return;
-        }
+
         BeanDeploymentArchiveImpl rootBda = deploymentUnit
                 .getAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE);
         if (rootBda == null) {
@@ -80,7 +77,8 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
             rootBda = topLevelDeployment.getAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE);
         }
         if (rootBda == null) {
-            throw new RuntimeException("Could not find BeanManager for deployment " + deploymentUnit.getName());
+            logger.errorf("Could not find BeanManager for deployment %d", deploymentUnit.getName());
+            return;
         }
 
         final ServiceName weldServiceName = topLevelDeployment.getServiceName().append(WeldService.SERVICE_NAME);
@@ -91,15 +89,26 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         serviceTarget.addService(beanManagerServiceName, beanManagerService).addDependency(weldServiceName,
                 WeldContainer.class, beanManagerService.getWeldContainer()).install();
 
-        // bind the bean manager to JNDI
-        final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
-        bindBeanManager(serviceTarget, beanManagerServiceName, moduleContextServiceName);
+
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+
+        if (moduleDescription == null) {
+            return;
+        }
+
+        //hack to set up a java:comp binding for jar deployments as well as wars
+        if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) || deploymentUnit.getName().endsWith(".jar")) {
+            // bind the bean manager to JNDI
+            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
+            bindBeanManager(serviceTarget, beanManagerServiceName, moduleContextServiceName);
+        }
+
 
         //bind the bm into java:comp for all components that require it
-        for(ComponentDescription component : moduleDescription.getComponentDescriptions()) {
-            if(component.getNamingMode() == ComponentNamingMode.CREATE) {
-                final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(),moduleDescription.getModuleName(),component.getComponentName());
-                bindBeanManager(serviceTarget,beanManagerServiceName, compContextServiceName);
+        for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
+            if (component.getNamingMode() == ComponentNamingMode.CREATE) {
+                final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), component.getComponentName());
+                bindBeanManager(serviceTarget, beanManagerServiceName, compContextServiceName);
             }
         }
         deploymentUnit.addToAttachmentList(Attachments.SETUP_ACTIONS, new WeldContextSetup());

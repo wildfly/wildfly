@@ -26,8 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-public class JacORBSubsystemDescribe implements NewStepHandler {
+public class JacORBSubsystemDescribe implements OperationStepHandler {
 
     static final JacORBSubsystemDescribe INSTANCE = new JacORBSubsystemDescribe();
 
@@ -52,7 +52,7 @@ public class JacORBSubsystemDescribe implements NewStepHandler {
     }
 
     @Override
-    public void execute(final NewOperationContext context, final ModelNode operation) {
+    public void execute(final OperationContext context, final ModelNode operation) {
         final ModelNode result = new ModelNode();
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR))
                 .getLastElement());

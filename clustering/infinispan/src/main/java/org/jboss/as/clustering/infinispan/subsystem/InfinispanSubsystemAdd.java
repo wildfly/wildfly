@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -69,7 +69,7 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler implements De
         populate(operation, model);
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         ServiceTarget target = context.getServiceTarget();
         newControllers.add(target.addService(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, new EmbeddedCacheManagerDefaultsService())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)

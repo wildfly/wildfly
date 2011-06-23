@@ -42,7 +42,7 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandler;
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
@@ -94,7 +94,7 @@ public class ModelControllerClientTestCase {
             }
         };
 
-        NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
+        ModelControllerClientOperationHandler operationHandler = new ModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
 
         ModelControllerClient client = new ExistingChannelModelControllerClient(channels.getClientChannel());
@@ -177,7 +177,7 @@ public class ModelControllerClientTestCase {
             }
         };
 
-        NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
+        ModelControllerClientOperationHandler operationHandler = new ModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
 
         ModelControllerClient client = new ExistingChannelModelControllerClient(channels.getClientChannel());
@@ -224,7 +224,7 @@ public class ModelControllerClientTestCase {
             }
         };
 
-        NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
+        ModelControllerClientOperationHandler operationHandler = new ModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
 
         ModelControllerClient client = new ExistingChannelModelControllerClient(channels.getClientChannel());
@@ -282,7 +282,7 @@ public class ModelControllerClientTestCase {
             }
         };
 
-        NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
+        ModelControllerClientOperationHandler operationHandler = new ModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.setOperationHandler(operationHandler);
 
         ModelControllerClient client = new ExistingChannelModelControllerClient(channels.getClientChannel());
@@ -319,7 +319,7 @@ public class ModelControllerClientTestCase {
         }
     }
 
-    private static abstract class MockModelController implements NewModelController {
+    private static abstract class MockModelController implements ModelController {
         protected volatile ModelNode operation;
 
         ModelNode getOperation() {

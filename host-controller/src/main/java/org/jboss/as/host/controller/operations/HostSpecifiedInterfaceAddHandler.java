@@ -23,10 +23,9 @@ package org.jboss.as.host.controller.operations;
 
 import java.util.List;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
-import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -48,13 +47,13 @@ public class HostSpecifiedInterfaceAddHandler extends SpecifiedInterfaceAddHandl
     }
 
     @Override
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, String name, ParsedInterfaceCriteria criteria) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, String name, ParsedInterfaceCriteria criteria) {
         super.performRuntime(context, operation, model, verificationHandler, newControllers, name, criteria);
         hostControllerInfo.addNetworkInterfaceBinding(name, criteria);
     }
 
     @Override
-    protected boolean requiresRuntime(NewOperationContext context) {
-        return context.getType() == NewOperationContext.Type.HOST;
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getType() == OperationContext.Type.HOST;
     }
 }

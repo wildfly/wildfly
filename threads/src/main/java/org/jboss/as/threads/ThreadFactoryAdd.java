@@ -22,15 +22,14 @@
 package org.jboss.as.threads;
 
 import java.util.Locale;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.controller.operations.common.Util;
 import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
 import static org.jboss.as.threads.CommonAttributes.PRIORITY;
 import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
@@ -45,14 +44,14 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ThreadFactoryAdd implements NewStepHandler, DescriptionProvider {
+public class ThreadFactoryAdd implements OperationStepHandler, DescriptionProvider {
 
     static final ThreadFactoryAdd INSTANCE = new ThreadFactoryAdd();
 
     /**
      * {@inheritDoc}
      */
-    public void execute(NewOperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) {
         final ModelNode opAddr = operation.get(OP_ADDR);
 
         final PathAddress address = PathAddress.pathAddress(opAddr);
@@ -83,9 +82,9 @@ public class ThreadFactoryAdd implements NewStepHandler, DescriptionProvider {
         }
 
 
-        if (context.getType() == NewOperationContext.Type.SERVER) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) {
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) {
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     final ServiceTarget target = context.getServiceTarget();
                     final ThreadFactoryService service = new ThreadFactoryService();
@@ -98,13 +97,13 @@ public class ThreadFactoryAdd implements NewStepHandler, DescriptionProvider {
                             .setInitialMode(ServiceController.Mode.ACTIVE)
                             .install();
 
-                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         context.removeService(ThreadsServices.threadFactoryName(name));
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
         }
 
         context.completeStep();

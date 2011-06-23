@@ -21,7 +21,7 @@ package org.jboss.as.controller.operations.common;
 import java.util.List;
 import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -97,7 +97,7 @@ public class SystemPropertyAddHandler extends AbstractAddStepHandler implements 
         }
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
         final String value = operation.get(VALUE).isDefined() ? operation.get(VALUE).asString() : null;
         SecurityActions.setSystemProperty(name, value);

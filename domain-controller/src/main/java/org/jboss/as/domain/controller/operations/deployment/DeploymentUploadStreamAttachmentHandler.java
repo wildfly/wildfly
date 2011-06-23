@@ -24,7 +24,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPL
 import java.io.InputStream;
 import java.util.Locale;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
@@ -60,7 +60,7 @@ implements DescriptionProvider {
      * {@inheritDoc}
      */
     @Override
-    protected InputStream getContentInputStream(NewOperationContext operationContext, ModelNode operation) throws OperationFailedException {
+    protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
         streamValidator.validate(operation);
 
         int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();

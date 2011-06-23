@@ -35,15 +35,15 @@ import java.util.Locale;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -67,7 +67,7 @@ public class NamingExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(NamingSubsystemProviders.SUBSYSTEM);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(NamingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NamingSubsystemAdd.INSTANCE, NamingSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, NamingSubsystemDescribeHandler.INSTANCE, NamingSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(parser);
@@ -107,10 +107,10 @@ public class NamingExtension implements Extension {
         }
     }
 
-    private static class NamingSubsystemDescribeHandler implements NewStepHandler, DescriptionProvider {
+    private static class NamingSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final NamingSubsystemDescribeHandler INSTANCE = new NamingSubsystemDescribeHandler();
 
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
             context.getResult().add(createAddOperation());
             context.completeStep();
         }

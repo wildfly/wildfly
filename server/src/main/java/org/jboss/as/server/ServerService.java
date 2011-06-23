@@ -25,16 +25,15 @@ package org.jboss.as.server;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -44,7 +43,7 @@ import org.jboss.as.server.deployment.ServiceLoaderProcessor;
 import org.jboss.as.server.deployment.SubDeploymentProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndexProcessor;
-import org.jboss.as.server.deployment.integration.SeamProcessor;
+import org.jboss.as.server.deployment.integration.Seam2Processor;
 import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
 import org.jboss.as.server.deployment.module.DeploymentStructureDescriptorParser;
@@ -83,10 +82,7 @@ import org.jboss.msc.value.InjectedValue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -108,8 +104,8 @@ public final class ServerService extends AbstractControllerService {
      * @param configuration the bootstrap configuration
      * @param prepareStep the prepare step to use
      */
-    ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState, final NewStepHandler prepareStep, final BootstrapListener bootstrapListener) {
-        super(NewOperationContext.Type.SERVER, configuration.getConfigurationPersister(), processState, ServerDescriptionProviders.ROOT_PROVIDER, prepareStep);
+    ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState, final OperationStepHandler prepareStep, final BootstrapListener bootstrapListener) {
+        super(OperationContext.Type.SERVER, configuration.getConfigurationPersister(), processState, ServerDescriptionProviders.ROOT_PROVIDER, prepareStep);
         this.configuration = configuration;
         this.bootstrapListener = bootstrapListener;
         this.processState = processState;
@@ -189,7 +185,7 @@ public final class ServerService extends AbstractControllerService {
 
         // Ext integration deployers
 
-        DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SEAM, new SeamProcessor(serviceTarget));
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SEAM, new Seam2Processor(serviceTarget));
 
         try {
             super.boot(context);
@@ -211,7 +207,7 @@ public final class ServerService extends AbstractControllerService {
     }
 
     @Override
-    protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         ServerControllerModelUtil.updateCoreModel(rootResource.getModel());
         ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(),
                 configuration.getConfigurationPersister(), configuration.getServerEnvironment(), processState);

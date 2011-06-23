@@ -50,4 +50,9 @@ public interface SecurityRealm {
      */
     SSLContext getSSLContext();
 
+    /**
+     * @return A CallbackHandlerFactory for a pre-configured secret.
+     */
+    CallbackHandlerFactory getSecretCallbackHandlerFactory();
+
 }

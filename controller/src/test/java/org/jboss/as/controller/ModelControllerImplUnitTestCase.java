@@ -69,7 +69,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -86,14 +86,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Unit tests of {@link NewModelControllerImpl}.
+ * Unit tests of {@link ModelControllerImpl}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ModelControllerImplUnitTestCase {
 
     private ServiceContainer container;
-    private NewModelController controller;
+    private ModelController controller;
     private AtomicBoolean sharedState;
 
     public static final void toggleRuntimeState(AtomicBoolean state) {
@@ -109,7 +109,7 @@ public class ModelControllerImplUnitTestCase {
         ServiceTarget target = container.subTarget();
         ControlledProcessState processState = new ControlledProcessState(true);
         ModelControllerService svc = new ModelControllerService(processState);
-        ServiceBuilder<NewModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
+        ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         sharedState = svc.state;
         svc.latch.await();
@@ -140,14 +140,14 @@ public class ModelControllerImplUnitTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
 
         ModelControllerService(final ControlledProcessState processState) {
-            super(NewOperationContext.Type.SERVER, new NullConfigurationPersister(), processState, DESC_PROVIDER, null);
+            super(OperationContext.Type.SERVER, new NullConfigurationPersister(), processState, DESC_PROVIDER, null);
         }
 
         @Override
-        protected void initModel(Resource rootResource, ModelNodeRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
 
             rootRegistration.registerOperationHandler("setup", new SetupHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("composite", NewCompositeOperationHandler.INSTANCE, DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("composite", CompositeOperationHandler.INSTANCE, DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("good", new ModelStageGoodHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("bad", new ModelStageFailsHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("evil", new ModelStageThrowsExceptionHandler(), DESC_PROVIDER, false);
@@ -516,10 +516,10 @@ public class ModelControllerImplUnitTestCase {
         return op;
     }
 
-    public static class SetupHandler implements NewStepHandler {
+    public static class SetupHandler implements OperationStepHandler {
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
             ModelNode model = new ModelNode();
 
             //Atttributes
@@ -540,10 +540,10 @@ public class ModelControllerImplUnitTestCase {
         }
     }
 
-    public static class ModelStageGoodHandler implements NewStepHandler {
+    public static class ModelStageGoodHandler implements OperationStepHandler {
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
 
             String name = operation.require(NAME).asString();
             ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
@@ -557,10 +557,10 @@ public class ModelControllerImplUnitTestCase {
         }
     }
 
-    public static class ModelStageFailsHandler implements NewStepHandler {
+    public static class ModelStageFailsHandler implements OperationStepHandler {
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
 
             String name = operation.require(NAME).asString();
             ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
@@ -573,10 +573,10 @@ public class ModelControllerImplUnitTestCase {
         }
     }
 
-    public static class ModelStageThrowsExceptionHandler implements NewStepHandler {
+    public static class ModelStageThrowsExceptionHandler implements OperationStepHandler {
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
 
             String name = operation.require(NAME).asString();
             ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
@@ -587,7 +587,7 @@ public class ModelControllerImplUnitTestCase {
         }
     }
 
-    public static class RuntimeStageFailsHandler implements NewStepHandler {
+    public static class RuntimeStageFailsHandler implements OperationStepHandler {
 
         private final AtomicBoolean state;
 
@@ -596,7 +596,7 @@ public class ModelControllerImplUnitTestCase {
         }
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
 
             String name = operation.require("name").asString();
             ModelNode attr = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(name);
@@ -605,23 +605,23 @@ public class ModelControllerImplUnitTestCase {
 
             context.getResult().set(current);
 
-            context.addStep(new NewStepHandler() {
+            context.addStep(new OperationStepHandler() {
 
                 @Override
-                public void execute(NewOperationContext context, ModelNode operation) {
+                public void execute(OperationContext context, ModelNode operation) {
                     toggleRuntimeState(state);
                     context.getFailureDescription().set("handleFailed");
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         toggleRuntimeState(state);
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
 
             context.completeStep();
         }
     }
 
-    public static class RuntimeStageThrowsExceptionHandler implements NewStepHandler {
+    public static class RuntimeStageThrowsExceptionHandler implements OperationStepHandler {
 
         private final AtomicBoolean state;
 
@@ -630,7 +630,7 @@ public class ModelControllerImplUnitTestCase {
         }
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
 
             String name = operation.require("name").asString();
             ModelNode attr = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(name);
@@ -639,23 +639,23 @@ public class ModelControllerImplUnitTestCase {
 
             context.getResult().set(current);
 
-            context.addStep(new NewStepHandler() {
+            context.addStep(new OperationStepHandler() {
 
                 @Override
-                public void execute(NewOperationContext context, ModelNode operation) {
+                public void execute(OperationContext context, ModelNode operation) {
                     toggleRuntimeState(state);
                     throw new RuntimeException("runtime exception");
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
 
             context.completeStep();
         }
     }
 
-    public static class RuntimeStageThrowsOFEHandler implements NewStepHandler {
+    public static class RuntimeStageThrowsOFEHandler implements OperationStepHandler {
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
 
             String name = operation.require("name").asString();
             ModelNode attr = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(name);
@@ -664,31 +664,31 @@ public class ModelControllerImplUnitTestCase {
 
             context.getResult().set(current);
 
-            context.addStep(new NewStepHandler() {
+            context.addStep(new OperationStepHandler() {
 
                 @Override
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     throw new OperationFailedException(new ModelNode().set("OFE"));
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
 
             context.completeStep();
         }
     }
 
-    public static class GoodServiceHandler implements NewStepHandler {
+    public static class GoodServiceHandler implements OperationStepHandler {
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
 
             String name = operation.require("name").asString();
             ModelNode attr = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(name);
             final int current = attr.asInt();
             attr.set(operation.require("value"));
 
-            context.addStep(new NewStepHandler() {
+            context.addStep(new OperationStepHandler() {
 
                 @Override
-                public void execute(NewOperationContext context, ModelNode operation) {
+                public void execute(OperationContext context, ModelNode operation) {
 
                     context.getResult().set(current);
                     ServiceName svcName =  ServiceName.JBOSS.append("good-service");
@@ -696,30 +696,30 @@ public class ModelControllerImplUnitTestCase {
                     context.getServiceTarget().addService(svcName, Service.NULL)
                             .addListener(verificationHandler)
                             .install();
-                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         context.removeService(svcName);
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
 
             context.completeStep();
         }
     }
 
-    public static class MissingServiceHandler implements NewStepHandler {
+    public static class MissingServiceHandler implements OperationStepHandler {
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
 
             String name = operation.require("name").asString();
             ModelNode attr = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(name);
             final int current = attr.asInt();
             attr.set(operation.require("value"));
 
-            context.addStep(new NewStepHandler() {
+            context.addStep(new OperationStepHandler() {
 
                 @Override
-                public void execute(NewOperationContext context, ModelNode operation) {
+                public void execute(OperationContext context, ModelNode operation) {
 
                     context.getResult().set(current);
 
@@ -729,30 +729,30 @@ public class ModelControllerImplUnitTestCase {
                             .addDependency(ServiceName.JBOSS.append("missing"))
                             .addListener(verificationHandler)
                             .install();
-                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         context.removeService(svcName);
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
 
             context.completeStep();
         }
     }
 
-    public static class BadServiceHandler implements NewStepHandler {
+    public static class BadServiceHandler implements OperationStepHandler {
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
 
             String name = operation.require("name").asString();
             ModelNode attr = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(name);
             final int current = attr.asInt();
             attr.set(operation.require("value"));
 
-            context.addStep(new NewStepHandler() {
+            context.addStep(new OperationStepHandler() {
 
                 @Override
-                public void execute(NewOperationContext context, ModelNode operation) {
+                public void execute(OperationContext context, ModelNode operation) {
 
                     context.getResult().set(current);
 
@@ -779,20 +779,20 @@ public class ModelControllerImplUnitTestCase {
                     context.getServiceTarget().addService(svcName, bad)
                             .addListener(verificationHandler)
                             .install();
-                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         context.removeService(svcName);
                     }
                 }
-            }, NewOperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.RUNTIME);
 
             context.completeStep();
         }
     }
 
-    public static class ReloadRequiredHandler implements NewStepHandler {
+    public static class ReloadRequiredHandler implements OperationStepHandler {
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
 
             String name = operation.require(NAME).asString();
             ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
@@ -804,15 +804,15 @@ public class ModelControllerImplUnitTestCase {
 
             context.runtimeUpdateSkipped();
             context.reloadRequired();
-            if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+            if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                 context.revertReloadRequired();
             }
         }
     }
 
-    public static class RestartRequiredHandler implements NewStepHandler {
+    public static class RestartRequiredHandler implements OperationStepHandler {
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(OperationContext context, ModelNode operation) {
 
             String name = operation.require(NAME).asString();
             ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
@@ -824,7 +824,7 @@ public class ModelControllerImplUnitTestCase {
 
             context.runtimeUpdateSkipped();
             context.restartRequired();
-            if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+            if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                 context.revertRestartRequired();
             }
         }
@@ -837,12 +837,12 @@ public class ModelControllerImplUnitTestCase {
         }
     };
 
-    static class RollbackTransactionControl implements NewModelController.OperationTransactionControl {
+    static class RollbackTransactionControl implements ModelController.OperationTransactionControl {
 
         static final RollbackTransactionControl INSTANCE = new RollbackTransactionControl();
 
         @Override
-        public void operationPrepared(NewModelController.OperationTransaction transaction, ModelNode result) {
+        public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode result) {
             transaction.rollback();
         }
     }

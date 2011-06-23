@@ -21,7 +21,7 @@ package org.jboss.as.controller.operations.common;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.Locale;
@@ -52,7 +52,7 @@ public class SocketBindingGroupRemoveHandler extends AbstractRemoveStepHandler i
         return SocketBindingGroupDescription.getSocketBindingRemoveOperation(locale);
     }
 
-    protected boolean requiresRuntime(NewOperationContext context) {
+    protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
 }

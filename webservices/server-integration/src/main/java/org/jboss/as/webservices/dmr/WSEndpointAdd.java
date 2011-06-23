@@ -23,7 +23,7 @@
 package org.jboss.as.webservices.dmr;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -67,7 +67,7 @@ final class WSEndpointAdd extends AbstractAddStepHandler {
         model.get(ENDPOINT_WSDL).set(endpointWSDL);
     }
 
-    protected boolean requiresRuntime(NewOperationContext context) {
+    protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
 }

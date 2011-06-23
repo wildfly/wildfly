@@ -24,7 +24,7 @@ package org.jboss.as.server.deployment.scanner;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -48,7 +48,7 @@ public class DeploymentScannerSubsystemAdd extends AbstractAddStepHandler implem
         model.get(CommonAttributes.SCANNER).setEmptyObject();
     }
 
-    protected boolean requiresRuntime(NewOperationContext context) {
+    protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
 

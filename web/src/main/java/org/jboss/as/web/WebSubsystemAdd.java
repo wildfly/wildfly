@@ -26,9 +26,8 @@ import javax.management.MBeanServer;
 import java.util.List;
 import java.util.Locale;
 
-import com.sun.tools.internal.xjc.model.Model;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -51,6 +50,7 @@ import org.jboss.as.web.deployment.WebParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.component.WebComponentProcessor;
 import org.jboss.as.web.deployment.jsf.JsfAnnotationProcessor;
 import org.jboss.as.web.deployment.jsf.JsfManagedBeanProcessor;
+import org.jboss.as.web.deployment.jsf.JsfVersionProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
@@ -109,7 +109,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
         model.get(Constants.VIRTUAL_SERVER).setEmptyObject();
     }
 
-    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model,
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model,
                                    ServiceVerificationHandler verificationHandler,
                                    List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ModelNode config = operation.get(Constants.CONTAINER_CONFIG);
@@ -133,6 +133,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_COMPONENTS, new WebComponentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_CONTEXT_ROOT, new EarContextRootProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_MERGE_METADATA, new WarMetaDataProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JSF_VERSION, new JsfVersionProcessor());
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE, new WarClassloadingDependencyProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JsfManagedBeanProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JsfManagedBeanProcessor());
@@ -140,7 +141,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JSF_ANNOTATIONS, new JsfAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultVirtualServer));
             }
-        }, NewOperationContext.Stage.RUNTIME);
+        }, OperationContext.Stage.RUNTIME);
 
         final WebServerService service = new WebServerService(defaultVirtualServer, useNative);
         newControllers.add(context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB, service)

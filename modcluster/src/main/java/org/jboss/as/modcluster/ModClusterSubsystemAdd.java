@@ -25,7 +25,7 @@ package org.jboss.as.modcluster;
 import java.util.List;
 import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -51,7 +51,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
         model.set(operation.get(CommonAttributes.MOD_CLUSTER_CONFIG));
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         try {
             // Add mod_cluster service
             final ModClusterService service = new ModClusterService(operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).clone());
