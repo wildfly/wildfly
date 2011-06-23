@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.marshalling.Marshalling;
@@ -33,6 +34,7 @@ import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
+import org.jboss.remoting3.MessageOutputStream;
 import org.xnio.IoUtils;
 
 /**
@@ -44,9 +46,45 @@ public class ManagementChannel extends ProtocolChannel {
 
     private final RequestReceiver requestReceiver = new RequestReceiver();
     private final ResponseReceiver responseReceiver = new ResponseReceiver();
+    private final AtomicBoolean byeByeSent = new AtomicBoolean();
 
     ManagementChannel(String name, Channel channel) {
         super(name, channel);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void close() throws IOException {
+        if(byeByeSent.compareAndSet(false, true)) {
+            sendByeBye();
+        }
+        super.close();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void writeShutdown() throws IOException {
+        if(byeByeSent.compareAndSet(false, true)) {
+            sendByeBye();
+        }
+        super.close();
+    }
+
+    private void sendByeBye() throws IOException {
+
+        try {
+            final MessageOutputStream out = writeMessage();
+            try {
+                out.write(ManagementProtocol.BYE_BYE);
+            } catch (IOException ingore) {
+            }finally {
+                IoUtils.safeClose(out);
+            }
+        } finally {
+            super.close();
+        }
     }
 
     public void setOperationHandler(final ManagementOperationHandler handler) {
@@ -54,14 +92,21 @@ public class ManagementChannel extends ProtocolChannel {
     }
 
     @Override
-    protected void doHandle(final Channel channel, final MessageInputStream message) {
+    protected void doHandle(final MessageInputStream message) {
         log.tracef("%s handling incoming data", this);
         final SimpleDataInput input = new SimpleDataInput(Marshalling.createByteInput(message));
         Exception error = null;
         ManagementRequestHeader requestHeader = null;
         ManagementRequestHandler requestHandler = null;
         try {
-            ManagementProtocolHeader header = ManagementProtocolHeader.parse(input);
+            ManagementProtocolHeader header;
+            try {
+                header = ManagementProtocolHeader.parse(input);
+
+            } catch (ByeByeException bbe) {
+                close();
+                return;
+            }
             if (header.isRequest()) {
                 requestHeader = (ManagementRequestHeader)header;
                 requestHandler = requestReceiver.readRequest(requestHeader, input);
