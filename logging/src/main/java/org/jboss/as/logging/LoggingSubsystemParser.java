@@ -239,7 +239,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         // Attributes
         String name = null;
         boolean autoflush = true;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.FILE_NAME, Attribute.NAME);
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
