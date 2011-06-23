@@ -269,18 +269,6 @@ class BasicResource implements Resource {
         }
     }
 
-    //
-    static interface ResourceProvider {
-
-        boolean has(String name);
-        Resource get(String name);
-        boolean hasChildren();
-        Set<String> children();
-        void register(String name, Resource resource);
-        Resource remove(String name);
-    }
-
-
     abstract static class DelegateResource implements ResourceEntry {
         final Resource delegate;
         protected DelegateResource(Resource delegate) {

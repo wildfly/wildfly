@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceRegistry;
@@ -40,7 +42,8 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
     private final String managementName;
     final InjectedValue<VirtualFile> contentsInjector = new InjectedValue<VirtualFile>();
     private final DeploymentUnit parent;
-    private final DeploymentModelUtils model;
+    private final ImmutableManagementResourceRegistration registration;
+    private Resource resource;
 
     /**
      * Construct a new instance.
@@ -48,36 +51,30 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
      * @param name the deployment unit simple name
      * @param managementName the deployment's domain-wide unique name
      * @param parent the parent deployment unit
+     * @param registration the registration
+     * @param resource the model
      */
-    public RootDeploymentUnitService(final String name, final String managementName, final DeploymentUnit parent, final DeploymentModelUtils model) {
+    public RootDeploymentUnitService(final String name, final String managementName, final DeploymentUnit parent, final ImmutableManagementResourceRegistration registration, Resource resource) {
         assert name != null : "name is null";
         this.name = name;
         this.managementName = managementName;
         this.parent = parent;
-        this.model = model;
+        this.registration = registration;
+        this.resource = resource;
     }
 
     protected DeploymentUnit createAndInitializeDeploymentUnit(final ServiceRegistry registry) {
-        model.initialize();
-        final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, name, registry, model);
+        final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, name, registry);
         deploymentUnit.putAttachment(Attachments.RUNTIME_NAME, name);
         deploymentUnit.putAttachment(Attachments.MANAGEMENT_NAME, managementName);
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_CONTENTS, contentsInjector.getValue());
-        deploymentUnit.putAttachment(DeploymentModelUtils.KEY, model);
+        deploymentUnit.putAttachment(DeploymentModelUtils.REGISTRATION_ATTACHMENT, registration);
+        deploymentUnit.putAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE, resource);
 
         // Attach the deployment repo
         deploymentUnit.putAttachment(Attachments.SERVER_DEPLOYMENT_REPOSITORY, serverDeploymentRepositoryInjector.getValue());
 
         return deploymentUnit;
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        try {
-            super.stop(context);
-        } finally {
-            model.cleanup();
-        }
     }
 
     Injector<ServerDeploymentRepository> getServerDeploymentRepositoryInjector() {

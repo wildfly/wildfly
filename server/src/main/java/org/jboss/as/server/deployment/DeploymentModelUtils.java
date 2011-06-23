@@ -27,7 +27,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,71 +37,55 @@ import org.jboss.dmr.ModelNode;
  */
 class DeploymentModelUtils {
 
-    static final AttachmentKey<DeploymentModelUtils> KEY = AttachmentKey.create(DeploymentModelUtils.class);
+    static final AttachmentKey<Resource> DEPLOYMENT_RESOURCE = AttachmentKey.create(Resource.class);
+    static final AttachmentKey<ImmutableManagementResourceRegistration> REGISTRATION_ATTACHMENT = AttachmentKey.create(ImmutableManagementResourceRegistration.class);
+
     static final String SUBSYSTEM = ModelDescriptionConstants.SUBSYSTEM;
     static final String SUB_DEPLOYMENT = "subdeployment";
 
-    private final Resource root;
-    private final ImmutableManagementResourceRegistration registration;
-
-    DeploymentModelUtils(final Resource root, final ImmutableManagementResourceRegistration registration) {
-        this.root = root;
-        this.registration = registration;
-    }
-
-    void initialize() {
-        for(final Resource.ResourceEntry entry : root.getChildren(SUBSYSTEM)) {
-            root.removeChild(entry.getPathElement());
-        }
-        for(final Resource.ResourceEntry entry : root.getChildren(SUB_DEPLOYMENT)) {
-            root.removeChild(entry.getPathElement());
+    static ModelNode createDeploymentSubModel(final String subsystemName, final PathElement address, final DeploymentUnit unit) {
+        final Resource root = unit.getAttachment(DEPLOYMENT_RESOURCE);
+        synchronized (root) {
+            final ImmutableManagementResourceRegistration registration = unit.getAttachment(REGISTRATION_ATTACHMENT);
+            final Resource subsystem = getOrCreate(root, PathElement.pathElement(SUBSYSTEM, subsystemName));
+            final ImmutableManagementResourceRegistration subModel = registration.getSubModel(getExtensionAddress(subsystemName, address));
+            if(subModel == null) {
+                throw new IllegalStateException(address.toString());
+            }
+            return getOrCreate(subsystem, address).getModel();
         }
     }
 
-    void cleanup() {
-        for(final Resource.ResourceEntry entry : root.getChildren(SUBSYSTEM)) {
-            root.removeChild(entry.getPathElement());
-        }
-        for(final Resource.ResourceEntry entry : root.getChildren(SUB_DEPLOYMENT)) {
-            root.removeChild(entry.getPathElement());
-        }
-    }
-
-    ModelNode createDeploymentSubModel(final String subsystemName, final PathElement address) {
-        final Resource subsystem = getOrCreate(root, PathElement.pathElement(SUBSYSTEM, subsystemName));
-        final ImmutableManagementResourceRegistration subModel = registration.getSubModel(getExtensionAddress(subsystemName, address));
-        if(subModel == null) {
-            throw new IllegalStateException(address.toString());
-        }
-        return getOrCreate(subsystem, address).getModel();
-    }
-
-    DeploymentModelUtils createSubDeployment(final String deploymentName) {
-        final Resource subDeploymentRoot = getOrCreate(root, PathElement.pathElement(SUB_DEPLOYMENT,deploymentName));
-        final DeploymentModelUtils utils = new DeploymentModelUtils(subDeploymentRoot, registration);
-        utils.initialize();
-        return utils;
+    static Resource createSubDeployment(final String deploymentName, DeploymentUnit parent) {
+        final Resource root = parent.getAttachment(DEPLOYMENT_RESOURCE);
+        return getOrCreate(root, PathElement.pathElement(SUB_DEPLOYMENT, deploymentName));
     }
 
     static Resource getOrCreate(final Resource parent, final PathElement element) {
-        if(parent.hasChild(element)) {
-            return parent.requireChild(element);
-        } else {
-            final Resource resource = Resource.Factory.create();
-            parent.registerChild(element, resource);
-            return resource;
+        synchronized(parent) {
+            if(parent.hasChild(element)) {
+                return parent.requireChild(element);
+            } else {
+                final Resource resource = Resource.Factory.create();
+                parent.registerChild(element, resource);
+                return resource;
+            }
+        }
+    }
+
+    static void cleanup(final Resource resource) {
+        synchronized (resource) {
+            for(final Resource.ResourceEntry entry : resource.getChildren(SUBSYSTEM)) {
+                resource.removeChild(entry.getPathElement());
+            }
+            for(final Resource.ResourceEntry entry : resource.getChildren(SUB_DEPLOYMENT)) {
+                resource.removeChild(entry.getPathElement());
+            }
         }
     }
 
     static PathAddress getExtensionAddress(final String subsystemName, final PathElement element) {
         return PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystemName), element);
-    }
-
-    static DeploymentModelUtils create(final OperationContext context, final PathAddress address) {
-            final Resource resource = context.readResourceForUpdate(address);
-
-            final ImmutableManagementResourceRegistration registration = context.getResourceRegistration().getSubModel(address);
-            return new DeploymentModelUtils(resource, registration);
     }
 
 }

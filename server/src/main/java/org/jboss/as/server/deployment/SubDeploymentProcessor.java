@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -47,7 +49,9 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
                 if (!SubDeploymentMarker.isSubDeployment(childRoot)) {
                     continue;
                 }
-                final SubDeploymentUnitService service = new SubDeploymentUnitService(childRoot, deploymentUnit);
+                final Resource resource = DeploymentModelUtils.createSubDeployment(childRoot.getRootName(), deploymentUnit);
+                final ImmutableManagementResourceRegistration registration = deploymentUnit.getAttachment(DeploymentModelUtils.REGISTRATION_ATTACHMENT);
+                final SubDeploymentUnitService service = new SubDeploymentUnitService(childRoot, deploymentUnit, registration, resource);
 
                 final ResourceRoot parentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
                 final String relativePath = childRoot.getRoot().getPathNameRelativeTo(parentRoot.getRoot());
@@ -62,7 +66,6 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
                 phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS,serviceName.append(ServiceName.of(Phase.STRUCTURE.name())));
                 previous = serviceName;
             }
-
         }
     }
 
