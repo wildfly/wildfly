@@ -60,7 +60,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.xnio.IoUtils;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -455,12 +454,27 @@ public class RemoteProxyControllerProtocolTestCase {
     public void testClosesBeforePrepare() throws Exception {
 
         final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<Exception> errorRef = new AtomicReference<Exception>();
         MockModelController controller = new MockModelController() {
             @Override
             public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
-                IoUtils.safeClose(channels.getClientChannel());
+                try {
+                    channels.getClientChannel().writeShutdown();
+                    channels.getClientChannel().awaitClosed();
+                } catch (Exception e) {
+                    errorRef.set(e);
+                    throw new RuntimeException();
+                }
                 latch.countDown();
-                IoUtils.safeClose(channels.getServerChannel());
+                try {
+                    channels.getServerChannel().writeShutdown();
+                    channels.getServerChannel().awaitClosed();
+
+                } catch (Exception e) {
+                    errorRef.set(e);
+                }
+                //IoUtils.safeClose(channels.getClientChannel());
+                //IoUtils.safeClose(channels.getServerChannel());
                 return new ModelNode();
             }
         };
@@ -476,9 +490,11 @@ public class RemoteProxyControllerProtocolTestCase {
                     null,
                     commitControl,
                     null);
+            latch.await();
             Assert.fail("Should have failed");
         } catch (Exception expected) {
         }
+        Assert.assertNull(errorRef.get());
     }
 
 
