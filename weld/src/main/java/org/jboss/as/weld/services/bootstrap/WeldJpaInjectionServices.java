@@ -23,6 +23,7 @@ package org.jboss.as.weld.services.bootstrap;
 
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
+import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.service.PersistenceUnitService;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -42,10 +43,12 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
 
     private final DeploymentUnit deploymentUnit;
     private final ServiceRegistry serviceRegistry;
+    private final SFSBXPCMap sfsbxpcMap;
 
     public WeldJpaInjectionServices(DeploymentUnit deploymentUnit, ServiceRegistry serviceRegistry) {
         this.deploymentUnit = deploymentUnit;
         this.serviceRegistry = serviceRegistry;
+        this.sfsbxpcMap = SFSBXPCMap.getXpcMap(deploymentUnit);
     }
 
     @Override
@@ -62,7 +65,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         //now we have the service controller, as this method is only called at runtime the service should
         //always be up
         PersistenceUnitService persistenceUnitService = (PersistenceUnitService)serviceController.getValue();
-        return new TransactionScopedEntityManager(scopedPuName,new HashMap<Object,Object>(), persistenceUnitService.getEntityManagerFactory());
+        return new TransactionScopedEntityManager(scopedPuName,new HashMap<Object,Object>(), persistenceUnitService.getEntityManagerFactory(), sfsbxpcMap);
     }
 
     @Override

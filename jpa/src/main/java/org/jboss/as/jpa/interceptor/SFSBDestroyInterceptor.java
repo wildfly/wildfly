@@ -27,10 +27,10 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.ejb3.SFSBContextHandleImpl;
-import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 import javax.persistence.EntityManager;
 import java.util.List;
@@ -43,9 +43,10 @@ import java.util.List;
  */
 public class SFSBDestroyInterceptor implements Interceptor {
 
-    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SFSBDestroyInterceptor());
+    private final SFSBXPCMap sfsbxpcMap;
 
-    private SFSBDestroyInterceptor() {
+    private SFSBDestroyInterceptor(final SFSBXPCMap sfsbxpcMap) {
+        this.sfsbxpcMap = sfsbxpcMap;
     }
 
     @Override
@@ -56,7 +57,7 @@ public class SFSBDestroyInterceptor implements Interceptor {
         } finally {
             StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) interceptorContext.getPrivateData(ComponentInstance.class);
             SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
-            List<EntityManager> readyToClose = SFSBXPCMap.getINSTANCE().remove(sfsbContextHandle);
+            List<EntityManager> readyToClose = sfsbxpcMap.remove(sfsbContextHandle);
             if (readyToClose != null && readyToClose.size() > 0) {
                 for (EntityManager entityManager : readyToClose) {
                     if (entityManager instanceof ExtendedEntityManager) {
@@ -67,6 +68,20 @@ public class SFSBDestroyInterceptor implements Interceptor {
                     }
                 }
             }
+        }
+    }
+
+    public static class Factory implements InterceptorFactory {
+
+        private final SFSBXPCMap sfsbxpcMap;
+
+        public Factory(final SFSBXPCMap sfsbxpcMap) {
+            this.sfsbxpcMap = sfsbxpcMap;
+        }
+
+        @Override
+        public Interceptor create(final InterceptorFactoryContext context) {
+            return new SFSBDestroyInterceptor(sfsbxpcMap);
         }
     }
 }

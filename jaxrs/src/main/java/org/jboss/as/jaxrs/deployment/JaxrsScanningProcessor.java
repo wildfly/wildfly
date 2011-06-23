@@ -52,8 +52,11 @@ import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import javax.ws.rs.core.Application;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -85,6 +88,15 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             return;
         }
         final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        final Map<ModuleIdentifier, ResteasyDeploymentData> deploymentData;
+        if(deploymentUnit.getParent() == null) {
+            deploymentData = Collections.synchronizedMap(new HashMap<ModuleIdentifier, ResteasyDeploymentData>());
+            deploymentUnit.putAttachment(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA, deploymentData);
+        } else {
+            deploymentData = parent.getAttachment(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA);
+        }
+
+        final ModuleIdentifier moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
 
         ResteasyDeploymentData resteasyDeploymentData = new ResteasyDeploymentData();
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
@@ -96,7 +108,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             if (warMetaData == null) {
                 resteasyDeploymentData.setScanAll(true);
                 scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData, serviceController.getValue(), false);
-                parent.addToAttachmentList(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA, resteasyDeploymentData);
+                deploymentData.put(moduleIdentifier, resteasyDeploymentData);
             } else {
                 scanWebDeployment(deploymentUnit, warMetaData.getMergedJBossWebMetaData(), module.getClassLoader(), resteasyDeploymentData);
                 scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData, serviceController.getValue(), true);

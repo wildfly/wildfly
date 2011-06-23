@@ -44,6 +44,7 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
+import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
 import org.jboss.as.jpa.interceptor.SBInvocationInterceptor;
@@ -144,7 +145,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
                 // if it's a component then setup the interceptors
                 for (ComponentDescription componentDescription : componentDescriptions) {
                     if (componentDescription instanceof SessionBeanComponentDescription) {
-                        this.registerInterceptorsForExtendedPersistenceContext((SessionBeanComponentDescription) componentDescription, annotation);
+                        this.registerInterceptorsForExtendedPersistenceContext((SessionBeanComponentDescription) componentDescription, annotation, deploymentUnit);
                     }
                 }
             }
@@ -299,7 +300,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
                 properties = null;
             }
 
-            return new PersistenceContextInjectionSource(type, properties, puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
+            return new PersistenceContextInjectionSource(type, properties, puServiceName, deploymentUnit, scopedPuName, injectionTypeName, SFSBXPCMap.getXpcMap(deploymentUnit));
         } else {
             return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, injectionTypeName);
         }
@@ -351,7 +352,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
     }
 
     // Register our listeners on SFSB that will be created
-    private void registerInterceptorsForExtendedPersistenceContext(SessionBeanComponentDescription componentDescription, AnnotationInstance annotation) {
+    private void registerInterceptorsForExtendedPersistenceContext(SessionBeanComponentDescription componentDescription, AnnotationInstance annotation, final DeploymentUnit deploymentUnit) {
         // if it's a SFSB and extended persistence context then setup appropriate interceptors
         if (componentDescription.isStateful() && isExtendedPersistenceContext(annotation)) {
             // first setup the post construct and pre destroy component interceptors
@@ -359,8 +360,9 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws
                         DeploymentUnitProcessingException {
-                    configuration.addPostConstructInterceptor(SFSBCreateInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.JPA_SFSB_CREATE);
-                    configuration.addPreDestroyInterceptor(SFSBDestroyInterceptor.FACTORY, InterceptorOrder.ComponentPreDestroy.JPA_SFSB_DESTROY);
+                    final SFSBXPCMap map = SFSBXPCMap.getXpcMap(deploymentUnit);
+                    configuration.addPostConstructInterceptor(new SFSBCreateInterceptor.Factory(map), InterceptorOrder.ComponentPostConstruct.JPA_SFSB_CREATE);
+                    configuration.addPreDestroyInterceptor(new SFSBDestroyInterceptor.Factory(map), InterceptorOrder.ComponentPreDestroy.JPA_SFSB_DESTROY);
                 }
             });
 
@@ -391,6 +393,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             });
         }
     }
+
 
 }
 

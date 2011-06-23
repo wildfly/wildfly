@@ -53,10 +53,10 @@ public class SFSBCallStack {
      * @param puScopedName Scoped pu name
      * @return the found XPC that matches puName or null if not found
      */
-    public static EntityManager findPersistenceContext(String puScopedName) {
+    public static EntityManager findPersistenceContext(String puScopedName, SFSBXPCMap sfsbxpcMap) {
         // TODO: arrange for a more optimal datastructure for this
         for (SFSBContextHandle handle : currentSFSBCallStack()) {
-            List<EntityManager> xpcs = SFSBXPCMap.getINSTANCE().getXPC(handle);
+            List<EntityManager> xpcs = sfsbxpcMap.getXPC(handle);
             if (xpcs == null)
                 continue;
             for (EntityManager xpc : xpcs) {

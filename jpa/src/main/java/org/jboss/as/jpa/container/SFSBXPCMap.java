@@ -23,6 +23,8 @@
 package org.jboss.as.jpa.container;
 
 import org.jboss.as.jpa.spi.SFSBContextHandle;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.DeploymentUnit;
 
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
@@ -42,11 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SFSBXPCMap {
 
-    private static final SFSBXPCMap INSTANCE = new SFSBXPCMap();
-
-    public static SFSBXPCMap getINSTANCE() {
-        return INSTANCE;
-    }
+    public static final AttachmentKey<SFSBXPCMap> ATTACHMENT_KEY = AttachmentKey.create(SFSBXPCMap.class);
 
     /**
      * Track the XPCs used by each stateful session bean.
@@ -196,5 +194,26 @@ public class SFSBXPCMap {
         }
         return result;
     }
+
+
+    /**
+     * Get or create a SFSBXPCMap that is shared over the top level deployment
+     * @param deploymentUnit
+     * @return
+     */
+    public static SFSBXPCMap getXpcMap(final DeploymentUnit deploymentUnit) {
+        final DeploymentUnit top = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        SFSBXPCMap sfsbMap = top.getAttachment(SFSBXPCMap.ATTACHMENT_KEY);
+        if(sfsbMap == null) {
+            synchronized (top) {
+                sfsbMap = top.getAttachment(SFSBXPCMap.ATTACHMENT_KEY);
+                if(sfsbMap == null) {
+                    top.putAttachment(SFSBXPCMap.ATTACHMENT_KEY, sfsbMap = new SFSBXPCMap());
+                }
+            }
+        }
+        return sfsbMap;
+    }
+
 
 }

@@ -7,6 +7,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.WeldAttachments;
@@ -18,6 +20,7 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.resteasy.cdi.ResteasyCdiExtension;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
@@ -27,6 +30,7 @@ import javax.enterprise.inject.spi.Extension;
 import javax.ws.rs.ApplicationPath;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -61,9 +65,17 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (resteasy == null)
             return;
 
-
-        resteasy.merge(parent.getAttachmentList(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA));
-
+        final Map<ModuleIdentifier, ResteasyDeploymentData> attachmentMap = parent.getAttachment(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA);
+        final List<ResteasyDeploymentData> additionalData = new ArrayList<ResteasyDeploymentData>();
+        final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        if (moduleSpec != null && attachmentMap != null) {
+            for (ModuleDependency dep : moduleSpec.getAllDependencies()) {
+                if (attachmentMap.containsKey(dep.getIdentifier())) {
+                    additionalData.add(attachmentMap.get(dep.getIdentifier()));
+                }
+            }
+            resteasy.merge(additionalData);
+        }
         if (!resteasy.getScannedResourceClasses().isEmpty()) {
             StringBuffer buf = null;
             for (String resource : resteasy.getScannedResourceClasses()) {
