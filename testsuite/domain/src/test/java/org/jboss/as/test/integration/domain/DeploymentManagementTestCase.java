@@ -329,8 +329,7 @@ public class DeploymentManagementTestCase {
         ModelNode op = getEmptyOperation("undeploy", OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
         executeOnMaster(op);
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        // Thread.sleep(1000);
 
         try {
             performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -384,8 +383,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(builder.build());
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        // Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -403,8 +401,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(op);
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        // Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -422,8 +419,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(op);
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        // Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -441,8 +437,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(op);
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        // Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -460,8 +455,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(op);
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -480,8 +474,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(builder.build());
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        // Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -499,8 +492,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(builder.build());
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        // Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -519,8 +511,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(op);
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -543,8 +534,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(op);
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -562,8 +552,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(op);
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -581,8 +570,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(op);
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -600,8 +588,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(op);
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -619,8 +606,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(op);
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
@@ -640,8 +626,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(builder.build());
 
-        // TODO git rid of this once ops never return until service container is settled
-        Thread.sleep(1000);
+        //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
         performHttpCall(DomainTestSupport.slaveAddress, 8630);
