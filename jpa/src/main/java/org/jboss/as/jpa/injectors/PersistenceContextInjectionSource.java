@@ -81,16 +81,16 @@ public class PersistenceContextInjectionSource extends InjectionSource {
      * @param deploymentUnit    represents the deployment that we are injecting into
      * @param scopedPuName      the fully scoped reference to the persistence.xml
      * @param injectionTypeName is normally "javax.persistence.EntityManager" but could be a different target class
-     *                          for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
-     *                          the unwrap return value is injected (instead of the EntityManager instance)
+*                          for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
+     * @param sfsbxpcMap
      */
-    public PersistenceContextInjectionSource(final PersistenceContextType type, final Map properties, final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String scopedPuName, final String injectionTypeName) {
+    public PersistenceContextInjectionSource(final PersistenceContextType type, final Map properties, final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String scopedPuName, final String injectionTypeName, final SFSBXPCMap sfsbxpcMap) {
 
         AnnotationValue value;
         this.type = type;
 
 
-        injectable = new PersistenceContextJndiInjectable(puServiceName, deploymentUnit, this.type, properties, scopedPuName, injectionTypeName);
+        injectable = new PersistenceContextJndiInjectable(puServiceName, deploymentUnit, this.type, properties, scopedPuName, injectionTypeName, sfsbxpcMap);
         this.puServiceName = puServiceName;
     }
 
@@ -120,17 +120,18 @@ public class PersistenceContextInjectionSource extends InjectionSource {
         private final Map properties;
         private final String unitName;
         private final String injectionTypeName;
+        private final SFSBXPCMap sfsbxpcMap;
 
         private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
         private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
         public PersistenceContextJndiInjectable(
-            final ServiceName puServiceName,
-            final DeploymentUnit deploymentUnit,
-            final PersistenceContextType type,
-            final Map properties,
-            final String unitName,
-            final String injectionTypeName) {
+                final ServiceName puServiceName,
+                final DeploymentUnit deploymentUnit,
+                final PersistenceContextType type,
+                final Map properties,
+                final String unitName,
+                final String injectionTypeName, final SFSBXPCMap sfsbxpcMap) {
 
             this.puServiceName = puServiceName;
             this.deploymentUnit = deploymentUnit;
@@ -138,6 +139,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             this.properties = properties;
             this.unitName = unitName;
             this.injectionTypeName = injectionTypeName;
+            this.sfsbxpcMap = sfsbxpcMap;
         }
 
         @Override
@@ -148,13 +150,13 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             boolean isExtended;
             if (type.equals(PersistenceContextType.TRANSACTION)) {
                 isExtended = false;
-                entityManager = new TransactionScopedEntityManager(unitName, properties, emf);
+                entityManager = new TransactionScopedEntityManager(unitName, properties, emf, sfsbxpcMap);
                 if (log.isDebugEnabled())
                     log.debug("created new TransactionScopedEntityManager for unit name=" + unitName);
             } else {
                 // handle PersistenceContextType.EXTENDED
                 isExtended = true;
-                EntityManager entityManager1 = SFSBCallStack.findPersistenceContext(unitName);
+                EntityManager entityManager1 = SFSBCallStack.findPersistenceContext(unitName, sfsbxpcMap);
                 if (entityManager1 == null) {
                     entityManager1 = emf.createEntityManager(properties);
                     entityManager = new ExtendedEntityManager(unitName, entityManager1);

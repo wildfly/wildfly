@@ -43,12 +43,14 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
     private final String puScopedName;          // Scoped name of the persistent unit
     private final Map properties;
     private final EntityManagerFactory emf;
+    private final SFSBXPCMap sfsbxpcMap;
 
-    public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf) {
+    public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, final SFSBXPCMap sfsbxpcMap) {
         super(puScopedName, false);
         this.puScopedName = puScopedName;
         this.properties = properties;
         this.emf = emf;
+        this.sfsbxpcMap = sfsbxpcMap;
     }
 
     @Override
@@ -59,7 +61,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
         isInTx = TransactionUtil.getInstance().isInTx();
 
         // try to get EM from XPC and return it if puScopedName is found
-        if (isInTx && (result = SFSBCallStack.findPersistenceContext(puScopedName)) != null) {
+        if (isInTx && (result = SFSBCallStack.findPersistenceContext(puScopedName, sfsbxpcMap)) != null) {
 
 
             // 7.6.3.1 throw EJBException if a different persistence context is already joined to the

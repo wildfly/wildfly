@@ -26,10 +26,10 @@ import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.ejb3.SFSBContextHandleImpl;
-import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * For SFSB life cycle management.
@@ -39,16 +39,32 @@ import org.jboss.invocation.InterceptorFactory;
  */
 public class SFSBCreateInterceptor implements Interceptor {
 
-    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SFSBCreateInterceptor());
+    private final SFSBXPCMap sfsbxpcMap;
 
-    private SFSBCreateInterceptor() {
+    private SFSBCreateInterceptor(final SFSBXPCMap sfsbxpcMap) {
+        this.sfsbxpcMap = sfsbxpcMap;
     }
 
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
         StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) interceptorContext.getPrivateData(ComponentInstance.class);
         SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
-        SFSBXPCMap.getINSTANCE().finishRegistrationOfPersistenceContext(sfsbContextHandle);
+        sfsbxpcMap.finishRegistrationOfPersistenceContext(sfsbContextHandle);
         return interceptorContext.proceed();
+    }
+
+
+    public static class Factory implements InterceptorFactory {
+
+        private final SFSBXPCMap sfsbxpcMap;
+
+        public Factory(final SFSBXPCMap sfsbxpcMap) {
+            this.sfsbxpcMap = sfsbxpcMap;
+        }
+
+        @Override
+        public Interceptor create(final InterceptorFactoryContext context) {
+            return new SFSBCreateInterceptor(sfsbxpcMap);
+        }
     }
 }
