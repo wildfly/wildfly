@@ -34,7 +34,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALMS;
-import org.jboss.as.host.controller.NewHostModelUtil;
+import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,17 +42,17 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class NewLocalHostAddHandler implements OperationStepHandler, DescriptionProvider {
+public class LocalHostAddHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "add-host";
 
     private final LocalHostControllerInfoImpl hostControllerInfo;
 
-    public static NewLocalHostAddHandler getInstance(final LocalHostControllerInfoImpl hostControllerInfo) {
-        return new NewLocalHostAddHandler(hostControllerInfo);
+    public static LocalHostAddHandler getInstance(final LocalHostControllerInfoImpl hostControllerInfo) {
+        return new LocalHostAddHandler(hostControllerInfo);
     }
 
-    private NewLocalHostAddHandler(final LocalHostControllerInfoImpl hostControllerInfo) {
+    private LocalHostAddHandler(final LocalHostControllerInfoImpl hostControllerInfo) {
         this.hostControllerInfo = hostControllerInfo;
     }
 
@@ -71,7 +71,7 @@ public class NewLocalHostAddHandler implements OperationStepHandler, Description
         }
 
         final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-        NewHostModelUtil.initCoreModel(model);
+        HostModelUtil.initCoreModel(model);
 
         // Create the empty managmeent security resources
         context.createResource(PathAddress.pathAddress(PathElement.pathElement(MANAGEMENT, SECURITY_REALMS)));

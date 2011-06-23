@@ -54,7 +54,7 @@ import java.util.EnumSet;
 
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
-import org.jboss.as.controller.NewCompositeOperationHandler;
+import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.ExtensionRemoveHandler;
@@ -122,7 +122,7 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class NewDomainModelUtil {
+public class DomainModelUtil {
 
     /**
      * Update the model to hold domain level configuration.
@@ -145,7 +145,7 @@ public class NewDomainModelUtil {
 
     public static ExtensionContext initializeMasterDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                                   final ContentRepository contentRepository, final FileRepository fileRepository,
-                                                                  final NewDomainController domainController, final UnregisteredHostChannelRegistry registry) {
+                                                                  final DomainController domainController, final UnregisteredHostChannelRegistry registry) {
         return initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true, domainController, registry);
     }
 
@@ -156,13 +156,13 @@ public class NewDomainModelUtil {
 
     private static ExtensionContext initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                              final ContentRepository contentRepo, final FileRepository fileRepository, final boolean isMaster,
-                                                             final NewDomainController domainController, final UnregisteredHostChannelRegistry registry) {
+                                                             final DomainController domainController, final UnregisteredHostChannelRegistry registry) {
 
         EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
         EnumSet<OperationEntry.Flag> deploymentUpload = EnumSet.of(OperationEntry.Flag.DEPLOYMENT_UPLOAD);
 
         // Other root resource operations
-        root.registerOperationHandler(NewCompositeOperationHandler.NAME, NewCompositeOperationHandler.INSTANCE, NewCompositeOperationHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        root.registerOperationHandler(CompositeOperationHandler.NAME, CompositeOperationHandler.INSTANCE, CompositeOperationHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         XmlMarshallingHandler xmh = new XmlMarshallingHandler(configurationPersister);
         root.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, OperationEntry.EntryType.PUBLIC, readOnly);
         root.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);

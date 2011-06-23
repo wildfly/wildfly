@@ -21,35 +21,35 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
-import org.jboss.as.controller.remote.NewAbstractModelControllerOperationHandlerFactoryService;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerFactoryService;
-import org.jboss.as.domain.controller.NewDomainController;
+import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Installs {@link NewMasterDomainControllerOperationHandlerImpl} which handles requests from slave DC to master DC.
+ * Installs {@link MasterDomainControllerOperationHandlerImpl} which handles requests from slave DC to master DC.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NewMasterDomainControllerOperationHandlerService extends NewAbstractModelControllerOperationHandlerFactoryService<NewMasterDomainControllerOperationHandlerImpl> {
+public class MasterDomainControllerOperationHandlerService extends AbstractModelControllerOperationHandlerFactoryService<MasterDomainControllerOperationHandlerImpl> {
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
-    public static final ServiceName SERVICE_NAME = NewDomainController.SERVICE_NAME.append(NewModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
+    public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(ModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
 
-    private final NewDomainController domainController;
+    private final DomainController domainController;
     private final UnregisteredHostChannelRegistry registry;
 
-    public NewMasterDomainControllerOperationHandlerService(final NewDomainController domainController, final UnregisteredHostChannelRegistry registry) {
+    public MasterDomainControllerOperationHandlerService(final DomainController domainController, final UnregisteredHostChannelRegistry registry) {
         this.domainController = domainController;
         this.registry = registry;
     }
 
     @Override
-    public NewMasterDomainControllerOperationHandlerImpl createOperationHandler() {
-        return new NewMasterDomainControllerOperationHandlerImpl(getExecutor(), getController(), registry, domainController);
+    public MasterDomainControllerOperationHandlerImpl createOperationHandler() {
+        return new MasterDomainControllerOperationHandlerImpl(getExecutor(), getController(), registry, domainController);
     }
 
 }

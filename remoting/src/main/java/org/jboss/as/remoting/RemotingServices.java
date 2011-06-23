@@ -38,8 +38,8 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
-import org.jboss.as.controller.remote.NewAbstractModelControllerOperationHandlerFactoryService;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerFactoryService;
+import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.msc.inject.Injector;
@@ -144,7 +144,7 @@ public final class RemotingServices {
      * @return the service name
      */
     public static ServiceName operationHandlerName(ServiceName controllerName, String channelName) {
-        return controllerName.append(channelName).append(NewModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
+        return controllerName.append(channelName).append(ModelControllerClientOperationHandlerFactoryService.OPERATION_HANDLER_NAME_SUFFIX);
     }
 
     /**
@@ -233,7 +233,7 @@ public final class RemotingServices {
      */
     public static void installChannelServices(
             final ServiceTarget serviceTarget,
-            final NewAbstractModelControllerOperationHandlerFactoryService<?> operationHandlerService,
+            final AbstractModelControllerOperationHandlerFactoryService<?> operationHandlerService,
             final ServiceName modelControllerName,
             final String channelName,
             final ServiceVerificationHandler verificationHandler,

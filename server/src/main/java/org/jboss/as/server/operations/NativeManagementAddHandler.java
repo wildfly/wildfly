@@ -35,7 +35,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ManagementDescription;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerFactoryService;
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.server.Services;
@@ -79,7 +79,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler implement
 
         RemotingServices.installStandaloneConnectorServices(serviceTarget, interfaceSvcName, port, realmSvcName, verificationHandler, newControllers);
         RemotingServices.installChannelServices(serviceTarget,
-                new NewModelControllerClientOperationHandlerFactoryService(),
+                new ModelControllerClientOperationHandlerFactoryService(),
                 Services.JBOSS_SERVER_CONTROLLER,
                 RemotingServices.MANAGEMENT_CHANNEL,
                 verificationHandler,

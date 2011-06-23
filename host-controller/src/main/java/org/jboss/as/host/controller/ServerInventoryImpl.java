@@ -48,8 +48,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.controller.remote.NewRemoteProxyController;
-import org.jboss.as.domain.controller.NewDomainController;
+import org.jboss.as.controller.remote.RemoteProxyController;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -66,7 +66,7 @@ import org.jboss.remoting3.CloseHandler;
  * @author Emanuel Muckenhuber
  * @author Kabir Khan
    */
-public class NewServerInventoryImpl implements NewServerInventory {
+public class ServerInventoryImpl implements ServerInventory {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     private final Map<String, ManagedServer> servers = Collections.synchronizedMap(new HashMap<String, ManagedServer>());
@@ -74,11 +74,11 @@ public class NewServerInventoryImpl implements NewServerInventory {
     private final HostControllerEnvironment environment;
     private final ProcessControllerClient processControllerClient;
     private final InetSocketAddress managementAddress;
-    private final NewDomainController domainController;
+    private final DomainController domainController;
     private volatile CountDownLatch processInventoryLatch;
     private volatile Map<String, ProcessInfo> processInfos;
 
-    NewServerInventoryImpl(final NewDomainController domainController, final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final ProcessControllerClient processControllerClient) {
+    ServerInventoryImpl(final DomainController domainController, final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final ProcessControllerClient processControllerClient) {
         this.domainController = domainController;
         this.environment = environment;
         this.managementAddress = managementAddress;
@@ -255,7 +255,7 @@ public class NewServerInventoryImpl implements NewServerInventory {
             server.setState(ServerState.STARTED);
 
             final PathElement element = PathElement.pathElement(RUNNING_SERVER, server.getServerName());
-            final ProxyController serverController = NewRemoteProxyController.create(Executors.newCachedThreadPool(),
+            final ProxyController serverController = RemoteProxyController.create(Executors.newCachedThreadPool(),
                     PathAddress.pathAddress(PathElement.pathElement(HOST, domainController.getLocalHostInfo().getLocalHostName()), element),
                     ProxyOperationAddressTranslator.SERVER,
                     channel);
@@ -327,7 +327,7 @@ public class NewServerInventoryImpl implements NewServerInventory {
 
     private ManagedServer createManagedServer(final String serverName, final ModelNode domainModel) {
         final ModelNode hostModel = domainModel.require(HOST).require(domainController.getLocalHostInfo().getLocalHostName());
-        final NewModelCombiner combiner = new NewModelCombiner(serverName, domainModel, hostModel, domainController, environment);
+        final ModelCombiner combiner = new ModelCombiner(serverName, domainModel, hostModel, domainController, environment);
         return new ManagedServer(serverName, processControllerClient, managementAddress, combiner);
     }
 

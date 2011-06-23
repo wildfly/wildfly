@@ -85,11 +85,11 @@ import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.NewDomainController;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.management.operations.ConnectionAddHandler;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
-import org.jboss.as.host.controller.NewRemoteDomainConnectionService.RemoteFileRepository;
+import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
@@ -99,14 +99,14 @@ import org.jboss.as.host.controller.operations.IsMasterHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.NativeManagementAddHandler;
-import org.jboss.as.host.controller.operations.NewLocalDomainControllerAddHandler;
-import org.jboss.as.host.controller.operations.NewLocalHostAddHandler;
-import org.jboss.as.host.controller.operations.NewRemoteDomainControllerAddHandler;
-import org.jboss.as.host.controller.operations.NewServerRestartHandler;
-import org.jboss.as.host.controller.operations.NewServerStartHandler;
-import org.jboss.as.host.controller.operations.NewServerStatusHandler;
-import org.jboss.as.host.controller.operations.NewServerStopHandler;
-import org.jboss.as.host.controller.operations.NewStartServersHandler;
+import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
+import org.jboss.as.host.controller.operations.LocalHostAddHandler;
+import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
+import org.jboss.as.host.controller.operations.ServerRestartHandler;
+import org.jboss.as.host.controller.operations.ServerStartHandler;
+import org.jboss.as.host.controller.operations.ServerStatusHandler;
+import org.jboss.as.host.controller.operations.ServerStopHandler;
+import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
 import org.jboss.as.host.controller.operations.ServerRemoveHandler;
@@ -123,7 +123,7 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class NewHostModelUtil {
+public class HostModelUtil {
 
     public static void initCoreModel(final ModelNode root) {
         root.get(NAME);
@@ -144,13 +144,13 @@ public class NewHostModelUtil {
 
     public static void createHostRegistry(final ManagementResourceRegistration root, final HostControllerConfigurationPersister configurationPersister,
                                           final HostControllerEnvironment environment, final FileRepository localFileRepository,
-                                          final LocalHostControllerInfoImpl hostControllerInfo, final NewServerInventory serverInventory,
-                                          final RemoteFileRepository remoteFileRepository, final NewDomainController domainController,
+                                          final LocalHostControllerInfoImpl hostControllerInfo, final ServerInventory serverInventory,
+                                          final RemoteFileRepository remoteFileRepository, final DomainController domainController,
                                           final UnregisteredHostChannelRegistry registry) {
         // Add of the host itself
         ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST), HostDescriptionProviders.HOST_ROOT_PROVIDER);
-        NewLocalHostAddHandler handler = NewLocalHostAddHandler.getInstance(hostControllerInfo);
-        hostRegistration.registerOperationHandler(NewLocalHostAddHandler.OPERATION_NAME, handler, handler, false, OperationEntry.EntryType.PRIVATE);
+        LocalHostAddHandler handler = LocalHostAddHandler.getInstance(hostControllerInfo);
+        hostRegistration.registerOperationHandler(LocalHostAddHandler.OPERATION_NAME, handler, handler, false, OperationEntry.EntryType.PRIVATE);
 
         // Global operations
         EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY);
@@ -173,8 +173,8 @@ public class NewHostModelUtil {
         hostRegistration.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
         hostRegistration.registerReadWriteAttribute(NAME, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
         hostRegistration.registerReadOnlyAttribute(MASTER, IsMasterHandler.INSTANCE, Storage.RUNTIME);
-        NewStartServersHandler ssh = new NewStartServersHandler(environment, serverInventory);
-        hostRegistration.registerOperationHandler(NewStartServersHandler.OPERATION_NAME, ssh, ssh, false, OperationEntry.EntryType.PRIVATE);
+        StartServersHandler ssh = new StartServersHandler(environment, serverInventory);
+        hostRegistration.registerOperationHandler(StartServersHandler.OPERATION_NAME, ssh, ssh, false, OperationEntry.EntryType.PRIVATE);
         HostStopHandler hsh = new HostStopHandler(domainController);
         hostRegistration.registerOperationHandler(HostStopHandler.OPERATION_NAME, hsh, hsh);
 
@@ -207,13 +207,13 @@ public class NewHostModelUtil {
         // hostRegistration.registerReadWriteAttribute(ModelDescriptionConstants.MANAGEMENT_INTERFACE, GlobalOperationHandlers.READ_ATTRIBUTE, ManagementSocketAddHandler.INSTANCE);
         //hostRegistration.registerOperationHandler(ManagementSocketRemoveHandler.OPERATION_NAME, ManagementSocketRemoveHandler.INSTANCE, ManagementSocketRemoveHandler.INSTANCE, false);
 
-        NewLocalDomainControllerAddHandler localDcAddHandler = NewLocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,
+        LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,
                 environment, configurationPersister, localFileRepository, domainController, registry);
-        hostRegistration.registerOperationHandler(NewLocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
+        hostRegistration.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
         hostRegistration.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
-        NewRemoteDomainControllerAddHandler remoteDcAddHandler = NewRemoteDomainControllerAddHandler.getInstance(root, hostControllerInfo,
+        RemoteDomainControllerAddHandler remoteDcAddHandler = RemoteDomainControllerAddHandler.getInstance(root, hostControllerInfo,
                 configurationPersister, remoteFileRepository);
-        hostRegistration.registerOperationHandler(NewRemoteDomainControllerAddHandler.OPERATION_NAME, remoteDcAddHandler, remoteDcAddHandler, false);
+        hostRegistration.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, remoteDcAddHandler, remoteDcAddHandler, false);
         hostRegistration.registerOperationHandler(RemoteDomainControllerRemoveHandler.OPERATION_NAME, RemoteDomainControllerRemoveHandler.INSTANCE, RemoteDomainControllerRemoveHandler.INSTANCE, false);
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister.getHostPersister());
         hostRegistration.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false);
@@ -256,13 +256,13 @@ public class NewHostModelUtil {
         servers.registerReadWriteAttribute(CPU_AFFINITY, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
 
         // Register server runtime operation handlers
-        servers.registerMetric(NewServerStatusHandler.ATTRIBUTE_NAME, new NewServerStatusHandler(serverInventory));
-        NewServerStartHandler startHandler = new NewServerStartHandler(serverInventory);
-        servers.registerOperationHandler(NewServerStartHandler.OPERATION_NAME, startHandler, startHandler, false);
-        NewServerRestartHandler restartHandler = new NewServerRestartHandler(serverInventory);
-        servers.registerOperationHandler(NewServerRestartHandler.OPERATION_NAME, restartHandler, restartHandler, false);
-        NewServerStopHandler stopHandler = new NewServerStopHandler(serverInventory);
-        servers.registerOperationHandler(NewServerStopHandler.OPERATION_NAME, stopHandler, stopHandler, false);
+        servers.registerMetric(ServerStatusHandler.ATTRIBUTE_NAME, new ServerStatusHandler(serverInventory));
+        ServerStartHandler startHandler = new ServerStartHandler(serverInventory);
+        servers.registerOperationHandler(ServerStartHandler.OPERATION_NAME, startHandler, startHandler, false);
+        ServerRestartHandler restartHandler = new ServerRestartHandler(serverInventory);
+        servers.registerOperationHandler(ServerRestartHandler.OPERATION_NAME, restartHandler, restartHandler, false);
+        ServerStopHandler stopHandler = new ServerStopHandler(serverInventory);
+        servers.registerOperationHandler(ServerStopHandler.OPERATION_NAME, stopHandler, stopHandler, false);
 
         //server paths
         ManagementResourceRegistration serverPaths = servers.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
@@ -286,7 +286,7 @@ public class NewHostModelUtil {
         //TODO register the rest of the server values
     }
 
-    public static void registerServerInventory(final NewServerInventory serverInventory) {
+    public static void registerServerInventory(final ServerInventory serverInventory) {
 
     }
 }

@@ -31,7 +31,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface NewDomainController {
+public interface DomainController {
 
     /**
      * {@link org.jboss.msc.service.ServiceName} under which a DomainController instance should be registered

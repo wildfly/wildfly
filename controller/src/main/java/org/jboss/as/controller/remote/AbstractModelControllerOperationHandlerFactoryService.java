@@ -39,7 +39,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public abstract class NewAbstractModelControllerOperationHandlerFactoryService<T extends NewAbstractModelControllerOperationHandler> implements Service<ManagementOperationHandlerFactory>, ManagementOperationHandlerFactory{
+public abstract class AbstractModelControllerOperationHandlerFactoryService<T extends AbstractModelControllerOperationHandler> implements Service<ManagementOperationHandlerFactory>, ManagementOperationHandlerFactory{
 
     protected static final Logger log = Logger.getLogger("org.jboss.server.management");
 

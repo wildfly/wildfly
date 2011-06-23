@@ -64,7 +64,7 @@ import org.jboss.threads.AsyncFuture.Status;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NewRemoteProxyController implements ProxyController, ManagementOperationHandler {
+public class RemoteProxyController implements ProxyController, ManagementOperationHandler {
 
     private final AtomicBoolean closed = new AtomicBoolean();
     private final PathAddress pathAddress;
@@ -73,7 +73,7 @@ public class NewRemoteProxyController implements ProxyController, ManagementOper
     private final Map<Integer, ExecuteRequestContext> activeRequests = Collections.synchronizedMap(new HashMap<Integer, ExecuteRequestContext>());
     private final ProxyOperationAddressTranslator addressTranslator;
 
-    private NewRemoteProxyController(final ExecutorService executorService, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final ManagementChannel channel) {
+    private RemoteProxyController(final ExecutorService executorService, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final ManagementChannel channel) {
         this.pathAddress = pathAddress;
         this.channel = channel;
         this.executorService = executorService;
@@ -83,7 +83,7 @@ public class NewRemoteProxyController implements ProxyController, ManagementOper
 
             @Override
             public void handleClose(Channel closed) {
-                NewRemoteProxyController.this.closed.set(true);
+                RemoteProxyController.this.closed.set(true);
                 synchronized (activeRequests) {
                     for (ExecuteRequestContext context : activeRequests.values()) {
                         context.setError("Channel closed");
@@ -103,8 +103,8 @@ public class NewRemoteProxyController implements ProxyController, ManagementOper
      * @param channel the channel to use for communication
      * @return the proxy controller
      */
-    public static NewRemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final ManagementChannel channel) {
-        return new NewRemoteProxyController(executorService, pathAddress, addressTranslator, channel);
+    public static RemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final ManagementChannel channel) {
+        return new RemoteProxyController(executorService, pathAddress, addressTranslator, channel);
     }
 
     /** {@inheritDoc} */

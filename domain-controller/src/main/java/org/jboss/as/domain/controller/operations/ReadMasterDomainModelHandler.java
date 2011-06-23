@@ -45,7 +45,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.NewDomainController;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.dmr.ModelNode;
 
@@ -58,10 +58,10 @@ import org.jboss.dmr.ModelNode;
 public class ReadMasterDomainModelHandler implements OperationStepHandler, DescriptionProvider {
     public static final String OPERATION_NAME = "read-master-domain-model";
 
-    private final NewDomainController domainController;
+    private final DomainController domainController;
     private final UnregisteredHostChannelRegistry registry;
 
-    public ReadMasterDomainModelHandler(final NewDomainController domainController, final UnregisteredHostChannelRegistry registry) {
+    public ReadMasterDomainModelHandler(final DomainController domainController, final UnregisteredHostChannelRegistry registry) {
         this.domainController = domainController;
         this.registry = registry;
     }

@@ -31,7 +31,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.host.controller.NewServerInventory;
+import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -40,16 +40,16 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NewServerRestartHandler implements OperationStepHandler, DescriptionProvider {
+public class ServerRestartHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "restart";
 
-    private final NewServerInventory serverInventory;
+    private final ServerInventory serverInventory;
 
     /**
      * Create the ServerAddHandler
      */
-    public NewServerRestartHandler(final NewServerInventory serverInventory) {
+    public ServerRestartHandler(final ServerInventory serverInventory) {
         this.serverInventory = serverInventory;
     }
 

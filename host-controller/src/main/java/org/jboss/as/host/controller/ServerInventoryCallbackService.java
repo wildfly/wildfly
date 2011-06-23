@@ -22,7 +22,6 @@
 package org.jboss.as.host.controller;
 
 
-import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.msc.service.Service;
@@ -35,11 +34,11 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class NewServerInventoryCallbackService implements Service<CallbackHandler> {
+public class ServerInventoryCallbackService implements Service<CallbackHandler> {
 
     static final ServiceName SERVICE_NAME = NewServerInventoryService.SERVICE_NAME.append("callback");
 
-    private final InjectedValue<NewServerInventory> serverInventoryInjectedValue = new InjectedValue<NewServerInventory>();
+    private final InjectedValue<ServerInventory> serverInventoryInjectedValue = new InjectedValue<ServerInventory>();
 
     public void start(StartContext startContext) throws StartException {
     }
@@ -47,7 +46,7 @@ public class NewServerInventoryCallbackService implements Service<CallbackHandle
     public void stop(StopContext stopContext) {
     }
 
-    public InjectedValue<NewServerInventory> getServerInventoryInjectedValue() {
+    public InjectedValue<ServerInventory> getServerInventoryInjectedValue() {
         return serverInventoryInjectedValue;
     }
 

@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  * @author Emanuel Muckenhuber
  * @author Kabir Khan
    */
-public interface NewServerInventory extends ManagedServerLifecycleCallback {
+public interface ServerInventory extends ManagedServerLifecycleCallback {
     void stopServers(int gracefulTimeout);
     String getServerProcessName(String serverName);
     Map<String, ProcessInfo> determineRunningProcesses();

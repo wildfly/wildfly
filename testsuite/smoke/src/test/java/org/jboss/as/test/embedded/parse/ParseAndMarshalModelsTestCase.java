@@ -101,10 +101,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.NewDomainModelUtil;
+import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.management.operations.ConnectionAddHandler;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
-import org.jboss.as.host.controller.NewHostModelUtil;
+import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
@@ -333,7 +333,7 @@ public class ParseAndMarshalModelsTestCase {
 
         final ModelController controller = createController(model, new Setup() {
             public void setup(ModelNode model, ManagementResourceRegistration root) {
-                NewHostModelUtil.initCoreModel(model.get(HOST, "local"));
+                HostModelUtil.initCoreModel(model.get(HOST, "local"));
 
                 final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(new ControlledProcessState(false));
 
@@ -435,8 +435,8 @@ public class ParseAndMarshalModelsTestCase {
         final ModelNode model = new ModelNode();
         final ModelController controller = createController(model, new Setup() {
             public void setup(ModelNode model, ManagementResourceRegistration rootRegistration) {
-                NewDomainModelUtil.updateCoreModel(model);
-                NewDomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, null, new MockFileRepository(), null, null);
+                DomainModelUtil.updateCoreModel(model);
+                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, null, new MockFileRepository(), null, null);
             }
         });
 

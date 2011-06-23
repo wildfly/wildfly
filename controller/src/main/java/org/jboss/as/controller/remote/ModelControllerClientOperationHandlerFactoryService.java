@@ -28,10 +28,10 @@ package org.jboss.as.controller.remote;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NewModelControllerClientOperationHandlerFactoryService extends NewAbstractModelControllerOperationHandlerFactoryService<NewModelControllerClientOperationHandler>{
+public class ModelControllerClientOperationHandlerFactoryService extends AbstractModelControllerOperationHandlerFactoryService<ModelControllerClientOperationHandler> {
 
     @Override
-    public NewModelControllerClientOperationHandler createOperationHandler() {
-        return new NewModelControllerClientOperationHandler(getExecutor(), getController());
+    public ModelControllerClientOperationHandler createOperationHandler() {
+        return new ModelControllerClientOperationHandler(getExecutor(), getController());
     }
 }

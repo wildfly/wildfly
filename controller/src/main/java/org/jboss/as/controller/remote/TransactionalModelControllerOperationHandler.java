@@ -51,9 +51,9 @@ import org.jboss.remoting3.HandleableCloseable.Key;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NewTransactionalModelControllerOperationHandler extends NewAbstractModelControllerOperationHandler {
+public class TransactionalModelControllerOperationHandler extends AbstractModelControllerOperationHandler {
 
-    public NewTransactionalModelControllerOperationHandler(final ExecutorService executorService, final ModelController controller) {
+    public TransactionalModelControllerOperationHandler(final ExecutorService executorService, final ModelController controller) {
         super(executorService, controller);
     }
 

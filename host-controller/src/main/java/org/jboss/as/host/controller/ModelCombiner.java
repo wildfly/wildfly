@@ -67,7 +67,7 @@ import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.domain.controller.NewDomainController;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.host.controller.operations.ExtensionAddHandler;
 import org.jboss.as.process.DefaultJvmUtils;
@@ -83,7 +83,7 @@ import org.jboss.dmr.Property;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class NewModelCombiner implements ManagedServerBootConfiguration {
+class ModelCombiner implements ManagedServerBootConfiguration {
 
     private static final ModelNode EMPTY = new ModelNode();
     static {
@@ -99,10 +99,10 @@ class NewModelCombiner implements ManagedServerBootConfiguration {
     private final String profileName;
     private final JvmElement jvmElement;
     private final HostControllerEnvironment environment;
-    private final NewDomainController domainController;
+    private final DomainController domainController;
 
-    NewModelCombiner(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final NewDomainController domainController,
-                     final HostControllerEnvironment environment) {
+    ModelCombiner(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final DomainController domainController,
+                  final HostControllerEnvironment environment) {
         this.serverName = serverName;
         this.domainModel = domainModel;
         this.hostModel = hostModel;

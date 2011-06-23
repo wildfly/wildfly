@@ -45,25 +45,25 @@ import org.jboss.threads.JBossThreadFactory;
 /**
  * @author Emanuel Muckenhuber
  */
-class NewProcessControllerConnectionService implements Service<NewProcessControllerConnectionService> {
+class ProcessControllerConnectionService implements Service<ProcessControllerConnectionService> {
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "process-controller-connection");
 
     private final HostControllerEnvironment environment;
     private final byte[] authCode;
     private volatile ProcessControllerClient client;
-    private volatile NewServerInventory serverInventory;
+    private volatile ServerInventory serverInventory;
 
-    NewProcessControllerConnectionService(final HostControllerEnvironment environment, final byte[] authCode) {
+    ProcessControllerConnectionService(final HostControllerEnvironment environment, final byte[] authCode) {
         this.environment = environment;
         this.authCode = authCode;
     }
 
-    NewServerInventory getServerInventory() {
+    ServerInventory getServerInventory() {
         return serverInventory;
     }
 
-    void setServerInventory(NewServerInventory serverInventory) {
+    void setServerInventory(ServerInventory serverInventory) {
         this.serverInventory = serverInventory;
     }
 
@@ -137,7 +137,7 @@ class NewProcessControllerConnectionService implements Service<NewProcessControl
 
     /** {@inheritDoc} */
     @Override
-    public synchronized NewProcessControllerConnectionService getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized ProcessControllerConnectionService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 

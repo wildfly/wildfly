@@ -50,14 +50,14 @@ import org.jboss.logging.Logger;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public abstract class NewAbstractModelControllerOperationHandler implements ManagementOperationHandler {
+public abstract class AbstractModelControllerOperationHandler implements ManagementOperationHandler {
 
     final Logger log = Logger.getLogger("org.jboss.as.controller.remote");
 
     protected final ExecutorService executorService;
     protected final ModelController controller;
 
-    public NewAbstractModelControllerOperationHandler(final ExecutorService executorService, final ModelController controller) {
+    public AbstractModelControllerOperationHandler(final ExecutorService executorService, final ModelController controller) {
         this.executorService = executorService;
         this.controller = controller;
     }

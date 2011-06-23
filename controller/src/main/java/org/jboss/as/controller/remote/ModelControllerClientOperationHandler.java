@@ -46,7 +46,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NewModelControllerClientOperationHandler extends NewAbstractModelControllerOperationHandler {
+public class ModelControllerClientOperationHandler extends AbstractModelControllerOperationHandler {
 
     private final Map<Integer, Thread> asynchRequests = Collections.synchronizedMap(new HashMap<Integer, Thread>());
 
@@ -54,7 +54,7 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
      * @param executorService executor to use to execute requests from this operation handler to the initiator
      * @param controller the target controller
      */
-    public NewModelControllerClientOperationHandler(final ExecutorService executorService, final ModelController controller) {
+    public ModelControllerClientOperationHandler(final ExecutorService executorService, final ModelController controller) {
         super(executorService, controller);
     }
 

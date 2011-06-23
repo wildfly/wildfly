@@ -47,13 +47,13 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
-import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
+import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.NewMasterDomainControllerClient;
+import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.security.SecretIdentityService;
 import org.jboss.as.domain.management.security.SecurityRealmService;
-import org.jboss.as.host.controller.mgmt.NewDomainControllerProtocol;
+import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -82,12 +82,12 @@ import org.jboss.threads.AsyncFutureTask;
 
 
 /**
- * Establishes the connection from a slave {@link org.jboss.as.domain.controller.NewDomainController} to the master
- * {@link org.jboss.as.domain.controller.NewDomainController}
+ * Establishes the connection from a slave {@link org.jboss.as.domain.controller.DomainController} to the master
+ * {@link org.jboss.as.domain.controller.DomainController}
  *
  * @author Kabir Khan
  */
-public class NewRemoteDomainConnectionService implements NewMasterDomainControllerClient, Service<NewMasterDomainControllerClient>, ClosedCallback {
+public class RemoteDomainConnectionService implements MasterDomainControllerClient, Service<MasterDomainControllerClient>, ClosedCallback {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private final ModelController controller;
@@ -101,7 +101,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     /** Used to invoke ModelController ops on the master */
     private volatile ModelControllerClient masterProxy;
     /** Handler for transactional operations */
-    private volatile NewTransactionalModelControllerOperationHandler txOperationHandler;
+    private volatile TransactionalModelControllerOperationHandler txOperationHandler;
     private final AtomicBoolean shutdown = new AtomicBoolean();
     private volatile ManagementChannel channel;
     private final ExecutorService executor = Executors.newCachedThreadPool();
@@ -110,7 +110,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
     private final InjectedValue<CallbackHandlerFactory> callbackFactoryInjector = new InjectedValue<CallbackHandlerFactory>();
 
-    private NewRemoteDomainConnectionService(final ModelController controller, final String name, final InetAddress host, final int port, final RemoteFileRepository remoteFileRepository){
+    private RemoteDomainConnectionService(final ModelController controller, final String name, final InetAddress host, final int port, final RemoteFileRepository remoteFileRepository){
         this.controller = controller;
         this.name = name;
         this.host = host;
@@ -119,12 +119,12 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         remoteFileRepository.setRemoteFileRepositoryExecutor(remoteFileRepositoryExecutor);
     }
 
-    public static Future<NewMasterDomainControllerClient> install(final ServiceTarget serviceTarget, final ModelController controller,
+    public static Future<MasterDomainControllerClient> install(final ServiceTarget serviceTarget, final ModelController controller,
                                                                   final String localHostName, final String remoteDcHost, final int remoteDcPort,
                                                                   final String securityRealm, final RemoteFileRepository remoteFileRepository) {
-        NewRemoteDomainConnectionService service;
+        RemoteDomainConnectionService service;
         try {
-            service = new NewRemoteDomainConnectionService(
+            service = new RemoteDomainConnectionService(
                     controller,
                     localHostName,
                     InetAddress.getByName(remoteDcHost),
@@ -133,7 +133,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        ServiceBuilder builder = serviceTarget.addService(NewMasterDomainControllerClient.SERVICE_NAME, service)
+        ServiceBuilder builder = serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
                 .addDependency(RemotingServices.ENDPOINT, Endpoint.class, service.endpointInjector)
                 .setInitialMode(ServiceController.Mode.ACTIVE);
 
@@ -177,7 +177,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
 
     private synchronized void connect() {
         Security.addProvider(saslProvider);
-        txOperationHandler = new NewTransactionalModelControllerOperationHandler(executor, controller);
+        txOperationHandler = new TransactionalModelControllerOperationHandler(executor, controller);
         ProtocolChannelClient<ManagementChannel> client;
         try {
             ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
@@ -338,7 +338,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
 
     /** {@inheritDoc} */
     @Override
-    public synchronized NewMasterDomainControllerClient getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized MasterDomainControllerClient getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
@@ -356,13 +356,13 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
 
         @Override
         protected byte getRequestCode() {
-            return NewDomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST;
+            return DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST;
         }
 
         /** {@inheritDoc} */
         @Override
         protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-            output.write(NewDomainControllerProtocol.PARAM_HOST_ID);
+            output.write(DomainControllerProtocol.PARAM_HOST_ID);
             output.writeUTF(name);
         }
 
@@ -370,7 +370,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         @Override
         protected String readResponse(DataInput input) throws IOException {
             byte status = input.readByte();
-            if (status == NewDomainControllerProtocol.PARAM_OK) {
+            if (status == DomainControllerProtocol.PARAM_OK) {
                 return null;
             } else {
                 return input.readUTF();
@@ -381,13 +381,13 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
     private class UnregisterModelControllerRequest extends RegistryRequest<Void> {
         @Override
         protected byte getRequestCode() {
-            return NewDomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST;
+            return DomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST;
         }
 
         /** {@inheritDoc} */
         @Override
         protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
-            output.write(NewDomainControllerProtocol.PARAM_HOST_ID);
+            output.write(DomainControllerProtocol.PARAM_HOST_ID);
             output.writeUTF(name);
         }
     }
@@ -405,16 +405,16 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
 
         @Override
         public final byte getRequestCode() {
-            return NewDomainControllerProtocol.GET_FILE_REQUEST;
+            return DomainControllerProtocol.GET_FILE_REQUEST;
         }
 
         @Override
         protected final void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
             super.writeRequest(protocolVersion, output);
             log.debugf("Requesting files for path %s", filePath);
-            output.writeByte(NewDomainControllerProtocol.PARAM_ROOT_ID);
+            output.writeByte(DomainControllerProtocol.PARAM_ROOT_ID);
             output.writeByte(rootId);
-            output.writeByte(NewDomainControllerProtocol.PARAM_FILE_PATH);
+            output.writeByte(DomainControllerProtocol.PARAM_FILE_PATH);
             output.writeUTF(filePath);
         }
 
@@ -422,15 +422,15 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         protected final File readResponse(final DataInput input) throws IOException {
             final File localPath;
             switch (rootId) {
-                case NewDomainControllerProtocol.PARAM_ROOT_ID_FILE: {
+                case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
                     localPath = localFileRepository.getFile(filePath);
                     break;
                 }
-                case NewDomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
+                case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
                     localPath = localFileRepository.getConfigurationFile(filePath);
                     break;
                 }
-                case NewDomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
+                case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
                     byte[] hash = HashUtil.hexStringToByteArray(filePath);
                     localPath = localFileRepository.getDeploymentRoot(hash);
                     break;
@@ -439,7 +439,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
                     localPath = null;
                 }
             }
-            expectHeader(input, NewDomainControllerProtocol.PARAM_NUM_FILES);
+            expectHeader(input, DomainControllerProtocol.PARAM_NUM_FILES);
             int numFiles = input.readInt();
             log.debugf("Received %d files for %s", numFiles, localPath);
             switch (numFiles) {
@@ -454,10 +454,10 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
                 }
                 default: { // Found on DC
                     for (int i = 0; i < numFiles; i++) {
-                        expectHeader(input, NewDomainControllerProtocol.FILE_START);
-                        expectHeader(input, NewDomainControllerProtocol.PARAM_FILE_PATH);
+                        expectHeader(input, DomainControllerProtocol.FILE_START);
+                        expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
                         final String path = input.readUTF();
-                        expectHeader(input, NewDomainControllerProtocol.PARAM_FILE_SIZE);
+                        expectHeader(input, DomainControllerProtocol.PARAM_FILE_SIZE);
                         final long length = input.readLong();
                         log.debugf("Received file [%s] of length %d", path, length);
                         final File file = new File(localPath, path);
@@ -484,7 +484,7 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
                             throw new IOException("Did not read the entire file. Missing: " + (length - totalRead));
                         }
 
-                        expectHeader(input, NewDomainControllerProtocol.FILE_END);
+                        expectHeader(input, DomainControllerProtocol.FILE_END);
                     }
                 }
             }
@@ -502,24 +502,24 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
 
         @Override
         public final File getFile(String relativePath) {
-            return getFile(relativePath, NewDomainControllerProtocol.PARAM_ROOT_ID_FILE);
+            return getFile(relativePath, DomainControllerProtocol.PARAM_ROOT_ID_FILE);
         }
 
         @Override
         public final File getConfigurationFile(String relativePath) {
-            return getFile(relativePath, NewDomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION);
+            return getFile(relativePath, DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION);
         }
 
         @Override
         public final File[] getDeploymentFiles(byte[] deploymentHash) {
             String hex = deploymentHash == null ? "" : HashUtil.bytesToHexString(deploymentHash);
-            return getFile(hex, NewDomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT).listFiles();
+            return getFile(hex, DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT).listFiles();
         }
 
         @Override
         public File getDeploymentRoot(byte[] deploymentHash) {
             String hex = deploymentHash == null ? "" : HashUtil.bytesToHexString(deploymentHash);
-            return getFile(hex, NewDomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT);
+            return getFile(hex, DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT);
         }
 
         private File getFile(final String relativePath, final byte repoId) {
@@ -545,13 +545,13 @@ public class NewRemoteDomainConnectionService implements NewMasterDomainControll
         }
     };
 
-    private class FutureClient extends AsyncFutureTask<NewMasterDomainControllerClient>{
+    private class FutureClient extends AsyncFutureTask<MasterDomainControllerClient>{
 
         protected FutureClient() {
             super(null);
         }
 
-        private void setClient(NewMasterDomainControllerClient client) {
+        private void setClient(MasterDomainControllerClient client) {
             super.setResult(client);
         }
     }

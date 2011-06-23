@@ -61,7 +61,7 @@ import static org.jboss.as.server.controller.descriptions.ServerDescriptionConst
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
-import org.jboss.as.controller.NewCompositeOperationHandler;
+import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
@@ -175,7 +175,7 @@ public class
         root.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
         root.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
         // Other root resource operations
-        root.registerOperationHandler(NewCompositeOperationHandler.NAME, NewCompositeOperationHandler.INSTANCE, NewCompositeOperationHandler.INSTANCE, false, EntryType.PRIVATE);
+        root.registerOperationHandler(CompositeOperationHandler.NAME, CompositeOperationHandler.INSTANCE, CompositeOperationHandler.INSTANCE, false, EntryType.PRIVATE);
         XmlMarshallingHandler xmh = new XmlMarshallingHandler(extensibleConfigurationPersister);
         root.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false);
         root.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);

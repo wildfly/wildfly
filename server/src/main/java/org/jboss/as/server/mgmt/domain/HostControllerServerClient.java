@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.remote.NewTransactionalModelControllerOperationHandler;
+import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
@@ -67,7 +67,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
-        hcChannel.getValue().setOperationHandler(new NewTransactionalModelControllerOperationHandler(executor, controller.getValue()));
+        hcChannel.getValue().setOperationHandler(new TransactionalModelControllerOperationHandler(executor, controller.getValue()));
 
         try {
             new ServerRegisterRequest().executeForResult(executor, ManagementClientChannelStrategy.create(hcChannel.getValue()));

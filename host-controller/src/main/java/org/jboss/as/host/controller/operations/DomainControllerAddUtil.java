@@ -50,7 +50,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Emanuel Muckenhuber
  */
-public class NewDomainControllerAddUtil {
+public class DomainControllerAddUtil {
 
     static Collection<ServiceController<?>> installLocalDomainController(final ModelNode host,
                                                                          final ServiceTarget serviceTarget,
@@ -109,7 +109,7 @@ public class NewDomainControllerAddUtil {
             throw new RuntimeException(e);
         }
         final int port = dc.require(PORT).resolve().asInt();
-//        final NewRemoteDomainConnectionService service = new NewRemoteDomainConnectionService(name, addr, port, localFileRepository);
+//        final RemoteDomainConnectionService service = new RemoteDomainConnectionService(name, addr, port, localFileRepository);
 //        return serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
 //                .setInitialMode(ServiceController.Mode.ACTIVE)
 //                .install();

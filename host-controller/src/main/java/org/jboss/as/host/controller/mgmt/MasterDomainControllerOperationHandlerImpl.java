@@ -37,10 +37,10 @@ import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.remote.NewAbstractModelControllerOperationHandler;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandler;
+import org.jboss.as.controller.remote.AbstractModelControllerOperationHandler;
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.NewDomainController;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry.ProxyCreatedCallback;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
@@ -55,19 +55,19 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractModelControllerOperationHandler {
+public class MasterDomainControllerOperationHandlerImpl extends AbstractModelControllerOperationHandler {
 
-    private final NewModelControllerClientOperationHandler clientHandler;
+    private final ModelControllerClientOperationHandler clientHandler;
     private volatile ManagementOperationHandler proxyHandler;
 
-    private final NewDomainController domainController;
+    private final DomainController domainController;
     private final UnregisteredHostChannelRegistry registry;
 
-    public NewMasterDomainControllerOperationHandlerImpl(final ExecutorService executorService, final ModelController controller, final UnregisteredHostChannelRegistry registry, final NewDomainController domainController) {
+    public MasterDomainControllerOperationHandlerImpl(final ExecutorService executorService, final ModelController controller, final UnregisteredHostChannelRegistry registry, final DomainController domainController) {
         super(executorService, controller);
         this.domainController = domainController;
         this.registry = registry;
-        this.clientHandler = new NewModelControllerClientOperationHandler(executorService, controller);
+        this.clientHandler = new ModelControllerClientOperationHandler(executorService, controller);
     }
 
     @Override
@@ -83,11 +83,11 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
             }
         }
         switch (id) {
-        case NewDomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST:
+        case DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST:
             return new RegisterOperation();
-        case NewDomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST:
+        case DomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST:
             return new UnregisterOperation();
-        case NewDomainControllerProtocol.GET_FILE_REQUEST:
+        case DomainControllerProtocol.GET_FILE_REQUEST:
             return new GetFileOperation();
         }
         return null;
@@ -101,7 +101,7 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            expectHeader(input, NewDomainControllerProtocol.PARAM_HOST_ID);
+            expectHeader(input, DomainControllerProtocol.PARAM_HOST_ID);
             hostId = input.readUTF();
         }
     }
@@ -110,7 +110,7 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            expectHeader(input, NewDomainControllerProtocol.PARAM_HOST_ID);
+            expectHeader(input, DomainControllerProtocol.PARAM_HOST_ID);
             hostId = input.readUTF();
         }
 
@@ -141,10 +141,10 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
             }
 
             if (error != null) {
-                output.write(NewDomainControllerProtocol.PARAM_ERROR);
+                output.write(DomainControllerProtocol.PARAM_ERROR);
                 output.writeUTF(error);
             } else {
-                output.write(NewDomainControllerProtocol.PARAM_OK);
+                output.write(DomainControllerProtocol.PARAM_OK);
             }
         }
     }
@@ -164,21 +164,21 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
             final byte rootId;
             final String filePath;
             final FileRepository localFileRepository = domainController.getFileRepository();
-            expectHeader(input, NewDomainControllerProtocol.PARAM_ROOT_ID);
+            expectHeader(input, DomainControllerProtocol.PARAM_ROOT_ID);
             rootId = input.readByte();
-            expectHeader(input, NewDomainControllerProtocol.PARAM_FILE_PATH);
+            expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
             filePath = input.readUTF();
 
             switch (rootId) {
-                case NewDomainControllerProtocol.PARAM_ROOT_ID_FILE: {
+                case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
                     localPath = localFileRepository.getFile(filePath);
                     break;
                 }
-                case NewDomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
+                case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
                     localPath = localFileRepository.getConfigurationFile(filePath);
                     break;
                 }
-                case NewDomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
+                case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
                     byte[] hash = HashUtil.hexStringToByteArray(filePath);
                     localPath = localFileRepository.getDeploymentRoot(hash);
                     break;
@@ -191,7 +191,7 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
 
         @Override
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
-            output.writeByte(NewDomainControllerProtocol.PARAM_NUM_FILES);
+            output.writeByte(DomainControllerProtocol.PARAM_NUM_FILES);
             if (localPath == null || !localPath.exists()) {
                 output.writeInt(-1);
             } else if (localPath.isFile()) {
@@ -227,10 +227,10 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
         }
 
         private void writeFile(final File file, final FlushableDataOutput output) throws IOException {
-            output.writeByte(NewDomainControllerProtocol.FILE_START);
-            output.writeByte(NewDomainControllerProtocol.PARAM_FILE_PATH);
+            output.writeByte(DomainControllerProtocol.FILE_START);
+            output.writeByte(DomainControllerProtocol.PARAM_FILE_PATH);
             output.writeUTF(getRelativePath(localPath, file));
-            output.writeByte(NewDomainControllerProtocol.PARAM_FILE_SIZE);
+            output.writeByte(DomainControllerProtocol.PARAM_FILE_SIZE);
             output.writeLong(file.length());
             InputStream inputStream = null;
             try {
@@ -248,7 +248,7 @@ public class NewMasterDomainControllerOperationHandlerImpl extends NewAbstractMo
                     }
                 }
             }
-            output.writeByte(NewDomainControllerProtocol.FILE_END);
+            output.writeByte(DomainControllerProtocol.FILE_END);
             output.flush();
         }
     }

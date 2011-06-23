@@ -30,8 +30,8 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.NewDomainController;
-import org.jboss.as.domain.controller.NewDomainModelUtil;
+import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision: 1.1 $
  */
-public class NewLocalDomainControllerAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class LocalDomainControllerAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "write-local-domain-controller";
 
@@ -52,29 +52,29 @@ public class NewLocalDomainControllerAddHandler extends AbstractAddStepHandler i
     private final HostControllerConfigurationPersister overallConfigPersister;
     private final FileRepository fileRepository;
     private final LocalHostControllerInfoImpl hostControllerInfo;
-    private final NewDomainController domainController;
+    private final DomainController domainController;
     private final UnregisteredHostChannelRegistry registry;
 
-    public static NewLocalDomainControllerAddHandler getInstance(final ManagementResourceRegistration rootRegistration,
+    public static LocalDomainControllerAddHandler getInstance(final ManagementResourceRegistration rootRegistration,
                                                                  final LocalHostControllerInfoImpl hostControllerInfo,
                                                                  final HostControllerEnvironment environment,
                                                                  final HostControllerConfigurationPersister overallConfigPersister,
                                                                  final FileRepository fileRepository,
-                                                                 final NewDomainController domainController,
+                                                                 final DomainController domainController,
                                                                  final UnregisteredHostChannelRegistry registry) {
-        return new NewLocalDomainControllerAddHandler(rootRegistration, hostControllerInfo, environment, overallConfigPersister, fileRepository, domainController, registry);
+        return new LocalDomainControllerAddHandler(rootRegistration, hostControllerInfo, environment, overallConfigPersister, fileRepository, domainController, registry);
     }
 
     /**
      * Create the ServerAddHandler
      */
-    NewLocalDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
-                                       final LocalHostControllerInfoImpl hostControllerInfo,
-                                       final HostControllerEnvironment environment,
-                                       final HostControllerConfigurationPersister overallConfigPersister,
-                                       final FileRepository fileRepository,
-                                       final NewDomainController domainController,
-                                       final UnregisteredHostChannelRegistry registry) {
+    LocalDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
+                                    final LocalHostControllerInfoImpl hostControllerInfo,
+                                    final HostControllerEnvironment environment,
+                                    final HostControllerConfigurationPersister overallConfigPersister,
+                                    final FileRepository fileRepository,
+                                    final DomainController domainController,
+                                    final UnregisteredHostChannelRegistry registry) {
         this.environment = environment;
         this.rootRegistration = rootRegistration;
         this.overallConfigPersister = overallConfigPersister;
@@ -98,7 +98,7 @@ public class NewLocalDomainControllerAddHandler extends AbstractAddStepHandler i
         ContentRepository contentRepo = new DomainContentRepository(environment.getDomainDeploymentDir());
         hostControllerInfo.setContentRepository(contentRepo);
 
-        NewDomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
+        DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
                 contentRepo, fileRepository, domainController, registry);
     }
 

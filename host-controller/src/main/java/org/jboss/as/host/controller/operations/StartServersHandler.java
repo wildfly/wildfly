@@ -33,7 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
-import org.jboss.as.host.controller.NewServerInventory;
+import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -43,19 +43,19 @@ import org.jboss.logging.Logger;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NewStartServersHandler implements OperationStepHandler, DescriptionProvider {
+public class StartServersHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "start-servers";
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
-    private final NewServerInventory serverInventory;
+    private final ServerInventory serverInventory;
     private final HostControllerEnvironment hostControllerEnvironment;
 
     /**
      * Create the ServerAddHandler
      */
-    public NewStartServersHandler(final HostControllerEnvironment hostControllerEnvironment, final NewServerInventory serverInventory) {
+    public StartServersHandler(final HostControllerEnvironment hostControllerEnvironment, final ServerInventory serverInventory) {
         this.hostControllerEnvironment = hostControllerEnvironment;
         this.serverInventory = serverInventory;
     }

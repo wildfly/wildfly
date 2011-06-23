@@ -26,7 +26,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.domain.controller.NewDomainController;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -44,12 +44,12 @@ public class HostStopHandler implements OperationStepHandler, DescriptionProvide
         return op;
     }
 
-    private final NewDomainController domainController;
+    private final DomainController domainController;
 
     /**
      * Create the ServerAddHandler
      */
-    public HostStopHandler(final NewDomainController domainController) {
+    public HostStopHandler(final DomainController domainController) {
         this.domainController = domainController;
     }
 

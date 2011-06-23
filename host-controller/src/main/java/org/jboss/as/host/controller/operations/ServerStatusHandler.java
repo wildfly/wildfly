@@ -31,7 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.host.controller.NewServerInventory;
+import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -39,16 +39,16 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public class NewServerStatusHandler implements OperationStepHandler {
+public class ServerStatusHandler implements OperationStepHandler {
 
     public static final String ATTRIBUTE_NAME = "status";
 
-    private final NewServerInventory serverInventory;
+    private final ServerInventory serverInventory;
 
     /**
      * Create the ServerAddHandler
      */
-    public NewServerStatusHandler(final NewServerInventory serverInventory) {
+    public ServerStatusHandler(final ServerInventory serverInventory) {
         this.serverInventory = serverInventory;
     }
 

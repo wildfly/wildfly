@@ -44,11 +44,11 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public final class NewCompositeOperationHandler implements OperationStepHandler, DescriptionProvider {
-    public static final NewCompositeOperationHandler INSTANCE = new NewCompositeOperationHandler();
+public final class CompositeOperationHandler implements OperationStepHandler, DescriptionProvider {
+    public static final CompositeOperationHandler INSTANCE = new CompositeOperationHandler();
     public static final String NAME = ModelDescriptionConstants.COMPOSITE;
 
-    private NewCompositeOperationHandler() {
+    private CompositeOperationHandler() {
     }
 
     public void execute(final OperationContext context, final ModelNode operation) {

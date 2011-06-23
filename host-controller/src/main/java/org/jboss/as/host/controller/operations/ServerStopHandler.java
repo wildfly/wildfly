@@ -32,7 +32,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.host.controller.NewServerInventory;
+import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NewServerStopHandler implements OperationStepHandler, DescriptionProvider {
+public class ServerStopHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "stop";
 
@@ -52,12 +52,12 @@ public class NewServerStopHandler implements OperationStepHandler, DescriptionPr
         return op;
     }
 
-    private final NewServerInventory serverInventory;
+    private final ServerInventory serverInventory;
 
     /**
      * Create the ServerAddHandler
      */
-    public NewServerStopHandler(final NewServerInventory serverInventory) {
+    public ServerStopHandler(final ServerInventory serverInventory) {
         this.serverInventory = serverInventory;
     }
 

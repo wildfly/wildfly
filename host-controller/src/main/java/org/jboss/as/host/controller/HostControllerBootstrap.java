@@ -31,11 +31,8 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -50,7 +47,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NewHostControllerBootstrap {
+public class HostControllerBootstrap {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("host", "controller");
@@ -59,7 +56,7 @@ public class NewHostControllerBootstrap {
     private final HostControllerEnvironment environment;
     private final byte[] authCode;
 
-    public NewHostControllerBootstrap(final HostControllerEnvironment environment, final byte[] authCode) {
+    public HostControllerBootstrap(final HostControllerEnvironment environment, final byte[] authCode) {
         this.environment = environment;
         this.authCode = authCode;
     }
@@ -77,8 +74,8 @@ public class NewHostControllerBootstrap {
         final ServiceTarget serviceTarget = serviceContainer;
 
         // Install the process controller client
-        final NewProcessControllerConnectionService processControllerClient = new NewProcessControllerConnectionService(environment, authCode);
-        serviceTarget.addService(NewProcessControllerConnectionService.SERVICE_NAME, processControllerClient).install();
+        final ProcessControllerConnectionService processControllerClient = new ProcessControllerConnectionService(environment, authCode);
+        serviceTarget.addService(ProcessControllerConnectionService.SERVICE_NAME, processControllerClient).install();
 
         // Thread Factory and Executor Services
         final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");

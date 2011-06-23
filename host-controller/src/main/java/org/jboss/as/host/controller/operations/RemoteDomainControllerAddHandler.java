@@ -36,7 +36,7 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.NewDomainModelUtil;
+import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.dmr.ModelNode;
 
@@ -45,7 +45,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision: 1.1 $
  */
-public class NewRemoteDomainControllerAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class RemoteDomainControllerAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "write-remote-domain-controller";
 
@@ -56,20 +56,20 @@ public class NewRemoteDomainControllerAddHandler extends AbstractAddStepHandler 
     private final FileRepository fileRepository;
     private final LocalHostControllerInfoImpl hostControllerInfo;
 
-    public static NewRemoteDomainControllerAddHandler getInstance(final ManagementResourceRegistration rootRegistration,
+    public static RemoteDomainControllerAddHandler getInstance(final ManagementResourceRegistration rootRegistration,
                                                                  final LocalHostControllerInfoImpl hostControllerInfo,
                                                                  final HostControllerConfigurationPersister overallConfigPersister,
                                                                  final FileRepository fileRepository) {
-        return new NewRemoteDomainControllerAddHandler(rootRegistration, hostControllerInfo, overallConfigPersister, fileRepository);
+        return new RemoteDomainControllerAddHandler(rootRegistration, hostControllerInfo, overallConfigPersister, fileRepository);
     }
 
     /**
      * Create the ServerAddHandler
      */
-    NewRemoteDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
-                                        final LocalHostControllerInfoImpl hostControllerInfo,
-                                        final HostControllerConfigurationPersister overallConfigPersister,
-                                        final FileRepository fileRepository) {
+    RemoteDomainControllerAddHandler(final ManagementResourceRegistration rootRegistration,
+                                     final LocalHostControllerInfoImpl hostControllerInfo,
+                                     final HostControllerConfigurationPersister overallConfigPersister,
+                                     final FileRepository fileRepository) {
         this.rootRegistration = rootRegistration;
         this.overallConfigPersister = overallConfigPersister;
         this.fileRepository = fileRepository;
@@ -104,7 +104,7 @@ public class NewRemoteDomainControllerAddHandler extends AbstractAddStepHandler 
 
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
-        NewDomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), fileRepository);
+        DomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), fileRepository);
     }
 
   //Done by DomainModelControllerService
