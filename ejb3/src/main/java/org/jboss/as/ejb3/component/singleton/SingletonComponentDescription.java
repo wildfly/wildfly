@@ -118,6 +118,12 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                             return new SingletonBMTInterceptor((SingletonComponent) component);
                         }
                     };
+                    if(getClassDescription().getPostConstructMethod() != null) {
+                        configuration.addPostConstructInterceptor(slsbBmtInterceptorFactory, InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
+                    }
+                    if(getClassDescription().getPreDestroyMethod() != null) {
+                        configuration.addPreDestroyInterceptor(slsbBmtInterceptorFactory, InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
+                    }
                     // add the bmt interceptor factory
                     configuration.addComponentInterceptor(slsbBmtInterceptorFactory, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR, false);
                 }
