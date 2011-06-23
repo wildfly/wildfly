@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.InetAddress;
@@ -40,14 +41,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.xml.crypto.Data;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.stream.StreamSource;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import junit.framework.Assert;
 
@@ -58,12 +57,14 @@ import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.NewDat
 import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.Node;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriterFactory;
 import org.jboss.staxmapper.XMLMapper;
@@ -78,13 +79,17 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DataSourceOperationsUnitTestCase {
+public class AddMySqlDataSourceOperationsUnitTestCase {
 
     private ModelControllerClient client;
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> getDeployment() {
-        return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
+        Archive<?> archive = ShrinkWrap.createFromZipFile(JavaArchive.class, new File(
+                "src/test/resources/mysql-connector-java-5.1.15.jar"));
+        Node node = archive.get("META-INF");
+        return archive;
+        // ShrinkWrapUtils.createJavaArchive("mysql-connector-java-5.1.15.jar").getResources("mysql-connector-java-5.1.15.jar");
     }
 
     // [ARQ-458] @Before not called with @RunAsClient
@@ -104,30 +109,29 @@ public class DataSourceOperationsUnitTestCase {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
-        address.add("data-source", "MyNewDs");
+        address.add("data-source", "MySqlDs");
         address.protect();
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("add");
         operation.get(OP_ADDR).set(address);
 
-        operation.get("name").set("MyNewDs");
-        operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
+        operation.get("name").set("MySqlDs");
+        operation.get("jndi-name").set("java:jboss/datasources/MySqlDs");
         operation.get("enabled").set(true);
 
-        operation.get("driver-name").set("h2");
-        operation.get("pool-name").set("MyNewDs_Pool");
+        operation.get("driver-name").set("mysql-connector-java-5.1.15.jar");
+        operation.get("pool-name").set("MySqlDs_Pool");
 
-        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        operation.get("connection-url").set("dont_care");
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
         final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         final ModelNode address2 = new ModelNode();
         address2.add("subsystem", "datasources");
-        address2.add("data-source", "MyNewDs");
+        address2.add("data-source", "MySqlDs");
         address2.protect();
 
         final ModelNode operation2 = new ModelNode();
@@ -143,55 +147,7 @@ public class DataSourceOperationsUnitTestCase {
 
         final Map<String, ModelNode> parseChildren = DataSourceOperationTestUtil.getChildren(newList.get(1));
         Assert.assertFalse(parseChildren.isEmpty());
-        Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("remove");
-        compensatingOperation.get(OP_ADDR).set(address);
-
-        getModelControllerClient().execute(compensatingOperation);
-    }
-
-    @Test
-    public void testAddDsWithConnectionProperties() throws Exception {
-
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "datasources");
-        address.add("data-source", "MyNewDs");
-        address.protect();
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set("add");
-        operation.get(OP_ADDR).set(address);
-
-        operation.get("name").set("MyNewDs");
-        operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
-        operation.get("enabled").set(true);
-        operation.get("connection-properties", "MyKey").set("MyValue");
-
-        operation.get("driver-name").set("h2");
-        operation.get("pool-name").set("MyNewDs_Pool");
-
-        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-        operation.get("user-name").set("sa");
-        operation.get("password").set("sa");
-
-        final ModelNode result = getModelControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
-        List<ModelNode> newList = marshalAndReparseDsResources();
-
-        Assert.assertNotNull(newList);
-
-        final Map<String, ModelNode> parseChildren = DataSourceOperationTestUtil.getChildren(newList.get(1));
-        Assert.assertFalse(parseChildren.isEmpty());
-        Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
-        for (Entry<String, ModelNode> entry : parseChildren.entrySet()) {
-            System.out.println(entry.getKey());
-        }
-
-        Assert.assertEquals("MyKey", parseChildren.get("connection-properties").asProperty().getName());
-        Assert.assertEquals("MyValue", parseChildren.get("connection-properties").asProperty().getValue().asString());
+        Assert.assertEquals("java:jboss/datasources/MySqlDs", parseChildren.get("jndi-name").asString());
 
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set("remove");
