@@ -39,6 +39,7 @@ import org.jboss.modules.Module;
 
 import javax.annotation.Resource;
 import javax.annotation.Resources;
+import javax.validation.ValidatorFactory;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,7 +70,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         locations.put("javax.transaction.TransactionSynchronizationRegistry", "java:comp/TransactionSynchronizationRegistry");
         locations.put("javax.enterprise.inject.spi.BeanManager", "java:comp/BeanManager");
         locations.put("javax.validation.Validator", "java:comp/Validator");
-        locations.put("javax.validation.ValidationFactory", "java:comp/ValidationFactory");
+        locations.put(ValidatorFactory.class.getName(), "java:comp/ValidatorFactory");
         locations.put("javax.ejb.EJBContext", "java:comp/EJBContext");
         locations.put("javax.ejb.SessionContext", "java:comp/EJBContext");
         locations.put("javax.ejb.TimerService", "java:comp/TimerService");
@@ -245,14 +246,14 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
                 new ResourceInjectionConfiguration(targetDescription, injectionSource) : null;
 
         if (optionalEnvEntry) {
-            LazyResourceInjection lazyResourceInjection = new LazyResourceInjection(targetDescription, localContextName , classDescription);
+            LazyResourceInjection lazyResourceInjection = new LazyResourceInjection(targetDescription, localContextName, classDescription);
             eeModuleDescription.addLazyResourceInjection(lazyResourceInjection);
         } else {
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
             // TODO: class hierarchies? shared bindings?
             classDescription.getConfigurators().add(new ClassConfigurator() {
                 public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-                    if(createBindingFinal) {
+                    if (createBindingFinal) {
                         configuration.getBindingConfigurations().add(bindingConfiguration);
                     }
                     if (injectionConfiguration != null && !optionalEnvEntry) {
