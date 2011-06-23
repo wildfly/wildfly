@@ -91,6 +91,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
@@ -371,6 +372,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     protected void parseManagement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         int securityRealmsCount = 0;
         int connectionsCount = 0;
+        int managementInterfacesCount = 0;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
@@ -384,11 +386,18 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
                             break;
                         }
-                        case CONNECTIONS: {
+                        case OUTBOUND_CONNECTIONS: {
                             if (++connectionsCount > 1) {
                                 throw unexpectedElement(reader);
                             }
                             parseConnections(reader, address, list);
+                            break;
+                        }
+                        case MANAGEMENT_INTERFACES: {
+                            if (++managementInterfacesCount > 1) {
+                                throw unexpectedElement(reader);
+                            }
+                            parseManagementInterfaces(reader, address, list);
                             break;
                         }
                         default: {
@@ -2299,7 +2308,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         writer.writeEndElement();
     }
 
-    protected void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode management) throws XMLStreamException {
+    protected void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode management, final ModelNode managementInterface) throws XMLStreamException {
         boolean hasSecurityRealm = management.get(SECURITY_REALMS).hasDefined(SECURITY_REALM);
         boolean hasConnection = management.get(CONNECTIONS).hasDefined(CONNECTION);
 
@@ -2404,7 +2413,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
 
         if (hasConnection) {
-            writer.writeStartElement(Element.CONNECTIONS.getLocalName());
+            writer.writeStartElement(Element.OUTBOUND_CONNECTIONS.getLocalName());
             ModelNode connections = management.get(CONNECTIONS).get(CONNECTION);
 
             for (Property variable : connections.asPropertyList()) {
@@ -2425,7 +2434,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
             writer.writeEndElement();
         }
-
+        if (managementInterface != null) {
+            writeManagementInterfaces(writer, managementInterface);
+        }
 
         writer.writeEndElement();
     }
