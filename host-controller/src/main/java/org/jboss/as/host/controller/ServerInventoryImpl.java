@@ -242,8 +242,7 @@ public class ServerInventoryImpl implements ServerInventory {
             }
 
             channel.addCloseHandler(new CloseHandler<Channel>() {
-                @Override
-                public void handleClose(Channel closed) {
+                public void handleClose(final Channel closed, final IOException exception) {
                     domainController.unregisterRunningServer(serverProcessName);
                 }
             });

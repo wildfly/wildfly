@@ -328,7 +328,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
 
         CloseHandler<Channel> getRequestCloseHandler(){
             return new CloseHandler<Channel>() {
-                public void handleClose(Channel closed) {
+                public void handleClose(final Channel closed, final IOException exception) {
                     if (!done) {
                         executeRequest.setError(new ClientException(new IOException("Channel closed")));
                     }

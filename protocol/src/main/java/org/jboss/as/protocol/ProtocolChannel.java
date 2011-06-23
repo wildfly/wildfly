@@ -34,6 +34,8 @@ import org.jboss.remoting3.MessageOutputStream;
  * A wrapper around the {@link Channel} that handles repeated receives on the Channel.
  * The standard close, shutdownWrites and awaitClosed methods are hacked to work around
  * issues in remoting closing down and so try another approach.
+ * TODO: we should not subclass {@link Channel}; that interface may change without notice.  Let's refactor
+ * this to use composition sometime soon.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
@@ -50,7 +52,7 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
         this.name = name;
         this.channel = channel;
         channel.addCloseHandler(new CloseHandler<Channel>() {
-            public void handleClose(Channel closed) {
+            public void handleClose(final Channel closed, final IOException exception) {
                 //stopReceiving.set(true);
             }
         });
@@ -97,6 +99,10 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
      */
     public void awaitClosedUninterruptibly() {
         channel.awaitClosedUninterruptibly();
+    }
+
+    public void closeAsync() {
+        channel.closeAsync();
     }
 
     /**

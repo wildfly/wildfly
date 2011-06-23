@@ -419,7 +419,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         unregisteredHostChannels.put(hostName, channel);
         proxyCreatedCallbacks.put(hostName, callback);
         channel.addCloseHandler(new CloseHandler<Channel>() {
-            public void handleClose(Channel closed) {
+            public void handleClose(final Channel closed, final IOException exception) {
                 unregisteredHostChannels.remove(hostName);
                 proxyCreatedCallbacks.remove(hostName);
             }
@@ -434,7 +434,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
         channel.addCloseHandler(new CloseHandler<Channel>() {
             //This does not get called when slave terminates abruptly - see REM3-121
-            public void handleClose(Channel closed) {
+            public void handleClose(final Channel closed, final IOException exception) {
                 //TODO A bit strange doing it here before the proxy is actually registered
                 unregisterRemoteHost(hostName);
             }

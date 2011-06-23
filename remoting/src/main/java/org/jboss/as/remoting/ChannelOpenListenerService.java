@@ -123,7 +123,7 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
         log.tracef("Opened %s: %s with handler %s", channelName, managementChannel, handler);
         managementChannel.startReceiving();
         channel.addCloseHandler(new CloseHandler<Channel>() {
-            public void handleClose(Channel closed) {
+            public void handleClose(final Channel closed, final IOException exception) {
                 channels.remove(managementChannel);
                 try {
                     managementChannel.sendByeBye();
