@@ -86,7 +86,7 @@ public class DeploymentHandlerUtil {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) {
                     final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-                    final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+                    final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
                     final ServiceController<?> deploymentController = serviceRegistry.getService(deploymentUnitServiceName);
                     if (deploymentController != null) {
                         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
