@@ -206,6 +206,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         InjectionSource valueSource = null;
         final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
         final boolean isResourceRefType = RESOURCE_REF_ENTRIES.contains(injectionType);
+        boolean createBinding = true;
         if (!isEmpty(lookup)) {
             valueSource = new LookupInjectionSource(lookup);
         } else if (isEnvEntryType) {
@@ -230,8 +231,11 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             }
         } else {
             //handle resource reference types
+            createBinding = false;
             valueSource = new LookupInjectionSource(localContextName);
         }
+
+        final boolean createBindingFinal = createBinding;
 
         // the binding/injection is optional if it's a env-entry which doesn't a env-entry-value or a lookup value
         final boolean optionalEnvEntry = valueSource == null;
@@ -248,7 +252,9 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             // TODO: class hierarchies? shared bindings?
             classDescription.getConfigurators().add(new ClassConfigurator() {
                 public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-                    configuration.getBindingConfigurations().add(bindingConfiguration);
+                    if(createBindingFinal) {
+                        configuration.getBindingConfigurations().add(bindingConfiguration);
+                    }
                     if (injectionConfiguration != null && !optionalEnvEntry) {
                         configuration.getInjectionConfigurations().add(injectionConfiguration);
                     }
