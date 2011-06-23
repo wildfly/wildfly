@@ -69,7 +69,7 @@ class BasicResource implements Resource {
 
     @Override
     public Resource getChild(final PathElement address) {
-        final ResourceProvider provider = children.get(address.getKey());
+        final ResourceProvider provider = getProvider(address.getKey());
         if(provider == null) {
             return null;
         }
@@ -78,7 +78,7 @@ class BasicResource implements Resource {
 
     @Override
     public boolean hasChild(final PathElement address) {
-        final ResourceProvider provider = children.get(address.getKey());
+        final ResourceProvider provider = getProvider(address.getKey());
         if(provider == null) {
             return false;
         }
@@ -113,7 +113,7 @@ class BasicResource implements Resource {
 
     @Override
     public Set<String> getChildrenNames(final String childType) {
-        final ResourceProvider provider = children.get(childType);
+        final ResourceProvider provider = getProvider(childType);
         if(provider == null) {
             return Collections.emptySet();
         }
@@ -122,7 +122,9 @@ class BasicResource implements Resource {
 
     @Override
     public Set<String> getChildTypes() {
-        return Collections.unmodifiableSet(children.keySet());
+        synchronized (children) {
+            return new LinkedHashSet<String>(children.keySet());
+        }
     }
 
     @Override
@@ -159,7 +161,7 @@ class BasicResource implements Resource {
 
     @Override
     public Resource removeChild(PathElement address) {
-        final ResourceProvider provider = children.get(address.getKey());
+        final ResourceProvider provider = getProvider(address.getKey());
         if(provider == null) {
             return null;
         }
@@ -189,26 +191,27 @@ class BasicResource implements Resource {
     }
 
     protected void registerResourceProvider(final String type, final ResourceProvider provider) {
-        if (children.containsKey(type)) {
-            throw new IllegalStateException("duplicate resource type " + type);
+        synchronized (children) {
+            if (children.containsKey(type)) {
+                throw new IllegalStateException("duplicate resource type " + type);
+            }
+            children.put(type, provider);
         }
-        children.put(type, provider);
     }
 
-    protected ResourceProvider getProvider(final String type) {
-        return children.get(type);
+    protected final ResourceProvider getProvider(final String type) {
+        synchronized (children) {
+            return children.get(type);
+        }
     }
 
     protected ResourceProvider getOrCreateProvider(final String type) {
-        final ResourceProvider provider = children.get(type);
-        if(provider != null) {
-            return provider;
-        } else {
-            final ResourceProvider newProvider = new DefaultResourceProvider();
-            final ResourceProvider existing = children.get(type);
-            if(existing != null) {
-                return existing;
+        synchronized (children) {
+            final ResourceProvider provider = children.get(type);
+            if(provider != null) {
+                return provider;
             } else {
+                final ResourceProvider newProvider = new DefaultResourceProvider();
                 children.put(type, newProvider);
                 return newProvider;
             }
@@ -224,17 +227,23 @@ class BasicResource implements Resource {
 
         @Override
         public Set<String> children() {
-            return Collections.unmodifiableSet(children.keySet());
+            synchronized (children) {
+                return new LinkedHashSet<String>(children.keySet());
+            }
         }
 
         @Override
         public boolean has(String name) {
-            return children.get(name) != null;
+            synchronized (children) {
+                return children.get(name) != null;
+            }
         }
 
         @Override
         public Resource get(String name) {
-            return children.get(name);
+            synchronized (children) {
+                return children.get(name);
+            }
         }
 
         @Override
@@ -244,15 +253,19 @@ class BasicResource implements Resource {
 
         @Override
         public void register(String name, Resource resource) {
-            if (children.containsKey(name)) {
-                throw new IllegalStateException("duplicate resource" + name);
+            synchronized (children) {
+                if (children.containsKey(name)) {
+                    throw new IllegalStateException("duplicate resource" + name);
+                }
+                children.put(name, resource);
             }
-            children.put(name, resource);
         }
 
         @Override
         public Resource remove(String name) {
-            return children.remove(name);
+            synchronized (children) {
+                return children.remove(name);
+            }
         }
     }
 
