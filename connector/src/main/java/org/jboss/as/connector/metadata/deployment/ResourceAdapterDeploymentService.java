@@ -40,6 +40,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -81,7 +82,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         final String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
         final File root = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getRoot();
         CommonDeployment raDeployment = null;
-        final AS7RaDeployer raDeployer = new AS7RaDeployer(container, url, deploymentName, root, module.getClassLoader(), cmd,
+        final AS7RaDeployer raDeployer = new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, module.getClassLoader(), cmd,
                 ijmd);
         raDeployer.setConfiguration(config.getValue());
 
@@ -119,7 +120,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         private final IronJacamar ijmd;
 
-        public AS7RaDeployer(ServiceContainer serviceContainer, URL url, String deploymentName, File root, ClassLoader cl,
+        public AS7RaDeployer(ServiceTarget serviceContainer, URL url, String deploymentName, File root, ClassLoader cl,
                 Connector cmd, IronJacamar ijmd) {
             super(serviceContainer, url, deploymentName, root, cl, cmd);
             this.ijmd = ijmd;
