@@ -5,7 +5,7 @@
 
    <servlet>
       <servlet-name>TestEndpoint</servlet-name>
-      <servlet-class>org.jboss.test.ws.tools.jbws3207.service.EndpointImpl</servlet-class>
+      <servlet-class>org.jboss.as.testsuite.integration.ws.tools.jbws3207.service.EndpointImpl</servlet-class>
    </servlet>
 
    <servlet-mapping>

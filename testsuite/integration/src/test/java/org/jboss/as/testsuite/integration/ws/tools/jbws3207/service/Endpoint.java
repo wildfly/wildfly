@@ -19,25 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.ws.tools.jbws3207.service;
+package org.jboss.as.testsuite.integration.ws.tools.jbws3207.service;
 
+import javax.jws.WebMethod;
 import javax.jws.WebService;
+import javax.jws.soap.SOAPBinding;
 
-import org.jboss.logging.Logger;
-
-/**
- * A simple endpoint
- *
- * @author alessio.soldano@jboss.com
- * @since 25-Jan-2011
- */
-@WebService(serviceName="EndpointService", portName="EndpointPort", endpointInterface = "org.jboss.test.ws.tools.jbws3207.service.Endpoint")
-public class EndpointImpl {
-   // Provide logging
-   private static Logger log = Logger.getLogger(EndpointImpl.class);
-
-   public String echo(String input) {
-      log.info("echo: " + input);
-      return input;
-   }
+@WebService (name="Endpoint")
+@SOAPBinding(style = SOAPBinding.Style.RPC)
+public interface Endpoint {
+   @WebMethod(operationName = "echoString", action = "urn:EchoString")
+   String echo(String input);
 }
