@@ -60,7 +60,7 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
    private String ejbName;
 
    /** EJB3 container. */
-   private volatile ComponentViewInstance ejbContainer;
+   private volatile ComponentViewInstance ejbComponentViewInstance;
 
    /**
     * Constructor.
@@ -89,20 +89,20 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
     *
     * @return EJB3 container
     */
-   private ComponentViewInstance getEjb3Container() {
-      if (ejbContainer == null) {
+   private ComponentViewInstance getComponentViewInstance() {
+      if (ejbComponentViewInstance == null) {
          synchronized(this) {
-            if (ejbContainer == null) {
+            if (ejbComponentViewInstance == null) {
                final ComponentView ejbView = iocContainer.getBean(ejbName, ComponentView.class);
                if (ejbView == null) {
                   throw new WebServiceException("Cannot find ejb: " + ejbName);
                }
-               ejbContainer = ejbView.createInstance();
+               ejbComponentViewInstance = ejbView.createInstance();
             }
          }
       }
 
-      return ejbContainer;
+      return ejbComponentViewInstance;
    }
 
    /**
@@ -117,16 +117,17 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
          // prepare for invocation
          onBeforeInvocation(wsInvocation);
          // prepare invocation data
-         final ComponentViewInstance ejbInstance = getEjb3Container();
-         final Method method = getEJBMethod(wsInvocation.getJavaMethod(), ejbInstance.allowedMethods());
+         final ComponentViewInstance componentViewInstance = getComponentViewInstance();
+         final Method method = getEJBMethod(wsInvocation.getJavaMethod(), componentViewInstance.allowedMethods());
          final InterceptorContext context = new InterceptorContext();
          context.setMethod(method);
          context.setContextData(getWebServiceContext(wsInvocation).getMessageContext());
          context.setParameters(wsInvocation.getArgs());
-         context.setTarget(ejbInstance.createProxy());
-         context.putPrivateData(Component.class, ejbInstance.getComponent());
+         context.setTarget(componentViewInstance.createProxy());
+         context.putPrivateData(Component.class, componentViewInstance.getComponent());
+         context.putPrivateData(ComponentViewInstance.class, componentViewInstance);
          // invoke method
-         final Object retObj = ejbInstance.getEntryPoint(method).processInvocation(context);
+         final Object retObj = componentViewInstance.getEntryPoint(method).processInvocation(context);
          // set return value
          wsInvocation.setReturnValue(retObj);
       }
@@ -151,7 +152,7 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
 
    public Context getJNDIContext(final Endpoint ep) throws NamingException {
       return null; // TODO: implement
-//      final EJBContainer ejb3Container = (EJBContainer) getEjb3Container();
+//      final EJBContainer ejb3Container = (EJBContainer) getComponentViewInstance();
 //      return (Context) ejb3Container.getEnc().lookup(EJB3_JNDI_PREFIX);
    }
 

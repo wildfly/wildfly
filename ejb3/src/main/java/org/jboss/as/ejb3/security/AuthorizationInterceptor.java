@@ -85,34 +85,29 @@ public class AuthorizationInterceptor implements Interceptor {
         }
         final Method invokedMethod = context.getMethod();
         final ComponentViewInstance componentViewInstance = context.getPrivateData(ComponentViewInstance.class);
-        // TODO: FIXME: Really fix me soon. WS invocation don't pass ComponentViewInstance.
-        // We could have used the declaring class of the invoked method as the view  class name but for
-        // a no-interface view, it won't work if the method is from the base class of the bean implementation class
-        if (componentViewInstance != null) {
-            final String viewClassOfInvokedMethod = componentViewInstance.getViewClass().getName();
-            // shouldn't really happen if the interceptor was setup correctly. But let's be safe and do a check
-            if (!this.viewClassName.equals(viewClassOfInvokedMethod) || !this.viewMethod.equals(invokedMethod)) {
-                throw new IllegalStateException(this.getClass().getName() + " cannot handle method "
-                        + invokedMethod + " of view class " + viewClassOfInvokedMethod + ".Expected view " +
-                        "method to be " + viewMethod + " on view class " + viewClassName);
-            }
-            final EJBComponent ejbComponent = (EJBComponent) component;
-            // check @DenyAll/exclude-list
-            if (ejbMethodSecurityMetaData.isAccessDenied()) {
-                throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " + ejbComponent.getComponentName()
-                        + " is not allowed");
-            }
-            // If @PermitAll isn't applicable for the method then check the allowed roles
-            if (!ejbMethodSecurityMetaData.isPermitAll()) {
-                // get allowed roles (if any) for this method invocation
-                final Collection<String> allowedRoles = ejbMethodSecurityMetaData.getRolesAllowed();
-                if (!allowedRoles.isEmpty()) {
-                    // call the security API to do authorization check
-                    final SimpleSecurityManager securityManager = ejbComponent.getSecurityManager();
-                    if (!securityManager.isCallerInRole(allowedRoles.toArray(new String[allowedRoles.size()]))) {
-                        throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " +
-                                ejbComponent.getComponentName() + " is not allowed");
-                    }
+        final String viewClassOfInvokedMethod = componentViewInstance.getViewClass().getName();
+        // shouldn't really happen if the interceptor was setup correctly. But let's be safe and do a check
+        if (!this.viewClassName.equals(viewClassOfInvokedMethod) || !this.viewMethod.equals(invokedMethod)) {
+            throw new IllegalStateException(this.getClass().getName() + " cannot handle method "
+                    + invokedMethod + " of view class " + viewClassOfInvokedMethod + ".Expected view " +
+                    "method to be " + viewMethod + " on view class " + viewClassName);
+        }
+        final EJBComponent ejbComponent = (EJBComponent) component;
+        // check @DenyAll/exclude-list
+        if (ejbMethodSecurityMetaData.isAccessDenied()) {
+            throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " + ejbComponent.getComponentName()
+                    + " is not allowed");
+        }
+        // If @PermitAll isn't applicable for the method then check the allowed roles
+        if (!ejbMethodSecurityMetaData.isPermitAll()) {
+            // get allowed roles (if any) for this method invocation
+            final Collection<String> allowedRoles = ejbMethodSecurityMetaData.getRolesAllowed();
+            if (!allowedRoles.isEmpty()) {
+                // call the security API to do authorization check
+                final SimpleSecurityManager securityManager = ejbComponent.getSecurityManager();
+                if (!securityManager.isCallerInRole(allowedRoles.toArray(new String[allowedRoles.size()]))) {
+                    throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " +
+                            ejbComponent.getComponentName() + " is not allowed");
                 }
             }
         }
