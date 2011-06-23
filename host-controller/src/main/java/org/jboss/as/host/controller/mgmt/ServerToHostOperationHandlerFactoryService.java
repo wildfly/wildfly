@@ -29,7 +29,6 @@ import java.io.IOException;
 
 import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
 import org.jboss.as.host.controller.ManagedServerLifecycleCallback;
-import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
@@ -109,22 +108,21 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementOpe
         }
 
         private class ServerRegisterCommand extends ManagementRequestHandler {
-
+            String serverName;
             @Override
-            public void readRequest(final DataInput input) throws IOException {
+            protected void readRequest(final DataInput input) throws IOException {
                 expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
-                final String serverName = input.readUTF();
-                log.infof("Server [%s] registered using connection [%s]", serverName, getContext().getChannel());
-                ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverRegistered(serverName, getContext().getChannel(), new ManagedServerLifecycleCallback.ProxyCreatedCallback() {
+                serverName = input.readUTF();
+                log.infof("Server [%s] registered using connection [%s]", serverName, getChannel());
+            }
+
+            protected void processRequest() {
+                ServerToHostOperationHandlerFactoryService.this.callback.getValue().serverRegistered(serverName, getChannel(), new ManagedServerLifecycleCallback.ProxyCreatedCallback() {
                     @Override
                     public void proxyOperationHandlerCreated(ManagementOperationHandler handler) {
                         proxyOperationHandler = handler;
                     }
                 });
-            }
-
-            @Override
-            protected void writeResponse(FlushableDataOutput output) throws IOException {
             }
         }
     }

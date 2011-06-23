@@ -24,6 +24,8 @@ package org.jboss.as.protocol.mgmt;
 import java.io.DataInput;
 import java.io.IOException;
 
+import org.jboss.remoting3.HandleableCloseable.Key;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -31,26 +33,45 @@ import java.io.IOException;
  */
 public abstract class ManagementResponseHandler<T> {
 
-    private ManagementResponseContext context;
-
-    /**
-     * Get the response context. This is only available in the readResponse(DataInput) method.
-     * @return the context
-     * @throws IllegalStateException if an attempt is made to read it outside of the readResponse(DataInput) method.
-     */
-    protected ManagementResponseContext getResponseContext() {
-        if (context == null) {
-            throw new IllegalArgumentException("Only allowed from within readResponse()");
+    public static final ManagementResponseHandler<Void> EMPTY_RESPONSE = new ManagementResponseHandler<Void>() {
+        @Override
+        protected Void readResponse(DataInput input) throws IOException {
+            return null;
         }
-        return context;
+    };
+
+    private volatile ManagementResponseHeader responseHeader;
+
+    private volatile ManagementChannel channel;
+
+    private volatile Key closeKey;
+
+    void setCloseKey(Key closeKey) {
+        this.closeKey = closeKey;
     }
 
-    /**
-     * Set the response context
-     * @param context the context to set
-     */
-    void setResponseContext(ManagementResponseContext context) {
-        this.context = context;
+    void removeCloseHandler() {
+        if (closeKey != null) {
+            closeKey.remove();
+        }
+    }
+
+    void setContextInfo(ManagementResponseHandler<?> other) {
+        this.closeKey = other.closeKey;
+        setContextInfo(other.responseHeader, other.channel);
+    }
+
+    void setContextInfo(ManagementResponseHeader responseHeader, ManagementChannel channel) {
+        this.responseHeader = responseHeader;
+        this.channel = channel;
+    }
+
+    protected ManagementResponseHeader getResponseHeader() {
+        return responseHeader;
+    }
+
+    protected ManagementChannel getChannel() {
+        return channel;
     }
 
     /**

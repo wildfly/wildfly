@@ -57,41 +57,74 @@ public class ManagementChannel extends ProtocolChannel {
     protected void doHandle(final Channel channel, final MessageInputStream message) {
         log.tracef("%s handling incoming data", this);
         final SimpleDataInput input = new SimpleDataInput(Marshalling.createByteInput(message));
+        Exception error = null;
+        ManagementRequestHeader requestHeader = null;
+        ManagementRequestHandler requestHandler = null;
         try {
             ManagementProtocolHeader header = ManagementProtocolHeader.parse(input);
             if (header.isRequest()) {
-                requestReceiver.handleRequest((ManagementRequestHeader)header, input);
+                requestHeader = (ManagementRequestHeader)header;
+                requestHandler = requestReceiver.readRequest(requestHeader, input);
             } else {
                 responseReceiver.handleResponse((ManagementResponseHeader)header, input);
             }
-            //Consume the rest of the output if any
-            while (input.read() != -1) {
-            }
         } catch (Exception e) {
+            error = e;
             log.tracef(e, "%s error handling incoming data", this);
         } finally {
             log.tracef("%s done handling incoming data", this);
+            try {
+                //Consume the rest of the output if any
+                while (input.read() != -1) {
+                }
+
+            } catch (IOException ignore) {
+            }
             IoUtils.safeClose(input);
             IoUtils.safeClose(message);
+        }
+
+        if (requestHeader != null) {
+            if (error == null) {
+                try {
+                    requestReceiver.processRequest(requestHeader, requestHandler);
+                } catch (Exception e) {
+                    error = e;
+                }
+            }
+
+            if (error != null) {
+                //TODO temporary debug stack
+                error.printStackTrace();
+            }
+            requestReceiver.writeResponse(requestHeader, requestHandler, error);
         }
     }
 
     void executeRequest(ManagementRequest<?> request, ManagementResponseHandler<?> responseHandler) throws IOException {
+        addCloseHandler(request, responseHandler);
         responseReceiver.registerResponseHandler(request.getCurrentRequestId(), responseHandler);
         final FlushableDataOutputImpl output = FlushableDataOutputImpl.create(this.writeMessage());
-
         try {
-            final CloseHandler<Channel> closeHandler = request.getRequestCloseHandler();
-            if (closeHandler != null) {
-                final Key closeKey = addCloseHandler(closeHandler);
-                request.setCloseKey(closeKey);
-            }
             final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, request.getCurrentRequestId(), request.getBatchId(), request.getRequestCode());
             managementRequestHeader.write(output);
 
             request.writeRequest(this, output);
+        } catch (Exception e) {
+            responseHandler.removeCloseHandler();
+            if (e instanceof RuntimeException) throw (RuntimeException)e;
+            if (e instanceof IOException) throw (IOException)e;
+            throw new IOException(e);
         } finally {
             IoUtils.safeClose(output);
+        }
+    }
+
+    private void addCloseHandler(ManagementRequest<?> request, ManagementResponseHandler<?> responseHandler) {
+        final CloseHandler<Channel> closeHandler = request.getRequestCloseHandler();
+        if (closeHandler != null) {
+            final Key closeKey = addCloseHandler(closeHandler);
+            responseHandler.setCloseKey(closeKey);
         }
     }
 
@@ -110,34 +143,57 @@ public class ManagementChannel extends ProtocolChannel {
     private class RequestReceiver {
         private volatile ManagementOperationHandler operationHandler;
 
-        private void handleRequest(final ManagementRequestHeader header, final DataInput input) throws IOException {
-            log.tracef("%s handling request %d(%d)", ManagementChannel.this, header.getBatchId(), header.getRequestId());
-            final FlushableDataOutputImpl output = FlushableDataOutputImpl.create(writeMessage());
-
+        private ManagementRequestHandler readRequest(final ManagementRequestHeader header, final DataInput input) throws IOException {
+            log.tracef("%s reading request %d(%d)", ManagementChannel.this, header.getBatchId(), header.getRequestId());
             Exception error = null;
             try {
                 final ManagementRequestHandler requestHandler;
-                try {
-                    //Read request
-                    requestHandler = getRequestHandler(header);
-                    requestHandler.setContext(new ManagementRequestContext(ManagementChannel.this, header));
-                    requestHandler.readRequest(input);
-                    expectHeader(input, ManagementProtocol.REQUEST_END);
-                } catch (Exception e) {
-                    error = e;
-                    throw e;
-                } finally {
-                    writeResponseHeader(header, output, error);
-                    if (error != null) {
-                        output.writeByte(ManagementProtocol.RESPONSE_END);
-                    }
+                //Read request
+                requestHandler = getRequestHandler(header);
+                requestHandler.setContextInfo(ManagementChannel.this, header);
+                requestHandler.readRequest(input);
+                expectHeader(input, ManagementProtocol.REQUEST_END);
+                return requestHandler;
+            } finally {
+                if (error == null) {
+                    log.tracef("%s finished reading request %d", ManagementChannel.this, header.getBatchId());
+                } else {
+                    log.tracef(error, "%s finished reading request %d with error", ManagementChannel.this, header.getBatchId());
                 }
-                requestHandler.writeResponse(output);
+            }
+        }
+
+        private void processRequest(ManagementRequestHeader requestHeader, ManagementRequestHandler requestHandler) throws RequestProcessingException {
+            log.tracef("%s processing request %d", ManagementChannel.this, requestHeader.getBatchId());
+            try {
+                requestHandler.processRequest();
+                log.tracef("%s finished processing request %d", ManagementChannel.this, requestHeader.getBatchId());
+            } catch (Exception e) {
+                log.tracef(e, "%s finished processing request %d with error", ManagementChannel.this, requestHeader.getBatchId());
+            }
+        }
+
+
+        private void writeResponse(ManagementRequestHeader requestHeader, ManagementRequestHandler requestHandler, Exception error) {
+            log.tracef("%s writing response %d", ManagementChannel.this, requestHeader.getBatchId());
+            final FlushableDataOutputImpl output;
+            try {
+                output = FlushableDataOutputImpl.create(writeMessage());
+            } catch (Exception e) {
+                log.tracef(e, "%s could not open output stream for request %d", ManagementChannel.this, requestHeader.getBatchId());
+                return;
+            }
+            try {
+                writeResponseHeader(requestHeader, output, error);
+
+                if (error == null && requestHandler != null) {
+                    requestHandler.writeResponse(output);
+                }
                 output.writeByte(ManagementProtocol.RESPONSE_END);
             } catch (Exception e) {
-                throwFormattedException(e);
+                log.tracef(e, "%s finished writing response %d with error", ManagementChannel.this, requestHeader.getBatchId());
             } finally {
-                log.tracef("%s finished request %d", ManagementChannel.this, header.getBatchId());
+                log.tracef("%s finished writing response %d", ManagementChannel.this, requestHeader.getBatchId());
                 IoUtils.safeClose(output);
             }
         }
@@ -203,19 +259,13 @@ public class ManagementChannel extends ProtocolChannel {
                 throw new IOException("No response handler for request " + header.getResponseId());
             }
             try {
-                responseHandler.setResponseContext(new ManagementResponseContext(header, ManagementChannel.this));
+                responseHandler.setContextInfo(header, ManagementChannel.this);
                 responseHandler.readResponse(input);
                 expectHeader(input, ManagementProtocol.RESPONSE_END);
             } catch (Exception e) {
                 throwFormattedException(e);
             } finally {
-                if (responseHandler instanceof ManagementRequest) {
-                    final Key closeKey = ((ManagementRequest<?>)responseHandler).getCloseKey();
-                    if (closeKey != null) {
-                        closeKey.remove();
-                    }
-                }
-
+                responseHandler.removeCloseHandler();
                 log.tracef("%s handled response %d", ManagementChannel.this, header.getResponseId());
             }
         }

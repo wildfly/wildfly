@@ -38,8 +38,9 @@ import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
-import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
+import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
@@ -69,14 +70,6 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
 
     //TODO this should be deleted once REM3-121 is available
     private static class PingRequestHandler extends ManagementRequestHandler {
-
-        @Override
-        protected void readRequest(DataInput input) throws IOException {
-        }
-
-        @Override
-        protected void writeResponse(FlushableDataOutput output) throws IOException {
-        }
     }
 
     /**
@@ -90,7 +83,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            executeRequestContext = new ExecuteRequestContext(getContext());
+            executeRequestContext = new ExecuteRequestContext(getChannel(), getHeader().getBatchId());
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_OPERATION);
             operation.readExternal(input);
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
@@ -98,13 +91,13 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
         }
 
         @Override
-        protected void writeResponse(final FlushableDataOutput output) throws IOException {
+        protected void processRequest() throws RequestProcessingException {
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
-                    final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(getContext(), executeRequestContext.getBatchId());
+                    final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(getChannel(), executeRequestContext.getBatchId());
                     final ProxyOperationControlProxy control = new ProxyOperationControlProxy(executeRequestContext);
-                    final OperationAttachmentsProxy attachmentsProxy = new OperationAttachmentsProxy(getContext(), executeRequestContext.getBatchId(), attachmentsLength);
+                    final OperationAttachmentsProxy attachmentsProxy = new OperationAttachmentsProxy(getChannel(), executeRequestContext.getBatchId(), attachmentsLength);
                     final ModelNode result;
                     try {
                         result = controller.execute(
@@ -137,7 +130,7 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
                 executeRequestContext.awaitPreparedOrFailed();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new IOException("Thread was interrupted waiting for the operation to prepare/fail");
+                throw new RequestProcessingException("Thread was interrupted waiting for the operation to prepare/fail");
             }
         }
     }
@@ -167,26 +160,30 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
                         super.writeRequest(protocolVersion, output);
                     }
 
-                    @Override
-                    protected Void readResponse(DataInput input) throws IOException {
-                        //The caller has delegated the operationPrepared() call
-                        ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_PREPARED);
-                        executeRequestContext.setPreparedOrFailed();
+                    protected ManagementResponseHandler<Void> getResponseHandler() {
+                        return new ManagementResponseHandler<Void>() {
+                            @Override
+                            protected Void readResponse(DataInput input) throws IOException {
+                                //The caller has delegated the operationPrepared() call
+                                ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_PREPARED);
+                                executeRequestContext.setPreparedOrFailed();
 
-                        //Now check if the Tx was committed or rolled back
-                        byte status = input.readByte();
-                        if (status == ModelControllerProtocol.PARAM_COMMIT) {
-                            transaction.commit();
-                            executeRequestContext.setTxCompleted();
+                                //Now check if the Tx was committed or rolled back
+                                byte status = input.readByte();
+                                if (status == ModelControllerProtocol.PARAM_COMMIT) {
+                                    transaction.commit();
+                                    executeRequestContext.setTxCompleted();
 
-                        } else if (status == ModelControllerProtocol.PARAM_ROLLBACK){
-                            transaction.rollback();
-                            executeRequestContext.setTxCompleted();
-                        } else {
-                            throw new IllegalArgumentException("Invalid status code " + status);
-                        }
+                                } else if (status == ModelControllerProtocol.PARAM_ROLLBACK){
+                                    transaction.rollback();
+                                    executeRequestContext.setTxCompleted();
+                                } else {
+                                    throw new IllegalArgumentException("Invalid status code " + status);
+                                }
 
-                        return null;
+                                return null;
+                            }
+                        };
                     }
 
                 }.executeForResult(executorService, getChannelStrategy(executeRequestContext.getChannel()));
@@ -242,23 +239,25 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
                 response.writeExternal(output);
             }
 
-            @Override
-            protected Void readResponse(final DataInput input) throws IOException {
-                return null;
+            protected ManagementResponseHandler<Void> getResponseHandler() {
+                return ManagementResponseHandler.EMPTY_RESPONSE;
             }
+
         }
     }
 
     private static class ExecuteRequestContext {
-        final ManagementRequestContext managementRequestContext;
+        final ManagementChannel channel;
+        final int batchId;
         final CountDownLatch preparedOrFailedLatch = new CountDownLatch(1);
         final CountDownLatch txCompletedLatch = new CountDownLatch(1);
         final Key closableKey;
         volatile String error;
 
-        public ExecuteRequestContext(final ManagementRequestContext managementRequestContext) {
-            this.managementRequestContext = managementRequestContext;
-            closableKey = managementRequestContext.getChannel().addCloseHandler(new CloseHandler<Channel>() {
+        public ExecuteRequestContext(final ManagementChannel channel, final int batchId) {
+            this.channel = channel;
+            this.batchId = batchId;
+            closableKey = channel.addCloseHandler(new CloseHandler<Channel>() {
                 public void handleClose(Channel closed) {
                     setError("Channel Closed");
                 }
@@ -266,11 +265,11 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
         }
 
         ManagementChannel getChannel() {
-            return managementRequestContext.getChannel();
+            return channel;
         }
 
         int getBatchId() {
-            return managementRequestContext.getHeader().getBatchId();
+            return batchId;
         }
 
         void awaitPreparedOrFailed() throws InterruptedException {

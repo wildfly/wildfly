@@ -36,14 +36,15 @@ public interface ManagementProtocol {
     byte TYPE_RESPONSE = 0x3;
 
     byte REQUEST_ID = 0x4;
-    byte BATCH_ID = 0x6;
-    byte OPERATION_ID = 0x7;
+    byte BATCH_ID = 0x5;
+    byte OPERATION_ID = 0x6;
+    byte ONE_WAY = 0x7;
     byte REQUEST_BODY = 0x08;
     byte REQUEST_END = 0x09;
 
-    byte RESPONSE_ID = 0x5;
-    byte RESPONSE_TYPE = 0xA;
-    byte RESPONSE_BODY = 0xB;
-    byte RESPONSE_ERROR = 0xC;
-    byte RESPONSE_END = 0xD;
+    byte RESPONSE_ID = 0xA;
+    byte RESPONSE_TYPE = 0xB;
+    byte RESPONSE_BODY = 0xC;
+    byte RESPONSE_ERROR = 0xD;
+    byte RESPONSE_END = 0xE;
 }

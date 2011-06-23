@@ -40,6 +40,8 @@ public class ManagementRequestHeader extends ManagementProtocolHeader {
     private int requestId;
     private int batchId;
     private byte operationId;
+    //TODO still unused, put in the protocol for when we get round to doing requests not expecting a response
+    private boolean oneWay;
 
     /**
      * Construct an instance with the protocol version and operation handler for the header.
@@ -69,6 +71,8 @@ public class ManagementRequestHeader extends ManagementProtocolHeader {
         batchId = input.readInt();
         ProtocolUtils.expectHeader(input, ManagementProtocol.OPERATION_ID);
         operationId = input.readByte();
+        ProtocolUtils.expectHeader(input, ManagementProtocol.ONE_WAY);
+        oneWay = input.readBoolean();
         ProtocolUtils.expectHeader(input, ManagementProtocol.REQUEST_BODY);
     }
 
@@ -81,6 +85,8 @@ public class ManagementRequestHeader extends ManagementProtocolHeader {
         output.writeInt(batchId);
         output.write(ManagementProtocol.OPERATION_ID);
         output.write(operationId);
+        output.write(ManagementProtocol.ONE_WAY);
+        output.writeBoolean(oneWay);
         output.write(ManagementProtocol.REQUEST_BODY);
     }
 

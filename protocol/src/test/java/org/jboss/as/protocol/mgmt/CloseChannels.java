@@ -135,10 +135,16 @@ public class CloseChannels {
                             output.writeInt(val);
                         }
 
-                        protected Integer readResponse(DataInput input) throws IOException {
-                            System.out.println("Reading response");
-                            ProtocolUtils.expectHeader(input, 22);
-                            return input.readInt();
+                        protected ManagementResponseHandler<Integer> getResponseHandler() {
+                            return new ManagementResponseHandler<Integer>() {
+
+                                @Override
+                                protected Integer readResponse(DataInput input) throws IOException {
+                                    System.out.println("Reading response");
+                                    ProtocolUtils.expectHeader(input, 22);
+                                    return input.readInt();
+                                }
+                            };
                         }
 
                     }.executeForResult(executor, ManagementClientChannelStrategy.create(clientChannel));

@@ -28,6 +28,7 @@ import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
 
 
 /**
@@ -63,9 +64,13 @@ public class SimpleHandlers {
         }
 
         @Override
-        public Integer readResponse(DataInput input) throws IOException {
-            int i = input.readInt();
-            return i;
+        protected ManagementResponseHandler<Integer> getResponseHandler() {
+            return new ManagementResponseHandler<Integer>() {
+                protected Integer readResponse(DataInput input) throws IOException {
+                    int i = input.readInt();
+                    return i;
+                }
+            };
         }
     }
 
@@ -108,10 +113,6 @@ public class SimpleHandlers {
         @Override
         public void readRequest(DataInput input) throws IOException {
             throw new IOException("BadReadRequest");
-        }
-
-        @Override
-        public void writeResponse(FlushableDataOutput output) throws IOException {
         }
     }
 

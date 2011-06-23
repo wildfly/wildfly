@@ -32,24 +32,12 @@ import java.io.IOException;
  */
 public abstract class ManagementRequestHandler {
 
-    private ManagementRequestContext context;
+    private volatile ManagementChannel channel;
+    private volatile ManagementRequestHeader requestHeader;
 
-    /**
-     * Get the request context
-     *
-     * @return the context
-     */
-    protected ManagementRequestContext getContext() {
-        return context;
-    }
-
-    /**
-     * Set the context
-     *
-     * @param context the context to set
-     */
-    void setContext(ManagementRequestContext context) {
-        this.context = context;
+    void setContextInfo(ManagementChannel channel, ManagementRequestHeader requestHeader) {
+        this.channel = channel;
+        this.requestHeader = requestHeader;
     }
 
     /**
@@ -57,12 +45,38 @@ public abstract class ManagementRequestHandler {
      *
      * @param input the data input
      */
-    protected abstract void readRequest(DataInput input) throws IOException;
+    protected void readRequest(DataInput input) throws IOException {
+    }
+
+    /**
+     * Do the work for the request here while not using any in/output
+     */
+    protected void processRequest() throws RequestProcessingException {
+
+    }
 
     /**
      * Write the response body for this management response
      *
      * @param output the data output
      */
-    protected abstract void writeResponse(FlushableDataOutput output) throws IOException;
+    protected void writeResponse(FlushableDataOutput output) throws IOException {
+    }
+
+
+    /**
+     * Get the channel
+     * @return the channel
+     */
+    public ManagementChannel getChannel() {
+        return channel;
+    }
+
+    /**
+     * Get the header
+     * @return the header
+     */
+    public ManagementRequestHeader getHeader() {
+        return requestHeader;
+    }
 }

@@ -22,7 +22,6 @@
 
 package org.jboss.as.server.mgmt.domain;
 
-import java.io.DataInput;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,6 +32,7 @@ import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -115,8 +115,8 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         }
 
         @Override
-        protected Void readResponse(DataInput input) throws IOException {
-            return null;
+        protected ManagementResponseHandler<Void> getResponseHandler() {
+            return ManagementResponseHandler.EMPTY_RESPONSE;
         }
     }
 }
