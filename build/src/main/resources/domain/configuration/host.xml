@@ -23,11 +23,12 @@
 <host xmlns="urn:jboss:domain:1.0"
       name="local">
 
-    <management-interfaces>
-       <native-interface interface="management" port="9999" />
-       <http-interface interface="management" port="9990"/>
-    </management-interfaces>
-
+    <management>
+       <management-interfaces>
+          <native-interface interface="management" port="9999" />
+          <http-interface interface="management" port="9990"/>
+       </management-interfaces>
+    </management>
 
     <domain-controller>
        <local/>
