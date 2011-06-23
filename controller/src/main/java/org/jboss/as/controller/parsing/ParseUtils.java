@@ -31,8 +31,10 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
+import com.sun.tools.javac.util.Log;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -373,5 +375,9 @@ public final class ParseUtils {
             result.set(value);
         }
         return result;
+    }
+
+    public static String getWarningMessage(final String msg, final Location location) {
+        return String.format("Parsing problem at [row,col]:[%d ,%d]\nMessage: ", location.getLineNumber(), location.getColumnNumber(), msg);
     }
 }
