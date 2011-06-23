@@ -80,7 +80,7 @@ public class JmsTopicRemoveHandler extends BatchModeCommandHandler {
                         }
                     }
 
-                return Util.getJmsResources(ctx.getModelControllerClient(), profileArg, "topic");
+                return Util.getJmsResources(ctx.getModelControllerClient(), profileArg, "jms-topic");
                 }
             }), 0, "--name") {
             @Override

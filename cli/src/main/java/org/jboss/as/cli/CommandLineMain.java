@@ -33,7 +33,9 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.UnknownHostException;
 import java.security.Security;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +54,8 @@ import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.batch.impl.DefaultBatchManager;
 import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
 import org.jboss.as.cli.handlers.ConnectHandler;
+import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
+import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.HistoryHandler;
@@ -143,10 +147,17 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new DataSourceAddHandler(), "add-data-source");
         cmdRegistry.registerHandler(new DataSourceModifyHandler(), "modify-data-source");
         cmdRegistry.registerHandler(new DataSourceRemoveHandler(), "remove-data-source");
-        //cmdRegistry.registerHandler(new SimpleDataSourceOperationHandler("data-source"), "data-source");
         cmdRegistry.registerHandler(new XADataSourceAddHandler(), "add-xa-data-source");
         cmdRegistry.registerHandler(new XADataSourceRemoveHandler(), "remove-xa-data-source");
         cmdRegistry.registerHandler(new XADataSourceModifyHandler(), "modify-xa-data-source");
+
+        // data-source
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=datasources/data-source", "--jndi-name",
+                Collections.singletonList("add"),
+                Arrays.asList("read-attribute", "read-children-names", "read-children-resources",
+                        "read-children-types", "read-operation-description", "read-operation-names", "read-resource",
+                        "read-resource-description", "write-attribute")), "data-source");
+
     }
 
     public static void main(String[] args) throws Exception {
