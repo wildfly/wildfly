@@ -53,48 +53,66 @@ class WebDeploymentService implements Service<Context> {
         this.injectionContainer = injectionContainer;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized void start(StartContext startContext) throws StartException {
-        context.setRealm(realm.getValue());
-
-        JsfInjectionProvider.getInjectionContainer().set(injectionContainer);
+        final ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
-            NamingValve.beginComponentStart(namespaceSelector.getOptionalValue());
+            SecurityActions.setContextClassLoader(context.getLoader().getClassLoader());
+            context.setRealm(realm.getValue());
+
+            JsfInjectionProvider.getInjectionContainer().set(injectionContainer);
             try {
+                NamingValve.beginComponentStart(namespaceSelector.getOptionalValue());
                 try {
-                    context.create();
-                } catch (Exception e) {
-                    throw new StartException("failed to create context", e);
+                    try {
+                        context.create();
+                    } catch (Exception e) {
+                        throw new StartException("failed to create context", e);
+                    }
+                    try {
+                        context.start();
+                    } catch (LifecycleException e) {
+                        throw new StartException("failed to start context", e);
+                    }
+                    log.info("registering web context: " + context.getName());
+                } finally {
+                    NamingValve.endComponentStart();
                 }
-                try {
-                    context.start();
-                } catch (LifecycleException e) {
-                    throw new StartException("failed to start context", e);
-                }
-                log.info("registering web context: " + context.getName());
             } finally {
-                NamingValve.endComponentStart();
+                JsfInjectionProvider.getInjectionContainer().set(null);
             }
         } finally {
-            JsfInjectionProvider.getInjectionContainer().set(null);
+            SecurityActions.setContextClassLoader(oldTccl);
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized void stop(StopContext stopContext) {
+        final ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
-            context.stop();
-        } catch (LifecycleException e) {
-            log.error("exception while stopping context", e);
-        }
-        try {
-            context.destroy();
-        } catch (Exception e) {
-            log.error("exception while destroying context", e);
+            SecurityActions.setContextClassLoader(context.getLoader().getClassLoader());
+            try {
+                context.stop();
+            } catch (LifecycleException e) {
+                log.error("exception while stopping context", e);
+            }
+            try {
+                context.destroy();
+            } catch (Exception e) {
+                log.error("exception while destroying context", e);
+            }
+        } finally {
+            SecurityActions.setContextClassLoader(oldTccl);
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized Context getValue() throws IllegalStateException {
         final Context context = this.context;
         if (context == null) {
