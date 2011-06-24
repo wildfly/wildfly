@@ -343,6 +343,7 @@ public enum Phase {
     public static final int POST_MODULE_JAXRS_COMPONENT                 = 0x1B00;
 
     // INSTALL
+    public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
     public static final int INSTALL_APP_CONTEXT                         = 0x0300;
     public static final int INSTALL_MODULE_CONTEXT                      = 0x0400;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
@@ -365,6 +366,7 @@ public enum Phase {
     public static final int INSTALL_DEPENDS_ON_ANNOTATION               = 0x1210;
     public static final int INSTALL_PERSISTENTUNIT                      = 0x1220;
     public static final int INSTALL_EE_COMPONENT                        = 0x1230;
+    public static final int INSTALL_JNDI_DEPENDENCIES                   = 0x1240;
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1300;
     public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1500;
     public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1600;

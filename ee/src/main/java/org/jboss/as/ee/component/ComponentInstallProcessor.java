@@ -36,6 +36,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
 import static org.jboss.as.server.deployment.Attachments.MODULE;
@@ -60,18 +61,22 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             return;
         }
         final EEModuleConfiguration moduleDescription = deploymentUnit.getAttachment(EE_MODULE_CONFIGURATION);
+
+        final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        final Set<ServiceName> dependencies = parent.getAttachment(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
+
         // Iterate through each component, installing it into the container
         for (ComponentConfiguration configuration : moduleDescription.getComponentConfigurations()) {
             try {
                 logger.tracef("Installing component %s", configuration.getComponentClass().getName());
-                deployComponent(phaseContext, configuration);
+                deployComponent(phaseContext, configuration, dependencies);
             } catch (RuntimeException e) {
                 throw new DeploymentUnitProcessingException("Failed to install component " + configuration, e);
             }
         }
     }
 
-    protected void deployComponent(final DeploymentPhaseContext phaseContext, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+    protected void deployComponent(final DeploymentPhaseContext phaseContext, final ComponentConfiguration configuration, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
@@ -143,6 +148,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 final ServiceName handleServiceName = binderServiceName.append(baseName).append(String.valueOf(i.value++));
 
                 //these bindings should never be merged, if a view binding is duplicated it is an error
+                dependencies.add(binderServiceName);
+
                 ServiceBuilder<Void> serviceBuilder = serviceTarget.addService(handleServiceName, service);
                 bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
                 serviceBuilder.install();
@@ -151,14 +158,14 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             // The bindings for the component
-            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), i);
+            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), i, dependencies);
 
 
             // The bindings for the component class
             new ClassDescriptionTraversal(configuration.getModuleClassConfiguration(), applicationDescription) {
                 @Override
                 protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, classConfiguration.getBindingConfigurations(), i);
+                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, classConfiguration.getBindingConfigurations(), i, dependencies);
                 }
             }.run();
 
@@ -170,7 +177,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     new ClassDescriptionTraversal(interceptorClass, applicationDescription) {
                         @Override
                         protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, classConfiguration.getBindingConfigurations(), i);
+                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, classConfiguration.getBindingConfigurations(), i, dependencies);
                         }
                     }.run();
                 }
@@ -181,7 +188,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         startBuilder.install();
     }
 
-    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, ServiceName compServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, IntHolder handleCount) throws DeploymentUnitProcessingException {
+    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, ServiceName compServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, IntHolder handleCount, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
 
         //we only handle java:comp bindings for components that have their own namespace here, the rest are processed by ModuleJndiBindingProcessor
         for (BindingConfiguration bindingConfiguration : bindings) {
@@ -191,6 +198,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 final BindingHandleService service = new BindingHandleService(bindingName, binderServiceName, bindingConfiguration.getSource(), contextServiceName);
                 final ServiceName handleServiceName = binderServiceName.append(compServiceName).append(String.valueOf(handleCount.value++));
 
+                dependencies.add(binderServiceName);
                 ServiceBuilder<Void> serviceBuilder = serviceTarget.addService(handleServiceName, service);
                 bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
                 serviceBuilder.install();
