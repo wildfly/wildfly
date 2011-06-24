@@ -69,6 +69,43 @@ public class ProfileDescribeHandler implements OperationStepHandler, Description
         final AtomicReference<ModelNode> failureRef = new AtomicReference<ModelNode>();
 
         final ModelNode subsystemResults = new ModelNode().setEmptyList();
+        final Map<String, ModelNode> includeResults = new HashMap<String, ModelNode>();
+
+        // Add a step at end to assemble all the data
+        // Add steps in the reverse of expected order, as Stage.IMMEDIATE adds to the top of the list
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                boolean failed = false;
+                if (failureRef.get() != null) {
+                    // One of our subsystems failed
+                    context.getFailureDescription().set(failureRef.get());
+                    failed = true;
+                } else {
+                    for (ModelNode includeRsp : includeResults.values()) {
+                        if (includeRsp.hasDefined(FAILURE_DESCRIPTION)) {
+                            context.getFailureDescription().set(includeRsp.get(FAILURE_DESCRIPTION));
+                            failed = true;
+                            break;
+                        }
+                        ModelNode includeResult = includeRsp.get(RESULT);
+                        if (includeResult.isDefined()) {
+                            for (ModelNode op : includeResult.asList()) {
+                                result.add(op);
+                            }
+                        }
+                    }
+                }
+                if (!failed) {
+                    for (ModelNode subsysRsp : subsystemResults.asList()) {
+                        result.add(subsysRsp);
+                    }
+                    context.getResult().set(result);
+                }
+                context.completeStep();
+            }
+        }, OperationContext.Stage.IMMEDIATE);
+
         if (profile.hasDefined(SUBSYSTEM)) {
             for (final String subsystemName : profile.get(SUBSYSTEM).keys()) {
                 final ModelNode subsystemRsp = new ModelNode();
@@ -82,8 +119,6 @@ public class ProfileDescribeHandler implements OperationStepHandler, Description
                 if (subsysHandler == null) {
                     throw new OperationFailedException(new ModelNode().set(String.format("No handler for operation %s at address %s", opName, fullAddress)));
                 }
-
-                // Add steps in the reverse of expected order, as Stage.IMMEDIATE adds to the top of the list
 
                 // Step to store subsystem ops in overall list
                 context.addStep(new OperationStepHandler() {
@@ -107,54 +142,20 @@ public class ProfileDescribeHandler implements OperationStepHandler, Description
             }
         }
 
-        if (failureRef.get() != null) {
-            context.getFailureDescription().set(failureRef.get());
-        } else {
-            final Map<String, ModelNode> includeResults = new HashMap<String, ModelNode>();
-            if (profile.hasDefined(INCLUDES)) {
+        if (profile.hasDefined(INCLUDES)) {
+            // Call this op for each included profile
+            for (ModelNode include : profile.get(INCLUDES).asList()) {
 
-                for (ModelNode include : profile.get(INCLUDES).asList()) {
+                final String includeName = include.asString();
+                final ModelNode includeRsp = new ModelNode();
+                includeResults.put(includeName, includeRsp);
 
-                    final String includeName = include.asString();
-                    final ModelNode includeRsp = new ModelNode();
-                    includeResults.put(includeName, includeRsp);
+                final ModelNode includeAddress = address.subAddress(0, address.size() - 1).append(PathElement.pathElement(PROFILE, includeName)).toModelNode();
+                final ModelNode newOp = operation.clone();
+                newOp.get(OP_ADDR).set(includeAddress);
 
-                    final ModelNode includeAddress = address.subAddress(0, address.size() - 1).append(PathElement.pathElement(PROFILE, includeName)).toModelNode();
-                    final ModelNode newOp = operation.clone();
-                    newOp.get(OP_ADDR).set(includeAddress);
-
-                    context.addStep(includeRsp, newOp, INSTANCE, OperationContext.Stage.IMMEDIATE);
-                }
+                context.addStep(includeRsp, newOp, INSTANCE, OperationContext.Stage.IMMEDIATE);
             }
-
-            // Add a step at end to assemble all the data
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    boolean failed = false;
-                    for (ModelNode includeRsp : includeResults.values()) {
-                        if (includeRsp.hasDefined(FAILURE_DESCRIPTION)) {
-                            context.getFailureDescription().set(includeRsp.get(FAILURE_DESCRIPTION));
-                            failed = true;
-                            break;
-                        }
-                        ModelNode includeResult = includeRsp.get(RESULT);
-                        if (includeResult.isDefined()) {
-                            for (ModelNode op : includeResult.asList()) {
-                                result.add(op);
-                            }
-                        }
-                    }
-                    if (!failed) {
-                        for (ModelNode subsysRsp : subsystemResults.asList()) {
-                            result.add(subsysRsp);
-
-                        }
-                        context.getResult().set(result);
-                    }
-                    context.completeStep();
-                }
-            }, OperationContext.Stage.MODEL);
         }
 
         context.completeStep();

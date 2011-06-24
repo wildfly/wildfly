@@ -59,7 +59,7 @@
             </jvm>
         </server>
         <server name="other-two" group="other-server-group">
-            <socket-binding-group ref="standard-sockets" port-offset="550"/>
+            <socket-binding-group ref="osgi-sockets" port-offset="550"/>
         </server>
     </servers>
 </host>

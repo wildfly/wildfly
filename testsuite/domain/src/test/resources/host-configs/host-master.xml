@@ -63,7 +63,7 @@
         <server name="other-one" group="other-server-group" auto-start="false">
             <!-- server-three avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
-            <socket-binding-group ref="standard-sockets" port-offset="250"/>
+            <socket-binding-group ref="osgi-sockets" port-offset="250"/>
         </server>
     </servers>
 </host>
