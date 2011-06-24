@@ -158,6 +158,10 @@ public class StandaloneXml extends CommonXml {
             parseManagement(reader, address, list);
             element = nextElement(reader);
         }
+        if (element == Element.MANAGEMENT_INTERFACES) {
+            parseManagementInterfaces(reader, address, list);
+            element = nextElement(reader);
+        }
         // Single profile
         if (element == Element.PROFILE) {
             parseServerProfile(reader, address, list);
@@ -361,8 +365,11 @@ public class StandaloneXml extends CommonXml {
             writePaths(writer, modelNode.get(PATH));
         }
 
-        ModelNode managementInterface = modelNode.hasDefined(MANAGEMENT_INTERFACE) ? modelNode.get(MANAGEMENT_INTERFACE) : null;
-        writeManagement(writer, modelNode.get(MANAGEMENT), managementInterface);
+        writeManagement(writer, modelNode.get(MANAGEMENT));
+
+        if (modelNode.hasDefined(MANAGEMENT_INTERFACE)) {
+            writeManagementInterfaces(writer, modelNode.get(MANAGEMENT_INTERFACE));
+        }
 
         writeServerProfile(writer, context);
 

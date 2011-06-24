@@ -26,6 +26,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -113,8 +114,11 @@ public class HostXml extends CommonXml {
             writePaths(writer, modelNode.get(PATH));
         }
 
-        ModelNode managementInterface = modelNode.hasDefined(MANAGEMENT_INTERFACE) ? modelNode.get(MANAGEMENT_INTERFACE) : null;
-        writeManagement(writer, modelNode.get(MANAGEMENT), managementInterface);
+        writeManagement(writer, modelNode.get(MANAGEMENT));
+
+        if (modelNode.hasDefined(MANAGEMENT_INTERFACE)) {
+            writeManagementInterfaces(writer, modelNode.get(MANAGEMENT_INTERFACE));
+        }
 
         if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
             writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER));
@@ -210,6 +214,10 @@ public class HostXml extends CommonXml {
         }
         if (element == Element.MANAGEMENT) {
             parseManagement(reader, address, list);
+            element = nextElement(reader);
+        }
+        if (element == Element.MANAGEMENT_INTERFACES) {
+            parseManagementInterfaces(reader, address, list);
             element = nextElement(reader);
         }
         if (element == Element.DOMAIN_CONTROLLER) {

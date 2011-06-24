@@ -79,12 +79,10 @@
        <path name="relative" path="relative" relative-to="absolute"/>
     </paths>
 
-    <management>
-       <management-interfaces>
-          <native-interface interface="management" port="9999" />
-          <http-interface interface="management" port="9990"/>
-       </management-interfaces>
-    </management>
+    <management-interfaces>
+       <native-interface interface="management" port="9999" />
+       <http-interface interface="management" port="9990"/>
+    </management-interfaces>
 
     <profile>
         <subsystem xmlns="urn:jboss:domain:logging:1.0">

@@ -25,12 +25,10 @@
       xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd"
       name="slave">
 
-    <management>
-       <management-interfaces>
-          <native-interface interface="public" port="19999" />
-          <http-interface interface="public" port="19990"/>
-       </management-interfaces>
-    </management>
+    <management-interfaces>
+       <native-interface interface="public" port="19999" />
+       <http-interface interface="public" port="19990"/>
+    </management-interfaces>
 
     <domain-controller>
        <!-- Remote domain controller configuration with a host and port -->
