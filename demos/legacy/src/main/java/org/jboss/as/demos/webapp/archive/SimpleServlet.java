@@ -63,7 +63,7 @@ public class SimpleServlet extends HttpServlet {
 
     private static volatile boolean initialized;
 
-    @Resource(mappedName="java:/H2DS")
+    @Resource(mappedName="java:jboss/datasources/ExampleDS")
     DataSource ds;
 
     @Resource(mappedName="java:/ConnectionFactory")
@@ -156,7 +156,7 @@ public class SimpleServlet extends HttpServlet {
                 //TODO Remove this once injection is working
                 try {
                     InitialContext context = new InitialContext();
-                    ds = (DataSource)context.lookup("java:/H2DS");
+                    ds = (DataSource)context.lookup("java:jboss/datasources/ExampleDS");
                     cf = (QueueConnectionFactory)context.lookup("java:/ConnectionFactory");
                     queue = (Queue)context.lookup("queue/test");
                     conn = cf.createQueueConnection();

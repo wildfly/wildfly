@@ -65,9 +65,12 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
         final String rawJndiName = operation.require(JNDINAME).asString();
         final String jndiName;
-        if (!rawJndiName.startsWith("java:/") && operation.hasDefined(USE_JAVA_CONTEXT)
-                && operation.get(USE_JAVA_CONTEXT).asBoolean()) {
-            jndiName = "java:/" + rawJndiName;
+        if (!rawJndiName.startsWith("java:") && operation.hasDefined(USE_JAVA_CONTEXT) && operation.get(USE_JAVA_CONTEXT).asBoolean()) {
+            if(rawJndiName.startsWith("jboss/")) {
+                jndiName = "java:/" + rawJndiName;
+            } else {
+                jndiName= "java:" + rawJndiName;
+            }
         } else {
             jndiName = rawJndiName;
         }
@@ -107,18 +110,21 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 referenceFactoryService).addDependency(dataSourceServiceName, DataSource.class,
                 referenceFactoryService.getDataSourceInjector());
 
-        String bindName = jndiName;
-        if (jndiName.startsWith("java:/")) {
-            bindName = jndiName.substring(6);
+        String bindName = cleanupJavaContext(jndiName);
+        final ServiceName parentContextName;
+        if (bindName.startsWith("jboss/")) {
+            parentContextName = ContextNames.JBOSS_CONTEXT_SERVICE_NAME;
+            bindName = bindName.substring(6);
+        } else {
+            parentContextName = ContextNames.JAVA_CONTEXT_SERVICE_NAME;
         }
+
         final BinderService binderService = new BinderService(bindName);
-        final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
+        final ServiceName binderServiceName = parentContextName.append(bindName);
         final ServiceBuilder<?> binderBuilder = serviceTarget
                 .addService(binderServiceName, binderService)
-                .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
-                        binderService.getManagedObjectInjector())
-                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
-                        binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+                .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class, binderService.getManagedObjectInjector())
+                .addDependency(parentContextName, NamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
                     public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
@@ -152,6 +158,18 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         controllers.add(dataSourceServiceBuilder.install());
         controllers.add(referenceBuilder.install());
         controllers.add(binderBuilder.install());
+    }
+
+    static String cleanupJavaContext(String jndiName) {
+        String bindName;
+        if (jndiName.startsWith("java:/")) {
+            bindName = jndiName.substring(6);
+        } else if(jndiName.startsWith("java:")) {
+            bindName = jndiName.substring(5);
+        } else {
+            bindName = jndiName;
+        }
+        return bindName;
     }
 
     protected abstract ServiceController<?> startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,

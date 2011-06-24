@@ -324,10 +324,13 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     }
 
     private String adjustJndi(String dataSourceName) {
-        if (dataSourceName != null &&
-                !dataSourceName.startsWith("java:")) {
+        if (dataSourceName != null && !dataSourceName.startsWith("java:")) {
+            if(dataSourceName.startsWith("jboss/")) {
+                return "java:" + dataSourceName;
+            }
             return "java:/" + dataSourceName;
         }
+
         return dataSourceName;
     }
 

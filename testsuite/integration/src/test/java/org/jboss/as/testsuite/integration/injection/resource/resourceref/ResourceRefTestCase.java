@@ -81,7 +81,7 @@ public class ResourceRefTestCase {
                 "\n" +
                 "    <resource-ref>\n" +
                 "        <res-ref-name>ds</res-ref-name>\n" +
-                "        <lookup-name>java:/H2DS</lookup-name>\n" +
+                "        <lookup-name>java:jboss/datasources/ExampleDS</lookup-name>\n" +
                 "        <injection-target>" +
                 "           <injection-target-class>"+ DatasourceManagedBean.class.getName()+"</injection-target-class>"+
                 "           <injection-target-name>ds</injection-target-name>" +

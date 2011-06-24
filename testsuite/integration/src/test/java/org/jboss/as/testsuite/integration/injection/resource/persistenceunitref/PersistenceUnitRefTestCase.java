@@ -49,7 +49,7 @@ public class PersistenceUnitRefTestCase {
             "  <persistence-unit name=\"mypc\">" +
             "    <description>Persistence Unit." +
             "    </description>" +
-            "  <jta-data-source>java:/H2DS</jta-data-source>" +
+            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
             "  <exclude-unlisted-classes>true</exclude-unlisted-classes>" +
             "  <class>" + PuMyEntity.class.getName() + "</class>" +
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/></properties>" +
@@ -57,7 +57,7 @@ public class PersistenceUnitRefTestCase {
             "  <persistence-unit name=\"otherpc\">" +
             "    <description>Persistence Unit." +
             "    </description>" +
-            "  <jta-data-source>java:/H2DS</jta-data-source>" +
+            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
             "  <exclude-unlisted-classes>true</exclude-unlisted-classes>" +
             "  <class>" + PuOtherEntity.class.getName() + "</class>" +
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/></properties>" +
