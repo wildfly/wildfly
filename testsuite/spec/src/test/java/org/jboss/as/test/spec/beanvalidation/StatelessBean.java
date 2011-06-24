@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,31 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.mgmt;
+package org.jboss.as.test.spec.beanvalidation;
+
+import javax.annotation.Resource;
+import javax.ejb.Stateless;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 /**
- * @author John Bailey
+ * User: Jaikiran Pai
  */
-public interface ManagementProtocol {
-    // Headers
-    byte[] SIGNATURE = {Byte.MAX_VALUE, Byte.MIN_VALUE, Byte.MAX_VALUE, Byte.MIN_VALUE};
-    int VERSION_FIELD = 0x00; // The version field header
-    int VERSION = 1; // The current protocol version
+@Stateless
+public class StatelessBean {
 
-    byte TYPE = 0x1;
-    byte TYPE_REQUEST = 0x2;
-    byte TYPE_RESPONSE = 0x3;
+    @Resource
+    private Validator validator;
 
-    byte REQUEST_ID = 0x4;
-    byte BATCH_ID = 0x5;
-    byte OPERATION_ID = 0x6;
-    byte ONE_WAY = 0x7;
-    byte REQUEST_BODY = 0x08;
-    byte REQUEST_END = 0x09;
+    @Resource
+    private ValidatorFactory validatorFactory;
 
-    byte RESPONSE_ID = 0xA;
-    byte RESPONSE_TYPE = 0xB;
-    byte RESPONSE_BODY = 0xC;
-    byte RESPONSE_ERROR = 0xD;
-    byte RESPONSE_END = 0xE;
+    public void buildDefaultValidatorFactory() {
+        Validation.buildDefaultValidatorFactory();
+    }
+
+    public boolean isValidatorInjected() {
+        return this.validator != null;
+    }
+
+    public boolean isValidatorFactoryInjected() {
+        return this.validatorFactory != null;
+    }
+
+    public Validator getValidatorFromValidatorFactory() {
+        return this.validatorFactory.getValidator();
+    }
 }

@@ -35,7 +35,7 @@ import org.jboss.modules.ModuleLoader;
 
 /**
  * Deployment processor which adds the java EE APIs to EE deployments
- *
+ * <p/>
  * TODO: This needs to be removed, so that the relevant API's are added by the corresponding sub systems
  *
  * @author John E. Bailey
@@ -45,6 +45,8 @@ import org.jboss.modules.ModuleLoader;
 public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
 
     private static ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
+
+    private static ModuleIdentifier HIBERNATE_VALIDATOR_ID = ModuleIdentifier.create("org.hibernate.validator");
 
     /**
      * Add the EE APIs as a dependency to all deployments
@@ -59,6 +61,8 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, true));
+        // TODO: Post 7.0, we have to rethink this whole hibernate dependencies that we add to user deployments
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, false, false, true));
     }
 
     public void undeploy(final DeploymentUnit context) {

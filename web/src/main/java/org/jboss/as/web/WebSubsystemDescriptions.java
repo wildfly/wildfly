@@ -59,24 +59,6 @@ class WebSubsystemDescriptions {
         node.get(ATTRIBUTES, Constants.NATIVE, REQUIRED).set(false);
         node.get(ATTRIBUTES, Constants.NATIVE, DEFAULT).set(true);
 
-        node.get(ATTRIBUTES, Constants.CONNECTOR, TYPE).set(ModelType.LIST);
-        node.get(ATTRIBUTES, Constants.CONNECTOR, DESCRIPTION).set(bundle.getString("web.connector"));
-        node.get(ATTRIBUTES, Constants.CONNECTOR, MAX_OCCURS).set(Integer.MAX_VALUE);
-
-        node.get(ATTRIBUTES, Constants.CONNECTOR, Constants.NAME, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, Constants.CONNECTOR, Constants.NAME, DESCRIPTION).set(bundle.getString("web.connector.name"));
-        node.get(ATTRIBUTES, Constants.CONNECTOR, Constants.NAME, REQUIRED).set(true);
-        node.get(ATTRIBUTES, Constants.CONNECTOR, Constants.NAME, NILLABLE).set(false);
-
-        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, TYPE).set(ModelType.LIST);
-        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, DESCRIPTION).set(bundle.getString("web.virtual-server"));
-        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, MAX_OCCURS).set(Integer.MAX_VALUE);
-
-        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, Constants.NAME, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, Constants.NAME, DESCRIPTION).set(bundle.getString("web.virtual-server.name"));
-        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, Constants.NAME, REQUIRED).set(true);
-        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, Constants.NAME, NILLABLE).set(false);
-
         getConfigurationCommonDescription(node.get(ATTRIBUTES, Constants.CONTAINER_CONFIG), ATTRIBUTES, bundle);
         getConnectorCommonDescription(node.get(CHILDREN, Constants.CONNECTOR), ATTRIBUTES, bundle);
         getVirtualServerCommonDescription(node.get(CHILDREN, Constants.VIRTUAL_SERVER), ATTRIBUTES, bundle);
@@ -144,7 +126,7 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.MIME_MAPPING, Constants.NAME, NILLABLE).set(false);
 
         node.get(type, Constants.MIME_MAPPING, Constants.VALUE, TYPE).set(ModelType.STRING);
-        node.get(type, Constants.MIME_MAPPING, Constants.VALUE, DESCRIPTION).set(bundle.getString("web.configuration.mime-mapping"));
+        node.get(type, Constants.MIME_MAPPING, Constants.VALUE, DESCRIPTION).set(bundle.getString("web.configuration.mime-mapping.value"));
         node.get(type, Constants.MIME_MAPPING, Constants.VALUE, REQUIRED).set(true);
         node.get(type, Constants.MIME_MAPPING, Constants.VALUE, NILLABLE).set(false);
 

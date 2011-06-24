@@ -222,15 +222,17 @@ public class RemoteProxyControllerProtocolTestCase {
 
     @Test
     public void testTransactionCommit() throws Exception {
-
+        final AtomicInteger txCompletionStatus = new AtomicInteger();
         final OperationTransaction tx = new OperationTransaction() {
 
             @Override
             public void rollback() {
+                txCompletionStatus.set(1);
             }
 
             @Override
             public void commit() {
+                txCompletionStatus.set(2);
             }
         };
         MockModelController controller = new MockModelController() {
@@ -289,18 +291,22 @@ public class RemoteProxyControllerProtocolTestCase {
         ModelNode finalResult = result.get();
         assertEquals(SUCCESS, finalResult.get(OUTCOME).asString());
         assertEquals("final", finalResult.get(RESULT).asString());
+        assertEquals(2, txCompletionStatus.get());
     }
 
     @Test
     public void testTransactionRollback() throws Exception {
+        final AtomicInteger txCompletionStatus = new AtomicInteger();
         final OperationTransaction tx = new OperationTransaction() {
 
             @Override
             public void rollback() {
+                txCompletionStatus.set(1);
             }
 
             @Override
             public void commit() {
+                txCompletionStatus.set(2);
             }
         };
         MockModelController controller = new MockModelController() {
@@ -356,6 +362,7 @@ public class RemoteProxyControllerProtocolTestCase {
         preparedTx.get().rollback();
         assertEquals(SUCCESS, result.get().get(OUTCOME).asString());
         assertEquals("prepared", result.get().get(RESULT).asString());
+        assertEquals(1, txCompletionStatus.get());
     }
 
     @Test

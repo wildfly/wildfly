@@ -35,7 +35,6 @@
                             urn:jboss:domain:jpa:1.0 jboss-jpa.xsd
                             urn:jboss:domain:logging:1.0 jboss-logging.xsd
                             urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
-                            urn:jboss:domain:modcluster:1.0 jboss-mod-cluster.xsd
                             urn:jboss:domain:naming:1.0 jboss-naming.xsd
                             urn:jboss:domain:osgi:1.0 jboss-osgi.xsd
                             urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
@@ -61,7 +60,6 @@
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.messaging"/>
-        <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
@@ -80,17 +78,13 @@
     </paths>
 
     <management>
-        <security-realms>
-            <security-realm name="TestRealm">
-                <authentication>
-                    <users>
-                        <user username="TestUser">
-                            <password>TestUserPassword</password>
-                        </user>
-                    </users>
-                </authentication>
-            </security-realm>
-        </security-realms>
+	    <security-realms>
+		    <security-realm name="PropertiesMgmtSecurityRealm">
+			    <authentication>
+				    <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" />
+			    </authentication>
+		    </security-realm>
+	    </security-realms>
     </management>
 
     <management-interfaces>
@@ -406,9 +400,6 @@
              <wsdl-port>8080</wsdl-port>
              <wsdl-secure-port>8443</wsdl-secure-port>
              -->
-        </subsystem>
-        <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-            <mod-cluster-config advertise-socket="mod_cluster" />
         </subsystem>
     </profile>
 

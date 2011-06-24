@@ -366,7 +366,7 @@
              -->
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-            <mod-cluster-config advertise-socket="mod_cluster" />
+            <mod-cluster-config advertise-socket="modcluster" />
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jgroups:1.0" default-stack="udp">
             <stack name="udp">
@@ -478,6 +478,7 @@
            <socket-binding name="jgroups-tcp" port="7600"/>
            <socket-binding name="jgroups-tcp-fd" port="57600"/>
            <socket-binding name="jgroups-mping" port="0" multicast-address="230.0.0.4" multicast-port="45700"/>
+           <socket-binding name="modcluster" port="0"  multicast-address="224.0.1.105" multicast-port="23364"/>
         </socket-binding-group>
 </server>
 

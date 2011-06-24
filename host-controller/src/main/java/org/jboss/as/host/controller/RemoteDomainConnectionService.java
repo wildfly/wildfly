@@ -24,7 +24,6 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
 
-import javax.security.auth.callback.CallbackHandler;
 import java.io.BufferedOutputStream;
 import java.io.DataInput;
 import java.io.File;
@@ -40,6 +39,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelController;
@@ -60,6 +61,7 @@ import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
 import org.jboss.as.protocol.old.Connection.ClosedCallback;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.dmr.ModelNode;
@@ -344,9 +346,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
     private abstract class RegistryRequest<T> extends ManagementRequest<T>{
 
-        protected T readResponse(DataInput input) throws IOException {
-            return null;
-        }
     }
 
     private class RegisterModelControllerRequest extends RegistryRequest<String> {
@@ -366,15 +365,18 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             output.writeUTF(name);
         }
 
-        /** {@inheritDoc} */
-        @Override
-        protected String readResponse(DataInput input) throws IOException {
-            byte status = input.readByte();
-            if (status == DomainControllerProtocol.PARAM_OK) {
-                return null;
-            } else {
-                return input.readUTF();
-            }
+        protected ManagementResponseHandler<String> getResponseHandler() {
+            return new ManagementResponseHandler<String>() {
+                @Override
+                protected String readResponse(DataInput input) throws IOException {
+                    byte status = input.readByte();
+                    if (status == DomainControllerProtocol.PARAM_OK) {
+                        return null;
+                    } else {
+                        return input.readUTF();
+                    }
+                }
+            };
         }
     }
 
@@ -389,6 +391,10 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         protected void writeRequest(final int protocolVersion, final FlushableDataOutput output) throws IOException {
             output.write(DomainControllerProtocol.PARAM_HOST_ID);
             output.writeUTF(name);
+        }
+
+        protected ManagementResponseHandler<Void> getResponseHandler() {
+            return ManagementResponseHandler.EMPTY_RESPONSE;
         }
     }
 
@@ -418,77 +424,81 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             output.writeUTF(filePath);
         }
 
-        @Override
-        protected final File readResponse(final DataInput input) throws IOException {
-            final File localPath;
-            switch (rootId) {
-                case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
-                    localPath = localFileRepository.getFile(filePath);
-                    break;
-                }
-                case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
-                    localPath = localFileRepository.getConfigurationFile(filePath);
-                    break;
-                }
-                case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
-                    byte[] hash = HashUtil.hexStringToByteArray(filePath);
-                    localPath = localFileRepository.getDeploymentRoot(hash);
-                    break;
-                }
-                default: {
-                    localPath = null;
-                }
-            }
-            expectHeader(input, DomainControllerProtocol.PARAM_NUM_FILES);
-            int numFiles = input.readInt();
-            log.debugf("Received %d files for %s", numFiles, localPath);
-            switch (numFiles) {
-                case -1: { // Not found on DC
-                    break;
-                }
-                case 0: { // Found on DC, but was an empty dir
-                    if (!localPath.mkdirs()) {
-                        throw new IOException("Unable to create local directory: " + localPath);
+        protected ManagementResponseHandler<File> getResponseHandler() {
+            return new ManagementResponseHandler<File>() {
+                @Override
+                protected final File readResponse(final DataInput input) throws IOException {
+                    final File localPath;
+                    switch (rootId) {
+                        case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
+                            localPath = localFileRepository.getFile(filePath);
+                            break;
+                        }
+                        case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
+                            localPath = localFileRepository.getConfigurationFile(filePath);
+                            break;
+                        }
+                        case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
+                            byte[] hash = HashUtil.hexStringToByteArray(filePath);
+                            localPath = localFileRepository.getDeploymentRoot(hash);
+                            break;
+                        }
+                        default: {
+                            localPath = null;
+                        }
                     }
-                    break;
-                }
-                default: { // Found on DC
-                    for (int i = 0; i < numFiles; i++) {
-                        expectHeader(input, DomainControllerProtocol.FILE_START);
-                        expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
-                        final String path = input.readUTF();
-                        expectHeader(input, DomainControllerProtocol.PARAM_FILE_SIZE);
-                        final long length = input.readLong();
-                        log.debugf("Received file [%s] of length %d", path, length);
-                        final File file = new File(localPath, path);
-                        if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
-                            throw new IOException("Unable to create local directory " + localPath.getParent());
+                    expectHeader(input, DomainControllerProtocol.PARAM_NUM_FILES);
+                    int numFiles = input.readInt();
+                    log.debugf("Received %d files for %s", numFiles, localPath);
+                    switch (numFiles) {
+                        case -1: { // Not found on DC
+                            break;
                         }
-                        long totalRead = 0;
-                        OutputStream fileOut = null;
-                        try {
-                            fileOut = new BufferedOutputStream(new FileOutputStream(file));
-                            final byte[] buffer = new byte[8192];
-                            while (totalRead < length) {
-                                int len = Math.min((int) (length - totalRead), buffer.length);
-                                input.readFully(buffer, 0, len);
-                                fileOut.write(buffer, 0, len);
-                                totalRead += len;
+                        case 0: { // Found on DC, but was an empty dir
+                            if (!localPath.mkdirs()) {
+                                throw new IOException("Unable to create local directory: " + localPath);
                             }
-                        } finally {
-                            if (fileOut != null) {
-                                fileOut.close();
-                            }
+                            break;
                         }
-                        if (totalRead != length) {
-                            throw new IOException("Did not read the entire file. Missing: " + (length - totalRead));
-                        }
+                        default: { // Found on DC
+                            for (int i = 0; i < numFiles; i++) {
+                                expectHeader(input, DomainControllerProtocol.FILE_START);
+                                expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
+                                final String path = input.readUTF();
+                                expectHeader(input, DomainControllerProtocol.PARAM_FILE_SIZE);
+                                final long length = input.readLong();
+                                log.debugf("Received file [%s] of length %d", path, length);
+                                final File file = new File(localPath, path);
+                                if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
+                                    throw new IOException("Unable to create local directory " + localPath.getParent());
+                                }
+                                long totalRead = 0;
+                                OutputStream fileOut = null;
+                                try {
+                                    fileOut = new BufferedOutputStream(new FileOutputStream(file));
+                                    final byte[] buffer = new byte[8192];
+                                    while (totalRead < length) {
+                                        int len = Math.min((int) (length - totalRead), buffer.length);
+                                        input.readFully(buffer, 0, len);
+                                        fileOut.write(buffer, 0, len);
+                                        totalRead += len;
+                                    }
+                                } finally {
+                                    if (fileOut != null) {
+                                        fileOut.close();
+                                    }
+                                }
+                                if (totalRead != length) {
+                                    throw new IOException("Did not read the entire file. Missing: " + (length - totalRead));
+                                }
 
-                        expectHeader(input, DomainControllerProtocol.FILE_END);
+                                expectHeader(input, DomainControllerProtocol.FILE_END);
+                            }
+                        }
                     }
+                    return localPath;
                 }
-            }
-            return localPath;
+            };
         }
     }
 

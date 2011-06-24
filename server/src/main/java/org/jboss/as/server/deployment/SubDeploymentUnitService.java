@@ -22,6 +22,9 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.service.ServiceRegistry;
@@ -34,20 +37,26 @@ import org.jboss.msc.service.ServiceRegistry;
 public class SubDeploymentUnitService extends AbstractDeploymentUnitService {
     private final ResourceRoot deploymentRoot;
     private final DeploymentUnit parent;
+    private final ImmutableManagementResourceRegistration registration;
+    private Resource resource;
 
-    public SubDeploymentUnitService(ResourceRoot deploymentRoot, DeploymentUnit parent) {
+    public SubDeploymentUnitService(ResourceRoot deploymentRoot, DeploymentUnit parent, ImmutableManagementResourceRegistration registration, Resource resource) {
         if (deploymentRoot == null) throw new IllegalArgumentException("Deployment root is required");
         this.deploymentRoot = deploymentRoot;
         if (parent == null) throw new IllegalArgumentException("Sub-deployments require a parent deployment unit");
         this.parent = parent;
+        this.registration = registration;
+        this.resource = resource;
     }
 
     protected DeploymentUnit createAndInitializeDeploymentUnit(ServiceRegistry registry) {
         final String deploymentName = deploymentRoot.getRootName();
-        final DeploymentModelUtils parentModel = parent.getAttachment(DeploymentModelUtils.KEY);
-        final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, deploymentName, registry, parentModel.createSubDeployment(deploymentName));
+        final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, deploymentName, registry);
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, deploymentRoot);
         deploymentUnit.putAttachment(Attachments.MODULE_SPECIFICATION, new ModuleSpecification());
+        deploymentUnit.putAttachment(DeploymentModelUtils.REGISTRATION_ATTACHMENT, registration);
+        deploymentUnit.putAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE, resource);
+        this.resource = null;
         return deploymentUnit;
     }
 

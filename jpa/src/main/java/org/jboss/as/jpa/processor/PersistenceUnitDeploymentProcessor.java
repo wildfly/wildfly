@@ -23,6 +23,7 @@
 package org.jboss.as.jpa.processor;
 
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -70,6 +71,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.validation.ValidatorFactory;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -198,7 +200,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
             final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
             final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-
+            final Collection<ComponentDescription> components = eeModuleDescription.getComponentDescriptions();
             if (module == null)
                 throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
 
@@ -242,11 +244,13 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             properties.put("javax.persistence.validation.factory", validatorFactory);
                         }
                         addProviderProperties(pu, properties);
-                        final ServiceName serviceName = PersistenceUnitService.getPUServiceName(pu);
+                        final ServiceName puServiceName = PersistenceUnitService.getPUServiceName(pu);
+                        // add the PU service as a dependency to all EE components in this scope
+                        this.addPUServiceDependencyToComponents(components, puServiceName);
 
-                        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, serviceName);
+                        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
 
-                        ServiceBuilder builder = serviceTarget.addService(serviceName, service);
+                        ServiceBuilder builder = serviceTarget.addService(puServiceName, service);
                         boolean useDefaultDataSource = true;
                         final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
                         final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
@@ -275,7 +279,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             if (defaultJtaDataSource != null &&
                                     defaultJtaDataSource.length() > 0) {
                                 builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
-                                log.trace(serviceName + " is using the default data source '" + defaultJtaDataSource + "'");
+                                log.trace(puServiceName + " is using the default data source '" + defaultJtaDataSource + "'");
                             }
                         }
 
@@ -290,7 +294,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             final BinderService binderService = new BinderService(jndiName);
                             serviceTarget.addService(bindingServiceName, binderService)
                                     .addDependency(ContextNames.serviceNameOfNamingStore(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), jndiName), NamingStore.class, binderService.getNamingStoreInjector())
-                                    .addDependency(serviceName, PersistenceUnitService.class, new Injector<PersistenceUnitService>() {
+                                    .addDependency(puServiceName, PersistenceUnitService.class, new Injector<PersistenceUnitService>() {
                                         @Override
                                         public void inject(final PersistenceUnitService value) throws InjectionException {
                                             binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value.getEntityManagerFactory())));
@@ -309,7 +313,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                                 .addInjection(service.getPropertiesInjector(), properties)
                                 .install();
 
-                        log.trace("added PersistenceUnitService for '" + serviceName + "'.  PU is ready for injector action. ");
+                        log.trace("added PersistenceUnitService for '" + puServiceName + "'.  PU is ready for injector action. ");
 
                     } catch (ServiceRegistryException e) {
                         throw new DeploymentUnitProcessingException("Failed to add persistence unit service for " + pu.getPersistenceUnitName(), e);
@@ -364,6 +368,22 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         public void uninject() {
             reference.release();
             reference = null;
+        }
+    }
+
+    /**
+     * Add the <code>puServiceName</code> as a dependency on each of the passed <code>components</code>
+     *
+     * @param components    The components to which the PU service is added as a dependency
+     * @param puServiceName The persistence unit service name
+     */
+    private void addPUServiceDependencyToComponents(final Collection<ComponentDescription> components, final ServiceName puServiceName) {
+        if (components == null || components.isEmpty()) {
+            return;
+        }
+        for (final ComponentDescription component : components) {
+            log.debug("Adding dependency on PU service " + puServiceName + " for component " + component.getComponentClassName());
+            component.addDependency(puServiceName, ServiceBuilder.DependencyType.REQUIRED);
         }
     }
 }

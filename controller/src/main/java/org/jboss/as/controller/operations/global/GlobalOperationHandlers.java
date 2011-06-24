@@ -82,6 +82,17 @@ public class GlobalOperationHandlers {
     public static final OperationStepHandler READ_CHILDREN_NAMES = new ReadChildrenNamesOperationHandler();
     public static final OperationStepHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
     public static final OperationStepHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
+    public static final OperationStepHandler VALIDATE_ADDRESS = new OperationStepHandler() {
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            try {
+                context.readResource(PathAddress.EMPTY_ADDRESS);
+            } catch (Exception e) {
+                context.getFailureDescription().set(new ModelNode().set("resource does not exist: " + operation.get(OP_ADDR)));
+            }
+            context.completeStep();
+        }
+    };
 
     private GlobalOperationHandlers() {
         //
@@ -131,7 +142,7 @@ public class GlobalOperationHandlers {
 
             // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
             final ReadResourceAssemblyHandler assemblyHandler = new ReadResourceAssemblyHandler(directAttributes, metrics, otherAttributes, directChildren, childResources);
-            context.addStep(assemblyHandler, OperationContext.Stage.IMMEDIATE);
+            context.addStep(assemblyHandler, queryRuntime ? OperationContext.Stage.VERIFY : OperationContext.Stage.IMMEDIATE);
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             // Get the model for this resource.

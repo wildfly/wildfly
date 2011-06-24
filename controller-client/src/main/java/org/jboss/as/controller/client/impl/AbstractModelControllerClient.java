@@ -46,6 +46,8 @@ import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
+import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -195,30 +197,35 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             }
         }
 
-        @Override
-        protected ModelNode readResponse(final DataInput input) throws IOException {
-            log.tracef("Client reading response %d", getBatchId());
-            try {
-                ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_RESPONSE);
-                ModelNode node = new ModelNode();
-                node.readExternal(input);
-                log.tracef("Client read response %d successfully", getBatchId());
-                return node;
-            } catch (Exception e) {
-                log.tracef(e, "Client read response %d with error", getBatchId());
-                super.setError(e);
-                if (e instanceof IOException) {
-                    throw (IOException)e;
+        protected ManagementResponseHandler<ModelNode> getResponseHandler() {
+            return new ManagementResponseHandler<ModelNode>() {
+                @Override
+                protected ModelNode readResponse(final DataInput input) throws IOException {
+                    log.tracef("Client reading response %d", getBatchId());
+                    try {
+                        ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_RESPONSE);
+                        ModelNode node = new ModelNode();
+                        node.readExternal(input);
+                        log.tracef("Client read response %d successfully", getBatchId());
+                        return node;
+                    } catch (Exception e) {
+                        log.tracef(e, "Client read response %d with error", getBatchId());
+                        //super.setError(e);
+                        setError(e);
+                        if (e instanceof IOException) {
+                            throw (IOException)e;
+                        }
+                        if (e instanceof RuntimeException) {
+                            throw (RuntimeException)e;
+                        }
+                        throw new IOException(e);
+                    } finally {
+                        ManagementBatchIdManager.DEFAULT.freeBatchId(getBatchId());
+                        activeRequests.remove(getCurrentRequestId());
+                        executeRequestContext.done();
+                    }
                 }
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException)e;
-                }
-                throw new IOException(e);
-            } finally {
-                ManagementBatchIdManager.DEFAULT.freeBatchId(getBatchId());
-                activeRequests.remove(getCurrentRequestId());
-                executeRequestContext.done();
-            }
+            };
         }
 
         @Override
@@ -235,7 +242,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            int batchId = getContext().getHeader().getBatchId();
+            int batchId = getHeader().getBatchId();
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE_SEVERITY);
             MessageSeverity severity = Enum.valueOf(MessageSeverity.class, input.readUTF());
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_MESSAGE);
@@ -250,8 +257,8 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             }
         }
 
-        @Override
-        protected void writeResponse(final FlushableDataOutput output) throws IOException {
+        protected void processRequest() {
+
         }
     }
 
@@ -261,9 +268,10 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
      */
     private class ReadAttachmentInputStreamRequestHandler extends ManagementRequestHandler {
         InputStream attachmentInput;
+        byte[] bytes;
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            int batchId = getContext().getHeader().getBatchId();
+            int batchId = getHeader().getBatchId();
             log.tracef("Client got inputstream request %d",  batchId);
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_INDEX);
             int index = input.readInt();
@@ -276,22 +284,33 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             attachmentInput = in != null ? new BufferedInputStream(in) : null;
         }
 
+        protected void processRequest() throws RequestProcessingException {
+            try {
+                ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                if (attachmentInput != null) {
+                    int i = attachmentInput.read();
+                    while (i != -1) {
+                        bout.write(i);
+                        i = attachmentInput.read();
+                    }
+                }
+                bytes = bout.toByteArray();
+            } catch (IOException e) {
+                throw new RequestProcessingException(e);
+            } finally {
+                //Think the caller is responsible for closing these
+                //IoUtils.safeClose(attachmentInput);
+            }
+        }
+
+
         @Override
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
-            ByteArrayOutputStream bout = new ByteArrayOutputStream();
-            if (attachmentInput != null) {
-                int i = attachmentInput.read();
-                while (i != -1) {
-                    bout.write(i);
-                    i = attachmentInput.read();
-                }
-            }
-            byte[] bytes = bout.toByteArray();
             output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
             output.writeInt(bytes.length);
             output.write(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
             output.write(bytes);
-            log.tracef("Client handled inputstream request %d",  getContext().getHeader().getBatchId());
+            log.tracef("Client handled inputstream request %d",  getHeader().getBatchId());
         }
     }
 
@@ -429,10 +448,10 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                 return ModelControllerProtocol.CANCEL_ASYNC_REQUEST;
             }
 
+
             @Override
-            protected Void readResponse(DataInput input) throws IOException {
-                isCancelled = true;
-                return null;
+            protected ManagementResponseHandler<Void> getResponseHandler() {
+                return ManagementResponseHandler.EMPTY_RESPONSE;
             }
         }
     }

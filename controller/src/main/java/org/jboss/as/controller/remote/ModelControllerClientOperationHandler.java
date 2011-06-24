@@ -37,8 +37,12 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.HandleableCloseable.Key;
 
 /**
  * Operation handlers for the remote implementation of {@link org.jboss.as.controller.client.ModelControllerClient}
@@ -80,6 +84,7 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
         private ModelNode operation = new ModelNode();
         private int batchId;
         private int attachmentsLength;
+        private ModelNode result;
 
         public ExecuteRequestHandler(boolean asynch) {
             this.asynch = asynch;
@@ -87,27 +92,30 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            batchId = getContext().getHeader().getBatchId();
+            batchId = getHeader().getBatchId();
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_OPERATION);
             operation.readExternal(input);
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
             attachmentsLength = input.readInt();
         }
 
-        @Override
-        protected void writeResponse(final FlushableDataOutput output) throws IOException {
-            OperationAttachmentsProxy attachmentsProxy = new OperationAttachmentsProxy(getContext(), batchId, attachmentsLength);
+        protected void processRequest() throws RequestProcessingException {
+            final Key closeKey = getChannel().addCloseHandler(new CloseHandler<Channel>() {
+                public void handleClose(Channel closed) {
+                    asynchRequests.remove(getHeader().getBatchId());
+                }
+            });
+            OperationAttachmentsProxy attachmentsProxy = new OperationAttachmentsProxy(getChannel(), batchId, attachmentsLength);
             try {
-                ModelNode result;
                 try {
-                    log.tracef("Executing client request %d(%d)", batchId, getContext().getHeader().getRequestId());
+                    log.tracef("Executing client request %d(%d)", batchId, getHeader().getRequestId());
                     if (asynch) {
                         //register the cancel handler
                         asynchRequests.put(batchId, Thread.currentThread());
                     }
                     result = controller.execute(
                             operation,
-                            new OperationMessageHandlerProxy(getContext(), batchId),
+                            new OperationMessageHandlerProxy(getChannel(), batchId),
                             ModelController.OperationTransactionControl.COMMIT,
                             attachmentsProxy);
                 } catch (Exception e) {
@@ -119,13 +127,18 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
                 } finally {
                     log.tracef("Executed client request %d", batchId);
                 }
-                output.write(ModelControllerProtocol.PARAM_RESPONSE);
-                result.writeExternal(output);
             } finally {
                 if (asynch) {
                     asynchRequests.remove(batchId);
                 }
+                closeKey.remove();
             }
+        }
+
+        @Override
+        protected void writeResponse(final FlushableDataOutput output) throws IOException {
+            output.write(ModelControllerProtocol.PARAM_RESPONSE);
+            result.writeExternal(output);
         }
     }
 
@@ -133,17 +146,16 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
         private int batchId;
         @Override
         protected void readRequest(DataInput input) throws IOException {
-            batchId = getContext().getHeader().getBatchId();
+            batchId = getHeader().getBatchId();
         }
 
-        @Override
-        protected void writeResponse(FlushableDataOutput output) throws IOException {
+        protected void processRequest() throws RequestProcessingException {
             Thread t = asynchRequests.get(batchId);
             if (t != null) {
                 t.interrupt();
             }
             else {
-                throw new IOException("No asynch request with batch id " + batchId);
+                throw new RequestProcessingException("No asynch request with batch id " + batchId);
             }
         }
     }

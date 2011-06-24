@@ -169,8 +169,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         });
     }
 
-    public EJBViewDescription addWebserviceEndpointView() { // TODO: shouldn't we reuse addNoInterfaceView() method and pass one parameter to it explicitly?
-        noInterfaceViewPresent = true; // TODO ? should we modify this mark for WS endpoint views?
+    public EJBViewDescription addWebserviceEndpointView() {
         return registerView(getEJBClassName(), MethodIntf.SERVICE_ENDPOINT);
     }
 

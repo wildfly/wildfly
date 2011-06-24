@@ -37,6 +37,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.web.WebServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -58,6 +59,7 @@ import org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric;
 import org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -81,6 +83,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     private LoadBalanceFactorProvider load;
 
     private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
+    private final InjectedValue<SocketBinding> binding = new InjectedValue<SocketBinding>();
 
     /* Depending on configuration we use one of the other */
     private org.jboss.modcluster.ModClusterService service;
@@ -95,9 +98,6 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
         config = new ModClusterConfig();
         // Set the configuration.
-        final ModelNode proxyconf = modelconf.get(CommonAttributes.PROXY_CONF);
-        final ModelNode httpdconf = proxyconf.get(CommonAttributes.HTTPD_CONF);
-        final ModelNode nodeconf = proxyconf.get(CommonAttributes.NODES_CONF);
 
         // Check that Advertise could work.
         boolean defaultavert = false;
@@ -113,7 +113,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
 
         // Set some defaults...
-        if (!httpdconf.hasDefined(CommonAttributes.PROXY_LIST)) {
+        if (!modelconf.hasDefined(CommonAttributes.PROXY_LIST)) {
             config.setAdvertise(defaultavert);
         }
         config.setAdvertisePort(23364);
@@ -123,18 +123,21 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         config.setSocketTimeout(20000);
 
         // Read node to set configuration.
-        if (httpdconf.hasDefined(CommonAttributes.ADVERTISE_SOCKET)) {
-            // TODO: That should be a socket-binding....
-            config.setAdvertisePort(23364);
-            config.setAdvertiseGroupAddress("224.0.1.105");
-            if (!defaultavert)
-                log.error("Mod_cluster requires Advertise but Multicast interface is not available");
-            config.setAdvertise(true);
+        if (modelconf.hasDefined(CommonAttributes.ADVERTISE_SOCKET)) {
+            // There should be a socket-binding....
+            final SocketBinding binding = this.binding.getValue();
+            if (binding != null) {
+                config.setAdvertisePort(binding.getMulticastPort());
+                config.setAdvertiseGroupAddress(binding.getMulticastSocketAddress().getHostName());
+                if (!defaultavert)
+                    log.error("Mod_cluster requires Advertise but Multicast interface is not available");
+                config.setAdvertise(true);
+            }
         }
-        if (httpdconf.hasDefined(CommonAttributes.SSL)) {
+        if (modelconf.hasDefined(CommonAttributes.SSL)) {
             // Add SSL configuration.
             config.setSsl(true);
-            final ModelNode ssl = httpdconf.get(CommonAttributes.SSL);
+            final ModelNode ssl = modelconf.get(CommonAttributes.SSL);
             if (ssl.has(CommonAttributes.KEY_ALIAS))
                 config.setSslKeyAlias(ssl.get(CommonAttributes.KEY_ALIAS).asString());
             if (ssl.has(CommonAttributes.PASSWORD)) {
@@ -152,26 +155,26 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             if (ssl.has(CommonAttributes.CA_REVOCATION_URL))
                 config.setSslCrlFile(ssl.get(CommonAttributes.CA_REVOCATION_URL).asString());
         }
-        if (httpdconf.hasDefined(CommonAttributes.ADVERTISE))
-            config.setAdvertise(httpdconf.get(CommonAttributes.ADVERTISE).asBoolean());
-        if (httpdconf.hasDefined(CommonAttributes.PROXY_LIST)) {
-            config.setProxyList(httpdconf.get(CommonAttributes.PROXY_LIST).asString());
+        if (modelconf.hasDefined(CommonAttributes.ADVERTISE))
+            config.setAdvertise(modelconf.get(CommonAttributes.ADVERTISE).asBoolean());
+        if (modelconf.hasDefined(CommonAttributes.PROXY_LIST)) {
+            config.setProxyList(modelconf.get(CommonAttributes.PROXY_LIST).asString());
         }
-        if (httpdconf.hasDefined(CommonAttributes.PROXY_URL))
-            config.setProxyList(httpdconf.get(CommonAttributes.PROXY_URL).asString());
-        if (httpdconf.has(CommonAttributes.ADVERTISE_SECURITY_KEY))
-            config.setProxyList(httpdconf.get(CommonAttributes.ADVERTISE_SECURITY_KEY).asString());
+        if (modelconf.hasDefined(CommonAttributes.PROXY_URL))
+            config.setProxyList(modelconf.get(CommonAttributes.PROXY_URL).asString());
+        if (modelconf.has(CommonAttributes.ADVERTISE_SECURITY_KEY))
+            config.setProxyList(modelconf.get(CommonAttributes.ADVERTISE_SECURITY_KEY).asString());
 
-        if (nodeconf.hasDefined(CommonAttributes.EXCLUDED_CONTEXTS))
-            config.setExcludedContexts(nodeconf.get(CommonAttributes.EXCLUDED_CONTEXTS).asString());
-        if (nodeconf.hasDefined(CommonAttributes.AUTO_ENABLE_CONTEXTS))
-            config.setAutoEnableContexts(nodeconf.get(CommonAttributes.AUTO_ENABLE_CONTEXTS).asBoolean());
-        if (nodeconf.hasDefined(CommonAttributes.STOP_CONTEXT_TIMEOUT)) {
-            config.setStopContextTimeout(nodeconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt());
+        if (modelconf.hasDefined(CommonAttributes.EXCLUDED_CONTEXTS))
+            config.setExcludedContexts(modelconf.get(CommonAttributes.EXCLUDED_CONTEXTS).asString());
+        if (modelconf.hasDefined(CommonAttributes.AUTO_ENABLE_CONTEXTS))
+            config.setAutoEnableContexts(modelconf.get(CommonAttributes.AUTO_ENABLE_CONTEXTS).asBoolean());
+        if (modelconf.hasDefined(CommonAttributes.STOP_CONTEXT_TIMEOUT)) {
+            config.setStopContextTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt());
             config.setStopContextTimeoutUnit(TimeUnit.SECONDS);
         }
-        if (nodeconf.hasDefined(CommonAttributes.SOCKET_TIMEOUT))
-            config.setSocketTimeout(nodeconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt());
+        if (modelconf.hasDefined(CommonAttributes.SOCKET_TIMEOUT))
+            config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt());
 
         // Read the metrics configuration.
         final ModelNode loadmetric = modelconf.get(CommonAttributes.LOAD_METRIC);
@@ -339,6 +342,10 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
     public Injector<WebServer> getWebServer() {
         return webServer;
+    }
+
+    public Injector<SocketBinding>getBinding() {
+        return binding;
     }
 
     Registry getRegistry() {

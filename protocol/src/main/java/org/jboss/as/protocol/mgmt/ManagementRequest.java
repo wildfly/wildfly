@@ -31,7 +31,6 @@ import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
-import org.jboss.remoting3.HandleableCloseable.Key;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 
@@ -43,7 +42,7 @@ import org.jboss.threads.AsyncFutureTask;
  * @author John Bailey
  * @author Kabir Khan
  */
-public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> {
+public abstract class ManagementRequest<T> {
 
     private final Logger log = Logger.getLogger("org.jboss.as.protocol");
 
@@ -51,7 +50,6 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
     private final int currentRequestId = requestId.incrementAndGet();
     private final ManagementFuture<T> future = new ManagementFuture<T>();
     private final int batchId;
-    private volatile Key closeKey;
 
     /**
      * Create a new ManagementRequest that is not part of an 'execution', i.e. this is a standalone request.
@@ -83,14 +81,6 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
 
     protected int getBatchId() {
         return batchId;
-    }
-
-    void setCloseKey(Key closeKey) {
-        this.closeKey = closeKey;
-    }
-
-    Key getCloseKey() {
-        return closeKey;
     }
 
     /**
@@ -169,7 +159,7 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
 
         @Override
         protected T readResponse(DataInput input) {
-            final String error = getResponseContext().getResponse().getError();
+            final String error = getResponseHeader().getError();
             if (error != null) {
                 future.failed(new IOException("A problem happened executing on the server: " + error));
                 return null;
@@ -177,8 +167,9 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
 
             T result = null;
             try {
-                ManagementRequest.this.setResponseContext(getResponseContext());
-                result = ManagementRequest.this.readResponse(input);
+                ManagementResponseHandler<T> responseHandler = getResponseHandler();
+                responseHandler.setContextInfo(this);
+                result = responseHandler.readResponse(input);
                 future.done(result);
                 return result;
             } catch (Exception e) {
@@ -193,6 +184,8 @@ public abstract class ManagementRequest<T> extends ManagementResponseHandler<T> 
     protected void setError(Exception e) {
         future.failed(e);
     }
+
+    protected abstract ManagementResponseHandler<T> getResponseHandler();
 
     static class ManagementFuture<T> extends AsyncFutureTask<T>{
         protected ManagementFuture() {

@@ -39,14 +39,15 @@ import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.AbstractModelControllerOperationHandler;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry.ProxyCreatedCallback;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -107,7 +108,7 @@ public class MasterDomainControllerOperationHandlerImpl extends AbstractModelCon
     }
 
     private class RegisterOperation extends RegistryOperation {
-
+        String error;
         @Override
         protected void readRequest(final DataInput input) throws IOException {
             expectHeader(input, DomainControllerProtocol.PARAM_HOST_ID);
@@ -116,11 +117,9 @@ public class MasterDomainControllerOperationHandlerImpl extends AbstractModelCon
 
 
         @Override
-        protected void writeResponse(final FlushableDataOutput output) throws IOException {
-
-            String error = null;
+        protected void processRequest() throws RequestProcessingException {
             try {
-                registry.registerChannel(hostId, getContext().getChannel(), new ProxyCreatedCallback() {
+                registry.registerChannel(hostId, getChannel(), new ProxyCreatedCallback() {
                     @Override
                     public void proxyCreated(ManagementOperationHandler handler) {
                         proxyHandler = handler;
@@ -139,7 +138,11 @@ public class MasterDomainControllerOperationHandlerImpl extends AbstractModelCon
                 e.printStackTrace();
                 error = e.getMessage();
             }
+        }
 
+
+        @Override
+        protected void writeResponse(final FlushableDataOutput output) throws IOException {
             if (error != null) {
                 output.write(DomainControllerProtocol.PARAM_ERROR);
                 output.writeUTF(error);
@@ -151,23 +154,27 @@ public class MasterDomainControllerOperationHandlerImpl extends AbstractModelCon
 
     private class UnregisterOperation extends RegistryOperation {
         @Override
-        protected void writeResponse(final FlushableDataOutput output) throws IOException {
+        protected void processRequest() throws RequestProcessingException {
             domainController.unregisterRemoteHost(hostId);
         }
     }
 
     private class GetFileOperation extends RegistryOperation {
         private File localPath;
+        private byte rootId;
+        private String filePath;
 
         @Override
         protected void readRequest(final DataInput input) throws IOException {
-            final byte rootId;
-            final String filePath;
-            final FileRepository localFileRepository = domainController.getFileRepository();
             expectHeader(input, DomainControllerProtocol.PARAM_ROOT_ID);
             rootId = input.readByte();
             expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
             filePath = input.readUTF();
+        }
+
+        @Override
+        protected void processRequest() throws RequestProcessingException {
+            final FileRepository localFileRepository = domainController.getFileRepository();
 
             switch (rootId) {
                 case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
@@ -184,7 +191,7 @@ public class MasterDomainControllerOperationHandlerImpl extends AbstractModelCon
                     break;
                 }
                 default: {
-                    throw new IOException(String.format("Invalid root id [%d]", rootId));
+                    throw new RequestProcessingException(String.format("Invalid root id [%d]", rootId));
                 }
             }
         }

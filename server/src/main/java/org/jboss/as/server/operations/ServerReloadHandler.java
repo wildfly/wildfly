@@ -32,6 +32,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.Collections;
 import java.util.Locale;
 
 /**
@@ -58,21 +59,23 @@ public class ServerReloadHandler implements OperationStepHandler, DescriptionPro
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         context.addStep(new OperationStepHandler() {
             @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(Services.JBOSS_AS);
-                service.addListener(new AbstractServiceListener<Object>() {
-                    public void listenerAdded(final ServiceController<?> controller) {
-                        controller.setMode(ServiceController.Mode.NEVER);
-                    }
-
-                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                        if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
-                            controller.removeListener(this);
-                            controller.setMode(ServiceController.Mode.ACTIVE);
+            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                final ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(Services.JBOSS_AS);
+                context.reloadRequired();
+                if(context.completeStep() == OperationContext.ResultAction.KEEP) {
+                    service.addListener(new AbstractServiceListener<Object>() {
+                        public void listenerAdded(final ServiceController<?> controller) {
+                            controller.setMode(ServiceController.Mode.NEVER);
                         }
-                    }
-                });
-                context.completeStep();
+
+                        public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                            if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
+                                controller.removeListener(this);
+                                controller.setMode(ServiceController.Mode.ACTIVE);
+                            }
+                        }
+                    });
+                }
             }
         }, OperationContext.Stage.RUNTIME);
         context.completeStep();

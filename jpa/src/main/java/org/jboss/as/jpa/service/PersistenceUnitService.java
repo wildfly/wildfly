@@ -71,7 +71,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
     @Override
     public void start(StartContext context) throws StartException {
         try {
-            log.debugf("starting Persistence Unit Service '%s' ", pu.getScopedPersistenceUnitName() );
+            log.infof("starting Persistence Unit Service '%s' ", pu.getScopedPersistenceUnitName() );
 
             PersistenceProvider provider = lookupProvider(pu.getPersistenceProviderClassName());
 
@@ -86,7 +86,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     @Override
     public void stop(StopContext context) {
-        log.debugf("stopping Persistence Unit Service '%s' ", pu.getScopedPersistenceUnitName() );
+        log.infof("stopping Persistence Unit Service '%s' ", pu.getScopedPersistenceUnitName() );
         if (entityManagerFactory != null) {
             entityManagerFactory.close();
             entityManagerFactory = null;

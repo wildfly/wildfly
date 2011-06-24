@@ -40,8 +40,8 @@ import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
-import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
 import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.logging.Logger;
 
@@ -73,11 +73,11 @@ public abstract class AbstractModelControllerOperationHandler implements Managem
      * A proxy to the operation message handler on the remote caller
      */
     class OperationMessageHandlerProxy implements OperationMessageHandler {
-        final ManagementRequestContext context;
+        final ManagementChannel channel;
         final int batchId;
 
-        public OperationMessageHandlerProxy(final ManagementRequestContext context, final int batchId) {
-            this.context = context;
+        public OperationMessageHandlerProxy(final ManagementChannel channel, final int batchId) {
+            this.channel = channel;
             this.batchId = batchId;
         }
 
@@ -109,10 +109,10 @@ public abstract class AbstractModelControllerOperationHandler implements Managem
                     }
 
                     @Override
-                    protected Void readResponse(final DataInput input) throws IOException {
-                        return null;
+                    protected ManagementResponseHandler<Void> getResponseHandler() {
+                        return ManagementResponseHandler.EMPTY_RESPONSE;
                     }
-                }.executeForResult(executorService, getChannelStrategy(context.getChannel()));
+                }.executeForResult(executorService, getChannelStrategy(channel));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -122,10 +122,10 @@ public abstract class AbstractModelControllerOperationHandler implements Managem
     class OperationAttachmentsProxy implements OperationAttachments {
         final List<ProxiedInputStream> proxiedStreams;
 
-        OperationAttachmentsProxy(final ManagementRequestContext context, final int batchId, final int size){
+        OperationAttachmentsProxy(final ManagementChannel channel, final int batchId, final int size){
             proxiedStreams = new ArrayList<ProxiedInputStream>(size);
             for (int i = 0 ; i < size ; i++) {
-                proxiedStreams.add(new ProxiedInputStream(context, batchId, i));
+                proxiedStreams.add(new ProxiedInputStream(channel, batchId, i));
             }
         }
 
@@ -144,15 +144,15 @@ public abstract class AbstractModelControllerOperationHandler implements Managem
     }
 
     private class ProxiedInputStream extends InputStream {
-        final ManagementRequestContext context;
+        final ManagementChannel channel;
         final int batchId;
         final int index;
         volatile byte[] bytes;
         volatile ByteArrayInputStream delegate;
         volatile Exception error;
 
-        ProxiedInputStream(final ManagementRequestContext context, final int batchId, final int index) {
-            this.context = context;
+        ProxiedInputStream(final ManagementChannel channel, final int batchId, final int index) {
+            this.channel = channel;
             this.batchId = batchId;
             this.index = index;
         }
@@ -199,22 +199,26 @@ public abstract class AbstractModelControllerOperationHandler implements Managem
                     }
 
                     @Override
-                    protected Void readResponse(DataInput input) throws IOException {
-                        synchronized (ProxiedInputStream.this) {
-                            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
-                            final int size = input.readInt();
-                            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
+                    protected ManagementResponseHandler<Void> getResponseHandler() {
+                        return new ManagementResponseHandler<Void>() {
+                            protected Void readResponse(DataInput input) throws IOException {
+                                synchronized (ProxiedInputStream.this) {
+                                    ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
+                                    final int size = input.readInt();
+                                    ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
 
-                            final byte[] buf = new byte[size];
-                            for (int i = 0 ; i < size ; i++) {
-                                buf[i] = input.readByte();
+                                    final byte[] buf = new byte[size];
+                                    for (int i = 0 ; i < size ; i++) {
+                                        buf[i] = input.readByte();
+                                    }
+                                    bytes = buf;
+                                    ProxiedInputStream.this.notifyAll();
+                                }
+                                return null;
                             }
-                            bytes = buf;
-                            ProxiedInputStream.this.notifyAll();
-                        }
-                        return null;
+                        };
                     }
-                }.execute(executorService, getChannelStrategy(context.getChannel()));
+                }.execute(executorService, getChannelStrategy(channel));
             }
         }
 

@@ -25,6 +25,7 @@ package org.jboss.as.ee.component;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -41,6 +42,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class BasicComponentInstance implements ComponentInstance {
 
     private static final long serialVersionUID = -8099216228976950066L;
+
+    private static final Logger logger = Logger.getLogger(BasicComponentInstance.class);
 
     public static final Object INSTANCE_KEY = new Object();
 
@@ -110,7 +113,7 @@ public class BasicComponentInstance implements ComponentInstance {
             interceptorContext.putPrivateData(ComponentInstance.class, this);
             preDestroy.processInvocation(interceptorContext);
         } catch (Exception e) {
-            // todo log it
+            logger.warn("Exception while destroying component instance " + this + " for component " + this.getComponent().getComponentClass(), e);
         } finally {
             component.finishDestroy();
         }

@@ -29,10 +29,12 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.web.WebServer;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 
@@ -52,15 +54,25 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        String bindingRef = null;
+        if (operation.hasDefined(CommonAttributes.MOD_CLUSTER_CONFIG)) {
+            final ModelNode node = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG);
+            if (node.hasDefined(CommonAttributes.ADVERTISE_SOCKET)) {
+                bindingRef = node.get(CommonAttributes.ADVERTISE_SOCKET).asString();
+            }
+        }
         try {
             // Add mod_cluster service
             final ModClusterService service = new ModClusterService(operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).clone());
-            newControllers.add(context.getServiceTarget().addService(ModClusterService.NAME, service)
+            final ServiceBuilder<ModCluster> serviceBuilder = context.getServiceTarget().addService(ModClusterService.NAME, service)
                     // .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                     .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())
                     .addListener(verificationHandler)
-                    .setInitialMode(Mode.ACTIVE)
-                    .install());
+                    .setInitialMode(Mode.ACTIVE);
+             if (bindingRef != null)
+                serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding());
+
+            newControllers.add(serviceBuilder.install());
         } catch (Throwable t) {
             log.error("Error: " + t);
             throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
