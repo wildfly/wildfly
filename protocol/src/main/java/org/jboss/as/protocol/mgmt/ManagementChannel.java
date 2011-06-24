@@ -56,9 +56,7 @@ public class ManagementChannel extends ProtocolChannel {
      * {@inheritDoc}
      */
     public void close() throws IOException {
-        if(byeByeSent.compareAndSet(false, true)) {
-            sendByeBye();
-        }
+        sendByeBye();
         super.close();
     }
 
@@ -66,13 +64,14 @@ public class ManagementChannel extends ProtocolChannel {
      * {@inheritDoc}
      */
     public void writeShutdown() throws IOException {
-        if(byeByeSent.compareAndSet(false, true)) {
-            sendByeBye();
-        }
+        sendByeBye();
         super.close();
     }
 
-    private void sendByeBye() throws IOException {
+    public void sendByeBye() throws IOException {
+        if(!byeByeSent.compareAndSet(false, true)) {
+            return;
+        }
 
         try {
             final MessageOutputStream out = writeMessage();
@@ -102,7 +101,6 @@ public class ManagementChannel extends ProtocolChannel {
             ManagementProtocolHeader header;
             try {
                 header = ManagementProtocolHeader.parse(input);
-
             } catch (ByeByeException bbe) {
                 close();
                 return;

@@ -34,8 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.IOException;
-import javax.security.auth.callback.CallbackHandler;
-
 import java.security.AccessController;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,14 +44,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -64,10 +64,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.RemoteProxyController;
-import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
+import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
