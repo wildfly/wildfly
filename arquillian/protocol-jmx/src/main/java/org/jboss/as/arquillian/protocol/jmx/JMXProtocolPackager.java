@@ -31,11 +31,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.arquillian.container.test.spi.RemoteLoadableExtension;
 import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
-import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.arquillian.protocol.jmx.JMXProtocol;
+import org.jboss.arquillian.protocol.jmx.AbstractJMXProtocol;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.as.arquillian.service.JMXProtocolEndpointExtension;
@@ -90,11 +90,11 @@ public class JMXProtocolPackager implements DeploymentPackager {
         log.debugf("Generating: %s", archive.getName());
 
         archive.addPackage(ArquillianService.class.getPackage());
-        archive.addPackage(JMXProtocol.class.getPackage());
+        archive.addPackage(AbstractJMXProtocol.class.getPackage());
 
         // Merge the auxilliary archives and collect the loadable extensions
         final Set<String> loadableExtensions = new HashSet<String>();
-        final String loadableExtentionsPath = "META-INF/services/" + LoadableExtension.class.getName();
+        final String loadableExtentionsPath = "META-INF/services/" + RemoteLoadableExtension.class.getName();
         for (Archive<?> aux : auxArchives) {
             Node node = aux.get(loadableExtentionsPath);
             if (node != null) {

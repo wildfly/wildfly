@@ -17,8 +17,8 @@
  */
 package org.jboss.arquillian.testenricher.msc;
 
+import org.jboss.arquillian.container.test.spi.RemoteLoadableExtension;
 import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveAppender;
-import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -35,7 +35,7 @@ public class MSCAuxiliaryArchiveAppender implements AuxiliaryArchiveAppender {
     @Override
     public Archive<?> createAuxiliaryArchive() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-testenricher-msc.jar");
-        archive.addAsServiceProvider(LoadableExtension.class, MSCEnricherExtension.class);
+        archive.addAsServiceProvider(RemoteLoadableExtension.class, MSCEnricherRemoteExtension.class);
         archive.addPackage(MSCTestEnricher.class.getPackage());
         return archive;
     }

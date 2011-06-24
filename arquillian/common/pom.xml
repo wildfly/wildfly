@@ -38,10 +38,6 @@
             <artifactId>arquillian-container-osgi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.protocol</groupId>
-            <artifactId>arquillian-protocol-jmx</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
             <artifactId>arquillian-testenricher-cdi</artifactId>
         </dependency>
