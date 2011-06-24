@@ -31,7 +31,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
@@ -161,8 +160,8 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
                     target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleIdentifier);
                     log.debugf("Resource %s added as external jar %s", classPathFile, resourceRoot.getRoot());
                 } else {
-                    //this is a dep on another deployment
-                    target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES,ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + classPathFile.getName()));
+                    //ignore
+                    log.debugf("Ignoring missing Class-Path entry %s", classPathFile);
                 }
             }
         }
