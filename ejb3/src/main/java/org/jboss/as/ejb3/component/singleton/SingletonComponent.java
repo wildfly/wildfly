@@ -106,8 +106,11 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
                             }
                         }
                     }
-
-                    this.singletonComponentInstance = (SingletonComponentInstance) this.createInstance();
+                    //as the methods above can potentially call wait()
+                    //we need to check again
+                    if(this.singletonComponentInstance == null) {
+                        this.singletonComponentInstance = (SingletonComponentInstance) this.createInstance();
+                    }
                 }
             }
         }

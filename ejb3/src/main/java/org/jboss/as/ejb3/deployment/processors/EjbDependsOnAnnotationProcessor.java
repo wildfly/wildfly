@@ -24,7 +24,10 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
@@ -37,6 +40,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceName;
 
@@ -103,6 +107,19 @@ public class EjbDependsOnAnnotationProcessor extends AbstractComponentConfigProc
                     DependencyType.REQUIRED);
         }
         logger.info(singletonComponentDescription.getEJBName() + " bean has @DependsOn");
+        componentDescription.getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.getStartDependencies().add(new DependencyConfigurator() {
+                    @Override
+                    public void configureDependency(final ServiceBuilder<?> serviceBuilder) throws DeploymentUnitProcessingException {
+                        for(ServiceName dep : singletonComponentDescription.getDependsOn()) {
+                            serviceBuilder.addDependency(dep);
+                        }
+                    }
+                });
+            }
+        });
     }
 
     /**
