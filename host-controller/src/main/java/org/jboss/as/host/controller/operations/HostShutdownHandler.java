@@ -35,21 +35,16 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Kabir Khan
  */
-public class HostStopHandler implements OperationStepHandler, DescriptionProvider {
+public class HostShutdownHandler implements OperationStepHandler, DescriptionProvider {
 
-    public static final String OPERATION_NAME = "stop";
-
-    public static ModelNode getStopServerOperation() {
-        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, new ModelNode());
-        return op;
-    }
+    public static final String OPERATION_NAME = "shutdown";
 
     private final DomainController domainController;
 
     /**
      * Create the ServerAddHandler
      */
-    public HostStopHandler(final DomainController domainController) {
+    public HostShutdownHandler(final DomainController domainController) {
         this.domainController = domainController;
     }
 
