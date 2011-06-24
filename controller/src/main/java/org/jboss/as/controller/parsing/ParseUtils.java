@@ -24,17 +24,15 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 
+import javax.xml.XMLConstants;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.XMLConstants;
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamException;
-
-import com.sun.tools.javac.util.Log;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;

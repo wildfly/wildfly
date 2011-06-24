@@ -25,6 +25,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
@@ -73,9 +74,8 @@ public class LocalHostAddHandler implements OperationStepHandler, DescriptionPro
         final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         HostModelUtil.initCoreModel(model);
 
-        // Create the empty managmeent security resources
-        context.createResource(PathAddress.pathAddress(PathElement.pathElement(MANAGEMENT, SECURITY_REALMS)));
-        context.createResource(PathAddress.pathAddress(PathElement.pathElement(MANAGEMENT, CONNECTIONS)));
+        // Create the empty management security resources
+        context.createResource(PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, MANAGEMENT)));
 
         final String localHostName = operation.require(NAME).asString();
         model.get(NAME).set(localHostName);
