@@ -122,10 +122,10 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:complexType name="domain-managementType">
+    <xs:complexType name="managementType">
         <xs:annotation>
             <xs:documentation>
-                Domain-wide default configuration settings for the management of standalone servers and a Host Controller.
+                The centralized configuration for the management of standalone servers and the domain.
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -144,22 +144,8 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0"/>
         </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="managementType">
-        <xs:annotation>
-            <xs:documentation>
-                The centralized configuration for the management of standalone servers and a Host Controller.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="domain-managementType">
-                <xs:sequence>
-                    <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="ldapType"> <!-- TODO - May extend from a common connection type for name -->

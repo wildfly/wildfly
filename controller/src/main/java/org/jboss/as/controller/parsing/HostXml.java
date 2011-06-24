@@ -209,7 +209,7 @@ public class HostXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.MANAGEMENT) {
-            parseManagement(reader, address, list, true);
+            parseManagement(reader, address, list);
             element = nextElement(reader);
         }
         if (element == Element.DOMAIN_CONTROLLER) {

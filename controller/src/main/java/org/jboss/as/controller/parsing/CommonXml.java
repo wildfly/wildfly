@@ -127,7 +127,6 @@ import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -141,9 +140,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelMarshallingContext> {
-
-    // TODO perhaps have this provided by subclasses via an abstract method
-    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     /** The restricted path names. */
     protected static final Set<String> RESTRICTED_PATHS;
@@ -373,7 +369,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseManagement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, boolean allowInterfaces) throws XMLStreamException {
+    protected void parseManagement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         int securityRealmsCount = 0;
         int connectionsCount = 0;
         int managementInterfacesCount = 0;
@@ -398,15 +394,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             break;
                         }
                         case MANAGEMENT_INTERFACES: {
-                            if (allowInterfaces) {
-                                if (++managementInterfacesCount > 1) {
-                                    throw unexpectedElement(reader);
-                                }
-                                parseManagementInterfaces(reader, address, list);
-                            } else {
-                                String msg = String.format("Element %s is not supported in a domain.xml file", element.getLocalName());
-                                log.warn(ParseUtils.getWarningMessage(msg, reader.getLocation()));
+                            if (++managementInterfacesCount > 1) {
+                                throw unexpectedElement(reader);
                             }
+                            parseManagementInterfaces(reader, address, list);
                             break;
                         }
                         default: {
