@@ -43,14 +43,16 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler implements 
 
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
+    private final HostControllerEnvironment environment;
     private final LocalHostControllerInfoImpl hostControllerInfo;
 
-    private HttpManagementAddHandler(final LocalHostControllerInfoImpl hostControllerInfo) {
+    private HttpManagementAddHandler(final HostControllerEnvironment environment, final LocalHostControllerInfoImpl hostControllerInfo) {
+        this.environment = environment;
         this.hostControllerInfo = hostControllerInfo;
     }
 
-    public static HttpManagementAddHandler getInstance(final LocalHostControllerInfoImpl hostControllerInfo) {
-        return new HttpManagementAddHandler(hostControllerInfo);
+    public static HttpManagementAddHandler getInstance(HostControllerEnvironment environment, final LocalHostControllerInfoImpl hostControllerInfo) {
+        return new HttpManagementAddHandler(environment, hostControllerInfo);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {

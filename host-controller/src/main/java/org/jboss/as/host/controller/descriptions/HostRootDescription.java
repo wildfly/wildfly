@@ -22,7 +22,6 @@
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -32,8 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
@@ -130,9 +127,8 @@ public class HostRootDescription {
         root.get(CHILDREN, SYSTEM_PROPERTY, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).setEmptyObject();
 
-        root.get(CHILDREN, CORE_SERVICE, DESCRIPTION).set(bundle.getString("host.core-services"));
-        root.get(CHILDREN, CORE_SERVICE, MIN_OCCURS).set(0);
-        root.get(CHILDREN, CORE_SERVICE, MODEL_DESCRIPTION);
+        root.get(CHILDREN, NATIVE_INTERFACE).set(ManagementDescription.getNativeManagementDescription(locale));
+        root.get(CHILDREN, HTTP_INTERFACE).set(ManagementDescription.getHttpManagementDescription(locale));
 
         root.get(CHILDREN, INTERFACE, DESCRIPTION).set(bundle.getString("host.interface"));
         root.get(CHILDREN, INTERFACE, MIN_OCCURS).set(0);

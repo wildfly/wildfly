@@ -59,7 +59,6 @@ public class ModelDescriptionConstants {
     public static final String CONNECTION = "connection";
     public static final String CONNECTIONS = "connections";
     public static final String CONTENT = "content";
-    public static final String CORE_SERVICE = "core-service";
     public static final String CPU_AFFINITY = "cpu-affinity";
     public static final String CRITERIA = "criteria";
     public static final String DEFAULT = "default";
@@ -139,7 +138,6 @@ public class ModelDescriptionConstants {
     public static final String OPERATION_HEADERS = "operation-headers";
     public static final String OPERATION_NAME = "operation-name";
     public static final String OPERATIONS = "operations";
-    public static final String OUTBOUND_CONNECTION = "outbound-connection";
     /** Use this standard operation address field in the operation *description* ModelNode */
     public static final String OUTCOME = "outcome";
     public static final String PASSWORD = "password";
@@ -201,7 +199,6 @@ public class ModelDescriptionConstants {
     public static final String SERVER_GROUPS = "server-groups";
     public static final String SERVER_IDENTITIES = "server-identities";
     public static final String SERVER_OPERATIONS = "server-operations";
-    public static final String SERVICE_CONTAINER = "service-container";
     public static final String OPERATION_REQUIRES_RELOAD = "operation-requires-reload";
     public static final String OPERATION_REQUIRES_RESTART = "operation-requires-restart";
     public static final String SHUTDOWN = "shutdown";

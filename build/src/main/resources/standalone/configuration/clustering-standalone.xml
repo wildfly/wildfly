@@ -80,17 +80,10 @@
     </paths>
 
     <management>
-        <security-realms>
-            <security-realm name="PropertiesMgmtSecurityRealm">
-                <authentication>
-                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" />
-                </authentication>
-            </security-realm>
-        </security-realms>
-        <management-interfaces>
+       <management-interfaces>
           <native-interface interface="management" port="9999" />
           <http-interface interface="management" port="9990"/>
-        </management-interfaces>
+       </management-interfaces>
     </management>
 
     <profile>

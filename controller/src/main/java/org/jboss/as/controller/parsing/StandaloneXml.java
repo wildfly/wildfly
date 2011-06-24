@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.parsing;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import org.jboss.as.controller.operations.common.Util;
 
@@ -361,9 +360,8 @@ public class StandaloneXml extends CommonXml {
             writePaths(writer, modelNode.get(PATH));
         }
 
-        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
-            writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
-        }
+        ModelNode managementInterface = modelNode.hasDefined(MANAGEMENT_INTERFACE) ? modelNode.get(MANAGEMENT_INTERFACE) : null;
+        writeManagement(writer, modelNode.get(MANAGEMENT), managementInterface);
 
         writeServerProfile(writer, context);
 

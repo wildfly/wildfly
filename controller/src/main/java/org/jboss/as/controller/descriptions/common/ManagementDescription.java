@@ -23,19 +23,12 @@ package org.jboss.as.controller.descriptions.common;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTBOUND_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
@@ -61,60 +54,15 @@ public class ManagementDescription {
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
 
-    public static ModelNode getManagementDescriptionWithInterfaces(final Locale locale) {
-        return getManagementDescription(locale, true);
-    }
-
-    public static ModelNode getManagementDescription(final Locale locale, boolean interfaces) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("core.management"));
-        root.get(OPERATIONS);
-
-        root.get(CHILDREN, SECURITY_REALM, DESCRIPTION).set(bundle.getString("core.management.security-realms"));
-        root.get(CHILDREN, SECURITY_REALM, MIN_OCCURS).set(0);
-        root.get(CHILDREN, SECURITY_REALM, MODEL_DESCRIPTION);
-
-        root.get(CHILDREN, OUTBOUND_CONNECTION, DESCRIPTION).set(bundle.getString("core.management.outbound-connections"));
-        root.get(CHILDREN, OUTBOUND_CONNECTION, MIN_OCCURS).set(0);
-        root.get(CHILDREN, OUTBOUND_CONNECTION, MODEL_DESCRIPTION);
-
-        if (interfaces) {
-            root.get(CHILDREN, MANAGEMENT_INTERFACE, DESCRIPTION).set(bundle.getString("core.management.management-interfaces"));
-            root.get(CHILDREN, MANAGEMENT_INTERFACE, MIN_OCCURS).set(0);
-            root.get(CHILDREN, MANAGEMENT_INTERFACE, MODEL_DESCRIPTION);
-        }
-
-        return root;
-    }
-
-    public static ModelNode getManagementSecurityRealmDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("core.management.security-realm"));
-        // TODO attributes
-        root.get(OPERATIONS);
-        return root;
-    }
-
-    public static ModelNode getManagementOutboundConnectionDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("core.management.outbound-connection"));
-        // TODO attributes
-        root.get(OPERATIONS);
-        return root;
-    }
-
     public static ModelNode getNativeManagementDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("core.management.native-interface"));
+        root.get(DESCRIPTION).set(bundle.getString("server.management.native-interface"));
         root.get(ATTRIBUTES, INTERFACE, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, INTERFACE, DESCRIPTION).set(bundle.getString("core.management.native-interface.interface"));
+        root.get(ATTRIBUTES, INTERFACE, DESCRIPTION).set(bundle.getString("server.management.native-interface.interface"));
         root.get(ATTRIBUTES, INTERFACE, REQUIRED).set(false);
         root.get(ATTRIBUTES, PORT, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, PORT, DESCRIPTION).set(bundle.getString("core.management.native-interface.port"));
+        root.get(ATTRIBUTES, PORT, DESCRIPTION).set(bundle.getString("server.management.native-interface.port"));
         root.get(ATTRIBUTES, PORT, REQUIRED).set(false);
         root.get(HEAD_COMMENT_ALLOWED).set(true);
         root.get(TAIL_COMMENT_ALLOWED).set(false);
@@ -124,12 +72,12 @@ public class ManagementDescription {
     public static ModelNode getHttpManagementDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("core.management.http-interface"));
+        root.get(DESCRIPTION).set(bundle.getString("server.management.http-interface"));
         root.get(ATTRIBUTES, INTERFACE, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, INTERFACE, DESCRIPTION).set(bundle.getString("core.management.http-interface.interface"));
+        root.get(ATTRIBUTES, INTERFACE, DESCRIPTION).set(bundle.getString("server.management.http-interface.interface"));
         root.get(ATTRIBUTES, INTERFACE, REQUIRED).set(false);
         root.get(ATTRIBUTES, PORT, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, PORT, DESCRIPTION).set(bundle.getString("core.management.http-interface.port"));
+        root.get(ATTRIBUTES, PORT, DESCRIPTION).set(bundle.getString("server.management.http-interface.port"));
         root.get(ATTRIBUTES, PORT, REQUIRED).set(false);
         root.get(HEAD_COMMENT_ALLOWED).set(true);
         root.get(TAIL_COMMENT_ALLOWED).set(false);
@@ -139,12 +87,12 @@ public class ManagementDescription {
     public static ModelNode getAddNativeManagementDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode op = new ModelNode();
-        op.get(DESCRIPTION).set(bundle.getString("core.management.native-interface.add"));
+        op.get(DESCRIPTION).set(bundle.getString("server.management.native-interface.add"));
         op.get(REQUEST_PROPERTIES, INTERFACE, TYPE).set(ModelType.STRING);
-        op.get(REQUEST_PROPERTIES, INTERFACE, DESCRIPTION).set(bundle.getString("core.management.native-interface.interface"));
+        op.get(REQUEST_PROPERTIES, INTERFACE, DESCRIPTION).set(bundle.getString("server.management.native-interface.interface"));
         op.get(REQUEST_PROPERTIES, INTERFACE, REQUIRED).set(false);
         op.get(REQUEST_PROPERTIES, PORT, TYPE).set(ModelType.STRING);
-        op.get(REQUEST_PROPERTIES, PORT, DESCRIPTION).set(bundle.getString("core.management.native-interface.port"));
+        op.get(REQUEST_PROPERTIES, PORT, DESCRIPTION).set(bundle.getString("server.management.native-interface.port"));
         op.get(REQUEST_PROPERTIES, PORT, REQUIRED).set(false);
 
         return op;
@@ -153,12 +101,12 @@ public class ManagementDescription {
     public static ModelNode getAddHttpManagementDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode op = new ModelNode();
-        op.get(DESCRIPTION).set(bundle.getString("core.management.http-interface.add"));
+        op.get(DESCRIPTION).set(bundle.getString("server.management.http-interface.add"));
         op.get(REQUEST_PROPERTIES, INTERFACE, TYPE).set(ModelType.STRING);
-        op.get(REQUEST_PROPERTIES, INTERFACE, DESCRIPTION).set(bundle.getString("core.management.http-interface.interface"));
+        op.get(REQUEST_PROPERTIES, INTERFACE, DESCRIPTION).set(bundle.getString("server.management.http-interface.interface"));
         op.get(REQUEST_PROPERTIES, INTERFACE, REQUIRED).set(false);
         op.get(REQUEST_PROPERTIES, PORT, TYPE).set(ModelType.STRING);
-        op.get(REQUEST_PROPERTIES, PORT, DESCRIPTION).set(bundle.getString("core.management.http-interface.port"));
+        op.get(REQUEST_PROPERTIES, PORT, DESCRIPTION).set(bundle.getString("server.management.http-interface.port"));
         op.get(REQUEST_PROPERTIES, PORT, REQUIRED).set(false);
 
         return op;

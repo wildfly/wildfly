@@ -25,7 +25,6 @@ package org.jboss.as.controller.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -114,9 +113,8 @@ public class HostXml extends CommonXml {
             writePaths(writer, modelNode.get(PATH));
         }
 
-        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
-            writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
-        }
+        ModelNode managementInterface = modelNode.hasDefined(MANAGEMENT_INTERFACE) ? modelNode.get(MANAGEMENT_INTERFACE) : null;
+        writeManagement(writer, modelNode.get(MANAGEMENT), managementInterface);
 
         if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
             writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER));

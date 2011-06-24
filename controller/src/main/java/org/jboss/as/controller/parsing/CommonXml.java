@@ -31,7 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -58,7 +57,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTBOUND_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
@@ -379,9 +377,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         int securityRealmsCount = 0;
         int connectionsCount = 0;
         int managementInterfacesCount = 0;
-
-        final ModelNode managementAddress = address.clone().add(CORE_SERVICE, MANAGEMENT);
-
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
@@ -391,7 +386,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             if (++securityRealmsCount > 1) {
                                 throw unexpectedElement(reader);
                             }
-                            parseSecurityRealms(reader, managementAddress, list);
+                            parseSecurityRealms(reader, address, list);
 
                             break;
                         }
@@ -399,7 +394,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             if (++connectionsCount > 1) {
                                 throw unexpectedElement(reader);
                             }
-                            parseConnections(reader, managementAddress, list);
+                            parseConnections(reader, address, list);
                             break;
                         }
                         case MANAGEMENT_INTERFACES: {
@@ -407,7 +402,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                                 if (++managementInterfacesCount > 1) {
                                     throw unexpectedElement(reader);
                                 }
-                                parseManagementInterfaces(reader, managementAddress, list);
+                                parseManagementInterfaces(reader, address, list);
                             } else {
                                 String msg = String.format("Element %s is not supported in a domain.xml file", element.getLocalName());
                                 log.warn(ParseUtils.getWarningMessage(msg, reader.getLocation()));
@@ -508,7 +503,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         requireNoContent(reader);
 
         final ModelNode add = new ModelNode();
-        add.get(OP_ADDR).set(address).add(OUTBOUND_CONNECTION, name);
+        add.get(OP_ADDR).set(address).add(MANAGEMENT, CONNECTIONS).add(CONNECTION, name);
         add.get(OP).set(ADD);
         add.get(TYPE).set(LDAP);
         add.get(URL).set(url);
@@ -551,7 +546,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final String realmName = reader.getAttributeValue(0);
 
         final ModelNode add = new ModelNode();
-        add.get(OP_ADDR).set(address).add(SECURITY_REALM, realmName);
+        add.get(OP_ADDR).set(address).add(MANAGEMENT, SECURITY_REALMS).add(SECURITY_REALM, realmName);
         add.get(OP).set(ADD);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -2322,18 +2317,17 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         writer.writeEndElement();
     }
 
-    protected void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode management, boolean allowInterfaces) throws XMLStreamException {
-        boolean hasSecurityRealm = management.hasDefined(SECURITY_REALM);
-        boolean hasConnection = management.hasDefined(OUTBOUND_CONNECTION);
-        boolean hasInterface = allowInterfaces && management.hasDefined(MANAGEMENT_INTERFACE);
+    protected void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode management, final ModelNode managementInterface) throws XMLStreamException {
+        boolean hasSecurityRealm = management.get(SECURITY_REALMS).hasDefined(SECURITY_REALM);
+        boolean hasConnection = management.get(CONNECTIONS).hasDefined(CONNECTION);
 
-        if ((hasSecurityRealm == false) && (hasConnection == false) && (hasInterface == false)) {
+        if ((hasSecurityRealm == false) && (hasConnection == false)) {
             return;
         }
 
         writer.writeStartElement(Element.MANAGEMENT.getLocalName());
         if (hasSecurityRealm) {
-            ModelNode securityRealms = management.get(SECURITY_REALM);
+            ModelNode securityRealms = management.get(SECURITY_REALMS).get(SECURITY_REALM);
             writer.writeStartElement(Element.SECURITY_REALMS.getLocalName());
 
             for (Property variable : securityRealms.asPropertyList()) {
@@ -2429,7 +2423,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         if (hasConnection) {
             writer.writeStartElement(Element.OUTBOUND_CONNECTIONS.getLocalName());
-            ModelNode connections = management.get(OUTBOUND_CONNECTION);
+            ModelNode connections = management.get(CONNECTIONS).get(CONNECTION);
 
             for (Property variable : connections.asPropertyList()) {
                 ModelNode connection = variable.getValue();
@@ -2449,20 +2443,22 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
             writer.writeEndElement();
         }
+        if (managementInterface != null) {
+            writeManagementInterfaces(writer, managementInterface);
+        }
 
-        if (allowInterfaces && hasInterface) {
-            writer.writeStartElement(Element.MANAGEMENT_INTERFACES.getLocalName());
-            ModelNode managementInterfaces = management.get(MANAGEMENT_INTERFACE);
+        writer.writeEndElement();
+    }
 
-            if (managementInterfaces.hasDefined(NATIVE_INTERFACE)) {
-                writeManagementProtocol(Element.NATIVE_INTERFACE, writer, managementInterfaces.get(NATIVE_INTERFACE));
-            }
+    protected void writeManagementInterfaces(final XMLExtendedStreamWriter writer, final ModelNode managementInterfaces) throws XMLStreamException {
+        writer.writeStartElement(Element.MANAGEMENT_INTERFACES.getLocalName());
 
-            if (managementInterfaces.hasDefined(HTTP_INTERFACE)) {
-                writeManagementProtocol(Element.HTTP_INTERFACE, writer, managementInterfaces.get(HTTP_INTERFACE));
-            }
+        if (managementInterfaces.hasDefined(NATIVE_INTERFACE)) {
+            writeManagementProtocol(Element.NATIVE_INTERFACE, writer, managementInterfaces.get(NATIVE_INTERFACE));
+        }
 
-            writer.writeEndElement();
+        if (managementInterfaces.hasDefined(HTTP_INTERFACE)) {
+            writeManagementProtocol(Element.HTTP_INTERFACE, writer, managementInterfaces.get(HTTP_INTERFACE));
         }
 
         writer.writeEndElement();
