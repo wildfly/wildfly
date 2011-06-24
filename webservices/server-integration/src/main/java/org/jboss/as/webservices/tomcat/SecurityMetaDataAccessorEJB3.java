@@ -33,8 +33,8 @@ import org.jboss.ws.api.annotation.WebContext;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
-import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
+import org.jboss.as.webservices.metadata.WebServiceDeclaration;
+import org.jboss.as.webservices.metadata.WebServiceDeployment;
 
 /**
  * Creates web app security meta data for EJB 3 deployment.

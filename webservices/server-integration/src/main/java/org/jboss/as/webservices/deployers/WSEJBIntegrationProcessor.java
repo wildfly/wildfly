@@ -41,8 +41,8 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
-import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
+import org.jboss.as.webservices.metadata.WebServiceDeclaration;
+import org.jboss.as.webservices.metadata.WebServiceDeployment;
 
 /**
  * WebServiceDeployment deployer processes EJB containers and its metadata and creates WS adapters wrapping it.
