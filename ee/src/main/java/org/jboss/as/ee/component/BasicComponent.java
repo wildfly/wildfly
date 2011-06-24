@@ -36,7 +36,6 @@ import java.lang.reflect.Method;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -55,8 +54,6 @@ public class BasicComponent implements Component {
 
     private volatile boolean gate;
     private final AtomicBoolean stopping = new AtomicBoolean();
-    private final AtomicInteger instanceCount = new AtomicInteger(1);
-    private volatile StopContext stopContext;
 
     /**
      * Construct a new instance.
@@ -77,7 +74,6 @@ public class BasicComponent implements Component {
     public ComponentInstance createInstance() {
         waitForComponentStart();
         BasicComponentInstance instance = constructComponentInstance(null);
-        instanceCount.getAndIncrement();
         return instance;
     }
 
@@ -89,7 +85,6 @@ public class BasicComponent implements Component {
     public ComponentInstance createInstance(Object instance) {
         waitForComponentStart();
         BasicComponentInstance obj = constructComponentInstance(new ValueManagedReference(new ImmediateValue<Object>(instance)));
-        instanceCount.getAndIncrement();
         return obj;
     }
 
@@ -234,10 +229,6 @@ public class BasicComponent implements Component {
     }
 
     void finishDestroy() {
-        //otherwise the server will hang
-        if (instanceCount.decrementAndGet() == 0) {
-            if (stopContext != null)
-                stopContext.complete();
-        }
+
     }
 }
