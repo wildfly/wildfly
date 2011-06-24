@@ -22,8 +22,6 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
 
 import java.util.Locale;
@@ -31,10 +29,11 @@ import java.util.Locale;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
@@ -49,6 +48,9 @@ import org.jboss.modules.ModuleLoadException;
 public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler, DescriptionProvider {
     public static final String OPERATION_NAME = "apply-remote-domain-model";
 
+    //This is a hack to avoid initializing the extensions again for the case when master is restarted and we reconnect
+    private boolean appliedExensions;
+
     private final ExtensionContext extensionContext;
 
     public ApplyRemoteMasterDomainModelHandler(ExtensionContext extensionContext) {
@@ -58,20 +60,24 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode domainModel = operation.get(DOMAIN_MODEL);
         // We get the model as a list of resources descriptions
-        for(final ModelNode resourceDescription : domainModel.asList()) {
-            final PathAddress resourceAddress = PathAddress.pathAddress(resourceDescription.require("domain-resource-address"));
-            final Resource resource = context.createResource(resourceAddress);
-            if(resourceAddress.size() == 1 && resourceAddress.getElement(0).getKey().equals(ModelDescriptionConstants.EXTENSION)) {
-                final String module = resourceAddress.getElement(0).getValue();
-                try {
-                    for (final Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
-                        extension.initialize(extensionContext);
+
+        if (!appliedExensions) {
+            for(final ModelNode resourceDescription : domainModel.asList()) {
+                appliedExensions = true;
+                final PathAddress resourceAddress = PathAddress.pathAddress(resourceDescription.require("domain-resource-address"));
+                final Resource resource = context.createResource(resourceAddress);
+                if(resourceAddress.size() == 1 && resourceAddress.getElement(0).getKey().equals(ModelDescriptionConstants.EXTENSION)) {
+                    final String module = resourceAddress.getElement(0).getValue();
+                    try {
+                        for (final Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
+                            extension.initialize(extensionContext);
+                        }
+                    } catch (ModuleLoadException e) {
+                        throw new RuntimeException(e);
                     }
-                } catch (ModuleLoadException e) {
-                    throw new RuntimeException(e);
                 }
+                resource.writeModel(resourceDescription.get("domain-resource-model"));
             }
-            resource.writeModel(resourceDescription.get("domain-resource-model"));
         }
         context.completeStep();
     }

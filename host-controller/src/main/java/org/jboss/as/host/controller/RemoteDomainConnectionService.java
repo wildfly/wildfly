@@ -178,18 +178,35 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     }
 
     private synchronized void connect() {
+
+        if (this.channelClient != null) {
+            try {
+                new UnregisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
+            } catch (Exception e) {
+            }
+
+            this.channelClient.close();
+            this.channelClient = null;
+        }
+
         Security.addProvider(saslProvider);
         txOperationHandler = new TransactionalModelControllerOperationHandler(executor, controller);
         ProtocolChannelClient<ManagementChannel> client;
+        ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
+        //Reusing the endpoint here after a disconnect does not seem to work once something has gone down, so try our own
+        //configuration.setEndpoint(endpointInjector.getValue());
+        configuration.setEndpointName("endpoint");
+        configuration.setExecutor(RemotingServices.createExecutor());
+        configuration.setUriScheme("remote");
+
         try {
-            ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
-            configuration.setEndpoint(endpointInjector.getValue());
             configuration.setUri(new URI("remote://" + host.getHostAddress() + ":" + port));
             configuration.setChannelFactory(new ManagementChannelFactory(txOperationHandler));
             client = ProtocolChannelClient.create(configuration);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
         try {
             CallbackHandler handler = null;
             CallbackHandlerFactory handlerFactory = callbackFactoryInjector.getOptionalValue();
@@ -199,10 +216,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
             client.connect(handler);
             this.channelClient = client;
-
-            if (connected.get()) {
-                unregister();
-            }
 
             ManagementChannel channel = client.openChannel(RemotingServices.DOMAIN_CHANNEL);
             this.channel = channel;
@@ -218,8 +231,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             masterProxy = new ExistingChannelModelControllerClient(channel);
         } catch (IOException e) {
             log.warnf("Could not connect to remote domain controller %s:%d", host.getHostAddress(), port);
-            //TODO remove this line
-            e.printStackTrace();
             throw new IllegalStateException(e);
         }
 
@@ -239,7 +250,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         try {
             new UnregisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
         } catch (Exception e) {
-            log.errorf(e, "Error unregistering from master");
+            log.debugf(e, "Error unregistering from master");
         }
         finally {
             channelClient.close();
