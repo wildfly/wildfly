@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><wsdl:definitions name="EndpointService" targetNamespace="http://archive.ws.demos.as.jboss.org/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://archive.ws.demos.as.jboss.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<?xml version="1.0" ?><wsdl:definitions name="EndpointService" targetNamespace="http://archive.wsejb.demos.as.jboss.org/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://archive.ws.demos.as.jboss.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <wsdl:message name="echoString">
     <wsdl:part name="arg0" type="xsd:string">
     </wsdl:part>
