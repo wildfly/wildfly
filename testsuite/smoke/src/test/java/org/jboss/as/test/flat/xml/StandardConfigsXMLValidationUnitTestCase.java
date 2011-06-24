@@ -21,25 +21,25 @@
  */
 package org.jboss.as.test.flat.xml;
 
+import junit.framework.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import junit.framework.Assert;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A XSDValidationUnitTestCase.
@@ -47,7 +47,17 @@ import org.xml.sax.XMLReader;
  * @author Brian Stansberry
  * @version $Revision: 1.1 $
  */
-public class StandardConfigsXMLValidationUnitTestCase {
+public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidationUnitTest {
+    private static Source[] SCHEMAS;
+
+    @BeforeClass
+    public static void setUp() {
+        final List<Source> sources = new LinkedList<Source>();
+        for (File file : jbossSchemaFiles()) {
+            sources.add(new StreamSource(file));
+        }
+        SCHEMAS = sources.toArray(new StreamSource[0]);
+    }
 
     @Test
     public void testHost() throws Exception {
@@ -65,87 +75,20 @@ public class StandardConfigsXMLValidationUnitTestCase {
     }
 
     private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, IOException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        if (!factory.isNamespaceAware())
-            factory.setNamespaceAware(true);
-        if (!factory.isValidating())
-            factory.setValidating(true);
-        if (!factory.isXIncludeAware())
-            factory.setXIncludeAware(true);
-
-        SAXParser parser = factory.newSAXParser();
-        XMLReader reader = parser.getXMLReader();
-        reader.setFeature("http://apache.org/xml/features/validation/schema", true);
-        reader.setErrorHandler(new ErrorHandlerImpl());
-        reader.setEntityResolver(new EntityResolver() {
-            @Override
-            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                if (systemId == null)
-                    Assert.fail("Failed to resolve schema: systemId is null");
-                int lastSlash = systemId.lastIndexOf('/');
-                if (lastSlash > 0)
-                    systemId = systemId.substring(lastSlash + 1);
-                URL xsdUrl = getXsdUrl(systemId);
-                return new InputSource(xsdUrl.openStream());
-            }
-        });
-        URL xmlUrl = getXmlUrl(xmlName);
-        InputSource is = new InputSource();
-        is.setByteStream(xmlUrl.openStream());
-        reader.parse(is);
+        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        schemaFactory.setErrorHandler(new ErrorHandlerImpl());
+        schemaFactory.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
+        Schema schema = schemaFactory.newSchema(SCHEMAS);
+        Validator validator = schema.newValidator();
+        validator.setFeature("http://apache.org/xml/features/validation/schema", true);
+        validator.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
+        validator.validate(new StreamSource(getXmlFile(xmlName)));
     }
 
-    private URL getXmlUrl(String xmlName) throws MalformedURLException {
-        // user.dir will point to the root of this module
-        File f = new File(System.getProperty("user.dir"));
-        f = new File(f, "../../build/target");
-        File[] children = f.listFiles(); f = null;
-        if (children != null)
-            for (File child : children)
-                if (child.getName().startsWith("jboss-"))
-                    f = child;
-
-        if (f == null)
+    private File getXmlFile(String xmlName) throws MalformedURLException {
+        if (baseDir() == null)
             Assert.fail("Server not built");
 
-        f = new File(f, xmlName);
-        return f.toURI().toURL();
-    }
-
-    private URL getXsdUrl(String xsdName) {
-        String resourceName = xsdName;
-        URL url = XsdUtil.discover(xsdName);
-        if (url == null)
-            url = Thread.currentThread().getContextClassLoader().getResource(xsdName);
-        Assert.assertNotNull(resourceName + " not found", url);
-        return url;
-    }
-
-    private final class ErrorHandlerImpl implements ErrorHandler {
-        @Override
-        public void error(SAXParseException e) throws SAXException {
-            Assert.fail(formatMessage(e));
-        }
-
-        @Override
-        public void fatalError(SAXParseException e) throws SAXException {
-            Assert.fail(formatMessage(e));
-        }
-
-        @Override
-        public void warning(SAXParseException e) throws SAXException {
-            System.out.println(formatMessage(e));
-        }
-
-        private String formatMessage(SAXParseException e) {
-            StringBuffer sb = new StringBuffer();
-            sb.append(e.getLineNumber()).append(':').append(e.getColumnNumber());
-            if (e.getPublicId() != null)
-                sb.append(" publicId='").append(e.getPublicId()).append('\'');
-            if (e.getSystemId() != null)
-                sb.append(" systemId='").append(e.getSystemId()).append('\'');
-            sb.append(' ').append(e.getLocalizedMessage());
-            return sb.toString();
-        }
+        return new File(baseDir(), xmlName);
     }
 }
