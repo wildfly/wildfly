@@ -21,20 +21,23 @@
  */
 package org.jboss.as.demos.domain.interactive.runner;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.domain.DeploymentActionsCompleteBuilder;
+import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.domain.DeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
+import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.as.controller.client.helpers.domain.UndeployDeploymentPlanBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.demos.DomainDeploymentUtils;
+import org.jboss.as.demos.fakejndi.FakeJndi;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -76,23 +79,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.domain.DeploymentActionsCompleteBuilder;
-import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.domain.DeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
-import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
-import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
-import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.controller.client.helpers.domain.UndeployDeploymentPlanBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.demos.DomainDeploymentUtils;
-import org.jboss.as.demos.fakejndi.FakeJndi;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * Demonstration of basic aspects of administering servers via the domain management API.
@@ -107,9 +94,10 @@ public class ExampleRunner implements Runnable {
 
     private static final Map<String, MainMenu> mainMenuByCmd = new HashMap<String, MainMenu>();
     private static final Map<String, DeploymentActionsMenu> deploymentActionMenuByCmd =
-        new HashMap<String, DeploymentActionsMenu>();
+            new HashMap<String, DeploymentActionsMenu>();
     private static final Map<String, DeploymentPlanMenu> deploymentPlanMenuByCmd =
-        new HashMap<String, DeploymentPlanMenu>();
+            new HashMap<String, DeploymentPlanMenu>();
+
     static {
         for (MainMenu cmd : MainMenu.ALL) {
             mainMenuByCmd.put(cmd.getCommand(), cmd);
@@ -141,11 +129,9 @@ public class ExampleRunner implements Runnable {
                 quit = mainMenu();
             }
             while (!quit);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace(System.out);
-        }
-        finally {
+        } finally {
 
             stdout.println("Closing connection to domain controller");
 
@@ -168,8 +154,7 @@ public class ExampleRunner implements Runnable {
             MainMenu cmd = mainMenuByCmd.get(choice.toUpperCase());
             if (cmd == null) {
                 stdout.println(choice + " is not a valid selection.\n");
-            }
-            else {
+            } else {
                 boolean quit = false;
                 switch (cmd) {
                     case DOMAIN_CFG: {
@@ -253,8 +238,7 @@ public class ExampleRunner implements Runnable {
             sb.append(']');
             if (i < 9) {
                 sb.append("   ");
-            }
-            else {
+            } else {
                 sb.append("  ");
             }
             Object choice = choices.get(i);
@@ -289,16 +273,14 @@ public class ExampleRunner implements Runnable {
         return continuePrompt();
     }
 
-    private boolean dumpHostController()  throws Exception {
+    private boolean dumpHostController() throws Exception {
         List<String> hostControllers = client.getHostControllerNames();
         if (hostControllers.size() == 0) {
             // this isn't possible :-)
             stdout.println("No host controllers available");
-        }
-        else if (hostControllers.size() == 1) {
+        } else if (hostControllers.size() == 1) {
             writeHostController(hostControllers.get(0));
-        }
-        else {
+        } else {
             stdout.println("Choose a Host Controller:");
             Map<String, Object> choices = writeMenuBody(hostControllers);
             stdout.println("[C]   Cancel");
@@ -307,8 +289,7 @@ public class ExampleRunner implements Runnable {
                 Object hc = choices.get(choice);
                 if (hc != null) {
                     writeHostController(hc.toString());
-                }
-                else {
+                } else {
                     stdout.println(choice + " is not a valid selection");
                     return dumpHostController();
                 }
@@ -327,7 +308,7 @@ public class ExampleRunner implements Runnable {
 
     private boolean listServers() throws Exception {
         stdout.println("\nReading the list of configured servers:");
-        for(Map.Entry<ServerIdentity, ServerStatus> server : client.getServerStatuses().entrySet()) {
+        for (Map.Entry<ServerIdentity, ServerStatus> server : client.getServerStatuses().entrySet()) {
             ServerIdentity id = server.getKey();
             stdout.println("\nServer:\n");
             stdout.println("server name:         " + id.getServerName());
@@ -338,7 +319,7 @@ public class ExampleRunner implements Runnable {
         return continuePrompt();
     }
 
-    private boolean dumpServer()  throws Exception {
+    private boolean dumpServer() throws Exception {
 
         ServerIdentity server = chooseServer(ServerStatus.STARTED);
         if (server != null) {
@@ -396,8 +377,7 @@ public class ExampleRunner implements Runnable {
         List<String> hostControllers = client.getHostControllerNames();
         if (hostControllers.size() == 1) {
             hostController = hostControllers.get(0);
-        }
-        else {
+        } else {
             do {
                 stdout.println("Choose a Host Controller for the new Server:");
                 Map<String, Object> choices = writeMenuBody(hostControllers);
@@ -431,8 +411,7 @@ public class ExampleRunner implements Runnable {
 
             if (obj == null) {
                 stdout.println(choice + " is not a valid selection");
-            }
-            else {
+            } else {
                 serverGroup = obj.toString();
             }
 
@@ -505,8 +484,7 @@ public class ExampleRunner implements Runnable {
             boolean success = true;
             try {
                 executeForResult(new OperationBuilder(op).build());
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 success = false;
             }
             stdout.println("Remove success: " + success);
@@ -514,7 +492,7 @@ public class ExampleRunner implements Runnable {
         return continuePrompt();
     }
 
-    private ServerIdentity chooseServer(ServerStatus valid, ServerStatus...alsoValid) throws IOException {
+    private ServerIdentity chooseServer(ServerStatus valid, ServerStatus... alsoValid) throws IOException {
         ServerIdentity result = null;
         SortedMap<String, ServerIdentity> servers = getValidServers(valid, alsoValid);
         if (servers.size() == 0) {
@@ -527,8 +505,7 @@ public class ExampleRunner implements Runnable {
                 }
             }
             stdout.println(sb.toString());
-        }
-        else {
+        } else {
             stdout.println("Choose a Server:");
             Map<String, Object> choices = writeMenuBody(new ArrayList<String>(servers.keySet()));
             stdout.println("[C]   Cancel");
@@ -537,8 +514,7 @@ public class ExampleRunner implements Runnable {
                 Object hc = choices.get(choice);
                 if (hc != null) {
                     result = servers.get(hc.toString());
-                }
-                else {
+                } else {
                     stdout.println(choice + " is not a valid selection");
                     result = chooseServer(valid, alsoValid);
                 }
@@ -603,8 +579,7 @@ public class ExampleRunner implements Runnable {
 
             if (obj == null) {
                 stdout.println(choice + " is not a valid selection");
-            }
-            else {
+            } else {
                 serverGroup = obj.toString();
             }
 
@@ -627,8 +602,7 @@ public class ExampleRunner implements Runnable {
             DeploymentActionsMenu cmd = deploymentActionMenuByCmd.get(choice.toUpperCase());
             if (cmd == null) {
                 stdout.println(choice + " is not a valid selection.\n");
-            }
-            else {
+            } else {
                 switch (cmd) {
                     case ADD:
                     case ADD_AND_DEPLOY:
@@ -645,7 +619,7 @@ public class ExampleRunner implements Runnable {
                         break;
                     }
                     case UNDEPLOY:
-                    case UNDEPLOY_AND_REMOVE:{
+                    case UNDEPLOY_AND_REMOVE: {
                         builder = undeployContent(builder, addedContent, deployedContent, undeployedContent, removedContent, model, cmd);
                         break;
                     }
@@ -656,8 +630,7 @@ public class ExampleRunner implements Runnable {
                     case APPLY: {
                         if (hasActions) {
                             return (DeploymentActionsCompleteBuilder) builder;
-                        }
-                        else {
+                        } else {
                             stdout.println(choice + " is not a valid selection.\n");
                         }
                         break;
@@ -675,8 +648,8 @@ public class ExampleRunner implements Runnable {
     }
 
     private DeploymentPlanBuilder addContent(DeploymentPlanBuilder builder, Set<String> addedContent,
-            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
-            ModelNode model, DeploymentActionsMenu cmd) throws Exception {
+                                             Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
+                                             ModelNode model, DeploymentActionsMenu cmd) throws Exception {
         File content = chooseFile();
         if (content == null) {
             // User cancelled
@@ -724,8 +697,8 @@ public class ExampleRunner implements Runnable {
     }
 
     private DeploymentPlanBuilder deployContent(DeploymentPlanBuilder builder, Set<String> addedContent,
-            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
-            ModelNode domainModel) throws IOException {
+                                                Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
+                                                ModelNode domainModel) throws IOException {
 
         String deployment = chooseUndeployedContent("Choose the content to deploy:", addedContent, deployedContent, undeployedContent, removedContent,
                 domainModel);
@@ -733,13 +706,13 @@ public class ExampleRunner implements Runnable {
         if (deployment != null) {
             deployedContent.add(deployment);
             undeployedContent.remove(deployment);
-            return  builder.deploy(deployment);
+            return builder.deploy(deployment);
         }
         return builder;
     }
 
     private String chooseUndeployedContent(String message, Set<String> addedContent, Set<String> deployedContent,
-            Set<String> undeployedContent, Set<String> removedContent, ModelNode domainModel) throws IOException {
+                                           Set<String> undeployedContent, Set<String> removedContent, ModelNode domainModel) throws IOException {
 
         TreeSet<String> deployments = new TreeSet<String>(addedContent);
         // FIXME DomainModel needs to expose all deployments; here we are guessing
@@ -776,12 +749,10 @@ public class ExampleRunner implements Runnable {
                 Object dep = choices.get(choice);
                 if (dep != null) {
                     deployment = dep.toString();
-                }
-                else {
+                } else {
                     stdout.println(choice + " is not a valid selection");
                 }
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -791,14 +762,14 @@ public class ExampleRunner implements Runnable {
     }
 
     private DeploymentPlanBuilder replaceContent(DeploymentPlanBuilder builder, Set<String> addedContent,
-            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent, ModelNode domainModel) throws IOException {
+                                                 Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent, ModelNode domainModel) throws IOException {
 
         String toDeploy = chooseUndeployedContent("Choose the replacement deployment:", removedContent, removedContent, removedContent, removedContent, domainModel);
         if (toDeploy != null) {
             String toReplace = chooseDeployedContent("Choose the deployment to be replaced:", deployedContent, undeployedContent, domainModel);
 
             if (toReplace != null) {
-                return  builder.replace(toDeploy, toReplace);
+                return builder.replace(toDeploy, toReplace);
             }
         }
         return builder;
@@ -829,8 +800,8 @@ public class ExampleRunner implements Runnable {
     }
 
     private DeploymentPlanBuilder undeployContent(DeploymentPlanBuilder builder, Set<String> addedContent,
-            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
-            ModelNode domainModel, DeploymentActionsMenu cmd) throws IOException {
+                                                  Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
+                                                  ModelNode domainModel, DeploymentActionsMenu cmd) throws IOException {
 
         String toUndeploy = chooseDeployedContent("Choose the deployment to undeploy:", deployedContent, undeployedContent, domainModel);
 
@@ -850,8 +821,8 @@ public class ExampleRunner implements Runnable {
     }
 
     private DeploymentPlanBuilder removeContent(DeploymentPlanBuilder builder, Set<String> addedContent,
-            Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
-            ModelNode domainModel) throws IOException {
+                                                Set<String> deployedContent, Set<String> undeployedContent, Set<String> removedContent,
+                                                ModelNode domainModel) throws IOException {
 
 
         String deployment = chooseUndeployedContent("Choose the content to remove:", addedContent, deployedContent, undeployedContent, removedContent,
@@ -860,7 +831,7 @@ public class ExampleRunner implements Runnable {
         if (deployment != null) {
             removedContent.add(deployment);
             addedContent.remove(deployment);
-            return  builder.remove(deployment);
+            return builder.remove(deployment);
         }
         return builder;
     }
@@ -879,8 +850,7 @@ public class ExampleRunner implements Runnable {
             DeploymentPlanMenu cmd = deploymentPlanMenuByCmd.get(choice.toUpperCase());
             if (cmd == null) {
                 stdout.println(choice + " is not a valid selection.\n");
-            }
-            else {
+            } else {
                 switch (cmd) {
                     case ROLLING_TO_SERVERS: {
                         groupPlanBuilder = groupPlanBuilder.rollingToServers();
@@ -925,11 +895,11 @@ public class ExampleRunner implements Runnable {
         initializeSwing();
         JFileChooser chooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
-            "Archives", "jar", "war", "sar");
+                "Archives", "jar", "war", "sar");
         chooser.setFileFilter(filter);
         int returnVal = chooser.showOpenDialog(null);
-        if(returnVal == JFileChooser.APPROVE_OPTION) {
-           return chooser.getSelectedFile();
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            return chooser.getSelectedFile();
         }
         return null;
     }
@@ -953,9 +923,8 @@ public class ExampleRunner implements Runnable {
                 try {
                     ins = new FileInputStream(file);
                     props.load(ins);
-                }
-                catch (IOException ignored) {}
-                finally {
+                } catch (IOException ignored) {
+                } finally {
                     if (ins != null) {
                         try {
                             ins.close();
@@ -968,8 +937,8 @@ public class ExampleRunner implements Runnable {
             String clazz = props.getProperty("swing.defaultlaf");
             if (clazz != null) {
                 try {
-                     getClass().getClassLoader().loadClass(clazz);
-                     swingLAF = clazz;
+                    getClass().getClassLoader().loadClass(clazz);
+                    swingLAF = clazz;
                 } catch (ClassNotFoundException e) {
                     // ignore; we'll use Metal below
                 }
@@ -994,8 +963,8 @@ public class ExampleRunner implements Runnable {
 
         final ModelNode address = new ModelNode();
         address.add(ModelDescriptionConstants.PROFILE, "default");
-        address.add(ModelDescriptionConstants.SUBSYSTEM, "jms");
-        address.add("queue", queueName);
+        address.add(ModelDescriptionConstants.SUBSYSTEM, "messaging");
+        address.add("jms-queue", queueName);
 
         final ModelNode queueAddOperation = new ModelNode();
         queueAddOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
@@ -1013,10 +982,11 @@ public class ExampleRunner implements Runnable {
 
             try {
                 final ModelNode result = executeForResult(queueAddOperation);
-                Collection<ServerIdentity> servers = resultToServerIdentitySet(result);
-                for(ServerIdentity server : servers) {
-                    System.out.println(server);
-                    exerciseQueueOnServer(queueName, server);
+                Collection<String> serverGroups = resultToServerGroupIdentitySet(result);
+                for (String serverGroup : serverGroups) {
+                    System.out.println(serverGroup);
+                    //TODO: fixme
+                    //exerciseQueueOnServer(queueName, serverGroup);
                 }
 
             } catch (Exception e) {
@@ -1026,7 +996,7 @@ public class ExampleRunner implements Runnable {
 
             return continuePrompt();
         } finally {
-            if(deployed && utils != null) {
+            if (deployed && utils != null) {
                 utils.undeploy();
             }
 
@@ -1052,7 +1022,7 @@ public class ExampleRunner implements Runnable {
 
                 @Override
                 public void onMessage(Message message) {
-                    TextMessage msg = (TextMessage)message;
+                    TextMessage msg = (TextMessage) message;
                     try {
                         stdout.println("---->Received: " + msg.getText());
                     } catch (JMSException e) {
@@ -1062,14 +1032,13 @@ public class ExampleRunner implements Runnable {
             });
 
             QueueSender sender = session.createSender(queue);
-            for (int i = 0 ; i < 10 ; i++) {
+            for (int i = 0; i < 10; i++) {
                 String s = "Test" + i;
-                stdout.println("----> Sending: " +s );
+                stdout.println("----> Sending: " + s);
                 TextMessage msg = session.createTextMessage(s);
                 sender.send(msg);
             }
-        }
-        finally {
+        } finally {
             try {
                 conn.stop();
             } catch (Exception ignore) {
@@ -1102,7 +1071,7 @@ public class ExampleRunner implements Runnable {
         // TODO replace with direct jndi lookup when remote JNDI support is added
         MBeanServerConnection mbeanServer = getMBeanServerConnection(server);
         ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
-        Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});
+        Object o = mbeanServer.invoke(objectName, "lookup", new Object[]{name}, new String[]{"java.lang.String"});
         return expected.cast(o);
     }
 
@@ -1249,17 +1218,13 @@ public class ExampleRunner implements Runnable {
             ModelNode result = client.execute(op);
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
                 return result.get("result");
-            }
-            else if (result.hasDefined("failure-description")) {
+            } else if (result.hasDefined("failure-description")) {
                 throw new RuntimeException(result.get("failure-description").toString());
-            }
-            else if (result.hasDefined("domain-failure-description")) {
+            } else if (result.hasDefined("domain-failure-description")) {
                 throw new RuntimeException(result.get("domain-failure-description").toString());
-            }
-            else if (result.hasDefined("host-failure-descriptions")) {
+            } else if (result.hasDefined("host-failure-descriptions")) {
                 throw new RuntimeException(result.get("host-failure-descriptions").toString());
-            }
-            else {
+            } else {
                 throw new RuntimeException("Operation outcome is " + result);
             }
         } catch (IOException e) {
@@ -1273,13 +1238,10 @@ public class ExampleRunner implements Runnable {
      * @param result the operation result
      * @return a collection of affected
      */
-    private Collection<ServerIdentity> resultToServerIdentitySet(final ModelNode result) {
-        final Collection<ServerIdentity> servers = new ArrayList<ServerIdentity>();
-        for(final Property serverGroup : result.get(SERVER_GROUPS).asPropertyList()) {
-            for(Property server : serverGroup.getValue().asPropertyList()) {
-                final String host = server.getValue().get(HOST).asString();
-                servers.add(new ServerIdentity(host, serverGroup.getName(), server.getName()));
-            }
+    private Collection<String> resultToServerGroupIdentitySet(final ModelNode result) {
+        final Collection<String> servers = new ArrayList<String>();
+        for (final Property serverGroup : result.get(SERVER_GROUPS).asPropertyList()) {
+            servers.add(serverGroup.getName());
         }
         return servers;
     }
