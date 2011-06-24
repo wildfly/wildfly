@@ -22,7 +22,10 @@
 
 package org.jboss.as.demos.client.jms.runner;
 
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.demos.DeploymentUtils;
+import org.jboss.as.demos.fakejndi.FakeJndi;
+import org.jboss.dmr.ModelNode;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -39,10 +42,7 @@ import javax.management.ObjectName;
 import java.io.IOException;
 import java.net.InetAddress;
 
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.demos.DeploymentUtils;
-import org.jboss.as.demos.fakejndi.FakeJndi;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 /**
  * Demo using the AS management API to create and destroy a JMS queue.
@@ -66,8 +66,8 @@ public class ExampleRunner {
 
             ModelNode op = new ModelNode();
             op.get("operation").set("add");
-            op.get("address").add("subsystem", "jms");
-            op.get("address").add("queue", QUEUE_NAME);
+            op.get("address").add("subsystem", "messaging");
+            op.get("address").add("jms-queue", QUEUE_NAME);
             op.get("entries").add(QUEUE_NAME);
             applyUpdate(op, client);
             actionsApplied = true;
@@ -126,8 +126,8 @@ public class ExampleRunner {
                 // Remove the queue using the management API
                 ModelNode op = new ModelNode();
                 op.get("operation").set("remove");
-                op.get("address").add("subsystem", "jms");
-                op.get("address").add("queue", QUEUE_NAME);
+                op.get("address").add("subsystem", "messaging");
+                op.get("address").add("jms-queue", QUEUE_NAME);
                 applyUpdate(op, client);
             }
             safeClose(client);
