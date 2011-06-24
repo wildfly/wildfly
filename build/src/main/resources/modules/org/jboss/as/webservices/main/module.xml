@@ -29,9 +29,11 @@
     </resources>
 
     <dependencies>
+        <module name="javax.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.jws.api"/>
         <module name="javax.xml.ws.api"/>
+        <module name="org.jboss.ejb3"/>
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.metadata"/>

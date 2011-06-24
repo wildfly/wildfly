@@ -156,8 +156,13 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
        * @param <T> annotation class type
        * @return requested annotation or null if not found
        */
-      public <T extends Annotation> T getAnnotation(final Class<T> annotationType) {// DotName
-          throw new UnsupportedOperationException(); // TODO: implement
+      public AnnotationInstance getAnnotation(final DotName annotationType) {// DotName
+          List<AnnotationInstance> list = webServiceClassInfo.annotations().get(annotationType);
+          if (list != null) {
+              return list.get(0);
+          }
+          return null;
+//          throw new UnsupportedOperationException(); // TODO: implement
 //         final boolean haveEjbContainer = this.ejbContainer != null;
 //
 //         if (haveEjbContainer)

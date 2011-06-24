@@ -26,6 +26,7 @@ import java.util.Iterator;
 import javax.annotation.security.RolesAllowed;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -67,9 +68,10 @@ final class SecurityMetaDataAccessorEJB3 extends AbstractSecurityMetaDataAccesso
 
         while (ejbContainers.hasNext()) {
             final WebServiceDeclaration ejbContainer = ejbContainers.next();
-            final SecurityDomain nextSecurityDomain = ejbContainer.getAnnotation(SecurityDomain.class);
+            //final SecurityDomain nextSecurityDomain = ejbContainer.getAnnotation(SecurityDomain.class);
+            final AnnotationInstance nextSecurityDomain = ejbContainer.getAnnotation(SECURITY_DOMAIN_DOT_NAME);
 
-            securityDomain = this.getDomain(securityDomain, nextSecurityDomain);
+            securityDomain = getDomain(securityDomain, nextSecurityDomain);
         }
 
         // return super.appendJaasPrefix(securityDomain); TODO: properly removed?
@@ -89,11 +91,12 @@ final class SecurityMetaDataAccessorEJB3 extends AbstractSecurityMetaDataAccesso
 
         while (ejbContainers.hasNext()) {
             final WebServiceDeclaration ejbContainer = ejbContainers.next();
-            final RolesAllowed allowedRoles = ejbContainer.getAnnotation(RolesAllowed.class);
+            //final RolesAllowed allowedRoles = ejbContainer.getAnnotation(RolesAllowed.class);
+            final AnnotationInstance allowedRoles = ejbContainer.getAnnotation(ROLES_ALLOWED_DOT_NAME);
             final boolean hasAllowedRoles = allowedRoles != null;
 
             if (hasAllowedRoles) {
-                for (final String roleName : allowedRoles.value()) {
+                for (final String roleName : allowedRoles.value().asStringArray()) {
                     final SecurityRoleMetaData securityRoleMD = new SecurityRoleMetaData();
 
                     securityRoleMD.setRoleName(roleName);
@@ -152,6 +155,7 @@ final class SecurityMetaDataAccessorEJB3 extends AbstractSecurityMetaDataAccesso
      */
     @SuppressWarnings({ "unchecked" })
     private WebContext getWebContextAnnotation(final Endpoint endpoint) {
+        // TODO: rework to use Jandex
         return (WebContext) endpoint.getTargetBeanClass().getAnnotation(WebContext.class);
     }
 
@@ -163,16 +167,16 @@ final class SecurityMetaDataAccessorEJB3 extends AbstractSecurityMetaDataAccesso
      * @return security domain value
      * @throws IllegalStateException if domains have different values
      */
-    private String getDomain(final String oldSecurityDomain, final SecurityDomain nextSecurityDomain) {
+    private String getDomain(final String oldSecurityDomain, final AnnotationInstance nextSecurityDomain) {
         if (nextSecurityDomain == null) {
             return oldSecurityDomain;
         }
 
         if (oldSecurityDomain == null) {
-            return nextSecurityDomain.value();
+            return nextSecurityDomain.value().asString();
         }
 
-        this.ensureSameDomains(oldSecurityDomain, nextSecurityDomain.value());
+        ensureSameDomains(oldSecurityDomain, nextSecurityDomain.value().asString());
 
         return oldSecurityDomain;
     }

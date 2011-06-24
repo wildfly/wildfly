@@ -21,6 +21,9 @@
  */
 package org.jboss.as.webservices.metadata;
 
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.DotName;
+
 /**
  * A minimum web service meta data representation that offers a generic
  * way to access more fine grained meta data through {@link #getAnnotation(Class)}
@@ -55,5 +58,5 @@ public interface WebServiceDeclaration {
     * @param t
     * @return
     */
-   <T extends java.lang.annotation.Annotation> T getAnnotation(Class<T> t);
+   AnnotationInstance getAnnotation(DotName dotName);
 }
