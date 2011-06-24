@@ -47,4 +47,6 @@ public interface ManagementProtocol {
     byte RESPONSE_BODY = 0xC;
     byte RESPONSE_ERROR = 0xD;
     byte RESPONSE_END = 0xE;
+
+    byte BYE_BYE = 0x71;
 }

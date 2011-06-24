@@ -21,6 +21,12 @@
 */
 package org.jboss.as.remoting;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
@@ -56,7 +62,10 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
 
     private final String channelName;
     private final OptionMap optionMap;
+    private final Set<ManagementChannel> channels = Collections.synchronizedSet(new HashSet<ManagementChannel>());
+
     private volatile Registration registration;
+    private final AtomicBoolean closed = new AtomicBoolean();
 
     public ChannelOpenListenerService(final String channelName, OptionMap optionMap) {
         this.channelName = channelName;
@@ -95,18 +104,32 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
         if (registration != null) {
             registration.close();
         }
+        synchronized (channels) {
+            for (ManagementChannel channel : channels) {
+                try {
+                    channel.sendByeBye();
+                } catch (IOException e) {
+                }
+            }
+
+        }
     }
 
     @Override
     public void channelOpened(Channel channel) {
         final ManagementOperationHandler handler = operationHandlerFactoryValue.getValue().createOperationHandler();
-        final ManagementChannel protocolChannel = new ManagementChannelFactory(handler).create(channelName, channel);
-        log.tracef("Opened %s: %s with handler %s", channelName, protocolChannel, handler);
-        protocolChannel.startReceiving();
+        final ManagementChannel managementChannel = new ManagementChannelFactory(handler).create(channelName, channel);
+        channels.add(managementChannel);
+        log.tracef("Opened %s: %s with handler %s", channelName, managementChannel, handler);
+        managementChannel.startReceiving();
         channel.addCloseHandler(new CloseHandler<Channel>() {
-            @Override
-            public void handleClose(Channel closed) {
-                log.tracef("Handling close for %s", protocolChannel);
+            public void handleClose(final Channel closed, final IOException exception) {
+                channels.remove(managementChannel);
+                try {
+                    managementChannel.sendByeBye();
+                } catch (IOException ignore) {
+                }
+                log.tracef("Handling close for %s", managementChannel);
             }
         });
     }

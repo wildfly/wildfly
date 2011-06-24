@@ -22,16 +22,6 @@
 
 package org.jboss.as.web.deployment;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.ServletContext;
-
 import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
@@ -40,6 +30,7 @@ import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.Attachments;
@@ -67,6 +58,15 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
+
+import javax.servlet.ServletContext;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Emanuel Muckenhuber
@@ -222,7 +222,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     webDeploymentService.getRealm());
 
             builder.addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES));
-
+            builder.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
             if (metaData.getDistributable() != null) {
                 DistributedCacheManagerFactory factory = DistributableSessionManager.getDistributedCacheManagerFactory();
                 if (factory != null) {

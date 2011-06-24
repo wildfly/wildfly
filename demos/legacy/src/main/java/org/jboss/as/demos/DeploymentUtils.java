@@ -21,26 +21,6 @@
  */
 package org.jboss.as.demos;
 
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
-
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
@@ -54,6 +34,25 @@ import org.jboss.shrinkwrap.api.container.ResourceContainer;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 
 /**
@@ -192,6 +191,17 @@ public class DeploymentUtils implements Closeable {
             }
         }
 
+        protected void addWebFiles(WebArchive archive, File dir, ArchivePath dest) {
+            for (String name : dir.list()) {
+                File file = new File(dir, name);
+                if (file.isDirectory()) {
+                    addWebFiles(archive, file, ArchivePaths.create(dest, name));
+                } else {
+                    archive.addAsWebResource(file, ArchivePaths.create(dest, name));
+                }
+            }
+        }
+
         protected File getSourceMetaInfDir(String archiveName) {
             String name = "archives/" + archiveName + "/META-INF/MANIFEST.MF";
 
@@ -208,8 +218,8 @@ public class DeploymentUtils implements Closeable {
         }
 
         protected File getSourceWebInfDir(String archiveName) {
-           String name = "archives/" + archiveName + "/WEB-INF";
 
+           String name = "archives/" + archiveName + "/WEB-INF/";
            URL url = Thread.currentThread().getContextClassLoader().getResource(name);
            if (url == null) {
               return null;
@@ -293,7 +303,7 @@ public class DeploymentUtils implements Closeable {
 
             File sourceWebInf = getSourceWebInfDir(archiveName);
             if (sourceWebInf != null) {
-               addFiles(archive, sourceWebInf, ArchivePaths.create("WEB-INF"));
+               addWebFiles(archive, sourceWebInf, ArchivePaths.create("WEB-INF"));
             }
 
             System.out.println(archive.toString(show));

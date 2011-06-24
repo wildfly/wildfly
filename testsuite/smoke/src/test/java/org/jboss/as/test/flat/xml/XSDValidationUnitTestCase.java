@@ -31,11 +31,9 @@ import org.xml.sax.SAXParseException;
 
 import javax.xml.XMLConstants;
 import javax.xml.validation.SchemaFactory;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -43,191 +41,20 @@ import static org.junit.Assert.*;
  * A XSDValidationUnitTestCase.
  *
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @version $Revision: 1.1 $
  */
-public class XSDValidationUnitTestCase {
-
-    private static Map<String, String> NAMESPACE_MAP = new HashMap<String, String>();
-
-    static {
-        NAMESPACE_MAP.put("http://java.sun.com/xml/ns/javaee/javaee_6.xsd", "schema/javaee_6.xsd");
-        NAMESPACE_MAP.put("http://www.w3.org/2001/xml.xsd", "schema/xml.xsd");
-    }
-
+public class XSDValidationUnitTestCase extends AbstractValidationUnitTest {
     @Test
-    public void testJBoss70() throws Exception {
-        validateXsd("jboss_7_0.xsd");
+    public void testJBossXsds() throws Exception {
+        for (File xsdFile : jbossSchemaFiles())
+            validateXsd(xsdFile);
     }
 
-    @Test
-    public void testJBossClustering() throws Exception {
-        validateXsd("jboss-infinispan.xsd");
-        validateXsd("jboss-jgroups.xsd");
-    }
-
-    @Test
-    public void testJBossConnector() throws Exception {
-        validateXsd("jboss-jca.xsd");
-    }
-
-    @Test
-    public void testJBossDatasources() throws Exception {
-        validateXsd("jboss-datasources.xsd");
-    }
-
-    @Test
-    public void testJBossResourceAdapters() throws Exception {
-        validateXsd("jboss-resource-adapters.xsd");
-    }
-
-    @Test
-    public void testJBossJmx() throws Exception {
-        validateXsd("jboss-jmx.xsd");
-    }
-
-    @Test
-    public void testJBossLogging() throws Exception {
-        validateXsd("jboss-logging.xsd");
-    }
-
-    @Test
-    public void testJBossMessaging() throws Exception {
-        validateXsd("jboss-messaging.xsd");
-    }
-
-    @Test
-    public void testJBossNaming() throws Exception {
-        validateXsd("jboss-naming.xsd");
-    }
-
-    @Test
-    public void testJBossRemoting() throws Exception {
-        validateXsd("jboss-remoting.xsd");
-    }
-
-    @Test
-    public void testJBossSar() throws Exception {
-        validateXsd("jboss-sar.xsd");
-    }
-
-    @Test
-    public void testJBossThreads() throws Exception {
-        validateXsd("jboss-threads.xsd");
-    }
-
-    @Test
-    public void testJBossDeploymentScanner() throws Exception {
-        validateXsd("jboss-deployment-scanner.xsd");
-    }
-
-    @Test
-    public void testJBossEE() throws Exception {
-        validateXsd("jboss-ee.xsd");
-    }
-
-    @Test
-    public void testJBossEjb3() throws Exception {
-        validateXsd("jboss-ejb3.xsd");
-    }
-
-    @Test
-    public void testJBossJacorb() throws Exception {
-        validateXsd("jboss-jacorb.xsd");
-    }
-
-    @Test
-    public void testJBossJaxrs() throws Exception {
-        validateXsd("jboss-jaxrs.xsd");
-    }
-
-    @Test
-    public void testJBossJPA() throws Exception {
-        validateXsd("jboss-jpa.xsd");
-    }
-
-    @Test
-    public void testJBossModCluster() throws Exception {
-        validateXsd("jboss-mod-cluster.xsd");
-    }
-
-    @Test
-    public void testJBossTransactions() throws Exception {
-        validateXsd("jboss-txn.xsd");
-    }
-
-    @Test
-    public void testJBossWeb() throws Exception {
-        validateXsd("jboss-web.xsd");
-    }
-
-    @Test
-    public void testJBossWebServices() throws Exception {
-        validateXsd("jboss-webservices.xsd");
-    }
-
-    @Test
-    public void testJBossWeld() throws Exception {
-        validateXsd("jboss-weld.xsd");
-    }
-
-    private void validateXsd(String xsdName) throws Exception {
-        URL jbossDomain = getXsdUrl(xsdName);
-
+    private void validateXsd(final File xsdFile) throws Exception {
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         schemaFactory.setErrorHandler(new ErrorHandlerImpl());
-        schemaFactory.setResourceResolver(new LSResourceResolver() {
-            public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
-                LSInput input = new DOMInputImpl();
-
-                final URL url;
-                if (NAMESPACE_MAP.containsKey(systemId)) {
-                    url = XsdUtil.discover(NAMESPACE_MAP.get(systemId));
-                } else {
-                    url = XsdUtil.discover(systemId);
-                }
-                try {
-                    input.setByteStream(url.openStream());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-                return input;
-            }
-        });
-        schemaFactory.newSchema(jbossDomain);
-    }
-
-    private URL getXsdUrl(String xsdName) {
-        final URL url = XsdUtil.discover(xsdName);
-        assertNotNull(url);
-        return url;
-    }
-
-    private final class ErrorHandlerImpl implements ErrorHandler {
-        @Override
-        public void error(SAXParseException e) throws SAXException {
-            fail(formatMessage(e));
-        }
-
-        @Override
-        public void fatalError(SAXParseException e) throws SAXException {
-            fail(formatMessage(e));
-        }
-
-        @Override
-        public void warning(SAXParseException e) throws SAXException {
-            System.out.println(formatMessage(e));
-        }
-
-        private String formatMessage(SAXParseException e) {
-            StringBuffer sb = new StringBuffer();
-            sb.append(e.getLineNumber()).append(':').append(e.getColumnNumber());
-            if (e.getPublicId() != null)
-                sb.append(" publicId='").append(e.getPublicId()).append('\'');
-            if (e.getSystemId() != null)
-                sb.append(" systemId='").append(e.getSystemId()).append('\'');
-            sb.append(' ').append(e.getLocalizedMessage());
-            return sb.toString();
-        }
+        schemaFactory.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
+        schemaFactory.newSchema(xsdFile.toURI().toURL());
     }
 }

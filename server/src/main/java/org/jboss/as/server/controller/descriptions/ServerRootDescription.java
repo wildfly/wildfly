@@ -103,9 +103,9 @@ public class ServerRootDescription {
         root.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
         root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION);
 
-        root.get(CHILDREN, MANAGEMENT_INTERFACE, DESCRIPTION).set(bundle.getString("server.management"));
-        root.get(CHILDREN, MANAGEMENT_INTERFACE, MIN_OCCURS).set(0);
-        root.get(CHILDREN, MANAGEMENT_INTERFACE, MODEL_DESCRIPTION);
+        root.get(CHILDREN, CORE_SERVICE, DESCRIPTION).set(bundle.getString("server.core-services"));
+        root.get(CHILDREN, CORE_SERVICE, MIN_OCCURS).set(0);
+        root.get(CHILDREN, CORE_SERVICE, MODEL_DESCRIPTION);
 
         root.get(CHILDREN, INTERFACE, DESCRIPTION).set(bundle.getString("server.interface"));
         root.get(CHILDREN, INTERFACE, MIN_OCCURS).set(0);

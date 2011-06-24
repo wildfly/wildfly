@@ -394,18 +394,18 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         final ModelNode groupAdd = BindingGroupAddHandler.getOperation(groupAddress, group);
         groupAdd.get(PORT_OFFSET).set(portOffSet);
         updates.add(groupAdd);
-        mergeBindingGroups(updates, groups, bindingRef, group, processed, group.get(INTERFACE));
+        mergeBindingGroups(updates, groups, bindingRef, group, processed);
     }
 
-    private void mergeBindingGroups(List<ModelNode> updates, Map<String, ModelNode> groups, final String groupName, ModelNode group, Set<String> processed, ModelNode parentInterface) {
+    private void mergeBindingGroups(List<ModelNode> updates, Map<String, ModelNode> groups, final String groupName, ModelNode group, Set<String> processed) {
         addSocketBindings(updates, group, groupName, group.get(DEFAULT_INTERFACE));
         if(group.has(INCLUDES) && group.get(INCLUDES).isDefined()) {
             for(final ModelNode include : group.get(INCLUDES).asList()) {
                 final String ref = include.asString();
                 if(processed.add(ref)) {
                     final ModelNode includedGroup = groups.get(ref);
-                    final ModelNode defaultInterface = group.hasDefined(INTERFACE) ? group.get(INTERFACE) : parentInterface;
-                    addSocketBindings(updates, includedGroup, groupName, defaultInterface);
+//                    addSocketBindings(updates, includedGroup, groupName, defaultInterface);
+                    mergeBindingGroups(updates, groups, groupName, includedGroup, processed);
                 }
             }
         }

@@ -25,10 +25,19 @@
       xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd"
       name="slave">
 
-    <management-interfaces>
-       <native-interface interface="public" port="19999" />
-       <http-interface interface="public" port="19990"/>
-    </management-interfaces>
+    <management>
+        <security-realms>
+            <security-realm name="PropertiesMgmtSecurityRealm">
+                <authentication>
+                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" />
+                </authentication>
+            </security-realm>
+        </security-realms>
+        <management-interfaces>
+            <native-interface interface="public" port="19999" />
+            <http-interface interface="public" port="19990"/>
+        </management-interfaces>
+    </management>
 
     <domain-controller>
        <!-- Remote domain controller configuration with a host and port -->
@@ -59,7 +68,7 @@
             </jvm>
         </server>
         <server name="other-two" group="other-server-group">
-            <socket-binding-group ref="standard-sockets" port-offset="550"/>
+            <socket-binding-group ref="osgi-sockets" port-offset="550"/>
         </server>
     </servers>
 </host>

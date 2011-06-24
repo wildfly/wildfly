@@ -62,6 +62,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         if (moduleConfiguration == null) {
             return;
         }
+        final Set<ServiceName> dependencies = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
 
         final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings = new HashMap<ServiceName, BindingConfiguration>();
 
@@ -77,7 +78,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
             deploymentDescriptorBindings.put(serviceName, binding);
-            addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, moduleOwnerName, moduleCount);
+            addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, moduleOwnerName, moduleCount, dependencies);
         }
 
         //now we process all component level bindings, for components that do not have their own java:comp namespace.
@@ -96,7 +97,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                 final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
                 deploymentDescriptorBindings.put(serviceName, binding);
-                addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, moduleOwnerName, moduleCount);
+                addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, moduleOwnerName, moduleCount, dependencies);
             }
         }
 
@@ -113,12 +114,12 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     classConfigurations.add(interceptorClass);
                 }
             }
-            processClassConfigurations(phaseContext, applicationDescription, moduleConfiguration, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations, componentConfiguration.getComponentName(), moduleOwnerName, moduleCount);
+            processClassConfigurations(phaseContext, applicationDescription, moduleConfiguration, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations, componentConfiguration.getComponentName(), moduleOwnerName, moduleCount, dependencies);
         }
 
     }
 
-    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<EEModuleClassConfiguration> classConfigurations, final String componentName, final ServiceName ownerName, final IntHolder handleCount) throws DeploymentUnitProcessingException {
+    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<EEModuleClassConfiguration> classConfigurations, final String componentName, final ServiceName ownerName, final IntHolder handleCount, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
         for (final EEModuleClassConfiguration classConfiguration : classConfigurations) {
             new ClassDescriptionTraversal(classConfiguration, applicationDescription) {
 
@@ -149,7 +150,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                         if (deploymentDescriptorBindings.containsKey(serviceName)) {
                             continue; //this has been overridden by a DD binding
                         }
-                        addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, ownerName, handleCount);
+                        addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, ownerName, handleCount, dependencies);
                     }
                 }
             }.run();
@@ -157,7 +158,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
     }
 
 
-    protected void addJndiBinding(final EEModuleConfiguration module, final BindingConfiguration bindingConfiguration, final DeploymentPhaseContext phaseContext, ServiceName serviceName, ServiceName ownerName, IntHolder handleCount) throws DeploymentUnitProcessingException {
+    protected void addJndiBinding(final EEModuleConfiguration module, final BindingConfiguration bindingConfiguration, final DeploymentPhaseContext phaseContext, ServiceName serviceName, ServiceName ownerName, IntHolder handleCount, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
         // Gather information about the dependency
         final String bindingName = bindingConfiguration.getName().startsWith("java:") ? bindingConfiguration.getName() : "java:module/env/" + bindingConfiguration.getName();
 
@@ -169,6 +170,9 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
             final BindingHandleService service = new BindingHandleService(bindingName, serviceName, bindingConfiguration.getSource(), serviceName.getParent());
             final ServiceName handleServiceName = serviceName.append(ownerName).append(String.valueOf(handleCount.value++));
+
+            dependencies.add(serviceName);
+
             // The service builder for the binding
             ServiceBuilder<Void> sourceServiceBuilder = phaseContext.getServiceTarget().addService(handleServiceName, service);
             InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(

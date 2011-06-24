@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.parsing;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import org.jboss.as.controller.operations.common.Util;
 
@@ -60,7 +61,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -155,11 +155,7 @@ public class StandaloneXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.MANAGEMENT) {
-            parseManagement(reader, address, list);
-            element = nextElement(reader);
-        }
-        if (element == Element.MANAGEMENT_INTERFACES) {
-            parseManagementInterfaces(reader, address, list);
+            parseManagement(reader, address, list, true);
             element = nextElement(reader);
         }
         // Single profile
@@ -365,10 +361,8 @@ public class StandaloneXml extends CommonXml {
             writePaths(writer, modelNode.get(PATH));
         }
 
-        writeManagement(writer, modelNode.get(MANAGEMENT));
-
-        if (modelNode.hasDefined(MANAGEMENT_INTERFACE)) {
-            writeManagementInterfaces(writer, modelNode.get(MANAGEMENT_INTERFACE));
+        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
+            writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
         }
 
         writeServerProfile(writer, context);

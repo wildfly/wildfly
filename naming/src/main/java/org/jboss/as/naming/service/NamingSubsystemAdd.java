@@ -22,9 +22,6 @@
 
 package org.jboss.as.naming.service;
 
-import java.util.List;
-import javax.management.MBeanServer;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -34,12 +31,20 @@ import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingEventCoordinator;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
+import org.jboss.as.naming.deployment.JndiNamingDependencySetupProcessor;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+
+import javax.management.MBeanServer;
+import java.util.List;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -89,6 +94,17 @@ public class NamingSubsystemAdd extends AbstractAddStepHandler {
                 .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector())
                 .addListener(verificationHandler)
                 .install());
+
+        if (context.isBooting()) {
+            context.addStep(new AbstractDeploymentChainStep() {
+                        protected void execute(DeploymentProcessorTarget processorTarget) {
+
+                            processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCY_SETUP, new JndiNamingDependencySetupProcessor());
+                            processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCIES, new JndiNamingDependencyProcessor());
+                        }
+                    }, OperationContext.Stage.RUNTIME);
+        }
+
     }
 
     private static ServiceController<?> addContextFactory(final ServiceTarget target, final String contextName, final ServiceVerificationHandler verificationHandler) {

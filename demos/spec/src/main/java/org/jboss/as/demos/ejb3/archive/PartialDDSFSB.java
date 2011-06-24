@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,12 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.embedded.demos.ejb3.dd;
+package org.jboss.as.demos.ejb3.archive;
+
+import javax.ejb.EJB;
+import javax.ejb.LocalBean;
 
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
-public interface Echo {
+@LocalBean
+public class PartialDDSFSB implements Echo {
 
-    String echo(String msg);
+    @EJB (beanName = "DDBasedSLSB")
+    private Echo otherEchoBean;
+
+    @Override
+    public String echo(String msg) {
+        return this.otherEchoBean.echo(msg);
+    }
 }

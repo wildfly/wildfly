@@ -24,7 +24,6 @@ package org.jboss.as.server.deployment;
 
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
 import org.jboss.as.server.deployment.module.ExtensionInfo;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
@@ -32,6 +31,7 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.jandex.Index;
@@ -40,6 +40,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
 
+import java.util.Set;
 import java.util.jar.Manifest;
 
 /**
@@ -246,6 +247,11 @@ public final class Attachments {
      * A list of services that a web deployment should have as dependencies.
      */
     public static final AttachmentKey<AttachmentList<ServiceName>> WEB_DEPENDENCIES = AttachmentKey.createList(ServiceName.class);
+
+    /**
+     * JNDI dependencies, only attached to the top level deployment
+     */
+    public static final AttachmentKey<Set<ServiceName>> JNDI_DEPENDENCIES = AttachmentKey.create(Set.class);
 
     /**
      * The reflection index for the deployment.

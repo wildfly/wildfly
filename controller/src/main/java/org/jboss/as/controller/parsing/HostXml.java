@@ -25,8 +25,8 @@ package org.jboss.as.controller.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -114,10 +114,8 @@ public class HostXml extends CommonXml {
             writePaths(writer, modelNode.get(PATH));
         }
 
-        writeManagement(writer, modelNode.get(MANAGEMENT));
-
-        if (modelNode.hasDefined(MANAGEMENT_INTERFACE)) {
-            writeManagementInterfaces(writer, modelNode.get(MANAGEMENT_INTERFACE));
+        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
+            writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
         }
 
         if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
@@ -213,11 +211,7 @@ public class HostXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.MANAGEMENT) {
-            parseManagement(reader, address, list);
-            element = nextElement(reader);
-        }
-        if (element == Element.MANAGEMENT_INTERFACES) {
-            parseManagementInterfaces(reader, address, list);
+            parseManagement(reader, address, list, true);
             element = nextElement(reader);
         }
         if (element == Element.DOMAIN_CONTROLLER) {

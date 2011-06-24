@@ -20,15 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.embedded.demos.ejb3.dd;
+package org.jboss.as.demos.ejb3.archive;
 
 /**
- * @author Jaikiran Pai
+ * User: jpai
  */
-public class DDBasedSLSB implements Echo {
-    
-    @Override
-    public String echo(String msg) {
-        return msg;
-    }
+public interface Echo {
+
+    String echo(String msg);
 }

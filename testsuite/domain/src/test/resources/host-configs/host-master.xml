@@ -25,11 +25,19 @@
       xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd"
       name="master">
 
-    <management-interfaces>
-       <native-interface interface="public" port="9999" />
-       <http-interface interface="public" port="9990"/>
-    </management-interfaces>
-
+    <management>
+        <security-realms>
+            <security-realm name="PropertiesMgmtSecurityRealm">
+                <authentication>
+                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" />
+                </authentication>
+            </security-realm>
+        </security-realms>
+       <management-interfaces>
+            <native-interface interface="public" port="9999" />
+            <http-interface interface="public" port="9990"/>
+       </management-interfaces>
+    </management>
 
     <domain-controller>
        <local/>
@@ -63,7 +71,7 @@
         <server name="other-one" group="other-server-group" auto-start="false">
             <!-- server-three avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
-            <socket-binding-group ref="standard-sockets" port-offset="250"/>
+            <socket-binding-group ref="osgi-sockets" port-offset="250"/>
         </server>
     </servers>
 </host>

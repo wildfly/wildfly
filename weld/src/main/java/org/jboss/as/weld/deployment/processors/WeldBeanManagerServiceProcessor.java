@@ -48,6 +48,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
 import javax.enterprise.inject.spi.BeanManager;
+import java.util.Set;
 
 /**
  * {@link DeploymentUnitProcessor} that binds the bean manager to JNDI
@@ -67,6 +68,8 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         if (!WeldDeploymentMarker.isPartOfWeldDeployment(topLevelDeployment)) {
             return;
         }
+
+        final Set<ServiceName> dependencies = deploymentUnit.getAttachment(Attachments.JNDI_DEPENDENCIES);
 
 
         BeanDeploymentArchiveImpl rootBda = deploymentUnit
@@ -100,7 +103,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) || deploymentUnit.getName().endsWith(".jar")) {
             // bind the bean manager to JNDI
             final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
-            bindBeanManager(serviceTarget, beanManagerServiceName, moduleContextServiceName);
+            bindBeanManager(serviceTarget, beanManagerServiceName, moduleContextServiceName, dependencies);
         }
 
 
@@ -108,15 +111,15 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             if (component.getNamingMode() == ComponentNamingMode.CREATE) {
                 final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), component.getComponentName());
-                bindBeanManager(serviceTarget, beanManagerServiceName, compContextServiceName);
+                bindBeanManager(serviceTarget, beanManagerServiceName, compContextServiceName, dependencies);
             }
         }
         deploymentUnit.addToAttachmentList(Attachments.SETUP_ACTIONS, new WeldContextSetup());
     }
 
-    private void bindBeanManager(ServiceTarget serviceTarget, ServiceName beanManagerServiceName, ServiceName contextServiceName) {
+    private void bindBeanManager(ServiceTarget serviceTarget, ServiceName beanManagerServiceName, ServiceName contextServiceName, final Set<ServiceName> dependencies) {
         final ServiceName beanManagerBindingServiceName = contextServiceName.append("BeanManager");
-
+        dependencies.add(beanManagerBindingServiceName);
         InjectedValue<BeanManager> injectedBeanManager = new InjectedValue<BeanManager>();
         BinderService beanManagerBindingService = new BinderService("BeanManager");
         serviceTarget.addService(beanManagerBindingServiceName, beanManagerBindingService)

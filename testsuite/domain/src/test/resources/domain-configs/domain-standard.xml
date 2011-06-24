@@ -52,7 +52,16 @@
 
     <profiles>
 
+        <profile name="web-only">
+            <subsystem xmlns="urn:jboss:domain:web:1.0">
+               <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
+               <virtual-server name="localhost">
+                  <alias name="example.com" />
+               </virtual-server>
+             </subsystem>
+        </profile>
         <profile name="default">
+            <include profile="web-only"/>
 
             <subsystem xmlns="urn:jboss:domain:logging:1.0">
                 <console-handler name="CONSOLE">
@@ -161,67 +170,6 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0" />
-       <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
-            <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
-                <property name="manager.root">jboss-osgi</property>
-            </configuration>
-            <properties>
-                <!--
-                    A comma seperated list of module identifiers. Each system module
-                    is added as a dependency to the OSGi framework module. The packages
-                    from these system modules can be made visible as framework system packages.
-                    http://www.osgi.org/javadoc/r4v42/org/osgi/framework/Constants.html#FRAMEWORK_SYSTEMPACKAGES_EXTRA
-                -->
-                <property name="org.jboss.osgi.system.modules">
-                org.apache.commons.logging,
-                org.apache.log4j,
-                org.jboss.as.osgi,
-                org.slf4j,
-                </property>
-                <!--
-                    Framework environment property identifying extra packages which the system bundle
-                    must export from the current execution environment
-                -->
-                <property name="org.osgi.framework.system.packages.extra">
-                org.apache.commons.logging;version=1.1.1,
-                org.apache.log4j;version=1.2,
-                org.jboss.as.osgi.service;version=7.0,
-                org.jboss.osgi.deployment.interceptor;version=1.0,
-                org.jboss.osgi.spi.capability;version=1.0,
-                org.jboss.osgi.spi.util;version=1.0,
-                org.jboss.osgi.testing;version=1.0,
-                org.jboss.osgi.vfs;version=1.0,
-                org.slf4j;version=1.5.10,
-                </property>
-                <!-- Specifies the beginning start level of the framework -->
-                <property name="org.osgi.framework.startlevel.beginning">1</property>
-            </properties>
-            <modules>
-                <!-- modules registered with the OSGi layer on startup -->
-                <module identifier="javaee.api"/>
-                <module identifier="org.jboss.logging"/>
-                <!-- bundles installed on startup -->
-                <module identifier="org.apache.aries.util"/>
-                <module identifier="org.jboss.osgi.webconsole"/>
-                <module identifier="org.osgi.compendium"/>
-                <!-- bundles started in startlevel 1 -->
-                <module identifier="org.apache.felix.log" startlevel="1"/>
-                <module identifier="org.jboss.osgi.logging" startlevel="1"/>
-                <module identifier="org.apache.felix.configadmin" startlevel="1"/>
-                <module identifier="org.jboss.as.osgi.configadmin" startlevel="1"/>
-                <!-- bundles started in startlevel 2 -->
-                <module identifier="org.apache.aries.jmx" startlevel="2"/>
-                <module identifier="org.apache.felix.eventadmin" startlevel="2"/>
-                <module identifier="org.apache.felix.metatype" startlevel="2"/>
-                <module identifier="org.apache.felix.webconsole" startlevel="2"/>
-                <module identifier="org.jboss.osgi.jmx" startlevel="2"/>
-                <module identifier="org.jboss.osgi.http" startlevel="2"/>
-                <!-- bundles started in startlevel 3 -->
-                <module identifier="org.jboss.osgi.blueprint" startlevel="3"/>
-                <module identifier="org.jboss.osgi.webapp" startlevel="3"/>
-                <module identifier="org.jboss.osgi.xerces" startlevel="3"/>
-            </modules>
-        </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
             <journal-file-size>102400</journal-file-size>
@@ -307,12 +255,6 @@
            </jms-destinations>
         </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:web:1.0">
-               <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
-               <virtual-server name="localhost">
-                  <alias name="example.com" />
-               </virtual-server>
-             </subsystem>
            <subsystem xmlns="urn:jboss:domain:webservices:1.0">
              <modify-wsdl-address>true</modify-wsdl-address>
              <wsdl-host>localhost</wsdl-host>
@@ -324,6 +266,70 @@
           <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
              <mod-cluster-config advertise-socket="mod_cluster" />
           </subsystem>
+        </profile>
+        <profile name="osgi">
+            <include profile="default"/>
+            <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
+                <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
+                    <property name="manager.root">jboss-osgi</property>
+                </configuration>
+                <properties>
+                    <!--
+                        A comma seperated list of module identifiers. Each system module
+                        is added as a dependency to the OSGi framework module. The packages
+                        from these system modules can be made visible as framework system packages.
+                        http://www.osgi.org/javadoc/r4v42/org/osgi/framework/Constants.html#FRAMEWORK_SYSTEMPACKAGES_EXTRA
+                    -->
+                    <property name="org.jboss.osgi.system.modules">
+                    org.apache.commons.logging,
+                    org.apache.log4j,
+                    org.jboss.as.osgi,
+                    org.slf4j,
+                    </property>
+                    <!--
+                        Framework environment property identifying extra packages which the system bundle
+                        must export from the current execution environment
+                    -->
+                    <property name="org.osgi.framework.system.packages.extra">
+                    org.apache.commons.logging;version=1.1.1,
+                    org.apache.log4j;version=1.2,
+                    org.jboss.as.osgi.service;version=7.0,
+                    org.jboss.osgi.deployment.interceptor;version=1.0,
+                    org.jboss.osgi.spi.capability;version=1.0,
+                    org.jboss.osgi.spi.util;version=1.0,
+                    org.jboss.osgi.testing;version=1.0,
+                    org.jboss.osgi.vfs;version=1.0,
+                    org.slf4j;version=1.5.10,
+                    </property>
+                    <!-- Specifies the beginning start level of the framework -->
+                    <property name="org.osgi.framework.startlevel.beginning">1</property>
+                </properties>
+                <modules>
+                    <!-- modules registered with the OSGi layer on startup -->
+                    <module identifier="javaee.api"/>
+                    <module identifier="org.jboss.logging"/>
+                    <!-- bundles installed on startup -->
+                    <module identifier="org.apache.aries.util"/>
+                    <module identifier="org.jboss.osgi.webconsole"/>
+                    <module identifier="org.osgi.compendium"/>
+                    <!-- bundles started in startlevel 1 -->
+                    <module identifier="org.apache.felix.log" startlevel="1"/>
+                    <module identifier="org.jboss.osgi.logging" startlevel="1"/>
+                    <module identifier="org.apache.felix.configadmin" startlevel="1"/>
+                    <module identifier="org.jboss.as.osgi.configadmin" startlevel="1"/>
+                    <!-- bundles started in startlevel 2 -->
+                    <module identifier="org.apache.aries.jmx" startlevel="2"/>
+                    <module identifier="org.apache.felix.eventadmin" startlevel="2"/>
+                    <module identifier="org.apache.felix.metatype" startlevel="2"/>
+                    <module identifier="org.apache.felix.webconsole" startlevel="2"/>
+                    <module identifier="org.jboss.osgi.jmx" startlevel="2"/>
+                    <module identifier="org.jboss.osgi.http" startlevel="2"/>
+                    <!-- bundles started in startlevel 3 -->
+                    <module identifier="org.jboss.osgi.blueprint" startlevel="3"/>
+                    <module identifier="org.jboss.osgi.webapp" startlevel="3"/>
+                    <module identifier="org.jboss.osgi.xerces" startlevel="3"/>
+                </modules>
+            </subsystem>
         </profile>
     </profiles>
 
@@ -342,21 +348,24 @@
     </interfaces>
 
     <socket-binding-groups>
+         <socket-binding-group name="web-sockets" default-interface="public">
+            <socket-binding name="http" port="8080"/>
+            <socket-binding name="https" port="8443"/>
+         </socket-binding-group>
          <socket-binding-group name="standard-sockets" default-interface="public">
-            <include socket-binding-group="messaging-sockets"/>
+            <include socket-binding-group="web-sockets"/>
             <socket-binding name="jmx-connector-registry" port="1090"/>
             <socket-binding name="jmx-connector-server" port="1091"/>
             <socket-binding name="jndi" port="1099"/>
-            <socket-binding name="http" port="8080"/>
-            <socket-binding name="https" port="8447"/>
-            <socket-binding name="osgi-http" port="8090"/>
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
-         </socket-binding-group>
-         <socket-binding-group name="messaging-sockets" default-interface="public">
             <socket-binding name="messaging" port="5445" />
             <socket-binding name="messaging-throughput" port="5455"/>
+         </socket-binding-group>
+         <socket-binding-group name="osgi-sockets" default-interface="public">
+            <include socket-binding-group="standard-sockets"/>
+            <socket-binding name="osgi-http" port="8090"/>
          </socket-binding-group>
     </socket-binding-groups>
 
@@ -368,11 +377,11 @@
             <socket-binding-group ref="standard-sockets"/>
         </server-group>
 
-        <server-group name="other-server-group" profile="default">
+        <server-group name="other-server-group" profile="osgi">
             <jvm name="default">
                <heap size="64m" max-size="512m"/>
             </jvm>
-            <socket-binding-group ref="standard-sockets"/>
+            <socket-binding-group ref="osgi-sockets"/>
         </server-group>
     </server-groups>
 

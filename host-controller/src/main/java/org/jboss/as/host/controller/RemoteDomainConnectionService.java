@@ -208,7 +208,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             this.channel = channel;
 
             channel.addCloseHandler(new CloseHandler<Channel>() {
-                public void handleClose(Channel closed) {
+                public void handleClose(final Channel closed, final IOException exception) {
                     connectionClosed();
                 }
             });

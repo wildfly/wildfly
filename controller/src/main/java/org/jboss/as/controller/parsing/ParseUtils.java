@@ -24,14 +24,14 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 
+import javax.xml.XMLConstants;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import javax.xml.XMLConstants;
-import javax.xml.stream.XMLStreamException;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -373,5 +373,9 @@ public final class ParseUtils {
             result.set(value);
         }
         return result;
+    }
+
+    public static String getWarningMessage(final String msg, final Location location) {
+        return String.format("Parsing problem at [row,col]:[%d ,%d]\nMessage: ", location.getLineNumber(), location.getColumnNumber(), msg);
     }
 }

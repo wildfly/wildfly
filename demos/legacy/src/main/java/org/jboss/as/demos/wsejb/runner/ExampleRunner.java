@@ -21,7 +21,8 @@
  */
 package org.jboss.as.demos.wsejb.runner;
 
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+import org.jboss.as.demos.DeploymentUtils;
+import org.jboss.as.demos.wsejb.archive.EndpointImpl;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -29,8 +30,7 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.jboss.as.demos.DeploymentUtils;
-import org.jboss.as.demos.wsejb.archive.EndpointImpl;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 /**
  * @author <a href="alessio.soldano@jboss.com">Alessio Soldano</a>
@@ -76,7 +76,7 @@ public class ExampleRunner {
         URLConnection conn = null;
         InputStream in = null;
         OutputStreamWriter osw = null;
-        final String message = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:arc=\"http://archive.ws.demos.as.jboss.org/\">"
+        final String message = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:arc=\"http://archive.wsejb.demos.as.jboss.org/\">"
                 + "  <soapenv:Header/>"
                 + "  <soapenv:Body>"
                 + "    <arc:echo>"

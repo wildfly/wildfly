@@ -22,7 +22,11 @@
 
 package org.jboss.as.demos.web.connector.runner;
 
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.demos.DeploymentUtils;
+import org.jboss.as.demos.war.archive.SimpleServlet;
+import org.jboss.dmr.ModelNode;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -33,11 +37,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.demos.DeploymentUtils;
-import org.jboss.as.demos.war.archive.SimpleServlet;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 /**
  * @author Emanuel Muckenhuber
@@ -91,7 +91,6 @@ public class ExampleRunner {
         op.get("operation").set("add");
         op.get("address").add("socket-binding-group", "standard-sockets");
         op.get("address").add("socket-binding", "http-test");
-        op.get("interface").set("default");
         op.get("port").set(8380);
 
         updates.add(op);

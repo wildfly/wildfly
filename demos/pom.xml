@@ -101,32 +101,6 @@
                     <forkMode>once</forkMode>
                 </configuration>
             </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-resources-plugin</artifactId>
-          <executions>
-            <execution>
-              <id>copy-resources</id>
-              <phase>process-test-classes</phase>
-              <goals>
-                <goal>copy-resources</goal>
-              </goals>
-              <configuration>
-                <outputDirectory>${basedir}/target/jbossas</outputDirectory>
-                <resources>          
-                  <resource>
-                    <directory>${basedir}/../../build/target/jboss-${project.version}</directory>
-                    <includes>
-                      <include>**</include>
-                    </includes>
-                  </resource>
-                </resources>              
-              </configuration>            
-            </execution>
-          </executions>
-        </plugin>
-            
         </plugins>
     </build>
 
@@ -207,8 +181,8 @@
            <groupId>org.jboss.spec.javax.annotation</groupId>
            <artifactId>jboss-annotations-api_1.1_spec</artifactId>
         </dependency>
-        
-        <!-- 
+
+        <!--
         Java EE APIs
          -->
         <dependency>

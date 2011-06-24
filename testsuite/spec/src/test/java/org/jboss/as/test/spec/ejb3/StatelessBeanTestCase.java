@@ -69,7 +69,7 @@ public class StatelessBeanTestCase {
     public void testSLSB() throws Exception {
         String message = "Zzzzzzzz.....!";
         String echo = localBean.echo(message);
-        String expectedEcho = SimpleInterceptor.class.getSimpleName() + "#" + SimpleStatelessSessionBean.class.getSimpleName() + "#" + "Echo " + message + " -- (1:Other, 2:Other, 3:Other)" ;
+        String expectedEcho = SimpleInterceptor.class.getName() + "#" + SimpleStatelessSessionBean.class.getName() + "#" + "Echo " + message + " -- (1:Other, 2:Other, 3:Other)" ;
         Assert.assertEquals("Unexpected echo message received from stateless bean", expectedEcho, echo);
     }
 }

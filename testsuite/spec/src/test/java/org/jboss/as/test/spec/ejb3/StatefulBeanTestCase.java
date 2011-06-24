@@ -71,7 +71,7 @@ public class StatefulBeanTestCase {
         String state = "not in a good mood!";
         localSfsb.setState(state);
         String storedState = localSfsb.getState();
-        Assert.assertEquals("Unexpected state returned from stateful session bean", SimpleInterceptor.class.getSimpleName() + "#" + state, storedState);
+        Assert.assertEquals("Unexpected state returned from stateful session bean", SimpleInterceptor.class.getName() + "#" + state, storedState);
 
     }
 }

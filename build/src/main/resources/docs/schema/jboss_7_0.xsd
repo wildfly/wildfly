@@ -70,7 +70,6 @@
                 <xs:element name="system-properties" type="properties-with-boottime" minOccurs="0"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
                 <xs:element name="management" type="managementType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0"/>
                 <xs:element name="domain-controller" type="domain-controllerType"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
                 <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
@@ -123,14 +122,14 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:complexType name="managementType">
+    <xs:complexType name="domain-managementType">
         <xs:annotation>
             <xs:documentation>
-                The centralized configuration for the management of standalone servers and the domain.
+                Domain-wide default configuration settings for the management of standalone servers and a Host Controller.
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="security-realms">
+            <xs:element name="security-realms" minOccurs="0">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="security-realm" type="security-realmType" minOccurs="1"
@@ -138,7 +137,7 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="connections" minOccurs="0">
+            <xs:element name="outbound-connections" minOccurs="0">
                 <xs:complexType>
                     <xs:sequence>
                       <xs:element name="ldap" type="ldapType" minOccurs="1" /> <!-- TODO minOccurs only while ldap is only supported connection. -->
@@ -146,6 +145,21 @@
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="managementType">
+        <xs:annotation>
+            <xs:documentation>
+                The centralized configuration for the management of standalone servers and a Host Controller.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="domain-managementType">
+                <xs:sequence>
+                    <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="ldapType"> <!-- TODO - May extend from a common connection type for name -->

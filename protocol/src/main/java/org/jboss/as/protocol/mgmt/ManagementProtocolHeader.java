@@ -93,9 +93,16 @@ abstract class ManagementProtocolHeader {
      * @param input The input to read the signature from
      * @throws IOException If any read problems occur
      */
-    protected static void validateSignature(final DataInput input) throws IOException {
+    protected static void validateSignature(final DataInput input) throws IOException, ByeByeException {
         final byte[] signatureBytes = new byte[4];
-        input.readFully(signatureBytes);
+        byte first = input.readByte();
+        if (first == ManagementProtocol.BYE_BYE) {
+            throw new ByeByeException();
+        }
+        signatureBytes[0] = first;
+        signatureBytes[1] = input.readByte();
+        signatureBytes[2] = input.readByte();
+        signatureBytes[3] = input.readByte();
         if (!Arrays.equals(ManagementProtocol.SIGNATURE, signatureBytes)) {
             throw new IOException("Invalid signature [" + Arrays.toString(signatureBytes) + "]");
         }
@@ -106,7 +113,7 @@ abstract class ManagementProtocolHeader {
      * Parses the input stream to read the header
      *
      */
-    static ManagementProtocolHeader parse(DataInput input) throws IOException {
+    static ManagementProtocolHeader parse(DataInput input) throws IOException, ByeByeException {
         validateSignature(input);
         expectHeader(input, ManagementProtocol.VERSION_FIELD);
         int version = input.readInt();
