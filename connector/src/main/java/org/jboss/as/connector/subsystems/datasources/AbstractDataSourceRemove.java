@@ -45,26 +45,11 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
 
-        final String rawJndiName = model.require(JNDINAME).asString();
-        final String jndiName;
-        if (!rawJndiName.startsWith("java:/") && model.hasDefined(USE_JAVA_CONTEXT) && model.get(USE_JAVA_CONTEXT).asBoolean()) {
-            jndiName = "java:/" + rawJndiName;
-        } else {
-            jndiName = rawJndiName;
-        }
-
-        String bindName = cleanupJavaContext(jndiName);
-        final ServiceName parentContextName;
-        if (bindName.startsWith("jboss/")) {
-            parentContextName = ContextNames.JBOSS_CONTEXT_SERVICE_NAME;
-            bindName = bindName.substring(6);
-        } else {
-            parentContextName = ContextNames.JAVA_CONTEXT_SERVICE_NAME;
-        }
-
         final ServiceRegistry registry = context.getServiceRegistry(true);
 
-        final ServiceName binderServiceName = parentContextName.append(bindName);
+        final String jndiName = Util.getJndiName(model);
+
+        final ServiceName binderServiceName = Util.getBinderServiceName(jndiName);
         final ServiceController<?> binderController = registry.getService(binderServiceName);
         if (binderController != null) {
             context.removeService(binderServiceName);

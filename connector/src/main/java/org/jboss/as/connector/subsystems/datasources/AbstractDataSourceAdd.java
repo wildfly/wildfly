@@ -63,17 +63,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
-        final String rawJndiName = operation.require(JNDINAME).asString();
-        final String jndiName;
-        if (!rawJndiName.startsWith("java:") && operation.hasDefined(USE_JAVA_CONTEXT) && operation.get(USE_JAVA_CONTEXT).asBoolean()) {
-            if(rawJndiName.startsWith("jboss/")) {
-                jndiName = "java:/" + rawJndiName;
-            } else {
-                jndiName= "java:" + rawJndiName;
-            }
-        } else {
-            jndiName = rawJndiName;
-        }
+
+        final String jndiName = Util.getJndiName(operation);
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -110,21 +101,12 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 referenceFactoryService).addDependency(dataSourceServiceName, DataSource.class,
                 referenceFactoryService.getDataSourceInjector());
 
-        String bindName = cleanupJavaContext(jndiName);
-        final ServiceName parentContextName;
-        if (bindName.startsWith("jboss/")) {
-            parentContextName = ContextNames.JBOSS_CONTEXT_SERVICE_NAME;
-            bindName = bindName.substring(6);
-        } else {
-            parentContextName = ContextNames.JAVA_CONTEXT_SERVICE_NAME;
-        }
-
-        final BinderService binderService = new BinderService(bindName);
-        final ServiceName binderServiceName = parentContextName.append(bindName);
+        final ServiceName binderServiceName = Util.getBinderServiceName(jndiName);
+        final BinderService binderService = new BinderService(binderServiceName.getSimpleName());
         final ServiceBuilder<?> binderBuilder = serviceTarget
                 .addService(binderServiceName, binderService)
                 .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class, binderService.getManagedObjectInjector())
-                .addDependency(parentContextName, NamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+                .addDependency(binderServiceName.getParent(), NamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
                     public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
