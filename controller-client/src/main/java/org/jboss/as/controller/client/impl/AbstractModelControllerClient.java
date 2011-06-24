@@ -186,7 +186,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                 log.tracef("Client wrote request %d successfully", getBatchId());
             } catch (Exception e) {
                 log.tracef(e, "Client wrote request %d with error", getBatchId());
-                super.setError(e);
+                super.setError(new ClientException(e));
                 if (e instanceof IOException) {
                     throw (IOException)e;
                 }
@@ -210,8 +210,8 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                         return node;
                     } catch (Exception e) {
                         log.tracef(e, "Client read response %d with error", getBatchId());
-                        //super.setError(e);
-                        setError(e);
+                        //super.setError(new ClientException(e));
+                        setError(new ClientException(e));
                         if (e instanceof IOException) {
                             throw (IOException)e;
                         }
@@ -230,7 +230,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
 
         @Override
         protected void setError(Exception e) {
-            super.setError(e);
+            super.setError(new ClientException(e));
         }
     }
 
@@ -330,7 +330,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             return new CloseHandler<Channel>() {
                 public void handleClose(Channel closed) {
                     if (!done) {
-                        executeRequest.setError(new Exception("Channel closed"));
+                        executeRequest.setError(new ClientException(new IOException("Channel closed")));
                     }
                 }
             };
