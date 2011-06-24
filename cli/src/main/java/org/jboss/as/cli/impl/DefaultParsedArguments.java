@@ -135,6 +135,10 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
     @Override
     public void argument(String name, int nameStart, String value, int valueStart, int end) throws CommandFormatException {
         if(name != null) {
+            if(name.endsWith("-")) {
+                // this might be not the best way to check for an empty name, e.g. '--'.
+                throw new CommandFormatException("Argument name is not complete: '" + name + "'");
+            }
             if(handler != null && !handler.hasArgument(name)) {
                 throw new CommandFormatException("Unexpected argument name '" + name + "'.");
             }

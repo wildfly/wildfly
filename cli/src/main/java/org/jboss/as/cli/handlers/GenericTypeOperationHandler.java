@@ -31,6 +31,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
+import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
@@ -42,6 +43,7 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  *
@@ -49,6 +51,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
+    protected final String commandName;
     protected final String type;
     protected final OperationRequestAddress nodePath;
     protected final ArgumentWithValue profile;
@@ -56,8 +59,11 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     protected final ArgumentWithValue operation;
     protected final ArgumentWithValue props;
 
-    protected final List<String> typeOps;
     protected final List<String> excludeOps;
+
+    // help arguments
+    protected final ArgumentWithoutValue helpAttributes;
+    protected final ArgumentWithoutValue helpCommands;
 
     public GenericTypeOperationHandler(String nodeType, String idName, List<String> typeOperations, List<String> excludeOperations) {
 
@@ -76,8 +82,8 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         }
         this.type = nodePath.getNodeType();
         nodePath.toParentNode();
+        this.commandName = type;
 
-        this.typeOps = typeOperations;
         this.excludeOps = excludeOperations;
 
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
@@ -93,6 +99,37 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
+        profile.addCantAppearAfter(helpArg);
+
+        operation = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
+                @Override
+                public List<String> getAllCandidates(CommandContext ctx) {
+                    DefaultOperationRequestAddress address = new DefaultOperationRequestAddress();
+                    if(ctx.isDomainMode()) {
+                        final String profileName = profile.getValue(ctx.getParsedArguments());
+                        if(profile == null) {
+                            return Collections.emptyList();
+                        }
+                        address.toNode("profile", profileName);
+                    }
+
+                    for(OperationRequestAddress.Node node : nodePath) {
+                        address.toNode(node.getType(), node.getName());
+                    }
+                    address.toNode(type, "?");
+                    List<String> ops = ctx.getOperationCandidatesProvider().getOperationNames(address);
+                    ops.removeAll(excludeOps);
+                    return ops;
+                }}), 0, "--operation") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
+                    return false;
+                }
+                return super.canAppearNext(ctx);
+            }
+        };
+        operation.addCantAppearAfter(helpArg);
 
         name = new ArgumentWithValue(this, new DefaultCompleter(new DefaultCompleter.CandidatesProvider() {
             @Override
@@ -126,41 +163,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
-
-        operation = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
-                @Override
-                public List<String> getAllCandidates(CommandContext ctx) {
-                    final String theName = name.getValue(ctx.getParsedArguments());
-                    if(theName == null) {
-                        return typeOps;
-                    }
-
-                    DefaultOperationRequestAddress address = new DefaultOperationRequestAddress();
-                    if(ctx.isDomainMode()) {
-                        final String profileName = profile.getValue(ctx.getParsedArguments());
-                        if(profile == null) {
-                            return Collections.emptyList();
-                        }
-                        address.toNode("profile", profileName);
-                    }
-
-                    for(OperationRequestAddress.Node node : nodePath) {
-                        address.toNode(node.getType(), node.getName());
-                    }
-                    address.toNode(type, theName);
-                    List<String> ops = ctx.getOperationCandidatesProvider().getOperationNames(address);
-                    ops.removeAll(excludeOps);
-                    return ops;
-                }}), 0, "--operation") {
-            @Override
-            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
-                    return false;
-                }
-                return super.canAppearNext(ctx);
-            }
-        };
-        //operation.addRequiredPreceding(name);
+        name.addRequiredPreceding(operation);
 
         props = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
@@ -178,51 +181,19 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                     return Collections.emptyList();
                 }
 
-                final List<String> allProps;
-                if(typeOps.contains(op)) {
-                    ModelNode request = new ModelNode();
-                    ModelNode address = request.get("address");
-                    if(ctx.isDomainMode()) {
-                        final String profileName = profile.getValue(ctx.getParsedArguments());
-                        if(profile == null) {
-                            return Collections.emptyList();
-                        }
-                        address.add("profile", profileName);
-                    }
-                    for(OperationRequestAddress.Node node : nodePath) {
-                        address.add(node.getType(), node.getName());
-                    }
-                    address.add(type, "?");
-                    request.get("operation").set("read-operation-description");
-                    request.get("name").set(op);
-
-                    try {
-                        ModelNode result = ctx.getModelControllerClient().execute(request);
-                        if(!result.hasDefined("result")) {
-                            return Collections.emptyList();
-                        }
-                        allProps = Util.getRequestPropertyNames(result);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                DefaultOperationRequestAddress address = new DefaultOperationRequestAddress();
+                if(ctx.isDomainMode()) {
+                    final String profileName = profile.getValue(args);
+                    if(profile == null) {
                         return Collections.emptyList();
                     }
-
-                } else {
-                    DefaultOperationRequestAddress address = new DefaultOperationRequestAddress();
-                    if(ctx.isDomainMode()) {
-                        final String profileName = profile.getValue(args);
-                        if(profile == null) {
-                            return Collections.emptyList();
-                        }
-                        address.toNode("profile=", profileName);
-                    }
-                    for(OperationRequestAddress.Node node : nodePath) {
-                        address.toNode(node.getType(), node.getName());
-                    }
-                    address.toNode(type, theName);
-                    allProps = ctx.getOperationCandidatesProvider().getPropertyNames(op, address);
+                    address.toNode("profile=", profileName);
                 }
-
+                for(OperationRequestAddress.Node node : nodePath) {
+                    address.toNode(node.getType(), node.getName());
+                }
+                address.toNode(type, "?");
+                final List<String> allProps = ctx.getOperationCandidatesProvider().getPropertyNames(op, address);
 
                 if(allProps.size() > 0) {
                 try {
@@ -254,8 +225,19 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             public boolean isPresent(ParsedArguments args) throws CommandFormatException {
                 return false;
             }
-            };
-            props.addRequiredPreceding(operation);
+        };
+        props.addRequiredPreceding(operation);
+        props.addRequiredPreceding(name);
+
+        helpAttributes = new ArgumentWithoutValue(this, "--attributes");
+        helpAttributes.addRequiredPreceding(helpArg);
+        helpAttributes.addCantAppearAfter(operation);
+
+        helpCommands = new ArgumentWithoutValue(this, "--commands");
+        helpCommands.addRequiredPreceding(helpArg);
+        helpCommands.addCantAppearAfter(operation);
+        helpCommands.addCantAppearAfter(helpAttributes);
+        helpAttributes.addCantAppearAfter(helpCommands);
     }
 
     @Override
@@ -296,5 +278,160 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         }
 
         return builder.buildRequest();
+    }
+
+    protected void printHelp(CommandContext ctx) {
+
+        ParsedArguments args = ctx.getParsedArguments();
+        try {
+            if(helpAttributes.isPresent(args)) {
+                printAttributes(ctx);
+                return;
+            }
+        } catch (CommandFormatException e) {
+            ctx.printLine(e.getLocalizedMessage());
+            return;
+        }
+
+        try {
+            if(helpCommands.isPresent(args)) {
+                printCommands(ctx);
+                return;
+            }
+        } catch (CommandFormatException e) {
+            ctx.printLine(e.getLocalizedMessage());
+            return;
+        }
+
+        final String operationName = operation.getValue(args);
+        if(operationName == null) {
+            printNodeDescription(ctx);
+            return;
+        }
+        ctx.printLine("HELP!");
+    }
+
+    protected void printNodeDescription(CommandContext ctx) {
+        ModelNode request = initRequest(ctx);
+        if(request == null) {
+            return;
+        }
+        request.get("operation").set("read-resource-description");
+
+        try {
+            ModelNode result = ctx.getModelControllerClient().execute(request);
+            if(!result.hasDefined("result")) {
+                ctx.printLine("Node description is not available.");
+                return;
+            }
+            result = result.get("result");
+            if(!result.hasDefined("description")) {
+                ctx.printLine("Node description is not available.");
+                return;
+            }
+            ctx.printLine(result.get("description").asString());
+        } catch (Exception e) {
+        }
+    }
+
+    protected void printAttributes(CommandContext ctx) {
+        ModelNode request = initRequest(ctx);
+        if(request == null) {
+            return;
+        }
+        request.get("operation").set("read-resource-description");
+
+        try {
+            ModelNode result = ctx.getModelControllerClient().execute(request);
+            if(!result.hasDefined("result")) {
+                ctx.printLine("Node description is not available.");
+                return;
+            }
+            result = result.get("result");
+            if(!result.hasDefined("attributes")) {
+                ctx.printLine("Attribute descriptions are not available.");
+                return;
+            }
+
+            result = result.get("attributes");
+            for(Property attr : result.asPropertyList()) {
+                final ModelNode value = attr.getValue();
+                // filter metrics
+                if(value.has("access-type") && "metric".equals(value.get("access-type").asString())) {
+                    continue;
+                }
+
+                final boolean required = value.has("required") ? value.get("required").asBoolean() : false;
+
+                final StringBuilder descr = new StringBuilder();
+                descr.append("\n ");
+                descr.append(attr.getName());
+
+                final int length = descr.length();
+                int newLength = Math.max(24, ((length + 4) / 4) * 4);
+                descr.setLength(newLength);
+                for (int i = length; i < newLength; ++i) {
+                    descr.setCharAt(i, ' ');
+                }
+
+                descr.append("- ");
+
+                if(value.has("description")) {
+                    descr.append('(');
+                    if(required) {
+                        descr.append("required");
+                    } else {
+                        descr.append("optional");
+                    }
+                    descr.append(") ");
+                    descr.append(value.get("description").asString());
+                } else {
+                    descr.append("no description");
+                }
+                ctx.printLine(descr.toString());
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    protected void printCommands(CommandContext ctx) {
+        ModelNode request = initRequest(ctx);
+        if(request == null) {
+            return;
+        }
+        request.get("operation").set("read-operation-names");
+
+        try {
+            ModelNode result = ctx.getModelControllerClient().execute(request);
+            if(!result.hasDefined("result")) {
+                ctx.printLine("Operation names aren't available.");
+                return;
+            }
+            final List<String> list = Util.getList(result);
+            list.removeAll(this.excludeOps);
+            list.add("To read the description of a specific command execute '" + this.commandName + " command_name --help'.");
+            for(String name : list) {
+                ctx.printLine(name);
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    protected ModelNode initRequest(CommandContext ctx) {
+        ModelNode request = new ModelNode();
+        ModelNode address = request.get("address");
+        if(ctx.isDomainMode()) {
+            final String profileName = profile.getValue(ctx.getParsedArguments());
+            if(profile == null) {
+                ctx.printLine("--profile argument is required to get the node description.");
+                return null;
+            }
+            address.add("profile", profileName);
+        }
+        for(OperationRequestAddress.Node node : nodePath) {
+            address.add(node.getType(), node.getName());
+        }
+        address.add(type, "?");
+        return request;
     }
 }
