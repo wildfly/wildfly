@@ -51,9 +51,9 @@ public class SimpleStatefulSessionBean implements SimpleStatefulSessionLocal {
         entity.setName("Douglas Adams");
         entityManager.persist(entity);
         System.out.println("saved new Entity for " + entity.getName());
-        entity = entityManager.find(SimpleEntity.class, new Integer(1));
+        entity = entityManager.find(SimpleEntity.class, 1);
         System.out.println("read back Entity for " + entity.getName());
-
+        entityManager.remove(entity);
         return "Echo " + msg + ":" + state + " entitymanager find should return 'Douglas Adams', it returned = " + entity;
     }
 
