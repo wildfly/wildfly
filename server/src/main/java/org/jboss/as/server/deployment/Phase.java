@@ -366,7 +366,6 @@ public enum Phase {
     public static final int INSTALL_DEPENDS_ON_ANNOTATION               = 0x1210;
     public static final int INSTALL_PERSISTENTUNIT                      = 0x1220;
     public static final int INSTALL_EE_COMPONENT                        = 0x1230;
-    public static final int INSTALL_JNDI_DEPENDENCIES                   = 0x1240;
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1300;
     public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1500;
     public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1600;
@@ -376,6 +375,7 @@ public enum Phase {
     public static final int INSTALL_PERSISTENCE_PROVIDER                = 0x1A00;
     public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1B00;
     public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1C00;
+    public static final int INSTALL_JNDI_DEPENDENCIES                   = 0x1C01;
     public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1D00;
 
     // CLEANUP

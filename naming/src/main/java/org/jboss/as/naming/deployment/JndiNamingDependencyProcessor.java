@@ -32,7 +32,7 @@ import java.util.Set;
 
 /**
  * Adds a service that depends on all JNDI bindings from the deployment to be up.
- *
+ * <p/>
  * As binding services are not children of the root deployment unit service this service
  * is necessary to ensure the deployment is not considered complete until add bindings are up
  *
@@ -46,18 +46,17 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (deploymentUnit.getParent() == null) {
-            Set<ServiceName> dependencies = deploymentUnit.getAttachment(Attachments.JNDI_DEPENDENCIES);
-            final ServiceName serviceName = serviceName(deploymentUnit);
-            phaseContext.getServiceTarget().addService(serviceName, org.jboss.msc.service.Service.NULL)
-                    .addDependencies(dependencies)
-                    .install();
-        }
+
+        Set<ServiceName> dependencies = deploymentUnit.getAttachment(Attachments.JNDI_DEPENDENCIES);
+        final ServiceName serviceName = serviceName(deploymentUnit);
+        phaseContext.getServiceTarget().addService(serviceName, org.jboss.msc.service.Service.NULL)
+                .addDependencies(dependencies)
+                .install();
+
     }
 
     public static ServiceName serviceName(final DeploymentUnit deploymentUnit) {
-        final DeploymentUnit top = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
-        return top.getServiceName().append(JNDI_DEPENDENCY_SERVICE);
+        return deploymentUnit.getServiceName().append(JNDI_DEPENDENCY_SERVICE);
     }
 
     @Override

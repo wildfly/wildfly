@@ -63,8 +63,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         }
         final EEModuleConfiguration moduleDescription = deploymentUnit.getAttachment(EE_MODULE_CONFIGURATION);
 
-        final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
-        final Set<ServiceName> dependencies = parent.getAttachment(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
+        final Set<ServiceName> dependencies = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
 
         final ServiceName bindingDependencyService = JndiNamingDependencyProcessor.serviceName(deploymentUnit);
 

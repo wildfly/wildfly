@@ -40,10 +40,7 @@ public class JndiNamingDependencySetupProcessor implements DeploymentUnitProcess
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (deploymentUnit.getParent() == null) {
-            deploymentUnit.putAttachment(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, Collections.newSetFromMap(new ConcurrentHashMap<ServiceName, Boolean>()));
-        }
-
+        deploymentUnit.putAttachment(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, Collections.newSetFromMap(new ConcurrentHashMap<ServiceName, Boolean>()));
     }
 
     @Override

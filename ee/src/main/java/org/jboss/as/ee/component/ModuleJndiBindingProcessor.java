@@ -62,8 +62,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         if (moduleConfiguration == null) {
             return;
         }
-        final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
-        final Set<ServiceName> dependencies = parent.getAttachment(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
+        final Set<ServiceName> dependencies = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
 
         final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings = new HashMap<ServiceName, BindingConfiguration>();
 
