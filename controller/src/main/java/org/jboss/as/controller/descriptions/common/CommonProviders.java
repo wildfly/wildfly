@@ -62,6 +62,39 @@ public final class CommonProviders {
     /**
      * Provider for a sub-model that defines the management configuration.
      */
+    public static final DescriptionProvider MANAGEMENT_WITH_INTERFACES_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return ManagementDescription.getManagementDescriptionWithInterfaces(locale);
+        }
+    };
+
+
+    /**
+     * Provider for a sub-model that defines a management security-realm configuration.
+     */
+    public static final DescriptionProvider MANAGEMENT_SECURITY_REALM_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return ManagementDescription.getManagementSecurityRealmDescription(locale);
+        }
+    };
+
+
+    /**
+     * Provider for a sub-model that defines a management authentication/authorization connection factory configuration.
+     */
+    public static final DescriptionProvider MANAGEMENT_OUTBOUND_CONNECTION_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return ManagementDescription.getManagementOutboundConnectionDescription(locale);
+        }
+    };
+
+
+    /**
+     * Provider for a sub-model that defines the management configuration.
+     */
     public static final DescriptionProvider NATIVE_MANAGEMENT_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
@@ -220,4 +253,13 @@ public final class CommonProviders {
         }
     };
 
+    /**
+     * Provider for a sub-resource that exposes the MSC ServiceContainer.
+     */
+    public static final DescriptionProvider SERVICE_CONTAINER_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return CommonDescriptions.getServiceContainerDescription(locale);
+        }
+    };
 }
