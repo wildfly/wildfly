@@ -450,7 +450,7 @@
             <socket-binding name="jmx-connector-server" port="1091"/>
             <socket-binding name="jndi" port="1099"/>
             <socket-binding name="http" port="8080"/>
-            <socket-binding name="https" port="8447"/>
+            <socket-binding name="https" port="8443"/>
             <socket-binding name="jacorb" port="3528"/>
             <socket-binding name="jacorb-ssl" port="3529"/>
             <socket-binding name="osgi-http" port="8090"/>

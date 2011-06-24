@@ -350,7 +350,7 @@
     <socket-binding-groups>
          <socket-binding-group name="web-sockets" default-interface="public">
             <socket-binding name="http" port="8080"/>
-            <socket-binding name="https" port="8447"/>
+            <socket-binding name="https" port="8443"/>
          </socket-binding-group>
          <socket-binding-group name="standard-sockets" default-interface="public">
             <include socket-binding-group="web-sockets"/>
