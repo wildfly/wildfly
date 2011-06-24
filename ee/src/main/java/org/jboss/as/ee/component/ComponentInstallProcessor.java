@@ -24,6 +24,7 @@ package org.jboss.as.ee.component;
 
 import org.jboss.as.ee.naming.RootContextService;
 import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.service.BindingHandleService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -65,18 +66,20 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final Set<ServiceName> dependencies = parent.getAttachment(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
 
+        final ServiceName bindingDependencyService = JndiNamingDependencyProcessor.serviceName(deploymentUnit);
+
         // Iterate through each component, installing it into the container
         for (ComponentConfiguration configuration : moduleDescription.getComponentConfigurations()) {
             try {
                 logger.tracef("Installing component %s", configuration.getComponentClass().getName());
-                deployComponent(phaseContext, configuration, dependencies);
+                deployComponent(phaseContext, configuration, dependencies, bindingDependencyService);
             } catch (RuntimeException e) {
                 throw new DeploymentUnitProcessingException("Failed to install component " + configuration, e);
             }
         }
     }
 
-    protected void deployComponent(final DeploymentPhaseContext phaseContext, final ComponentConfiguration configuration, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
+    protected void deployComponent(final DeploymentPhaseContext phaseContext, final ComponentConfiguration configuration, final Set<ServiceName> dependencies, final ServiceName bindingDependencyService) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
@@ -114,6 +117,9 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         // START depends on CREATE
         startBuilder.addDependency(createServiceName, BasicComponent.class, startService.getComponentInjector());
+
+        //don't start components until all bindings are up
+        startBuilder.addDependency(bindingDependencyService);
         final ServiceName contextServiceName;
         //set up the naming context if nessesary
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {

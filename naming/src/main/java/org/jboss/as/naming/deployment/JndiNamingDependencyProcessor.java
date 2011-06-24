@@ -31,7 +31,10 @@ import org.jboss.msc.service.ServiceName;
 import java.util.Set;
 
 /**
- * Adds a service that depends on all JNDI bindings from the deployment to be up
+ * Adds a service that depends on all JNDI bindings from the deployment to be up.
+ *
+ * As binding services are not children of the root deployment unit service this service
+ * is necessary to ensure the deployment is not considered complete until add bindings are up
  *
  * @author Stuart Douglas
  */
