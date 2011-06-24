@@ -20,30 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.embedded.demos.ejb3.dd;
+package org.jboss.as.demos.ejb3.archive;
 
-import javax.annotation.PostConstruct;
-import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 
 /**
  * User: jpai
  */
-public class SimpleInterceptor {
+public class DDBasedInterceptor {
 
     private boolean postConstructInvoked;
 
-    @PostConstruct
-    private void onConstruct(InvocationContext invocationContext) throws Exception {
+    private void onConstruct(InvocationContext ctx)  throws Exception {
         this.postConstructInvoked = true;
-        invocationContext.proceed();
+        ctx.proceed();
     }
 
-    @AroundInvoke
-    public Object onInvoke(InvocationContext ctx) throws Exception {
+    public Object onInvoke(InvocationContext invocationContext) throws Exception {
         if (!this.postConstructInvoked) {
             throw new IllegalStateException("PostConstruct method on " + this.getClass().getName() + " interceptor was not invoked");
         }
-        return getClass().getName() + "#" + ctx.proceed();
+        return this.getClass().getName() + "#" + invocationContext.proceed();
     }
+
 }

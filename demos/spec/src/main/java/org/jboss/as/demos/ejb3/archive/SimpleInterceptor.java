@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,17 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.demos.ejb3.archive;
 
+import javax.annotation.PostConstruct;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * User: jpai
  */
 public class SimpleInterceptor {
+
+    private boolean postConstructInvoked;
+
+    @PostConstruct
+    private void onConstruct(InvocationContext invocationContext) throws Exception {
+        this.postConstructInvoked = true;
+        invocationContext.proceed();
+    }
+
     @AroundInvoke
-    public Object aroundInvoke(InvocationContext ctx) throws Exception {
-        return getClass().getSimpleName() + "#" + ctx.proceed();
+    public Object onInvoke(InvocationContext ctx) throws Exception {
+        if (!this.postConstructInvoked) {
+            throw new IllegalStateException("PostConstruct method on " + this.getClass().getName() + " interceptor was not invoked");
+        }
+        return getClass().getName() + "#" + ctx.proceed();
     }
 }

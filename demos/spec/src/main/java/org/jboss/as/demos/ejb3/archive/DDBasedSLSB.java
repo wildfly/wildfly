@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,15 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.embedded.demos.ejb3.dd;
-
-import javax.ejb.Stateless;
+package org.jboss.as.demos.ejb3.archive;
 
 /**
  * @author Jaikiran Pai
  */
-@Stateless
-public class DDOverrideSLSB implements Echo {
+public class DDBasedSLSB implements Echo {
 
     @Override
     public String echo(String msg) {

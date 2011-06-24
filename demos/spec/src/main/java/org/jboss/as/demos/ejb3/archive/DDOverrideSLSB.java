@@ -20,22 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.embedded.demos.ejb3.dd;
+package org.jboss.as.demos.ejb3.archive;
 
-import javax.ejb.EJB;
-import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
 
 /**
  * @author Jaikiran Pai
  */
-@LocalBean
-public class PartialDDSFSB implements Echo {
-
-    @EJB (beanName = "DDBasedSLSB")
-    private Echo otherEchoBean;
+@Stateless
+public class DDOverrideSLSB implements Echo {
 
     @Override
     public String echo(String msg) {
-        return this.otherEchoBean.echo(msg);
+        return msg;
     }
 }
