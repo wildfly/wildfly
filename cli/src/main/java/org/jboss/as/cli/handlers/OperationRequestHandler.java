@@ -89,6 +89,8 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
                 }
                 if (cur instanceof ClientException) {
                     ctx.printLine("Error: " + cur.getLocalizedMessage());
+                    //This avoids the hang trying to execute a new command by forcing the client to reconnect
+                    ctx.disconnectController();
                     return;
                 }
             }
