@@ -45,6 +45,7 @@ import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndexProcessor;
 import org.jboss.as.server.deployment.integration.Seam2Processor;
 import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
+import org.jboss.as.server.deployment.module.ClassFileTransformerProcessor;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
 import org.jboss.as.server.deployment.module.DeploymentStructureDescriptorParser;
 import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
@@ -181,6 +182,7 @@ public final class ServerService extends AbstractControllerService {
         DeployerChainAddHandler.addDeploymentProcessor(Phase.CONFIGURE_MODULE, Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_INSTALL_EXTENSION, new ModuleExtensionNameProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_REFLECTION_INDEX, new InstallReflectionIndexProcessor());
+        DeployerChainAddHandler.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_TRANSFORMER, new ClassFileTransformerProcessor());
         DeployerChainAddHandler.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor());
 
         // Ext integration deployers

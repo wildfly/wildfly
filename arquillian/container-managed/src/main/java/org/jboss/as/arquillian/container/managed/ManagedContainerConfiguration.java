@@ -39,6 +39,8 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     private boolean outputToConsole = true;
 
+    private String serverConfig = System.getProperty("jboss.server.config.file.name",  "standalone.xml");
+
     @Override
     public void validate() throws ConfigurationException {
         super.validate();
@@ -117,5 +119,23 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
      */
     public boolean isOutputToConsole() {
         return outputToConsole;
+    }
+
+    /**
+     * Get the server configuration file name.  Equivalent to [-server-config=...] on the command line.
+     *
+     * @return the server config
+     */
+    public String getServerConfig() {
+        return serverConfig;
+    }
+
+    /**
+     * Set the server configuration file name.  Equivalent to [-server-config=...] on the command line.
+     *
+     * @param serverConfig the server config
+     */
+    public void setServerConfig(String serverConfig) {
+        this.serverConfig = serverConfig;
     }
 }

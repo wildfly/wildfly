@@ -22,11 +22,11 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
@@ -38,12 +38,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransaction;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
@@ -57,6 +58,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class ReadMasterDomainModelHandler implements OperationStepHandler, DescriptionProvider {
     public static final String OPERATION_NAME = "read-master-domain-model";
+
+    public static final String FORCE_DIRECT_HACK = "force-direct-hack";
 
     private final DomainController domainController;
     private final UnregisteredHostChannelRegistry registry;
@@ -76,6 +79,8 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
 
         ModelNode op = new ModelNode();
         op.get(OP).set(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME);
+        //FIXME this makes the op work after boot (i.e. slave connects to restarted master), but does not make the slave resync the servers
+        op.get(OPERATION_HEADERS, "execute-for-coordinator").set(true);
         op.get(OP_ADDR).setEmptyList();
         op.get(DOMAIN_MODEL).set(modelDescription);
 

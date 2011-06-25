@@ -54,7 +54,7 @@ public class SessionFactoryTestCase {
             "  <persistence-unit name=\"mypc\">" +
             "    <description>Persistence Unit." +
             "    </description>" +
-            "  <jta-data-source>java:/H2DS</jta-data-source>" +
+            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
 //  Disabled until JBAS-9229 & JBAS-9224 are fixed.
 //            "<property name=\"hibernate.session_factory_name\" value=\"modelSessionFactory\" />" +

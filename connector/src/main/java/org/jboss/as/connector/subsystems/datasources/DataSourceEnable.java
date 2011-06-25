@@ -58,20 +58,15 @@ public class DataSourceEnable implements OperationStepHandler {
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
     public void execute(OperationContext context, ModelNode operation) {
-        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED).set(true);
+
+        final ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
+        model.get(ENABLED).set(true);
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                    final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-                    final String rawJndiName = model.require(JNDINAME).asString();
-                    final String jndiName;
-                    if (!rawJndiName.startsWith("java:/") && model.hasDefined(USE_JAVA_CONTEXT) && model.get(USE_JAVA_CONTEXT).asBoolean()) {
-                        jndiName = "java:/" + rawJndiName;
-                    } else {
-                        jndiName = rawJndiName;
-                    }
+                    final String jndiName = Util.getJndiName(model);
 
                     final ServiceRegistry registry = context.getServiceRegistry(true);
 
@@ -113,7 +108,7 @@ public class DataSourceEnable implements OperationStepHandler {
                         referenceController.setMode(ServiceController.Mode.ACTIVE);
                     }
 
-                    final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
+                    final ServiceName binderServiceName = Util.getBinderServiceName(jndiName);
                     final ServiceController<?> binderController = registry.getService(binderServiceName);
                     if (binderController != null && !ServiceController.State.UP.equals(binderController.getState())) {
                         binderController.setMode(ServiceController.Mode.ACTIVE);

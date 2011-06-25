@@ -136,7 +136,7 @@ public class ExampleRunner {
 
         System.out.println("<subsystem xmlns=\"urn:jboss:domain:datasources:1.0\">");
         System.out.println("    <datasources>");
-        System.out.println("        <datasource jndi-name=\"java:/H2DS\" enabled=\"true\" use-java-context=\"true\" pool-name=\"H2DS\">");
+        System.out.println("        <datasource jndi-name=\"java:jboss/datasources/ExampleDS\" enabled=\"true\" use-java-context=\"true\" pool-name=\"H2DS\">");
         System.out.println("            <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>");
         System.out.println("            <driver-class>org.h2.Driver</driver-class>");
         System.out.println("            <module>com.h2database.h2</module>");

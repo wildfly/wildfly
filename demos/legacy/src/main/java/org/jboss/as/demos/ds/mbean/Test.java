@@ -34,7 +34,7 @@ import javax.sql.DataSource;
  */
 public class Test implements TestMBean {
 
-    private static final String JNDI_NAME = "java:/H2DS";
+    private static final String JNDI_NAME = "java:jboss/datasources/ExampleDS";
 
     @Override
     public String test() throws Exception {

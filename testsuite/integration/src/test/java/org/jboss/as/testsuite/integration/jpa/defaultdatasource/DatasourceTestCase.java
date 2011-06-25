@@ -56,7 +56,7 @@ public class DatasourceTestCase {
             "    </description>" +
 // comment out the following line when its time to enable this test.
 // will also need to make sure the JPA default-datasource is configured
-          "  <jta-data-source>java:/H2DS</jta-data-source>" +
+          "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "</properties>" +
             "  </persistence-unit>" +

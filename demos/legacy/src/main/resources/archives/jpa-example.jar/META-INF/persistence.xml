@@ -2,7 +2,7 @@
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="1.0">
   <persistence-unit name="H2DS">
     <description> JPA demo </description>
-    <jta-data-source>java:/H2DS</jta-data-source>
+    <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
     <!--class>org.jboss.as.demos.jpa.archive.SimpleEntity</class -->
     <properties>
         <property name="hibernate.hbm2ddl.auto" value="create-drop"/>

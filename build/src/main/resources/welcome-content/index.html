@@ -23,55 +23,35 @@
 
 <html>
 <head>
- <title>Welcome to JBoss Application Server 7</title>
-  <style type="text/css">
-<!--
-     body {
-         font-family : Verdana, Arial, Helvetica, sans-serif;
-       }
-
-     a {
-        text-decoration: none;
-        color: #5e8a9a;
-      }
-
-     a:hover {
-        text-decoration: underline;
-        color: #8ec6d9;
-      }
-
-     .center {
-        text-align: center
-     }
-
-     .note {
-        font-size: 8pt;
-        color: #aaaaaa;
-    }
-    -->
-  </style>
+  <title>Welcome to JBoss Application Server 7</title>
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="StyleSheet" href="as7_style.css" type="text/css">
 </head>
 
 <body>
-  <div class="center">
-    <h1>Welcome to AS 7</h1>
+  <div class="wrapper">
+    <div class="as7">
+      <img src="as7_logo.png" alt="JBoss Application Server 7... it's here." width="195" height="228" border="0">
+    </div>
 
-    <p>Your JBoss Application Server 7 is running.</p>
+    <div class="content">
+      <h1>Welcome to AS 7</h1>
 
-    <p><a href="/console">Administration
-    Console</a></p>
+      <h3>Your JBoss Application Server 7 is running.</h3>
 
-    <p>[<a href="http://www.jboss.org/jbossas">AS 7 Home</a>]
-    [<a href=
-    "http://community.jboss.org/en/jbossas/as7_users?view=all">User
-    Forum</a>] [<a href="https://issues.jboss.org/browse/AS7">Issue
-    Tracker</a>]</p>
+      <p><a href="documentation.html">Documentation</a> | <a href="/console">Administration Console</a><br/>
 
-    <p><a href="http://jboss.org"><img alt="JBoss Community" src=
-    "jbosscommunity_logo_hori_white.png"></a></p>
-    <p class="note">To replace this page set "enable-welcome-root" to
-    false in your server configuration and deploy your own war with /
-    as its context path.</p>
+      <a href="http://www.jboss.org/jbossas"><br>
+      JBoss AS Project</a> | <a href="http://community.jboss.org/en/jbossas/as7_users?view=all">User
+      Forum</a> | <a href=
+      "https://issues.jboss.org/browse/AS7">Report an issue</a></p>
+
+      <p class="logos"><a href="http://jboss.org"><img src="jboss_community.png" alt="JBoss and JBoss Community" width=
+      "254" height="31" border="0"></a></p>
+
+      <p class="note">To replace this page set "enable-welcome-root" to false in your server configuration and deploy
+      your own war with / as its context path.</p>
+    </div>
   </div>
 </body>
 </html>

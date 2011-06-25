@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class DsTestCase {
-    private static final String JNDI_NAME = "java:/H2DS";
+    private static final String JNDI_NAME = "java:jboss/datasources/ExampleDS";
 
     @Deployment
     public static Archive<?> getDeployment() {

@@ -123,6 +123,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             cmd.add("-jaxpmodule");
             cmd.add("javax.xml.jaxp-provider");
             cmd.add("org.jboss.as.standalone");
+            cmd.add("-server-config");
+            cmd.add(config.getServerConfig());
 
             log.info("Starting container with: " + cmd.toString());
             ProcessBuilder processBuilder = new ProcessBuilder(cmd);

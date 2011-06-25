@@ -20,7 +20,7 @@ package org.jboss.as.arquillian.protocol.jmx;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.arquillian.protocol.jmx.JMXProtocol;
+import org.jboss.arquillian.protocol.jmx.AbstractJMXProtocol;
 import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
 import org.jboss.shrinkwrap.api.Archive;
 
@@ -30,7 +30,7 @@ import org.jboss.shrinkwrap.api.Archive;
  * @author thomas.diesler@jboss.com
  * @since 31-May-2011
  */
-public class JMXProtocolAS7 extends JMXProtocol {
+public class JMXProtocolAS7 extends AbstractJMXProtocol {
 
     @Inject
     @SuiteScoped

@@ -20,8 +20,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<server name="example"
-        xmlns="urn:jboss:domain:1.0">
+<server name="example" xmlns="urn:jboss:domain:1.0">
+
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
@@ -29,21 +29,17 @@
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
-        <extension module="org.jboss.as.jacorb"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
-        <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.naming"/>
-        <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web" />
-        <extension module="org.jboss.as.webservices" />
         <extension module="org.jboss.as.weld" />
     </extensions>
 
@@ -144,16 +140,6 @@
                 </security-domain>
             </security-domains>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:jacorb:1.0">
-            <orb name="JBoss" print-version="off" giop-minor-version="2">
-                <connection max-managed-buf-size="24" outbuf-cache-timeout="-1"/>
-                <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
-            </orb>
-            <poa monitoring="off" queue-wait="off">
-                <request-processors pool-size="2" max-threads="8"/>
-            </poa>
-            <interop sun="on" chunk-custom-rmi-valuetypes="on" strict-check-on-tc-creation="off"/>
-        </subsystem>
         <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.0">
             <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
@@ -190,9 +176,10 @@
                 </long-running-threads>
             </default-workmanager>
         </subsystem>
+
         <subsystem xmlns="urn:jboss:domain:datasources:1.0">
             <datasources>
-                <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
+                <datasource jndi-name="java:jboss/datasources/ExampleDS" enabled="true" use-java-context="true" pool-name="H2DS">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                     <driver>h2</driver>
                     <pool></pool>
@@ -211,152 +198,10 @@
                 </drivers>
             </datasources>
        </subsystem>
-       <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0" />
-       <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
-            <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
-                <property name="manager.root">jboss-osgi</property>
-            </configuration>
-            <properties>
-                <!--
-                    A comma seperated list of module identifiers. Each system module
-                    is added as a dependency to the OSGi framework module. The packages
-                    from these system modules can be made visible as framework system packages.
-                    http://www.osgi.org/javadoc/r4v42/org/osgi/framework/Constants.html#FRAMEWORK_SYSTEMPACKAGES_EXTRA
-                -->
-                <property name="org.jboss.osgi.system.modules">
-                org.apache.commons.logging,
-                org.apache.log4j,
-                org.jboss.as.osgi,
-                org.slf4j,
-                </property>
-                <!--
-                    Framework environment property identifying extra packages which the system bundle
-                    must export from the current execution environment
-                -->
-                <property name="org.osgi.framework.system.packages.extra">
-                org.apache.commons.logging;version=1.1.1,
-                org.apache.log4j;version=1.2,
-                org.jboss.as.osgi.service;version=7.0,
-                org.jboss.osgi.deployment.interceptor;version=1.0,
-                org.jboss.osgi.spi.capability;version=1.0,
-                org.jboss.osgi.spi.util;version=1.0,
-                org.jboss.osgi.testing;version=1.0,
-                org.jboss.osgi.vfs;version=1.0,
-                org.slf4j;version=1.5.10,
-                </property>
-                <!-- Specifies the beginning start level of the framework -->
-                <property name="org.osgi.framework.startlevel.beginning">1</property>
-            </properties>
-            <modules>
-                <!-- modules registered with the OSGi layer on startup -->
-                <module identifier="javaee.api"/>
-                <module identifier="org.jboss.logging"/>
-                <!-- bundles installed on startup -->
-                <module identifier="org.apache.aries.util"/>
-                <module identifier="org.jboss.osgi.webconsole"/>
-                <module identifier="org.osgi.compendium"/>
-                <!-- bundles started in startlevel 1 -->
-                <module identifier="org.apache.felix.log" startlevel="1"/>
-                <module identifier="org.jboss.osgi.logging" startlevel="1"/>
-                <module identifier="org.apache.felix.configadmin" startlevel="1"/>
-                <module identifier="org.jboss.as.osgi.configadmin" startlevel="1"/>
-                <!-- bundles started in startlevel 2 -->
-                <module identifier="org.apache.aries.jmx" startlevel="2"/>
-                <module identifier="org.apache.felix.eventadmin" startlevel="2"/>
-                <module identifier="org.apache.felix.metatype" startlevel="2"/>
-                <module identifier="org.apache.felix.webconsole" startlevel="2"/>
-                <module identifier="org.jboss.osgi.jmx" startlevel="2"/>
-                <module identifier="org.jboss.osgi.http" startlevel="2"/>
-                <!-- bundles started in startlevel 3 -->
-                <module identifier="org.jboss.osgi.blueprint" startlevel="3"/>
-                <module identifier="org.jboss.osgi.webapp" startlevel="3"/>
-                <module identifier="org.jboss.osgi.xerces" startlevel="3"/>
-            </modules>
-        </subsystem>
-        <subsystem xmlns="urn:jboss:domain:messaging:1.0">
-            <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
-            <journal-file-size>102400</journal-file-size>
-            <journal-min-files>2</journal-min-files>
-            <journal-type>NIO</journal-type>
-            <!-- disable messaging persistence -->
-            <persistence-enabled>false</persistence-enabled>
 
-            <connectors>
-               <netty-connector name="netty" socket-binding="messaging" />
-               <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
-                  <param key="batch-delay" value="50"/>
-               </netty-connector>
-               <in-vm-connector name="in-vm" server-id="0" />
-            </connectors>
+        
+        <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0" />
 
-            <acceptors>
-               <netty-acceptor name="netty" socket-binding="messaging" />
-               <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
-                  <param key="batch-delay" value="50"/>
-                  <param key="direct-deliver" value="false"/>
-               </netty-acceptor>
-               <in-vm-acceptor name="in-vm" server-id="0" />
-            </acceptors>
-
-            <security-settings>
-               <security-setting match="#">
-                   <permission type="createNonDurableQueue" roles="guest"/>
-                   <permission type="deleteNonDurableQueue" roles="guest"/>
-                    <permission type="consume" roles="guest"/>
-                    <permission type="send" roles="guest"/>
-               </security-setting>
-            </security-settings>
-
-            <address-settings>
-               <!--default for catch all-->
-               <address-setting match="#">
-                  <dead-letter-address>jms.queue.DLQ</dead-letter-address>
-                  <expiry-address>jms.queue.ExpiryQueue</expiry-address>
-                  <redelivery-delay>0</redelivery-delay>
-                  <max-size-bytes>10485760</max-size-bytes>
-                  <message-counter-history-day-limit>10</message-counter-history-day-limit>
-                  <address-full-policy>BLOCK</address-full-policy>
-               </address-setting>
-            </address-settings>
-
-            <!--JMS Stuff-->
-           <jms-connection-factories>
-              <connection-factory name="InVmConnectionFactory">
-                 <connectors>
-                    <connector-ref connector-name="in-vm"/>
-                 </connectors>
-                 <entries>
-                    <entry name="java:/ConnectionFactory"/>
-                 </entries>
-              </connection-factory>
-              <connection-factory name="RemoteConnectionFactory">
-                 <connectors>
-                    <connector-ref connector-name="netty"/>
-                 </connectors>
-                 <entries>
-                    <entry name="RemoteConnectionFactory"/>
-                 </entries>
-              </connection-factory>
-              <pooled-connection-factory name="hornetq-ra">
-                 <transaction mode="xa"/>
-                 <connectors>
-                    <connector-ref connector-name="in-vm"/>
-                 </connectors>
-                 <entries>
-                    <entry name="java:/JmsXA"/>
-                 </entries>
-              </pooled-connection-factory>
-           </jms-connection-factories>
-
-           <jms-destinations>
-              <jms-queue name="testQueue">
-                 <entry name="queue/test"/>
-              </jms-queue>
-              <jms-topic name="testTopic">
-                 <entry name="topic/test"/>
-              </jms-topic>
-           </jms-destinations>
-        </subsystem>
         <subsystem xmlns="urn:jboss:domain:web:1.0">
             <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
             <virtual-server name="localhost" enable-welcome-root="true">
@@ -366,14 +211,6 @@
         <subsystem xmlns="urn:jboss:domain:weld:1.0" />
         <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
             <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
-        </subsystem>
-        <subsystem xmlns="urn:jboss:domain:webservices:1.0">
-             <modify-wsdl-address>true</modify-wsdl-address>
-             <wsdl-host>localhost</wsdl-host>
-             <!--
-             <wsdl-port>8080</wsdl-port>
-             <wsdl-secure-port>8443</wsdl-secure-port>
-             -->
         </subsystem>
     </profile>
 
@@ -392,14 +229,9 @@
            <socket-binding name="jmx-connector-server" port="1091"/>
            <socket-binding name="http" port="8080"/>
            <socket-binding name="https" port="8443"/>
-           <socket-binding name="jacorb" port="3528"/>
-           <socket-binding name="jacorb-ssl" port="3529"/>
-           <socket-binding name="osgi-http" port="8090"/>
            <socket-binding name="remoting" port="4447"/>
            <socket-binding name="txn-recovery-environment" port="4712"/>
            <socket-binding name="txn-status-manager" port="4713"/>
-           <socket-binding name="messaging" port="5445" />
-           <socket-binding name="messaging-throughput" port="5455"/>
         </socket-binding-group>
 
 </server>

@@ -17,18 +17,13 @@
 package org.jboss.as.arquillian.container.remote;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 
 import javax.management.MBeanServerConnection;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.arquillian.container.remote.archive.ConfigService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -38,32 +33,24 @@ import org.junit.runner.RunWith;
  * JBossASRemoteIntegrationTestCase
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Thomas.Diesler@jboss.com
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.AS_CLIENT)
-public class JBossASRemoteAsClientTestCase extends JBossASRemoteInContainerTestCase {
+public class RemoteAsClientTestCase extends AbstractContainerTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static JavaArchive createDeployment() throws Exception {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "sar-example.sar");
         archive.addPackage(ConfigService.class.getPackage());
         String path = "META-INF/jboss-service.xml";
-        URL resourceURL = JBossASRemoteAsClientTestCase.class.getResource("/sar-example.sar/" + path);
-        archive.addResource(new File(resourceURL.getFile()), path);
+        URL resourceURL = RemoteAsClientTestCase.class.getResource("/sar-example.sar/" + path);
+        archive.addAsResource(new File(resourceURL.getFile()), path);
         return archive;
     }
 
     @Override
     protected MBeanServerConnection getMBeanServer() throws Exception {
-        int port = 1090;
-        String urlString = System.getProperty("jmx.service.url", "service:jmx:rmi:///jndi/rmi://127.0.0.1:" + port + "/jmxrmi");
-        try {
-            JMXServiceURL serviceURL = new JMXServiceURL(urlString);
-            JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
-            return jmxConnector.getMBeanServerConnection();
-        } catch (IOException ex) {
-            throw new IllegalStateException("Cannot obtain MBeanServerConnection to: " + urlString, ex);
-        }
+        MBeanServerConnectionProvider provider = MBeanServerConnectionProvider.defaultProvider();
+        return provider.getConnection();
     }
-
 }

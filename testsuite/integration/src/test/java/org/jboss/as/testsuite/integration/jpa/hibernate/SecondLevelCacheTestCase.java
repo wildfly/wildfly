@@ -57,7 +57,7 @@ public class SecondLevelCacheTestCase {
             "  <persistence-unit name=\"mypc\">" +
             "    <description>Persistence Unit." +
             "    </description>" +
-            "  <jta-data-source>java:/H2DS</jta-data-source>" +
+            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
             " <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>" +
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
@@ -108,7 +108,7 @@ public class SecondLevelCacheTestCase {
         sfsb1.getEmployeeNoTX(10);
         sfsb1.getEmployeeNoTX(20);
 
-        DataSource ds = rawLookup("java:/H2DS", DataSource.class);
+        DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
         Connection conn = ds.getConnection();
         int deleted = conn.prepareStatement("delete from Employee").executeUpdate();
 

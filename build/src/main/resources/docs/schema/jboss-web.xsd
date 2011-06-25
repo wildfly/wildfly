@@ -159,7 +159,7 @@
       <xs:attribute name="max-post-size" />
       <xs:attribute name="max-save-post-size" />
       <xs:attribute name="enabled" default="true" type="xs:boolean" />
-      <xs:attribute name="executor" type="xs:IDREF" />
+      <xs:attribute name="executor" type="xs:string" />
       <xs:attribute name="max-connections" />
    </xs:attributeGroup>
 

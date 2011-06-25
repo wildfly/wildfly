@@ -85,9 +85,20 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     @Override
     protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors) {
-        // wise, or not?
+        // synchronized from getComponentInstance
+        assert Thread.holdsLock(this);
+        // the race is on right through createInstance where everybody will wait until the component is started
         if (this.singletonComponentInstance != null) {
-            throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
+            return this.singletonComponentInstance;
+        }
+        if (dependsOn != null) {
+            for(ServiceName serviceName : dependsOn) {
+                final ServiceController<Component> service = (ServiceController<Component>) CurrentServiceRegistry.getServiceRegistry().getRequiredService(serviceName);
+                final Component component = service.getValue();
+                if(component instanceof SingletonComponent) {
+                    ((SingletonComponent) component).getComponentInstance();
+                }
+            }
         }
         return new SingletonComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
@@ -95,20 +106,8 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     ComponentInstance getComponentInstance() {
         if (this.singletonComponentInstance == null) {
             synchronized (this) {
-                if(this.singletonComponentInstance == null) {
-
-                    if (dependsOn != null) {
-                        for(ServiceName serviceName : dependsOn) {
-                            final ServiceController<Component> service = (ServiceController<Component>) CurrentServiceRegistry.getServiceRegistry().getRequiredService(serviceName);
-                            final Component component = service.getValue();
-                            if(component instanceof SingletonComponent) {
-                                ((SingletonComponent) component).getComponentInstance();
-                            }
-                        }
-                    }
-
-                    this.singletonComponentInstance = (SingletonComponentInstance) this.createInstance();
-                }
+                // no need to check here, createInstance has a wait (on start)
+                this.singletonComponentInstance = (SingletonComponentInstance) this.createInstance();
             }
         }
         return this.singletonComponentInstance;

@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.AbstractDataSourceAdd.cleanupJavaContext;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 
@@ -44,17 +45,11 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
 
-        final String rawJndiName = model.require(JNDINAME).asString();
-        final String jndiName;
-        if (!rawJndiName.startsWith("java:/") && model.hasDefined(USE_JAVA_CONTEXT) && model.get(USE_JAVA_CONTEXT).asBoolean()) {
-            jndiName = "java:/" + rawJndiName;
-        } else {
-            jndiName = rawJndiName;
-        }
-
         final ServiceRegistry registry = context.getServiceRegistry(true);
 
-        final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
+        final String jndiName = Util.getJndiName(model);
+
+        final ServiceName binderServiceName = Util.getBinderServiceName(jndiName);
         final ServiceController<?> binderController = registry.getService(binderServiceName);
         if (binderController != null) {
             context.removeService(binderServiceName);

@@ -53,7 +53,7 @@ public class MultiplePuTestCase {
             "  <persistence-unit name=\"pu1\">" +
             "    <description>Persistence Unit." +
             "    </description>" +
-            "    <jta-data-source>H2DS</jta-data-source>" +
+            "    <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
             "    <properties> " +
             "      <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "      <property name=\"PersistenceUnitName\" value=\"pu1\"/>" +
@@ -62,7 +62,7 @@ public class MultiplePuTestCase {
             "  <persistence-unit name=\"pu2\">" +
             "    <description>Persistence Unit." +
             "    </description>" +
-            "    <jta-data-source>H2DS</jta-data-source>" +
+            "    <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
             "    <properties> " +
             "      <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "      <property name=\"PersistenceUnitName\" value=\"pu2\"/>" +
