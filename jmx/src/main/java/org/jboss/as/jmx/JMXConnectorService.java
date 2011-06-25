@@ -126,7 +126,7 @@ public class JMXConnectorService implements Service<Void> {
             }
         }
 
-        log.info("JMX remote connector stopped");
+        log.debug("JMX remote connector stopped");
     }
 
     private JMXServiceURL buildJMXServiceURL() throws MalformedURLException {

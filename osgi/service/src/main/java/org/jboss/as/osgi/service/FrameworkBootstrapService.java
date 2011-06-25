@@ -146,7 +146,7 @@ public class FrameworkBootstrapService implements Service<Void> {
     public synchronized void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
         log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
-        log.infof("Stopping OSGi Framework");
+        log.debug("Stopping OSGi Framework");
     }
 
     @Override
