@@ -37,5 +37,6 @@
     <module name="org.jboss.common-core"/>
     <module name="org.slf4j"/>
     <module name="org.apache.xerces" services="import"/>
+    <module name="sun.jdk" services="import"/>
   </dependencies>
 </module>
