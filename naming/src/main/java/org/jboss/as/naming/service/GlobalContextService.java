@@ -22,11 +22,6 @@
 
 package org.jboss.as.naming.service;
 
-import javax.naming.CompositeName;
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.naming.Reference;
-
 import org.jboss.as.naming.InMemoryNamingStore;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.context.GlobalNamespaceObjectFactory;
@@ -37,6 +32,11 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import javax.naming.CompositeName;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.Reference;
 
 /**
  * Service responsible for managing the creation and life-cycle of a global naming context.
@@ -49,8 +49,8 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class GlobalContextService implements Service<NamingStore> {
     private InMemoryNamingStore store;
-    private String name;
-    private InjectedValue<NamingStore> javaContext = new InjectedValue<NamingStore>();
+    private final String name;
+    private final InjectedValue<NamingStore> javaContext = new InjectedValue<NamingStore>();
 
     public GlobalContextService(String name) {
         this.name = name;
