@@ -21,10 +21,15 @@
  */
 package org.jboss.as.clustering.lock;
 
-import static org.mockito.Mockito.*;
-import static org.mockito.AdditionalMatchers.*;
-import static org.jboss.as.clustering.lock.LockParamsMatcher.*;
-import static org.junit.Assert.*;
+import org.jboss.as.clustering.ClusterNode;
+import org.jboss.as.clustering.GroupMembershipNotifier;
+import org.jboss.as.clustering.GroupRpcDispatcher;
+import org.jboss.as.clustering.MockClusterNode;
+import org.jboss.as.clustering.ResponseFilter;
+import org.jboss.as.clustering.lock.AbstractClusterLockSupport.RpcTarget;
+import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager.LockResult;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,15 +40,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.clustering.ClusterNode;
-import org.jboss.as.clustering.GroupMembershipNotifier;
-import org.jboss.as.clustering.GroupRpcDispatcher;
-import org.jboss.as.clustering.MockClusterNode;
-import org.jboss.as.clustering.ResponseFilter;
-import org.jboss.as.clustering.lock.AbstractClusterLockSupport.RpcTarget;
-import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager.LockResult;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
+import static org.jboss.as.clustering.lock.LockParamsMatcher.eqLockParams;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.AdditionalMatchers.aryEq;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests of SharedLocalYieldingClusterLockManager.
@@ -160,11 +168,12 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
         RemoteLocker locker = new RemoteLocker(ts, node2, readyLatch, endLatch);
         Executors.newSingleThreadExecutor().execute(locker);
 
-        readyLatch.await(5, TimeUnit.SECONDS);
+        boolean gotLatch = readyLatch.await(5, TimeUnit.SECONDS);
+        assertTrue("timed out waiting for ready latch",gotLatch);
         Thread.sleep(500);
         ts.testee.unlock("test", localRemoves);
-        endLatch.await(5, TimeUnit.SECONDS);
-
+        gotLatch = endLatch.await(5, TimeUnit.SECONDS);
+        assertTrue("timed out waiting for end latch",gotLatch);
         if (locker.exception != null) {
             throw locker.exception;
         }
@@ -228,13 +237,17 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
             executor.submit(lockers[i]);
         }
 
-        readyLatch.await(5, TimeUnit.SECONDS);
+        boolean gotLatch = readyLatch.await(5, TimeUnit.SECONDS);
+        assertTrue("timed out waiting for ready latch",gotLatch);
         startLatch.countDown();
-        endLatch.await(5, TimeUnit.SECONDS);
+        gotLatch = endLatch.await(5, TimeUnit.SECONDS);
+        assertTrue("timed out waiting for ready latch",gotLatch);
 
         boolean sawNewLockResult = false;
-
+        int lockPosition = -1;  // use in failure message
         for (Locker locker : lockers) {
+            lockPosition++;
+            String details = "failure on lock#" + lockPosition +" newLock is #"+newLockPos;
             if (locker.exception != null) {
                 throw (Exception) locker.exception;
             }
@@ -243,12 +256,15 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
 
             if (sawNewLockResult) {
                 if (locker.newLock) {
-                    assertTrue(locker.result == LockResult.ALREADY_HELD || locker.result == LockResult.NEW_LOCK);
+                    assertTrue("locker result ("+locker.result+") is not ALREADY_HELD or NEW_LOCK, " + details,
+                        locker.result == LockResult.ALREADY_HELD || locker.result == LockResult.NEW_LOCK);
                 } else {
-                    assertTrue(locker.result == LockResult.ALREADY_HELD || locker.result == LockResult.ACQUIRED_FROM_CLUSTER);
+                    assertTrue("locker result ("+locker.result+") is not ALREADY_HELD or ACQUIRED_FROM_CLUSTER, " + details,
+                        locker.result == LockResult.ALREADY_HELD || locker.result == LockResult.ACQUIRED_FROM_CLUSTER);
                 }
             } else if (locker.result != LockResult.ALREADY_HELD) {
-                assertEquals(newLockResult, locker.result);
+                assertEquals("expected lock to be " + newLockResult + " but was " + locker.result +", " +details,
+                    newLockResult, locker.result);
                 sawNewLockResult = true;
             }
         }
@@ -364,7 +380,11 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
         public void run() {
             try {
                 readyLatch.countDown();
-                startLatch.await(10, TimeUnit.SECONDS);
+                boolean gotLatch = startLatch.await(10, TimeUnit.SECONDS);
+                if (! gotLatch) {
+                    this.exception = new RuntimeException("background Locker thread, timed out waiting for start latch");
+                    return;
+                }
                 result = ts.testee.lock("test", 1000, newLock);
             } catch (Exception e) {
                 this.exception = e;
