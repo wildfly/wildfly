@@ -28,6 +28,7 @@ import org.jboss.as.connector.services.AdminObjectReferenceFactoryService;
 import org.jboss.as.connector.services.AdminObjectService;
 import org.jboss.as.connector.services.ConnectionFactoryReferenceFactoryService;
 import org.jboss.as.connector.services.ConnectionFactoryService;
+import org.jboss.as.connector.subsystems.datasources.Util;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -235,7 +236,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
             final BinderService binderService = new BinderService(jndi.substring(6));
-            final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndi);
+            final ServiceName binderServiceName = Util.getBinderServiceName(jndi);
             serviceTarget
                     .addService(binderServiceName, binderService)
                     .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
