@@ -65,7 +65,7 @@ public class JBossStandaloneEJBContainer extends EJBContainer {
         }
         server.stop();
         for(File tempFile : tempFiles) {
-            //tempFile.delete();
+            tempFile.delete();
         }
     }
 
