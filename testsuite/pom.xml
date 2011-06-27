@@ -133,9 +133,10 @@
                             <resources>
                                 <resource>
                                     <directory>${jboss.home}</directory>
-                                    <includes>
-                                        <include>**</include>
-                                    </includes>
+                                    <excludes>
+                                        <exclude>modules/</exclude>
+                                        <exclude>bundles/</exclude>
+                                    </excludes>
                                 </resource>
                             </resources>
                         </configuration>
@@ -161,6 +162,10 @@
                         <property>
                           <name>jboss.home</name>
                           <value>${basedir}/target/jbossas</value>
+                        </property>
+                        <property>
+                          <name>module.path</name>
+                          <value>${jboss.home}/modules</value>
                         </property>
                     </systemProperties>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>

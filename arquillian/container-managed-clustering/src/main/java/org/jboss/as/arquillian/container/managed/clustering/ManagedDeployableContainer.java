@@ -16,12 +16,18 @@
  */
 package org.jboss.as.arquillian.container.managed.clustering;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
+import org.jboss.arquillian.core.api.InstanceProducer;
+import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
 
+import javax.management.MBeanServerConnection;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,18 +40,11 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import javax.management.MBeanServerConnection;
-
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
-import org.jboss.arquillian.core.api.InstanceProducer;
-import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
-import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * JBossAsManagedContainer
@@ -93,6 +92,13 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             final String jbossHomeDir = config.getJbossHome();
             final String additionalJavaOpts = System.getProperty("jboss.options");
 
+            final String modulePath;
+            if(config.getModulePath() != null && !config.getModulePath().isEmpty()) {
+                modulePath = config.getModulePath();
+            } else {
+                modulePath = jbossHomeDir + "/modules";
+            }
+
             File modulesJar = new File(jbossHomeDir + "/jboss-modules.jar");
             if (modulesJar.exists() == false)
                 throw new IllegalStateException("Cannot find: " + modulesJar);
@@ -118,10 +124,11 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             cmd.add("-Djboss.home.dir=" + jbossHomeDir);
             cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/standalone/log/boot.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/standalone/configuration/logging.properties");
+            cmd.add("-Djboss.modules.dir=" + modulePath);
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
             cmd.add("-mp");
-            cmd.add(jbossHomeDir + "/modules");
+            cmd.add(modulePath);
             cmd.add("-logmodule");
             cmd.add("org.jboss.logmanager");
             cmd.add("-jaxpmodule");

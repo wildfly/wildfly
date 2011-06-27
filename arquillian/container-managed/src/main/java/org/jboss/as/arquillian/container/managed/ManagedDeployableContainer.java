@@ -43,7 +43,11 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * JBossAsManagedContainer
@@ -98,6 +102,14 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
             ManagedContainerConfiguration config = getContainerConfiguration();
             final String jbossHomeDir = config.getJbossHome();
+
+            final String modulePath;
+            if(config.getModulePath() != null && !config.getModulePath().isEmpty()) {
+                modulePath = config.getModulePath();
+            } else {
+                modulePath = jbossHomeDir + "/modules";
+            }
+
             final String additionalJavaOpts = System.getProperty("jboss.options");
 
             File modulesJar = new File(jbossHomeDir + "/jboss-modules.jar");
@@ -114,10 +126,11 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             cmd.add("-Djboss.home.dir=" + jbossHomeDir);
             cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/standalone/log/boot.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/standalone/configuration/logging.properties");
+            cmd.add("-Djboss.modules.dir=" + modulePath);
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
             cmd.add("-mp");
-            cmd.add(jbossHomeDir + "/modules");
+            cmd.add(modulePath);
             cmd.add("-logmodule");
             cmd.add("org.jboss.logmanager");
             cmd.add("-jaxpmodule");
