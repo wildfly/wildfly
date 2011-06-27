@@ -21,10 +21,6 @@
  */
 package org.jboss.as.jpa.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
-import java.util.List;
-import java.util.Locale;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -38,6 +34,7 @@ import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
 import org.jboss.as.jpa.processor.JPAAnnotationParseProcessor;
 import org.jboss.as.jpa.processor.JPADependencyProcessor;
+import org.jboss.as.jpa.processor.JPAInterceptorProcessor;
 import org.jboss.as.jpa.processor.PersistenceRefProcessor;
 import org.jboss.as.jpa.processor.PersistenceUnitDeploymentProcessor;
 import org.jboss.as.jpa.processor.PersistenceUnitParseProcessor;
@@ -48,6 +45,11 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+
+import java.util.List;
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 /**
  * Add the JPA subsystem directive.
@@ -103,6 +105,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA, new JPADependencyProcessor());
                 // TODO: enable updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENCE_PROVIDER, new PersistenceProviderProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_PERSISTENCE_REF, new PersistenceRefProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JPA_INTERCEPTORS, new JPAInterceptorProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor());
             }
         }, OperationContext.Stage.RUNTIME);

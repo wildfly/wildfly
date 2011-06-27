@@ -25,9 +25,6 @@ package org.jboss.as.jpa.processor;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ClassConfigurator;
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.ComponentConfigurator;
-import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -37,20 +34,11 @@ import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
-import org.jboss.as.ee.component.ViewConfiguration;
-import org.jboss.as.ee.component.ViewConfigurator;
-import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
-import org.jboss.as.jpa.interceptor.SBInvocationInterceptor;
-import org.jboss.as.jpa.interceptor.SFSBCreateInterceptor;
-import org.jboss.as.jpa.interceptor.SFSBDestroyInterceptor;
-import org.jboss.as.jpa.interceptor.SFSBInvocationInterceptor;
 import org.jboss.as.jpa.service.PersistenceUnitService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -135,19 +123,6 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
                 declaringClass = (ClassInfo) annotationTarget;
                 EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.getOrAddClassByName(declaringClass.name().toString());
                 this.processClass(deploymentUnit, annotation, eeModuleClassDescription);
-            }
-
-            // setup interceptors if the annotation is on a component
-            if (declaringClass != null) {
-                // TODO: This may not always work? For example : What if this deployer runs before the components have been
-                // added to the EEModuleDescription?
-                List<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentsByClassName(declaringClass.name().toString());
-                // if it's a component then setup the interceptors
-                for (ComponentDescription componentDescription : componentDescriptions) {
-                    if (componentDescription instanceof SessionBeanComponentDescription && isPersistenceContext(annotation)) {
-                        this.registerSessionBeanInterceptors((SessionBeanComponentDescription) componentDescription, annotation, deploymentUnit);
-                    }
-                }
             }
         }
     }
@@ -350,50 +325,6 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
         return PersistenceUnitService.getPUServiceName(scopedPuName);
     }
-
-    // Register our listeners on SFSB that will be created
-    private void registerSessionBeanInterceptors(SessionBeanComponentDescription componentDescription, AnnotationInstance annotation, final DeploymentUnit deploymentUnit) {
-        // if it's a SFSB and extended persistence context then setup appropriate interceptors
-        if (componentDescription.isStateful() && isExtendedPersistenceContext(annotation)) {
-            // first setup the post construct and pre destroy component interceptors
-            componentDescription.getConfigurators().addFirst(new ComponentConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws
-                        DeploymentUnitProcessingException {
-                    final SFSBXPCMap map = SFSBXPCMap.getXpcMap(deploymentUnit);
-                    configuration.addPostConstructInterceptor(new SFSBCreateInterceptor.Factory(map), InterceptorOrder.ComponentPostConstruct.JPA_SFSB_CREATE);
-                    configuration.addPreDestroyInterceptor(new SFSBDestroyInterceptor.Factory(map), InterceptorOrder.ComponentPreDestroy.JPA_SFSB_DESTROY);
-                }
-            });
-
-            // now for each view and each method on that view, setup the SFSB invocation interceptor factory
-            // TODO: Is there a better/efficient way of doing this? Why do we need to fetch all methods of the view
-            // and then setup the interceptors on each of those methods? Why not just have a construct "applies to all
-            // invocations on the view"?
-            Iterable<ViewDescription> views = componentDescription.getViews();
-            for (ViewDescription view : views) {
-                view.getConfigurators().addFirst(new ViewConfigurator() {
-                    @Override
-                    public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws
-                            DeploymentUnitProcessingException {
-                        configuration.addViewInterceptor(SFSBInvocationInterceptor.FACTORY, InterceptorOrder.View.JPA_SFSB_INTERCEPTOR);
-                    }
-                });
-            }
-        }
-        // register interceptor on stateful/stateless SB with transactional entity manager.
-        if (!isExtendedPersistenceContext(annotation) &&
-                (componentDescription.isStateful() || componentDescription.isStateless())) {
-            componentDescription.getConfigurators().add(new ComponentConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws
-                        DeploymentUnitProcessingException {
-                    configuration.addComponentInterceptor(SBInvocationInterceptor.FACTORY, InterceptorOrder.Component.JPA_SESSION_BEAN_INTERCEPTOR, false);
-                }
-            });
-        }
-    }
-
 
 }
 
