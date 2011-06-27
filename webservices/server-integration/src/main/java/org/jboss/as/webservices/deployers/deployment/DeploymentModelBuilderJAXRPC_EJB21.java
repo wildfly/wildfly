@@ -23,7 +23,7 @@ package org.jboss.as.webservices.deployers.deployment;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
+import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.wsf.spi.metadata.webservices.PortComponentMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;

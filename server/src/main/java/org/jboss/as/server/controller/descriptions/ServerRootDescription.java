@@ -86,7 +86,7 @@ public class ServerRootDescription {
         root.get(ATTRIBUTES, LAUNCH_TYPE, NILLABLE).set(false);
         root.get(ATTRIBUTES, LAUNCH_TYPE, MIN_LENGTH).set(1);
         root.get(ATTRIBUTES, LAUNCH_TYPE, ALLOWED).add(ServerEnvironment.LaunchType.DOMAIN.toString());
-        root.get(ATTRIBUTES, LAUNCH_TYPE, ALLOWED).add(ServerEnvironment.LaunchType.STANADALONE.toString());
+        root.get(ATTRIBUTES, LAUNCH_TYPE, ALLOWED).add(ServerEnvironment.LaunchType.STANDALONE.toString());
         root.get(ATTRIBUTES, LAUNCH_TYPE, ALLOWED).add(ServerEnvironment.LaunchType.EMBEDDED.toString());
 
         root.get(OPERATIONS);

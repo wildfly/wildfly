@@ -25,7 +25,7 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
-import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
+import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 

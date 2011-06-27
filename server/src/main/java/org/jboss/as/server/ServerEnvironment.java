@@ -46,7 +46,7 @@ public class ServerEnvironment implements Serializable {
 
     public static enum LaunchType {
         DOMAIN,
-        STANADALONE,
+        STANDALONE,
         EMBEDDED
     }
 

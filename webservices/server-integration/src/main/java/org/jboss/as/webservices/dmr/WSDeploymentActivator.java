@@ -57,8 +57,8 @@ final class WSDeploymentActivator {
     static void activate(final DeploymentProcessorTarget processorTarget) {
 
         processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEBSERVICES_XML, new WSDescriptorDeploymentProcessor());
+        processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WS_EJB_INTEGRATION, new WSEJBIntegrationProcessor());
         processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WS, new WSDependenciesProcessor());
-        processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_EJB_INTEGRATION, new WSEJBIntegrationProcessor());
         processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_JMS_INTEGRATION, new WSJMSIntegrationProcessor());
         //processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRPC, new WSJAXRPCDependenciesDeploymentProcessor());
         processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_DEPLOYMENT_TYPE_DETECTOR, new WSTypeDeploymentProcessor());

@@ -19,14 +19,21 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.controller.client.impl;
+package org.jboss.as.protocol.mgmt;
 
 /**
- * TODO this needs revisiting, it's late and I want to fix CLI :shutdown  with what we have before deadline
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ClientException extends Exception {
-    public ClientException(Throwable cause) {
-        super(cause);
+public class ManagementPingHeader extends ManagementProtocolHeader {
+
+    protected ManagementPingHeader(int version) {
+        super(version);
     }
+
+    @Override
+    byte getType() {
+        return ManagementProtocol.TYPE_PONG;
+    }
+
 }

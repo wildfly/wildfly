@@ -214,7 +214,7 @@ public class
                 root.registerOperationHandler(ServerReloadHandler.OPERATION_NAME, ServerReloadHandler.INSTANCE, ServerReloadHandler.INSTANCE, false);
 
             // The System.exit() based shutdown command is only valid for a server process directly launched from the command line
-            if (serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.STANADALONE)
+            if (serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.STANDALONE)
                 root.registerOperationHandler(ServerShutdownHandler.OPERATION_NAME, ServerShutdownHandler.INSTANCE, ServerShutdownHandler.INSTANCE, false);
 
             root.registerReadOnlyAttribute(ServerDescriptionConstants.LAUNCH_TYPE, new LaunchTypeHandler(serverEnvironment.getLaunchType()), Storage.RUNTIME);

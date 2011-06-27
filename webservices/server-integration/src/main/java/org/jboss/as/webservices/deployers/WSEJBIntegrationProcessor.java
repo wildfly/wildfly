@@ -36,14 +36,13 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
-import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
+import org.jboss.as.webservices.metadata.WebServiceDeclaration;
+import org.jboss.as.webservices.metadata.WebServiceDeployment;
 
 /**
  * WebServiceDeployment deployer processes EJB containers and its metadata and creates WS adapters wrapping it.
@@ -80,8 +79,6 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
 
            final List<ComponentDescription> componentDescriptions = moduleDescription.getComponentsByClassName(beanClassName);
 
-           // final String componentName = beanClassName.substring(beanClassName.lastIndexOf(".") + 1); // TODO: investigate why commented out
-           // final ServiceName baseName = unit.getServiceName().append("component").append(componentName).append("START"); // TODO: investigate why commented out
            final List<SessionBeanComponentDescription> sessionBeans = getSessionBeans(componentDescriptions);
            for(SessionBeanComponentDescription sessionBean : sessionBeans) {
                if (sessionBean.isStateless() || sessionBean.isSingleton()) {
@@ -159,8 +156,13 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
        * @param <T> annotation class type
        * @return requested annotation or null if not found
        */
-      public <T extends Annotation> T getAnnotation(final Class<T> annotationType) {// DotName
-          throw new UnsupportedOperationException(); // TODO: implement
+      public AnnotationInstance getAnnotation(final DotName annotationType) {// DotName
+          List<AnnotationInstance> list = webServiceClassInfo.annotations().get(annotationType);
+          if (list != null) {
+              return list.get(0);
+          }
+          return null;
+//          throw new UnsupportedOperationException(); // TODO: implement
 //         final boolean haveEjbContainer = this.ejbContainer != null;
 //
 //         if (haveEjbContainer)

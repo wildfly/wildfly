@@ -24,9 +24,7 @@ package org.jboss.as.webservices.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceProvider;
@@ -34,23 +32,19 @@ import javax.xml.ws.WebServiceProvider;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.server.deployment.module.ModuleRootMarker;
-import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionMetaData;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionsMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
-import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
-import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
+import org.jboss.as.webservices.metadata.WebServiceDeclaration;
+import org.jboss.as.webservices.metadata.WebServiceDeployment;
 
 /**
  * JBoss AS integration helper class.

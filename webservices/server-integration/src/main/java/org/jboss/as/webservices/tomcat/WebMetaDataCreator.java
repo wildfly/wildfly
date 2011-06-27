@@ -49,18 +49,10 @@ final class WebMetaDataCreator {
     private static final String EJB_WEBSERVICE_REALM = "EJBWebServiceEndpointServlet Realm";
 
     /** EJB 21 security meta data builder. */
-    private final SecurityMetaDataAccessorEJB ejb21SecurityAccessor = null; // TODO:
-                                                                            // implement
-                                                                            // =
-                                                                            // new
-                                                                            // SecurityMetaDataAccessorEJB21();
+    private final SecurityMetaDataAccessorEJB ejb21SecurityAccessor = new SecurityMetaDataAccessorEJB21();
 
     /** EJB 3 security meta data builder. */
-    private final SecurityMetaDataAccessorEJB ejb3SecurityAccessor = null; // TODO:
-                                                                           // implement
-                                                                           // =
-                                                                           // new
-                                                                           // SecurityMetaDataAccessorEJB3();
+    private final SecurityMetaDataAccessorEJB ejb3SecurityAccessor = new SecurityMetaDataAccessorEJB3();
 
     /** Logger. */
     private final Logger log = Logger.getLogger(WebMetaDataCreator.class);
@@ -80,19 +72,20 @@ final class WebMetaDataCreator {
      */
     void create(final Deployment dep) {
         final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
-        WarMetaData warMD = ASHelper.getOptionalAttachment(unit, WarMetaData.ATTACHMENT_KEY); // TODO:
-                                                                                              // WarMetaData?
+        WarMetaData warMD = ASHelper.getOptionalAttachment(unit, WarMetaData.ATTACHMENT_KEY);
         JBossWebMetaData jbossWebMD = warMD != null ? warMD.getJbossWebMetaData() : null;
+
         if (warMD == null) {
             warMD = new WarMetaData();
+        }
+        if (jbossWebMD == null) {
             jbossWebMD = new JBossWebMetaData();
-            // warMD.setJbossWebMetaData(jbossWebMD); // TODO: ooops!
             warMD.setMergedJBossWebMetaData(jbossWebMD);
             unit.putAttachment(WarMetaData.ATTACHMENT_KEY, warMD);
         }
 
-        this.createWebAppDescriptor(dep, jbossWebMD);
-        this.createJBossWebAppDescriptor(dep, jbossWebMD);
+        createWebAppDescriptor(dep, jbossWebMD);
+        createJBossWebAppDescriptor(dep, jbossWebMD);
 
         dep.addAttachment(JBossWebMetaData.class, jbossWebMD);
     }
@@ -106,12 +99,12 @@ final class WebMetaDataCreator {
      *            jboss web meta data
      */
     private void createWebAppDescriptor(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        this.log.debug("Creating web descriptor");
-        this.createServlets(dep, jbossWebMD);
-        this.createServletMappings(dep, jbossWebMD);
-        this.createSecurityConstraints(dep, jbossWebMD);
-        this.createLoginConfig(dep, jbossWebMD);
-        this.createSecurityRoles(dep, jbossWebMD);
+        log.debug("Creating web descriptor");
+        createServlets(dep, jbossWebMD);
+        createServletMappings(dep, jbossWebMD);
+        createSecurityConstraints(dep, jbossWebMD);
+        createLoginConfig(dep, jbossWebMD);
+        createSecurityRoles(dep, jbossWebMD);
     }
 
     /**
@@ -133,25 +126,22 @@ final class WebMetaDataCreator {
      *            jboss web meta data
      */
     private void createJBossWebAppDescriptor(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        this.log.debug("Creating jboss web descriptor");
-        final SecurityMetaDataAccessorEJB ejbMDAccessor = this.getEjbSecurityMetaDataAccessor(dep);
+        log.debug("Creating jboss web descriptor");
+        final SecurityMetaDataAccessorEJB ejbMDAccessor = getEjbSecurityMetaDataAccessor(dep);
 
-        if (ejbMDAccessor != null) { // TODO: remove this if statement so blok
-                                     // code is always executed
-            // Set security domain
-            final String securityDomain = ejbMDAccessor.getSecurityDomain(dep);
-            final boolean hasSecurityDomain = securityDomain != null;
+        // Set security domain
+        final String securityDomain = ejbMDAccessor.getSecurityDomain(dep);
+        final boolean hasSecurityDomain = securityDomain != null;
 
-            if (hasSecurityDomain) {
-                this.log.debug("Setting security domain: " + securityDomain);
-                jbossWebMD.setSecurityDomain(securityDomain);
-            }
-
-            // Set virtual hosts
-            final List<String> virtualHosts = dep.getService().getVirtualHosts();
-            this.log.debug("Setting virtual hosts: " + virtualHosts);
-            jbossWebMD.setVirtualHosts(virtualHosts);
+        if (hasSecurityDomain) {
+            log.debug("Setting security domain: " + securityDomain);
+            jbossWebMD.setSecurityDomain(securityDomain);
         }
+
+        // Set virtual hosts
+        final List<String> virtualHosts = dep.getService().getVirtualHosts();
+        log.debug("Setting virtual hosts: " + virtualHosts);
+        jbossWebMD.setVirtualHosts(virtualHosts);
     }
 
     /**
@@ -170,14 +160,14 @@ final class WebMetaDataCreator {
      *            jboss web meta data
      */
     private void createServlets(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        this.log.debug("Creating servlets");
+        log.debug("Creating servlets");
         final JBossServletsMetaData servlets = WebMetaDataHelper.getServlets(jbossWebMD);
 
         for (final Endpoint endpoint : dep.getService().getEndpoints()) {
             final String endpointName = endpoint.getShortName();
             final String endpointClassName = endpoint.getTargetBeanName();
 
-            this.log.debug("Servlet name: " + endpointName + ", servlet class: " + endpointClassName);
+            log.debug("Servlet name: " + endpointName + ", servlet class: " + endpointClassName);
             WebMetaDataHelper.newServlet(endpointName, endpointClassName, servlets);
         }
     }
@@ -198,7 +188,7 @@ final class WebMetaDataCreator {
      *            jboss web meta data
      */
     private void createServletMappings(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        this.log.debug("Creating servlet mappings");
+        log.debug("Creating servlet mappings");
         final List<ServletMappingMetaData> servletMappings = WebMetaDataHelper.getServletMappings(jbossWebMD);
 
         for (final Endpoint ep : dep.getService().getEndpoints()) {
@@ -206,7 +196,7 @@ final class WebMetaDataCreator {
                 final String endpointName = ep.getShortName();
                 final List<String> urlPatterns = WebMetaDataHelper.getUrlPatterns(((HttpEndpoint)ep).getURLPattern());
 
-                this.log.debug("Servlet name: " + endpointName + ", URL patterns: " + urlPatterns);
+                log.debug("Servlet name: " + endpointName + ", URL patterns: " + urlPatterns);
                 WebMetaDataHelper.newServletMapping(endpointName, urlPatterns, servletMappings);
             }
         }
@@ -238,49 +228,45 @@ final class WebMetaDataCreator {
      *            jboss web meta data
      */
     private void createSecurityConstraints(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        this.log.debug("Creating security constraints");
-        final SecurityMetaDataAccessorEJB ejbMDAccessor = this.getEjbSecurityMetaDataAccessor(dep);
+        log.debug("Creating security constraints");
+        final SecurityMetaDataAccessorEJB ejbMDAccessor = getEjbSecurityMetaDataAccessor(dep);
 
-        if (ejbMDAccessor != null) { // TODO: remove this if statement so the
-                                     // following block of code is always
-                                     // executed
-            for (final Endpoint ejbEndpoint : dep.getService().getEndpoints()) {
-                final boolean secureWsdlAccess = ejbMDAccessor.isSecureWsdlAccess(ejbEndpoint);
-                final String transportGuarantee = ejbMDAccessor.getTransportGuarantee(ejbEndpoint);
-                final boolean hasTransportGuarantee = transportGuarantee != null;
-                final String authMethod = ejbMDAccessor.getAuthMethod(ejbEndpoint);
-                final boolean hasAuthMethod = authMethod != null;
+        for (final Endpoint ejbEndpoint : dep.getService().getEndpoints()) {
+            final boolean secureWsdlAccess = ejbMDAccessor.isSecureWsdlAccess(ejbEndpoint);
+            final String transportGuarantee = ejbMDAccessor.getTransportGuarantee(ejbEndpoint);
+            final boolean hasTransportGuarantee = transportGuarantee != null;
+            final String authMethod = ejbMDAccessor.getAuthMethod(ejbEndpoint);
+            final boolean hasAuthMethod = authMethod != null;
 
-                if (ejbEndpoint instanceof HttpEndpoint && (hasAuthMethod || hasTransportGuarantee)) {
-                    final List<SecurityConstraintMetaData> securityConstraints = WebMetaDataHelper
-                            .getSecurityConstraints(jbossWebMD);
+            if (ejbEndpoint instanceof HttpEndpoint && (hasAuthMethod || hasTransportGuarantee)) {
+                final List<SecurityConstraintMetaData> securityConstraints = WebMetaDataHelper
+                .getSecurityConstraints(jbossWebMD);
 
-                    // security-constraint
-                    final SecurityConstraintMetaData securityConstraint = WebMetaDataHelper
-                            .newSecurityConstraint(securityConstraints);
+                // security-constraint
+                final SecurityConstraintMetaData securityConstraint = WebMetaDataHelper
+                .newSecurityConstraint(securityConstraints);
 
-                    // web-resource-collection
-                    final WebResourceCollectionsMetaData webResourceCollections = WebMetaDataHelper
-                            .getWebResourceCollections(securityConstraint);
-                    final String endpointName = ejbEndpoint.getShortName();
-                    final String urlPattern = ((HttpEndpoint)ejbEndpoint).getURLPattern();
-                    this.log.debug("Creating web resource collection for endpoint: " + endpointName + ", URL pattern: "
-                            + urlPattern);
-                    WebMetaDataHelper.newWebResourceCollection(endpointName, urlPattern, secureWsdlAccess,
-                            webResourceCollections);
+                // web-resource-collection
+                final WebResourceCollectionsMetaData webResourceCollections = WebMetaDataHelper
+                .getWebResourceCollections(securityConstraint);
+                final String endpointName = ejbEndpoint.getShortName();
+                final String urlPattern = ((HttpEndpoint)ejbEndpoint).getURLPattern();
+                log.debug("Creating web resource collection for endpoint: " + endpointName + ", URL pattern: "
+                        + urlPattern);
+                WebMetaDataHelper.newWebResourceCollection(endpointName, urlPattern, secureWsdlAccess,
+                        webResourceCollections);
 
-                    // auth-constraint
-                    if (hasAuthMethod) {
-                        this.log.debug("Creating auth constraint for endpoint: " + endpointName);
-                        WebMetaDataHelper.newAuthConstraint(WebMetaDataHelper.getAllRoles(), securityConstraint);
-                    }
+                // auth-constraint
+                if (hasAuthMethod) {
+                    log.debug("Creating auth constraint for endpoint: " + endpointName);
+                    WebMetaDataHelper.newAuthConstraint(WebMetaDataHelper.getAllRoles(), securityConstraint);
+                }
 
-                    // user-data-constraint
-                    if (hasTransportGuarantee) {
-                        this.log.debug("Creating new user data constraint for endpoint: " + endpointName
-                                + ", transport guarantee: " + transportGuarantee);
-                        WebMetaDataHelper.newUserDataConstraint(transportGuarantee, securityConstraint);
-                    }
+                // user-data-constraint
+                if (hasTransportGuarantee) {
+                    log.debug("Creating new user data constraint for endpoint: " + endpointName
+                            + ", transport guarantee: " + transportGuarantee);
+                    WebMetaDataHelper.newUserDataConstraint(transportGuarantee, securityConstraint);
                 }
             }
         }
@@ -302,11 +288,11 @@ final class WebMetaDataCreator {
      *            jboss web meta data
      */
     private void createLoginConfig(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        final String authMethod = this.getAuthMethod(dep);
+        final String authMethod = getAuthMethod(dep);
         final boolean hasAuthMethod = authMethod != null;
 
         if (hasAuthMethod) {
-            this.log.debug("Creating new login config: " + WebMetaDataCreator.EJB_WEBSERVICE_REALM + ", auth method: "
+            log.debug("Creating new login config: " + WebMetaDataCreator.EJB_WEBSERVICE_REALM + ", auth method: "
                     + authMethod);
             final LoginConfigMetaData loginConfig = WebMetaDataHelper.getLoginConfig(jbossWebMD);
             loginConfig.setRealmName(WebMetaDataCreator.EJB_WEBSERVICE_REALM);
@@ -331,21 +317,17 @@ final class WebMetaDataCreator {
      *            jboss web meta data
      */
     private void createSecurityRoles(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        final String authMethod = this.getAuthMethod(dep);
+        final String authMethod = getAuthMethod(dep);
         final boolean hasAuthMethod = authMethod != null;
 
         if (hasAuthMethod) {
-            final SecurityMetaDataAccessorEJB ejbMDAccessor = this.getEjbSecurityMetaDataAccessor(dep);
-            if (ejbMDAccessor != null) { // TODO: remove this if statement so
-                                         // the following block of code is
-                                         // always executed
-                final SecurityRolesMetaData securityRolesMD = ejbMDAccessor.getSecurityRoles(dep);
-                final boolean hasSecurityRolesMD = securityRolesMD != null;
+            final SecurityMetaDataAccessorEJB ejbMDAccessor = getEjbSecurityMetaDataAccessor(dep);
+            final SecurityRolesMetaData securityRolesMD = ejbMDAccessor.getSecurityRoles(dep);
+            final boolean hasSecurityRolesMD = securityRolesMD != null;
 
-                if (hasSecurityRolesMD) {
-                    this.log.debug("Setting security roles: " + securityRolesMD);
-                    jbossWebMD.setSecurityRoles(securityRolesMD);
-                }
+            if (hasSecurityRolesMD) {
+                log.debug("Setting security roles: " + securityRolesMD);
+                jbossWebMD.setSecurityRoles(securityRolesMD);
             }
         }
     }
@@ -358,19 +340,16 @@ final class WebMetaDataCreator {
      * @return deployment authentication method
      */
     private String getAuthMethod(final Deployment dep) {
-        final SecurityMetaDataAccessorEJB ejbMDAccessor = this.getEjbSecurityMetaDataAccessor(dep);
+        final SecurityMetaDataAccessorEJB ejbMDAccessor = getEjbSecurityMetaDataAccessor(dep);
 
-        if (ejbMDAccessor != null) { // TODO: remove this if statement so the
-                                     // following code is always executed
-            for (final Endpoint ejbEndpoint : dep.getService().getEndpoints()) {
-                final String beanAuthMethod = ejbMDAccessor.getAuthMethod(ejbEndpoint);
-                final boolean hasBeanAuthMethod = beanAuthMethod != null;
+        for (final Endpoint ejbEndpoint : dep.getService().getEndpoints()) {
+            final String beanAuthMethod = ejbMDAccessor.getAuthMethod(ejbEndpoint);
+            final boolean hasBeanAuthMethod = beanAuthMethod != null;
 
-                if (hasBeanAuthMethod) {
-                    // First found auth-method defines war
-                    // login-config/auth-method
-                    return beanAuthMethod;
-                }
+            if (hasBeanAuthMethod) {
+                // First found auth-method defines war
+                // login-config/auth-method
+                return beanAuthMethod;
             }
         }
 
@@ -387,6 +366,6 @@ final class WebMetaDataCreator {
     private SecurityMetaDataAccessorEJB getEjbSecurityMetaDataAccessor(final Deployment dep) {
         final boolean isJaxws = WSHelper.isJaxwsDeployment(dep);
 
-        return isJaxws ? this.ejb3SecurityAccessor : this.ejb21SecurityAccessor;
+        return isJaxws ? ejb3SecurityAccessor : ejb21SecurityAccessor;
     }
 }

@@ -54,7 +54,7 @@ public class DumpServicesHandler implements OperationStepHandler, DescriptionPro
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(Services.JBOSS_AS);
+                ServiceController<?> service = context.getServiceRegistry(false).getRequiredService(Services.JBOSS_AS);
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 PrintStream print = new PrintStream(out);
                 service.getServiceContainer().dumpServices(print);

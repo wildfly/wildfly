@@ -121,9 +121,4 @@ public class ManagementRequestHeader extends ManagementProtocolHeader {
     byte getType() {
         return ManagementProtocol.TYPE_REQUEST;
     }
-
-    @Override
-    boolean isRequest() {
-        return true;
-    }
 }

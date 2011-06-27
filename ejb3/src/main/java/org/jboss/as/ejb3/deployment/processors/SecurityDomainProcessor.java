@@ -63,7 +63,7 @@ public class SecurityDomainProcessor extends AbstractAnnotationEJBProcessor<EJBC
         final String securityDomain = securityDomainAnnotation.value().asString();
         logger.debug("EJB " + componentDescription.getEJBName() + " is annotated with @SecurityDomain named: " + securityDomain);
         if (securityDomain.trim().isEmpty()) {
-            throw new DeploymentUnitProcessingException("SecurtiyDomain value on bean class: " + componentDescription.getEJBClassName() + " cannot be an empty string");
+            throw new DeploymentUnitProcessingException("SecurityDomain value on bean class: " + componentDescription.getEJBClassName() + " cannot be an empty string");
         }
         componentDescription.setSecurityDomain(securityDomain);
     }
