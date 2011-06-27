@@ -119,7 +119,6 @@
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
-                                    <skipTests>false</skipTests>
                                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <enableAssertions>true</enableAssertions>
                                     <systemPropertyVariables>

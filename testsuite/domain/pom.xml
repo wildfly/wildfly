@@ -48,6 +48,37 @@
         </dependency>
     </dependencies>
 
-
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <failIfNoTests>false</failIfNoTests>
+                    <!-- parallel>none</parallel -->
+                    <redirectTestOutputToFile>false</redirectTestOutputToFile>
+                    <systemProperties>
+                        <property>
+                          <name>jboss.options</name>
+                          <value>${surefire.system.args}</value>
+                        </property>
+                        <property>
+                          <name>java.util.logging.manager</name>
+                          <value>org.jboss.logmanager.LogManager</value>
+                        </property>
+                        <property>
+                          <name>jboss.home</name>
+                          <value>${jboss.home}</value>
+                        </property>
+                        <property>
+                          <name>module.path</name>
+                          <value>${jboss.home}/modules</value>
+                        </property>
+                    </systemProperties>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

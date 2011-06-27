@@ -187,8 +187,8 @@
                 <skip.stress.tests>false</skip.stress.tests>
             </properties>
             <modules>
-                <module>stress</module>
-                <module>benchmark</module>
+                <!--<module>stress</module>
+                <module>benchmark</module>-->
                 <module>spec</module>
                 <module>integration</module>
                 <module>clustering</module>
