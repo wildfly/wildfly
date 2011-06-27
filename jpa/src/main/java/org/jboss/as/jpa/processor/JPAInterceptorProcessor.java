@@ -36,6 +36,7 @@ import org.jboss.as.jpa.interceptor.SBInvocationInterceptor;
 import org.jboss.as.jpa.interceptor.SFSBCreateInterceptor;
 import org.jboss.as.jpa.interceptor.SFSBDestroyInterceptor;
 import org.jboss.as.jpa.interceptor.SFSBInvocationInterceptor;
+import org.jboss.as.jpa.interceptor.SFSBPreCreateInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -67,6 +68,7 @@ public class JPAInterceptorProcessor implements DeploymentUnitProcessor {
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws
                         DeploymentUnitProcessingException {
                     final SFSBXPCMap map = SFSBXPCMap.getXpcMap(deploymentUnit);
+                    configuration.addPostConstructInterceptor(SFSBPreCreateInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.JPA_SFSB_PRE_CREATE);
                     configuration.addPostConstructInterceptor(new SFSBCreateInterceptor.Factory(map), InterceptorOrder.ComponentPostConstruct.JPA_SFSB_CREATE);
                     configuration.addPreDestroyInterceptor(new SFSBDestroyInterceptor.Factory(map), InterceptorOrder.ComponentPreDestroy.JPA_SFSB_DESTROY);
                 }

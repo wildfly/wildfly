@@ -174,6 +174,9 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                 // this is important for creating a new XPC or inheriting existing XPC from SFSBCallStack
                 SFSBXPCMap.registerPersistenceContext(entityManager);
 
+                //register the pc so it is accessible to other SFSB's during the creation process
+                SFSBCallStack.extendedPersistenceContextCreated(unitName, entityManager);
+
             }
 
             if (!ENTITY_MANAGER_CLASS.equals(injectionTypeName)) { // inject non-standard wrapped class (e.g. org.hibernate.Session)

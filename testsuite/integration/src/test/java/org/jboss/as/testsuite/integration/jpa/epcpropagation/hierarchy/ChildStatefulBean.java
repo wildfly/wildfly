@@ -23,6 +23,7 @@ package org.jboss.as.testsuite.integration.jpa.epcpropagation.hierarchy;
 
 import org.junit.Assert;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateful;
 import javax.naming.InitialContext;
 
@@ -32,13 +33,18 @@ import javax.naming.InitialContext;
 @Stateful
 public class ChildStatefulBean extends BeanParent {
 
+    @EJB
+    private SimpleStatefulBean injectedSimpleStatefulBean;
+
     public void testPropagation() throws Exception {
         SimpleStatefulBean simpleStatefulBean = (SimpleStatefulBean)new InitialContext().lookup("java:module/" + SimpleStatefulBean.class.getSimpleName());
         Bus b = new Bus(1, "My Bus");
         entityManager.persist(b);
         //the XPC should propagate
         simpleStatefulBean.noop();
+        injectedSimpleStatefulBean.noop();
         Assert.assertTrue(simpleStatefulBean.contains(b));
+        Assert.assertTrue(injectedSimpleStatefulBean.contains(b));
         Assert.assertTrue(entityManager.contains(b));
     }
 }
