@@ -53,25 +53,11 @@ public abstract class ManagementClientChannelStrategy {
     }
 
     public static ManagementClientChannelStrategy create(String hostName, int port, final ExecutorService executorService, final ManagementOperationHandler handler, final CallbackHandler cbHandler) throws URISyntaxException, IOException {
-        ManagementClientChannelStrategy strategy = new EstablishingWithNewEndpoint(hostName, port, executorService, handler, cbHandler);
-        //Make sure the other end is alive
-        try {
-            strategy.getChannel();
-        } finally {
-            strategy.requestDone();
-        }
-        return strategy;
+        return new EstablishingWithNewEndpoint(hostName, port, executorService, handler, cbHandler);
     }
 
     public static ManagementClientChannelStrategy create(String hostName, int port, final Endpoint endpoint, final ManagementOperationHandler handler, final CallbackHandler cbHandler) throws URISyntaxException, IOException {
-        ManagementClientChannelStrategy strategy = new EstablishingWithExistingEndpoint(hostName, port, endpoint, handler, cbHandler);
-        //Make sure the other end is alive
-        try {
-            strategy.getChannel();
-        } finally {
-            strategy.requestDone();
-        }
-        return strategy;
+        return new EstablishingWithExistingEndpoint(hostName, port, endpoint, handler, cbHandler);
     }
 
     private static class Existing extends ManagementClientChannelStrategy {
