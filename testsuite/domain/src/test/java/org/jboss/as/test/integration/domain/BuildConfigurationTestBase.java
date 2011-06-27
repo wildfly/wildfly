@@ -34,18 +34,19 @@ import java.util.Arrays;
 import java.util.Collections;
 
 /**
- * Test validating the configuration
+ * Test validating the configuration starts and can accept a simple web request.
  *
  * @author Emanuel Muckenhuber
  */
-public class BuildConfigurationTestCase {
+ public abstract class BuildConfigurationTestBase {
 
     static final String masterAddress = System.getProperty("jboss.test.host.master.address", "127.0.0.1");
-    static final File BUILD_DIR = new File("../../build/src/main/resources/domain/configuration/");
+    static final File JBOSS_HOME = new File(System.getProperty("jboss.home"));
+    static final File BUILD_DIR = new File(JBOSS_HOME, "domain/configuration/");
 
     @Test
     public void test() throws Exception {
-        final JBossAsManagedConfiguration config = createConfiguration("domain.xml", "host.xml", "test");
+        final JBossAsManagedConfiguration config = createConfiguration(getDomainConfigFile(), getHostConfigFile(), getClass().getSimpleName());
         final DomainLifecycleUtil utils = new DomainLifecycleUtil(config);
         utils.start(); // Start
         try {
@@ -55,6 +56,10 @@ public class BuildConfigurationTestCase {
             utils.stop(); // Stop
         }
     }
+
+    protected abstract String getDomainConfigFile();
+
+    protected abstract String getHostConfigFile();
 
 
     static JBossAsManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
