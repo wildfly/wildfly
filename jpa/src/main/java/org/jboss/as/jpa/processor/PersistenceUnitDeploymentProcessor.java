@@ -47,6 +47,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.txn.TransactionManagerService;
 import org.jboss.as.txn.TransactionSynchronizationRegistryService;
@@ -167,18 +169,23 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isEarDeployment(deploymentUnit) && JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             // handle META-INF/persistence.xml
-            final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-            PersistenceUnitMetadataHolder holder;
-            ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
+            final List<ResourceRoot> deploymentRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
+            for (final ResourceRoot root : deploymentRoots) {
+                if (!SubDeploymentMarker.isSubDeployment(root)) {
+                    PersistenceUnitMetadataHolder holder;
+                    ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
 
-            if (deploymentRoot != null &&
-                    (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
-                    holder.getPersistenceUnits().size() > 0) {
-                // assemble and install the PU service
-                puList.add(holder);
+                    if (root != null &&
+                            (holder = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
+                            holder.getPersistenceUnits().size() > 0) {
+                        // assemble and install the PU service
+                        puList.add(holder);
+                    }
+
+                    log.trace("install persistence unit definitions for ear " + root.getRootName());
+                    addPuService(phaseContext, root, puList);
+                }
             }
-            log.trace("install persistence unit definitions for ear " + deploymentRoot.getRootName());
-            addPuService(phaseContext, deploymentRoot, puList);
         }
     }
 
@@ -325,7 +332,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
     private String adjustJndi(String dataSourceName) {
         if (dataSourceName != null && !dataSourceName.startsWith("java:")) {
-            if(dataSourceName.startsWith("jboss/")) {
+            if (dataSourceName.startsWith("jboss/")) {
                 return "java:" + dataSourceName;
             }
             return "java:/" + dataSourceName;

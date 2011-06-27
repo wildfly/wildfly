@@ -57,7 +57,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
@@ -118,6 +117,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
     private void processPersistenceAnnotations(final DeploymentUnit deploymentUnit, final EEModuleDescription eeModuleDescription, List<AnnotationInstance> persistenceContexts) throws
             DeploymentUnitProcessingException {
+
         for (AnnotationInstance annotation : persistenceContexts) {
             ClassInfo declaringClass = null;
             final AnnotationTarget annotationTarget = annotation.target();
@@ -144,8 +144,8 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
                 List<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentsByClassName(declaringClass.name().toString());
                 // if it's a component then setup the interceptors
                 for (ComponentDescription componentDescription : componentDescriptions) {
-                    if (componentDescription instanceof SessionBeanComponentDescription) {
-                        this.registerInterceptorsForExtendedPersistenceContext((SessionBeanComponentDescription) componentDescription, annotation, deploymentUnit);
+                    if (componentDescription instanceof SessionBeanComponentDescription && isPersistenceContext(annotation)) {
+                        this.registerSessionBeanInterceptors((SessionBeanComponentDescription) componentDescription, annotation, deploymentUnit);
                     }
                 }
             }
@@ -352,7 +352,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
     }
 
     // Register our listeners on SFSB that will be created
-    private void registerInterceptorsForExtendedPersistenceContext(SessionBeanComponentDescription componentDescription, AnnotationInstance annotation, final DeploymentUnit deploymentUnit) {
+    private void registerSessionBeanInterceptors(SessionBeanComponentDescription componentDescription, AnnotationInstance annotation, final DeploymentUnit deploymentUnit) {
         // if it's a SFSB and extended persistence context then setup appropriate interceptors
         if (componentDescription.isStateful() && isExtendedPersistenceContext(annotation)) {
             // first setup the post construct and pre destroy component interceptors
@@ -388,7 +388,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws
                         DeploymentUnitProcessingException {
-                    configuration.addComponentInterceptor(new ImmediateInterceptorFactory(SBInvocationInterceptor.INSTANCE), InterceptorOrder.Component.JPA_SESSION_BEAN_INTERCEPTOR, false);
+                    configuration.addComponentInterceptor(SBInvocationInterceptor.FACTORY, InterceptorOrder.Component.JPA_SESSION_BEAN_INTERCEPTOR, false);
                 }
             });
         }

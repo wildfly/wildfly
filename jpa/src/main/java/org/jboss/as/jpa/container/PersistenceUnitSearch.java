@@ -22,14 +22,15 @@
 
 package org.jboss.as.jpa.container;
 
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
+import org.jboss.vfs.VirtualFile;
 
 import java.util.List;
 
@@ -37,7 +38,7 @@ import java.util.List;
  * Perform scoped search for persistence unit name
  *
  * @author Scott Marlow (forked from Carlo de Wolf code).
- *
+ * @author Stuart Douglas
  */
 public class PersistenceUnitSearch {
     private static final Logger log = Logger.getLogger("org.jboss.jpa");
@@ -50,8 +51,9 @@ public class PersistenceUnitSearch {
         }
         int i = (persistenceUnitName == null ? -1 : persistenceUnitName.indexOf('#'));
         if (i != -1) {
-            String path = persistenceUnitName.substring(0, i);
-            PersistenceUnitMetadata pu = getPersistenceUnit(deploymentUnit, path);
+            final String path = persistenceUnitName.substring(0, i);
+            final String name = persistenceUnitName.substring(i + 1);
+            PersistenceUnitMetadata pu = getPersistenceUnit(deploymentUnit, path, name);
             if (traceEnabled) {
                 log.trace("pu search found " + pu.getScopedPersistenceUnitName());
             }
@@ -59,7 +61,7 @@ public class PersistenceUnitSearch {
         } else {
             PersistenceUnitMetadata name = findPersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
             if (traceEnabled) {
-                if(name != null) {
+                if (name != null) {
                     log.trace("pu search found " + name);
                 }
             }
@@ -68,50 +70,34 @@ public class PersistenceUnitSearch {
     }
 
     private static PersistenceUnitMetadata findPersistenceUnitSupplier(DeploymentUnit deploymentUnit, String persistenceUnitName) {
-        PersistenceUnitMetadata name = findWithinModule(deploymentUnit, persistenceUnitName, true);
-        if (name == null)
+        PersistenceUnitMetadata name = findWithinDeployment(deploymentUnit, persistenceUnitName);
+        if (name == null) {
             name = findWithinApplication(getTopLevel(deploymentUnit), persistenceUnitName);
+        }
         return name;
     }
 
     private static PersistenceUnitMetadata findWithinApplication(DeploymentUnit unit, String persistenceUnitName) {
-        PersistenceUnitMetadata name = findWithinModule(unit, persistenceUnitName, false);
-        if (name != null)
+        PersistenceUnitMetadata name = findWithinDeployment(unit, persistenceUnitName);
+        if (name != null) {
             return name;
+        }
 
         List<ResourceRoot> resourceRoots = unit.getAttachmentList(Attachments.RESOURCE_ROOTS);
 
         for (ResourceRoot resourceRoot : resourceRoots) {
-            name = findWithinApplication(resourceRoot, persistenceUnitName);
-            if (name != null)
-                return name;
+            if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
+                name = findWithinLibraryJar(resourceRoot, persistenceUnitName);
+                if (name != null) {
+                    return name;
+                }
+            }
         }
 
         return null;
     }
 
-    private static PersistenceUnitMetadata findWithinApplication(ResourceRoot moduleResourceRoot, String persistenceUnitName) {
-        PersistenceUnitMetadata name = findWithinModule(moduleResourceRoot, persistenceUnitName, false);
-        if (name != null)
-            return name;
-
-        List<ResourceRoot> resourceRoots = moduleResourceRoot.getAttachmentList(Attachments.RESOURCE_ROOTS);
-
-        for (ResourceRoot resourceRoot : resourceRoots) {
-            name = findWithinApplication(resourceRoot, persistenceUnitName);
-            if (name != null)
-                return name;
-        }
-
-        return null;
-    }
-
-
-    private static PersistenceUnitMetadata findWithinModule(ResourceRoot moduleResourceRoot, String persistenceUnitName, boolean allowScoped) {
-
-
-        if (!allowScoped && isScoped(moduleResourceRoot))
-            return null;
+    private static PersistenceUnitMetadata findWithinLibraryJar(ResourceRoot moduleResourceRoot, String persistenceUnitName) {
 
         final ResourceRoot deploymentRoot = moduleResourceRoot;
         PersistenceUnitMetadataHolder holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
@@ -120,11 +106,11 @@ public class PersistenceUnitSearch {
 
         for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
             if (traceEnabled) {
-                log.tracef("findWithinModule check '%s' against pu '%s'", persistenceUnitName,persistenceUnit.getPersistenceUnitName());
+                log.tracef("findWithinLibraryJar check '%s' against pu '%s'", persistenceUnitName, persistenceUnit.getPersistenceUnitName());
             }
             if (persistenceUnitName == null || persistenceUnitName.length() == 0 || persistenceUnit.getPersistenceUnitName().equals(persistenceUnitName)) {
                 if (traceEnabled) {
-                    log.tracef("findWithinModule matched '%s' against pu '%s'", persistenceUnitName,persistenceUnit.getPersistenceUnitName());
+                    log.tracef("findWithinLibraryJar matched '%s' against pu '%s'", persistenceUnitName, persistenceUnit.getPersistenceUnitName());
                 }
                 return persistenceUnit;
             }
@@ -134,11 +120,8 @@ public class PersistenceUnitSearch {
 
     /*
      * When finding the default persistence unit, the first persistence unit encountered is returned.
-     * TODO: Maybe the name of unscoped persistence units should be changed, so only one can be deployed anyway.
      */
-    private static PersistenceUnitMetadata findWithinModule(DeploymentUnit unit, String persistenceUnitName, boolean allowScoped) {
-        if (!allowScoped && isScoped(unit))
-            return null;
+    private static PersistenceUnitMetadata findWithinDeployment(DeploymentUnit unit, String persistenceUnitName) {
 
         final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         PersistenceUnitMetadataHolder holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
@@ -147,81 +130,55 @@ public class PersistenceUnitSearch {
 
         for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
             if (traceEnabled) {
-                log.tracef("findWithinModule check '%s' against pu '%s'", persistenceUnitName,persistenceUnit.getPersistenceUnitName());
+                log.tracef("findWithinDeployment check '%s' against pu '%s'", persistenceUnitName, persistenceUnit.getPersistenceUnitName());
             }
             if (persistenceUnitName == null || persistenceUnitName.length() == 0 || persistenceUnit.getPersistenceUnitName().equals(persistenceUnitName)) {
                 if (traceEnabled) {
-                    log.tracef("findWithinModule matched '%s' against pu '%s'", persistenceUnitName,persistenceUnit.getPersistenceUnitName());
+                    log.tracef("findWithinDeployment matched '%s' against pu '%s'", persistenceUnitName, persistenceUnit.getPersistenceUnitName());
                 }
                 return persistenceUnit;
-             }
+            }
         }
         return null;
     }
 
-    /*
-    * JPA 6.2.2: Persistence Unit Scope
-    */
-    private static boolean isScoped(DeploymentUnit unit) {
-
-        // TODO:  add CLIENT
-        if (DeploymentTypeMarker.isType(DeploymentType.EAR, unit) ||
-            DeploymentTypeMarker.isType(DeploymentType.WAR, unit))
-            return true;
-        return false;
-    }
-
-    private static boolean isScoped(ResourceRoot moduleResourceRoot) {
-
-        if (moduleResourceRoot.getRoot().getLowerCaseName().endsWith(".ear") ||
-            moduleResourceRoot.getRoot().getLowerCaseName().endsWith(".war")) {
-            return true;
-        }
-        return false;
-    }
-
     private static DeploymentUnit getTopLevel(DeploymentUnit du) {
-        while (du.getParent() != null) {
-            du = du.getParent();
-        }
-        return du;
+        return du.getParent() == null ? du : du.getParent();
     }
 
-    private static PersistenceUnitMetadata getPersistenceUnit(DeploymentUnit current, String path) {
-        if (path.startsWith("/"))
-            return getPersistenceUnit(getTopLevel(current), path.substring(1));
-        if (path.startsWith("./"))
-            return getPersistenceUnit(current, path.substring(2));
-        if (path.startsWith("../"))
-            return getPersistenceUnit(current.getParent(), path.substring(3));
-        int i = path.indexOf('/');
-        String name;
-        if (i == -1)
-            name = path;
-        else
-            name = path.substring(0, i);
+    private static PersistenceUnitMetadata getPersistenceUnit(DeploymentUnit current, final String absolutePath, String puName) {
+        final String path;
+        if (absolutePath.startsWith("../")) {
+            path = absolutePath.substring(3);
+        } else {
+            path = absolutePath;
+        }
+        final VirtualFile parent = current.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot().getParent();
+        final VirtualFile resolvedPath = parent.getChild(path);
 
-        List<ResourceRoot> resourceRoots = current.getAttachmentList(Attachments.RESOURCE_ROOTS);
+        List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(getTopLevel(current));
 
         for (ResourceRoot resourceRoot : resourceRoots) {
-            PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
-            if (holder != null) {
-                for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
-                    if (traceEnabled) {
-                        log.tracef("getPersistenceUnit check '%s' against pu '%s'", name,pu.getPersistenceUnitName());
-                    }
-                    if (pu.getPersistenceUnitName().equals(name)) {
+            if (resourceRoot.getRoot().equals(resolvedPath)) {
+                PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
+                if (holder != null) {
+                    for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
                         if (traceEnabled) {
-                            log.tracef("getPersistenceUnit matched '%s' against pu '%s'", name,pu.getPersistenceUnitName());
+                            log.tracef("getPersistenceUnit check '%s' against pu '%s'", puName, pu.getPersistenceUnitName());
                         }
-                        return pu;
+                        if (pu.getPersistenceUnitName().equals(puName)) {
+                            if (traceEnabled) {
+                                log.tracef("getPersistenceUnit matched '%s' against pu '%s'", puName, pu.getPersistenceUnitName());
+                            }
+                            return pu;
+                        }
                     }
                 }
             }
         }
 
 
-        throw new IllegalArgumentException("Can't find a deployment unit named " + name + " at " + current);
+        throw new IllegalArgumentException("Can't find a deployment unit named " + absolutePath + "#" + puName + " at " + current);
     }
 }
 

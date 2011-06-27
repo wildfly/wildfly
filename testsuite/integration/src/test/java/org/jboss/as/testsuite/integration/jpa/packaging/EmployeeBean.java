@@ -20,34 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.interceptor;
+package org.jboss.as.testsuite.integration.jpa.packaging;
 
-import org.jboss.as.jpa.container.NonTxEmCloser;
-import org.jboss.invocation.ImmediateInterceptorFactory;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
+import javax.ejb.Stateless;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
 
 /**
- * Session bean Invocation interceptor
+ * stateful session bean
  *
- * @author Scott Marlow
+ * @author Stuart Douglas
  */
-public class SBInvocationInterceptor implements Interceptor {
+@Stateless
+public class EmployeeBean {
 
-    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SBInvocationInterceptor());
+    @PersistenceUnit(unitName = "mainPu")
+    EntityManagerFactory entityManagerFactory;
 
-    @Override
-    public Object processInvocation(InterceptorContext context) throws Exception {
+    @PersistenceUnit
+    EntityManagerFactory defaultEntityManagerFactory;
 
-        NonTxEmCloser.pushCall();
-        try {
-            return context.proceed();   // call the next interceptor or target
-        } finally {
-            NonTxEmCloser.popCall();
-        }
+    public EntityManagerFactory getEntityManagerFactory() {
+        return entityManagerFactory;
     }
 
-    private SBInvocationInterceptor() {
+    public EntityManagerFactory getDefaultEntityManagerFactory() {
+        return defaultEntityManagerFactory;
     }
 }

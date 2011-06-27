@@ -20,34 +20,47 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.interceptor;
+package org.jboss.as.testsuite.integration.jpa.packaging;
 
-import org.jboss.as.jpa.container.NonTxEmCloser;
-import org.jboss.invocation.ImmediateInterceptorFactory;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
- * Session bean Invocation interceptor
+ * Employee entity class
  *
  * @author Scott Marlow
  */
-public class SBInvocationInterceptor implements Interceptor {
+@Entity
+public class Employee {
+    @Id
+    private int id;
 
-    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SBInvocationInterceptor());
+    private String name;
 
-    @Override
-    public Object processInvocation(InterceptorContext context) throws Exception {
+    private String address;
 
-        NonTxEmCloser.pushCall();
-        try {
-            return context.proceed();   // call the next interceptor or target
-        } finally {
-            NonTxEmCloser.popCall();
-        }
+    public String getName() {
+        return name;
     }
 
-    private SBInvocationInterceptor() {
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public int getId() {
+
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
