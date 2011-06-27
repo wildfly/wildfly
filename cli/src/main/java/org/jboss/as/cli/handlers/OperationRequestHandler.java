@@ -93,6 +93,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
                     ctx.disconnectController();
                     return;
                 }
+                last = cur;
             }
             throw e;
         }
