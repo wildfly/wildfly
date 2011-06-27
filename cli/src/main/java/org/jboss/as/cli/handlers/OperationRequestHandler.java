@@ -76,6 +76,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
             ctx.printLine("The result couldn't be retrieved (perhaps the task was cancelled: " + e.getLocalizedMessage());
         } catch (IOException e) {
             ctx.printLine("Communication error: " + e.getLocalizedMessage());
+            ctx.disconnectController();
         } catch (RuntimeException e) {
             throw e;
         }

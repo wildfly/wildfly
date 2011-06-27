@@ -21,7 +21,6 @@
 */
 package org.jboss.as.protocol.mgmt;
 
-import javax.security.auth.callback.CallbackHandler;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
@@ -29,6 +28,8 @@ import java.net.URISyntaxException;
 import java.security.Provider;
 import java.security.Security;
 import java.util.concurrent.ExecutorService;
+
+import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.ProtocolChannelClient.Configuration;
@@ -119,6 +120,7 @@ public abstract class ManagementClientChannelStrategy {
                 addConfigurationProperties(configuration);
                 configuration.setUri(new URI("remote://" + hostName +  ":" + port));
                 configuration.setChannelFactory(new ManagementChannelFactory());
+                configuration.setConnectTimeoutProperty(CONNECT_TIME_OUT_PROPERTY);
                 client = ProtocolChannelClient.create(configuration);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -130,7 +132,7 @@ public abstract class ManagementClientChannelStrategy {
                     client.connect(callbackHandler);
                 } catch (ConnectException e) {
                     throw new ConnectException("Could not connect to " + configuration.getUri() + " in " + configuration.getConnectTimeout() + "ms. " +
-                              "Consider setting a longer timeout by setting -D" + CONNECT_TIME_OUT_PROPERTY + "=<timeout in ms>.");
+                              "Make sure the server is running and/or consider setting a longer timeout by setting -D" + CONNECT_TIME_OUT_PROPERTY + "=<timeout in ms>.");
                 }
                 channel = client.openChannel("management");
                 channel.setOperationHandler(handler);
