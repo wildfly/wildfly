@@ -335,7 +335,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                         log.debug("Attempting reconnection to master...");
                         try {
                             connect();
-                            log.info("Connected to master");
+                            log.info("Reconnected to master");
                             break;
                         } catch (Exception e) {
                         }

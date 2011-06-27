@@ -44,12 +44,16 @@ import org.xnio.IoUtils;
  */
 public class ManagementChannel extends ProtocolChannel {
 
+    private final ManagementChannelPinger pinger = ManagementChannelPinger.getInstance();
     private final RequestReceiver requestReceiver = new RequestReceiver();
     private final ResponseReceiver responseReceiver = new ResponseReceiver();
     private final AtomicBoolean byeByeSent = new AtomicBoolean();
+    private volatile long lastResponseReceived;
+    private AtomicBoolean awaitingPong = new AtomicBoolean();
 
     ManagementChannel(String name, Channel channel) {
         super(name, channel);
+        pinger.addChannel(this);
     }
 
     /**
@@ -72,6 +76,7 @@ public class ManagementChannel extends ProtocolChannel {
         if(!byeByeSent.compareAndSet(false, true)) {
             return;
         }
+        pinger.removeChannel(this);
         ManagementByeByeHeader byeByeHeader = new ManagementByeByeHeader(ManagementProtocol.VERSION);
 
         try {
@@ -98,6 +103,7 @@ public class ManagementChannel extends ProtocolChannel {
         Exception error = null;
         ManagementRequestHeader requestHeader = null;
         ManagementRequestHandler requestHandler = null;
+        boolean wasPing = false;
         try {
             ManagementProtocolHeader header;
             header = ManagementProtocolHeader.parse(input);
@@ -108,14 +114,17 @@ public class ManagementChannel extends ProtocolChannel {
                 requestHandler = requestReceiver.readRequest(requestHeader, input);
                 break;
             case ManagementProtocol.TYPE_RESPONSE:
+                gotIncomingResponse();
                 responseReceiver.handleResponse((ManagementResponseHeader)header, input);
                 break;
             case ManagementProtocol.TYPE_BYE_BYE:
                 close();
                 break;
             case ManagementProtocol.TYPE_PING:
+                wasPing = true;
                 break;
             case ManagementProtocol.TYPE_PONG:
+                gotIncomingResponse();
                 break;
             }
         } catch (Exception e) {
@@ -148,7 +157,15 @@ public class ManagementChannel extends ProtocolChannel {
                 error.printStackTrace();
             }
             requestReceiver.writeResponse(requestHeader, requestHandler, error);
+        } else if (wasPing) {
+            ManagementPongHeader pongHeader = new ManagementPongHeader(ManagementProtocol.VERSION);
+            sendHeaderAndCloseOnError(pongHeader);
         }
+    }
+
+    private void gotIncomingResponse() {
+        lastResponseReceived = System.currentTimeMillis();
+        awaitingPong.set(false);
     }
 
     void executeRequest(ManagementRequest<?> request, ManagementResponseHandler<?> responseHandler) throws IOException {
@@ -188,6 +205,42 @@ public class ManagementChannel extends ProtocolChannel {
         }
         throw new IOException(e);
 
+    }
+
+    void ping(long timeOut) {
+        if (awaitingPong.get()) {
+            if (System.currentTimeMillis() - lastResponseReceived > timeOut) {
+                try {
+                    //We received no ping within the timeout
+                    log.tracef("Closing %s did not receive any pong within %dms", this, timeOut);
+                    close();
+                } catch (IOException ignore) {
+                }
+            }
+        } else {
+            awaitingPong.set(true);
+            ManagementPingHeader pingHeader = new ManagementPingHeader(ManagementProtocol.VERSION);
+            sendHeaderAndCloseOnError(pingHeader);
+        }
+    }
+
+    private void sendHeaderAndCloseOnError(ManagementProtocolHeader header) {
+        boolean ok = false;
+        try {
+            SimpleDataOutput out = new SimpleDataOutput(Marshalling.createByteOutput(writeMessage()));
+            try {
+                header.write(out);
+                ok = true;
+            }finally {
+                IoUtils.safeClose(out);
+            }
+        } catch (IOException ingore) {
+        } finally {
+            if (!ok) {
+                log.tracef("Error sending %X on %s, closing channel", header.getType(), this);
+                IoUtils.safeClose(this);
+            }
+        }
     }
 
     private class RequestReceiver {

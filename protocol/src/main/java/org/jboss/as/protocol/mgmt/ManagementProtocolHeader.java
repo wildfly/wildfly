@@ -111,8 +111,12 @@ abstract class ManagementProtocolHeader {
                 return new ManagementResponseHeader(version, input);
             case ManagementProtocol.TYPE_BYE_BYE:
                 return new ManagementByeByeHeader(version);
+            case ManagementProtocol.TYPE_PING:
+                return new ManagementPingHeader(version);
+            case ManagementProtocol.TYPE_PONG:
+                return new ManagementPongHeader(version);
             default:
-                throw new IOException("Invalid type: " + type);
+                throw new IOException("Invalid type: 0x" + Integer.toHexString(type));
         }
     }
 }
