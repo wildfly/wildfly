@@ -103,6 +103,13 @@ public class DomainLifecycleUtil {
             File domainDir = configuration.getDomainDirectory() != null ? new File(configuration.getDomainDirectory()) : new File(new File(jbossHomeDir), "domain");
             String domainPath = domainDir.getAbsolutePath();
 
+            final String modulePath;
+            if(configuration.getModulePath() != null && !configuration.getModulePath().isEmpty()) {
+                modulePath = configuration.getModulePath();
+            } else {
+                modulePath = jbossHomeDir + "/modules";
+            }
+
             List<String> cmd = new ArrayList<String>();
             cmd.add(java);
             if (additionalJavaOpts != null) {
@@ -116,7 +123,7 @@ public class DomainLifecycleUtil {
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
             cmd.add("-mp");
-            cmd.add(jbossHomeDir + "/modules");
+            cmd.add(modulePath);
             cmd.add("-logmodule");
             cmd.add("org.jboss.logmanager");
             //cmd.add("-jaxpmodule");

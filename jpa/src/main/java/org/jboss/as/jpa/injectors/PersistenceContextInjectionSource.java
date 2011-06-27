@@ -62,9 +62,10 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
     private final ServiceName puServiceName;
 
-    // the following list of classes determines which unwrap classes are special, in that the underlying entity
-    // manager won't be closed, even if no transaction is active on the calling thread.
-    // TODO:  move this list to PersistenceProviderAdaptor
+    /** the following list of classes determines which unwrap classes are special, in that the underlying entity
+     * manager won't be closed, even if no transaction is active on the calling thread.
+     * TODO:  move this list to PersistenceProviderAdaptor
+     */
     private static final HashSet<String> skipEntityManagerCloseFor = new HashSet<String>();
 
     static {
@@ -171,7 +172,10 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
                 // register the EntityManager on TL so that SFSBCreateInterceptor will see it.
                 // this is important for creating a new XPC or inheriting existing XPC from SFSBCallStack
-                SFSBXPCMap.RegisterPersistenceContext(entityManager);
+                SFSBXPCMap.registerPersistenceContext(entityManager);
+
+                //register the pc so it is accessible to other SFSB's during the creation process
+                SFSBCallStack.extendedPersistenceContextCreated(unitName, entityManager);
 
             }
 

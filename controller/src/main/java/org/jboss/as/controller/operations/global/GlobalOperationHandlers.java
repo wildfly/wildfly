@@ -83,6 +83,7 @@ public class GlobalOperationHandlers {
     public static final OperationStepHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
     public static final OperationStepHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
     public static final OperationStepHandler VALIDATE_ADDRESS = new OperationStepHandler() {
+
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             try {
@@ -93,6 +94,9 @@ public class GlobalOperationHandlers {
             context.completeStep();
         }
     };
+
+
+    public static final String VALIDATE_ADDRESS_OPERATION_NAME = "validate-address";
 
     private GlobalOperationHandlers() {
         //

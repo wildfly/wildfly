@@ -42,7 +42,7 @@ public class GlobalNamespaceObjectFactory implements ObjectFactory {
 
     private static class ContextRefAddr extends RefAddr {
         private static final long serialVersionUID = 4992673639670119399L;
-        private Context context;
+        private final Context context;
 
         ContextRefAddr(Context ctx) {
             super("context");

@@ -26,7 +26,9 @@ import org.jboss.as.jpa.spi.SFSBContextHandle;
 
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * For tracking of SFSB call stack on a per thread basis.
@@ -47,6 +49,44 @@ public class SFSBCallStack {
     };
 
     /**
+     * Entity managers that form part of the
+     */
+    private static ThreadLocal<Map<String, EntityManager>> sfsbCreationMap = new ThreadLocal<Map<String, EntityManager>>();
+
+    private static ThreadLocal<Integer> sfsbCreationCallStackCount = new ThreadLocal<Integer>() {
+        @Override
+        protected Integer initialValue() {
+            return 0;
+        }
+    };
+
+    public static void beginSfsbCreation() {
+        int no = sfsbCreationCallStackCount.get();
+        if (no == 0) {
+            sfsbCreationMap.set(new HashMap<String, EntityManager>());
+        }
+        sfsbCreationCallStackCount.set(no + 1);
+    }
+
+    public static void endSfsbCreation() {
+        int no = sfsbCreationCallStackCount.get();
+        no--;
+        sfsbCreationCallStackCount.set(no);
+        if (no == 0) {
+            sfsbCreationMap.remove();
+        }
+    }
+
+    public static void extendedPersistenceContextCreated(String scopedPuName, EntityManager entityManager) {
+        if (sfsbCreationCallStackCount.get() > 0) {
+            Map<String, EntityManager> map = sfsbCreationMap.get();
+            if (!map.containsKey(scopedPuName)) {
+                map.put(scopedPuName, entityManager);
+            }
+        }
+    }
+
+    /**
      * For the current thread, look at the call stack of SFSB invocations and return the first extended
      * persistence context that is based on puName.
      *
@@ -65,6 +105,10 @@ public class SFSBCallStack {
                     return xpc;
                 }
             }
+        }
+        Map<String, EntityManager> map = sfsbCreationMap.get();
+        if(map != null) {
+            return map.get(puScopedName);
         }
         return null;
     }

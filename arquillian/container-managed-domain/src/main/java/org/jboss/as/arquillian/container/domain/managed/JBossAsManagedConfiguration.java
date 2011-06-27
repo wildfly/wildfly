@@ -31,6 +31,8 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private String javaHome = System.getenv("JAVA_HOME");
 
+    private String modulePath = System.getProperty("module.path");
+
     private String javaVmArguments = "-Xmx512m -XX:MaxPermSize=128m";
 
     private int startupTimeoutInSeconds = 45;
@@ -195,5 +197,13 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     public void setHostName(String hostName) {
         this.hostName = hostName;
+    }
+
+    public String getModulePath() {
+        return modulePath;
+    }
+
+    public void setModulePath(final String modulePath) {
+        this.modulePath = modulePath;
     }
 }

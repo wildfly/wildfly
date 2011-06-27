@@ -306,7 +306,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             if (nativeSecurityRealm != null) {
                 realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(nativeSecurityRealm);
             }
-            RemotingServices.installDomainConnectorServices(serviceTarget, nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName);
+            RemotingServices.installDomainConnectorServices(serviceTarget, nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, null, null);
             ServerToHostOperationHandlerFactoryService.install(serviceTarget, NewServerInventoryService.SERVICE_NAME);
             RemotingServices.installChannelOpenListenerService(serviceTarget, RemotingServices.SERVER_CHANNEL,
                     ServerToHostOperationHandlerFactoryService.SERVICE_NAME, null, null);

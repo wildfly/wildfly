@@ -24,6 +24,13 @@
       name="local">
 
     <management>
+	    <security-realms>
+		    <security-realm name="PropertiesMgmtSecurityRealm">
+			    <authentication>
+				    <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir" />
+			    </authentication>
+		    </security-realm>
+	    </security-realms>
        <management-interfaces>
           <native-interface interface="management" port="9999" />
           <http-interface interface="management" port="9990"/>
@@ -57,15 +64,15 @@
             <jvm name="default"/>
         </server>
 
-        <server name="server-two" group="main-server-group" auto-start="true"> 
+        <server name="server-two" group="main-server-group" auto-start="true">
             <!-- server-two avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
             <socket-binding-group ref="standard-sockets" port-offset="150"/>
             <jvm name="default">
                 <heap size="64m" max-size="256m"/>
             </jvm>
-        </server> 
-        
+        </server>
+
         <server name="server-three" group="other-server-group" auto-start="false">
             <!-- server-three avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->

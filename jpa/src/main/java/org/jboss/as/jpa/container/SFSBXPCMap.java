@@ -83,11 +83,10 @@ public class SFSBXPCMap {
     // that happens later at postConstruct time.
     //
     // The deferToPostConstruct is a one item length store (hack)
-    private static ThreadLocal<Object[]> deferToPostConstruct = new ThreadLocal() {
-        protected Object initialValue() {
-            return new Object[1];
+    private static ThreadLocal<List<EntityManager>> deferToPostConstruct = new ThreadLocal<List<EntityManager>>() {
+        protected List<EntityManager> initialValue() {
+            return new ArrayList<EntityManager>(1);
         }
-
     };
 
     /**
@@ -96,7 +95,7 @@ public class SFSBXPCMap {
      *
      * @param xpc The ExtendedEntityManager
      */
-    public static void RegisterPersistenceContext(EntityManager xpc) {
+    public static void registerPersistenceContext(EntityManager xpc) {
 
         if (xpc == null) {
             throw new RuntimeException("internal SFSBXPCMap.RegisterPersistenceContext error, null EntityManager passed in");
@@ -106,22 +105,19 @@ public class SFSBXPCMap {
             throw new RuntimeException("internal error, XPC needs to be a AbstractEntityManager so that we can get metadata");
         }
 
-        Object[] store = deferToPostConstruct.get();
-        store[0] = xpc;
+        List<EntityManager> store = deferToPostConstruct.get();
+        store.add(xpc);
     }
 
     /**
      * Called by postconstruct interceptor
      */
     public void finishRegistrationOfPersistenceContext(SFSBContextHandle current) {
-        Object[] store = deferToPostConstruct.get();
-        if (store != null && store.length == 1) {
-            if (store[0] == null) {
-                throw new RuntimeException("internal SFSBXPCMap.finishRegistrationOfPersistenceContext error, null EntityManager passed in");
-            }
-            register(current, (EntityManager) store[0]);
-            store[0] = null;    // clear store
+        List<EntityManager> store = deferToPostConstruct.get();
+        for (EntityManager em : store) {
+            register(current, (EntityManager) em);
         }
+        store.clear();
     }
 
     /**

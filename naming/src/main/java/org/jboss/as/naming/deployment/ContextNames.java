@@ -22,7 +22,10 @@
 
 package org.jboss.as.naming.deployment;
 
+import org.jboss.as.server.deployment.module.IgnoreMetaInfMarker;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.util.platform.Java;
+import sun.java2d.opengl.OGLContext;
 
 /**
  * @author John Bailey
@@ -139,9 +142,13 @@ public class ContextNames {
             final int i = context.indexOf('/');
             if (i == -1) {
                 namespace = context.substring(5);
+            } else if (i == 5) {
+                // Absolute path
+                return JAVA_CONTEXT_SERVICE_NAME.append(context.substring(6));
             } else {
                 namespace = context.substring(5, i);
             }
+
             if (namespace.equals("global")) {
                 return GLOBAL_CONTEXT_SERVICE_NAME.append(context.substring(12));
             } else if (namespace.equals("jboss")) {

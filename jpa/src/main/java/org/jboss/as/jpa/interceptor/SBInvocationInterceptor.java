@@ -23,8 +23,10 @@
 package org.jboss.as.jpa.interceptor;
 
 import org.jboss.as.jpa.container.NonTxEmCloser;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 
 /**
  * Session bean Invocation interceptor
@@ -33,7 +35,7 @@ import org.jboss.invocation.InterceptorContext;
  */
 public class SBInvocationInterceptor implements Interceptor {
 
-    public static final SBInvocationInterceptor INSTANCE = new SBInvocationInterceptor();
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SBInvocationInterceptor());
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
@@ -44,5 +46,8 @@ public class SBInvocationInterceptor implements Interceptor {
         } finally {
             NonTxEmCloser.popCall();
         }
+    }
+
+    private SBInvocationInterceptor() {
     }
 }

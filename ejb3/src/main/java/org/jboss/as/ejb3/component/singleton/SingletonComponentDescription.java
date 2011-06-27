@@ -99,7 +99,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                     }
                     if(getClassDescription().getPreDestroyMethod() != null) {
                         TransactionAttributeType txAttr = getTransactionAttribute(MethodIntf.BEAN, getClassDescription().getClassName(), getClassDescription().getPreDestroyMethod().getName(), getClassDescription().getPreDestroyMethod().getParameterTypes());
-                        configuration.addPreDestroyInterceptor(new SingletonLifecycleCMTTxInterceptorFactory(txAttr), InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
+                        configuration.addPreDestroyInterceptor(new SingletonLifecycleCMTTxInterceptorFactory(txAttr), InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
                     }
                 }
             });

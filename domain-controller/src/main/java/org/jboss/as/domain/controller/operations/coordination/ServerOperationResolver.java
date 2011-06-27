@@ -96,7 +96,7 @@ public class ServerOperationResolver {
         UNKNOWN(null),
         PATH("path"),
         SYSTEM_PROPERTY("system-property"),
-        MANAGEMENT("management"),
+        CORE_SERVICE("core-service"),
         INTERFACE("interface"),
         JVM("jvm"),
         SERVER("server"),
@@ -504,7 +504,7 @@ public class ServerOperationResolver {
                 case SYSTEM_PROPERTY: {
                     return getServerSystemPropertyOperations(operation, address, Level.HOST,  domain, null, host);
                 }
-                case MANAGEMENT: {
+                case CORE_SERVICE: {
                     // TODO does server need to know about change?
                     return Collections.emptyMap();
                 }

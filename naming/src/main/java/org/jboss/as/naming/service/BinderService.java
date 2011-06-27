@@ -22,10 +22,11 @@
 
 package org.jboss.as.naming.service;
 
-import org.jboss.as.naming.ManagedReferenceObjectFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.ManagedReferenceObjectFactory;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.util.NameParser;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -45,6 +46,9 @@ import javax.naming.Reference;
  * @author John E. Bailey
  */
 public class BinderService implements Service<ManagedReferenceFactory> {
+
+    private static final Logger logger = Logger.getLogger(BinderService.class);
+
     private final InjectedValue<NamingStore> namingStoreValue = new InjectedValue<NamingStore>();
     private final String name;
     private final InjectedValue<ManagedReferenceFactory> managedReferenceFactory = new InjectedValue<ManagedReferenceFactory>();
@@ -55,10 +59,10 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     /**
      * Construct new instance.
      *
-     * @param name  The JNDI name to use for binding. May be either an absolute or relative name
+     * @param name The JNDI name to use for binding. May be either an absolute or relative name
      */
     public BinderService(final String name, Object source) {
-        if(name.startsWith("java:")) {
+        if (name.startsWith("java:")) {
             //this is an absolute reference
             this.name = name.substring(name.indexOf('/') + 1);
         } else {
@@ -104,6 +108,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
             final Reference reference = ManagedReferenceObjectFactory.createReference(controller.getName());
             final Name name = NameParser.INSTANCE.parse(this.name);
             namingStore.bind(name, reference);
+            logger.tracef("Bound resource %s into naming store %s", name, namingStore);
         } catch (NamingException e) {
             throw new StartException("Failed to bind resource into naming store [" + namingStore + "] at location [" + name + "]", e);
         }

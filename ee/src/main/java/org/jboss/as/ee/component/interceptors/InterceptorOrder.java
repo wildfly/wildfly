@@ -60,16 +60,17 @@ public class InterceptorOrder {
     public static final class ComponentPostConstruct {
 
         public static final int TCCL_INTERCEPTOR = 0x100;
-        public static final int TRANSACTION_INTERCEPTOR = 0x101;
-        public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
-        public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x300;
-        public static final int INSTANTIATION_INTERCEPTORS = 0x400;
-        public static final int RESOURCE_INJECTION_INTERCEPTORS = 0x500;
-        public static final int EJB_SET_SESSION_CONTEXT_METHOD_INVOCATION_INTERCEPTOR = 0x501;
-        public static final int WELD_INJECTION = 0x600;
-        public static final int JPA_SFSB_CREATE = 0x700;
-        public static final int USER_INTERCEPTORS = 0x800;
-        public static final int TERMINAL_INTERCEPTOR = 0x900;
+        public static final int TRANSACTION_INTERCEPTOR = 0x200;
+        public static final int JPA_SFSB_PRE_CREATE = 0x300;
+        public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x400;
+        public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x500;
+        public static final int INSTANTIATION_INTERCEPTORS = 0x600;
+        public static final int RESOURCE_INJECTION_INTERCEPTORS = 0x700;
+        public static final int EJB_SET_SESSION_CONTEXT_METHOD_INVOCATION_INTERCEPTOR = 0x800;
+        public static final int WELD_INJECTION = 0x900;
+        public static final int JPA_SFSB_CREATE = 0xA00;
+        public static final int USER_INTERCEPTORS = 0xB00;
+        public static final int TERMINAL_INTERCEPTOR = 0xC00;
 
         private ComponentPostConstruct() {
         }

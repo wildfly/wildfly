@@ -28,6 +28,7 @@ import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import javax.security.auth.callback.CallbackHandler;
 import java.security.AccessController;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -36,6 +37,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
 import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
@@ -172,13 +174,32 @@ public final class RemotingServices {
      * @param serviceTarget the service target to install the services into
      * @param networkInterfaceBinding the network interface binding
      * @param port the port
+     * @param verificationHandler
+     * @param newControllers
      */
     public static void installDomainConnectorServices(ServiceTarget serviceTarget,
+                                                      final NetworkInterfaceBinding networkInterfaceBinding,
+                                                      final int port,
+                                                      final ServiceName securityRealmName,
+                                                      final ServiceVerificationHandler verificationHandler,
+                                                      final List<ServiceController<?>> newControllers) {
+        ServiceName serverCallbackService = ServiceName.JBOSS.append("host", "controller", "server-inventory", "callback");
+        installConnectorServices(serviceTarget, null, networkInterfaceBinding, port, securityRealmName, serverCallbackService, verificationHandler, newControllers);
+    }
+
+    /**
+     * Removes the remoting stream server for a domain instance and then reinstalls it.
+     *
+     * @param operationContext context of the operation that is triggering the re-install
+     * @param networkInterfaceBinding the network interface binding
+     * @param port the port
+     */
+    public static void reinstallDomainConnectorServices(final OperationContext operationContext,
             final NetworkInterfaceBinding networkInterfaceBinding,
             final int port,
             final ServiceName securityRealmName) {
-        ServiceName serverCallbackService = ServiceName.JBOSS.append("host", "controller", "server-inventory", "callback");
-        installConnectorServices(serviceTarget, null, networkInterfaceBinding, port, securityRealmName, serverCallbackService, null, null);
+        remoteConnectorServices(operationContext, port);
+        installDomainConnectorServices(operationContext.getServiceTarget(), networkInterfaceBinding, port, securityRealmName, null, null);
     }
 
     /**
@@ -303,5 +324,11 @@ public final class RemotingServices {
                     .setInitialMode(ACTIVE);
             addController(newControllers, verificationHandler, builder);
         }
+    }
+
+    private static void remoteConnectorServices(final OperationContext context, final int port) {
+        context.removeService(RemotingServices.serverServiceName(MANAGEMENT_CHANNEL, port));
+        context.removeService(OPTION_MAP);
+        context.removeService(AUTHENTICATION_PROVIDER);
     }
 }

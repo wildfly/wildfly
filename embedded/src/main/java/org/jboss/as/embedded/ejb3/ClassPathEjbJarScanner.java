@@ -370,7 +370,10 @@ class ClassPathEjbJarScanner {
     private static String getModuleNameFromFileName(final VirtualFile file) {
         String moduleName = file.getName();
         int index = moduleName.lastIndexOf('.');
-        return moduleName.substring(0, index - 1);
+        if (index != -1) {
+            return moduleName.substring(0, index - 1);
+        }
+        return moduleName;
     }
 
     /**
@@ -387,10 +390,10 @@ class ClassPathEjbJarScanner {
         Indexer indexer = new Indexer();
         indexClasses(file, file, indexer);
         Index index = indexer.complete();
-        for(Class<? extends Annotation> annotation : EJB_COMPONENT_ANNOTATIONS) {
+        for (Class<? extends Annotation> annotation : EJB_COMPONENT_ANNOTATIONS) {
             final DotName annotationName = DotName.createSimple(annotation.getName());
             final List<AnnotationInstance> classes = index.getAnnotations(annotationName);
-            if(classes != null && !classes.isEmpty()) {
+            if (classes != null && !classes.isEmpty()) {
                 return true;
             }
         }
@@ -433,7 +436,7 @@ class ClassPathEjbJarScanner {
                     }
                 } finally {
                     try {
-                        if(stream != null) {
+                        if (stream != null) {
                             stream.close();
                         }
                     } catch (IOException e) {

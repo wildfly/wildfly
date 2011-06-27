@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment;
 
+import sun.tools.tree.FinallyStatement;
+
 /**
  * An enumeration of the phases of a deployment unit's processing cycle.
  *
@@ -345,6 +347,7 @@ public enum Phase {
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
+    public static final int INSTALL_JPA_INTERCEPTORS                    = 0x0200;
     public static final int INSTALL_APP_CONTEXT                         = 0x0300;
     public static final int INSTALL_MODULE_CONTEXT                      = 0x0400;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
