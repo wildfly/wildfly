@@ -78,14 +78,6 @@ abstract class ManagementProtocolHeader {
      */
     abstract byte getType();
 
-    /**
-     * Is this a request.
-     *
-     * @return true if this header is a request; false if it is a response
-     */
-    boolean isRequest() {
-        return getType() == ManagementProtocol.TYPE_REQUEST;
-    }
 
     /**
      * Validate the header signature.
@@ -93,16 +85,9 @@ abstract class ManagementProtocolHeader {
      * @param input The input to read the signature from
      * @throws IOException If any read problems occur
      */
-    protected static void validateSignature(final DataInput input) throws IOException, ByeByeException {
+    protected static void validateSignature(final DataInput input) throws IOException {
         final byte[] signatureBytes = new byte[4];
-        byte first = input.readByte();
-        if (first == ManagementProtocol.BYE_BYE) {
-            throw new ByeByeException();
-        }
-        signatureBytes[0] = first;
-        signatureBytes[1] = input.readByte();
-        signatureBytes[2] = input.readByte();
-        signatureBytes[3] = input.readByte();
+        input.readFully(signatureBytes);
         if (!Arrays.equals(ManagementProtocol.SIGNATURE, signatureBytes)) {
             throw new IOException("Invalid signature [" + Arrays.toString(signatureBytes) + "]");
         }
@@ -113,7 +98,7 @@ abstract class ManagementProtocolHeader {
      * Parses the input stream to read the header
      *
      */
-    static ManagementProtocolHeader parse(DataInput input) throws IOException, ByeByeException {
+    static ManagementProtocolHeader parse(DataInput input) throws IOException {
         validateSignature(input);
         expectHeader(input, ManagementProtocol.VERSION_FIELD);
         int version = input.readInt();
@@ -124,6 +109,8 @@ abstract class ManagementProtocolHeader {
                 return new ManagementRequestHeader(version, input);
             case ManagementProtocol.TYPE_RESPONSE:
                 return new ManagementResponseHeader(version, input);
+            case ManagementProtocol.TYPE_BYE_BYE:
+                return new ManagementByeByeHeader(version);
             default:
                 throw new IOException("Invalid type: " + type);
         }

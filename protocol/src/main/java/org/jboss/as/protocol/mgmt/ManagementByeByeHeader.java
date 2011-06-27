@@ -25,6 +25,15 @@ package org.jboss.as.protocol.mgmt;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ByeByeException extends Exception {
+public class ManagementByeByeHeader extends ManagementProtocolHeader {
+
+    protected ManagementByeByeHeader(int version) {
+        super(version);
+    }
+
+    @Override
+    byte getType() {
+        return ManagementProtocol.TYPE_BYE_BYE;
+    }
 
 }

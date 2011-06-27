@@ -31,10 +31,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
+import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
-import org.jboss.remoting3.MessageOutputStream;
 import org.xnio.IoUtils;
 
 /**
@@ -72,11 +72,12 @@ public class ManagementChannel extends ProtocolChannel {
         if(!byeByeSent.compareAndSet(false, true)) {
             return;
         }
+        ManagementByeByeHeader byeByeHeader = new ManagementByeByeHeader(ManagementProtocol.VERSION);
 
         try {
-            final MessageOutputStream out = writeMessage();
+            SimpleDataOutput out = new SimpleDataOutput(Marshalling.createByteOutput(writeMessage()));
             try {
-                out.write(ManagementProtocol.BYE_BYE);
+                byeByeHeader.write(out);
             } catch (IOException ingore) {
             }finally {
                 IoUtils.safeClose(out);
@@ -99,17 +100,23 @@ public class ManagementChannel extends ProtocolChannel {
         ManagementRequestHandler requestHandler = null;
         try {
             ManagementProtocolHeader header;
-            try {
-                header = ManagementProtocolHeader.parse(input);
-            } catch (ByeByeException bbe) {
-                close();
-                return;
-            }
-            if (header.isRequest()) {
+            header = ManagementProtocolHeader.parse(input);
+
+            switch (header.getType()) {
+            case ManagementProtocol.TYPE_REQUEST:
                 requestHeader = (ManagementRequestHeader)header;
                 requestHandler = requestReceiver.readRequest(requestHeader, input);
-            } else {
+                break;
+            case ManagementProtocol.TYPE_RESPONSE:
                 responseReceiver.handleResponse((ManagementResponseHeader)header, input);
+                break;
+            case ManagementProtocol.TYPE_BYE_BYE:
+                close();
+                break;
+            case ManagementProtocol.TYPE_PING:
+                break;
+            case ManagementProtocol.TYPE_PONG:
+                break;
             }
         } catch (Exception e) {
             error = e;
