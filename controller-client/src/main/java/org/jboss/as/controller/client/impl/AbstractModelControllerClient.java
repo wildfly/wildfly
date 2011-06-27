@@ -120,23 +120,36 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
 
     protected abstract ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException;
 
-    private ModelNode executeSynch(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler) {
+    private ModelNode executeSynch(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler) throws IOException {
         final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
 
         try {
             return new ExecuteRequest(batchId, false, operation, messageHandler, attachments).executeForResult(executor, getClientChannelStrategy());
         } catch (Exception e) {
             ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
-            throw new RuntimeException(e);
+            Throwable cause = e;
+            if (e instanceof ExecutionException) {
+                cause = e.getCause();
+            }
+            if (cause instanceof IOException) {
+                throw (IOException)cause;
+            }
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException)cause;
+            }
+            throw new IOException(cause);
         }
     }
 
-    private AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler){
+    private AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationAttachments attachments, OperationMessageHandler messageHandler) {
         final int batchId = ManagementBatchIdManager.DEFAULT.createBatchId();
         try {
             return new DelegatingCancellableAsyncFuture(new ExecuteRequest(batchId, true, operation, messageHandler, attachments).execute(executor, getClientChannelStrategy()), batchId);
         } catch (Exception e) {
             ManagementBatchIdManager.DEFAULT.freeBatchId(batchId);
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException)e;
+            }
             throw new RuntimeException(e);
         }
     }
@@ -186,7 +199,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                 log.tracef("Client wrote request %d successfully", getBatchId());
             } catch (Exception e) {
                 log.tracef(e, "Client wrote request %d with error", getBatchId());
-                super.setError(new ClientException(e));
+                setError(e);
                 if (e instanceof IOException) {
                     throw (IOException)e;
                 }
@@ -211,7 +224,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                     } catch (Exception e) {
                         log.tracef(e, "Client read response %d with error", getBatchId());
                         //super.setError(new ClientException(e));
-                        setError(new ClientException(e));
+                        setError(e);
                         if (e instanceof IOException) {
                             throw (IOException)e;
                         }
@@ -229,8 +242,8 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
         }
 
         @Override
-        protected void setError(Exception e) {
-            super.setError(new ClientException(e));
+        protected void setError(final Exception e) {
+            super.setError(e instanceof IOException ? e : new IOException(e));
         }
     }
 
@@ -330,7 +343,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
             return new CloseHandler<Channel>() {
                 public void handleClose(final Channel closed, final IOException exception) {
                     if (!done) {
-                        executeRequest.setError(new ClientException(new IOException("Channel closed")));
+                        executeRequest.setError(new IOException("Channel closed"));
                     }
                 }
             };
