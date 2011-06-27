@@ -141,7 +141,7 @@ public class RespawnTestCase {
     private void readHostControllerServers() throws Exception {
         final ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
-        operation.get(ModelDescriptionConstants.OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement("host", "local")).toModelNode());
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement("host", "master")).toModelNode());
         operation.get(ModelDescriptionConstants.RECURSIVE).set(true);
 
         final long time = System.currentTimeMillis() + TIMEOUT;

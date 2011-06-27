@@ -70,7 +70,7 @@ public class ExampleRunner {
 
     void runSysProperties(final ModelControllerClient client) throws Exception {
         final ModelNode address = new ModelNode();
-        address.add(HOST, "local");
+        address.add(HOST, "master");
         address.add(SYSTEM_PROPERTY, "test-property");
 
         final ModelNode operation = new ModelNode();
@@ -87,7 +87,7 @@ public class ExampleRunner {
 
     void runPaths(final ModelControllerClient client) throws Exception {
         final ModelNode address = new ModelNode();
-        address.add(HOST, "local");
+        address.add(HOST, "master");
         address.add(PATH, "temp");
 
         final ModelNode operation = new ModelNode();
@@ -105,7 +105,7 @@ public class ExampleRunner {
 
     void runInterface(final ModelControllerClient client) throws IOException {
         final ModelNode address = new ModelNode();
-        address.add(HOST, "local");
+        address.add(HOST, "master");
         address.add(INTERFACE, "new");
 
         final ModelNode operation = new ModelNode();

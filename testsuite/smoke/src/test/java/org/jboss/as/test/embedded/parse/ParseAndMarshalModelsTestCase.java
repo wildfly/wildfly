@@ -57,8 +57,6 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -77,7 +75,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALMS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
@@ -373,7 +370,7 @@ public class ParseAndMarshalModelsTestCase {
             public void setup(Resource resource, ManagementResourceRegistration root) {
 
                 final Resource host = Resource.Factory.create();
-                resource.registerChild(PathElement.pathElement(HOST, "local"), host);
+                resource.registerChild(PathElement.pathElement(HOST, "master"), host);
 
                 // TODO maybe make creating of empty nodes part of the MNR description
                 host.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
@@ -467,8 +464,8 @@ public class ParseAndMarshalModelsTestCase {
         toRun.add(caputreModelOp);
         executeOperations(controller, toRun);
 
-        model.get(HOST, "local", NAME).set("local");
-        persister.store(model.get(HOST, "local"), null).commit();
+        model.get(HOST, "master", NAME).set("master");
+        persister.store(model.get(HOST, "master"), null).commit();
         return model;
     }
 
