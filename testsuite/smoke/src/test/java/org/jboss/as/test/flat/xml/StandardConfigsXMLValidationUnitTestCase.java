@@ -75,8 +75,18 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     }
 
     @Test
+    public void testStandaloneHA() throws Exception {
+        parseXml("standalone/configuration/standalone-ha.xml");
+    }
+
+    @Test
     public void testStandalonePreview() throws Exception {
         parseXml("standalone/configuration/standalone-preview.xml");
+    }
+
+    @Test
+    public void testStandalonePreviewHA() throws Exception {
+        parseXml("standalone/configuration/standalone-preview-ha.xml");
     }
 
     private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, IOException {

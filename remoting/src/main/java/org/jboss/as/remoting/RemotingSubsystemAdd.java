@@ -49,14 +49,11 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
     static final OperationStepHandler INSTANCE = new RemotingSubsystemAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) {
-        final String threadPoolName = operation.require(THREAD_POOL).asString();
-        model.get(THREAD_POOL).set(threadPoolName);
         // initialize the connectors
         model.get(CONNECTOR);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final String threadPoolName = operation.require(THREAD_POOL).asString();
         // create endpoint
         final EndpointService endpointService = new EndpointService();
         // todo configure option map
@@ -68,7 +65,6 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
         newControllers.add(context
                 .getServiceTarget()
                 .addService(RemotingServices.ENDPOINT, endpointService)
-                //.addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
                 .addListener(verificationHandler)
                 .install());
     }

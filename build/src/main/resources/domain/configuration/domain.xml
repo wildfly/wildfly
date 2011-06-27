@@ -120,7 +120,7 @@
                 </core-environment>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
+            <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
             </subsystem>
@@ -208,7 +208,7 @@
                 </poa>
                 <interop sun="on" chunk-custom-rmi-valuetypes="on" strict-check-on-tc-creation="off"/>
             </subsystem>
-            
+
             <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
                 <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                     <property name="manager.root">jboss-osgi</property>

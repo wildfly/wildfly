@@ -113,13 +113,13 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
             // Can't figure out why -server-config won't work, so for now just
             // copy clustering-standalone.xml contents to standalone.xml
-            File srcFile = new File(jbossHomeDir + "/standalone/configuration/clustering-standalone.xml");
-            File destFile = new File(jbossHomeDir + "/standalone/configuration/standalone.xml");
-            FileChannel srcChannel = new java.io.FileInputStream(srcFile).getChannel();
-            FileChannel destChannel = new java.io.FileOutputStream(destFile).getChannel();
-            srcChannel.transferTo(0, srcFile.length(), destChannel);
-            srcChannel.close();
-            destChannel.close();
+//            File srcFile = new File(jbossHomeDir + "/standalone/configuration/clustering-standalone.xml");
+//            File destFile = new File(jbossHomeDir + "/standalone/configuration/standalone.xml");
+//            FileChannel srcChannel = new java.io.FileInputStream(srcFile).getChannel();
+//            FileChannel destChannel = new java.io.FileOutputStream(destFile).getChannel();
+//            srcChannel.transferTo(0, srcFile.length(), destChannel);
+//            srcChannel.close();
+//            destChannel.close();
 
             cmd.add("-Djboss.home.dir=" + jbossHomeDir);
             cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/standalone/log/boot.log");
@@ -136,6 +136,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 //            cmd.add("-server-config");
 //            cmd.add(jbossHomeDir + "/standalone/configuration/clustering-standalone.xml");
             cmd.add("org.jboss.as.standalone");
+            cmd.add("-server-config");
+            cmd.add(config.getServerConfig());
             cmd.add("-Djava.net.preferIPv4Stack=true");
 
             log.info("Starting container with: " + cmd.toString());

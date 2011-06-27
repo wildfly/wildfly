@@ -20,8 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<server name="example"
-        xmlns="urn:jboss:domain:1.0">
+<server name="example" xmlns="urn:jboss:domain:1.0">
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
@@ -35,7 +34,6 @@
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.messaging"/>
-        <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
@@ -48,23 +46,14 @@
         <extension module="org.jboss.as.weld" />
     </extensions>
 
-    <paths>
-       <path name="absolute" path="tmp"/>
-       <path name="relative" path="relative" relative-to="absolute"/>
-    </paths>
-
     <management>
-        <security-realms>
-            <security-realm name="TestRealm">
-                <authentication>
-                    <users>
-                        <user username="TestUser">
-                            <password>TestUserPassword</password>
-                        </user>
-                    </users>
-                </authentication>
-            </security-realm>
-        </security-realms>
+	    <security-realms>
+		    <security-realm name="PropertiesMgmtSecurityRealm">
+			    <authentication>
+				    <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" />
+			    </authentication>
+		    </security-realm>
+	    </security-realms>
         <management-interfaces>
            <native-interface interface="management" port="9999" />
            <http-interface interface="management" port="9990"/>
@@ -159,7 +148,7 @@
             </poa>
             <interop sun="on" chunk-custom-rmi-valuetypes="on" strict-check-on-tc-creation="off"/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
+        <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.0">
             <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
         </subsystem>
@@ -215,9 +204,9 @@
                     </driver>
                 </drivers>
             </datasources>
-       </subsystem>
-       <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0" />
-       <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0" />
+        <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                 <property name="manager.root">jboss-osgi</property>
             </configuration>
@@ -369,9 +358,6 @@
             </virtual-server>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:weld:1.0" />
-        <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
-            <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
-        </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:1.0">
              <modify-wsdl-address>true</modify-wsdl-address>
              <wsdl-host>localhost</wsdl-host>
@@ -380,8 +366,8 @@
              <wsdl-secure-port>8443</wsdl-secure-port>
              -->
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-            <mod-cluster-config advertise-socket="mod_cluster" />
+        <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
+            <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
         </subsystem>
     </profile>
 
@@ -394,20 +380,20 @@
         </interface>
     </interfaces>
 
-        <socket-binding-group name="standard-sockets" default-interface="public">
-           <socket-binding name="jndi" port="1099"/>
-           <socket-binding name="jmx-connector-registry" port="1090"/>
-           <socket-binding name="jmx-connector-server" port="1091"/>
-           <socket-binding name="http" port="8080"/>
-           <socket-binding name="https" port="8443"/>
-           <socket-binding name="jacorb" port="3528"/>
-           <socket-binding name="jacorb-ssl" port="3529"/>
-           <socket-binding name="osgi-http" port="8090"/>
-           <socket-binding name="remoting" port="4447"/>
-           <socket-binding name="txn-recovery-environment" port="4712"/>
-           <socket-binding name="txn-status-manager" port="4713"/>
-           <socket-binding name="messaging" port="5445" />
-           <socket-binding name="messaging-throughput" port="5455"/>
-        </socket-binding-group>
+    <socket-binding-group name="standard-sockets" default-interface="public">
+        <socket-binding name="jndi" port="1099"/>
+        <socket-binding name="jmx-connector-registry" port="1090"/>
+        <socket-binding name="jmx-connector-server" port="1091"/>
+        <socket-binding name="http" port="8080"/>
+        <socket-binding name="https" port="8443"/>
+        <socket-binding name="jacorb" port="3528"/>
+        <socket-binding name="jacorb-ssl" port="3529"/>
+        <socket-binding name="osgi-http" port="8090"/>
+        <socket-binding name="remoting" port="4447"/>
+        <socket-binding name="txn-recovery-environment" port="4712"/>
+        <socket-binding name="txn-status-manager" port="4713"/>
+        <socket-binding name="messaging" port="5445" />
+        <socket-binding name="messaging-throughput" port="5455"/>
+    </socket-binding-group>
 
 </server>
