@@ -135,7 +135,6 @@ public class RemotingExtension implements Extension {
             address.add(SUBSYSTEM, SUBSYSTEM_NAME);
             address.protect();
 
-            String threadPoolName = null;
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
                 requireNoNamespaceAttribute(reader, i);
@@ -143,21 +142,16 @@ public class RemotingExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case THREAD_POOL: {
-                        threadPoolName = value;
+                        // TODO this unused attribute is allowed in the file solely so the TCK
+                        // config would not fail right before CR1
                         break;
                     }
                     default:
                         throw unexpectedAttribute(reader, i);
                 }
             }
-            if (threadPoolName == null) {
-                throw missingRequired(reader, Collections.singleton(Attribute.THREAD_POOL));
-            }
 
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).set(address);
-            subsystem.get(THREAD_POOL).set(threadPoolName);
+            final ModelNode subsystem = Util.getEmptyOperation(ADD, address);
             list.add(subsystem);
 
             // Handle elements
@@ -392,9 +386,6 @@ public class RemotingExtension implements Extension {
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
             final ModelNode node = context.getModelNode();
-            if (has(node, THREAD_POOL)) {
-                writeAttribute(writer, Attribute.THREAD_POOL, node.get(THREAD_POOL));
-            }
 
             if (has(node, CONNECTOR)) {
                 final ModelNode connector = node.get(CONNECTOR);

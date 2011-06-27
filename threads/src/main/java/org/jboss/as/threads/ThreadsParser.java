@@ -96,7 +96,6 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
         subsystem.get(OP_ADDR).set(address);
         list.add(subsystem);
 
-        readXmlElements(reader, list, address);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case THREADS_1_0: {
@@ -107,22 +106,6 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                     throw unexpectedElement(reader);
                 }
             }
-        }
-    }
-
-    public String readXmlElements(final XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode address)
-            throws XMLStreamException {
-        // Handle elements
-        String name = null;
-
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            name = readSingleElement(reader, list, address);
-        }
-
-        if (name == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-        } else {
-            return name;
         }
     }
 

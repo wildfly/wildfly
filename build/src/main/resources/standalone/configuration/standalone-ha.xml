@@ -24,6 +24,7 @@
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
+        <extension module="org.jboss.as.clustering.jgroups"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
@@ -32,6 +33,7 @@
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
+        <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
@@ -44,16 +46,16 @@
     </extensions>
 
     <management>
-	    <security-realms>
-		    <security-realm name="PropertiesMgmtSecurityRealm">
-			    <authentication>
-				    <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" />
-			    </authentication>
-		    </security-realm>
-	    </security-realms>
+        <security-realms>
+            <security-realm name="PropertiesMgmtSecurityRealm">
+                <authentication>
+                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" />
+                </authentication>
+            </security-realm>
+        </security-realms>
         <management-interfaces>
-           <native-interface interface="management" port="9999" />
-           <http-interface interface="management" port="9990"/>
+          <native-interface interface="management" port="9999" />
+          <http-interface interface="management" port="9990"/>
         </management-interfaces>
     </management>
 
@@ -62,7 +64,7 @@
             <console-handler name="CONSOLE">
                 <level name="INFO"/>
                 <formatter>
-                    <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+                     <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </formatter>
             </console-handler>
 
@@ -119,19 +121,45 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee:1.0" />
         <subsystem xmlns="urn:jboss:domain:ejb3:1.0" />
-        <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="hibernate">
+        <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="cluster">
+            <cache-container name="cluster" default-cache="default">
+                <alias>ha-partition</alias>
+                <replicated-cache name="default" mode="SYNC" batching="true">
+                    <locking isolation="REPEATABLE_READ"/>
+                </replicated-cache>
+            </cache-container>
+            <cache-container name="web" default-cache="repl">
+                <alias>standard-session-cache</alias>
+                <replicated-cache name="repl" mode="ASYNC" batching="true">
+                    <locking isolation="REPEATABLE_READ"/>
+                    <file-store/>
+                </replicated-cache>
+                <distributed-cache name="dist" mode="ASYNC" batching="true">
+                    <locking isolation="REPEATABLE_READ"/>
+                    <file-store/>
+                </distributed-cache>
+            </cache-container>
+            <cache-container name="sfsb" default-cache="repl">
+                <alias>sfsb-cache</alias>
+                <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>
+                <replicated-cache name="repl" mode="ASYNC" batching="true">
+                    <locking isolation="REPEATABLE_READ"/>
+                    <eviction strategy="LRU" max-entries="10000"/>
+                    <file-store/>
+                </replicated-cache>
+            </cache-container>
             <cache-container name="hibernate" default-cache="local-query">
-                <local-cache name="entity">
+                <invalidation-cache name="entity" mode="SYNC">
                     <eviction strategy="LRU" max-entries="10000"/>
                     <expiration max-idle="100000"/>
-                </local-cache>
+                </invalidation-cache>
                 <local-cache name="local-query">
                     <eviction strategy="LRU" max-entries="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
-                <local-cache name="timestamps">
+                <replicated-cache name="timestamps" mode="ASYNC">
                     <eviction strategy="NONE"/>
-                </local-cache>
+                </replicated-cache>
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
@@ -153,13 +181,55 @@
                 </long-running-threads>
             </default-workmanager>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jgroups:1.0" default-stack="udp">
+            <stack name="udp">
+                <transport type="UDP" socket-binding="jgroups-udp" diagnostics-socket-binding="jgroups-diagnostics"/>
+                <protocol type="PING"/>
+                <protocol type="MERGE2"/>
+                <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
+                <protocol type="FD"/>
+                <protocol type="VERIFY_SUSPECT"/>
+                <protocol type="BARRIER"/>
+                <protocol type="pbcast.NAKACK"/>
+                <protocol type="UNICAST"/>
+                <protocol type="pbcast.STABLE"/>
+                <protocol type="VIEW_SYNC"/>
+                <protocol type="pbcast.GMS"/>
+                <protocol type="UFC"/>
+                <protocol type="MFC"/>
+                <protocol type="FRAG2"/>
+                <protocol type="pbcast.STREAMING_STATE_TRANSFER"/>
+                <protocol type="pbcast.FLUSH"/>
+            </stack>
+            <stack name="tcp">
+                <transport type="TCP" socket-binding="jgroups-tcp" diagnostics-socket-binding="jgroups-diagnostics"/>
+                <protocol type="MPING" socket-binding="jgroups-mping"/>
+                <protocol type="MERGE2"/>
+                <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+                <protocol type="FD"/>
+                <protocol type="VERIFY_SUSPECT"/>
+                <protocol type="BARRIER"/>
+                <protocol type="pbcast.NAKACK"/>
+                <protocol type="UNICAST"/>
+                <protocol type="pbcast.STABLE"/>
+                <protocol type="VIEW_SYNC"/>
+                <protocol type="pbcast.GMS"/>
+                <protocol type="UFC"/>
+                <protocol type="MFC"/>
+                <protocol type="FRAG2"/>
+                <protocol type="pbcast.STREAMING_STATE_TRANSFER"/>
+                <protocol type="pbcast.FLUSH"/>
+            </stack>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:jmx:1.0">
             <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jpa:1.0">
             <jpa default-datasource=""/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:naming:1.0" />
+        <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+            <mod-cluster-config advertise-socket="modcluster" />
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                 <property name="manager.root">jboss-osgi</property>
@@ -221,6 +291,7 @@
                 <module identifier="org.jboss.osgi.xerces" startlevel="3"/>
             </modules>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:naming:1.0" />
         <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0" />
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
@@ -253,7 +324,7 @@
         <subsystem xmlns="urn:jboss:domain:web:1.0">
             <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
             <virtual-server name="localhost" enable-welcome-root="true">
-                <alias name="example.com" />
+               <alias name="example.com" />
             </virtual-server>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:weld:1.0" />
@@ -271,13 +342,20 @@
     <socket-binding-group name="standard-sockets" default-interface="public">
         <socket-binding name="http" port="8080"/>
         <socket-binding name="https" port="8443"/>
+        <socket-binding name="jgroups-udp" port="55200" multicast-address="230.0.0.4" multicast-port="45688"/>
+        <socket-binding name="jgroups-udp-fd" port="54200"/>
+        <socket-binding name="jgroups-diagnostics" port="0" multicast-address="224.0.75.75" multicast-port="7500"/>
+        <socket-binding name="jgroups-tcp" port="7600"/>
+        <socket-binding name="jgroups-tcp-fd" port="57600"/>
+        <socket-binding name="jgroups-mping" port="0" multicast-address="230.0.0.4" multicast-port="45700"/>
         <socket-binding name="jmx-connector-registry" port="1090"/>
         <socket-binding name="jmx-connector-server" port="1091"/>
         <socket-binding name="jndi" port="1099"/>
+        <socket-binding name="modcluster" port="0"  multicast-address="224.0.1.105" multicast-port="23364"/>
         <socket-binding name="osgi-http" port="8090"/>
         <socket-binding name="remoting" port="4447"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
     </socket-binding-group>
-
 </server>
+

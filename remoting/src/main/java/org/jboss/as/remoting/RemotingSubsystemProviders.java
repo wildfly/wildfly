@@ -81,10 +81,6 @@ class RemotingSubsystemProviders {
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
             subsystem.get(NAMESPACE).set(Namespace.REMOTING_1_0.getUriString());
 
-            subsystem.get(ATTRIBUTES, THREAD_POOL, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, THREAD_POOL, DESCRIPTION).set(bundle.getString("remoting.thread-pool"));
-            subsystem.get(ATTRIBUTES, THREAD_POOL, REQUIRED).set(true);
-
             subsystem.get(CHILDREN, CONNECTOR, DESCRIPTION).set(bundle.getString("remoting.connectors"));
 
             return subsystem;
@@ -100,9 +96,6 @@ class RemotingSubsystemProviders {
             final ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set("add");
             operation.get(DESCRIPTION).set(bundle.getString("remoting.add"));
-            operation.get(REQUEST_PROPERTIES, THREAD_POOL, TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, THREAD_POOL, DESCRIPTION).set(bundle.getString("remoting.thread-pool"));
-            operation.get(REQUEST_PROPERTIES, THREAD_POOL, REQUIRED).set(true);
 
             return operation;
         }
