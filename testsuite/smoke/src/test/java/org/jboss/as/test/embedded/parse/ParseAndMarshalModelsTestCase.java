@@ -174,11 +174,30 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testStandaloneXml() throws Exception {
+        standaloneXmlTest(false, false);
+    }
+
+    @Test
+    public void testStandalonePreviewXml() throws Exception {
+        standaloneXmlTest(true, false);
+    }
+
+    @Test
+    public void testStandaloneHAXml() throws Exception {
+        standaloneXmlTest(false, true);
+    }
+
+    @Test
+    public void testStandalonePreviewHAXml() throws Exception {
+        standaloneXmlTest(true, true);
+    }
+
+    private void standaloneXmlTest(boolean preview, boolean ha) throws Exception {
         File file = new File("target/standalone-copy.xml");
         if (file.exists()) {
             file.delete();
         }
-        copyFile(getOriginalStandaloneXml(), file);
+        copyFile(getOriginalStandaloneXml(preview, ha), file);
         ModelNode originalModel = loadServerModel(file);
         ModelNode reparsedModel = loadServerModel(file);
 
@@ -201,14 +220,22 @@ public class ParseAndMarshalModelsTestCase {
         compare(originalModel, reparsedModel);
     }
 
-
     @Test
     public void testDomainXml() throws Exception {
+        domainXmlTest(false);
+    }
+
+    @Test
+    public void testDomainPreviewXml() throws Exception {
+        domainXmlTest(true);
+    }
+
+    private void domainXmlTest(boolean preview) throws Exception {
         File file = new File("target/domain-copy.xml");
         if (file.exists()) {
             file.delete();
         }
-        copyFile(getOriginalDomainXml(), file);
+        copyFile(getOriginalDomainXml(preview), file);
         ModelNode originalModel = loadDomainModel(file);
         ModelNode reparsedModel = loadDomainModel(file);
 
@@ -511,9 +538,12 @@ public class ParseAndMarshalModelsTestCase {
         }
     }
 
-    private File getOriginalStandaloneXml() {
+    private File getOriginalStandaloneXml(boolean preview, boolean ha) {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
+
+        String profile = preview ? (ha ? "standalone-preview-ha.xml" : "standalone-preview.xml")
+                                 : (ha ? "standalone-ha.xml" : "standalone.xml");
         File f = new File(".").getAbsoluteFile();
         f = f.getParentFile().getParentFile().getParentFile();
         Assert.assertTrue(f.exists());
@@ -529,7 +559,7 @@ public class ParseAndMarshalModelsTestCase {
         Assert.assertTrue(f.exists());
         f = new File(f, "configuration");
         Assert.assertTrue(f.exists());
-        f = new File(f, "standalone.xml");
+        f = new File(f, profile);
         Assert.assertTrue(f.exists());
         return f;
     }
@@ -564,11 +594,11 @@ public class ParseAndMarshalModelsTestCase {
         return f;
     }
 
-    private File getOriginalDomainXml() {
+    private File getOriginalDomainXml(boolean preview) {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
         File f = getDomainConfigDir();
-        f = new File(f, "domain.xml");
+        f = new File(f, preview ? "domain-preview.xml" : "domain.xml");
         Assert.assertTrue(f.exists());
         return f;
     }
