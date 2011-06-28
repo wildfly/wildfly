@@ -21,6 +21,8 @@ package org.jboss.as.server.deployment;
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
@@ -29,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -36,13 +39,58 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class DeploymentRemoveHandler implements OperationStepHandler, DescriptionProvider {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.server.controller");
 
     public static final String OPERATION_NAME = REMOVE;
 
     public static final DeploymentRemoveHandler INSTANCE = new DeploymentRemoveHandler();
 
     private DeploymentRemoveHandler() {
+    }
+
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
+
+        context.removeResource(PathAddress.EMPTY_ADDRESS);
+
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    String deploymentUnitName = null;
+
+                    boolean enabled = model.hasDefined(ENABLED) ? model.get(ENABLED).asBoolean() : true;
+                    if (enabled) {
+                        final ModelNode opAddr = operation.get(OP_ADDR);
+                        final PathAddress address = PathAddress.pathAddress(opAddr);
+                        final String name = address.getLastElement().getValue();
+                        deploymentUnitName = model.hasDefined(RUNTIME_NAME) ? model.get(RUNTIME_NAME).asString() : name;
+                        final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+                        context.removeService(deploymentUnitServiceName);
+                        context.removeService(deploymentUnitServiceName.append("contents"));
+                    }
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                        recoverServices(context, operation, model);
+
+                        if (enabled && context.hasFailureDescription()) {
+                            log.infof("Undeploy of deployment \"%s\" was rolled back with failure message %s",
+                                    deploymentUnitName, context.getFailureDescription().asString());
+                        } else if (enabled) {
+                            log.infof("Undeploy of deployment \"%s\" was rolled back with no failure message",
+                                    deploymentUnitName);
+                        }
+                    } else if (enabled) {
+                        log.infof("Undeployed \"%s\"", deploymentUnitName);
+                    }
+                }
+            }, OperationContext.Stage.RUNTIME);
+        }
+        context.completeStep();
+    }
+
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getType() == OperationContext.Type.SERVER;
     }
 
     @Override
@@ -53,14 +101,6 @@ public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implement
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         boolean enabled = model.hasDefined(ENABLED) ? model.get(ENABLED).asBoolean() : true;
         if (!enabled) return;
-
-        final ModelNode opAddr = operation.get(OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
-        final String name = address.getLastElement().getValue();
-        final String deploymentUnitName = model.hasDefined(RUNTIME_NAME) ? model.get(RUNTIME_NAME).asString() : name;
-        final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-        context.removeService(deploymentUnitServiceName);
-        context.removeService(deploymentUnitServiceName.append("contents"));
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {

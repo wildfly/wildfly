@@ -38,6 +38,7 @@ import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getConten
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.marshalling.util.IntKeyMap;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
@@ -57,6 +58,8 @@ import org.jboss.vfs.VirtualFile;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DeploymentHandlerUtil {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.server.controller");
 
     static class ContentItem {
         // either hash or <path, relativeTo, isArchive>
@@ -114,6 +117,13 @@ public class DeploymentHandlerUtil {
                             for(ServiceController<?> controller : controllers) {
                                 context.removeService(controller.getName());
                             }
+                            if (context.hasFailureDescription()) {
+                                log.infof("Deployment of \"%s\" was rolled back with failure message %s", deploymentUnitName, context.getFailureDescription().asString());
+                            } else {
+                                log.infof("Deployment of \"%s\" was rolled back with no failure message", deploymentUnitName);
+                            }
+                        } else {
+                            log.infof("Deployed \"%s\"", deploymentUnitName);
                         }
                     }
                 }
@@ -182,10 +192,31 @@ public class DeploymentHandlerUtil {
                         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                             ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                             doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration,  contents);
-                            context.completeStep();
+                            if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                                if (context.hasFailureDescription()) {
+                                    log.infof("Redeploy of deployment \"%s\" was rolled back with failure message %s",
+                                            deploymentUnitName, context.getFailureDescription().asString());
+                                } else {
+                                    log.infof("Redeploy of deployment \"%s\" was rolled back with no failure message",
+                                            deploymentUnitName);
+                                }
+                            } else {
+                                log.infof("Redeployed \"%s\"", deploymentUnitName);
+                            }
                         }
                     }, OperationContext.Stage.IMMEDIATE);
-                    context.completeStep();
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                        // TODO restore
+                        if (context.hasFailureDescription()) {
+                            log.infof("Undeploy of deployment \"%s\" was rolled back with failure message %s",
+                                    deploymentUnitName, context.getFailureDescription().asString());
+                        } else {
+                            log.infof("Undeploy of deployment \"%s\" was rolled back with no failure message",
+                                    deploymentUnitName);
+                        }
+                    } else {
+                        log.infof("Undeployed \"%s\"", deploymentUnitName);
+                    }
                 }
             }, OperationContext.Stage.RUNTIME);
         }
@@ -225,6 +256,16 @@ public class DeploymentHandlerUtil {
                         final DeploymentHandlerUtil.ContentItem[] contents = getContents(originalDeployment.require(CONTENT));
                         verificationHandler = new ServiceVerificationHandler();
                         doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, contents);
+
+                        if (context.hasFailureDescription()) {
+                            log.infof("Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with failure message %s",
+                                    replacedDeploymentUnitName, deploymentUnitName, context.getFailureDescription().asString());
+                        } else {
+                            log.infof("Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with no failure message",
+                                    replacedDeploymentUnitName, deploymentUnitName);
+                        }
+                    } else {
+                        log.infof("Replaced deployment \"%s\" with deployment \"%s\"", replacedDeploymentUnitName, deploymentUnitName);
                     }
                 }
             }, OperationContext.Stage.RUNTIME);
@@ -251,6 +292,16 @@ public class DeploymentHandlerUtil {
                         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
                         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                         doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, contents);
+
+                        if (context.hasFailureDescription()) {
+                            log.infof("Undeploy of deployment \"%s\" was rolled back with failure message %s",
+                                    deploymentUnitName, context.getFailureDescription().asString());
+                        } else {
+                            log.infof("Undeploy of deployment \"%s\" was rolled back with no failure message",
+                                    deploymentUnitName);
+                        }
+                    } else {
+                        log.infof("Undeployed \"%s\"", deploymentUnitName);
                     }
                 }
             }, OperationContext.Stage.RUNTIME);
