@@ -80,13 +80,11 @@
                                 <include>**/*TestCase.java</include>
                             </includes>
                             <excludes>
-                                <exclude>org/jboss/as/test/embedded/osgi/**</exclude>
-                                <exclude>org/jboss/as/test/embedded/configadmin/**</exclude>
-                                <exclude>org/jboss/as/test/embedded/demos/ws/**</exclude>
-                                <exclude>org/jboss/as/test/embedded/demos/jms/**</exclude>
                                 <exclude>org/jboss/as/test/embedded/demos/client/jms/**</exclude>
-                                <exclude>org/jboss/as/test/embedded/demos/messaging/**</exclude>
                                 <exclude>org/jboss/as/test/embedded/demos/client/messaging/**</exclude>
+                                <exclude>org/jboss/as/test/embedded/demos/jms/**</exclude>
+                                <exclude>org/jboss/as/test/embedded/demos/messaging/**</exclude>
+                                <exclude>org/jboss/as/test/embedded/demos/ws/**</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -125,16 +123,12 @@
                                         <jboss.server.config.file.name>standalone-preview.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                     <includes>
-                                        <include>org/jboss/as/test/embedded/configadmin/*TestCase.java</include>
-                                        <include>org/jboss/as/test/embedded/demos/ws/*TestCase.java</include>
-                                        <include>org/jboss/as/test/embedded/demos/jms/*TestCase.java</include>
                                         <include>org/jboss/as/test/embedded/demos/client/jms/*TestCase.java</include>
-                                        <include>org/jboss/as/test/embedded/demos/messaging/*TestCase.java</include>
                                         <include>org/jboss/as/test/embedded/demos/client/messaging/*TestCase.java</include>
+                                        <include>org/jboss/as/test/embedded/demos/jms/*TestCase.java</include>
+                                        <include>org/jboss/as/test/embedded/demos/messaging/*TestCase.java</include>
+                                        <include>org/jboss/as/test/embedded/demos/ws/*TestCase.java</include>
                                     </includes>
-                                    <excludes>
-                                        <exclude>org/jboss/as/test/embedded/osgi/**</exclude>
-                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>
