@@ -99,12 +99,12 @@ public abstract class ManagementRequest<T> {
 
                 try {
                     final ManagementChannel channel = channelStrategy.getChannel();
-                    log.tracef("Got channel %s from request %s", channel, ManagementRequest.this);
+                    log.tracef("Got channel %s from request %s for %d", channel, ManagementRequest.this, getCurrentRequestId());
 
                     //Ends up in writeRequest(ProtocolChannel, FlushableDataOutput)
                     channel.executeRequest(ManagementRequest.this, new DelegatingResponseHandler(channelStrategy));
                 } catch (Exception e) {
-                    log.tracef(e, "Could not get channel for request %s, failing %s", ManagementRequest.this, future);
+                    log.tracef(e, "Could not get channel for request %s, failing %s for %d", ManagementRequest.this, future, getCurrentRequestId());
                     future.failed(e);
                 }
             }
@@ -173,7 +173,7 @@ public abstract class ManagementRequest<T> {
                 future.done(result);
                 return result;
             } catch (Exception e) {
-                future.failed(e);
+                setError(e);
             } finally {
                 clientChannelStrategy.requestDone();
             }

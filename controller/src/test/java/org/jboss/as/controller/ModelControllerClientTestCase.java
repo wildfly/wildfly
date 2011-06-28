@@ -38,8 +38,8 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
@@ -47,6 +47,7 @@ import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.threads.AsyncFuture;
 import org.junit.After;
 import org.junit.Before;
@@ -59,6 +60,8 @@ import org.xnio.IoUtils;
  * @version $Revision: 1.1 $
  */
 public class ModelControllerClientTestCase {
+
+    Logger log = Logger.getLogger(ModelControllerClientTestCase.class);
 
     RemoteChannelPairSetup channels;
     @Before
@@ -270,6 +273,7 @@ public class ModelControllerClientTestCase {
                 executeLatch.countDown();
 
                 try {
+                    log.debug("Waiting for interrupt");
                     //Wait for this operation to be cancelled
                     Thread.sleep(10000000);
                     ModelNode result = new ModelNode();
