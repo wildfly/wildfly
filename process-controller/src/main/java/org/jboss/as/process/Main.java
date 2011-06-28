@@ -58,20 +58,22 @@ public final class Main {
     public static void usage() {
         System.out.println("Usage: ./domain.sh [args...]\n");
         System.out.println("where args include:");
-        System.out.println("    -backup                            Keep a copy of the persistent domain configuration even if this host is not the Domain Controller");
-        System.out.println("    -cached-dc                         If this host is not the Domain Controller and cannot contact the Domain Controller at boot, boot using a locally cached copy of the domain configuration (see -backup)");
-        System.out.println("    -D<name>[=<value>]                 Set a system property");
-        System.out.println("    -domain-config <config>            Name of the domain configuration file to use (default is \"domain.xml\")");
-        System.out.println("    -help                              Display this message and exit");
-        System.out.println("    -host-config <config>              Name of the host configuration file to use (default is \"host.xml\")");
-        System.out.println("    -pc-address <address>              Address of process controller socket");
-        System.out.println("    -pc-port <port>                    Port of process controller socket");
-        System.out.println("    -interprocess-name <proc>          Name of this process, used to register the socket with the server in the process controller");
-        System.out.println("    -interprocess-hc-address <address> Address this host controller's socket should listen on");
-        System.out.println("    -interprocess-hc-port <port>       Port of this host controller's socket  should listen on");
-        System.out.println("    -P  <url>                          Load system properties from the given url");
-        System.out.println("    -properties <url>                  Load system properties from the given url");
-        System.out.println("    -version                           Print version and exit\n");
+        System.out.println("    --backup                            Keep a copy of the persistent domain configuration even if this host is not the Domain Controller");
+        System.out.println("    --cached-dc                         If this host is not the Domain Controller and cannot contact the Domain Controller at boot, boot using a locally cached copy of the domain configuration (see -backup)");
+        System.out.println("    -D<name>[=<value>]                  Set a system property");
+        System.out.println("    --domain-config=<config>            Name of the domain configuration file to use (default is \"domain.xml\")");
+        System.out.println("    -h                                  Display this message and exit");
+        System.out.println("    --help                              Display this message and exit");
+        System.out.println("    --host-config=<config>              Name of the host configuration file to use (default is \"host.xml\")");
+        System.out.println("    --pc-address=<address>              Address of process controller socket");
+        System.out.println("    --pc-port=<port>                    Port of process controller socket");
+        System.out.println("    --interprocess-name=<proc>          Name of this process, used to register the socket with the server in the process controller");
+        System.out.println("    --interprocess-hc-address=<address> Address this host controller's socket should listen on");
+        System.out.println("    --interprocess-hc-port=<port>       Port of this host controller's socket  should listen on");
+        System.out.println("    -P=<url>                            Load system properties from the given url");
+        System.out.println("    --properties=<url>                  Load system properties from the given url");
+        System.out.println("    -V                                  Print version and exit\n");
+        System.out.println("    --version                           Print version and exit\n");
     }
 
     private Main() {
