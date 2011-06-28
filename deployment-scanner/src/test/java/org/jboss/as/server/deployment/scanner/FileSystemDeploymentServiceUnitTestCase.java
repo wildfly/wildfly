@@ -965,6 +965,49 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertTrue(failed.exists());
     }
 
+    @Test
+    public void testArchiveRedeployedAfterReboot() throws Exception {
+
+        File war = createFile("foo.war");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        TesteeSet ts = createTestee();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+
+        // Create a new testee to simulate a reboot
+        ts = createTestee();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+    }
+
+    @Test
+    public void testExplodedRedeployedAfterReboot() throws Exception {
+        final File war = createDirectory("foo.war", "index.html");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        TesteeSet ts = createTestee();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+
+        // Create a new testee to simulate a reboot
+        ts = createTestee();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+    }
+
     private TesteeSet createTestee(String... existingContent) throws OperationFailedException {
         return createTestee(new MockServerController(new MockDeploymentRepository(), existingContent));
     }
