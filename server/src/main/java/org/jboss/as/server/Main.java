@@ -22,6 +22,9 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.as.process.Main.getVersionString;
+import static org.jboss.as.process.Main.usage;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -31,6 +34,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.version.Version;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
@@ -50,6 +54,17 @@ import org.jboss.stdio.StdioContext;
  * @author Brian Stansberry
  */
 public final class Main {
+
+    public static void usage() {
+        System.out.println("Usage: ./standalone.sh [args...]\n");
+        System.out.println("where args include:");
+        System.out.println("    -D<name>[=<value>]                 Set a system property");
+        System.out.println("    --help                             Display this message and exit");
+        System.out.println("    -P=<url>                           Load system properties from the given url");
+        System.out.println("    --properties=<url>                 Load system properties from the given url");
+        System.out.println("    --server-config <config>           Name of the server configuration file to use (default is \"standalone.xml\")");
+        System.out.println("    --version                          Print version and exit\n");
+    }
 
     private Main() {
     }
@@ -91,14 +106,10 @@ public final class Main {
     }
 
     private static void abort(Throwable t) {
-        if (t != null) {
-            t.printStackTrace(System.err);
-        }
         try {
-            // Inform the process controller that we are shutting down on purpose
-            // so it doesn't try to respawn us
-            // FIXME implement shutdown()
-            throw new UnsupportedOperationException("implement me");
+            if (t != null) {
+                t.printStackTrace(System.err);
+            }
         } finally {
             SystemExiter.exit(1);
         }
@@ -110,20 +121,43 @@ public final class Main {
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
             try {
-                if (CommandLineConstants.SERVER_CONFIG.equals(arg)) {
+                if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg) || CommandLineConstants.OLD_VERSION.equals(arg)) {
+                    System.out.println("JBoss Application Server " + getVersionString());
+                    return null;
+                } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
+                    usage();
+                    return null;
+                } else if (CommandLineConstants.SERVER_CONFIG.equals(arg) || CommandLineConstants.OLD_SERVER_CONFIG.equals(arg)) {
                     serverConfig = args[++i];
-                } else if (CommandLineConstants.PROPERTIES.equals(arg) || "-P".equals(arg)) {
-                    // Set system properties from url/file
-                    URL url = null;
-                    try {
-                        url = makeURL(args[++i]);
-                        Properties props = System.getProperties();
-                        props.load(url.openConnection().getInputStream());
-                    } catch (MalformedURLException e) {
-                        System.err.printf("Malformed URL provided for option %s\n", arg);
+                } else if (arg.startsWith(CommandLineConstants.SERVER_CONFIG)) {
+                    serverConfig = parseValue(arg, CommandLineConstants.SERVER_CONFIG);
+                    if (serverConfig == null) {
                         return null;
-                    } catch (IOException e) {
-                        System.err.printf("Unable to load properties from URL %s\n", url);
+                    }
+                } else if (arg.startsWith(CommandLineConstants.OLD_SERVER_CONFIG)) {
+                    serverConfig = parseValue(arg, CommandLineConstants.OLD_SERVER_CONFIG);
+                    if (serverConfig == null) {
+                        return null;
+                    }
+                } else if (CommandLineConstants.PROPERTIES.equals(arg) || CommandLineConstants.OLD_PROPERTIES.equals(arg)
+                        || CommandLineConstants.SHORT_PROPERTIES.equals(arg)) {
+                    // Set system properties from url/file
+                    if (!processProperties(arg, args[++i])) {
+                        return null;
+                    }
+                } else if (arg.startsWith(CommandLineConstants.PROPERTIES)) {
+                    String urlSpec = parseValue(arg, CommandLineConstants.PROPERTIES);
+                    if (urlSpec == null || !processProperties(arg, urlSpec)) {
+                        return null;
+                    }
+                } else if (arg.startsWith(CommandLineConstants.SHORT_PROPERTIES)) {
+                    String urlSpec = parseValue(arg, CommandLineConstants.SHORT_PROPERTIES);
+                    if (urlSpec == null || !processProperties(arg, urlSpec)) {
+                        return null;
+                    }
+                }  else if (arg.startsWith(CommandLineConstants.OLD_PROPERTIES)) {
+                    String urlSpec = parseValue(arg, CommandLineConstants.OLD_PROPERTIES);
+                    if (urlSpec == null || !processProperties(arg, urlSpec)) {
                         return null;
                     }
                 } else if (arg.startsWith("-D")) {
@@ -142,15 +176,46 @@ public final class Main {
                     SecurityActions.setSystemProperty(name, value);
                 } else {
                     System.err.printf("Invalid option '%s'\n", arg);
+                    usage();
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
                 System.err.printf("Argument expected for option %s\n", arg);
+                usage();
                 return null;
             }
         }
 
         return new ServerEnvironment(systemProperties, systemEnvironment, serverConfig, launchType);
+    }
+
+    private static String parseValue(final String arg, final String key) {
+        String value = null;
+        int splitPos = key.length();
+        if (arg.length() <= splitPos + 1 || arg.charAt(splitPos) != '=') {
+            usage();
+        } else {
+            value = arg.substring(splitPos + 1);
+        }
+        return value;
+    }
+
+    private static boolean processProperties(final String arg, final String urlSpec) {
+         URL url = null;
+         try {
+             url = makeURL(urlSpec);
+             Properties props = System.getProperties();
+             props.load(url.openConnection().getInputStream());
+             return true;
+         } catch (MalformedURLException e) {
+             System.err.printf("Malformed URL provided for option %s\n", arg);
+             usage();
+             return false;
+         } catch (IOException e) {
+             System.err.printf("Unable to load properties from URL %s\n", url);
+             usage();
+             return false;
+         }
     }
 
     private static URL makeURL(String urlspec) throws MalformedURLException {
