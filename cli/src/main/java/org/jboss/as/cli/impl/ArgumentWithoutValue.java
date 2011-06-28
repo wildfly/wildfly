@@ -81,7 +81,7 @@ public class ArgumentWithoutValue implements CommandArgument {
     }
 
     public void setExclusive(boolean exclusive) {
-        this.exclusive = true;
+        this.exclusive = exclusive;
     }
 
     public void addRequiredPreceding(CommandArgument arg) {

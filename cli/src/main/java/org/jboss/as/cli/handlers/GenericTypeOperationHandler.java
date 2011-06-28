@@ -62,13 +62,14 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     protected final List<String> excludeOps;
 
     // help arguments
-    protected final ArgumentWithoutValue helpAttributes;
+    protected final ArgumentWithoutValue helpProperties;
     protected final ArgumentWithoutValue helpCommands;
 
     public GenericTypeOperationHandler(String nodeType, String idName, List<String> typeOperations, List<String> excludeOperations) {
 
         super("generic-type-operation", true);
 
+        helpArg.setExclusive(false);
         nodePath = new DefaultOperationRequestAddress();
         OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(nodePath);
         try {
@@ -164,6 +165,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             }
         };
         name.addRequiredPreceding(operation);
+        name.addCantAppearAfter(helpArg);
 
         props = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
@@ -229,15 +231,17 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         props.addRequiredPreceding(operation);
         props.addRequiredPreceding(name);
 
-        helpAttributes = new ArgumentWithoutValue(this, "--attributes");
-        helpAttributes.addRequiredPreceding(helpArg);
-        helpAttributes.addCantAppearAfter(operation);
+        helpArg.addCantAppearAfter(name);
+
+        helpProperties = new ArgumentWithoutValue(this, "--attributes");
+        helpProperties.addRequiredPreceding(helpArg);
+        helpProperties.addCantAppearAfter(operation);
 
         helpCommands = new ArgumentWithoutValue(this, "--commands");
         helpCommands.addRequiredPreceding(helpArg);
         helpCommands.addCantAppearAfter(operation);
-        helpCommands.addCantAppearAfter(helpAttributes);
-        helpAttributes.addCantAppearAfter(helpCommands);
+        helpCommands.addCantAppearAfter(helpProperties);
+        helpProperties.addCantAppearAfter(helpCommands);
     }
 
     @Override
@@ -284,7 +288,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
         ParsedArguments args = ctx.getParsedArguments();
         try {
-            if(helpAttributes.isPresent(args)) {
+            if(helpProperties.isPresent(args)) {
                 printAttributes(ctx);
                 return;
             }
@@ -308,7 +312,70 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             printNodeDescription(ctx);
             return;
         }
-        ctx.printLine("HELP!");
+
+        ModelNode request = initRequest(ctx);
+        if(request == null) {
+            return;
+        }
+        request.get("operation").set("read-operation-description");
+        request.get("name").set(operationName);
+
+        try {
+            ModelNode result = ctx.getModelControllerClient().execute(request);
+            if(!result.hasDefined("result")) {
+                ctx.printLine("Operation description is not available.");
+                return;
+            }
+            result = result.get("result");
+            if(!result.hasDefined("description")) {
+                ctx.printLine("Operation description is not available.");
+                return;
+            }
+
+            final StringBuilder buf = new StringBuilder();
+            buf.append("Operation description:\n\n\t");
+            buf.append(result.get("description").asString());
+            buf.append("\n\nProperties:");
+            ctx.printLine(buf.toString());
+
+            result = result.get("request-properties");
+            for(Property attr : result.asPropertyList()) {
+                final ModelNode value = attr.getValue();
+
+                final boolean required = value.has("required") ? value.get("required").asBoolean() : false;
+
+                final String type = value.has("type") ? value.get("type").asString() : "no type info";
+
+                final StringBuilder descr = new StringBuilder();
+                descr.append("\n --");
+                descr.append(attr.getName());
+
+                final int length = descr.length();
+                int newLength = Math.max(24, ((length + 4) / 4) * 4);
+                descr.setLength(newLength);
+                for (int i = length; i < newLength; ++i) {
+                    descr.setCharAt(i, ' ');
+                }
+
+                descr.append("- ");
+
+                if(value.has("description")) {
+                    descr.append('(');
+                    descr.append(type).append(',');
+                    if(required) {
+                        descr.append("required");
+                    } else {
+                        descr.append("optional");
+                    }
+                    descr.append(") ");
+                    descr.append(value.get("description").asString());
+                } else {
+                    descr.append("no description");
+                }
+                ctx.printLine(descr.toString());
+            }
+        } catch (Exception e) {
+        }
     }
 
     protected void printNodeDescription(CommandContext ctx) {
