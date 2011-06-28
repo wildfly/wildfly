@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 
 import org.jboss.as.demos.war.archive.SimpleServlet;
 import org.jboss.dmr.ModelNode;
@@ -55,7 +56,7 @@ public class ExampleRunner {
             is = new BufferedInputStream(archive.as(ZipExporter.class).exportAsInputStream());
 
             // Write the POST request and read the response from the HTTP server.
-            URL uploadContent = new URL("http://localhost:9990/domain-api/add-content");
+            URL uploadContent = new URL("http://localhost:9990/management/add-content");
             HttpURLConnection connection =(HttpURLConnection) uploadContent.openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
@@ -107,7 +108,7 @@ public class ExampleRunner {
 
             // II. Associate the new content with its name
 
-            connection =(HttpURLConnection) new URL("http://localhost:9990/domain-api/").openConnection();
+            connection =(HttpURLConnection) new URL("http://localhost:9990/management/").openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
@@ -116,7 +117,9 @@ public class ExampleRunner {
             ModelNode op = new ModelNode();
             op.get("operation").set("add");
             op.get("address").add("deployment", "war-example.war");
-            op.get("hash").set(hash);
+            ModelNode hashNode = new ModelNode();
+            hashNode.get("hash").set(hash);
+            op.get("content").set(Collections.singletonList(hashNode));
 
             String json = op.toJSONString(true);
             System.out.println(json);
@@ -132,7 +135,7 @@ public class ExampleRunner {
 
             // III. Map the new deployment to a server group and deploy it
 
-            connection =(HttpURLConnection) new URL("http://localhost:9990/domain-api/").openConnection();
+            connection =(HttpURLConnection) new URL("http://localhost:9990/management/").openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
@@ -175,7 +178,7 @@ public class ExampleRunner {
 
             // V. Redeploy the content
 
-            connection =(HttpURLConnection) new URL("http://localhost:9990/domain-api/").openConnection();
+            connection =(HttpURLConnection) new URL("http://localhost:9990/management/").openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
@@ -201,7 +204,7 @@ public class ExampleRunner {
 
             // VI. Undeploy and remove the deployment from the server group
 
-            connection =(HttpURLConnection) new URL("http://localhost:9990/domain-api/").openConnection();
+            connection =(HttpURLConnection) new URL("http://localhost:9990/management/").openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
@@ -227,7 +230,7 @@ public class ExampleRunner {
 
             // VII. Remove the deployment mapping from the domain
 
-            connection =(HttpURLConnection) new URL("http://localhost:9990/domain-api/").openConnection();
+            connection =(HttpURLConnection) new URL("http://localhost:9990/management/").openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
