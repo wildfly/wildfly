@@ -29,6 +29,7 @@ import java.util.concurrent.Executor;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.OpenListener;
+import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.ServiceRegistrationException;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
@@ -49,11 +50,14 @@ import org.xnio.channels.ConnectedStreamChannel;
  */
 public class ChannelServer implements Closeable {
     private final Endpoint endpoint;
+    private final Registration registration;
     private final AcceptingChannel<? extends ConnectedStreamChannel> streamServer;
 
     private ChannelServer(final Endpoint endpoint,
-            AcceptingChannel<? extends ConnectedStreamChannel> streamServer) {
+            final Registration registration,
+            final AcceptingChannel<? extends ConnectedStreamChannel> streamServer) {
         this.endpoint = endpoint;
+        this.registration = registration;
         this.streamServer = streamServer;
     }
 
@@ -66,19 +70,17 @@ public class ChannelServer implements Closeable {
         final Endpoint endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getExecutor(), configuration.getOptionMap());
         final Xnio xnio = Xnio.getInstance();
 
-        endpoint.addConnectionProvider(configuration.getUriScheme(), new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
+        Registration registration = endpoint.addConnectionProvider(configuration.getUriScheme(), new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
 
         final NetworkServerProvider networkServerProvider = endpoint.getConnectionProviderInterface(configuration.getUriScheme(), NetworkServerProvider.class);
         SimpleServerAuthenticationProvider provider = new SimpleServerAuthenticationProvider();
         //There is currently a probable bug in jboss remoting, so the user realm name MUST be the same as
         //the endpoint name.
         provider.addUser("bob", configuration.getEndpointName(), "pass".toCharArray());
-        //ChannelListener<AcceptingChannel<ConnectedStreamChannel>> serverListener = networkServerProvider.getServerListener(OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("DIGEST-MD5")), provider);
         System.out.println(configuration.getBindAddress());
-        //AcceptingChannel<? extends ConnectedStreamChannel> streamServer = xnio.createStreamServer(configuration.getBindAddress(), connectionChannelThread, serverListener, OptionMap.EMPTY);
         AcceptingChannel<? extends ConnectedStreamChannel> streamServer = networkServerProvider.createServer(configuration.getBindAddress(), OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("CRAM-MD5")), provider);
 
-        return new ChannelServer(endpoint, streamServer);
+        return new ChannelServer(endpoint, registration, streamServer);
     }
 
     public void addChannelOpenListener(final String channelName) throws ServiceRegistrationException {
@@ -104,18 +106,13 @@ public class ChannelServer implements Closeable {
 
     public void close() {
         IoUtils.safeClose(streamServer);
+        IoUtils.safeClose(registration);
         IoUtils.safeClose(endpoint);
-
-        //TODO do I need to shut down the executor or will this be injected in from somewhere and so should be kept alive?
-//        executorService.shutdown();
-//        executorService.awaitTermination(1L, TimeUnit.DAYS);
-//        executorService.shutdownNow();
     }
 
     public static final class Configuration {
         private String endpointName;
         private OptionMap optionMap = OptionMap.EMPTY;
-        private ThreadGroup readChannelThreadFactory;
         private String uriScheme;
         private InetSocketAddress bindAddress;
         private Executor executor;
