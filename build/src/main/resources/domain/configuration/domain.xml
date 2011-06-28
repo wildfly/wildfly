@@ -342,6 +342,25 @@
                     </replicated-cache>
                 </cache-container>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:jca:1.0">
+                <archive-validation enabled="true"/>
+                <bean-validation enabled="true"/>
+                <default-workmanager>
+                    <short-running-threads blocking="true">
+                        <core-threads count="10" per-cpu="20"/>
+                        <queue-length count="10" per-cpu="20"/>
+                        <max-threads count="10" per-cpu="20"/>
+                        <keepalive-time time="10" unit="seconds"/>
+                    </short-running-threads>
+                    <long-running-threads blocking="true">
+                        <core-threads count="10" per-cpu="20"/>
+                        <queue-length count="10" per-cpu="20"/>
+                        <max-threads count="10" per-cpu="20"/>
+                        <keepalive-time time="10" unit="seconds"/>
+                    </long-running-threads>
+                </default-workmanager>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jgroups:1.0" default-stack="udp">
                 <stack name="udp">
                     <transport type="UDP" socket-binding="jgroups-udp" diagnostics-socket-binding="jgroups-diagnostics"/>
@@ -381,25 +400,6 @@
                     <protocol type="pbcast.STREAMING_STATE_TRANSFER"/>
                     <protocol type="pbcast.FLUSH"/>
                 </stack>
-            </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:jca:1.0">
-                <archive-validation enabled="true"/>
-                <bean-validation enabled="true"/>
-                <default-workmanager>
-                    <short-running-threads blocking="true">
-                        <core-threads count="10" per-cpu="20"/>
-                        <queue-length count="10" per-cpu="20"/>
-                        <max-threads count="10" per-cpu="20"/>
-                        <keepalive-time time="10" unit="seconds"/>
-                    </short-running-threads>
-                    <long-running-threads blocking="true">
-                        <core-threads count="10" per-cpu="20"/>
-                        <queue-length count="10" per-cpu="20"/>
-                        <max-threads count="10" per-cpu="20"/>
-                        <keepalive-time time="10" unit="seconds"/>
-                    </long-running-threads>
-                </default-workmanager>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />

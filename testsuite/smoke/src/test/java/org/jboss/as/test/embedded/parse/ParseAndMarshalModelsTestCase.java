@@ -238,10 +238,15 @@ public class ParseAndMarshalModelsTestCase {
 
     private void fixupOSGiDomain(ModelNode node1, ModelNode node2) {
         //These multiline properties get extra indentation when marshalled. Put them on one line to compare properly
-        node1.get("profile", "web-base", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").asString()));
-        node2.get("profile", "web-base", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").asString()));
-        node1.get("profile", "web-base", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").asString()));
-        node2.get("profile", "web-base", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").asString()));
+        node1.get("profile", "default", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").asString()));
+        node2.get("profile", "default", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").asString()));
+        node1.get("profile", "default", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").asString()));
+        node2.get("profile", "default", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").asString()));
+
+        node1.get("profile", "ha", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("profile", "ha", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").asString()));
+        node2.get("profile", "ha", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "ha", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").asString()));
+        node1.get("profile", "ha", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "ha", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").asString()));
+        node2.get("profile", "ha", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "ha", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").asString()));
     }
 
     private String convertToSingleLine(String value) {
