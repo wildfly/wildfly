@@ -234,6 +234,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void writeSchemaLocation(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+        if(! modelNode.hasDefined(SCHEMA_LOCATIONS)) {
+            return;
+        }
         final StringBuilder b = new StringBuilder();
         final Iterator<ModelNode> iterator = modelNode.get(SCHEMA_LOCATIONS).asList().iterator();
         while (iterator.hasNext()) {
@@ -251,6 +254,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void writeNamespaces(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+        if(! modelNode.hasDefined(NAMESPACES)) {
+            return;
+        }
         for (final Property property : modelNode.get(NAMESPACES).asPropertyList()) {
             writer.writeNamespace(property.getName(), property.getValue().asString());
         }
