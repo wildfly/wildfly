@@ -101,12 +101,14 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         ServiceBuilder realmBuilder = serviceTarget.addService(realmServiceName, securityRealmService);
 
         ServiceName authenticationName = null;
-        if (authentication.hasDefined(LDAP)) {
-            authenticationName = addLdapService(authentication.require(LDAP), realmServiceName, serviceTarget, newControllers);
-        } else if (authentication.hasDefined(PROPERTIES)) {
-            authenticationName = addPropertiesService(authentication.require(PROPERTIES), realmServiceName, realmName, serviceTarget, newControllers);
-        } else if (authentication.hasDefined(USERS)) {
-            authenticationName = addUsersService(authentication.require(USERS), realmServiceName, realmName, serviceTarget, newControllers);
+        if (authentication != null) {
+            if (authentication.hasDefined(LDAP)) {
+                authenticationName = addLdapService(authentication.require(LDAP), realmServiceName, serviceTarget, newControllers);
+            } else if (authentication.hasDefined(PROPERTIES)) {
+                authenticationName = addPropertiesService(authentication.require(PROPERTIES), realmServiceName, realmName, serviceTarget, newControllers);
+            } else if (authentication.hasDefined(USERS)) {
+                authenticationName = addUsersService(authentication.require(USERS), realmServiceName, realmName, serviceTarget, newControllers);
+            }
         }
         if (authenticationName != null) {
             realmBuilder.addDependency(authenticationName, DomainCallbackHandler.class, securityRealmService.getCallbackHandlerInjector());
