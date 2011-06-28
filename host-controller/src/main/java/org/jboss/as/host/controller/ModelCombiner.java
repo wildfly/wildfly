@@ -388,7 +388,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         }
         final ModelNode group = groups.get(bindingRef);
         if(group == null) {
-            throw new IllegalArgumentException("undefined socket binding group " + bindingRef);
+            throw new IllegalStateException(String.format("Included socket binding group %s is not defined", bindingRef));
         }
         final ModelNode groupAddress = pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, bindingRef));
         final ModelNode groupAdd = BindingGroupAddHandler.getOperation(groupAddress, group);
@@ -404,7 +404,9 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 final String ref = include.asString();
                 if(processed.add(ref)) {
                     final ModelNode includedGroup = groups.get(ref);
-//                    addSocketBindings(updates, includedGroup, groupName, defaultInterface);
+                    if(group == null) {
+                        throw new IllegalStateException(String.format("Included socket binding group %s is not defined", ref));
+                    }
                     mergeBindingGroups(updates, groups, groupName, includedGroup, processed);
                 }
             }

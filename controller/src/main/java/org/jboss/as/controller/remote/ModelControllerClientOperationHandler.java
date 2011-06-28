@@ -30,7 +30,10 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -100,6 +103,41 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
         }
 
         protected void processRequest() throws RequestProcessingException {
+            if (!asynch) {
+                doProcessRequest();
+            } else {
+                //Do asynchrounous invocations in a separate thread to avoid interruption of the thread
+                //if cancelled filtering up to the NIO layer which results in ClosedByInterruptException
+                //which closes the channel
+                Future<Void> future = executorService.submit(new Callable<Void>() {
+                    public Void call() throws Exception {
+                        doProcessRequest();
+                        return null;
+                    }
+                });
+                try {
+                    future.get();
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof RequestProcessingException) {
+                        throw (RequestProcessingException)cause;
+                    }
+                    if (cause instanceof RuntimeException) {
+                        throw (RuntimeException)cause;
+                    }
+                    throw new RequestProcessingException(cause);
+                } catch (InterruptedException e) {
+                    Thread t = asynchRequests.get(batchId);
+                    if (t != null) {
+                        t.interrupt();
+                    }
+                    Thread.currentThread().interrupt();
+                    throw new RequestProcessingException("Thread was interrupted waiting for a response for asynch operation");
+                }
+            }
+        }
+
+        private void doProcessRequest() {
             final Key closeKey = getChannel().addCloseHandler(new CloseHandler<Channel>() {
                 public void handleClose(final Channel closed, final IOException exception) {
                     asynchRequests.remove(getHeader().getBatchId());

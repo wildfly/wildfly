@@ -344,6 +344,7 @@ public enum Phase {
     public static final int POST_MODULE_RESOLVE_EJB_INJECTIONS          = 0x1900;
     public static final int POST_MODULE_JAXRS_SCANNING                  = 0x1A00;
     public static final int POST_MODULE_JAXRS_COMPONENT                 = 0x1B00;
+    public static final int POST_MODULE_JAXRS_CDI_INTEGRATION           = 0x1C00;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;

@@ -238,9 +238,10 @@ final class ManagedProcess {
             synchronized (lock) {
                 process = ManagedProcess.this.process;
             }
+            int exitCode;
             for (;;) try {
-                final int value = process.waitFor();
-                log.infof("Process '%s' finished with an exit status of %d", processName, Integer.valueOf(value));
+                exitCode = process.waitFor();
+                log.infof("Process '%s' finished with an exit status of %d", processName, Integer.valueOf(exitCode));
                 break;
             } catch (InterruptedException e) {
                 // ignore
@@ -250,6 +251,15 @@ final class ManagedProcess {
                 state = State.DOWN;
                 if (shutdown) {
                     processController.removeProcess(processName);
+                } else if (isInitial() && exitCode == 99) {
+                    // Host Controller abort
+                    processController.removeProcess(processName);
+                    new Thread(new Runnable() {
+                        public void run() {
+                            processController.shutdown();
+                            System.exit(0);
+                        }
+                    }).start();
                 } else {
                     processController.processStopped(processName, endTime - startTime);
                     if (isInitial()) {

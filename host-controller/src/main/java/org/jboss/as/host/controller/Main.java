@@ -22,6 +22,9 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.process.Main.getVersionString;
+import static org.jboss.as.process.Main.usage;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +39,6 @@ import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.protocol.old.StreamUtils;
-import org.jboss.as.version.Version;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
@@ -53,30 +55,6 @@ import org.jboss.stdio.StdioContext;
  * @author Brian Stansberry
  */
 public final class Main {
-
-    public static String getVersionString() {
-        return Version.AS_VERSION;
-    }
-
-    private static void usage() {
-        System.out.println("Usage: ./domain.sh [args...]\n");
-        System.out.println("where args include:");
-        System.out.println("    -backup                            Keep a copy of the persistent domain configuration even if this host is not the Domain Controller");
-        System.out.println("    -cached-dc                         If this host is not the Domain Controller and cannot contact the Domain Controller at boot, boot using a locally cached copy of the domain configuration (see -backup)");
-        System.out.println("    -D<name>[=<value>]                 Set a system property");
-        System.out.println("    -domain-config <config>            Name of the domain configuration file to use (default is \"domain.xml\")");
-        System.out.println("    -help                              Display this message and exit");
-        System.out.println("    -host-config <config>              Name of the host configuration file to use (default is \"host.xml\")");
-        System.out.println("    -pc-address <address>              Address of process controller socket");
-        System.out.println("    -pc-port <port>                    Port of process controller socket");
-        System.out.println("    -interprocess-name <proc>          Name of this process, used to register the socket with the server in the process controller");
-        System.out.println("    -interprocess-hc-address <address> Address this host controller's socket should listen on");
-        System.out.println("    -interprocess-hc-port <port>       Port of this host controller's socket  should listen on");
-        System.out.println("    -P  <url>                          Load system properties from the given url");
-        System.out.println("    -properties <url>                  Load system properties from the given url");
-        System.out.println("    -version                           Print version and exit\n");
-    }
-
     /**
      * The main method.
      *
@@ -143,20 +121,18 @@ public final class Main {
     }
 
     private void abort(Throwable t) {
+        int exitCode = 1;
         try {
-            t.printStackTrace();
-            // Inform the process controller that we are shutting down on purpose
-            // so it doesn't try to respawn us
-
-            // FIXME implement abort()
-            throw new UnsupportedOperationException("implement me");
-
-//            if (t != null) {
-//                t.printStackTrace(System.err);
-//            }
+            if (t != null) {
+                t.printStackTrace();
+            } else {
+                // Inform the process controller that we are shutting down on purpose
+                // so it doesn't try to respawn us
+                exitCode = 99;
+            }
 
         } finally {
-            SystemExiter.exit(1);
+            SystemExiter.exit(exitCode);
         }
     }
 
@@ -184,78 +160,142 @@ public final class Main {
             final String arg = args[i];
 
             try {
-                if (CommandLineConstants.VERSION.equals(arg)) {
+                if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg) || CommandLineConstants.OLD_VERSION.equals(arg)) {
                     System.out.println("JBoss Application Server " + getVersionString());
                     return null;
-                } else if (CommandLineConstants.HELP.equals(arg)) {
+                } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
                     usage();
                     return null;
-                } else if (CommandLineConstants.PROPERTIES.equals(arg) || "-P".equals(arg)) {
+                } else if (CommandLineConstants.PROPERTIES.equals(arg) || CommandLineConstants.OLD_PROPERTIES.equals(arg)
+                        || CommandLineConstants.SHORT_PROPERTIES.equals(arg)) {
                     // Set system properties from url/file
-                    URL url = null;
-                    try {
-                        url = makeURL(args[++i]);
-                        Properties props = new Properties();
-                        props.load(url.openConnection().getInputStream());
-                        System.getProperties().putAll(props);
-                        for (Map.Entry<Object, Object> entry : props.entrySet()) {
-                            hostSystemProperties.put(String.class.cast(entry.getKey()), String.class.cast(entry.getValue()));
-                        }
-                    } catch (MalformedURLException e) {
-                        System.err.printf("Malformed URL provided for option %s\n", arg);
-                        usage();
+                    if (!processProperties(arg, args[++i])) {
                         return null;
-                    } catch (IOException e) {
-                        System.err.printf("Unable to load properties from URL %s\n", url);
-                        usage();
+                    }
+                } else if (arg.startsWith(CommandLineConstants.PROPERTIES)) {
+                    String urlSpec = parseValue(arg, CommandLineConstants.PROPERTIES);
+                    if (urlSpec == null || !processProperties(arg, urlSpec)) {
+                        return null;
+                    }
+                } else if (arg.startsWith(CommandLineConstants.SHORT_PROPERTIES)) {
+                    String urlSpec = parseValue(arg, CommandLineConstants.SHORT_PROPERTIES);
+                    if (urlSpec == null || !processProperties(arg, urlSpec)) {
+                        return null;
+                    }
+                }  else if (arg.startsWith(CommandLineConstants.OLD_PROPERTIES)) {
+                    String urlSpec = parseValue(arg, CommandLineConstants.OLD_PROPERTIES);
+                    if (urlSpec == null || !processProperties(arg, urlSpec)) {
                         return null;
                     }
                 } else if (CommandLineConstants.INTERPROCESS_PC_PORT.equals(arg)) {
+                    final String port = args[++i];
                     try {
-                        pmPort = Integer.valueOf(args[++i]);
+                        pmPort = Integer.valueOf(port);
                     } catch (NumberFormatException e) {
-                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_PC_PORT, args[i]);
+                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_PC_PORT, port);
                         usage();
                         return null;
                     }
                 } else if (CommandLineConstants.INTERPROCESS_PC_ADDRESS.equals(arg)) {
+                    final String addr = args[++i];
                     try {
-                        pmAddress = InetAddress.getByName(args[++i]);
+                        pmAddress = InetAddress.getByName(addr);
                     } catch (UnknownHostException e) {
-                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_PC_ADDRESS, args[i]);
+                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_PC_ADDRESS, addr);
                         usage();
                         return null;
                     }
-                } else if (CommandLineConstants.INTERPROCESS_HC_PORT.equals(arg)) {
-                    try {
-                        smPort = Integer.valueOf(args[++i]);
-                    } catch (NumberFormatException e) {
-                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_HC_PORT, args[i]);
-                        usage();
+                } else if (CommandLineConstants.INTERPROCESS_HC_PORT.equals(arg) || CommandLineConstants.OLD_INTERPROCESS_HC_PORT.equals(arg)) {
+                    final Integer port = parsePort(args[++i], arg);
+                    if (port == null) {
                         return null;
                     }
-                } else if (CommandLineConstants.INTERPROCESS_HC_ADDRESS.equals(arg)) {
-                    try {
-                        smAddress = InetAddress.getByName(args[++i]);
-                    } catch (UnknownHostException e) {
-                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_HC_ADDRESS, args[i]);
-                        usage();
+                    smPort = port;
+                } else if (arg.startsWith(CommandLineConstants.INTERPROCESS_HC_PORT)) {
+                    String val = parseValue(arg, CommandLineConstants.INTERPROCESS_HC_PORT);
+                    if (val == null) {
                         return null;
                     }
+                    final Integer port = parsePort(val, CommandLineConstants.INTERPROCESS_HC_PORT);
+                    if (port == null) {
+                        return null;
+                    }
+                    smPort = port;
+                } else if (arg.startsWith(CommandLineConstants.OLD_INTERPROCESS_HC_PORT)) {
+                    String val = parseValue(arg, CommandLineConstants.INTERPROCESS_HC_PORT);
+                    if (val == null) {
+                        return null;
+                    }
+                    final Integer port = parsePort(val, CommandLineConstants.INTERPROCESS_HC_PORT);
+                    if (port == null) {
+                        return null;
+                    }
+                    smPort = port;
+                } else if (CommandLineConstants.INTERPROCESS_HC_ADDRESS.equals(arg) || CommandLineConstants.OLD_INTERPROCESS_HC_ADDRESS.equals(arg)) {
+                    final InetAddress addr = parseAddress(args[++i], arg);
+                    if (addr == null) {
+                        return null;
+                    }
+                    smAddress = addr;
+                } else if (arg.startsWith(CommandLineConstants.INTERPROCESS_HC_ADDRESS)) {
+                    final String val = parseValue(arg, CommandLineConstants.INTERPROCESS_HC_ADDRESS);
+                    if (val == null) {
+                        return null;
+                    }
+                    final InetAddress addr = parseAddress(val, arg);
+                    if (addr == null) {
+                        return null;
+                    }
+                    smAddress = addr;
+                } else if (arg.startsWith(CommandLineConstants.OLD_INTERPROCESS_HC_ADDRESS)) {
+                    final String val = parseValue(arg, CommandLineConstants.OLD_INTERPROCESS_HC_ADDRESS);
+                    if (val == null) {
+                        return null;
+                    }
+                    final InetAddress addr = parseAddress(val, arg);
+                    if (addr == null) {
+                        return null;
+                    }
+                    smAddress = addr;
                 } else if (CommandLineConstants.INTERPROCESS_NAME.equals(arg)) {
                     procName = args[++i];
                 } else if (CommandLineConstants.RESTART_HOST_CONTROLLER.equals(arg)) {
                     isRestart = true;
-                } else if (CommandLineConstants.BACKUP_DC.equals(arg)) {
+                } else if (CommandLineConstants.BACKUP_DC.equals(arg) || CommandLineConstants.OLD_BACKUP_DC.equals(arg)) {
                     backupDomainFiles = true;
-                } else if (CommandLineConstants.CACHED_DC.equals(arg)) {
+                } else if (CommandLineConstants.CACHED_DC.equals(arg) || CommandLineConstants.OLD_CACHED_DC.equals(arg)) {
                     cachedDc = true;
-                } else if(CommandLineConstants.DEFAULT_JVM.equals(arg)) {
+                } else if(CommandLineConstants.DEFAULT_JVM.equals(arg) || CommandLineConstants.OLD_DEFAULT_JVM.equals(arg)) {
                     defaultJVM = args[++i];
-                } else if (CommandLineConstants.DOMAIN_CONFIG.equals(arg)) {
+                } else if (CommandLineConstants.DOMAIN_CONFIG.equals(arg) || CommandLineConstants.OLD_DOMAIN_CONFIG.equals(arg)) {
                     domainConfig = args[++i];
-                } else if (CommandLineConstants.HOST_CONFIG.equals(arg)) {
+                } else if (arg.startsWith(CommandLineConstants.DOMAIN_CONFIG)) {
+                    String val = parseValue(arg, CommandLineConstants.DOMAIN_CONFIG);
+                    if (val == null) {
+                        return null;
+                    }
+                    domainConfig = val;
+                } else if (arg.startsWith(CommandLineConstants.OLD_DOMAIN_CONFIG)) {
+                    String val = parseValue(arg, CommandLineConstants.OLD_DOMAIN_CONFIG);
+                    if (val == null) {
+                        return null;
+                    }
+                    domainConfig = val;
+                } else if (CommandLineConstants.HOST_CONFIG.equals(arg) || CommandLineConstants.OLD_HOST_CONFIG.equals(arg)) {
                     hostConfig = args[++i];
+                } else if (arg.startsWith(CommandLineConstants.HOST_CONFIG)) {
+                    String val = parseValue(arg, CommandLineConstants.HOST_CONFIG);
+                    if (val == null) {
+                        return null;
+                    }
+                    hostConfig = val;
+                } else if (arg.startsWith(CommandLineConstants.OLD_HOST_CONFIG)) {
+                    String val = parseValue(arg, CommandLineConstants.OLD_HOST_CONFIG);
+                    if (val == null) {
+                        return null;
+                    }
+                    hostConfig = val;
+
                 } else if (arg.startsWith("-D")) {
 
                     // set a system property
@@ -284,6 +324,55 @@ public final class Main {
 
         return new HostControllerEnvironment(hostSystemProperties, isRestart,  stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, defaultJVM,
                 domainConfig, hostConfig, backupDomainFiles, cachedDc);
+    }
+
+    private static String parseValue(final String arg, final String key) {
+        String value = null;
+        int splitPos = key.length();
+        if (arg.length() <= splitPos + 1 || arg.charAt(splitPos) != '=') {
+            usage();
+        } else {
+            value = arg.substring(splitPos + 1);
+        }
+        return value;
+    }
+
+    private static boolean processProperties(final String arg, final String urlSpec) {
+         URL url = null;
+         try {
+             url = makeURL(urlSpec);
+             Properties props = System.getProperties();
+             props.load(url.openConnection().getInputStream());
+             return true;
+         } catch (MalformedURLException e) {
+             System.err.printf("Malformed URL provided for option %s\n", arg);
+             usage();
+             return false;
+         } catch (IOException e) {
+             System.err.printf("Unable to load properties from URL %s\n", url);
+             usage();
+             return false;
+         }
+    }
+
+    private static Integer parsePort(final String value, final String key) {
+         try {
+             return Integer.valueOf(value);
+         } catch (NumberFormatException e) {
+             System.err.printf("Value for %s is not an Integer -- %s\n", key, value);
+             usage();
+             return null;
+         }
+    }
+
+    private static InetAddress parseAddress(final String value, final String key) {
+        try {
+            return InetAddress.getByName(value);
+        } catch (UnknownHostException e) {
+            System.err.printf("Value for %s is not a known host -- %s\n", key, value);
+            usage();
+            return null;
+        }
     }
 
     private static URL makeURL(String urlspec) throws MalformedURLException {

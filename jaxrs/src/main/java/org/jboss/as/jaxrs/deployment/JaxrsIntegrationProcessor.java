@@ -10,8 +10,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.web.deployment.WarMetaData;
-import org.jboss.as.weld.WeldDeploymentMarker;
-import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
@@ -21,12 +19,9 @@ import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.resteasy.cdi.ResteasyCdiExtension;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
-import org.jboss.weld.bootstrap.spi.Metadata;
 
-import javax.enterprise.inject.spi.Extension;
 import javax.ws.rs.ApplicationPath;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +33,6 @@ import java.util.Map;
  */
 public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
     private static final Logger log = Logger.getLogger("org.jboss.jaxrs");
-    public static final String CDI_INJECTOR_FACTORY_CLASS = "org.jboss.resteasy.cdi.CdiInjectorFactory";
     private static final String JAX_RS_SERVLET_NAME = "javax.ws.rs.core.Application";
     private static final String SERVLET_INIT_PARAM = "javax.ws.rs.Application";
 
@@ -118,53 +112,6 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             String providers = buf.toString();
             log.debug("Adding JAX-RS jndi component resource classes: " + providers);
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_SCANNED_JNDI_RESOURCES, providers);
-        }
-
-
-        try {
-            module.getClassLoader().loadClass(CDI_INJECTOR_FACTORY_CLASS);
-            // don't set this param if CDI is not in classpath
-            if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-                log.debug("Found CDI, adding injector factory class");
-                setContextParameter(webdata, "resteasy.injector.factory", CDI_INJECTOR_FACTORY_CLASS);
-                //now we need to add the CDI extension, if it has not
-                //already been added
-                synchronized (parent) {
-                    boolean found = false;
-                    final List<Metadata<Extension>> extensions = parent.getAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS);
-                    for (Metadata<Extension> extension : extensions) {
-                        if (extension.getValue() instanceof ResteasyCdiExtension) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-
-                        final ClassLoader classLoader = SecurityActions.getContextClassLoader();
-                        try {
-                            //MASSIVE HACK
-                            //the resteasy Logger throws a NPE if the TCCL is null
-                            SecurityActions.setContextClassLoader(ResteasyCdiExtension.class.getClassLoader());
-                            final ResteasyCdiExtension ext = new ResteasyCdiExtension();
-                            Metadata<Extension> metadata = new Metadata<Extension>() {
-                                @Override
-                                public Extension getValue() {
-                                    return ext;
-                                }
-
-                                @Override
-                                public String getLocation() {
-                                    return "org.jboss.as.jaxrs.JaxrsExtension";
-                                }
-                            };
-                            parent.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
-                        } finally {
-                            SecurityActions.setContextClassLoader(classLoader);
-                        }
-                    }
-                }
-            }
-        } catch (ClassNotFoundException ignored) {
         }
 
         if (!resteasy.isUnwrappedExceptionsParameterSet()) {

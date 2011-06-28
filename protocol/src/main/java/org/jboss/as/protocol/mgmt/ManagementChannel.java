@@ -76,6 +76,7 @@ public class ManagementChannel extends ProtocolChannel {
         if(!byeByeSent.compareAndSet(false, true)) {
             return;
         }
+        log.tracef("Closing %s by sending bye bye", this);
         pinger.removeChannel(this);
         ManagementByeByeHeader byeByeHeader = new ManagementByeByeHeader(ManagementProtocol.VERSION);
 
@@ -88,6 +89,7 @@ public class ManagementChannel extends ProtocolChannel {
                 IoUtils.safeClose(out);
             }
         } finally {
+            log.tracef("Invoking close on %s", this);
             super.close();
         }
     }
@@ -118,12 +120,15 @@ public class ManagementChannel extends ProtocolChannel {
                 responseReceiver.handleResponse((ManagementResponseHeader)header, input);
                 break;
             case ManagementProtocol.TYPE_BYE_BYE:
+                log.tracef("Received bye bye on %s, closing", this);
                 close();
                 break;
             case ManagementProtocol.TYPE_PING:
                 wasPing = true;
+                log.tracef("Received ping on %s", this);
                 break;
             case ManagementProtocol.TYPE_PONG:
+                log.tracef("Received pong on %s", this);
                 gotIncomingResponse();
                 break;
             }
@@ -153,17 +158,20 @@ public class ManagementChannel extends ProtocolChannel {
             }
 
             if (error != null) {
+                log.tracef(error, "Error processing request %s", this);
                 //TODO temporary debug stack
                 error.printStackTrace();
             }
             requestReceiver.writeResponse(requestHeader, requestHandler, error);
         } else if (wasPing) {
+            log.tracef("Sending pong on %s", this);
             ManagementPongHeader pongHeader = new ManagementPongHeader(ManagementProtocol.VERSION);
             sendHeaderAndCloseOnError(pongHeader);
         }
     }
 
     private void gotIncomingResponse() {
+        log.tracef("Resetting ping/response status on %s", this);
         lastResponseReceived = System.currentTimeMillis();
         awaitingPong.set(false);
     }
@@ -218,6 +226,7 @@ public class ManagementChannel extends ProtocolChannel {
                 }
             }
         } else {
+            log.tracef("No data received recently on %s, pinging to determine if the other end is alive", this);
             awaitingPong.set(true);
             ManagementPingHeader pingHeader = new ManagementPingHeader(ManagementProtocol.VERSION);
             sendHeaderAndCloseOnError(pingHeader);
@@ -237,7 +246,7 @@ public class ManagementChannel extends ProtocolChannel {
         } catch (IOException ingore) {
         } finally {
             if (!ok) {
-                log.tracef("Error sending %X on %s, closing channel", header.getType(), this);
+                log.tracef("Error sending 0x%X on %s, closing channel", header.getType(), this);
                 IoUtils.safeClose(this);
             }
         }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
@@ -87,6 +88,11 @@ public final class Attachments {
      * The special status listener attachment.
      */
     public static final AttachmentKey<AbstractDeploymentUnitService.DeploymentServiceListener> STATUS_LISTENER = AttachmentKey.create(AbstractDeploymentUnitService.DeploymentServiceListener.class);
+
+    /**
+     * This should be added as a listener to all non child services
+     */
+    public static final AttachmentKey<ServiceVerificationHandler> SERVICE_VERIFICATION_HANDLER = AttachmentKey.create(ServiceVerificationHandler.class);
 
     //
     // STRUCTURE

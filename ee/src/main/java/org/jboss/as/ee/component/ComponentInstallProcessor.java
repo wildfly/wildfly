@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ee.naming.RootContextService;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
@@ -81,6 +82,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
     protected void deployComponent(final DeploymentPhaseContext phaseContext, final ComponentConfiguration configuration, final Set<ServiceName> dependencies, final ServiceName bindingDependencyService) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ServiceVerificationHandler serviceVerificationHandler = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.SERVICE_VERIFICATION_HANDLER);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
         final String applicationName = configuration.getApplicationName();
@@ -149,7 +151,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 final String bindingName = bindingConfiguration.getName();
                 final ServiceName binderServiceName = ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, bindingName);
                 final ServiceName namingStoreName = ContextNames.serviceNameOfNamingStore(applicationName, moduleName, componentName, bindingName);
-                final BindingHandleService service = new BindingHandleService(bindingName, binderServiceName, bindingConfiguration.getSource(), namingStoreName);
+                final BindingHandleService service = new BindingHandleService(bindingName, binderServiceName, bindingConfiguration.getSource(), namingStoreName, serviceVerificationHandler);
                 final ServiceName handleServiceName = binderServiceName.append(baseName).append(String.valueOf(i.value++));
 
                 //these bindings should never be merged, if a view binding is duplicated it is an error
@@ -163,14 +165,14 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             // The bindings for the component
-            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), i, dependencies);
+            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), i, dependencies, serviceVerificationHandler);
 
 
             // The bindings for the component class
             new ClassDescriptionTraversal(configuration.getModuleClassConfiguration(), applicationDescription) {
                 @Override
                 protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, classConfiguration.getBindingConfigurations(), i, dependencies);
+                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, classConfiguration.getBindingConfigurations(), i, dependencies, serviceVerificationHandler);
                 }
             }.run();
 
@@ -182,7 +184,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     new ClassDescriptionTraversal(interceptorClass, applicationDescription) {
                         @Override
                         protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, classConfiguration.getBindingConfigurations(), i, dependencies);
+                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, classConfiguration.getBindingConfigurations(), i, dependencies, serviceVerificationHandler);
                         }
                     }.run();
                 }
@@ -193,14 +195,14 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         startBuilder.install();
     }
 
-    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, ServiceName compServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, IntHolder handleCount, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
+    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, ServiceName compServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, IntHolder handleCount, final Set<ServiceName> dependencies, final ServiceVerificationHandler serviceVerificationHandler) throws DeploymentUnitProcessingException {
 
         //we only handle java:comp bindings for components that have their own namespace here, the rest are processed by ModuleJndiBindingProcessor
         for (BindingConfiguration bindingConfiguration : bindings) {
             if (bindingConfiguration.getName().startsWith("java:comp") || !bindingConfiguration.getName().startsWith("java:")) {
                 final String bindingName = bindingConfiguration.getName().startsWith("java:comp") ? bindingConfiguration.getName() : "java:comp/env/" + bindingConfiguration.getName();
                 final ServiceName binderServiceName = ContextNames.serviceNameOfEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName);
-                final BindingHandleService service = new BindingHandleService(bindingName, binderServiceName, bindingConfiguration.getSource(), contextServiceName);
+                final BindingHandleService service = new BindingHandleService(bindingName, binderServiceName, bindingConfiguration.getSource(), contextServiceName, serviceVerificationHandler);
                 final ServiceName handleServiceName = binderServiceName.append(compServiceName).append(String.valueOf(handleCount.value++));
 
                 dependencies.add(binderServiceName);
