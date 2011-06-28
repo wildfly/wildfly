@@ -22,8 +22,8 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -38,9 +38,11 @@ public class SubDeploymentUnitService extends AbstractDeploymentUnitService {
     private final ResourceRoot deploymentRoot;
     private final DeploymentUnit parent;
     private final ImmutableManagementResourceRegistration registration;
+    private final ServiceVerificationHandler serviceVerificationHandler;
     private Resource resource;
 
-    public SubDeploymentUnitService(ResourceRoot deploymentRoot, DeploymentUnit parent, ImmutableManagementResourceRegistration registration, Resource resource) {
+    public SubDeploymentUnitService(ResourceRoot deploymentRoot, DeploymentUnit parent, ImmutableManagementResourceRegistration registration, Resource resource, final ServiceVerificationHandler serviceVerificationHandler) {
+        this.serviceVerificationHandler = serviceVerificationHandler;
         if (deploymentRoot == null) throw new IllegalArgumentException("Deployment root is required");
         this.deploymentRoot = deploymentRoot;
         if (parent == null) throw new IllegalArgumentException("Sub-deployments require a parent deployment unit");
@@ -56,6 +58,7 @@ public class SubDeploymentUnitService extends AbstractDeploymentUnitService {
         deploymentUnit.putAttachment(Attachments.MODULE_SPECIFICATION, new ModuleSpecification());
         deploymentUnit.putAttachment(DeploymentModelUtils.REGISTRATION_ATTACHMENT, registration);
         deploymentUnit.putAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE, resource);
+        deploymentUnit.putAttachment(Attachments.SERVICE_VERIFICATION_HANDLER, serviceVerificationHandler);
         this.resource = null;
         return deploymentUnit;
     }

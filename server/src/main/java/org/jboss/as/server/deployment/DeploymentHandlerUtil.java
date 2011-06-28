@@ -18,37 +18,36 @@
  */
 package org.jboss.as.server.deployment;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.marshalling.util.IntKeyMap;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
-import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
-
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VirtualFile;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
+import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
 
 /**
  * Utility methods used by operation handlers involved with deployment.
@@ -151,7 +150,7 @@ public class DeploymentHandlerUtil {
         }
         controllers.add(contentService);
 
-        final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, managementName, null, registration, deploymentResource);
+        final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, managementName, null, registration, deploymentResource, verificationHandler);
         final ServiceController<DeploymentUnit> deploymentUnitController = serviceTarget.addService(deploymentUnitServiceName, service)
                 .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                 .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())

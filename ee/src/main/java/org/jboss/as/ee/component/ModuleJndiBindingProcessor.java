@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ee.component;
 
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BindingHandleService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -162,13 +163,14 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         // Gather information about the dependency
         final String bindingName = bindingConfiguration.getName().startsWith("java:") ? bindingConfiguration.getName() : "java:module/env/" + bindingConfiguration.getName();
 
+        final ServiceVerificationHandler serviceVerificationHandler = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.SERVICE_VERIFICATION_HANDLER);
         // Check to see if this entry should actually be bound into JNDI.
         if (bindingName != null) {
             if (serviceName == null) {
                 throw new IllegalArgumentException("Invalid context name '" + bindingName + "' for binding");
             }
 
-            final BindingHandleService service = new BindingHandleService(bindingName, serviceName, bindingConfiguration.getSource(), serviceName.getParent());
+            final BindingHandleService service = new BindingHandleService(bindingName, serviceName, bindingConfiguration.getSource(), serviceName.getParent(), serviceVerificationHandler);
             final ServiceName handleServiceName = serviceName.append(ownerName).append(String.valueOf(handleCount.value++));
 
             dependencies.add(serviceName);

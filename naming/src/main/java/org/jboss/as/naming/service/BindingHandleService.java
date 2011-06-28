@@ -22,6 +22,7 @@
 
 package org.jboss.as.naming.service;
 
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.msc.inject.Injector;
@@ -46,6 +47,7 @@ public class BindingHandleService implements Service<Void> {
     private final BinderService binder;
     private final ServiceName binderName;
     private final String name;
+    private final ServiceVerificationHandler serviceVerificationHandler;
 
     private AcquireOnStart acquireOnStart;
     private ServiceName namingStoreName;
@@ -54,11 +56,12 @@ public class BindingHandleService implements Service<Void> {
      * Construct new instance.
      *
      * @param name  The JNDI name to use for binding. May be either an absolute or relative name
+     * @param serviceVerificationHandler As the binding services are not child services they must be added to the handler manually to ensure that the server can correctly report deployment completion
      */
-    public BindingHandleService(final String name, ServiceName binderName, Object source, ServiceName namingStoreName) {
-
+    public BindingHandleService(final String name, ServiceName binderName, Object source, ServiceName namingStoreName, final ServiceVerificationHandler serviceVerificationHandler) {
         this.binderName = binderName;
         this.name = name;
+        this.serviceVerificationHandler = serviceVerificationHandler;
         this.binder = new BinderService(name, source);
         this.namingStoreName = namingStoreName;
     }
@@ -73,6 +76,7 @@ public class BindingHandleService implements Service<Void> {
                 serviceBuilder.addDependency(namingStoreName, NamingStore.class, binder.getNamingStoreInjector());
                 serviceBuilder.addInjectionValue(binder.getManagedObjectInjector(), managedReferenceFactory);
                 serviceBuilder.addListener(acquireOnStart);
+                serviceBuilder.addListener(serviceVerificationHandler);
                 serviceBuilder.install();
         } catch (RuntimeException e) {
             @SuppressWarnings("unchecked")
