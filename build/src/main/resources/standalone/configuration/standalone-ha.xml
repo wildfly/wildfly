@@ -304,14 +304,7 @@
                 </security-domain>
             </security-domains>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:threads:1.0">
-            <bounded-queue-thread-pool name="ejb3-async" blocking="true">
-                <core-threads count="10" per-cpu="20"/>
-                <queue-length count="10" per-cpu="20"/>
-                <max-threads count="10" per-cpu="20"/>
-                <keepalive-time time="10" unit="seconds"/>
-            </bounded-queue-thread-pool>
-        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:threads:1.0"/>
         <subsystem xmlns="urn:jboss:domain:transactions:1.0">
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <core-environment>

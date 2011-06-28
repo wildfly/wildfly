@@ -40,7 +40,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.AccessTimeout;
@@ -128,7 +127,8 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public SessionBeanComponentDescription(final String componentName, final String componentClassName,
                                            final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
-        addDependency(SessionBeanComponent.ASYNC_EXECUTOR_SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
+        // TODO: AS7-447
+        //addDependency(SessionBeanComponent.ASYNC_EXECUTOR_SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
         // setSessionContext() method invocation interceptor
         this.addSetSessionContextMethodInvocationInterceptor();
     }
