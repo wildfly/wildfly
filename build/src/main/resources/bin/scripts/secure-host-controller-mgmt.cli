@@ -5,20 +5,20 @@
 ##
 ## ./jboss-admin.sh -c --file=scripts/secure-host-controller-mgmt.cli
 ##
-## Note that the commands below are addressed to "host=local", which is the name of the host in
+## Note that the commands below are addressed to "host=master", which is the name of the host in
 ## in the default host.xml that comes with the JBoss Application Server distribution. You must
-## change the 'local' to some other host name if you wish to use this script against some other
+## change the 'master' to some other host name if you wish to use this script against some other
 ## host configuration.
 
 # Use a batch, so that in case the validation does not pass we don't apply the subsequent changes.
 batch
 
 ## first validate that the security-realm exist
-/host=local/core-service=management/security-realm=PropertiesMgmtSecurityRealm:validate-address
+/host=master/core-service=management/security-realm=PropertiesMgmtSecurityRealm:validate-address
 
 ## update the native and http management interfaces
-/host=local/core-service=management/management-interface=http-interface:write-attribute(name=security-realm,value=PropertiesMgmtSecurityRealm)
-/host=local/core-service=management/management-interface=native-interface:write-attribute(name=security-realm,value=PropertiesMgmtSecurityRealm)
+/host=master/core-service=management/management-interface=http-interface:write-attribute(name=security-realm,value=PropertiesMgmtSecurityRealm)
+/host=master/core-service=management/management-interface=native-interface:write-attribute(name=security-realm,value=PropertiesMgmtSecurityRealm)
 
 # Execute the operations
 run-batch
