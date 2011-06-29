@@ -22,10 +22,7 @@
 
 package org.jboss.as.naming.deployment;
 
-import org.jboss.as.server.deployment.module.IgnoreMetaInfMarker;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.util.platform.Java;
-import sun.java2d.opengl.OGLContext;
 
 /**
  * @author John Bailey
