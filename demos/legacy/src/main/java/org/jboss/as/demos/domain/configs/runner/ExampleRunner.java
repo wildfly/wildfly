@@ -66,7 +66,7 @@ public class ExampleRunner {
 
             final ModelNode hostOp = new ModelNode();
             hostOp.get(OP).set(READ_RESOURCE_OPERATION);
-            hostOp.get(OP_ADDR).setEmptyList().add(HOST, "local");
+            hostOp.get(OP_ADDR).setEmptyList().add(HOST, "master");
             hostOp.get(RECURSIVE).set(true);
             hostOp.get("proxies").set(false);
 

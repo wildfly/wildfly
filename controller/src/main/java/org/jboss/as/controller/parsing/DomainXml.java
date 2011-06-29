@@ -24,6 +24,7 @@ package org.jboss.as.controller.parsing;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
@@ -36,6 +37,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -488,7 +490,16 @@ public class DomainXml extends CommonXml {
 
         writer.writeStartElement(Element.PROFILE.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), profileName);
-        Set<String> subsystemNames = profileNode.get(SUBSYSTEM).keys();
+
+        if(profileNode.hasDefined(INCLUDES)) {
+            for(final ModelNode include : profileNode.get(INCLUDES).asList()) {
+                writer.writeEmptyElement(INCLUDE);
+                writer.writeAttribute(PROFILE, include.asString());
+            }
+        }
+
+
+        final Set<String> subsystemNames = profileNode.get(SUBSYSTEM).keys();
         if (subsystemNames.size() > 0) {
             String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
             for (String subsystemName : subsystemNames) {

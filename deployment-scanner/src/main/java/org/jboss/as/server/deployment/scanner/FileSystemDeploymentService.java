@@ -288,6 +288,12 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     if (!child.delete()) {
                         log.warnf("Cannot removed extraneous deployment marker file %s", fileName);
                     }
+                    // AS7-1130 Put down a marker so we deploy on first scan
+                    File skipDeploy = new File(dir, deploymentName + SKIP_DEPLOY);
+                    if (!skipDeploy.exists()) {
+                        final File deployedMarker = new File(dir, deploymentName + DO_DEPLOY);
+                        createMarkerFile(deployedMarker, deploymentName);
+                    }
                 }
             }
         }
@@ -416,6 +422,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 log.tracef("Scan complete");
             }
         } finally {
+
             scanLock.unlock();
 
             if (scheduleRescan) {

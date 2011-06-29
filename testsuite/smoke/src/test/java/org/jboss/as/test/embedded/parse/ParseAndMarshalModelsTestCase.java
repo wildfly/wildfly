@@ -54,10 +54,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -76,7 +75,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALMS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
@@ -97,6 +95,7 @@ import org.jboss.as.controller.parsing.DomainXml;
 import org.jboss.as.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.StandaloneXml;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -172,11 +171,30 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testStandaloneXml() throws Exception {
+        standaloneXmlTest(false, false);
+    }
+
+    @Test
+    public void testStandalonePreviewXml() throws Exception {
+        standaloneXmlTest(true, false);
+    }
+
+    @Test
+    public void testStandaloneHAXml() throws Exception {
+        standaloneXmlTest(false, true);
+    }
+
+    @Test
+    public void testStandalonePreviewHAXml() throws Exception {
+        standaloneXmlTest(true, true);
+    }
+
+    private void standaloneXmlTest(boolean preview, boolean ha) throws Exception {
         File file = new File("target/standalone-copy.xml");
         if (file.exists()) {
             file.delete();
         }
-        copyFile(getOriginalStandaloneXml(), file);
+        copyFile(getOriginalStandaloneXml(preview, ha), file);
         ModelNode originalModel = loadServerModel(file);
         ModelNode reparsedModel = loadServerModel(file);
 
@@ -199,14 +217,22 @@ public class ParseAndMarshalModelsTestCase {
         compare(originalModel, reparsedModel);
     }
 
-
     @Test
     public void testDomainXml() throws Exception {
+        domainXmlTest(false);
+    }
+
+    @Test
+    public void testDomainPreviewXml() throws Exception {
+        domainXmlTest(true);
+    }
+
+    private void domainXmlTest(boolean preview) throws Exception {
         File file = new File("target/domain-copy.xml");
         if (file.exists()) {
             file.delete();
         }
-        copyFile(getOriginalDomainXml(), file);
+        copyFile(getOriginalDomainXml(preview), file);
         ModelNode originalModel = loadDomainModel(file);
         ModelNode reparsedModel = loadDomainModel(file);
 
@@ -240,6 +266,11 @@ public class ParseAndMarshalModelsTestCase {
         node2.get("profile", "default", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").asString()));
         node1.get("profile", "default", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").asString()));
         node2.get("profile", "default", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").asString()));
+
+        node1.get("profile", "ha", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("profile", "ha", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").asString()));
+        node2.get("profile", "ha", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "ha", "subsystem", "osgi", "properties", "org.jboss.osgi.system.modules").asString()));
+        node1.get("profile", "ha", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "ha", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").asString()));
+        node2.get("profile", "ha", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "ha", "subsystem", "osgi", "properties", "org.osgi.framework.system.packages.extra").asString()));
     }
 
     private String convertToSingleLine(String value) {
@@ -264,7 +295,7 @@ public class ParseAndMarshalModelsTestCase {
         Assert.assertEquals(node1.getType(), node2.getType());
         if (node1.getType() == ModelType.OBJECT) {
             final Set<String> keys1 = node1.keys();
-            final Set<String> keys2 = node1.keys();
+            final Set<String> keys2 = node2.keys();
             Assert.assertEquals(node1 + "\n" + node2, keys1.size(), keys2.size());
 
             for (String key : keys1) {
@@ -310,7 +341,7 @@ public class ParseAndMarshalModelsTestCase {
 
         final ModelNode model = new ModelNode();
         final ModelController controller = createController(model, new Setup() {
-            public void setup(ModelNode model, ManagementResourceRegistration rootRegistration) {
+            public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model);
                 ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null);
             }
@@ -323,7 +354,7 @@ public class ParseAndMarshalModelsTestCase {
         final List<ModelNode> toRun = new ArrayList<ModelNode>(ops);
         toRun.add(caputreModelOp);
         executeOperations(controller, toRun);
-        persister.store(model, null);
+        persister.store(model, null).commit();
         return model;
     }
 
@@ -336,8 +367,14 @@ public class ParseAndMarshalModelsTestCase {
         final ModelNode model = new ModelNode();
 
         final ModelController controller = createController(model, new Setup() {
-            public void setup(ModelNode model, ManagementResourceRegistration root) {
-                HostModelUtil.initCoreModel(model.get(HOST, "local"));
+            public void setup(Resource resource, ManagementResourceRegistration root) {
+
+                final Resource host = Resource.Factory.create();
+                resource.registerChild(PathElement.pathElement(HOST, "master"), host);
+
+                // TODO maybe make creating of empty nodes part of the MNR description
+                host.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
+                host.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
 
                 final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(new ControlledProcessState(false));
 
@@ -427,7 +464,8 @@ public class ParseAndMarshalModelsTestCase {
         toRun.add(caputreModelOp);
         executeOperations(controller, toRun);
 
-        persister.store(model.get(HOST, "local"), null);
+        model.get(HOST, "master", NAME).set("master");
+        persister.store(model.get(HOST, "master"), null).commit();
         return model;
     }
 
@@ -440,8 +478,8 @@ public class ParseAndMarshalModelsTestCase {
 
         final ModelNode model = new ModelNode();
         final ModelController controller = createController(model, new Setup() {
-            public void setup(ModelNode model, ManagementResourceRegistration rootRegistration) {
-                DomainModelUtil.updateCoreModel(model);
+            public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
+                DomainModelUtil.updateCoreModel(resource.getModel());
                 DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, null, new MockFileRepository(), null, null);
             }
         });
@@ -455,7 +493,8 @@ public class ParseAndMarshalModelsTestCase {
 
         executeOperations(controller, toRun);
 
-        persister.store(model, null);
+        //
+        persister.store(model, null).commit();
         return model;
     }
 
@@ -496,9 +535,12 @@ public class ParseAndMarshalModelsTestCase {
         }
     }
 
-    private File getOriginalStandaloneXml() {
+    private File getOriginalStandaloneXml(boolean preview, boolean ha) {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
+
+        String profile = preview ? (ha ? "standalone-preview-ha.xml" : "standalone-preview.xml")
+                                 : (ha ? "standalone-ha.xml" : "standalone.xml");
         File f = new File(".").getAbsoluteFile();
         f = f.getParentFile().getParentFile().getParentFile();
         Assert.assertTrue(f.exists());
@@ -514,7 +556,7 @@ public class ParseAndMarshalModelsTestCase {
         Assert.assertTrue(f.exists());
         f = new File(f, "configuration");
         Assert.assertTrue(f.exists());
-        f = new File(f, "standalone.xml");
+        f = new File(f, profile);
         Assert.assertTrue(f.exists());
         return f;
     }
@@ -549,11 +591,11 @@ public class ParseAndMarshalModelsTestCase {
         return f;
     }
 
-    private File getOriginalDomainXml() {
+    private File getOriginalDomainXml(boolean preview) {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
         File f = getDomainConfigDir();
-        f = new File(f, "domain.xml");
+        f = new File(f, preview ? "domain-preview.xml" : "domain.xml");
         Assert.assertTrue(f.exists());
         return f;
     }
@@ -592,7 +634,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     interface Setup {
-        void setup(ModelNode modelNode, ManagementResourceRegistration rootRegistration);
+        void setup(Resource resource, ManagementResourceRegistration rootRegistration);
     }
 
     class ModelControllerService extends AbstractControllerService {
@@ -617,14 +659,19 @@ public class ParseAndMarshalModelsTestCase {
         }
 
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-            registration.setup(rootResource.getModel(), rootRegistration);
+            registration.setup(rootResource, rootRegistration);
 
             rootRegistration.registerOperationHandler("capture-model", new OperationStepHandler() {
                         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                            model.set(context.readModel(PathAddress.EMPTY_ADDRESS));
+                            model.set(Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS)));
                         }
                     }, getRootDescriptionProvider());
+            // TODO maybe make creating of empty nodes part of the MNR description
+            rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
+            rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
         }
+
+
     }
 
     private static class MockContentRepository implements ContentRepository {

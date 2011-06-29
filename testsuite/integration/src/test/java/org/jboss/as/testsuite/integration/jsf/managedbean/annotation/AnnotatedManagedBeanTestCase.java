@@ -30,7 +30,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import sun.tools.jar.resources.jar;
 
 /**
  * @author Stuart Douglas

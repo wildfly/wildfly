@@ -29,12 +29,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-testsuite</artifactId>
-        <version>7.0.0.Beta4-SNAPSHOT</version>
+        <version>7.0.0.CR1</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-testsuite-integration</artifactId>
-    <version>7.0.0.Beta4-SNAPSHOT</version>
+    <version>7.0.0.CR1</version>
 
     <name>JBoss Application Server Test Suite: Integration Tests</name>
 
@@ -67,7 +67,6 @@
                                 <include>**/*TestCase.java</include>
                             </includes>
                             <excludes>
-                                <exclude>org/jboss/as/testsuite/integration/osgi/**</exclude>
                                 <exclude>org/jboss/as/testsuite/integration/ws/*TestCase.java</exclude>
                                 <exclude>org/jboss/as/testsuite/integration/wsejb/*TestCase.java</exclude>
                             </excludes>
@@ -111,9 +110,6 @@
                                         <include>org/jboss/as/testsuite/integration/ws/*TestCase.java</include>
                                         <include>org/jboss/as/testsuite/integration/wsejb/*TestCase.java</include>
                                     </includes>
-                                    <excludes>
-                                        <exclude>org/jboss/as/testsuite/integration/osgi/**</exclude>
-                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>

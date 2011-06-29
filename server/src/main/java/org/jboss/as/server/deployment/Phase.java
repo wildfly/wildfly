@@ -22,8 +22,6 @@
 
 package org.jboss.as.server.deployment;
 
-import sun.tools.tree.FinallyStatement;
-
 /**
  * An enumeration of the phases of a deployment unit's processing cycle.
  *

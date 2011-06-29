@@ -59,10 +59,12 @@ public final class Main {
         System.out.println("Usage: ./standalone.sh [args...]\n");
         System.out.println("where args include:");
         System.out.println("    -D<name>[=<value>]                 Set a system property");
+        System.out.println("    -h                                 Display this message and exit");
         System.out.println("    --help                             Display this message and exit");
         System.out.println("    -P=<url>                           Load system properties from the given url");
         System.out.println("    --properties=<url>                 Load system properties from the given url");
-        System.out.println("    --server-config <config>           Name of the server configuration file to use (default is \"standalone.xml\")");
+        System.out.println("    --server-config=<config>           Name of the server configuration file to use (default is \"standalone.xml\")");
+        System.out.println("    -V                                 Print version and exit\n");
         System.out.println("    --version                          Print version and exit\n");
     }
 

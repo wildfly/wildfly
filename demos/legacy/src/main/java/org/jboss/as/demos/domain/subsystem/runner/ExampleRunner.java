@@ -107,7 +107,7 @@ public class ExampleRunner {
             }
 
             final ModelNode address = new ModelNode();
-            address.add(HOST, "local");
+            address.add(HOST, "master");
             address.add(SERVER, "server-one");
             address.add(SUBSYSTEM, "web");
             address.add("connector", "new");

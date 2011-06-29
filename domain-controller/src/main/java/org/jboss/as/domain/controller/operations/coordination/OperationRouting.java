@@ -87,17 +87,15 @@ public class OperationRouting {
                     routing = new OperationRouting(targetHost, true);
                 }
             }
-        }
-        else if (!localHostControllerInfo.isMasterDomainController()) {
-            // TODO a slave could conceivably handle locally read-only requests for the domain model
-            routing = new OperationRouting();
-        }
-        else {
+        } else {
             Set<OperationEntry.Flag> flags = registry.getOperationFlags(PathAddress.EMPTY_ADDRESS, operation.require(OP).asString());
             checkNull(operation, flags);
             if (flags.contains(OperationEntry.Flag.READ_ONLY)) {
                 // Direct read of domain model
                 routing = new OperationRouting(localHostControllerInfo.getLocalHostName(), false);
+            } else if (!localHostControllerInfo.isMasterDomainController()) {
+                // TODO a slave could conceivably handle locally read-only requests for the domain model
+                routing = new OperationRouting();
             } else if (flags.contains(OperationEntry.Flag.DEPLOYMENT_UPLOAD)) {
                 // Deployment ops should be executed on the master DC only
                 routing = new OperationRouting(localHostControllerInfo.getLocalHostName(), false);

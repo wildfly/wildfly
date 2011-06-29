@@ -40,9 +40,29 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
     private int outstanding;
 
     public synchronized void execute(final OperationContext context, final ModelNode operation) {
-        while (outstanding > 0) {
+
+        // Wait for services to reach rest state.
+        // Additionally...
+        // Temp workaround to MSC issue of geting STARTING_TO_STARTED notification for parent service before
+        // getting the PROBLEM_TO_START_REQUESTED notification for dependent services. If there are
+        // services in PROBLEM state, wait up to 100ms to give them a chance to transition to START_REQUESTED.
+
+        long start = 0;
+        long settleTime = 100;
+        while (outstanding > 0 || (settleTime > 0 && ! problem.isEmpty())) {
             try {
-                wait();
+                long wait = outstanding > 0 ? 0 : settleTime;
+                wait(wait);
+                if (outstanding == 0) {
+                    if (start == 0) {
+                        start = System.currentTimeMillis();
+                    } else {
+                        settleTime -= System.currentTimeMillis() - start;
+                    }
+                } else {
+                    start = 0;
+                    settleTime = 100;
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 context.getFailureDescription().set("Operation cancelled");
@@ -50,6 +70,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                 return;
             }
         }
+
         if (! failed.isEmpty() || ! problem.isEmpty()) {
             final ModelNode failureDescription = context.getFailureDescription();
             ModelNode failedList = null;

@@ -198,6 +198,22 @@ public class ServerInventoryImpl implements ServerInventory {
 
     public ServerStatus restartServer(String serverName, final int gracefulTimeout, final ModelNode domainModel) {
         stopServer(serverName, gracefulTimeout);
+        ServerStatus status;
+        // FIXME total hack; set up some sort of notification scheme
+        for (int i = 0; i < 50; i++) {
+            status = determineServerStatus(serverName);
+            if (status == ServerStatus.STOPPING) {
+                try {
+                    Thread.sleep(100);
+                } catch (final InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            else {
+                break;
+            }
+        }
         return startServer(serverName, domainModel);
     }
 

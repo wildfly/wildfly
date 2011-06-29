@@ -71,7 +71,7 @@ import java.util.Collections;
         configuration.setDomainConfigFile(new File(BUILD_DIR, domainXmlName).getAbsolutePath());
         configuration.setHostConfigFile(new File(BUILD_DIR, hostXmlName).getAbsolutePath());
 
-        configuration.setHostName("local"); // TODO this shouldn't be needed
+        configuration.setHostName("master"); // TODO this shouldn't be needed
 
         new File(output, "configuration").mkdirs(); // TODO this should not be necessary
         configuration.setDomainDirectory(output.getAbsolutePath());
