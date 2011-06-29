@@ -29,6 +29,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -47,7 +48,6 @@ public class XmlMarshallingHandler implements OperationStepHandler, DescriptionP
 
     public static final String OPERATION_NAME = CommonDescriptions.READ_CONFIG_AS_XML;
 
-    private final String[] EMPTY = new String[0];
     private final ConfigurationPersister configPersister;
 
     public XmlMarshallingHandler(final ConfigurationPersister configPersister) {
@@ -61,7 +61,7 @@ public class XmlMarshallingHandler implements OperationStepHandler, DescriptionP
 
     @Override
     public void execute(OperationContext context, ModelNode operation) {
-        final Resource resource = context.getRootResource();
+        final Resource resource = context.getRootResource().navigate(getBaseAddress());
         // Get the model recursively
         final ModelNode model = Resource.Tools.readModel(resource);
         try {
@@ -80,6 +80,10 @@ public class XmlMarshallingHandler implements OperationStepHandler, DescriptionP
             context.getFailureDescription().set(e.toString());
         }
         context.completeStep();
+    }
+
+    protected PathAddress getBaseAddress() {
+        return PathAddress.EMPTY_ADDRESS;
     }
 
     private void safeClose(final Closeable closeable) {

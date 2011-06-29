@@ -93,6 +93,7 @@ import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.operations.HostShutdownHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
+import org.jboss.as.host.controller.operations.HostXmlMarshallingHandler;
 import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
 import org.jboss.as.host.controller.operations.HttpManagementAttributeHandlers;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
@@ -164,7 +165,7 @@ public class HostModelUtil {
         root.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
         // Other root resource operations
-        XmlMarshallingHandler xmh = new XmlMarshallingHandler(configurationPersister.getHostPersister());
+        XmlMarshallingHandler xmh = new HostXmlMarshallingHandler(configurationPersister.getHostPersister(), hostControllerInfo);
         hostRegistration.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, OperationEntry.EntryType.PUBLIC, flags);
         hostRegistration.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
         hostRegistration.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);
