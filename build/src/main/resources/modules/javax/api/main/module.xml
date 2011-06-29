@@ -103,6 +103,9 @@
                     <path name="javax/xml/datatype"/>
                     <path name="javax/xml/namespace"/>
                     <path name="javax/xml/parsers"/>
+                    <path name="javax/xml/stream"/>
+                    <path name="javax/xml/stream/events"/>
+                    <path name="javax/xml/stream/util"/>
                     <path name="javax/xml/transform"/>
                     <path name="javax/xml/transform/dom"/>
                     <path name="javax/xml/transform/sax"/>
