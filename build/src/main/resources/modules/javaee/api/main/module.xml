@@ -51,6 +51,7 @@
         <module name="javax.xml.bind.api" export="true"/>
         <module name="javax.xml.registry.api" export="true"/>
         <module name="javax.xml.soap.api" export="true"/>
+        <module name="javax.xml.stream.api" export="true"/>
         <module name="javax.xml.ws.api" export="true"/>
         <module name="org.apache.santuario.xmlsec" export="true">
             <exports>
