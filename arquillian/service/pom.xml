@@ -29,12 +29,12 @@
   <parent>
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-arquillian</artifactId>
-    <version>7.0.0.Beta4-SNAPSHOT</version>
+    <version>7.0.0.CR1</version>
   </parent>
 
   <groupId>org.jboss.as</groupId>
   <artifactId>jboss-as-arquillian-service</artifactId>
-  <version>7.0.0.Beta4-SNAPSHOT</version>
+  <version>7.0.0.CR1</version>
 
   <name>JBoss Application Server: Arquillian Service</name>
 
