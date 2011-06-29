@@ -114,7 +114,6 @@ final class OperationContextImpl implements OperationContext {
     private ModelNode operation;
 
     private Resource model;
-    private Resource readOnlyModel;
     private ResultAction resultAction;
     /** Tracks whether any steps have gotten write access to the runtime */
     private boolean affectsRuntime;
@@ -140,7 +139,7 @@ final class OperationContextImpl implements OperationContext {
         this.contextType = contextType;
         this.transactionControl = transactionControl;
         this.booting = booting;
-        this.model = this.readOnlyModel = model;
+        this.model = model;
         this.modelController = modelController;
         this.messageHandler = messageHandler;
         this.attachments = attachments;
@@ -714,7 +713,6 @@ final class OperationContextImpl implements OperationContext {
         if (affectsModel.size() == 0) {
             takeWriteLock();
             model = model.clone();
-            readOnlyModel = null;
         }
         affectsModel.add(address);
         Resource model = this.model;
@@ -776,7 +774,6 @@ final class OperationContextImpl implements OperationContext {
         if (affectsModel.size() == 0) {
             takeWriteLock();
             model = model.clone();
-            readOnlyModel = null;
         }
         affectsModel.add(address);
         Resource resource = this.model;
@@ -804,7 +801,6 @@ final class OperationContextImpl implements OperationContext {
         if (affectsModel.size() == 0) {
             takeWriteLock();
             model = model.clone();
-            readOnlyModel = null;
         }
         affectsModel.add(address);
         Resource model = this.model;
@@ -849,7 +845,6 @@ final class OperationContextImpl implements OperationContext {
         if (affectsModel.size() == 0) {
             takeWriteLock();
             model = model.clone();
-            readOnlyModel = null;
         }
         affectsModel.add(address);
         Resource model = this.model;
@@ -873,13 +868,8 @@ final class OperationContextImpl implements OperationContext {
     }
 
     public Resource getRootResource() {
-        final Resource readOnlyModel = this.readOnlyModel;
-        if (readOnlyModel == null) {
-            final Resource newModel = this.model.clone();
-            return this.readOnlyModel = newModel;
-        } else {
-            return readOnlyModel;
-        }
+        final Resource readOnlyModel = this.model;
+        return readOnlyModel.clone();
     }
 
     public boolean isModelAffected() {
