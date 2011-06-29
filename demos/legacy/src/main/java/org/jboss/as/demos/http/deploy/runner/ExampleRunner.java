@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 
 import org.jboss.as.demos.war.archive.SimpleServlet;
 import org.jboss.dmr.ModelNode;
@@ -42,7 +43,7 @@ public class ExampleRunner {
 
             /* The following mimics what would happen as part of submitting an HTML form like the
              * following where the selected file is the "war-example.war" created above:
-            <form method="post" action="http://localhost:9990/domain-api/add-content" enctype="multipart/form-data">
+            <form method="post" action="http://localhost:9990/management/add-content" enctype="multipart/form-data">
               file: <input type="file" name="file">
               <input type="submit">
             </form>
@@ -55,7 +56,7 @@ public class ExampleRunner {
             is = new BufferedInputStream(archive.as(ZipExporter.class).exportAsInputStream());
 
             // Write the POST request and read the response from the HTTP server.
-            URL uploadContent = new URL("http://localhost:9990/domain-api/add-content");
+            URL uploadContent = new URL("http://localhost:9990/management/add-content");
             HttpURLConnection connection =(HttpURLConnection) uploadContent.openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
@@ -107,7 +108,7 @@ public class ExampleRunner {
 
             // II. Deploy the new content
 
-            connection =(HttpURLConnection) new URL("http://localhost:9990/domain-api/").openConnection();
+            connection =(HttpURLConnection) new URL("http://localhost:9990/management/").openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
@@ -116,7 +117,9 @@ public class ExampleRunner {
             ModelNode op = new ModelNode();
             op.get("operation").set("add");
             op.get("address").add("deployment", "war-example.war");
-            op.get("hash").set(hash);
+            ModelNode hashNode = new ModelNode();
+            hashNode.get("hash").set(hash);
+            op.get("content").set(Collections.singletonList(hashNode));
             op.get("enabled").set(true);
 
             String json = op.toJSONString(true);
@@ -148,7 +151,7 @@ public class ExampleRunner {
 
             // IV. Redeploy the content
 
-            connection =(HttpURLConnection) new URL("http://localhost:9990/domain-api/").openConnection();
+            connection =(HttpURLConnection) new URL("http://localhost:9990/management/").openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
@@ -172,7 +175,7 @@ public class ExampleRunner {
 
             // V. Undeploy and remove the deployment
 
-            connection =(HttpURLConnection) new URL("http://localhost:9990/domain-api/").openConnection();
+            connection =(HttpURLConnection) new URL("http://localhost:9990/management/").openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
