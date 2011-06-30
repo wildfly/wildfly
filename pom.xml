@@ -3532,6 +3532,14 @@
                         <groupId>com.gwtplatform</groupId>
                         <artifactId>gwtp-all</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>com.google.code.gwt-log</groupId>
+                        <artifactId>gwt-log</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.mycila.com.google.inject.extensions</groupId>
+                        <artifactId>guice-assisted-inject</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
