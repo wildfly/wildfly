@@ -276,6 +276,21 @@ public class DeploymentManagementTestCase {
     }
 
     @Test
+    public void testDomainAddOnly() throws Exception {
+        ModelNode op = getEmptyOperation(UPLOAD_DEPLOYMENT_STREAM, ROOT_ADDRESS);
+        op.get(INPUT_STREAM_INDEX).set(0);
+        OperationBuilder builder = new OperationBuilder(op);
+        builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
+
+        byte[] hash = executeOnMaster(builder.build()).asBytes();
+
+        ModelNode content = new ModelNode();
+        content.get("hash").set(hash);
+        ModelNode composite = createDeploymentOperation(content);
+        executeOnMaster(composite);
+    }
+
+    @Test
     public void testUnmanagedArchiveDeployment() throws Exception {
         ModelNode content = new ModelNode();
         content.get("archive").set(true);

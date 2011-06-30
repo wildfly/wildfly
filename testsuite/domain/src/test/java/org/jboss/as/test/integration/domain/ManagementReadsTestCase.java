@@ -25,6 +25,8 @@ package org.jboss.as.test.integration.domain;
 import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
 import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfiguration;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -171,6 +173,23 @@ public class ManagementReadsTestCase {
         validateResponse(response);
         // TODO make some more assertions about result content
 
+    }
+
+    @Test
+    public void testCompositeOperation() throws IOException {
+        final DomainClient domainClient = domainMasterLifecycleUtil.getDomainClient();
+        final ModelNode request = new ModelNode();
+        request.get(OP).set(READ_RESOURCE_OPERATION);
+        request.get(OP_ADDR).add("profile", "*");
+
+        final ModelNode composite = new ModelNode();
+        composite.get(OP).set(COMPOSITE);
+        composite.get(OP_ADDR).setEmptyList();
+        composite.get(STEPS).add(request);
+
+        ModelNode response = domainClient.execute(composite);
+        validateResponse(response);
+        System.out.println(response);
     }
 
     @Test
