@@ -24,6 +24,7 @@ package org.jboss.as.cli.handlers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -68,7 +69,13 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     protected final ArgumentWithoutValue helpProperties;
     protected final ArgumentWithoutValue helpCommands;
 
-    public GenericTypeOperationHandler(String nodeType, String idProperty, List<String> typeOperations, List<String> excludeOperations) {
+    public GenericTypeOperationHandler(String nodeType, String idProperty) {
+        this(nodeType, idProperty, Arrays.asList("read-attribute", "read-children-names", "read-children-resources",
+                "read-children-types", "read-operation-description", "read-operation-names", "read-resource",
+                "read-resource-description", "validate-address", "write-attribute"));
+    }
+
+    public GenericTypeOperationHandler(String nodeType, String idProperty, List<String> excludeOperations) {
 
         super("generic-type-operation", true);
 
@@ -647,6 +654,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
         return result.get("attributes").asPropertyList();
     }
+
     protected ModelNode getOperationDescription(CommandContext ctx, String operationName) throws IOException {
         ModelNode request = initRequest(ctx);
         if(request == null) {

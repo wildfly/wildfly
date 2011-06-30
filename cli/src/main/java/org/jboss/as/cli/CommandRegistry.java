@@ -57,4 +57,15 @@ public class CommandRegistry {
     public CommandHandler getCommandHandler(String command) {
         return handlers.get(command);
     }
+
+    public CommandHandler remove(String cmdName) {
+        if(cmdName == null) {
+            throw new IllegalArgumentException();
+        }
+        CommandHandler handler = handlers.remove(cmdName);
+        if(handler != null) {
+            tabCompletionCommands.remove(cmdName);
+        }
+        return handler;
+    }
 }
