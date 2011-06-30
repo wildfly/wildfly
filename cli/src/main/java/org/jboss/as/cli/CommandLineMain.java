@@ -152,7 +152,7 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new XADataSourceModifyHandler(), "modify-xa-data-source");
 
         // data-source
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=datasources/data-source", "--jndi-name",
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=datasources/data-source", "jndi-name",
                 Collections.singletonList("add"),
                 Arrays.asList("read-attribute", "read-children-names", "read-children-resources",
                         "read-children-types", "read-operation-description", "read-operation-names", "read-resource",

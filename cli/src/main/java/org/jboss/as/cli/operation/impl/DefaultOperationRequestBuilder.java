@@ -225,7 +225,7 @@ public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackH
         if(name == null || name.trim().isEmpty())
             throw new IllegalArgumentException("The argument name is not specified: '" + name + "'");
         if(value == null || value.trim().isEmpty())
-            throw new IllegalArgumentException("The argument value is not specified: '" + value + "'");
+            throw new IllegalArgumentException("The argument value is not specified for " + name + ": '" + value + "'");
         ModelNode toSet = null;
         try {
             toSet = ModelNode.fromString(value);
