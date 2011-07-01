@@ -22,13 +22,15 @@
 
 package org.jboss.as.controller;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.ServiceName;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -49,7 +51,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
 
         long start = 0;
         long settleTime = 100;
-        while (outstanding > 0 || (settleTime > 0 && ! problem.isEmpty())) {
+        while (outstanding > 0 || (settleTime > 0 && !problem.isEmpty())) {
             try {
                 long wait = outstanding > 0 ? 0 : settleTime;
                 wait(wait);
@@ -71,7 +73,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
             }
         }
 
-        if (! failed.isEmpty() || ! problem.isEmpty()) {
+        if (!failed.isEmpty() || !problem.isEmpty()) {
             final ModelNode failureDescription = context.getFailureDescription();
             ModelNode failedList = null;
             for (ServiceController<?> controller : failed) {
@@ -82,10 +84,23 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
             }
             ModelNode problemList = null;
             for (ServiceController<?> controller : problem) {
-                if (problemList == null) {
-                    problemList = failureDescription.get("Services with missing/unavailable dependencies");
+                if (!controller.getImmediateUnavailableDependencies().isEmpty()) {
+                    if (problemList == null) {
+                        problemList = failureDescription.get("Services with missing/unavailable dependencies");
+                    }
+                    final StringBuilder problem = new StringBuilder();
+                    problem.append(controller.getName().getCanonicalName());
+                    problem.append(" missing [ ");
+                    for(Iterator<ServiceName> i = controller.getImmediateUnavailableDependencies().iterator(); i.hasNext(); ) {
+                        ServiceName missing = i.next();
+                        problem.append(missing.getCanonicalName());
+                        if(i.hasNext()) {
+                            problem.append(", ");
+                        }
+                    }
+                    problem.append(" ]");
+                    problemList.add(problem.toString());
                 }
-                problemList.add(controller.getName().getCanonicalName());
             }
             if (ModelControllerImpl.RB_ON_RT_FAILURE.get() == Boolean.TRUE) {
                 context.setRollbackOnly();
@@ -99,7 +114,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
 
     public synchronized void listenerAdded(final ServiceController<?> controller) {
         set.add(controller);
-        if (! controller.getSubstate().isRestState()) {
+        if (!controller.getSubstate().isRestState()) {
             outstanding++;
         }
     }
@@ -124,9 +139,9 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
             }
         }
         if (transition.leavesRestState()) {
-            outstanding ++;
+            outstanding++;
         } else if (transition.entersRestState()) {
-            if (outstanding -- == 1) {
+            if (outstanding-- == 1) {
                 notifyAll();
             }
         }
