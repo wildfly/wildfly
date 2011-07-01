@@ -61,6 +61,8 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         super("command", true);
         this.cmdRegistry = cmdRegistry;
 
+        action.addCantAppearAfter(helpArg);
+
         profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
             public List<String> getAllCandidates(CommandContext ctx) {
@@ -71,6 +73,10 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                 if(!ctx.isDomainMode()) {
                     return false;
                 }
+                final String actionName = action.getValue(ctx.getParsedArguments());
+                if(actionName == null || !"add".equals(actionName)) {
+                    return false;
+                }
                 return super.canAppearNext(ctx);
             }
         };
@@ -79,7 +85,19 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         nodePath = new ArgumentWithValue(this, new CommandLineCompleter(){
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-                return OperationRequestCompleter.INSTANCE.complete(ctx, buffer, cursor, candidates);
+                int offset = 0;
+                if(ctx.isDomainMode()) {
+                    final String profileName = profile.getValue(ctx.getParsedArguments());
+                    if(profileName == null) {
+                        return -1;
+                    }
+                    StringBuilder buf = new StringBuilder();
+                    buf.append("profile=").append(profileName).append('/');
+                    offset = buf.length();
+                    buf.append(buffer);
+                    buffer = buf.toString();
+                }
+                return OperationRequestCompleter.INSTANCE.complete(ctx, buffer, cursor + offset, candidates) - offset;
             }}, "--node-type") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -145,15 +163,17 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             }}), "--command-name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                final String actionStr = action.getValue(ctx.getParsedArguments());
-                if(action == null) {
+                ParsedArguments args = ctx.getParsedArguments();
+                if(isPresent(args)) {
                     return false;
                 }
-
-                if("add".equals(actionStr)) {
-                    return idProperty.isPresent(ctx.getParsedArguments());
+                final String actionStr = action.getValue(args);
+                if(actionStr == null) {
+                    return false;
                 }
-
+                if("add".equals(actionStr)) {
+                    return idProperty.isPresent(args);
+                }
                 if("remove".equals(actionStr)) {
                     return true;
                 }
