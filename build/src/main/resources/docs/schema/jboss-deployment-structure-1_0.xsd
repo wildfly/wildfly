@@ -136,6 +136,13 @@
                     </documentation>
                 </annotation>
             </xsd:element>
+            <xsd:element name="transformers" type="transformerSetType" minOccurs="0">
+                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                    <documentation>
+                        Lists the class file transformers that should be applied for classes loaded by this module.
+                    </documentation>
+                </annotation>
+            </xsd:element>
         </xsd:all>
     </xsd:complexType>
 
