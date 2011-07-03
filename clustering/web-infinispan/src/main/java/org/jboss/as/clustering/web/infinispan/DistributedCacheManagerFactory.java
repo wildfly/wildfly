@@ -34,6 +34,7 @@ import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.web.BatchingManager;
+import org.jboss.as.clustering.web.ClusteringNotSupportedException;
 import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.SessionAttributeMarshallerFactory;
@@ -78,8 +79,11 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
     private SessionAttributeMarshallerFactory marshallerFactory = new SessionAttributeMarshallerFactoryImpl();
 
     @Override
-    public <T extends OutgoingDistributableSessionData> org.jboss.as.clustering.web.DistributedCacheManager<T> getDistributedCacheManager(ServiceRegistry registry, LocalDistributableSessionManager manager) {
+    public <T extends OutgoingDistributableSessionData> org.jboss.as.clustering.web.DistributedCacheManager<T> getDistributedCacheManager(ServiceRegistry registry, LocalDistributableSessionManager manager) throws ClusteringNotSupportedException {
         Cache<SessionKeyImpl, Map<Object, Object>> sessionCache = this.sessionCacheSource.getCache(registry, manager);
+        if (!sessionCache.getConfiguration().isInvocationBatchingEnabled()) {
+            throw new ClusteringNotSupportedException(String.format("Failed to configure web application for <distributable/> sessions.  %s.%s cache requires batching=\"true\".", sessionCache.getCacheManager().getGlobalConfiguration().getCacheManagerName(), sessionCache.getName()));
+        }
         SharedLocalYieldingClusterLockManager lockManager = this.lockManagerSource.getLockManager(sessionCache);
         BatchingManager batchingManager = new TransactionBatchingManager(sessionCache.getAdvancedCache().getTransactionManager());
         SessionAttributeStorage<T> storage = this.storageFactory.createStorage(manager.getReplicationConfig().getReplicationGranularity(), this.marshallerFactory.createMarshaller(manager));

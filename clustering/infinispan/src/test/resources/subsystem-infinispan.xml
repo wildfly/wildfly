@@ -13,7 +13,7 @@
         <replicated-cache name="repl" mode="ASYNC" batching="true">
             <file-store></file-store>
         </replicated-cache>
-        <distributed-cache name="dist" mode="ASYNC" batching="true">
+        <distributed-cache name="dist" mode="ASYNC" batching="true" owners="2" virtual-nodes="1">
             <file-store></file-store>
         </distributed-cache>
     </cache-container>

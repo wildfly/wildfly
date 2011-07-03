@@ -347,7 +347,12 @@
                 </xs:sequence>
                 <xs:attribute name="owners" type="xs:int" default="2">
                     <xs:annotation>
-                        <xs:documentation></xs:documentation>
+                        <xs:documentation>Number of cluster-wide replicas for each cache entry.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="virtual-nodes" type="xs:int" default="1">
+                    <xs:annotation>
+                        <xs:documentation>Controls the number of virtual nodes per "real" node.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="l1-lifespan" type="xs:long" default="600000">

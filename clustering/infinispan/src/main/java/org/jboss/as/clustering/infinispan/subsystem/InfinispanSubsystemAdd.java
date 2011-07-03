@@ -70,6 +70,7 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler implements De
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        log.info("Activating Infinispan subsystem.");
         ServiceTarget target = context.getServiceTarget();
         newControllers.add(target.addService(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, new EmbeddedCacheManagerDefaultsService())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)

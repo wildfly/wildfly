@@ -88,12 +88,14 @@ public class DistributedCacheManagerFactoryTest {
         ReplicationConfig config = new ReplicationConfig();
         ReplicationGranularity granularity = ReplicationGranularity.SESSION;
         config.setReplicationGranularity(granularity);
+        Configuration configuration = new Configuration();
+        configuration.fluent().invocationBatching();
 
         when(this.sessionCacheSource.getCache(same(this.registry), same(this.manager))).thenReturn(this.cache);
+        when(this.cache.getConfiguration()).thenReturn(configuration);
         when(this.lockManagerSource.getLockManager(same(this.cache))).thenReturn(null);
         when(this.cache.getAdvancedCache()).thenReturn(this.cache);
         when(this.cache.getTransactionManager()).thenReturn(new BatchModeTransactionManager());
-        when(this.cache.getConfiguration()).thenReturn(new Configuration());
 
         when(this.marshallerFactory.createMarshaller(this.manager)).thenReturn(this.marshaller);
         when(this.manager.getReplicationConfig()).thenReturn(config);

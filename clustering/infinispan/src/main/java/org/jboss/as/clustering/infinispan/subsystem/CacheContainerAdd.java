@@ -189,6 +189,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
             if (cache.hasDefined(ModelKeys.OWNERS)) {
                 fluent.hash().numOwners(cache.get(ModelKeys.OWNERS).asInt());
             }
+            if (cache.hasDefined(ModelKeys.VIRTUAL_NODES)) {
+                fluent.hash().numVirtualNodes(cache.get(ModelKeys.VIRTUAL_NODES).asInt());
+            }
             if (cache.hasDefined(ModelKeys.L1_LIFESPAN)) {
                 long lifespan = cache.get(ModelKeys.L1_LIFESPAN).asLong();
                 if (lifespan > 0) {
