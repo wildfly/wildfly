@@ -33,7 +33,6 @@ import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
@@ -115,8 +114,7 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
                     deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, moduleIdentifier);
                     log.debugf("Resource %s added as external jar %s", classPathFile, resourceRoot.getRoot());
                 } else {
-                    //this is a dep on another deployment
-                    deploymentUnit.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES,ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX +  classPathFile.getName()));
+                    log.warnf("Class Path entry %s in %s does not point to a valid jar for a Class-Path reference.",item,resourceRoot.getRoot());
                 }
             }
         }
