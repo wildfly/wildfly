@@ -22,11 +22,9 @@
 
 package org.jboss.as.test.embedded.mgmt.datasource;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
@@ -35,7 +33,6 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -62,7 +59,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriterFactory;
@@ -198,6 +194,41 @@ public class DataSourceOperationsUnitTestCase {
         compensatingOperation.get(OP_ADDR).set(address);
 
         getModelControllerClient().execute(compensatingOperation);
+    }
+
+    @Test
+    public void testAddAndRemoveSameName() throws Exception {
+        final String dsName = "SameNameDs";
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "datasources");
+        address.add("data-source", dsName);
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("add");
+        operation.get(OP_ADDR).set(address);
+
+        operation.get("name").set(dsName);
+        operation.get("jndi-name").set("java:jboss/datasources/" + dsName);
+        operation.get("enabled").set(true);
+
+        operation.get("driver-name").set("h2");
+        operation.get("pool-name").set(dsName + "_Pool");
+
+        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        operation.get("user-name").set("sa");
+        operation.get("password").set("sa");
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set("remove");
+        compensatingOperation.get(OP_ADDR).set(address);
+        //do twice, test for AS7-720
+        for (int i = 1; i <= 2; i++) {
+            final ModelNode result = getModelControllerClient().execute(operation);
+            Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+            getModelControllerClient().execute(compensatingOperation);
+        }
     }
 
     public List<ModelNode> marshalAndReparseDsResources() throws Exception {
