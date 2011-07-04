@@ -231,6 +231,27 @@ public class DataSourceOperationsUnitTestCase {
         }
     }
 
+    @Test
+    public void testReadInstalledDrivers() throws Exception {
+
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "datasources");
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("installed-drivers-list");
+        operation.get(OP_ADDR).set(address);
+
+        final ModelNode result = getModelControllerClient().execute(operation);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        final ModelNode result2 = result.get(RESULT).get(0);
+        Assert.assertTrue(result2 != null);
+        Assert.assertTrue(result2.hasDefined("driver-module-name"));
+        Assert.assertTrue(result2.hasDefined("module-slot"));
+        Assert.assertTrue(result2.hasDefined("driver-name"));
+    }
+
     public List<ModelNode> marshalAndReparseDsResources() throws Exception {
 
         final ModelNode address = new ModelNode();
