@@ -21,14 +21,6 @@
  */
 package org.jboss.as.cli;
 
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.RealmCallback;
-import javax.security.sasl.RealmChoiceCallback;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -62,7 +54,6 @@ import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
 import org.jboss.as.cli.handlers.CommandCommandHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
-import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.HistoryHandler;
