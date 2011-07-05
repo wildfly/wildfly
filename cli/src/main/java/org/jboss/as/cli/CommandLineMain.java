@@ -21,6 +21,14 @@
  */
 package org.jboss.as.cli;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.RealmCallback;
+import javax.security.sasl.RealmChoiceCallback;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -300,9 +308,12 @@ public class CommandLineMain {
 
         try {
             while (!cmdCtx.terminate) {
-                String line = console.readLine(cmdCtx.getPrompt());
-                line = line != null ? line.trim() : "";
-                processLine(cmdCtx, line);
+                final String line = console.readLine(cmdCtx.getPrompt());
+                if(line == null) {
+                    cmdCtx.terminateSession();
+                } else {
+                    processLine(cmdCtx, line.trim());
+                }
             }
         } finally {
             cmdCtx.disconnectController();
