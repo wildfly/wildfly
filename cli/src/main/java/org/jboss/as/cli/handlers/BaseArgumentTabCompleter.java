@@ -121,7 +121,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
             }
         }
 
-        for(CommandArgument arg : getAllArguments()) {
+        for(CommandArgument arg : getAllArguments(ctx)) {
             try {
                 if(arg.canAppearNext(ctx)) {
                     if(arg.getIndex() >= 0) {
@@ -155,7 +155,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
 
     protected CommandLineCompleter getValueCompleter(CommandContext ctx, final String argName) {
         if(argName != null) {
-            for(CommandArgument arg : getAllArguments()) {
+            for(CommandArgument arg : getAllArguments(ctx)) {
                 if(argName.equals(arg.getFullName())) {
                     return arg.getValueCompleter();
                 }
@@ -163,7 +163,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
             return null;
         }
 
-        for (CommandArgument arg : getAllArguments()) {
+        for (CommandArgument arg : getAllArguments(ctx)) {
             try {
                 if (arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
                     return arg.getValueCompleter();
@@ -175,7 +175,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
         return null;
     }
 
-    protected abstract Iterable<CommandArgument> getAllArguments();
+    protected abstract Iterable<CommandArgument> getAllArguments(CommandContext ctx);
 
     private static final class ParsingResults {
         String argName;

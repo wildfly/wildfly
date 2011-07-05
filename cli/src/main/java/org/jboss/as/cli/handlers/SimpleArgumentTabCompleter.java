@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.cli.CommandArgument;
+import org.jboss.as.cli.CommandContext;
 
 
 /**
@@ -40,7 +41,7 @@ public class SimpleArgumentTabCompleter extends BaseArgumentTabCompleter {
     }
 
     @Override
-    protected Iterable<CommandArgument> getAllArguments() {
+    protected Iterable<CommandArgument> getAllArguments(CommandContext ctx) {
         return allArgs;
     }
 }
