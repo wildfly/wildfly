@@ -1136,7 +1136,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
     private void writeHandlersContent(final XMLExtendedStreamWriter writer, Element element, final ModelNode handlers) throws XMLStreamException {
         if (handlers.getType() == ModelType.LIST) {
-            writer.writeStartElement(Element.HANDLERS.getLocalName());
+            writer.writeStartElement(element.getLocalName());
             for (ModelNode handler : handlers.asList()) {
                 if (handler.isDefined()) {
                     writer.writeStartElement(Element.HANDLER.getLocalName());
