@@ -25,6 +25,10 @@
       xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd"
       name="master">
 
+    <paths>
+        <path name="domainTestPath" path="/tmp" />
+    </paths>
+
     <management>
         <security-realms>
             <security-realm name="PropertiesMgmtSecurityRealm">
@@ -57,6 +61,9 @@
 
     <servers>
         <server name="main-one" group="main-server-group">
+            <paths>
+                <path name="domainTestPath" path="main-one" relative-to="jboss.domain.temp.dir" />
+            </paths>
             <!-- server-one inherits the default socket-group declared in the server-group -->
             <jvm name="default"/>
         </server>

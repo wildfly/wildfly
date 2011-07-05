@@ -512,6 +512,7 @@ public class HostXml extends CommonXml {
                         }
                         case PATHS : {
                             parsePaths(reader, address, list, true);
+                            break;
                         }
                         case SOCKET_BINDING_GROUP: {
                             if (sawSocketBinding) {

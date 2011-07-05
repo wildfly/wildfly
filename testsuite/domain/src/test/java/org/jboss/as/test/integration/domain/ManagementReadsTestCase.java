@@ -26,9 +26,14 @@ import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
 import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfiguration;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -154,6 +159,48 @@ public class ManagementReadsTestCase {
         ModelNode response = domainClient.execute(serverOp);
         validateResponse(response);
         // TODO make some more assertions about result content
+    }
+
+    @Test
+    public void testServerPathOverride() throws IOException {
+        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
+
+        final ModelNode address = new ModelNode();
+        address.add(HOST, "master");
+        address.add(SERVER, "main-one");
+        address.add(PATH, "domainTestPath");
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).set(address);
+
+        final ModelNode response = client.execute(operation);
+        validateResponse(response);
+
+        final ModelNode result = response.get(RESULT);
+        Assert.assertEquals("main-one", result.get(PATH).asString());
+        Assert.assertEquals("jboss.domain.temp.dir", result.get(RELATIVE_TO).asString());
+    }
+
+    @Test
+    public void testHostPathOverride() throws IOException {
+        final DomainClient client = domainSlaveLifecycleUtil.getDomainClient();
+
+        final ModelNode address = new ModelNode();
+        address.add(HOST, "slave");
+        address.add(SERVER, "main-three");
+        address.add(PATH, "domainTestPath");
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).set(address);
+
+        final ModelNode response = client.execute(operation);
+        validateResponse(response);
+
+        final ModelNode result = response.get(RESULT);
+        Assert.assertEquals("/tmp", result.get(PATH).asString());
+        Assert.assertFalse(result.get(RELATIVE_TO).isDefined());
     }
 
     @Test
