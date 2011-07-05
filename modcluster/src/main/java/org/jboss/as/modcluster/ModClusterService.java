@@ -38,6 +38,7 @@ import javax.management.ObjectName;
 
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -59,7 +60,6 @@ import org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric;
 import org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -83,6 +83,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     private LoadBalanceFactorProvider load;
 
     private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
+    private final InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<SocketBindingManager>();
     private final InjectedValue<SocketBinding> binding = new InjectedValue<SocketBinding>();
 
     /* Depending on configuration we use one of the other */
@@ -118,6 +119,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         }
         config.setAdvertisePort(23364);
         config.setAdvertiseGroupAddress("224.0.1.105");
+        config.setAdvertiseInterface(bindingManager.getValue().getDefaultInterfaceAddress().getHostAddress());
         config.setAutoEnableContexts(true);
         config.setStopContextTimeout(10);
         config.setSocketTimeout(20000);
@@ -129,6 +131,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             if (binding != null) {
                 config.setAdvertisePort(binding.getMulticastPort());
                 config.setAdvertiseGroupAddress(binding.getMulticastSocketAddress().getHostName());
+                config.setAdvertiseInterface(binding.getSocketAddress().getAddress().getHostAddress());
                 if (!defaultavert)
                     log.error("Mod_cluster requires Advertise but Multicast interface is not available");
                 config.setAdvertise(true);
@@ -344,8 +347,12 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         return webServer;
     }
 
-    public Injector<SocketBinding>getBinding() {
+    public Injector<SocketBinding> getBinding() {
         return binding;
+    }
+
+    public Injector<SocketBindingManager> getBindingManager() {
+        return bindingManager;
     }
 
     Registry getRegistry() {
