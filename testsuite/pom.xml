@@ -48,7 +48,7 @@
         <surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
-        <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
+        <jboss.home>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.home>
     </properties>
 
     <dependencies>
