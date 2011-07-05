@@ -1027,7 +1027,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         update.get(OP_ADDR).set(address).add(ModelDescriptionConstants.PATH, name);
         update.get(OP).set(ADD);
         update.get(NAME).set(name);
-        update.get(PATH).set(path);
+        if(path != null) update.get(PATH).set(path);
         if (relativeTo != null) update.get(RELATIVE_TO).set(relativeTo);
         list.add(update);
     }

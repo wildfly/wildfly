@@ -50,6 +50,10 @@
         <property name="java.net.preferIPv4Stack" value="true"/>
     </system-properties>
 
+    <paths>
+        <path name="domainTestPath" />
+    </paths>
+
     <profiles>
 
         <profile name="web-only">

@@ -25,6 +25,10 @@
       xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd"
       name="slave">
 
+    <paths>
+        <path name="domainTestPath" path="/tmp" />
+    </paths>
+
     <management>
         <security-realms>
             <security-realm name="PropertiesMgmtSecurityRealm">

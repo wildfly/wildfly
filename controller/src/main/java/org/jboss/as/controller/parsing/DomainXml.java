@@ -185,7 +185,7 @@ public class DomainXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.PATHS) {
-            parsePaths(reader, address, list, true);
+            parsePaths(reader, address, list, false);
             element = nextElement(reader);
         }
         if (element == Element.PROFILES) {

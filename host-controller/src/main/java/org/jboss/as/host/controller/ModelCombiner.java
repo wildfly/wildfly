@@ -302,6 +302,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         final Map<String, ModelNode> paths = new LinkedHashMap<String, ModelNode>();
         addPaths(paths, domainModel.get(PATH));
         addPaths(paths, hostModel.get(PATH));
+        addPaths(paths, serverModel.get(PATH));
 
         for (Entry<String, ModelNode> entry : paths.entrySet()) {
             updates.add(PathAddHandler.getAddPathOperation(pathAddress(PathElement.pathElement(PATH, entry.getKey())), entry.getValue().get(PATH), entry.getValue().get(RELATIVE_TO)));

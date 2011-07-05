@@ -559,6 +559,14 @@ public class CompositeOperationHandlerUnitTestCase {
         assertEquals(2, i.get());
     }
 
+    @Test
+    public void testSingleStepOperation() throws Exception {
+        ModelNode step = getOperation("good", "attr2", 1);
+        ModelNode comp = getCompositeOperation(null, step);
+        ModelNode result = controller.execute(comp, null, ModelControllerImplUnitTestCase.RollbackTransactionControl.INSTANCE, null);
+        System.out.println(result);
+    }
+
     public static ModelNode getCompositeOperation(Boolean rollback, ModelNode... steps) {
 
         ModelNode op = new ModelNode();

@@ -25,8 +25,15 @@ package org.jboss.as.test.integration.domain;
 import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
 import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfiguration;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -155,6 +162,48 @@ public class ManagementReadsTestCase {
     }
 
     @Test
+    public void testServerPathOverride() throws IOException {
+        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
+
+        final ModelNode address = new ModelNode();
+        address.add(HOST, "master");
+        address.add(SERVER, "main-one");
+        address.add(PATH, "domainTestPath");
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).set(address);
+
+        final ModelNode response = client.execute(operation);
+        validateResponse(response);
+
+        final ModelNode result = response.get(RESULT);
+        Assert.assertEquals("main-one", result.get(PATH).asString());
+        Assert.assertEquals("jboss.domain.temp.dir", result.get(RELATIVE_TO).asString());
+    }
+
+    @Test
+    public void testHostPathOverride() throws IOException {
+        final DomainClient client = domainSlaveLifecycleUtil.getDomainClient();
+
+        final ModelNode address = new ModelNode();
+        address.add(HOST, "slave");
+        address.add(SERVER, "main-three");
+        address.add(PATH, "domainTestPath");
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).set(address);
+
+        final ModelNode response = client.execute(operation);
+        validateResponse(response);
+
+        final ModelNode result = response.get(RESULT);
+        Assert.assertEquals("/tmp", result.get(PATH).asString());
+        Assert.assertFalse(result.get(RELATIVE_TO).isDefined());
+    }
+
+    @Test
     @Ignore("AS7-376")
     public void testReadResourceWildcards() throws IOException {
         DomainClient domainClient = domainMasterLifecycleUtil.getDomainClient();
@@ -171,6 +220,23 @@ public class ManagementReadsTestCase {
         validateResponse(response);
         // TODO make some more assertions about result content
 
+    }
+
+    @Test
+    public void testCompositeOperation() throws IOException {
+        final DomainClient domainClient = domainMasterLifecycleUtil.getDomainClient();
+        final ModelNode request = new ModelNode();
+        request.get(OP).set(READ_RESOURCE_OPERATION);
+        request.get(OP_ADDR).add("profile", "*");
+
+        final ModelNode composite = new ModelNode();
+        composite.get(OP).set(COMPOSITE);
+        composite.get(OP_ADDR).setEmptyList();
+        composite.get(STEPS).add(request);
+
+        ModelNode response = domainClient.execute(composite);
+        validateResponse(response);
+        System.out.println(response);
     }
 
     @Test

@@ -329,17 +329,13 @@ public class OperationSlaveStepHandler {
                     domainSteps.add(stepNode);
                 }
             }
-            if (domainSteps.size() == 1) {
-                result = domainSteps.get(0);
+            //
+            ModelNode stepsParam = new ModelNode();
+            for (ModelNode stepNode : domainSteps) {
+                stepsParam.add(stepNode);
             }
-            else if (domainSteps.size() > 1) {
-                ModelNode stepsParam = new ModelNode();
-                for (ModelNode stepNode : domainSteps) {
-                    stepsParam.add(stepNode);
-                }
-                result = Util.getEmptyOperation(COMPOSITE, new ModelNode());
-                result.get(STEPS).set(stepsParam);
-            }
+            result = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+            result.get(STEPS).set(stepsParam);
             return result;
         }
 

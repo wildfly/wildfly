@@ -1489,8 +1489,8 @@
                                 </goals>
                                 <phase>package</phase>
                                 <configuration>
-                                    <licensesOutputDirectory>${project.build.directory}/jboss-${jboss.as.release.version}/docs/licenses</licensesOutputDirectory>
-                                    <licensesOutputFile>${project.build.directory}/jboss-${jboss.as.release.version}/docs/licenses/licenses.xml</licensesOutputFile>
+                                    <licensesOutputDirectory>${project.build.directory}/jboss-as-${jboss.as.release.version}/docs/licenses</licensesOutputDirectory>
+                                    <licensesOutputFile>${project.build.directory}/jboss-as-${jboss.as.release.version}/docs/licenses/licenses.xml</licensesOutputFile>
                                 </configuration>
                             </execution>
                         </executions>
