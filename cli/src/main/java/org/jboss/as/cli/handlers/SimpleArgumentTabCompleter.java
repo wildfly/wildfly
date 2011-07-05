@@ -22,198 +22,25 @@
 package org.jboss.as.cli.handlers;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandArgument;
-import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.CommandLineException;
-import org.jboss.as.cli.impl.DefaultParsedArguments;
-import org.jboss.as.cli.parsing.CommandLineParser;
 
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class SimpleArgumentTabCompleter implements CommandLineCompleter {
+public class SimpleArgumentTabCompleter extends BaseArgumentTabCompleter {
 
     private final List<CommandArgument> allArgs = new ArrayList<CommandArgument>();
-
-    private final ParsingResults results = new ParsingResults();
 
     public void addArgument(CommandArgument arg) {
         allArgs.add(arg);
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.CommandLineCompleter#complete(org.jboss.as.cli.CommandContext, java.lang.String, int, java.util.List)
-     */
     @Override
-    public int complete(CommandContext ctx, final String buffer, int cursor, List<String> candidates) {
-
-        int firstCharIndex = 0;
-        while(firstCharIndex < buffer.length()) {
-            if(!Character.isWhitespace(buffer.charAt(firstCharIndex))) {
-                break;
-            }
-            ++firstCharIndex;
-        }
-
-        results.reset();
-        final DefaultParsedArguments parsedArguments = (DefaultParsedArguments) ctx.getParsedArguments();
-        parsedArguments.reset(null, null);
-        try {
-            CommandLineParser.parse(buffer, new CommandLineParser.CallbackHandler() {
-                @Override
-                public void argument(String name, int nameStart, String value, int valueStart, int end) throws CommandFormatException {
-                    if(end > 0 && end < buffer.length()) {
-                        parsedArguments.argument(name, nameStart, value, valueStart, end);
-                    }
-                    results.argName = name;
-                    results.argValue = value;
-                    results.nameStart = nameStart;
-                    results.valueStart = valueStart;
-                    results.endIndex = end;
-                }
-            });
-        } catch (CommandLineException e) {
-            return -1;
-        }
-
-        int result = buffer.length();
-        String chunk = null;
-        CommandLineCompleter valueCompleter = null;
-        if (firstCharIndex != result) {
-
-            if(results.argValue != null) {
-                if(results.argValue.isEmpty()) {
-                    chunk = null;
-                    result = results.valueStart;
-
-                    if(results.argName != null) {
-                        for(CommandArgument arg : allArgs) {
-                            if(results.argName.equals(arg.getFullName())) {
-                                valueCompleter = arg.getValueCompleter();
-                                break;
-                            }
-                        }
-                    } else {
-                        for (CommandArgument arg : allArgs) {
-                            try {
-                                if (arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
-                                    valueCompleter = arg.getValueCompleter();
-                                    break;
-                                }
-                            } catch (CommandFormatException e) {
-                                return -1;
-                            }
-                        }
-                    }
-
-                    if(valueCompleter == null) {
-                        return -1;
-                    }
-                } else {
-                    if(results.endIndex < buffer.length()) {
-                        chunk = null;
-                    } else {
-                        chunk = results.argValue;
-                        result = results.valueStart;
-
-                        if(results.argName != null) {
-                            for(CommandArgument arg : allArgs) {
-                                if(results.argName.equals(arg.getFullName())) {
-                                    valueCompleter = arg.getValueCompleter();
-                                    break;
-                                }
-                            }
-                        } else {
-                            for (CommandArgument arg : allArgs) {
-                                try {
-                                    if (arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
-                                        valueCompleter = arg.getValueCompleter();
-                                        break;
-                                    }
-                                } catch (CommandFormatException e) {
-                                    return -1;
-                                }
-                            }
-                        }
-
-                        if(valueCompleter == null) {
-                            return -1;
-                        }
-                    }
-                }
-            } else {
-                if(results.endIndex < buffer.length()) {
-                    chunk = null;
-                } else {
-                    chunk = results.argName;
-                    if (results.argName != null) {
-                        result = results.nameStart;
-                    }
-                }
-            }
-        }
-
-        if(valueCompleter != null) {
-            int valueResult = valueCompleter.complete(ctx, chunk == null ? "" : chunk, cursor, candidates);
-            if(valueResult < 0) {
-                return valueResult;
-            } else {
-                return result + valueResult;
-            }
-        }
-
-        for(CommandArgument arg : allArgs) {
-            try {
-                if(arg.canAppearNext(ctx)) {
-                    if(arg.getIndex() >= 0) {
-                        CommandLineCompleter valCompl = arg.getValueCompleter();
-                        if(valCompl != null) {
-                            valCompl.complete(ctx, chunk == null ? "" : chunk, cursor, candidates);
-                        }
-                    } else {
-                        String argName = arg.getFullName();
-                        if (chunk == null) {
-                            if (arg.isValueRequired()) {
-                                argName += '=';
-                            }
-                            candidates.add(argName);
-                        } else if (argName.startsWith(chunk)) {
-                            if (arg.isValueRequired()) {
-                                argName += '=';
-                            }
-                            candidates.add(argName);
-                        }
-                    }
-                }
-            } catch (CommandFormatException e) {
-                return -1;
-            }
-        }
-
-        Collections.sort(candidates);
-        return result;
-    }
-
-    private static final class ParsingResults {
-        String argName;
-        String argValue;
-        int nameStart;
-        int valueStart;
-        int endIndex;
-
-        void reset() {
-            argName = null;
-            argValue = null;
-            nameStart = -1;
-            valueStart = -1;
-            endIndex = -1;
-        }
+    protected Iterable<CommandArgument> getAllArguments() {
+        return allArgs;
     }
 }

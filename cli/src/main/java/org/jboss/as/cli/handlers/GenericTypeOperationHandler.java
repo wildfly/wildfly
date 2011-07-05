@@ -248,7 +248,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                     }
                 }
                 return theProps;
-            }}), 2, "--props") {
+            }}), 2, "--driver-name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 ParsedArguments args = ctx.getParsedArguments();
@@ -279,6 +279,11 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         helpCommands.addCantAppearAfter(operation);
         helpCommands.addCantAppearAfter(helpProperties);
         helpProperties.addCantAppearAfter(helpCommands);
+
+
+        ///
+
+
     }
 
     @Override
