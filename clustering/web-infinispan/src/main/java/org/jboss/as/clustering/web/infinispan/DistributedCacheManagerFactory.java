@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
-import org.infinispan.Cache;
+import org.infinispan.AdvancedCache;
 import org.infinispan.manager.CacheContainer;
 import org.jboss.as.clustering.infinispan.atomic.AtomicMapCache;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
@@ -80,12 +80,12 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
 
     @Override
     public <T extends OutgoingDistributableSessionData> org.jboss.as.clustering.web.DistributedCacheManager<T> getDistributedCacheManager(ServiceRegistry registry, LocalDistributableSessionManager manager) throws ClusteringNotSupportedException {
-        Cache<SessionKeyImpl, Map<Object, Object>> sessionCache = this.sessionCacheSource.getCache(registry, manager);
+        AdvancedCache<SessionKeyImpl, Map<Object, Object>> sessionCache = this.sessionCacheSource.<SessionKeyImpl, Map<Object, Object>>getCache(registry, manager).getAdvancedCache().with(this.getClass().getClassLoader());
         if (!sessionCache.getConfiguration().isInvocationBatchingEnabled()) {
             throw new ClusteringNotSupportedException(String.format("Failed to configure web application for <distributable/> sessions.  %s.%s cache requires batching=\"true\".", sessionCache.getCacheManager().getGlobalConfiguration().getCacheManagerName(), sessionCache.getName()));
         }
         SharedLocalYieldingClusterLockManager lockManager = this.lockManagerSource.getLockManager(sessionCache);
-        BatchingManager batchingManager = new TransactionBatchingManager(sessionCache.getAdvancedCache().getTransactionManager());
+        BatchingManager batchingManager = new TransactionBatchingManager(sessionCache.getTransactionManager());
         SessionAttributeStorage<T> storage = this.storageFactory.createStorage(manager.getReplicationConfig().getReplicationGranularity(), this.marshallerFactory.createMarshaller(manager));
 
         return new DistributedCacheManager<T, SessionKeyImpl>(registry, manager, new AtomicMapCache<SessionKeyImpl, Object, Object>(sessionCache), this.jvmRouteCacheSource, lockManager, storage, batchingManager, new SessionKeyFactoryImpl(manager), this.invoker);

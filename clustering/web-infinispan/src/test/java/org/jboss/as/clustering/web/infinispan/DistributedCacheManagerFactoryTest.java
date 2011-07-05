@@ -92,9 +92,10 @@ public class DistributedCacheManagerFactoryTest {
         configuration.fluent().invocationBatching();
 
         when(this.sessionCacheSource.getCache(same(this.registry), same(this.manager))).thenReturn(this.cache);
+        when(this.cache.getAdvancedCache()).thenReturn(this.cache);
+        when(this.cache.with(same(DistributedCacheManagerFactory.class.getClassLoader()))).thenReturn(this.cache);
         when(this.cache.getConfiguration()).thenReturn(configuration);
         when(this.lockManagerSource.getLockManager(same(this.cache))).thenReturn(null);
-        when(this.cache.getAdvancedCache()).thenReturn(this.cache);
         when(this.cache.getTransactionManager()).thenReturn(new BatchModeTransactionManager());
 
         when(this.marshallerFactory.createMarshaller(this.manager)).thenReturn(this.marshaller);

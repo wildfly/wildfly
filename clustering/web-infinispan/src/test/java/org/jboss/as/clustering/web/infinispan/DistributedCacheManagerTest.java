@@ -498,6 +498,9 @@ public class DistributedCacheManagerTest {
 
         when(event.isPre()).thenReturn(false);
         when(event.isOriginLocal()).thenReturn(false);
+        when(event.getCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getClassLoader()).thenReturn(Thread.currentThread().getContextClassLoader());
         when(event.getKey()).thenReturn(key);
         when(this.keyFactory.ours(key)).thenReturn(false);
 
@@ -505,6 +508,9 @@ public class DistributedCacheManagerTest {
 
         when(event.isPre()).thenReturn(false);
         when(event.isOriginLocal()).thenReturn(false);
+        when(event.getCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getClassLoader()).thenReturn(Thread.currentThread().getContextClassLoader());
         when(event.getKey()).thenReturn(key);
         when(this.keyFactory.ours(key)).thenReturn(true);
         when(key.getSessionId()).thenReturn("abc");
@@ -536,6 +542,9 @@ public class DistributedCacheManagerTest {
 
         when(event.isPre()).thenReturn(false);
         when(event.isOriginLocal()).thenReturn(false);
+        when(event.getCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getClassLoader()).thenReturn(Thread.currentThread().getContextClassLoader());
         when(event.getKey()).thenReturn(key);
         when(this.keyFactory.ours(same(key))).thenReturn(false);
 
@@ -545,6 +554,9 @@ public class DistributedCacheManagerTest {
 
         when(event.isPre()).thenReturn(false);
         when(event.isOriginLocal()).thenReturn(false);
+        when(event.getCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getClassLoader()).thenReturn(Thread.currentThread().getContextClassLoader());
         when(event.getKey()).thenReturn(key);
         when(this.keyFactory.ours(same(key))).thenReturn(true);
         when(event.getValue()).thenReturn(Collections.emptyMap());
@@ -562,9 +574,15 @@ public class DistributedCacheManagerTest {
 
         when(event.isPre()).thenReturn(false);
         when(event.isOriginLocal()).thenReturn(false);
+        when(event.getCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getClassLoader()).thenReturn(Thread.currentThread().getContextClassLoader());
         when(event.getKey()).thenReturn(key);
         when(this.keyFactory.ours(same(key))).thenReturn(true);
         when(key.getSessionId()).thenReturn("abc");
+        when(event.getCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getClassLoader()).thenReturn(Thread.currentThread().getContextClassLoader());
         when(event.getValue()).thenReturn(map);
         when(map.isEmpty()).thenReturn(false);
 
@@ -591,12 +609,18 @@ public class DistributedCacheManagerTest {
         SessionKey key = mock(SessionKey.class);
 
         when(event.isPre()).thenReturn(false);
+        when(event.getCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getClassLoader()).thenReturn(Thread.currentThread().getContextClassLoader());
         when(event.getKey()).thenReturn(key);
         when(this.keyFactory.ours(key)).thenReturn(false);
 
         verifyZeroInteractions(this.sessionManager);
 
         when(event.isPre()).thenReturn(false);
+        when(event.getCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.getClassLoader()).thenReturn(Thread.currentThread().getContextClassLoader());
         when(event.getKey()).thenReturn(key);
         when(this.keyFactory.ours(key)).thenReturn(true);
 
