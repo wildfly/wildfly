@@ -55,6 +55,8 @@ import org.jboss.as.cli.operation.parsing.StateParser;
  */
 public class DefaultOperationRequestParser implements OperationRequestParser {
 
+    public static final OperationRequestParser INSTANCE = new DefaultOperationRequestParser();
+
     public static final String FORMAT = "[node-type=node-name (, node-type=node-name)*] : operation-name [ '(' name=value (, name=value)* ')' ]";
     public static final char NODE_TYPE_NAME_SEPARATOR = '=';
     public static final char NODE_SEPARATOR = '/';

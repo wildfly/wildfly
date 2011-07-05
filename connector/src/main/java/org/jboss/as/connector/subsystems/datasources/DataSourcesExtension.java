@@ -21,11 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -35,11 +30,6 @@ import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
-import org.jboss.as.connector.pool.PoolMetrics;
-import org.jboss.as.connector.pool.PoolOperations;
 import static org.jboss.as.connector.subsystems.datasources.AbstractDataSourceAdd.populateAddModel;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
@@ -58,6 +48,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAM
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
@@ -65,26 +56,37 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
 import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDSTATEMENTSCACHESIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SHAREPREPAREDSTATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKERCLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKSTATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLOATION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USETRYLOCK;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATEONMATCH;
-import static org.jboss.as.connector.subsystems.datasources.Constants.*;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKERCLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
@@ -113,16 +115,6 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystem
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.TEST_CONNECTION_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATA_SOURCE_DESC;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
@@ -130,10 +122,33 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
+import org.jboss.as.connector.pool.PoolMetrics;
+import org.jboss.as.connector.pool.PoolOperations;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -255,7 +270,7 @@ public class DataSourcesExtension implements Extension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewDataSourceSubsystemParser.INSTANCE);
     }
 
-    static final class NewDataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
+    public static final class NewDataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
             XMLElementWriter<SubsystemMarshallingContext> {
 
         static final NewDataSourceSubsystemParser INSTANCE = new NewDataSourceSubsystemParser();

@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -51,7 +52,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler, Descri
         ModelNode result = context.getResult();
 
         PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement());
-        ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
+        ModelNode subModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         result.add(InfinispanSubsystemAdd.createOperation(rootAddress.toModelNode(), subModel));
 

@@ -80,6 +80,7 @@ public enum Attribute {
     STRATEGY(ModelKeys.STRATEGY),
     STRIPING(ModelKeys.STRIPING),
     TIMEOUT(ModelKeys.TIMEOUT),
+    VIRTUAL_NODES(ModelKeys.VIRTUAL_NODES),
     ;
 
     private final String name;

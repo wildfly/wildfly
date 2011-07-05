@@ -43,12 +43,7 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
 
     private final String filename;
     private final boolean connectionRequired;
-    protected final ArgumentWithoutValue helpArg = new ArgumentWithoutValue(this, "--help", "-h") {
-        @Override
-        public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-            return !ctx.getParsedArguments().hasArguments();
-        }
-    };
+    protected final ArgumentWithoutValue helpArg = new ArgumentWithoutValue(this, "--help", "-h");
 
     public CommandHandlerWithHelp(String command) {
         this(command, false);
@@ -60,6 +55,7 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
         }
         this.filename = "help/" + command + ".txt";
         this.connectionRequired = connectionRequired;
+        this.helpArg.setExclusive(true);
     }
 
     @Override

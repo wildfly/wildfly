@@ -1,4 +1,12 @@
-Supported commands:
+For a list of commands available in the current context execute
+
+help --commands
+
+The resulting listing may depend on the current context. I.g. some of the commands
+require an established connection to a controller (standalone or domain).
+These commands won't appear in the listing unless the connection has been established.
+
+Here are some of the most common supported commands:
 
  cn (or cd)				- change the current node path to the argument;
  connect				- connect to the specified host and port;

@@ -19,34 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.staxmapper;
 
-package org.jboss.as.security.plugins;
-
-import java.security.Principal;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.infinispan.util.concurrent.BoundedConcurrentHashMap.EvictionListener;
-import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
- * Listener to perform a JAAS logout when an entry is evicted from the cache.
- *
- * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
+ * Expose the package protected {@link FormattingXMLStreamWriter} to tests.
+ * @author Paul Ferraro
  */
-public class AuthenticationCacheEvictionListener implements EvictionListener<Principal, DomainInfo> {
-
-    /** {@inheritDoc} */
-    @Override
-    public void onEntryEviction(Map<Principal, DomainInfo> evicted) {
-        for (Entry<Principal, DomainInfo> entry : evicted.entrySet()) {
-            DomainInfo domainInfo = entry.getValue();
-            domainInfo.logout();
-        }
-    }
-
-    @Override
-    public void onEntryChosenForEviction(DomainInfo arg0) {
-        // Do nothing
+public class XMLExtendedStreamWriterFactory {
+    public static XMLExtendedStreamWriter create(XMLStreamWriter writer) {
+        return new FormattingXMLStreamWriter(writer);
     }
 }

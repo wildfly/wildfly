@@ -436,12 +436,12 @@ public class Util {
     }
 
     public static boolean isTopic(ModelControllerClient client, String name) {
-        List<String> topics = getJmsResources(client, null, "topic");
+        List<String> topics = getJmsResources(client, null, "jms-topic");
         return topics.contains(name);
     }
 
     public static boolean isQueue(ModelControllerClient client, String name) {
-        List<String> queues = getJmsResources(client, null, "queue");
+        List<String> queues = getJmsResources(client, null, "jms-queue");
         return queues.contains(name);
     }
 

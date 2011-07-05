@@ -88,4 +88,5 @@ public class ModelKeys {
     static final String TIMEOUT = "timeout";
     static final String TRANSACTION = "transaction";
     static final String TRANSPORT = "transport";
+    static final String VIRTUAL_NODES = "virtual-nodes";
 }

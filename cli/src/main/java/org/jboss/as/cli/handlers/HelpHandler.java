@@ -21,7 +21,12 @@
  */
 package org.jboss.as.cli.handlers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.impl.ArgumentWithoutValue;
 
 /**
  * Help command handler. Reads 'help/help.txt' and prints its content to the output stream.
@@ -30,12 +35,18 @@ import org.jboss.as.cli.CommandContext;
  */
 public class HelpHandler extends CommandHandlerWithHelp {
 
+    private final ArgumentWithoutValue commands = new ArgumentWithoutValue(this, "--commands");
+
     public HelpHandler() {
         this("help");
     }
 
     public HelpHandler(String command) {
         super(command);
+        // trick to disable the help arg
+        helpArg.setExclusive(false);
+        helpArg.addCantAppearAfter(commands);
+        helpArg.addRequiredPreceding(commands);
     }
 
     /* (non-Javadoc)
@@ -43,7 +54,24 @@ public class HelpHandler extends CommandHandlerWithHelp {
      */
     @Override
     public void handle(CommandContext ctx) {
-        printHelp(ctx);
+        boolean printCommands;
+        try {
+            printCommands = commands.isPresent(ctx.getParsedArguments());
+        } catch (CommandFormatException e) {
+            ctx.printLine(e.getLocalizedMessage());
+            return;
+        }
+
+        if(printCommands) {
+            final List<String> commands = new ArrayList<String>();
+            ctx.getDefaultCommandCompleter().complete(ctx, "", 0, commands);
+
+            ctx.printLine("Commands available in the current context:");
+            ctx.printColumns(commands);
+            ctx.printLine("To read a description of a specific command execute 'command_name --help'.");
+        } else {
+            printHelp(ctx);
+        }
     }
 
     @Override

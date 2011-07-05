@@ -51,7 +51,9 @@ import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.batch.impl.DefaultBatchManager;
 import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
+import org.jboss.as.cli.handlers.CommandCommandHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
+import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.HistoryHandler;
@@ -143,10 +145,14 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new DataSourceAddHandler(), "add-data-source");
         cmdRegistry.registerHandler(new DataSourceModifyHandler(), "modify-data-source");
         cmdRegistry.registerHandler(new DataSourceRemoveHandler(), "remove-data-source");
-        //cmdRegistry.registerHandler(new SimpleDataSourceOperationHandler("data-source"), "data-source");
         cmdRegistry.registerHandler(new XADataSourceAddHandler(), "add-xa-data-source");
         cmdRegistry.registerHandler(new XADataSourceRemoveHandler(), "remove-xa-data-source");
         cmdRegistry.registerHandler(new XADataSourceModifyHandler(), "modify-xa-data-source");
+
+        cmdRegistry.registerHandler(new CommandCommandHandler(cmdRegistry), "command");
+
+        // data-source
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=datasources/data-source", "jndi-name"), "data-source");
     }
 
     public static void main(String[] args) throws Exception {
@@ -293,9 +299,12 @@ public class CommandLineMain {
 
         try {
             while (!cmdCtx.terminate) {
-                String line = console.readLine(cmdCtx.getPrompt());
-                line = line != null ? line.trim() : "";
-                processLine(cmdCtx, line);
+                final String line = console.readLine(cmdCtx.getPrompt());
+                if(line == null) {
+                    cmdCtx.terminateSession();
+                } else {
+                    processLine(cmdCtx, line.trim());
+                }
             }
         } finally {
             cmdCtx.disconnectController();

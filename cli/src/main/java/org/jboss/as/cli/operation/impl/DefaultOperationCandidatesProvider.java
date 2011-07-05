@@ -143,10 +143,10 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
             return Collections.emptyList();
         }
 
-        if(address.endsOnType()) {
+/*        if(address.endsOnType()) {
             throw new IllegalArgumentException("The prefix isn't expected to end on a type.");
         }
-
+*/
         ModelNode request;
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(address);
         try {

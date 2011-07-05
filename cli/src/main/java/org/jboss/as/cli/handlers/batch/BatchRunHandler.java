@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
 public class BatchRunHandler extends CommandHandlerWithHelp {
 
     public BatchRunHandler() {
-        super("batch-run");
+        super("batch-run", true);
     }
 
     @Override

@@ -80,14 +80,14 @@ public class CommandLineParser {
                 final String id = ctx.getState().getId();
                 if(ArgumentState.ID.equals(id)) {
                     if(buffer.length() > 0) {
-                        final int endIndex = ctx.getLocation(); //ctx.getCharacter() == ' ' ? ctx.getLocation() : ctx.getLocation() + 1;
+                        final int endIndex = ctx.getLocation();
                         argHandler.argument(buffer.toString(), nameStart, null, -1, endIndex);
                     }
                     buffer.setLength(0);
                     name = null;
                     nameStart = -1;
                 } else if(ArgumentValueState.ID.equals(id)) {
-                    final int endIndex = ctx.getLocation(); //ctx.getCharacter() == ' ' ? ctx.getLocation() : ctx.getLocation() + 1;
+                    final int endIndex = ctx.getLocation();
                     argHandler.argument(name, nameStart, buffer.toString(), valueStart, endIndex);
                     buffer.setLength(0);
                     valueStart = -1;
