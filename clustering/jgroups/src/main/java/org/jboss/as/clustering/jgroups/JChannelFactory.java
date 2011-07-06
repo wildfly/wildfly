@@ -153,11 +153,12 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
         if (transport.isShared() && !transport.getProperties().containsKey(Global.SINGLETON_NAME)) {
             properties.put(Global.SINGLETON_NAME, this.configuration.getName());
         }
-        SocketBinding socketBinding = transport.getSocketBinding();
-        if (socketBinding != null) {
-            properties.put("bind_addr", socketBinding.getSocketAddress().getAddress().getHostAddress());
-            this.configureServerSocket(config, "bind_port", socketBinding);
-            this.configureMulticastSocket(config, "mcast_addr", "mcast_port", socketBinding);
+
+        SocketBinding binding = transport.getSocketBinding();
+        if (binding != null) {
+            this.configureBindAddress(config, binding);
+            this.configureServerSocket(config, "bind_port", binding);
+            this.configureMulticastSocket(config, "mcast_addr", "mcast_port", binding);
         }
 
         SocketBinding diagnosticsSocketBinding = transport.getDiagnosticsSocketBinding();
@@ -171,10 +172,15 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
 
         for (ProtocolConfiguration protocol: this.configuration.getProtocols()) {
             config = this.createProtocol(protocol);
-            socketBinding = protocol.getSocketBinding();
-            if (socketBinding != null) {
-                this.configureServerSocket(config, "start_port", socketBinding);
-                this.configureMulticastSocket(config, "mcast_addr", "mcast_port", socketBinding);
+            binding = protocol.getSocketBinding();
+            if (binding != null) {
+                this.configureBindAddress(config, binding);
+                this.configureServerSocket(config, "bind_port", binding);
+                this.configureServerSocket(config, "start_port", binding);
+                this.configureMulticastSocket(config, "mcast_addr", "mcast_port", binding);
+            } else if (transport.getSocketBinding() != null) {
+                // If no socket-binding was specified, use bind address transport
+                this.configureBindAddress(config, transport.getSocketBinding());
             }
 
             configs.add(config);
@@ -182,18 +188,22 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
         return configs;
     }
 
-    private void configureServerSocket(org.jgroups.conf.ProtocolConfiguration config, String portProperty, SocketBinding socketBinding) {
-        config.getProperties().put(portProperty, String.valueOf(socketBinding.getSocketAddress().getPort()));
+    private void configureBindAddress(org.jgroups.conf.ProtocolConfiguration config, SocketBinding binding) {
+        config.getProperties().put("bind_addr", binding.getSocketAddress().getAddress().getHostAddress());
     }
 
-    private void configureMulticastSocket(org.jgroups.conf.ProtocolConfiguration config, String addressProperty, String portProperty, SocketBinding socketBinding) {
+    private void configureServerSocket(org.jgroups.conf.ProtocolConfiguration config, String portProperty, SocketBinding binding) {
+        config.getProperties().put(portProperty, String.valueOf(binding.getSocketAddress().getPort()));
+    }
+
+    private void configureMulticastSocket(org.jgroups.conf.ProtocolConfiguration config, String addressProperty, String portProperty, SocketBinding binding) {
         Map<String, String> properties = config.getProperties();
         try {
-            InetSocketAddress mcastSocketAddress = socketBinding.getMulticastSocketAddress();
+            InetSocketAddress mcastSocketAddress = binding.getMulticastSocketAddress();
             properties.put(addressProperty, mcastSocketAddress.getAddress().getHostAddress());
             properties.put(portProperty, String.valueOf(mcastSocketAddress.getPort()));
         } catch (IllegalStateException e) {
-            log.tracef(e, "Could not set %s.%s and %s.%s, %s socket binding does not specify a multicast socket", config.getProtocolName(), addressProperty, config.getProtocolName(), portProperty, socketBinding.getName());
+            log.tracef(e, "Could not set %s.%s and %s.%s, %s socket binding does not specify a multicast socket", config.getProtocolName(), addressProperty, config.getProtocolName(), portProperty, binding.getName());
         }
     }
 
