@@ -19,7 +19,7 @@ JBoss AS now has two distributions:
 1. jboss-as-web
    The Java EE Web Profile "certified" web profile disribution 
       (includes Servlet 3.0 + JAX-RS/RestEasy + CDI/Weld + 
-       EJB 3 Lite + Bean Validation + JPA/Hibernate)
+       EJB 3 Lite + Bean Validation + JCA + JPA/Hibernate)
 
 2. jboss-as
    The everything distribution. This distribution is not certified. It includes
