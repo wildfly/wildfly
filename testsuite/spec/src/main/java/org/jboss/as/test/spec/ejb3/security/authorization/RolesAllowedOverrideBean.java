@@ -21,19 +21,19 @@
  */
 package org.jboss.as.test.spec.ejb3.security.authorization;
 
-import org.jboss.ejb3.annotation.SecurityDomain;
-
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
+
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @Stateless
 @RolesAllowed("Role1")
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class RolesAllowedOverrideBean {
 
     public String defaultEcho(final String message) {

@@ -21,6 +21,20 @@
  */
 package org.jboss.as.test.spec.ejb3.security;
 
+import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.security.Principal;
+import java.util.logging.Logger;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBAccessException;
+import javax.security.auth.login.LoginContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.spec.common.HttpRequest;
@@ -33,26 +47,13 @@ import org.jboss.util.Base64;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
-import javax.security.auth.login.LoginContext;
-import java.security.Principal;
-import java.util.logging.Logger;
-
-import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 /**
  * Test case to test the requirements related to the handling of a RunAs identity.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-public class RunAsTestCase {
+public class RunAsTestCase extends SecurityTest {
 
     private static final Logger log = Logger.getLogger(RunAsTestCase.class.getName());
 
@@ -65,25 +66,30 @@ public class RunAsTestCase {
     /*
      * isCallerInRole Scenarios with @RunAs Defined
      *
-     * EJB 3.1 FR 17.2.5.2 isCallerInRole tests the principal that represents the caller of the enterprise bean,
-     * not the principal that corresponds to the run-as security identity for the bean.
+     * EJB 3.1 FR 17.2.5.2 isCallerInRole tests the principal that represents the caller of the enterprise bean, not the
+     * principal that corresponds to the run-as security identity for the bean.
      */
 
     @Deployment
     public static Archive<?> runAsDeployment() {
+        // FIXME hack to get things prepared before the deployment happens
+        try {
+            // create required security domains
+            createSecurityDomain();
+        } catch (Exception e) {
+            // ignore
+        }
+
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
-                .addPackage(WhoAmIBean.class.getPackage())
-                .addPackage(EntryBean.class.getPackage())
-                .addPackage(HttpRequest.class.getPackage())
-                .addClass(WhoAmI.class)
-                .addClass(Util.class)
-                .addClass(Entry.class)
-                .addClass(RunAsTestCase.class)
-                .addClass(Base64.class)
+                .addPackage(WhoAmIBean.class.getPackage()).addPackage(EntryBean.class.getPackage())
+                .addPackage(HttpRequest.class.getPackage()).addClass(WhoAmI.class).addClass(Util.class).addClass(Entry.class)
+                .addClass(RunAsTestCase.class).addClass(Base64.class).addClass(SecurityTest.class)
                 .addAsResource("ejb3/security/users.properties", "users.properties")
                 .addAsResource("ejb3/security/roles.properties", "roles.properties")
-                .addAsWebInfResource("ejb3/security/web.xml", "web.xml");
+                .addAsWebInfResource("ejb3/security/web.xml", "web.xml")
+                .addAsWebInfResource("ejb3/security/jboss-web.xml", "jboss-web.xml")
+                .addAsManifestResource("web-secure-programmatic-login.war/MANIFEST.MF", "MANIFEST.MF");
         log.info(war.toString(true));
         return war;
     }
@@ -108,12 +114,9 @@ public class RunAsTestCase {
         try {
             // TODO - Enable once auth checks are working.
             /*
-            try {
-                whoAmIBean.getCallerPrincipal();
-                fail("Expected call to whoAmIBean to fail");
-            } catch (Exception expected) {
-            }
-            */
+             * try { whoAmIBean.getCallerPrincipal(); fail("Expected call to whoAmIBean to fail"); } catch (Exception expected)
+             * { }
+             */
 
             boolean[] response;
             response = entryBean.doubleDoIHaveRole("Users");

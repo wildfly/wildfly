@@ -41,6 +41,14 @@ public class WebSecurityJBossWebXmlSecurityRolesTestCase extends WebSecurityFORM
 
     @Deployment
     public static WebArchive deployment() {
+        // FIXME hack to get things prepared before the deployment happens
+        try {
+            // create required security domains
+            createSecurityDomain();
+        } catch (Exception e) {
+            // ignore
+        }
+
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         URL webxml = tccl.getResource("web-secure.war/web.xml");
         WebArchive war = WebSecurityPasswordBasedBase.create("web-secure.war", SecuredServlet.class, true, webxml);

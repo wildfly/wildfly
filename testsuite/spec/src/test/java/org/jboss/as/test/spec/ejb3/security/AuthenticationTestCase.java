@@ -29,12 +29,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
-import javax.security.auth.login.LoginContext;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.logging.Logger;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBAccessException;
+import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -51,45 +52,48 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test case to hold the authentication scenarios, these range from calling a servlet which calls
- * a bean to calling a bean which calls another bean to calling a bean which re-authenticated
- * before calling another bean.
+ * Test case to hold the authentication scenarios, these range from calling a servlet which calls a bean to calling a bean which
+ * calls another bean to calling a bean which re-authenticated before calling another bean.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-public class AuthenticationTestCase {
+public class AuthenticationTestCase extends SecurityTest {
     private static final Logger log = Logger.getLogger(AuthenticationTestCase.class.getName());
 
     /*
-     *  Authentication Scenarios
+     * Authentication Scenarios
      *
-     *  Client -> Bean
-     *  Client -> Bean -> Bean
-     *  Client -> Bean (Re-auth) -> Bean
-     *  Client -> Servlet -> Bean
-     *  Client -> Servlet (Re-auth) -> Bean
-     *  Client -> Servlet -> Bean -> Bean
-     *  Client -> Servlet -> Bean (Re Auth) -> Bean
+     * Client -> Bean
+     * Client -> Bean -> Bean
+     * Client -> Bean (Re-auth) -> Bean
+     * Client -> Servlet -> Bean
+     * Client -> Servlet (Re-auth) -> Bean
+     * Client -> Servlet -> Bean -> Bean
+     * Client -> Servlet -> Bean (Re Auth) -> Bean
      */
 
     @Deployment
     public static Archive<?> deployment() {
+        // FIXME hack to get things prepared before the deployment happens
+        try {
+            // create required security domains
+            createSecurityDomain();
+        } catch (Exception e) {
+            // ignore
+        }
+
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
-                .addPackage(WhoAmIBean.class.getPackage())
-                .addPackage(EntryBean.class.getPackage())
-                .addPackage(HttpRequest.class.getPackage())
-                .addClass(WhoAmI.class)
-                .addClass(Util.class)
-                .addClass(Entry.class)
-                .addClass(WhoAmIServlet.class)
-                .addClass(AuthenticationTestCase.class)
-                .addClass(Base64.class)
-                .addAsResource("ejb3/security/users.properties", "users.properties")
+                .addPackage(WhoAmIBean.class.getPackage()).addPackage(EntryBean.class.getPackage())
+                .addPackage(HttpRequest.class.getPackage()).addClass(WhoAmI.class).addClass(Util.class).addClass(Entry.class)
+                .addClass(WhoAmIServlet.class).addClass(AuthenticationTestCase.class).addClass(Base64.class)
+                .addClass(SecurityTest.class).addAsResource("ejb3/security/users.properties", "users.properties")
                 .addAsResource("ejb3/security/roles.properties", "roles.properties")
-                .addAsWebInfResource("ejb3/security/web.xml", "web.xml");
+                .addAsWebInfResource("ejb3/security/web.xml", "web.xml")
+                .addAsWebInfResource("ejb3/security/jboss-web.xml", "jboss-web.xml")
+                .addAsManifestResource("web-secure-programmatic-login.war/MANIFEST.MF", "MANIFEST.MF");
         log.info(war.toString(true));
         return war;
     }
@@ -174,11 +178,13 @@ public class AuthenticationTestCase {
         try {
             try {
                 final Principal principal = whoAmIBean.getCallerPrincipal();
-                assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.", principal);
+                assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.",
+                        principal);
                 assertEquals("user1", principal.getName());
             } catch (RuntimeException e) {
                 e.printStackTrace();
-                fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method (" + e.getMessage() + ")");
+                fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method ("
+                        + e.getMessage() + ")");
             }
         } finally {
             client.logout();
@@ -189,43 +195,53 @@ public class AuthenticationTestCase {
     public void testUnauthenticated() throws Exception {
         try {
             final Principal principal = whoAmIBean.getCallerPrincipal();
-            assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.", principal);
+            assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.",
+                    principal);
             // TODO: where is 'anonymous' configured?
             assertEquals("anonymous", principal.getName());
         } catch (RuntimeException e) {
             e.printStackTrace();
-            fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method (" + e.getMessage() + ")");
+            fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method ("
+                    + e.getMessage() + ")");
         }
     }
 
     @Test
     public void testAuthentication_ViaServlet() throws Exception {
-        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=whoAmI", "user1", "password1", 10, SECONDS);
+        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=whoAmI", "user1", "password1",
+                10, SECONDS);
         assertEquals("user1", result);
     }
 
     @Test
     public void testAuthentication_ReAuth_ViaServlet() throws Exception {
-        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=whoAmI&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        final String result = HttpRequest.get(
+                "http://localhost:8080/ejb3security/whoAmI?method=whoAmI&username=user2&password=password2", "user1",
+                "password1", 10, SECONDS);
         assertEquals("user2", result);
     }
 
     @Test
     public void testAuthentication_TwoBeans_ViaServlet() throws Exception {
-        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleWhoAmI", "user1", "password1", 10, SECONDS);
+        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleWhoAmI", "user1",
+                "password1", 10, SECONDS);
         assertEquals("user1,user1", result);
     }
 
     @Test
     public void testAuthentication_TwoBeans_ReAuth_ViaServlet() throws Exception {
-        final String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        final String result = HttpRequest.get(
+                "http://localhost:8080/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=password2", "user1",
+                "password1", 10, SECONDS);
         assertEquals("user1,user2", result);
     }
 
     @Test
     public void testAuthentication_TwoBeans_ReAuth__BadPwd_ViaServlet() throws Exception {
         try {
-            HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=bad_password", "user1", "password1", 10, SECONDS);
+            HttpRequest.get(
+                    "http://localhost:8080/ejb3security/whoAmI?method=doubleWhoAmI&username=user2&password=bad_password",
+                    "user1", "password1", 10, SECONDS);
             fail("Expected IOException");
         } catch (IOException e) {
             assertTrue(e.getMessage().contains("javax.ejb.EJBAccessException"));
@@ -233,7 +249,7 @@ public class AuthenticationTestCase {
     }
 
     /*
-     *  isCallerInRole Scenarios
+     * isCallerInRole Scenarios
      */
 
     @Test
@@ -295,52 +311,68 @@ public class AuthenticationTestCase {
 
     @Test
     public void testICIR_ViaServlet() throws Exception {
-        String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Users", "user1", "password1", 10, SECONDS);
+        String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Users", "user1",
+                "password1", 10, SECONDS);
         assertEquals("true", result);
-        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Role1", "user1", "password1", 10, SECONDS);
+        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Role1", "user1",
+                "password1", 10, SECONDS);
         assertEquals("true", result);
-        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Role2", "user1", "password1", 10, SECONDS);
+        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Role2", "user1",
+                "password1", 10, SECONDS);
         assertEquals("false", result);
     }
 
     @Test
     public void testICIR_ReAuth_ViaServlet() throws Exception {
-        String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Users&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        String result = HttpRequest.get(
+                "http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Users&username=user2&password=password2",
+                "user1", "password1", 10, SECONDS);
         assertEquals("true", result);
-        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Role1&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        result = HttpRequest.get(
+                "http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Role1&username=user2&password=password2",
+                "user1", "password1", 10, SECONDS);
         assertEquals("false", result);
-        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Role2&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        result = HttpRequest.get(
+                "http://localhost:8080/ejb3security/whoAmI?method=doIHaveRole&role=Role2&username=user2&password=password2",
+                "user1", "password1", 10, SECONDS);
         assertEquals("true", result);
     }
 
     @Test
     public void testICIR_TwoBeans_ViaServlet() throws Exception {
-        String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Users", "user1", "password1", 10, SECONDS);
+        String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Users",
+                "user1", "password1", 10, SECONDS);
         assertEquals("true,true", result);
-        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role1", "user1", "password1", 10, SECONDS);
+        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role1", "user1",
+                "password1", 10, SECONDS);
         assertEquals("true,true", result);
-        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role2", "user1", "password1", 10, SECONDS);
+        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role2", "user1",
+                "password1", 10, SECONDS);
         assertEquals("false,false", result);
     }
 
     @Test
     public void testICIR_TwoBeans_ReAuth_ViaServlet() throws Exception {
-        String result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Users&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        String result = HttpRequest
+                .get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Users&username=user2&password=password2",
+                        "user1", "password1", 10, SECONDS);
         assertEquals("true,true", result);
-        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role1&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        result = HttpRequest
+                .get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role1&username=user2&password=password2",
+                        "user1", "password1", 10, SECONDS);
         assertEquals("true,false", result);
-        result = HttpRequest.get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role2&username=user2&password=password2", "user1", "password1", 10, SECONDS);
+        result = HttpRequest
+                .get("http://localhost:8080/ejb3security/whoAmI?method=doubleDoIHaveRole&role=Role2&username=user2&password=password2",
+                        "user1", "password1", 10, SECONDS);
         assertEquals("false,true", result);
     }
 
     /*
      * isCallerInRole Scenarios with @RunAs Defined
      *
-     * EJB 3.1 FR 17.2.5.2 isCallerInRole tests the principal that represents the caller of the enterprise bean,
-     * not the principal that corresponds to the run-as security identity for the bean.
+     * EJB 3.1 FR 17.2.5.2 isCallerInRole tests the principal that represents the caller of the enterprise bean, not the
+     * principal that corresponds to the run-as security identity for the bean.
      */
-
-
 
     // 17.2.5 - Programatic Access to Caller's Security Context
     // Include tests for methods not implemented to pick up if later they are implemented.
@@ -354,13 +386,13 @@ public class AuthenticationTestCase {
     // 17.3.2.3 - Unspecified Method Permission
     // 17.3.3 - Linking Security Role References to Security Roles
     // 17.3.4 - Specification on Security Identities in the Deployment Descriptor
-    //            (Include permutations for overrides esp where deployment descriptor removes access)
+    // (Include permutations for overrides esp where deployment descriptor removes access)
     // 17.3.4.1 - Run-as
     // 17.5 EJB Client Responsibilities
-    //      A transactional client can not change principal association within transaction.
-    //      A session bean client must not change the principal association for the duration of the communication.
-    //      If transactional requests within a single transaction arrive from multiple clients all must be associated
-    //        with the same security context.
+    // A transactional client can not change principal association within transaction.
+    // A session bean client must not change the principal association for the duration of the communication.
+    // If transactional requests within a single transaction arrive from multiple clients all must be associated
+    // with the same security context.
 
     // 17.6.3 - Security Mechanisms
     // 17.6.4 - Passing Principals on EJB Calls

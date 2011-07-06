@@ -297,11 +297,10 @@ public class WebSecurityCERTTestCase {
             KeyManager[] keyManagers = jsseSecurityDomain.getKeyManagers();
             TrustManager[] trustManagers = jsseSecurityDomain.getTrustManagers();
             ctx.init(keyManagers, trustManagers, null);
-            SSLSocketFactory ssf = new SSLSocketFactory(ctx);
-            ssf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+            SSLSocketFactory ssf = new SSLSocketFactory(ctx, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
             ClientConnectionManager ccm = base.getConnectionManager();
             SchemeRegistry sr = ccm.getSchemeRegistry();
-            sr.register(new Scheme("https", ssf, 8380));
+            sr.register(new Scheme("https", 8380, ssf));
             return new DefaultHttpClient(ccm, base.getParams());
         } catch (Exception ex) {
             ex.printStackTrace();

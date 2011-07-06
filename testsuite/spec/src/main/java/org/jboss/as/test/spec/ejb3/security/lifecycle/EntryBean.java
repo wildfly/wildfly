@@ -21,12 +21,13 @@
  */
 package org.jboss.as.test.spec.ejb3.security.lifecycle;
 
-import org.jboss.ejb3.annotation.SecurityDomain;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import java.util.Map;
+
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
  * The main bean to call the beans being tested and return the results.
@@ -34,7 +35,7 @@ import java.util.Map;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @Stateless
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class EntryBean {
 
     @Resource

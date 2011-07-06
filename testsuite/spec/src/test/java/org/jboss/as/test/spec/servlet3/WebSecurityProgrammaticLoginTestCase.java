@@ -21,17 +21,33 @@
  */
 package org.jboss.as.test.spec.servlet3;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.AUTHENTICATION;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.junit.Assert.assertEquals;
 
+import java.net.InetAddress;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -49,12 +65,22 @@ public class WebSecurityProgrammaticLoginTestCase {
 
     @Deployment(testable = true)
     public static WebArchive deployment() {
+        // FIXME hack to get things prepared before the deployment happens
+        try {
+            final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            // create required security domains
+            createSecurityDomains(client);
+        } catch (Exception e) {
+            // ignore
+        }
+
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         URL webxml = tccl.getResource("web-secure-programmatic-login.war/web.xml");
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure-programmatic-login.war");
         war.addAsResource(tccl.getResource("security/users.properties"), "users.properties");
         war.addAsResource(tccl.getResource("security/roles.properties"), "roles.properties");
         war.addAsManifestResource(tccl.getResource("web-secure-programmatic-login.war/MANIFEST.MF"), "MANIFEST.MF");
+        war.addAsWebInfResource(tccl.getResource("web-secure-programmatic-login.war/jboss-web.xml"), "jboss-web.xml");
         war.addClass(LoginServlet.class);
         war.addClass(SecuredServlet.class);
 
@@ -66,6 +92,14 @@ public class WebSecurityProgrammaticLoginTestCase {
 
         return war;
     }
+
+    // this is removing the security domain after each test so I have to disable it
+//    @AfterClass
+//    public static void after() throws Exception {
+//        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+//        // remove test security domains
+//        removeSecurityDomains(client);
+//    }
 
     /**
      * Test with user "anil" who has the right password and the right role to access the servlet
@@ -109,7 +143,7 @@ public class WebSecurityProgrammaticLoginTestCase {
                 System.out.println("Response content length: " + entity.getContentLength());
             }
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
-            entity.consumeContent();
+            EntityUtils.consume(entity);
         } finally {
             // When HttpClient instance is no longer needed,
             // shut down the connection manager to ensure
@@ -129,5 +163,49 @@ public class WebSecurityProgrammaticLoginTestCase {
      */
     public static void printWar(WebArchive war) {
         System.out.println(war.toString(true));
+    }
+
+    public static void createSecurityDomains(final ModelControllerClient client) throws Exception {
+        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        ModelNode op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, "web-programmatic-login");
+        ModelNode loginModule = op.get(AUTHENTICATION).add();
+        loginModule.get(CODE).set("UsersRoles");
+        loginModule.get(FLAG).set("required");
+        updates.add(op);
+
+        applyUpdates(updates, client);
+    }
+
+    public static void removeSecurityDomains(final ModelControllerClient client) throws Exception {
+        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        ModelNode op = new ModelNode();
+        op.get(OP).set(REMOVE);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, "web-programmatic-login");
+        updates.add(op);
+
+        applyUpdates(updates, client);
+    }
+
+    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
+        for (ModelNode update : updates) {
+            applyUpdate(update, client);
+        }
+    }
+
+    public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
+        ModelNode result = client.execute(new OperationBuilder(update).build());
+        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+            if (result.hasDefined("result")) {
+                System.out.println(result.get("result"));
+            }
+        } else if (result.hasDefined("failure-description")) {
+            throw new RuntimeException(result.get("failure-description").toString());
+        } else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
+        }
     }
 }
