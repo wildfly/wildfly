@@ -220,6 +220,7 @@
     </properties>
 
     <modules>
+        <module>api</module>
         <module>build</module>
         <module>build-config</module>
         <module>arquillian</module>
@@ -256,6 +257,7 @@
         <module>sar</module>
         <module>security</module>
         <module>server</module>
+        <module>spec-api</module>
         <module>threads</module>
         <module>transactions</module>
         <module>web</module>
