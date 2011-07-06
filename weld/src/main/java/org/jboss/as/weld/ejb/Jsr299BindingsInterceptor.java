@@ -17,10 +17,12 @@
 
 package org.jboss.as.weld.ejb;
 
-import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.weld.WeldContainer;
 import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
-import org.jboss.ejb3.context.CurrentInvocationContext;
-import org.jboss.ejb3.context.base.BaseSessionContext;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bean.SessionBean;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.ejb.spi.EjbServices;
@@ -30,21 +32,16 @@ import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.serialization.spi.ContextualStore;
 import org.jboss.weld.serialization.spi.helpers.SerializableContextualInstance;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.EJBContext;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InterceptionType;
 import javax.enterprise.inject.spi.Interceptor;
-import javax.inject.Inject;
-import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Interceptor for applying the JSR-299 specific interceptor bindings.
@@ -55,107 +52,44 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Marius Bogoevici
  * @author Stuart Douglas
  */
-public class Jsr299BindingsInterceptor implements Serializable {
+public class Jsr299BindingsInterceptor implements Serializable, org.jboss.invocation.Interceptor {
 
-    private static final long serialVersionUID = -1999613731498564948L;
+    private final Map<String, SerializableContextualInstance<Interceptor<Object>, Object>> interceptorInstances;
+    private final CreationalContext<Object> creationalContext;
+    private final String ejbName;
+    private final BeanManager beanManager;
+    private final InterceptionType interceptionType;
 
-    private final Map<String, SerializableContextualInstance<Interceptor<Object>, Object>> interceptorInstances = new ConcurrentHashMap<String, SerializableContextualInstance<Interceptor<Object>, Object>>();
 
-    private volatile String ejbName;
+    protected Jsr299BindingsInterceptor(final BeanManagerImpl beanManager, final String ejbName, final InterceptorFactoryContext context, final InterceptionType interceptionType) {
 
-    private volatile CreationalContext<Object> creationalContext;
-
-    @Inject
-    private BeanManager beanManager;
-
-    @PostConstruct
-    public void doPostConstruct(InvocationContext invocationContext) throws Exception {
-        final BeanManagerImpl beanManager = (BeanManagerImpl) this.beanManager;
-
-        try {
-            init(beanManager);
-            doLifecycleInterception(invocationContext, InterceptionType.POST_CONSTRUCT);
-        } finally {
-            invocationContext.proceed();
-        }
-    }
-
-    private void init(final BeanManagerImpl beanManager) {
-
-        ejbName = getEjbName();
-        EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(ejbName);
+        this.beanManager = beanManager;
+        this.ejbName = ejbName;
+        this.interceptionType = interceptionType;
+        EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(this.ejbName);
         SessionBean<Object> bean = beanManager.getBean(descriptor);
-        creationalContext = beanManager.createCreationalContext(bean);
-        // create contextual instances for interceptors
+        InterceptorInstances instances = (InterceptorInstances) context.getContextData().get(InterceptorInstances.class);
 
-        InterceptorBindings interceptorBindings = getInterceptorBindings(ejbName);
-        if (interceptorBindings != null) {
-            for (Interceptor<?> interceptor : interceptorBindings.getAllInterceptors()) {
-                addInterceptorInstance((Interceptor<Object>) interceptor, beanManager);
+        if (instances == null) {
+            creationalContext = beanManager.createCreationalContext(bean);
+            interceptorInstances = new HashMap<String, SerializableContextualInstance<Interceptor<Object>, Object>>();
+            InterceptorBindings interceptorBindings = getInterceptorBindings(this.ejbName);
+            if (interceptorBindings != null) {
+                for (Interceptor<?> interceptor : interceptorBindings.getAllInterceptors()) {
+                    addInterceptorInstance((Interceptor<Object>) interceptor, beanManager, interceptorInstances);
+                }
             }
-
-        }
-    }
-
-    private InterceptorBindings getInterceptorBindings(String ejbName) {
-        BeanManagerImpl beanManager = (BeanManagerImpl)this.beanManager;
-        EjbServices ejbServices = beanManager.getServices().get(EjbServices.class);
-        if (ejbServices instanceof ForwardingEjbServices) {
-            ejbServices = ((ForwardingEjbServices) ejbServices).delegate();
-        }
-        InterceptorBindings interceptorBindings = null;
-        if (ejbServices instanceof WeldEjbServices) {
-            interceptorBindings = ((WeldEjbServices) ejbServices).getBindings(ejbName);
-        }
-        return interceptorBindings;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void addInterceptorInstance(Interceptor<Object> interceptor, BeanManagerImpl beanManager) {
-        Object instance = beanManager.getContext(interceptor.getScope()).get(interceptor, creationalContext);
-        SerializableContextualInstance<Interceptor<Object>, Object> serializableContextualInstance
-                = beanManager.getServices().get(ContextualStore.class).<Interceptor<Object>, Object>getSerializableContextualInstance(interceptor, instance, creationalContext);
-        interceptorInstances.put(interceptor.getBeanClass().getName(), serializableContextualInstance);
-    }
-
-    @PreDestroy
-    public void doPreDestroy(InvocationContext invocationContext) throws Exception {
-        try {
-            doLifecycleInterception(invocationContext, InterceptionType.PRE_DESTROY);
-            if (creationalContext != null) {
-                creationalContext.release();
-            }
-        } finally {
-            invocationContext.proceed();
-        }
-    }
-
-    @AroundInvoke
-    public Object doAroundInvoke(InvocationContext invocationContext) throws Exception {
-        return doMethodInterception(invocationContext, InterceptionType.AROUND_INVOKE);
-    }
-
-    private void doLifecycleInterception(InvocationContext invocationContext, InterceptionType interceptionType)
-            throws Exception {
-        InterceptorBindings interceptorBindings = getInterceptorBindings(ejbName);
-        if (interceptorBindings != null) {
-            List<Interceptor<?>> currentInterceptors = interceptorBindings.getLifecycleInterceptors(interceptionType);
-            delegateInterception(invocationContext, interceptionType, currentInterceptors);
-        }
-    }
-
-    private Object doMethodInterception(InvocationContext invocationContext, InterceptionType interceptionType)
-            throws Exception {
-        InterceptorBindings interceptorBindings = getInterceptorBindings(ejbName);
-        if (interceptorBindings != null) {
-            List<Interceptor<?>> currentInterceptors = interceptorBindings.getMethodInterceptors(interceptionType, invocationContext.getMethod());
-            return delegateInterception(invocationContext, interceptionType, currentInterceptors);
+            instances = new InterceptorInstances(creationalContext, interceptorInstances);
+            context.getContextData().put(InterceptorInstances.class, instances);
         } else {
-            return invocationContext.proceed();
+            creationalContext = instances.creationalContext;
+            interceptorInstances = instances.interceptorInstances;
         }
+
     }
 
-    private Object delegateInterception(InvocationContext invocationContext, InterceptionType interceptionType, List<Interceptor<?>> currentInterceptors)
+
+    protected Object delegateInterception(InvocationContext invocationContext, InterceptionType interceptionType, List<Interceptor<?>> currentInterceptors)
             throws Exception {
         List<Object> currentInterceptorInstances = new ArrayList<Object>();
         for (Interceptor<?> interceptor : currentInterceptors) {
@@ -169,17 +103,101 @@ public class Jsr299BindingsInterceptor implements Serializable {
 
     }
 
-    private EJBContext getEjbContext() {
-        return CurrentInvocationContext.get().getEJBContext();
-    }
 
-    private String getEjbName() {
-        EJBContext ejbContext = getEjbContext();
-        if (ejbContext instanceof BaseSessionContext) {
-            return ((EJBComponent) ((BaseSessionContext) ejbContext).getComponent()).getComponentName();
+    private Object doMethodInterception(InvocationContext invocationContext, InterceptionType interceptionType)
+            throws Exception {
+        InterceptorBindings interceptorBindings = getInterceptorBindings(ejbName);
+        if (interceptorBindings != null) {
+            List<Interceptor<?>> currentInterceptors = interceptorBindings.getMethodInterceptors(interceptionType, invocationContext.getMethod());
+            return delegateInterception(invocationContext, interceptionType, currentInterceptors);
         } else {
-            throw new IllegalStateException("Unable to extract ejb name from EJBContext " + ejbContext);
+            return invocationContext.proceed();
         }
     }
 
+    @Override
+    public Object processInvocation(final InterceptorContext context) throws Exception {
+        switch (interceptionType) {
+            case AROUND_INVOKE:
+                return doMethodInterception(context.getInvocationContext(), InterceptionType.AROUND_INVOKE);
+            case PRE_DESTROY:
+                try {
+                    return doLifecycleInterception(context);
+                } finally {
+                    creationalContext.release();
+                }
+            case POST_CONSTRUCT:
+                return doLifecycleInterception(context);
+            default:
+                //should never happen
+                return context.proceed();
+        }
+    }
+
+    private Object doLifecycleInterception(final InterceptorContext context) throws Exception {
+        try {
+            final InterceptorBindings interceptorBindings = getInterceptorBindings(ejbName);
+            if (interceptorBindings != null) {
+                List<Interceptor<?>> currentInterceptors = interceptorBindings.getLifecycleInterceptors(interceptionType);
+                delegateInterception(context.getInvocationContext(), interceptionType, currentInterceptors);
+            }
+        } finally {
+            return context.proceed();
+        }
+    }
+
+    protected InterceptorBindings getInterceptorBindings(String ejbName) {
+        BeanManagerImpl beanManager = (BeanManagerImpl) this.beanManager;
+        EjbServices ejbServices = beanManager.getServices().get(EjbServices.class);
+        if (ejbServices instanceof ForwardingEjbServices) {
+            ejbServices = ((ForwardingEjbServices) ejbServices).delegate();
+        }
+        InterceptorBindings interceptorBindings = null;
+        if (ejbServices instanceof WeldEjbServices) {
+            interceptorBindings = ((WeldEjbServices) ejbServices).getBindings(ejbName);
+        }
+        return interceptorBindings;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addInterceptorInstance(Interceptor<Object> interceptor, BeanManagerImpl beanManager, Map<String, SerializableContextualInstance<Interceptor<Object>, Object>> instances) {
+        Object instance = beanManager.getContext(interceptor.getScope()).get(interceptor, creationalContext);
+        SerializableContextualInstance<Interceptor<Object>, Object> serializableContextualInstance
+                = beanManager.getServices().get(ContextualStore.class).<Interceptor<Object>, Object>getSerializableContextualInstance(interceptor, instance, creationalContext);
+        instances.put(interceptor.getBeanClass().getName(), serializableContextualInstance);
+    }
+
+
+    public static class Factory implements InterceptorFactory {
+
+        private final InjectedValue<WeldContainer> weldContainer = new InjectedValue<WeldContainer>();
+        private final String beanArchiveId;
+        private final String ejbName;
+        private final InterceptionType interceptionType;
+
+        public Factory(final String beanArchiveId, final String ejbName, final InterceptionType interceptionType) {
+            this.beanArchiveId = beanArchiveId;
+            this.ejbName = ejbName;
+            this.interceptionType = interceptionType;
+        }
+
+        @Override
+        public org.jboss.invocation.Interceptor create(final InterceptorFactoryContext context) {
+            return new Jsr299BindingsInterceptor((BeanManagerImpl) weldContainer.getValue().getBeanManager(beanArchiveId), ejbName, context, interceptionType);
+        }
+
+        public InjectedValue<WeldContainer> getWeldContainer() {
+            return weldContainer;
+        }
+    }
+
+    private static class InterceptorInstances {
+        protected final CreationalContext<Object> creationalContext;
+        protected final Map<String, SerializableContextualInstance<Interceptor<Object>, Object>> interceptorInstances;
+
+        public InterceptorInstances(final CreationalContext<Object> creationalContext, final Map<String, SerializableContextualInstance<Interceptor<Object>, Object>> interceptorInstances) {
+            this.creationalContext = creationalContext;
+            this.interceptorInstances = interceptorInstances;
+        }
+    }
 }
