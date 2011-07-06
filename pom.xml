@@ -35,7 +35,7 @@
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-parent</artifactId>
-    <version>7.0.0.CR2-SNAPSHOT</version>
+    <version>7.0.0.Final-SNAPSHOT</version>
 
     <name>JBoss Application Server: Parent Aggregator</name>
     <description>JBoss Application Server: Parent Aggregator</description>
@@ -45,7 +45,7 @@
     <properties>
          <!-- Release Info -->
         <jboss.as.release.version>${project.version}</jboss.as.release.version>
-        <jboss.as.release.codename>White Rabbit</jboss.as.release.codename>
+        <jboss.as.release.codename>Lightning</jboss.as.release.codename>
 
         <!-- Build configuration -->
         <maven.compiler.source>1.6</maven.compiler.source>
