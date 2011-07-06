@@ -42,6 +42,7 @@ import java.util.Map;
  * Processes {@link RolesAllowed} annotation on EJB component.
  * <p/>
  * <p/>
+ * This processor should be run *after* all the views of the EJB have been identified and set in the {@link EJBComponentDescription}
  * User: Jaikiran Pai
  */
 public class RolesAllowedProcessor extends AbstractAnnotationEJBProcessor<EJBComponentDescription> {

@@ -51,7 +51,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * User: jpai
+ * Processes the &lt;method-permission&gt; elements of a EJB and sets up appropriate security permissions on the EJB.
+ * <p/>
+ * This processor should be run *after* all the views of the EJB have been identified and set in the {@link EJBComponentDescription}
+ * Author: Jaikiran Pai
  */
 public class MethodPermissionDDProcessor extends AbstractEjbXmlDescriptorProcessor<EnterpriseBeanMetaData> {
 

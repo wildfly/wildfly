@@ -48,6 +48,9 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
+ * Processes the &lt;exclude-list&gt; element of a EJB and sets up the appropriate security permission on the {@link EJBComponentDescription}
+ * <p/>
+ * This processor should be run *after* all the views of the EJB have been identified and set in the {@link EJBComponentDescription}
  * User: Jaikiran Pai
  */
 public class ExcludeListDDProcessor extends AbstractEjbXmlDescriptorProcessor<EnterpriseBeanMetaData> {

@@ -40,6 +40,7 @@ import java.util.Map;
  * Processes the {@link PermitAll} annotation on a EJB
  * <p/>
  * <p/>
+ * This processor should be run *after* all the views of the EJB have been identified and set in the {@link EJBComponentDescription}
  * User: Jaikiran Pai
  */
 public class PermitAllProcessor extends AbstractAnnotationEJBProcessor<EJBComponentDescription> {

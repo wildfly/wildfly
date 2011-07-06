@@ -225,7 +225,6 @@ public enum Phase {
     public static final int PARSE_EJB_ANNOTATION                        = 0x1400;
     public static final int PARSE_MESSAGE_DRIVEN_ANNOTATION             = 0x1500;
     public static final int PARSE_EJB_TRANSACTION_MANAGEMENT            = 0x1600;
-    public static final int PARSE_EJB_BUSINESS_VIEW_ANNOTATION          = 0x1700;
     public static final int PARSE_WS_EJB_INTEGRATION                    = 0x1701;
     public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1800;
     public static final int PARSE_EJB_SECURITY_DOMAIN_ANNOTATION        = 0x1801;
@@ -234,9 +233,6 @@ public enum Phase {
     public static final int PARSE_REMOVE_METHOD_ANNOTAION               = 0x1902;
     public static final int PARSE_EJB_DECLARE_ROLES_ANNOTATION          = 0x1903;
     public static final int PARSE_EJB_RUN_AS_ANNOTATION                 = 0x1904;
-    public static final int PARSE_EJB_DENY_ALL_ANNOTATION               = 0x1905;
-    public static final int PARSE_EJB_ROLES_ALLOWED_ANNOTATION          = 0x1906;
-    public static final int PARSE_EJB_PERMIT_ALL_ANNOTATION             = 0x1907;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1A00;
     public static final int PARSE_EJB_STATEFUL_TIMEOUT_ANNOTATION       = 0x1A01;
@@ -315,15 +311,18 @@ public enum Phase {
     public static final int POST_MODULE_REFLECTION_INDEX                = 0x0200;
     public static final int POST_MODULE_TRANSFORMER                     = 0x0201;
     public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
-    public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0400;
+    public static final int POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION    = 0x0400;
+    public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0401;
     public static final int POST_MODULE_EJB_DD_REMOVE_METHOD            = 0x0500;
-    public static final int POST_MODULE_EJB_EXCLUDE_LIST_DD             = 0x0501;
-    public static final int POST_MODULE_EJB_METHOD_PERMISSION_DD        = 0x0502;
+    public static final int POST_MODULE_EJB_DENY_ALL_ANNOTATION         = 0x0501;
+    public static final int POST_MODULE_EJB_ROLES_ALLOWED_ANNOTATION    = 0x0502;
+    public static final int POST_MODULE_EJB_PERMIT_ALL_ANNOTATION       = 0x0503;
+    public static final int POST_MODULE_EJB_EXCLUDE_LIST_DD             = 0x0504;
+    public static final int POST_MODULE_EJB_METHOD_PERMISSION_DD        = 0x0505;
     public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0600;
     public static final int POST_MODULE_EJB_DD_CONCURRENCY              = 0x0601;
     public static final int POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION = 0x0700;
     public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;
-    public static final int POST_MODULE_AGGREGATE_COMPONENT_INDEX       = 0x0900;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0A00;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0B00;
     public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x0C00;
@@ -339,7 +338,6 @@ public enum Phase {
     public static final int POST_MODULE_PERSISTENCE_REF                 = 0x1600;
     public static final int POST_MODULE_DATASOURCE_REF                  = 0x1700;
     public static final int POST_MODULE_WS_JMS_INTEGRATION              = 0x1800;
-    public static final int POST_MODULE_RESOLVE_EJB_INJECTIONS          = 0x1900;
     public static final int POST_MODULE_JAXRS_SCANNING                  = 0x1A00;
     public static final int POST_MODULE_JAXRS_COMPONENT                 = 0x1B00;
     public static final int POST_MODULE_JAXRS_CDI_INTEGRATION           = 0x1C00;
@@ -348,7 +346,9 @@ public enum Phase {
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
     public static final int INSTALL_JPA_INTERCEPTORS                    = 0x0200;
     public static final int INSTALL_APP_CONTEXT                         = 0x0300;
-    public static final int INSTALL_MODULE_CONTEXT                      = 0x0400;
+    public static final int INSTALL_COMPONENT_AGGREGATION               = 0x0400;
+    public static final int INSTALL_MODULE_CONTEXT                      = 0x0401;
+    public static final int INSTALL_RESOLVE_EJB_INJECTIONS              = 0x0402;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
     public static final int INSTALL_OSGI_DEPLOYMENT                     = 0x0600;
     public static final int INSTALL_OSGI_MODULE                         = 0x0650;
