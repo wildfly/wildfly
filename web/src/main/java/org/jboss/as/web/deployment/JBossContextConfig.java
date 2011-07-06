@@ -111,7 +111,6 @@ import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
 import org.jboss.metadata.web.spec.WelcomeFileListMetaData;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
 
@@ -223,9 +222,13 @@ public class JBossContextConfig extends ContextConfig {
     protected Object getInstance(String moduleName, String className, List<ParamValueMetaData> params) {
         try {
             final Module module = deploymentUnitContext.getAttachment(Attachments.MODULE);
-            ModuleClassLoader moduleClassLoader = null;
+            ClassLoader moduleClassLoader = null;
             if (moduleName == null) {
-                moduleClassLoader = module.getClassLoader();
+                if (context.getLoader() == null || context.getLoader().getClassLoader() == null) {
+                    moduleClassLoader = module.getClassLoader();
+                } else {
+                    moduleClassLoader = context.getLoader().getClassLoader();
+                }
             } else {
                 moduleClassLoader = module.getModule(ModuleIdentifier.create(moduleName)).getClassLoader();
             }
