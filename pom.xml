@@ -35,7 +35,7 @@
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-parent</artifactId>
-    <version>7.0.0.Final-SNAPSHOT</version>
+    <version>7.1.0.Alpha1-SNAPSHOT</version>
 
     <name>JBoss Application Server: Parent Aggregator</name>
     <description>JBoss Application Server: Parent Aggregator</description>
