@@ -9,6 +9,9 @@ http://www.jboss.org/jbossas/
 
 Go to the above link for documentation, and additional downloads.
 
+Also, once JBoss AS7 is started you can go to http://localhost:8080
+for additional information.
+
 Important Notes
 ---------------
 JBoss AS now has two distributions:
