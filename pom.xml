@@ -3166,20 +3166,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.ironjacamar</groupId>
-                <artifactId>jdbc-local</artifactId>
-                <version>${version.org.jboss.ironjacamar}</version>
-                <type>rar</type>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ironjacamar</groupId>
-                <artifactId>jdbc-xa</artifactId>
-                <version>${version.org.jboss.ironjacamar}</version>
-                <type>rar</type>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jpa</artifactId>
                 <version>${project.version}</version>

@@ -949,18 +949,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>jdbc-local</artifactId>
-            <type>rar</type>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>jdbc-xa</artifactId>
-            <type>rar</type>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.jbossts</groupId>
             <artifactId>jbossjts</artifactId>
         </dependency>
