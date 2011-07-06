@@ -255,7 +255,11 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         for(Property prop : getNodeProperties(ctx)) {
                             final ModelNode propDescr = prop.getValue();
                             if(propDescr.has("access-type") && "read-write".equals(propDescr.get("access-type").asString())) {
-                                nodeProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, "--" + prop.getName()));
+                                CommandLineCompleter valueCompleter = null;
+                                if(propDescr.has("type") && "BOOLEAN".equals(propDescr.get("type").asString())) {
+                                    valueCompleter = SimpleTabCompleter.BOOLEAN;
+                                }
+                                nodeProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, valueCompleter, "--" + prop.getName()));
                             }
                         }
                     }
@@ -279,7 +283,12 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         } else {
                             opProps = new ArrayList<CommandArgument>();
                             for (Property prop : descr.get("request-properties").asPropertyList()) {
-                                opProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, "--" + prop.getName()));
+                                CommandLineCompleter valueCompleter = null;
+                                final ModelNode propDescr = prop.getValue();
+                                if(propDescr.has("type") && "BOOLEAN".equals(propDescr.get("type").asString())) {
+                                    valueCompleter = SimpleTabCompleter.BOOLEAN;
+                                }
+                                opProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, valueCompleter, "--" + prop.getName()));
                             }
                         }
                         propsByOp.put(op, opProps);
