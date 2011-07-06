@@ -50,7 +50,8 @@ public class InterceptorOrder {
          * in the order that they are added.
          */
         public static final int USER_INTERCEPTORS                                           = 0x800;
-        public static final int TERMINAL_INTERCEPTOR                                        = 0x900;
+        public static final int CDI_INTERCEPTORS                                            = 0x900;
+        public static final int TERMINAL_INTERCEPTOR                                        = 0xA00;
 
         private Component() {
         }
@@ -70,7 +71,8 @@ public class InterceptorOrder {
         public static final int WELD_INJECTION = 0x900;
         public static final int JPA_SFSB_CREATE = 0xA00;
         public static final int USER_INTERCEPTORS = 0xB00;
-        public static final int TERMINAL_INTERCEPTOR = 0xC00;
+        public static final int CDI_INTERCEPTORS = 0xC00;
+        public static final int TERMINAL_INTERCEPTOR = 0xD00;
 
         private ComponentPostConstruct() {
         }
@@ -87,7 +89,8 @@ public class InterceptorOrder {
         public static final int UNINJECTION_INTERCEPTORS = 0x500;
         public static final int DESTRUCTION_INTERCEPTORS = 0x600;
         public static final int USER_INTERCEPTORS = 0x700;
-        public static final int TERMINAL_INTERCEPTOR = 0x800;
+        public static final int CDI_INTERCEPTORS = 0x800;
+        public static final int TERMINAL_INTERCEPTOR = 0x900;
 
         private ComponentPreDestroy() {
         }

@@ -28,6 +28,11 @@
     <target name="copy-files">
         <copy todir="${output.dir}">
             <fileset dir="src/main/resources">
+                <include name="LICENSE.txt"/>
+                <include name="README.txt"/>
+                <include name="copyright.txt"/>
+            </fileset>
+            <fileset dir="src/main/resources">
                 <include name="bin/**"/>
             </fileset>
             <fileset dir="src/main/resources">

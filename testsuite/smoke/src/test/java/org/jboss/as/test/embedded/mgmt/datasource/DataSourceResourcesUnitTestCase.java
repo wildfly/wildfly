@@ -31,7 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -44,7 +44,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.After;
 import org.junit.Test;
@@ -93,7 +92,7 @@ public class DataSourceResourcesUnitTestCase {
         final ModelNode result = getModelControllerClient().execute(operation);
         Assert.assertTrue(result.hasDefined(RESULT));
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        final Map<String, ModelNode> children = getChildren(result.get(RESULT));
+        final Map<String, ModelNode> children = DataSourceOperationTestUtil.getChildren(result.get(RESULT));
         Assert.assertFalse(children.isEmpty());
         for (final Entry<String, ModelNode> child : children.entrySet()) {
             Assert.assertTrue(child.getKey() != null);
@@ -103,13 +102,32 @@ public class DataSourceResourcesUnitTestCase {
         }
     }
 
-    protected static Map<String, ModelNode> getChildren(final ModelNode result) {
-        Assert.assertTrue(result.isDefined());
-        final Map<String, ModelNode> steps = new HashMap<String, ModelNode>();
-        for (final Property property : result.asPropertyList()) {
-            steps.put(property.getName(), property.getValue());
-        }
-        return steps;
-    }
+    @Test
+    public void testReadResourceResources() throws IOException {
 
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "datasources");
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("read-resource-description");
+
+        operation.get(OP_ADDR).set(address);
+
+        final ModelNode result = getModelControllerClient().execute(operation);
+        Assert.assertTrue(result.hasDefined(RESULT));
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        final Map<String, ModelNode> children = DataSourceOperationTestUtil.getChildren(
+            result.get(RESULT).get("attributes").get("installed-drivers").get("value-type"));
+        Assert.assertFalse(children.isEmpty());
+
+        HashSet<String> keys = new HashSet<String>();
+        for (final Entry<String, ModelNode> child : children.entrySet()) {
+            Assert.assertTrue(child.getKey() != null);
+            keys.add(child.getKey());
+        }
+        Assert.assertTrue(keys.contains("driver-xa-datasource-class-name"));
+        Assert.assertTrue(keys.contains("module-slot"));
+        Assert.assertTrue(keys.contains("driver-name"));
+    }
 }

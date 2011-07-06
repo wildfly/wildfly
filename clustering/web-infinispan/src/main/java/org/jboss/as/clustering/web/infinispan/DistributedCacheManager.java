@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.web.infinispan;
 
 import java.io.IOException;
+import java.security.AccessController;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
@@ -58,6 +60,7 @@ import org.jboss.as.clustering.web.SessionOwnershipSupport;
 import org.jboss.as.clustering.web.impl.IncomingDistributableSessionDataImpl;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.util.loading.ContextClassLoaderSwitcher;
 
 /**
  * Distributed cache manager implementation using Infinispan.
@@ -105,6 +108,11 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
     private final boolean requiresPurge;
     private final JvmRouteHandler jvmRouteHandler;
     private final SessionKeyFactory<K> keyFactory;
+
+    // Need to cast since ContextClassLoaderSwitcher.NewInstance does not generically implement
+    // PrivilegedAction<ContextClassLoaderSwitcher>
+    @SuppressWarnings("unchecked")
+    private final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
 
     public DistributedCacheManager(ServiceRegistry registry, LocalDistributableSessionManager manager,
             Cache<K, Map<Object, Object>> sessionCache, CacheSource jvmRouteCacheSource,
@@ -446,7 +454,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
 
         EmbeddedCacheManager container = (EmbeddedCacheManager) this.sessionCache.getCacheManager();
 
-        LockResult result = results.get(this.lockManager.lock(this.keyFactory.createKey(sessionId), container.getGlobalConfiguration().getDistributedSyncTimeout(), newLock));
+        LockResult result = results.get(this.lockManager.lock(this.keyFactory.createKey(sessionId).toString(), container.getGlobalConfiguration().getDistributedSyncTimeout(), newLock));
 
         trace("acquireSessionOwnership(%s, %s) = %s", sessionId, newLock, result);
 
@@ -457,7 +465,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
     public void relinquishSessionOwnership(String sessionId, boolean remove) {
         trace("relinquishSessionOwnership(%s, %s)", sessionId, remove);
 
-        this.lockManager.unlock(this.keyFactory.createKey(sessionId), remove);
+        this.lockManager.unlock(this.keyFactory.createKey(sessionId).toString(), remove);
     }
 
     /**
@@ -519,7 +527,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
     public void removed(CacheEntryRemovedEvent<K, Map<Object, Object>> event) {
         if (event.isPre() || event.isOriginLocal()) return;
 
-        K key = event.getKey();
+        K key = this.getEventKey(event);
 
         if (this.keyFactory.ours(key)) {
             try {
@@ -534,26 +542,31 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
     public void modified(CacheEntryModifiedEvent<K, Map<Object, Object>> event) {
         if (event.isPre() || event.isOriginLocal()) return;
 
-        K key = event.getKey();
+        K key = this.getEventKey(event);
 
         if (this.keyFactory.ours(key)) {
             try {
-                Map<Object, Object> map = event.getValue();
+                ContextClassLoaderSwitcher.SwitchContext context = this.getSwitchContext(event);
+                try {
+                    Map<Object, Object> map = event.getValue();
 
-                if (!map.isEmpty()) {
-                    String sessionId = key.getSessionId();
+                    if (!map.isEmpty()) {
+                        String sessionId = key.getSessionId();
 
-                    Integer version = SessionMapEntry.VERSION.get(map);
-                    Long timestamp = SessionMapEntry.TIMESTAMP.get(map);
-                    DistributableSessionMetadata metadata = SessionMapEntry.METADATA.get(map);
+                        Integer version = SessionMapEntry.VERSION.get(map);
+                        Long timestamp = SessionMapEntry.TIMESTAMP.get(map);
+                        DistributableSessionMetadata metadata = SessionMapEntry.METADATA.get(map);
 
-                    if ((version != null) && (timestamp != null) && (metadata != null)) {
-                        boolean updated = this.manager.sessionChangedInDistributedCache(sessionId, null, version.intValue(), timestamp.longValue(), metadata);
+                        if ((version != null) && (timestamp != null) && (metadata != null)) {
+                            boolean updated = this.manager.sessionChangedInDistributedCache(sessionId, null, version.intValue(), timestamp.longValue(), metadata);
 
-                        if (!updated) {
-                            log.warnf("Possible concurrency problem: Replicated version id %d is less than or equal to in-memory version for session %s", version, mask(sessionId));
+                            if (!updated) {
+                                log.warnf("Possible concurrency problem: Replicated version id %d is less than or equal to in-memory version for session %s", version, mask(sessionId));
+                            }
                         }
                     }
+                } finally {
+                    context.reset();
                 }
             } catch (Throwable e) {
                 log.warn(e.getMessage(), e);
@@ -565,7 +578,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
     public void activated(CacheEntryActivatedEvent<K, Map<Object, Object>> event) {
         if (event.isPre()) return;
 
-        K key = event.getKey();
+        K key = this.getEventKey(event);
 
         if (this.keyFactory.ours(key)) {
             try {
@@ -574,6 +587,19 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
                 log.warn(e.getMessage(), e);
             }
         }
+    }
+
+    private K getEventKey(CacheEntryEvent<K, ?> event) {
+        ContextClassLoaderSwitcher.SwitchContext context = this.getSwitchContext(event);
+        try {
+            return event.getKey();
+        } finally {
+            context.reset();
+        }
+    }
+
+    private <V> ContextClassLoaderSwitcher.SwitchContext getSwitchContext(CacheEntryEvent<K, V> event) {
+        return this.switcher.getSwitchContext(this.getClass().getClassLoader());
     }
 
     private <R> R batch(Operation<R> operation) {

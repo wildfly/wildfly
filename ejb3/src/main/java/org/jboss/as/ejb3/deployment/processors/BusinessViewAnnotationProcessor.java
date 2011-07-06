@@ -22,27 +22,30 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.AnnotationValue;
-import org.jboss.jandex.ClassInfo;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.jandex.DotName;
-import org.jboss.jandex.Type;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 
 import javax.ejb.Local;
 import javax.ejb.LocalBean;
 import javax.ejb.Remote;
 import java.io.Externalizable;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -52,11 +55,7 @@ import java.util.Set;
  *
  * @author Jaikiran Pai
  */
-public class BusinessViewAnnotationProcessor extends AbstractAnnotationEJBProcessor<SessionBeanComponentDescription> {
-
-    private static final DotName LOCAL = DotName.createSimple(Local.class.getName());
-    private static final DotName LOCAL_BEAN = DotName.createSimple(LocalBean.class.getName());
-    private static final DotName REMOTE = DotName.createSimple(Remote.class.getName());
+public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor {
 
     /**
      * Logger
@@ -64,8 +63,22 @@ public class BusinessViewAnnotationProcessor extends AbstractAnnotationEJBProces
     private static final Logger logger = Logger.getLogger(BusinessViewAnnotationProcessor.class);
 
     @Override
-    protected Class<SessionBeanComponentDescription> getComponentDescriptionType() {
-        return SessionBeanComponentDescription.class;
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final Collection<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentDescriptions();
+        if (componentDescriptions == null || componentDescriptions.isEmpty()) {
+            return;
+        }
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final ClassLoader moduleClassLoader = module.getClassLoader();
+        for (ComponentDescription componentDescription : componentDescriptions) {
+            if (componentDescription instanceof SessionBeanComponentDescription == false) {
+                continue;
+            }
+            final Class<?> ejbClass = this.getEjbClass(componentDescription.getComponentClassName(), moduleClassLoader);
+            this.processViewAnnotations(ejbClass, (SessionBeanComponentDescription) componentDescription);
+        }
     }
 
     /**
@@ -73,126 +86,85 @@ public class BusinessViewAnnotationProcessor extends AbstractAnnotationEJBProces
      * accordingly
      *
      * @param sessionBeanClass The bean class
-     * @param compositeIndex   The composite annotation index
      * @param sessionBeanComponentDescription
      *                         The component description
      * @throws DeploymentUnitProcessingException
      *
      */
-    @Override
-    protected void processAnnotations(ClassInfo sessionBeanClass, CompositeIndex compositeIndex, SessionBeanComponentDescription sessionBeanComponentDescription) throws DeploymentUnitProcessingException {
-        final Collection<String> remoteBusinessInterfaces = getBusinessInterfaces(sessionBeanClass, compositeIndex, REMOTE);
-        sessionBeanComponentDescription.addRemoteBusinessInterfaceViews(remoteBusinessInterfaces);
+    private void processViewAnnotations(Class<?> sessionBeanClass, final SessionBeanComponentDescription sessionBeanComponentDescription) throws DeploymentUnitProcessingException {
+        final Collection<Class<?>> remoteBusinessInterfaces = this.getRemoteBusinessInterfaces(sessionBeanClass);
+        if (remoteBusinessInterfaces != null && !remoteBusinessInterfaces.isEmpty()) {
+            sessionBeanComponentDescription.addRemoteBusinessInterfaceViews(this.toString(remoteBusinessInterfaces));
+        }
 
         // fetch the local business interfaces of the bean
-        Collection<String> localBusinessInterfaces = getBusinessInterfaces(sessionBeanClass, compositeIndex, LOCAL);
-        if (logger.isTraceEnabled()) {
-            logger.trace("Session bean: " + sessionBeanComponentDescription.getEJBName() + " has " + localBusinessInterfaces.size() + " local business interfaces namely: " + localBusinessInterfaces);
+        Collection<Class<?>> localBusinessInterfaces = this.getLocalBusinessInterfaces(sessionBeanClass);
+        if (localBusinessInterfaces != null && !localBusinessInterfaces.isEmpty()) {
+            sessionBeanComponentDescription.addLocalBusinessInterfaceViews(this.toString(localBusinessInterfaces));
         }
-        // add it to the component description
-        sessionBeanComponentDescription.addLocalBusinessInterfaceViews(localBusinessInterfaces);
 
-        if (hasNoInterfaceView(sessionBeanClass))
+        if (hasNoInterfaceView(sessionBeanClass)) {
             sessionBeanComponentDescription.addNoInterfaceView();
+        }
 
         // EJB 3.1 FR 4.9.7 & 4.9.8, if the bean exposes no views
         if (hasNoViews(sessionBeanComponentDescription)) {
-            final Set<DotName> names = getPotentialBusinessInterfaces(sessionBeanClass);
-            if (names.isEmpty())
+            final Set<Class<?>> potentialBusinessInterfaces = getPotentialBusinessInterfaces(sessionBeanClass);
+            if (potentialBusinessInterfaces.isEmpty()) {
                 sessionBeanComponentDescription.addNoInterfaceView();
-            else if (names.size() == 1)
-                sessionBeanComponentDescription.addLocalBusinessInterfaceViews(names.iterator().next().toString());
+            } else if (potentialBusinessInterfaces.size() == 1) {
+                sessionBeanComponentDescription.addLocalBusinessInterfaceViews(potentialBusinessInterfaces.iterator().next().getName());
+            }
         }
     }
 
-    private static Collection<String> getBusinessInterfaces(ClassInfo sessionBeanClass, CompositeIndex compositeIndex, DotName annotationType) throws DeploymentUnitProcessingException {
-        Map<DotName, List<AnnotationInstance>> annotationsOnBean = sessionBeanClass.annotations();
-        List<AnnotationInstance> annotations = annotationsOnBean.get(annotationType);
-        if (annotations == null || annotations.isEmpty()) {
-
-            Collection<String> interfaces = getBusinessInterfacesFromInterfaceAnnotations(sessionBeanClass, compositeIndex, annotationType);
+    private Collection<Class<?>> getRemoteBusinessInterfaces(Class<?> sessionBeanClass) throws DeploymentUnitProcessingException {
+        final Remote remoteViewAnnotation = sessionBeanClass.getAnnotation(Remote.class);
+        if (remoteViewAnnotation == null) {
+            Collection<Class<?>> interfaces = getBusinessInterfacesFromInterfaceAnnotations(sessionBeanClass, Remote.class);
             if (!interfaces.isEmpty()) {
                 return interfaces;
             }
             return Collections.emptySet();
         }
-        if (annotations.size() > 1) {
-            throw new DeploymentUnitProcessingException("@" + annotationType + " appears more than once in EJB class: " + sessionBeanClass.name());
-        }
-
-        final AnnotationInstance annotation = annotations.get(0);
-        final AnnotationTarget target = annotation.target();
-        if (target instanceof ClassInfo == false) {
-            throw new RuntimeException("@" + annotationType + " should only appear on a class. Target: " + target + " is not a class");
-        }
-        AnnotationValue annotationValue = annotation.value();
-        if (annotationValue == null) {
-            Set<DotName> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
+        Class<?>[] remoteViews = remoteViewAnnotation.value();
+        if (remoteViews == null || remoteViews.length == 0) {
+            Set<Class<?>> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
             if (interfaces.size() != 1)
-                throw new DeploymentUnitProcessingException("Bean " + sessionBeanClass + " specifies @" + annotationType + ", but does not implement 1 interface");
-            return Collections.singleton(interfaces.iterator().next().toString());
+                throw new DeploymentUnitProcessingException("Bean " + sessionBeanClass + " specifies @Remote annotation, but does not implement 1 interface");
+            return interfaces;
         }
-        final Collection<String> businessInterfaces = new HashSet<String>();
-        final Type[] interfaceTypes = annotationValue.asClassArray();
-        for (final Type type : interfaceTypes) {
-            businessInterfaces.add(type.name().toString());
+        return Arrays.asList(remoteViews);
+    }
+
+    private Collection<Class<?>> getLocalBusinessInterfaces(Class<?> sessionBeanClass) throws DeploymentUnitProcessingException {
+        final Local localViewAnnotation = sessionBeanClass.getAnnotation(Local.class);
+        if (localViewAnnotation == null) {
+            Collection<Class<?>> interfaces = getBusinessInterfacesFromInterfaceAnnotations(sessionBeanClass, Local.class);
+            if (!interfaces.isEmpty()) {
+                return interfaces;
+            }
+            return Collections.emptySet();
+        }
+        Class<?>[] remoteViews = localViewAnnotation.value();
+        if (remoteViews == null || remoteViews.length == 0) {
+            Set<Class<?>> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
+            if (interfaces.size() != 1)
+                throw new DeploymentUnitProcessingException("Bean " + sessionBeanClass + " specifies @Remote annotation, but does not implement 1 interface");
+            return interfaces;
+        }
+        return Arrays.asList(remoteViews);
+    }
+
+    private static Collection<Class<?>> getBusinessInterfacesFromInterfaceAnnotations(Class<?> sessionBeanClass, Class<? extends Annotation> annotation) {
+        final Set<Class<?>> potentialBusinessInterfaces = getPotentialBusinessInterfaces(sessionBeanClass);
+        final Set<Class<?>> businessInterfaces = new HashSet<Class<?>>();
+        for (Class<?> iface : potentialBusinessInterfaces) {
+            if (iface.getAnnotation(annotation) != null) {
+                businessInterfaces.add(iface);
+            }
         }
         return businessInterfaces;
-    }
-
-    private static Collection<String> getBusinessInterfacesFromInterfaceAnnotations(ClassInfo sessionBeanClass, CompositeIndex compositeIndex, DotName annotationType) {
-        Set<DotName> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
-        Set<String> localInterfaces = new HashSet<String>();
-        for (DotName iface : interfaces) {
-            final ClassInfo ifaceClass = compositeIndex.getClassByName(iface);
-
-            if (ifaceClass != null) {
-                final List<AnnotationInstance> annotations = ifaceClass.annotations().get(annotationType);
-                if (annotations != null) {
-                    for (AnnotationInstance annotation : annotations) {
-                        if (annotation.target() instanceof ClassInfo) {
-                            localInterfaces.add(iface.toString());
-                            break;
-                        }
-                    }
-                }
-            } else {
-                logger.warnf("Could not read annotations on EJB interface %s", iface.toString());
-            }
-        }
-        return localInterfaces;
-    }
-
-    /**
-     * Gets a beans implicit local interface
-     *
-     * @param sessionBeanClass The bean class
-     * @return The implicit business interface, or null if one is not found
-     */
-    private static String getDefaultLocalInterface(ClassInfo sessionBeanClass, CompositeIndex index) {
-        final Set<DotName> names = getPotentialBusinessInterfaces(sessionBeanClass);
-        if (names.size() != 1) {
-            return null;
-        }
-        //now we have an interface, but it is not an implicit local interface
-        //if it is annotated @Remote
-        final DotName iface = names.iterator().next();
-        final ClassInfo classInfo = index.getClassByName(iface);
-        if (classInfo == null) {
-            logger.warnf("Could not read annotations in interface %s when determining local interfaces for %s", iface, sessionBeanClass.name());
-            return null;
-        }
-        List<AnnotationInstance> annotations = classInfo.annotations().get(REMOTE);
-        if (annotations == null || annotations.isEmpty()) {
-            return iface.toString();
-        }
-        for (AnnotationInstance annotation : annotations) {
-            if (annotation.target() instanceof ClassInfo) {
-                return null;
-            }
-        }
-
-        return iface.toString();
     }
 
     /**
@@ -201,42 +173,56 @@ public class BusinessViewAnnotationProcessor extends AbstractAnnotationEJBProces
      * @param sessionBeanClass The bean class
      * @return A collection of all potential business interfaces
      */
-    private static Set<DotName> getPotentialBusinessInterfaces(ClassInfo sessionBeanClass) {
-        DotName[] interfaces = sessionBeanClass.interfaces();
+    private static Set<Class<?>> getPotentialBusinessInterfaces(Class<?> sessionBeanClass) {
+        Class<?>[] interfaces = sessionBeanClass.getInterfaces();
         if (interfaces == null) {
             return Collections.emptySet();
         }
-        final Set<DotName> names = new HashSet<DotName>();
-        for (DotName dotName : interfaces) {
-            String name = dotName.toString();
+        final Set<Class<?>> potentialBusinessInterfaces = new HashSet<Class<?>>();
+        for (Class<?> klass : interfaces) {
             // EJB 3.1 FR 4.9.7 bullet 5.3
-            if (name.equals(Serializable.class.getName()) ||
-                    name.equals(Externalizable.class.getName()) ||
-                    name.startsWith("javax.ejb.")) {
+            if (klass.equals(Serializable.class) ||
+                    klass.equals(Externalizable.class) ||
+                    klass.getName().startsWith("javax.ejb.")) {
                 continue;
             }
-            names.add(dotName);
+            potentialBusinessInterfaces.add(klass);
         }
-        return names;
+        return potentialBusinessInterfaces;
     }
 
     /**
      * Returns true if the <code>sessionBeanClass</code> has a {@link LocalBean no-interface view annotation}.
      * Else returns false.
      *
-     * @param sessionBeanClass The session bean {@link ClassInfo class}
+     * @param sessionBeanClass The session bean {@link Class class}
      * @return
      */
-    private static boolean hasNoInterfaceView(ClassInfo sessionBeanClass) {
-        Map<DotName, List<AnnotationInstance>> annotationsOnBeanClass = sessionBeanClass.annotations();
-        if (annotationsOnBeanClass == null || annotationsOnBeanClass.isEmpty()) {
-            return false;
-        }
-        List<AnnotationInstance> localBeanAnnotations = annotationsOnBeanClass.get(LOCAL_BEAN);
-        return localBeanAnnotations != null && !localBeanAnnotations.isEmpty();
+    private static boolean hasNoInterfaceView(Class<?> sessionBeanClass) {
+        return sessionBeanClass.getAnnotation(LocalBean.class) != null;
     }
 
     private static boolean hasNoViews(SessionBeanComponentDescription sessionBeanComponentDescription) {
         return sessionBeanComponentDescription.getViews() == null || sessionBeanComponentDescription.getViews().isEmpty();
+    }
+
+    private Class<?> getEjbClass(String className, ClassLoader cl) throws DeploymentUnitProcessingException {
+        try {
+            return cl.loadClass(className);
+        } catch (ClassNotFoundException e) {
+            throw new DeploymentUnitProcessingException("Could not load EJB class " + className);
+        }
+    }
+
+    private Collection<String> toString(Collection<Class<?>> classes) {
+        final Collection<String> classNames = new ArrayList<String>(classes.size());
+        for (Class<?> klass : classes) {
+            classNames.add(klass.getName());
+        }
+        return classNames;
+    }
+
+    @Override
+    public void undeploy(DeploymentUnit context) {
     }
 }

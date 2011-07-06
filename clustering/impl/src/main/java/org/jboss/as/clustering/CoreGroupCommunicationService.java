@@ -1061,8 +1061,13 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
         }
 
         ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
-        MarshalledValueInputStream mvis = new MarshalledValueInputStream(bais);
-        return mvis.readObject();
+        SwitchContext context = classLoaderSwitcher.getSwitchContext(this.getClass().getClassLoader());
+        try {
+            MarshalledValueInputStream mvis = new MarshalledValueInputStream(bais);
+            return mvis.readObject();
+        } finally {
+            context.reset();
+        }
     }
 
     /**
@@ -1091,8 +1096,13 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
         ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
         // read past the null/serializable byte
         bais.read();
-        MarshalledValueInputStream mvis = new MarshalledValueInputStream(bais);
-        return mvis.readObject();
+        SwitchContext context = classLoaderSwitcher.getSwitchContext(this.getClass().getClassLoader());
+        try {
+            MarshalledValueInputStream mvis = new MarshalledValueInputStream(bais);
+            return mvis.readObject();
+        } finally {
+            context.reset();
+        }
     }
 
     /**
@@ -1418,7 +1428,6 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
 
         @Override
         public Object objectFromByteBuffer(byte[] buf) throws Exception {
-            boolean trace = CoreGroupCommunicationService.this.log.isTraceEnabled();
             Object retval = CoreGroupCommunicationService.this.objectFromByteBufferResponseInternal(buf);
             // HAServiceResponse is only received when a scoped classloader is required for unmarshalling
             if (!(retval instanceof HAServiceResponse)) {
@@ -1428,29 +1437,14 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
             String serviceName = ((HAServiceResponse) retval).getServiceName();
             byte[] payload = ((HAServiceResponse) retval).getPayload();
 
-            ClassLoader previousCL = null;
-            boolean overrideCL = false;
+            WeakReference<ClassLoader> weak = CoreGroupCommunicationService.this.clmap.get(serviceName);
+            SwitchContext context = CoreGroupCommunicationService.this.classLoaderSwitcher.getSwitchContext((weak != null) ? weak.get() : CoreGroupCommunicationService.class.getClassLoader());
             try {
-                WeakReference<ClassLoader> weak = CoreGroupCommunicationService.this.clmap.get(serviceName);
-                if (weak != null) { // this should always be true since we only use HAServiceResponse when classloader is
-                                    // specified
-                    previousCL = Thread.currentThread().getContextClassLoader();
-                    ClassLoader loader = weak.get();
-                    if (trace) {
-                        CoreGroupCommunicationService.this.log
-                                .trace("overriding response Thread ContextClassLoader for service " + serviceName);
-                    }
-                    overrideCL = true;
-                    Thread.currentThread().setContextClassLoader(loader);
-                }
                 retval = CoreGroupCommunicationService.this.objectFromByteBufferResponseInternal(payload);
 
                 return retval;
             } finally {
-                if (overrideCL == true) {
-                    CoreGroupCommunicationService.this.log.trace("resetting response classloader");
-                    Thread.currentThread().setContextClassLoader(previousCL);
-                }
+                context.reset();
             }
         }
 
@@ -1492,8 +1486,6 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
             Object retval = null;
             Object handler = null;
             boolean trace = this.log.isTraceEnabled();
-            boolean overrideCL = false;
-            ClassLoader previousCL = null;
             String service = null;
             byte[] request_bytes = null;
 
@@ -1534,28 +1526,17 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
                 return null;
             }
 
+            // If client registered the service with a classloader, override the thread classloader here
+            WeakReference<ClassLoader> weak = CoreGroupCommunicationService.this.clmap.get(service);
+            SwitchContext context = CoreGroupCommunicationService.this.classLoaderSwitcher.getSwitchContext((weak != null) ? weak.get() : CoreGroupCommunicationService.class.getClassLoader());
             try {
-                // If client registered the service with a classloader, override the thread classloader here
-                WeakReference<ClassLoader> weak = CoreGroupCommunicationService.this.clmap.get(service);
-                if (weak != null) {
-                    if (trace) {
-                        this.log.trace("overriding Thread ContextClassLoader for RPC service " + service);
-                    }
-                    previousCL = Thread.currentThread().getContextClassLoader();
-                    ClassLoader loader = weak.get();
-                    overrideCL = true;
-                    Thread.currentThread().setContextClassLoader(loader);
-                }
                 body = CoreGroupCommunicationService.this.objectFromByteBufferInternal(request_bytes);
             } catch (Exception e) {
                 this.log.warn("Partition " + CoreGroupCommunicationService.this.getGroupName()
                         + " failed extracting message body from request bytes", e);
                 return null;
             } finally {
-                if (overrideCL) {
-                    this.log.trace("resetting Thread ContextClassLoader");
-                    Thread.currentThread().setContextClassLoader(previousCL);
-                }
+                context.reset();
             }
 
             if (body == null || !(body instanceof MethodCall)) {
@@ -1589,7 +1570,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
              */
             try {
                 retval = method_call.invoke(handler);
-                if (overrideCL) {
+                if (weak != null) {
                     // wrap the response so that the service name can be accessed during unmarshalling of the response
                     byte[] retbytes = CoreGroupCommunicationService.this.objectToByteBufferResponseInternal(retval);
                     retval = new HAServiceResponse(handlerName, retbytes);
