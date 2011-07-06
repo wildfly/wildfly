@@ -285,6 +285,7 @@
                 <configuration>
                     <doCheck>false</doCheck>
                     <doUpdate>false</doUpdate>
+                    <revisionOnScmFailure>UNKNOWN</revisionOnScmFailure>
                 </configuration>
             </plugin>
         </plugins>
