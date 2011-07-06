@@ -35,6 +35,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.parser.jboss.ejb3.JBossEjb3MetaDataParser;
+import org.jboss.metadata.ejb.parser.spec.AbstractMetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.EjbJarMetaDataParser;
 import org.jboss.metadata.ejb.spec.EjbJar31MetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
@@ -47,6 +49,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 
 /**
  * Processes a {@link DeploymentUnit} containing a ejb-jar.xml and creates {@link EjbJarMetaData}
@@ -77,15 +80,10 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
      */
     private static final String JAR_FILE_EXTENSION = ".jar";
 
-    /**
-     * Location of ejb-jar.xml packaged in a .war
-     */
-    private static final String EJB_JAR_XML_LOCATION_IN_WAR = "WEB-INF/ejb-jar.xml";
-
-    /**
-     * Location of ejb-jar.xml packaged in a .jar
-     */
-    private static final String EJB_JAR_XML_LOCATION_IN_JAR = "META-INF/ejb-jar.xml";
+    private static final String EJB_JAR_XML = "ejb-jar.xml";
+    private static final String JBOSS_EJB3_XML = "jboss-ejb3.xml";
+    private static final String META_INF = "META-INF";
+    private static final String WEB_INF = "WEB-INF";
 
     /**
      * Finds a ejb-jar.xml (at WEB-INF of a .war or META-INF of a .jar) parses the file and creates
@@ -107,24 +105,19 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
 
-        // Locate a ejb-jar.xml
-        VirtualFile ejbJarXml = null;
-        // EJB 3.1 FR 20.4 Enterprise Beans Packaged in a .war
-        // TODO: Is there a better way to do this?
-        if (deploymentRoot.getName().toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
-            // it's a .war file, so look for the ejb-jar.xml in WEB-INF
-            ejbJarXml = deploymentRoot.getChild(EJB_JAR_XML_LOCATION_IN_WAR);
-        } else if (deploymentRoot.getName().toLowerCase().endsWith(JAR_FILE_EXTENSION)) {
-            ejbJarXml = deploymentRoot.getChild(EJB_JAR_XML_LOCATION_IN_JAR);
+        final EjbJarMetaData ejbJarMetaData;
+        final EjbJarMetaData specMetaData = parseEjbJarXml(deploymentUnit);
+        final EjbJarMetaData jbossMetaData = parseJBossEjb3Xml(deploymentUnit);
+        if (specMetaData == null) {
+            if (jbossMetaData == null)
+                return;
+            ejbJarMetaData = jbossMetaData;
+        } else if (jbossMetaData == null) {
+            ejbJarMetaData = specMetaData;
         } else {
-            // neither a .jar nor a .war. Return
-            return;
+            throw new UnsupportedOperationException("NYI: descriptor merging");
         }
 
-        if (ejbJarXml == null || !ejbJarXml.exists()) {
-            // no ejb-jar.xml found, nothing to do!
-            return;
-        }
         // Mark it as a EJB deployment
         EjbDeploymentMarker.mark(deploymentUnit);
         if (!deploymentUnit.hasAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION)) {
@@ -133,45 +126,21 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION, ejbModuleDescription);
         }
 
-        // get the XMLStreamReader and parse the ejb-jar.xml
-        MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();
-        InputStream stream = null;
-        try {
-            stream = ejbJarXml.openStream();
+        // attach the EjbJarMetaData to the deployment unit
+        deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA, ejbJarMetaData);
 
-            XMLStreamReader reader = this.getXMLStreamReader(stream, ejbJarXml, dtdInfo);
-
-            EjbJarMetaData ejbJarMetaData = EjbJarMetaDataParser.parse(reader, dtdInfo);
-            // attach the EjbJarMetaData to the deployment unit
-            deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA, ejbJarMetaData);
-
-            if (ejbJarMetaData instanceof EjbJar31MetaData) {
-                EjbJar31MetaData ejbJar31MetaData = (EjbJar31MetaData) ejbJarMetaData;
-                if (ejbJar31MetaData.getModuleName() != null) {
-                    eeModuleDescription.setModuleName(ejbJar31MetaData.getModuleName());
-                }
-                if (ejbJar31MetaData.isMetadataComplete()) {
-                    MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
-                }
-            } else if (!ejbJarMetaData.isEJB3x()) {
-                //EJB spec 20.5.1, we do not process annotations for older deployments
+        if(ejbJarMetaData instanceof EjbJar31MetaData) {
+            EjbJar31MetaData ejbJar31MetaData = (EjbJar31MetaData)ejbJarMetaData;
+            if(ejbJar31MetaData.getModuleName() != null) {
+                eeModuleDescription.setModuleName(ejbJar31MetaData.getModuleName());
+            }
+            if (ejbJar31MetaData.isMetadataComplete()) {
                 MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
             }
-
-        } catch (XMLStreamException xmlse) {
-            throw new DeploymentUnitProcessingException("Exception while parsing ejb-jar.xml: " + ejbJarXml.getPathName(), xmlse);
-        } catch (IOException ioe) {
-            throw new DeploymentUnitProcessingException("Failed to create reader for ejb-jar.xml: " + ejbJarXml.getPathName(), ioe);
-        } finally {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-            } catch (IOException ioe) {
-                logger.debug("Ignoring exception while closing the InputStream ", ioe);
-            }
+        } else if (!ejbJarMetaData.isEJB3x()) {
+            //EJB spec 20.5.1, we do not process annotations for older deployments
+            MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
         }
-
     }
 
     /**
@@ -180,6 +149,27 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
     @Override
     public void undeploy(DeploymentUnit unit) {
 
+    }
+
+    private static VirtualFile getDescriptor(final VirtualFile deploymentRoot, final String descriptorName) {
+        // Locate the descriptor
+        final VirtualFile descriptor;
+        // EJB 3.1 FR 20.4 Enterprise Beans Packaged in a .war
+        if (isWar(deploymentRoot)) {
+            // it's a .war file, so look for the ejb-jar.xml in WEB-INF
+            descriptor = deploymentRoot.getChild(WEB_INF + "/" + descriptorName);
+        } else if (deploymentRoot.getName().toLowerCase().endsWith(JAR_FILE_EXTENSION)) {
+            descriptor = deploymentRoot.getChild(META_INF + "/" + descriptorName);
+        } else {
+            // neither a .jar nor a .war. Return
+            return null;
+        }
+
+        if (descriptor == null || !descriptor.exists()) {
+            // no descriptor found, nothing to do!
+            return null;
+        }
+        return descriptor;
     }
 
     /**
@@ -191,7 +181,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
      * @throws DeploymentUnitProcessingException
      *
      */
-    private XMLStreamReader getXMLStreamReader(InputStream stream, VirtualFile ejbJarXml, XMLResolver resolver) throws DeploymentUnitProcessingException {
+    private static XMLStreamReader getXMLStreamReader(InputStream stream, VirtualFile ejbJarXml, XMLResolver resolver) throws DeploymentUnitProcessingException {
         try {
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
             inputFactory.setXMLResolver(resolver);
@@ -202,4 +192,75 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         }
     }
 
+    private static boolean isWar(final VirtualFile deploymentRoot) {
+        // TODO: Is there a better way to do this?
+        return deploymentRoot.getName().toLowerCase().endsWith(WAR_FILE_EXTENSION);
+    }
+
+    private static InputStream open(final VirtualFile file) throws DeploymentUnitProcessingException {
+        try {
+            return file.openStream();
+        } catch (IOException e) {
+            throw new DeploymentUnitProcessingException(e);
+        }
+    }
+
+    private static EjbJarMetaData parseEjbJarXml(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+        final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+
+        // Locate the descriptor
+        final VirtualFile descriptor = getDescriptor(deploymentRoot, EJB_JAR_XML);
+        if (descriptor == null) {
+            // no descriptor found, nothing to do!
+            return null;
+        }
+
+        // get the XMLStreamReader and parse the descriptor
+        MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();
+        InputStream stream = open(descriptor);
+        try {
+            XMLStreamReader reader = getXMLStreamReader(stream, descriptor, dtdInfo);
+
+            EjbJarMetaData ejbJarMetaData = EjbJarMetaDataParser.parse(reader, dtdInfo);
+            return ejbJarMetaData;
+        } catch (XMLStreamException xmlse) {
+            throw new DeploymentUnitProcessingException("Exception while parsing ejb-jar.xml: " + descriptor.getPathName(), xmlse);
+        } finally {
+            try {
+                stream.close();
+            } catch (IOException ioe) {
+                logger.warn("Ignoring exception while closing the InputStream ", ioe);
+            }
+        }
+    }
+
+    private static EjbJarMetaData parseJBossEjb3Xml(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+        final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+
+        // Locate the descriptor
+        final VirtualFile descriptor = getDescriptor(deploymentRoot, JBOSS_EJB3_XML);
+        if (descriptor == null) {
+            // no descriptor found, nothing to do!
+            return null;
+        }
+
+        // get the XMLStreamReader and parse the descriptor
+        MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();
+        InputStream stream = open(descriptor);
+        try {
+            XMLStreamReader reader = getXMLStreamReader(stream, descriptor, dtdInfo);
+
+            final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(new HashMap<String, AbstractMetaDataParser<?>>());
+            EjbJarMetaData ejbJarMetaData = parser.parse(reader, dtdInfo);
+            return ejbJarMetaData;
+        } catch (XMLStreamException xmlse) {
+            throw new DeploymentUnitProcessingException("Exception while parsing " + JBOSS_EJB3_XML + ": " + descriptor.getPathName(), xmlse);
+        } finally {
+            try {
+                stream.close();
+            } catch (IOException ioe) {
+                logger.warn("Ignoring exception while closing the InputStream ", ioe);
+            }
+        }
+    }
 }
