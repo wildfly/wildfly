@@ -32,6 +32,6 @@ import org.jboss.ejb3.annotation.SecurityDomain;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @Stateless
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class EntryBean extends org.jboss.as.test.spec.ejb3.security.base.EntryBean implements Entry {
 }

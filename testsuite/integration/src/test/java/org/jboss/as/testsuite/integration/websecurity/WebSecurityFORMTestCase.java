@@ -39,6 +39,7 @@ import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -56,13 +57,20 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
 
     @Deployment
     public static WebArchive deployment() {
+        // FIXME hack to get things prepared before the deployment happens
+        try {
+            // create required security domains
+            createSecurityDomain();
+        } catch (Exception e) {
+            // ignore
+        }
+
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         URL webxml = tccl.getResource("web-secure.war/web.xml");
         WebArchive war = WebSecurityPasswordBasedBase.create("web-secure.war", SecuredServlet.class, true, webxml);
-
         war.addAsWebResource(tccl.getResource("web-secure.war/login.jsp"), "login.jsp");
         war.addAsWebResource(tccl.getResource("web-secure.war/error.jsp"), "error.jsp");
-
+        war.addAsWebInfResource("web-secure-basic.war/jboss-web.xml", "jboss-web.xml");
         WebSecurityPasswordBasedBase.printWar(war);
         return war;
     }
@@ -76,7 +84,7 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
 
             HttpEntity entity = response.getEntity();
             if (entity != null)
-                entity.consumeContent();
+                EntityUtils.consume(entity);
 
             // We should get the Login Page
             StatusLine statusLine = response.getStatusLine();
@@ -105,7 +113,7 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
             response = httpclient.execute(httpost);
             entity = response.getEntity();
             if (entity != null)
-                entity.consumeContent();
+                EntityUtils.consume(entity);
 
             statusLine = response.getStatusLine();
 
@@ -119,7 +127,7 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
 
             entity = response.getEntity();
             if (entity != null)
-                entity.consumeContent();
+                EntityUtils.consume(entity);
 
             System.out.println("Post logon cookies:");
             cookies = httpclient.getCookieStore().getCookies();

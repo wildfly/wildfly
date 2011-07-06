@@ -25,10 +25,11 @@ import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;
 import javax.security.auth.login.LoginContext;
-import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -42,27 +43,36 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test case to test the general authorization requirements for annotated beans, more
- * specific requirements such as RunAs handling will be in their own test case.
+ * Test case to test the general authorization requirements for annotated beans, more specific requirements such as RunAs
+ * handling will be in their own test case.
  * <p/>
  * EJB 3.1 Section 17.3.2.1
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-public class AnnotationAuthorizationTestCase {
+public class AnnotationAuthorizationTestCase extends SecurityTest {
 
     private static final Logger log = Logger.getLogger(AnnotationAuthorizationTestCase.class.getName());
 
     @Deployment
     public static Archive<?> runAsDeployment() {
+        // FIXME hack to get things prepared before the deployment happens
+        try {
+            // create required security domains
+            createSecurityDomain();
+        } catch (Exception e) {
+            // ignore
+        }
+
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
-                .addPackage(RolesAllowedOverrideBean.class.getPackage())
-                .addClass(Util.class)
-                .addClass(AnnotationAuthorizationTestCase.class)
+                .addPackage(RolesAllowedOverrideBean.class.getPackage()).addClass(Util.class)
+                .addClass(AnnotationAuthorizationTestCase.class).addClass(SecurityTest.class)
                 .addAsResource("ejb3/security/users.properties", "users.properties")
-                .addAsResource("ejb3/security/roles.properties", "roles.properties");
+                .addAsResource("ejb3/security/roles.properties", "roles.properties")
+                .addAsWebInfResource("ejb3/security/jboss-web.xml", "jboss-web.xml")
+                .addAsManifestResource("web-secure-programmatic-login.war/MANIFEST.MF", "MANIFEST.MF");
         log.info(war.toString(true));
         return war;
     }
@@ -204,8 +214,8 @@ public class AnnotationAuthorizationTestCase {
     }
 
     /*
-    * Test overrides of ben annotated at bean level with @DenyAll
-    */
+     * Test overrides of ben annotated at bean level with @DenyAll
+     */
 
     @EJB(mappedName = "java:global/ejb3security/DenyAllOverrideBean")
     private DenyAllOverrideBean denyAllOverrideBean;
@@ -217,7 +227,6 @@ public class AnnotationAuthorizationTestCase {
             fail("Expected EJBAccessException not thrown");
         } catch (EJBAccessException ignored) {
         }
-
 
         String response = denyAllOverrideBean.permitAllEcho("2");
         assertEquals("2", response);
@@ -250,6 +259,5 @@ public class AnnotationAuthorizationTestCase {
             lc.logout();
         }
     }
-
 
 }

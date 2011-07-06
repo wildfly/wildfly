@@ -21,14 +21,14 @@
  */
 package org.jboss.as.test.spec.ejb3.security.lifecycle;
 
-import org.jboss.ejb3.annotation.SecurityDomain;
-
 import javax.ejb.Stateless;
+
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @Stateless
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class StatelessBean extends SessionBean {
 }

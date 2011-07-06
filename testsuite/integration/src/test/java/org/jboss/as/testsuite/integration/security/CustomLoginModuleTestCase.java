@@ -50,13 +50,14 @@ import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.testsuite.integration.websecurity.SecuredServlet;
 import org.jboss.as.testsuite.integration.websecurity.WebSecurityPasswordBasedBase;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -145,7 +146,7 @@ public class CustomLoginModuleTestCase {
 
             HttpEntity entity = response.getEntity();
             if (entity != null)
-                entity.consumeContent();
+                EntityUtils.consume(entity);
 
             // We should get the Login Page
             StatusLine statusLine = response.getStatusLine();
@@ -174,7 +175,7 @@ public class CustomLoginModuleTestCase {
             response = httpclient.execute(httpost);
             entity = response.getEntity();
             if (entity != null)
-                entity.consumeContent();
+                EntityUtils.consume(entity);
 
             statusLine = response.getStatusLine();
 
@@ -188,7 +189,7 @@ public class CustomLoginModuleTestCase {
 
             entity = response.getEntity();
             if (entity != null)
-                entity.consumeContent();
+                EntityUtils.consume(entity);
 
             System.out.println("Post logon cookies:");
             cookies = httpclient.getCookieStore().getCookies();
