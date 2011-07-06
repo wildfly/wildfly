@@ -32,7 +32,7 @@ import org.junit.Test;
  *
  * @author Anil Saldhana
  */
-public abstract class WebSecurityPasswordBasedBase {
+public abstract class WebSecurityPasswordBasedBase extends SecurityTest {
 
     protected final String URL = "http://localhost:8080/" + getContextPath() + "/secured/";
 
@@ -48,6 +48,7 @@ public abstract class WebSecurityPasswordBasedBase {
     public static WebArchive create(String name, Class<?> servletClass, boolean addProps, URL webxml) {
         WebArchive war = ShrinkWrap.create(WebArchive.class, name);
         war.addClass(servletClass);
+        war.addClass(SecurityTest.class);
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
 

@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.spec.ejb3.security.dd.override;
 
-import org.jboss.ejb3.annotation.SecurityDomain;
-
 import javax.annotation.Resource;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
@@ -31,11 +29,13 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 
+import org.jboss.ejb3.annotation.SecurityDomain;
+
 /**
  * User: jpai
  */
 @Stateless
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class PartialDDBean {
 
     @Resource

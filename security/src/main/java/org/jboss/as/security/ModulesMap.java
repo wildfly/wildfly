@@ -26,16 +26,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.resource.security.CallerIdentityLoginModule;
-import org.jboss.resource.security.ConfiguredIdentityLoginModule;
-import org.jboss.resource.security.JaasSecurityDomainIdentityLoginModule;
-import org.jboss.resource.security.PBEIdentityLoginModule;
-import org.jboss.resource.security.SecureIdentityLoginModule;
 import org.jboss.security.ClientLoginModule;
 import org.jboss.security.auth.spi.BaseCertLoginModule;
 import org.jboss.security.auth.spi.CertRolesLoginModule;
 import org.jboss.security.auth.spi.DatabaseCertLoginModule;
 import org.jboss.security.auth.spi.DatabaseServerLoginModule;
+import org.jboss.security.auth.spi.DisabledLoginModule;
 import org.jboss.security.auth.spi.IdentityLoginModule;
 import org.jboss.security.auth.spi.LdapExtLoginModule;
 import org.jboss.security.auth.spi.LdapLoginModule;
@@ -79,11 +75,7 @@ public interface ModulesMap {
             put("RunAs", RunAsLoginModule.class.getName());
             put("Simple", SimpleServerLoginModule.class.getName());
             put("UsersRoles", UsersRolesLoginModule.class.getName());
-            put("CallerIdentity", CallerIdentityLoginModule.class.getName());
-            put("ConfiguredIdentity", ConfiguredIdentityLoginModule.class.getName());
-            put("JaasSecurityDomainIdentity", JaasSecurityDomainIdentityLoginModule.class.getName());
-            put("PBEIdentity", PBEIdentityLoginModule.class.getName());
-            put("SecureIdentity", SecureIdentityLoginModule.class.getName());
+            put("Disabled", DisabledLoginModule.class.getName());
             // Authentication only modules
             put("PropertiesUsers", PropertiesUsersLoginModule.class.getName());
             put("SimpleUsers", SimpleUsersLoginModule.class.getName());

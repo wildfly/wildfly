@@ -21,16 +21,16 @@
  */
 package org.jboss.as.test.spec.ejb3.security.lifecycle;
 
-import org.jboss.ejb3.annotation.SecurityDomain;
-
 import javax.ejb.AfterBegin;
 import javax.ejb.Stateful;
+
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @Stateful
-@SecurityDomain("other")
+@SecurityDomain("ejb3-tests")
 public class StatefulBean extends SessionBean {
 
     @AfterBegin

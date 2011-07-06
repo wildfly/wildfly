@@ -21,21 +21,6 @@
  */
 package org.jboss.as.test.spec.ejb3.security;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.spec.ejb3.security.lifecycle.EntryBean;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import javax.ejb.EJB;
-import javax.security.auth.login.LoginContext;
-import java.util.Map;
-import java.util.logging.Logger;
-
 import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
 import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.AFTER_BEGIN;
 import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.BUSINESS;
@@ -47,15 +32,30 @@ import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.IS_CALLER_
 import static org.jboss.as.test.spec.ejb3.security.lifecycle.BaseBean.LIFECYCLE_CALLBACK;
 import static org.junit.Assert.fail;
 
+import java.util.Map;
+import java.util.logging.Logger;
+
+import javax.ejb.EJB;
+import javax.security.auth.login.LoginContext;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.spec.ejb3.security.lifecycle.EntryBean;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
- * EJB 3.1 Section 17.2.5 - This test case is to test the programmatic access to the callers's
- * security context for the various bean methods.
+ * EJB 3.1 Section 17.2.5 - This test case is to test the programmatic access to the callers's security context for the various
+ * bean methods.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-public class LifecycleTestCase {
+public class LifecycleTestCase extends SecurityTest {
 
     private static final Logger log = Logger.getLogger(LifecycleTestCase.class.getName());
 
@@ -72,12 +72,23 @@ public class LifecycleTestCase {
 
     @Deployment
     public static Archive<?> runAsDeployment() {
+        // FIXME hack to get things prepared before the deployment happens
+        try {
+            // create required security domains
+            createSecurityDomain();
+        } catch (Exception e) {
+            // ignore
+        }
+
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
                 .addPackage(EntryBean.class.getPackage())
+                .addClass(SecurityTest.class)
                 .addClass(Util.class) // TODO - Should not need to exclude the interfaces.
                 .addAsResource("ejb3/security/users.properties", "users.properties")
-                .addAsResource("ejb3/security/roles.properties", "roles.properties");
+                .addAsResource("ejb3/security/roles.properties", "roles.properties")
+                .addAsWebInfResource("ejb3/security/jboss-web.xml", "jboss-web.xml")
+                .addAsManifestResource("web-secure-programmatic-login.war/MANIFEST.MF", "MANIFEST.MF");
         log.info(war.toString(true));
         return war;
     }
@@ -109,7 +120,8 @@ public class LifecycleTestCase {
         lc.login();
         try {
             Map<String, String> result = entryBean.testStatefulBean();
-            verifyResult(result, DEPENDENCY_INJECTION, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE, failureMessages);
+            verifyResult(result, DEPENDENCY_INJECTION, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE,
+                    failureMessages);
         } finally {
             lc.logout();
         }
@@ -150,7 +162,8 @@ public class LifecycleTestCase {
             for (String current : result.keySet()) {
                 log.info(current + " = " + result.get(current));
             }
-            verifyResult(result, DEPENDENCY_INJECTION, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE, failureMessages);
+            verifyResult(result, DEPENDENCY_INJECTION, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE,
+                    failureMessages);
         } finally {
             lc.logout();
         }
@@ -171,7 +184,8 @@ public class LifecycleTestCase {
             for (String current : result.keySet()) {
                 log.info(current + " = " + result.get(current));
             }
-            verifyResult(result, LIFECYCLE_CALLBACK, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE, failureMessages);
+            verifyResult(result, LIFECYCLE_CALLBACK, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE,
+                    failureMessages);
         } finally {
             lc.logout();
         }
@@ -181,16 +195,18 @@ public class LifecycleTestCase {
         }
     }
 
-
     // TODO - Add test for Message Driven Bean
 
     private void verifyResult(Map<String, String> result, String beanMethod, String getCallerPrincipalResponse,
-                              String getCallerIdentityResponse, String isCallerInRoleResponse,
-                              String isCallerInRoleIdentityResponse, StringBuilder errors) {
-        verify(beanMethod, GET_CALLER_PRINCIPAL, getCallerPrincipalResponse, result.get(beanMethod + ":" + GET_CALLER_PRINCIPAL), errors);
-        verify(beanMethod, GET_CALLER_IDENTITY, getCallerIdentityResponse, result.get(beanMethod + ":" + GET_CALLER_IDENTITY), errors);
+            String getCallerIdentityResponse, String isCallerInRoleResponse, String isCallerInRoleIdentityResponse,
+            StringBuilder errors) {
+        verify(beanMethod, GET_CALLER_PRINCIPAL, getCallerPrincipalResponse,
+                result.get(beanMethod + ":" + GET_CALLER_PRINCIPAL), errors);
+        verify(beanMethod, GET_CALLER_IDENTITY, getCallerIdentityResponse, result.get(beanMethod + ":" + GET_CALLER_IDENTITY),
+                errors);
         verify(beanMethod, IS_CALLER_IN_ROLE, isCallerInRoleResponse, result.get(beanMethod + ":" + IS_CALLER_IN_ROLE), errors);
-        verify(beanMethod, IS_CALLER_IN_ROLE_IDENITY, isCallerInRoleIdentityResponse, result.get(beanMethod + ":" + IS_CALLER_IN_ROLE_IDENITY), errors);
+        verify(beanMethod, IS_CALLER_IN_ROLE_IDENITY, isCallerInRoleIdentityResponse,
+                result.get(beanMethod + ":" + IS_CALLER_IN_ROLE_IDENITY), errors);
     }
 
     private void verify(String beanMethod, String ejbContextMethod, String expected, String actual, StringBuilder errors) {

@@ -22,6 +22,13 @@
 
 package org.jboss.as.test.spec.ejb3.security;
 
+import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
+
+import javax.ejb.EJBAccessException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.security.auth.login.LoginContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.spec.ejb3.security.dd.override.PartialDDBean;
@@ -33,31 +40,34 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.ejb.EJBAccessException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.security.auth.login.LoginContext;
-
-import static org.jboss.as.test.spec.ejb3.security.Util.getCLMLoginContext;
-
 /**
  * Tests that security configurations on a EJB, overriden through the use of ejb-jar.xml work as expected
  * <p/>
  * User: Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-public class SecurityDDOverrideTestCase {
+public class SecurityDDOverrideTestCase extends SecurityTest {
 
     private static final Logger logger = Logger.getLogger(SecurityDDOverrideTestCase.class);
 
     @Deployment
     public static Archive<?> runAsDeployment() {
+        // FIXME hack to get things prepared before the deployment happens
+        try {
+            // create required security domains
+            createSecurityDomain();
+        } catch (Exception e) {
+            // ignore
+        }
+
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-security-partial-dd-test.jar");
         jar.addPackage(PartialDDBean.class.getPackage());
         jar.addClass(Util.class);
+        jar.addClass(SecurityTest.class);
         jar.addAsResource("ejb3/security/users.properties", "users.properties");
         jar.addAsResource("ejb3/security/roles.properties", "roles.properties");
         jar.addAsManifestResource("ejb3/security/ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource("web-secure-programmatic-login.war/MANIFEST.MF", "MANIFEST.MF");
         logger.info(jar.toString(true));
         return jar;
     }

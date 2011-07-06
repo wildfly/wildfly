@@ -32,6 +32,7 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -49,9 +50,18 @@ public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
 
     @Deployment
     public static WebArchive deployment() {
+        // FIXME hack to get things prepared before the deployment happens
+        try {
+            // create required security domains
+            createSecurityDomain();
+        } catch (Exception e) {
+            // ignore
+        }
+
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         URL webxml = tccl.getResource("web-secure-basic.war/web.xml");
         WebArchive war = WebSecurityPasswordBasedBase.create("web-secure-basic.war", SecuredServlet.class, true, webxml);
+        war.addAsWebInfResource("web-secure-basic.war/jboss-web.xml", "jboss-web.xml");
         WebSecurityPasswordBasedBase.printWar(war);
         return war;
     }
@@ -75,7 +85,7 @@ public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
                 System.out.println("Response content length: " + entity.getContentLength());
             }
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
-            entity.consumeContent();
+            EntityUtils.consume(entity);
         } finally {
             // When HttpClient instance is no longer needed,
             // shut down the connection manager to ensure
