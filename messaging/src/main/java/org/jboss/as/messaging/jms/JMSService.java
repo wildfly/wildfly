@@ -26,12 +26,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.as.messaging.MessagingServices;
-import org.jboss.as.naming.MockContext;
-import org.jboss.as.naming.NamingContext;
-import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -42,17 +37,12 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import javax.naming.CompositeName;
-import javax.naming.Name;
-import org.omg.IOP.ServiceContext;
-
 /**
  * The {@code JMSServerManager} service.
  *
  * @author Emanuel Muckenhuber
  */
 public class JMSService implements Service<JMSServerManager> {
-    private final InjectedValue<NamingStore> namingStore = new InjectedValue<NamingStore>();
     private final InjectedValue<HornetQServer> hornetQServer = new InjectedValue<HornetQServer>();
     private JMSServerManager jmsServer;
 
@@ -60,7 +50,6 @@ public class JMSService implements Service<JMSServerManager> {
         final JMSService service = new JMSService();
         return target.addService(JMSServices.JMS_MANAGER, service)
             .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
-            .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, service.getNamingStore())
             .addListener(listeners)
             .setInitialMode(Mode.ACTIVE)
             .install();
@@ -108,9 +97,5 @@ public class JMSService implements Service<JMSServerManager> {
 
     InjectedValue<HornetQServer> getHornetQServer() {
         return hornetQServer;
-    }
-
-    Injector<NamingStore> getNamingStore() {
-        return namingStore;
     }
 }

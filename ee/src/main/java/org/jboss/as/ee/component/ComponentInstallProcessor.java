@@ -22,9 +22,9 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.naming.RootContextService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.service.BinderService;
@@ -122,7 +122,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final ServiceName contextServiceName;
         //set up the naming context if nessesary
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
-            final RootContextService contextService = new RootContextService();
+            final NamingStoreService contextService = new NamingStoreService();
             contextServiceName = ContextNames.contextServiceNameOfComponent(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName());
             serviceTarget.addService(contextServiceName, contextService).install();
         } else {

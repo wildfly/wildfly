@@ -132,12 +132,11 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         if(valves == null) {
             metaData.setValves(valves = new ArrayList<ValveMetaData>());
         }
-        final ValveMetaData valve= new ValveMetaData();
-        valve.setModule("org.jboss.as.web");
-        valve.setValveClass(NamingValve.class.getName());
-        valve.setId(NamingValve.class.getName());
-        valves.add(valve);
-        //webContext.addInstanceListener(NamingValve.class.getName());
+        final ValveMetaData namingValve= new ValveMetaData();
+        namingValve.setModule("org.jboss.as.web");
+        namingValve.setValveClass(NamingValve.class.getName());
+        namingValve.setId(NamingValve.class.getName());
+        valves.add(namingValve);
 
         // Set the deployment root
         try {

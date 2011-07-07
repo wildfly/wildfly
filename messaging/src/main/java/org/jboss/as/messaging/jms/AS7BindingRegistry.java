@@ -71,22 +71,14 @@ public class AS7BindingRegistry implements BindingRegistry {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Cannot bind a null or empty string as jndi name");
         }
-        if (name.equals("java:jboss/") || name.equals("java:comp/") || name.equals("java:module/")
-                || name.equals("java:/app") || name.equals("java:global/") || name.equals("java:/")) {
-            throw new IllegalArgumentException("Missing relative path in (invalid) jndi name: " + name);
-        }
-        final JndiBinding jndiBinding = JndiBinding.parse(name);
-        if (jndiBinding == null) {
-            throw new IllegalArgumentException("Binding to " + name + " isn't allowed, since it belongs to a unknown/unsupported jndi name context");
-        }
-        // create the binding service
-        final BinderService binderService = new BinderService(jndiBinding.relativeJndiName);
-        container.addService(jndiBinding.jndiContextServiceName.append(jndiBinding.relativeJndiName), binderService)
-                .addDependency(jndiBinding.jndiContextServiceName, NamingStore.class, binderService.getNamingStoreInjector())
-                .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(obj)))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
-        logger.info("Bound messaging object to jndi name " + jndiBinding);
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
+        final BinderService binderService = new BinderService(bindInfo.getBindName());
+        container.addService(bindInfo.getBinderServiceName(), binderService)
+                 .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class, binderService.getNamingStoreInjector())
+                 .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(obj)))
+                 .setInitialMode(ServiceController.Mode.ACTIVE)
+                 .install();
+        logger.info("Bound messaging object to jndi name " + name);
         return true;
     }
 
@@ -99,7 +91,7 @@ public class AS7BindingRegistry implements BindingRegistry {
         if (jndiBinding == null) {
             throw new IllegalArgumentException("Cannot unbind " + name + " since it belongs to a unknown/unsupported jndi name context");
         }
-        ServiceController<?> bindingService = container.getService(jndiBinding.jndiContextServiceName.append(jndiBinding.relativeJndiName));
+        ServiceController<?> bindingService = container.getService(ContextNames.bindInfoFor(name).getBinderServiceName());
         if (bindingService == null) {
             logger.debug("Cannot unbind " + name + " since no binding exists with that name");
             return;
@@ -210,8 +202,6 @@ public class AS7BindingRegistry implements BindingRegistry {
                 sb.append("java:comp/");
             } else if (this.jndiContextServiceName.equals(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME)) {
                 sb.append("java:global/");
-            } else if (this.jndiContextServiceName.equals(ContextNames.JAVA_CONTEXT_SERVICE_NAME)) {
-                sb.append("java:/");
             }
             sb.append(this.relativeJndiName);
             return sb.toString();

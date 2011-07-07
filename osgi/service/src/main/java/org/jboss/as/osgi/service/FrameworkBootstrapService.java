@@ -180,8 +180,7 @@ public class FrameworkBootstrapService implements Service<Void> {
 
     private static final class SystemServicesIntegration implements Service<SystemServicesProvider>, SystemServicesProvider {
 
-        private static JndiName BUNDLE_CONTEXT_JNDI_NAME = ContextNames.JBOSS_CONTEXT_NAME.append("BundleContext");
-        private static ServiceName BUNDLE_CONTEXT_SERVICE_NAME = ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("BundleContext");
+        private static final ContextNames.BindInfo BUNDLE_BIND_INFO = ContextNames.bindInfoFor("java:jboss/BundleContext");
 
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
         private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
@@ -231,10 +230,10 @@ public class FrameworkBootstrapService implements Service<Void> {
             context.registerService(ServiceContainer.class.getName(), serviceContainer, null);
 
             // Register BundleContext in JNDI
-            BinderService service = new BinderService(BUNDLE_CONTEXT_JNDI_NAME.getAbsoluteName(), context);
+            BinderService service = new BinderService(BUNDLE_BIND_INFO.getBindName(), context);
             service.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(injectedBundleContext));
-            ServiceBuilder<?> builder = target.addService(BUNDLE_CONTEXT_SERVICE_NAME, service);
-            builder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, service.getNamingStoreInjector());
+            ServiceBuilder<?> builder = target.addService(BUNDLE_BIND_INFO.getBinderServiceName(), service);
+            builder.addDependency(BUNDLE_BIND_INFO.getParentContextServiceName(), NamingStore.class, service.getNamingStoreInjector());
             builder.install();
         }
     }

@@ -83,11 +83,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
     private ServiceName adjustJndiName(String jndiName) {
         jndiName = toJndiName(jndiName).toString();
-        int index = jndiName.indexOf("/");
-        String namespace = (index > 5) ? jndiName.substring(5, index) : null;
-        String binding = (index > 5) ? jndiName.substring(index + 1) : jndiName.substring(5);
-        ServiceName naming = (namespace != null) ? ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(namespace) : ContextNames.JAVA_CONTEXT_SERVICE_NAME;
-        return naming.append(binding);
+        return ContextNames.bindInfoFor(jndiName).getBinderServiceName();
     }
 
     private static JndiName toJndiName(String value) {

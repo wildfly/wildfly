@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.naming;
+package org.jboss.as.naming.service;
 
 import javax.naming.NamingException;
 
@@ -32,28 +32,37 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * Service responsible for managing the creation and life-cycle of a naming context.
+ * Service responsible for managing the creation and life-cycle of a naming store.
  * <p>
  * Contexts created by this service use a separate in-memory store
  *
  * @author John E. Bailey
  * @author Stuart Douglas
  */
-public class RootContextService implements Service<NamingStore> {
-    private InMemoryNamingStore store;
+public class NamingStoreService implements Service<NamingStore> {
+    private NamingStore store;
+
+    public NamingStoreService() {
+    }
+
+    public NamingStoreService(NamingStore store) {
+        this.store = store;
+    }
 
     /**
-     * Creates a sub-context in the parent context with the provided name.
+     * Creates the naming store if not provided by the constructor.
      *
      * @param context The start context
      * @throws StartException If any problems occur creating the context
      */
     public synchronized void start(final StartContext context) throws StartException {
-        store = new InMemoryNamingStore();
+        if(store == null) {
+            store = new InMemoryNamingStore();
+        }
     }
 
     /**
-     * Unbinds the context from the parent.
+     * Destroys the naming store.
      *
      * @param context The stop context
      */
@@ -62,7 +71,7 @@ public class RootContextService implements Service<NamingStore> {
             store.close();
             store = null;
         } catch (NamingException e) {
-            throw new IllegalStateException("Failed to destroy root context", e);
+            throw new IllegalStateException("Failed to destroy naming store", e);
         }
     }
 

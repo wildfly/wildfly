@@ -22,6 +22,9 @@
 
 package org.jboss.as.naming.service;
 
+import javax.naming.CompositeName;
+import javax.naming.Context;
+import javax.naming.NamingException;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -30,6 +33,7 @@ import org.jboss.as.naming.InitialContextFactoryService;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingEventCoordinator;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.deployment.JndiNamingDependencySetupProcessor;
@@ -50,10 +54,12 @@ import java.util.List;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
+ * @author John Bailey
  */
 public class NamingSubsystemAdd extends AbstractAddStepHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.naming");
+    private static final CompositeName EMPTY_NAME = new CompositeName();
 
     static final NamingSubsystemAdd INSTANCE = new NamingSubsystemAdd();
 
@@ -78,14 +84,40 @@ public class NamingSubsystemAdd extends AbstractAddStepHandler {
                 .install());
 
         // Create the java:global namespace
-        newControllers.add(addGlobalContextFactory(target, "global", verificationHandler));
-        // Create the java:jboss vendor namespace
-        newControllers.add(addGlobalContextFactory(target, "jboss", verificationHandler));
+        final NamingStore globalNamingStore = new InMemoryNamingStore();
+        newControllers.add(target.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new NamingStoreService(globalNamingStore))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .addListener(verificationHandler)
+                .install());
 
-        // Create the EE namespace
-        newControllers.add(addContextFactory(target, "app", verificationHandler));
-        newControllers.add(addContextFactory(target, "module", verificationHandler));
-        newControllers.add(addContextFactory(target, "comp", verificationHandler));
+        // Create the java:jboss vendor namespace
+        final NamingStore jbossNamingStore = new InMemoryNamingStore();
+        newControllers.add(target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, new NamingStoreService(jbossNamingStore))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .addListener(verificationHandler)
+                .install());
+
+        NamespaceContextSelector.setDefault(new NamespaceContextSelector() {
+            public Context getContext(String identifier) {
+                final NamingStore namingStore;
+                if(identifier.equals("global")){
+                    namingStore = globalNamingStore;
+                } else if(identifier.equals("jboss")) {
+                    namingStore = jbossNamingStore;
+                } else {
+                    namingStore = null;
+                }
+                if (namingStore != null) {
+                    try {
+                        return (Context) namingStore.lookup(EMPTY_NAME);
+                    } catch (NamingException e) {
+                        throw new IllegalStateException(e);
+                    }
+                } else {
+                    return null;
+                }
+            }
+        });
 
         // Provide the {@link InitialContext} as OSGi service
         newControllers.add(InitialContextFactoryService.addService(target, verificationHandler));
@@ -94,31 +126,12 @@ public class NamingSubsystemAdd extends AbstractAddStepHandler {
 
         if (context.isBooting()) {
             context.addStep(new AbstractDeploymentChainStep() {
-                        protected void execute(DeploymentProcessorTarget processorTarget) {
-
-                            processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCY_SETUP, new JndiNamingDependencySetupProcessor());
-                            processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCIES, new JndiNamingDependencyProcessor());
-                        }
-                    }, OperationContext.Stage.RUNTIME);
+                protected void execute(DeploymentProcessorTarget processorTarget) {
+                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCY_SETUP, new JndiNamingDependencySetupProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCIES, new JndiNamingDependencyProcessor());
+                }
+            }, OperationContext.Stage.RUNTIME);
         }
 
-    }
-
-    private static ServiceController<?> addContextFactory(final ServiceTarget target, final String contextName, final ServiceVerificationHandler verificationHandler) {
-        final EEContextService eeContextService = new EEContextService(contextName);
-        return target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(contextName), eeContextService)
-                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, eeContextService.getJavaContextInjector())
-                .addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
-    }
-
-    private static ServiceController<?> addGlobalContextFactory(final ServiceTarget target, final String contextName, final ServiceVerificationHandler verificationHandler) {
-        final GlobalContextService eeContextService = new GlobalContextService(contextName);
-        return target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(contextName), eeContextService)
-                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, eeContextService.getJavaContextInjector())
-                .addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
     }
 }
