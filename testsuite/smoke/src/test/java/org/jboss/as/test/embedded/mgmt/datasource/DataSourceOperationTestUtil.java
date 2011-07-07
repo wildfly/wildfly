@@ -21,9 +21,15 @@
  */
 package org.jboss.as.test.embedded.mgmt.datasource;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
@@ -37,6 +43,20 @@ public class DataSourceOperationTestUtil {
             steps.put(property.getName(), property.getValue());
         }
         return steps;
+    }
+
+    static void testConnection(final String dsName, final ModelControllerClient client) throws Exception {
+        final ModelNode address3 = new ModelNode();
+        address3.add("subsystem", "datasources");
+        address3.add("data-source", "MyNewDs");
+        address3.protect();
+
+        final ModelNode operation3 = new ModelNode();
+        operation3.get(OP).set("test-connection-in-pool");
+        operation3.get(OP_ADDR).set(address3);
+
+        final ModelNode result3 = client.execute(operation3);
+        Assert.assertEquals(SUCCESS, result3.get(OUTCOME).asString());
     }
 
 }
