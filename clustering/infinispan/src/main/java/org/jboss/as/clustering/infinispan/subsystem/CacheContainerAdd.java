@@ -148,16 +148,13 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
 
         String jndiName = (operation.hasDefined(ModelKeys.JNDI_NAME) ? toJndiName(operation.get(ModelKeys.JNDI_NAME).asString()) : JndiName.of("java:jboss").append(InfinispanExtension.SUBSYSTEM_NAME).append(name)).getAbsoluteName();
-        int index = jndiName.indexOf("/");
-        String namespace = (index > 5) ? jndiName.substring(5, index) : null;
-        String binding = (index > 5) ? jndiName.substring(index + 1) : jndiName.substring(5);
-        ServiceName naming = (namespace != null) ? ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(namespace) : ContextNames.JAVA_CONTEXT_SERVICE_NAME;
-        ServiceName bindingName = naming.append(binding);
-        BinderService binder = new BinderService(binding);
-        newControllers.add(target.addService(bindingName, binder)
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+
+        BinderService binder = new BinderService(bindInfo.getBindName());
+        newControllers.add(target.addService(bindInfo.getBinderServiceName(), binder)
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
                 .addDependency(serviceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
-                .addDependency(naming, NamingStore.class, binder.getNamingStoreInjector())
+                .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class, binder.getNamingStoreInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
         boolean requiresTransport = false;
@@ -308,7 +305,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
             configurations.put(cacheName, configuration);
 
             StartMode startMode = cache.hasDefined(ModelKeys.START) ? StartMode.valueOf(cache.get(ModelKeys.START).asString()) : StartMode.LAZY;
-            ServiceBuilder<Cache<Object, Object>> cacheBuilder = new CacheService<Object, Object>(cacheName).build(target, serviceName).addDependency(bindingName).setInitialMode(startMode.getMode());
+            ServiceBuilder<Cache<Object, Object>> cacheBuilder = new CacheService<Object, Object>(cacheName).build(target, serviceName).addDependency(bindInfo.getBinderServiceName()).setInitialMode(startMode.getMode());
             if (cacheName.equals(defaultCache)) {
                 cacheBuilder.addAliases(CacheService.getServiceName(name, null));
             }

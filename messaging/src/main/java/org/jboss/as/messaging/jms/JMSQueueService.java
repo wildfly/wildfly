@@ -23,22 +23,12 @@
 package org.jboss.as.messaging.jms;
 
 import org.hornetq.jms.server.JMSServerManager;
-import org.jboss.as.naming.MockContext;
-import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.ValueManagedReferenceFactory;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Values;
-
-import java.util.Map;
 
 /**
  * Service responsible for creating and destroying a {@code javax.jms.Queue}.

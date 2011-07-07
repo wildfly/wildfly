@@ -235,13 +235,16 @@ public abstract class AbstractResourceAdapterDeploymentService {
             serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
                     .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
-            final BinderService binderService = new BinderService(jndi.substring(6));
-            final ServiceName binderServiceName = Util.getBinderServiceName(jndi);
+
+            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndi);
+
+            final BinderService binderService = new BinderService(bindInfo.getBindName());
+
             serviceTarget
-                    .addService(binderServiceName, binderService)
+                    .addService(bindInfo.getBinderServiceName(), binderService)
                     .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
                             binderService.getManagedObjectInjector())
-                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
+                    .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class,
                             binderService.getNamingStoreInjector())
                     .addDependency(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(deploymentName))
                     .addListener(new AbstractServiceListener<Object>() {
@@ -285,13 +288,15 @@ public abstract class AbstractResourceAdapterDeploymentService {
             serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
                     .addDependency(adminObjectServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
-            final BinderService binderService = new BinderService(jndi.substring(6));
-            final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndi);
+
+            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndi);
+            final BinderService binderService = new BinderService(bindInfo.getBindName());
+            final ServiceName binderServiceName = bindInfo.getBinderServiceName();
             serviceTarget
                     .addService(binderServiceName, binderService)
                     .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
                             binderService.getManagedObjectInjector())
-                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
+                    .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class,
                             binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
 
                         public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {

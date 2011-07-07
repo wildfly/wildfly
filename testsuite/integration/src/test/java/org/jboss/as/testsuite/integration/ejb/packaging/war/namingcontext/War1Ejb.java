@@ -40,11 +40,11 @@ public class War1Ejb implements EjbInterface {
 
 
     public UserTransaction lookupUserTransaction() throws NamingException {
-        return (UserTransaction) new InitialContext().lookup("java:/comp/env/" + getClass().getName() + "/ut1");
+        return (UserTransaction) new InitialContext().lookup("java:comp/env/" + getClass().getName() + "/ut1");
     }
 
     @Override
     public UserTransaction lookupOtherUserTransaction() throws NamingException {
-        return (UserTransaction) new InitialContext().lookup("java:/comp/env/" + getClass().getPackage().getName() + "War2Ejb/ut2");
+        return (UserTransaction) new InitialContext().lookup("java:comp/env/" + getClass().getPackage().getName() + "War2Ejb/ut2");
     }
 }

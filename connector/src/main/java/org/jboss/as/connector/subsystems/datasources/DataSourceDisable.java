@@ -79,7 +79,7 @@ public class DataSourceDisable implements OperationStepHandler {
                         referenceController.setMode(ServiceController.Mode.NEVER);
                     }
 
-                    final ServiceName binderServiceName = Util.getBinderServiceName(jndiName);
+                    final ServiceName binderServiceName = ContextNames.bindInfoFor(jndiName).getBinderServiceName();
                     final ServiceController<?> binderController = registry.getService(binderServiceName);
                     if (binderController != null && ServiceController.State.UP.equals(binderController.getState())) {
                         binderController.setMode(ServiceController.Mode.NEVER);

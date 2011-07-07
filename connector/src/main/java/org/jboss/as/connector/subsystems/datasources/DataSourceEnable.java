@@ -22,8 +22,6 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 
 import org.jboss.as.controller.OperationContext;
@@ -108,7 +106,7 @@ public class DataSourceEnable implements OperationStepHandler {
                         referenceController.setMode(ServiceController.Mode.ACTIVE);
                     }
 
-                    final ServiceName binderServiceName = Util.getBinderServiceName(jndiName);
+                    final ServiceName binderServiceName = ContextNames.bindInfoFor(jndiName).getBinderServiceName();
                     final ServiceController<?> binderController = registry.getService(binderServiceName);
                     if (binderController != null && !ServiceController.State.UP.equals(binderController.getState())) {
                         binderController.setMode(ServiceController.Mode.ACTIVE);

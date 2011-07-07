@@ -22,6 +22,7 @@
 
 package org.jboss.as.naming;
 
+import javax.naming.CompositeName;
 import static org.junit.Assert.assertTrue;
 
 import javax.naming.Context;
