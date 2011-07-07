@@ -149,6 +149,71 @@ public class DataSourceOperationsUnitTestCase {
     }
 
     @Test
+    public void testAddDisabledDsEnableItAndTestConnection() throws Exception {
+
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "datasources");
+        address.add("data-source", "MyNewDs");
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("add");
+        operation.get(OP_ADDR).set(address);
+
+        operation.get("name").set("MyNewDs");
+        operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
+        operation.get("enabled").set(false);
+
+        operation.get("driver-name").set("h2");
+        operation.get("pool-name").set("MyNewDs_Pool");
+
+        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        operation.get("user-name").set("sa");
+        operation.get("password").set("sa");
+
+        final ModelNode result = getModelControllerClient().execute(operation);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        final ModelNode address2 = new ModelNode();
+        address2.add("subsystem", "datasources");
+        address2.add("data-source", "MyNewDs");
+        address2.protect();
+
+        final ModelNode operation2 = new ModelNode();
+        operation2.get(OP).set("enable");
+        operation2.get(OP_ADDR).set(address2);
+
+        final ModelNode result2 = getModelControllerClient().execute(operation2);
+        Assert.assertEquals(SUCCESS, result2.get(OUTCOME).asString());
+
+        final ModelNode address3 = new ModelNode();
+        address3.add("subsystem", "datasources");
+        address3.add("data-source", "MyNewDs");
+        address3.protect();
+
+        final ModelNode operation3 = new ModelNode();
+        operation3.get(OP).set("test-connection-in-pool");
+        operation3.get(OP_ADDR).set(address3);
+
+        final ModelNode result3 = getModelControllerClient().execute(operation3);
+        Assert.assertEquals(SUCCESS, result3.get(OUTCOME).asString());
+
+        List<ModelNode> newList = marshalAndReparseDsResources();
+
+        Assert.assertNotNull(newList);
+
+        final Map<String, ModelNode> parseChildren = DataSourceOperationTestUtil.getChildren(newList.get(1));
+        Assert.assertFalse(parseChildren.isEmpty());
+        Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set("remove");
+        compensatingOperation.get(OP_ADDR).set(address);
+
+        getModelControllerClient().execute(compensatingOperation);
+    }
+
+    @Test
     public void testAddDsWithConnectionProperties() throws Exception {
 
         final ModelNode address = new ModelNode();
@@ -222,7 +287,7 @@ public class DataSourceOperationsUnitTestCase {
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set("remove");
         compensatingOperation.get(OP_ADDR).set(address);
-        //do twice, test for AS7-720
+        // do twice, test for AS7-720
         for (int i = 1; i <= 2; i++) {
             final ModelNode result = getModelControllerClient().execute(operation);
             Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
