@@ -40,8 +40,6 @@ import org.jboss.msc.value.Values;
  */
 public class CorbaServiceUtil {
 
-    public static final ServiceName JBOSS_CONTEXT_SERVICE_NAME = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jboss");
-
     /**
      * <p>
      * Private constructor as required by the {@code Singleton} pattern.
@@ -62,8 +60,8 @@ public class CorbaServiceUtil {
      */
     public static void bindObject(final ServiceTarget target, final String contextName, final Object value) {
         final BinderService binderService = new BinderService(contextName);
-        target.addService(JBOSS_CONTEXT_SERVICE_NAME.append(contextName), binderService)
-                .addDependency(JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
+        target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append(contextName), binderService)
+                .addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
                 .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(
                         Values.immediateValue(value)))
                 .setInitialMode(ServiceController.Mode.ACTIVE)

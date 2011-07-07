@@ -72,7 +72,7 @@ public class JNDITestCase {
     public void testJNDIAccess() throws Exception {
         bundle.start();
         InitialContext iniCtx = getInitialContext(bundle.getBundleContext());
-        Object lookup = iniCtx.lookup("jboss");
+        Object lookup = iniCtx.lookup("java:jboss");
         assertNotNull("Lookup not null", lookup);
 
         // Naming context is read-only

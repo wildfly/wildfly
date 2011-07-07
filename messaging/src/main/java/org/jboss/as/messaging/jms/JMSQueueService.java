@@ -81,7 +81,7 @@ public class JMSQueueService implements Service<Void> {
         }
         // FIXME This shouldn't be here
         for(final String jndiBinding : jndi) {
-            ServiceController<?> service = context.getController().getServiceContainer().getService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiBinding));
+            ServiceController<?> service = context.getController().getServiceContainer().getService(ContextNames.bindInfoFor(jndiBinding).getBinderServiceName());
             if (service != null) {
                 service.setMode(ServiceController.Mode.REMOVE);
             }

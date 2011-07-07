@@ -218,9 +218,8 @@ class TransactionSubsystemAdd implements OperationStepHandler {
                             controllers.add(TransactionSynchronizationRegistryService.addService(target, verificationHandler));
 
                             //bind the TransactionManger and the TSR into JNDI
-                            final BinderService tmBinderService = new BinderService("java:jboss/TransactionManager");
+                            final BinderService tmBinderService = new BinderService("TransactionManager");
                             final ServiceBuilder<ManagedReferenceFactory> tmBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmBinderService);
-                            tmBuilder.addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("java:jboss/TransactionManager"));
                             tmBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, tmBinderService.getNamingStoreInjector());
                             tmBuilder.addDependency(TransactionManagerService.SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
                                 @Override
@@ -235,10 +234,9 @@ class TransactionSubsystemAdd implements OperationStepHandler {
                             });
                             tmBuilder.install();
 
-                            final BinderService tsrBinderService = new BinderService("java:jboss/TransactionSynchronizationRegistry");
+                            final BinderService tsrBinderService = new BinderService("TransactionSynchronizationRegistry");
                             final ServiceBuilder<ManagedReferenceFactory> tsrBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionSynchronizationRegistry"), tsrBinderService);
                             tsrBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, tsrBinderService.getNamingStoreInjector());
-                            tsrBuilder.addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("java:jboss/TransactionSynchronizationRegistry"));
                             tsrBuilder.addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, new Injector<TransactionSynchronizationRegistry>() {
                                 @Override
                                 public void inject(final TransactionSynchronizationRegistry value) throws InjectionException {
@@ -253,9 +251,8 @@ class TransactionSubsystemAdd implements OperationStepHandler {
                             tsrBuilder.install();
 
                             // Bind the UserTransaction into JNDI
-                            final BinderService utBinderService = new BinderService("java:jboss/UserTransaction");
+                            final BinderService utBinderService = new BinderService("UserTransaction");
                             final ServiceBuilder<ManagedReferenceFactory> utBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("UserTransaction"), utBinderService);
-                            utBuilder.addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("java:jboss/UserTransaction"));
                             utBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, utBinderService.getNamingStoreInjector());
                             utBuilder.addDependency(UserTransactionService.SERVICE_NAME, javax.transaction.UserTransaction.class, new Injector<javax.transaction.UserTransaction>() {
                                 @Override

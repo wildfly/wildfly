@@ -81,7 +81,7 @@ public class ExtensionsInEarDiscoveredTestCase {
 
     @Test
     public void testExtensionIsLoaded() throws NamingException {
-        SomeInterface bean = (SomeInterface) new InitialContext().lookup("java:/global/testExtensions/testWar/WarSLSB");
+        SomeInterface bean = (SomeInterface) new InitialContext().lookup("java:global/testExtensions/testWar/WarSLSB");
         bean.testInjectionWorked();
     }
 
