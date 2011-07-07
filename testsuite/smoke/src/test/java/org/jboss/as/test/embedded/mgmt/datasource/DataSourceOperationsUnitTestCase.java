@@ -124,7 +124,7 @@ public class DataSourceOperationsUnitTestCase {
 
         testConnection("MyNewDs", getModelControllerClient());
 
-        List<ModelNode> newList = marshalAndReparseDsResources();
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         Assert.assertNotNull(newList);
 
@@ -183,7 +183,7 @@ public class DataSourceOperationsUnitTestCase {
 
         testConnection("MyNewDs", getModelControllerClient());
 
-        List<ModelNode> newList = marshalAndReparseDsResources();
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         Assert.assertNotNull(newList);
 
@@ -225,16 +225,13 @@ public class DataSourceOperationsUnitTestCase {
         final ModelNode result = getModelControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
-        List<ModelNode> newList = marshalAndReparseDsResources();
+        List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         Assert.assertNotNull(newList);
 
         final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
-        for (Entry<String, ModelNode> entry : parseChildren.entrySet()) {
-            System.out.println(entry.getKey());
-        }
 
         Assert.assertEquals("MyKey", parseChildren.get("connection-properties").asProperty().getName());
         Assert.assertEquals("MyValue", parseChildren.get("connection-properties").asProperty().getValue().asString());
@@ -361,6 +358,55 @@ public class DataSourceOperationsUnitTestCase {
     }
 
     /**
+     * AS7-1200 test case for xa datasource persistence to xml
+     * @throws Exception
+     */
+    @Test
+    public void testMarshallUnmarshallXaDs() throws Exception {
+        final String dsName = "XaDsName";
+        final String jndiDsName = "XaJndiDsName";
+
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "datasources");
+        address.add("xa-data-source", dsName);
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("add");
+        operation.get(OP_ADDR).set(address);
+
+        operation.get("name").set(dsName);
+        operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
+        operation.get("enabled").set(true);
+
+        operation.get("driver-name").set("h2");
+        operation.get("pool-name").set(dsName + "_Pool");
+
+        operation.get("xa-data-source-properties", "URL").set("jdbc:h2:mem:test");
+        operation.get("user-name").set("sa");
+        operation.get("password").set("sa");
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set("remove");
+        compensatingOperation.get(OP_ADDR).set(address);
+
+        final ModelNode result = getModelControllerClient().execute(operation);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
+
+        Assert.assertNotNull(newList);
+
+        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
+        Assert.assertFalse(parseChildren.isEmpty());
+        Assert.assertEquals("java:jboss/datasources/XaJndiDsName", parseChildren.get("jndi-name").asString());
+
+        final ModelNode compensatinResult = getModelControllerClient().execute(compensatingOperation);
+        Assert.assertEquals(SUCCESS, compensatinResult.get(OUTCOME).asString());
+
+    }
+
+    /**
      * AS7-1201 test for en/diable xa datasources
      * @throws Exception
      */
@@ -437,7 +483,7 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertTrue(result2.hasDefined("driver-name"));
     }
 
-    public List<ModelNode> marshalAndReparseDsResources() throws Exception {
+    public List<ModelNode> marshalAndReparseDsResources(final String childType) throws Exception {
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -445,7 +491,7 @@ public class DataSourceOperationsUnitTestCase {
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("read-children-resources");
-        operation.get("child-type").set("data-source");
+        operation.get("child-type").set(childType);
         operation.get(OP_ADDR).set(address);
 
         final ModelNode result = getModelControllerClient().execute(operation);
@@ -455,7 +501,7 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertFalse(children.isEmpty());
         for (final Entry<String, ModelNode> child : children.entrySet()) {
             Assert.assertTrue(child.getKey() != null);
-            Assert.assertTrue(child.getValue().hasDefined("connection-url"));
+            // Assert.assertTrue(child.getValue().hasDefined("connection-url"));
             Assert.assertTrue(child.getValue().hasDefined("jndi-name"));
             Assert.assertTrue(child.getValue().hasDefined("driver-name"));
         }
