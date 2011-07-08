@@ -24,6 +24,7 @@ package org.jboss.as.webservices.deployers;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ClassConfigurator;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
@@ -86,6 +87,7 @@ public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitPr
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
         final List<AnnotationInstance> resourceAnnotations = index.getAnnotations(WEB_SERVICE_REF_ANNOTATION_NAME);
         for (AnnotationInstance annotation : resourceAnnotations) {
@@ -93,11 +95,11 @@ public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitPr
             final WebServiceRefWrapper annotationWrapper = new WebServiceRefWrapper(annotation);
 
             if (annotationTarget instanceof FieldInfo) {
-                processFieldRef(deploymentUnit, module, eeModuleDescription, annotationWrapper, (FieldInfo) annotationTarget);
+                processFieldRef(deploymentUnit, module, eeModuleDescription, annotationWrapper, (FieldInfo) annotationTarget, applicationClasses);
             } else if (annotationTarget instanceof MethodInfo) {
-                processMethodRef(deploymentUnit, module, eeModuleDescription, annotationWrapper, (MethodInfo) annotationTarget);
+                processMethodRef(deploymentUnit, module, eeModuleDescription, annotationWrapper, (MethodInfo) annotationTarget, applicationClasses);
             } else if (annotationTarget instanceof ClassInfo) {
-                processClassRef(deploymentUnit, module, eeModuleDescription, annotationWrapper, (ClassInfo) annotationTarget);
+                processClassRef(deploymentUnit, module, eeModuleDescription, annotationWrapper, (ClassInfo) annotationTarget, applicationClasses);
             }
         }
         final List<AnnotationInstance> resourcesAnnotations = index.getAnnotations(WEB_SERVICE_REFS_ANNOTATION_NAME);
@@ -106,7 +108,7 @@ public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitPr
             if (annotationTarget instanceof ClassInfo) {
                 final AnnotationInstance[] values = outerAnnotation.value("value").asNestedArray();
                 for (AnnotationInstance annotation : values) {
-                    processClassRef(deploymentUnit, module, eeModuleDescription, new WebServiceRefWrapper(annotation), (ClassInfo) annotationTarget);
+                    processClassRef(deploymentUnit, module, eeModuleDescription, new WebServiceRefWrapper(annotation), (ClassInfo) annotationTarget, applicationClasses);
                 }
             }
         }
@@ -115,15 +117,15 @@ public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitPr
     public void undeploy(DeploymentUnit context) {
     }
 
-    private void processFieldRef(final DeploymentUnit deploymentUnit, final Module module, final EEModuleDescription eeModuleDescription, final WebServiceRefWrapper annotation, final FieldInfo fieldInfo) {
+    private void processFieldRef(final DeploymentUnit deploymentUnit, final Module module, final EEModuleDescription eeModuleDescription, final WebServiceRefWrapper annotation, final FieldInfo fieldInfo, final EEApplicationClasses applicationClasses) {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(annotation.type()) || annotation.type().equals(Object.class.getName()) ? fieldInfo.type().name().toString() : annotation.type();
         final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(),  fieldName, injectionType);
         final String localContextName = isEmpty(annotation.name()) ? fieldInfo.declaringClass().name().toString() + "/" + fieldInfo.name() : annotation.name();
-        processRef(deploymentUnit, module, eeModuleDescription, annotation.name(), targetDescription.getClassName(), annotation.value(), annotation.wsdlLocation(), fieldInfo.declaringClass(), targetDescription, localContextName);
+        processRef(deploymentUnit, module, eeModuleDescription, annotation.name(), targetDescription.getClassName(), annotation.value(), annotation.wsdlLocation(), fieldInfo.declaringClass(), targetDescription, localContextName, applicationClasses);
     }
 
-    private void processMethodRef(final DeploymentUnit deploymentUnit, final Module module, final EEModuleDescription eeModuleDescription, final WebServiceRefWrapper annotation, final MethodInfo methodInfo) {
+    private void processMethodRef(final DeploymentUnit deploymentUnit, final Module module, final EEModuleDescription eeModuleDescription, final WebServiceRefWrapper annotation, final MethodInfo methodInfo, final EEApplicationClasses applicationClasses) {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
             throw new IllegalArgumentException("@WebServiceRef injection target is invalid.  Only setter methods are allowed: " + methodInfo);
@@ -132,21 +134,21 @@ public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitPr
         final InjectionTarget targetDescription = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, injectionType);
 
         final String localContextName = isEmpty(annotation.name()) ? methodInfo.declaringClass().name().toString() + "/" + methodName.substring(3, 4).toLowerCase() + methodName.substring(4) : annotation.name();
-        processRef(deploymentUnit, module, eeModuleDescription, annotation.name(), targetDescription.getClassName(), annotation.value(), annotation.wsdlLocation(), methodInfo.declaringClass(), targetDescription, localContextName);
+        processRef(deploymentUnit, module, eeModuleDescription, annotation.name(), targetDescription.getClassName(), annotation.value(), annotation.wsdlLocation(), methodInfo.declaringClass(), targetDescription, localContextName, applicationClasses);
     }
 
-    private void processClassRef(final DeploymentUnit deploymentUnit, final Module module, final EEModuleDescription eeModuleDescription, final WebServiceRefWrapper annotation, final ClassInfo classInfo) throws DeploymentUnitProcessingException {
+    private void processClassRef(final DeploymentUnit deploymentUnit, final Module module, final EEModuleDescription eeModuleDescription, final WebServiceRefWrapper annotation, final ClassInfo classInfo, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         if (isEmpty(annotation.name())) {
             throw new DeploymentUnitProcessingException("@WebServiceRef attribute 'name' is required fo class level annotations.");
         }
         if (isEmpty(annotation.type())) {
             throw new DeploymentUnitProcessingException("@WebServiceRef attribute 'type' is required fo class level annotations.");
         }
-        processRef(deploymentUnit, module, eeModuleDescription, annotation.name(), annotation.type(), annotation.value(), annotation.wsdlLocation(), classInfo, null, annotation.name());
+        processRef(deploymentUnit, module, eeModuleDescription, annotation.name(), annotation.type(), annotation.value(), annotation.wsdlLocation(), classInfo, null, annotation.name(), applicationClasses);
     }
 
-    private void processRef(final DeploymentUnit deploymentUnit, final Module module, final EEModuleDescription eeModuleDescription, final String name, final String type, final String value, final String wsdlLocation, final ClassInfo classInfo, final InjectionTarget targetDescription, final String localContextName) {
-        final EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
+    private void processRef(final DeploymentUnit deploymentUnit, final Module module, final EEModuleDescription eeModuleDescription, final String name, final String type, final String value, final String wsdlLocation, final ClassInfo classInfo, final InjectionTarget targetDescription, final String localContextName, final EEApplicationClasses applicationClasses) {
+        final EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
 
         // our injection comes from the local lookup, no matter what.
         final ResourceInjectionConfiguration injectionConfiguration = targetDescription != null ?

@@ -52,24 +52,25 @@ public class AroundInvokeAnnotationParsingProcessor implements DeploymentUnitPro
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
 
         final List<AnnotationInstance> aroundInvokes = index.getAnnotations(AROUND_INVOKE_ANNOTATION_NAME);
         for (AnnotationInstance annotation : aroundInvokes) {
-            processAroundInvoke(eeModuleDescription, annotation.target());
+            processAroundInvoke(eeModuleDescription, annotation.target(), applicationClasses);
         }
     }
 
     public void undeploy(final DeploymentUnit context) {
     }
 
-    private void processAroundInvoke(final EEModuleDescription eeModuleDescription, final AnnotationTarget target) {
+    private void processAroundInvoke(final EEModuleDescription eeModuleDescription, final AnnotationTarget target, final EEApplicationClasses applicationClasses) {
         if (!(target instanceof MethodInfo)) {
             throw new IllegalArgumentException("@AroundInvoke is only valid on method targets.");
         }
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         final ClassInfo classInfo = methodInfo.declaringClass();
-        final EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
+        final EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
 
         validateArgumentType(classInfo, methodInfo);
         classDescription.setAroundInvokeMethod(MethodIdentifier.getIdentifier(Object.class, methodInfo.name(), InvocationContext.class));

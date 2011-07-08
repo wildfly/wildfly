@@ -25,6 +25,7 @@ package org.jboss.as.ee.datasource;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ClassConfigurator;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -62,6 +63,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
 
         // @DataSourceDefinitions
         List<AnnotationInstance> datasourceDefinitions = index.getAnnotations(DATASOURCE_DEFINITIONS);
@@ -77,7 +79,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
                 // process the nested @DataSourceDefinition
                 for (AnnotationInstance datasource : datasources) {
                     // create binding configurations out of it
-                    this.processDataSourceDefinition(eeModuleDescription, datasource, (ClassInfo) target);
+                    this.processDataSourceDefinition(eeModuleDescription, datasource, (ClassInfo) target, applicationClasses);
                 }
             }
         }
@@ -92,7 +94,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
                             "on class. " + target + " is not a class");
                 }
                 // create binding configurations out of it
-                this.processDataSourceDefinition(eeModuleDescription, datasource, (ClassInfo) target);
+                this.processDataSourceDefinition(eeModuleDescription, datasource, (ClassInfo) target, applicationClasses);
             }
         }
     }
@@ -101,10 +103,10 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
     public void undeploy(DeploymentUnit context) {
     }
 
-    private void processDataSourceDefinition(final EEModuleDescription eeModuleDescription, final AnnotationInstance datasourceDefinition, final ClassInfo targetClass) throws DeploymentUnitProcessingException {
+    private void processDataSourceDefinition(final EEModuleDescription eeModuleDescription, final AnnotationInstance datasourceDefinition, final ClassInfo targetClass, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         // create BindingConfiguration out of the @DataSource annotation
         final BindingConfiguration bindingConfiguration = this.getBindingConfiguration(datasourceDefinition);
-        EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(targetClass.name().toString());
+        EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(targetClass.name().toString());
         // add the binding configuration via a class configurator
         classDescription.getConfigurators().add(new ClassConfigurator() {
             @Override

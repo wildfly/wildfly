@@ -80,6 +80,7 @@ public class ComponentDescription {
     private final ServiceName serviceName;
     private final String componentName;
     private final String componentClassName;
+    private final EEApplicationClasses applicationClassesDescription;
     private final EEModuleDescription moduleDescription;
     private final EEModuleClassDescription classDescription;
 
@@ -120,10 +121,12 @@ public class ComponentDescription {
      * @param moduleDescription         the EE module description
      * @param classDescription          the component class' description
      * @param deploymentUnitServiceName the service name of the DU containing this component
+     * @param applicationClassesDescription
      */
-    public ComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final EEModuleClassDescription classDescription, final ServiceName deploymentUnitServiceName) {
+    public ComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final EEModuleClassDescription classDescription, final ServiceName deploymentUnitServiceName, final EEApplicationClasses applicationClassesDescription) {
         this.moduleDescription = moduleDescription;
         this.classDescription = classDescription;
+        this.applicationClassesDescription = applicationClassesDescription;
         if (componentName == null) {
             throw new IllegalArgumentException("name is null");
         }
@@ -210,7 +213,7 @@ public class ComponentDescription {
      */
     public void setClassInterceptors(List<InterceptorDescription> classInterceptors) {
         for (InterceptorDescription clazz : classInterceptors) {
-            moduleDescription.getOrAddClassByName(clazz.getInterceptorClassName());
+            applicationClassesDescription.getOrAddClassByName(clazz.getInterceptorClassName());
         }
         this.classInterceptors = classInterceptors;
         this.allInterceptors = null;
@@ -291,7 +294,7 @@ public class ComponentDescription {
     public boolean addClassInterceptor(InterceptorDescription description) {
         String name = description.getInterceptorClassName();
         // add the interceptor class to the EEModuleDescription
-        this.moduleDescription.getOrAddClassByName(name);
+        this.applicationClassesDescription.getOrAddClassByName(name);
         if (classInterceptors.contains(description)) {
             return false;
         }
@@ -344,7 +347,7 @@ public class ComponentDescription {
         }
         final String name = description.getInterceptorClassName();
         // add the interceptor class to the EEModuleDescription
-        this.moduleDescription.getOrAddClassByName(name);
+        this.applicationClassesDescription.getOrAddClassByName(name);
         if (interceptorClasses.contains(name)) {
             return false;
         }

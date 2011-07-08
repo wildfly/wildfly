@@ -23,9 +23,11 @@
 package org.jboss.as.jpa.processor;
 
 import org.jboss.as.ee.component.AbstractDeploymentDescriptorBindingsProcessor;
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.LookupInjectionSource;
@@ -64,7 +66,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
 
 
     @Override
-    protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws
+    protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws
         DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         bindings.addAll(getPersistenceUnitRefs(deploymentUnit, environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
@@ -84,6 +86,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
     private List<BindingConfiguration> getPersistenceUnitRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws
         DeploymentUnitProcessingException {
 
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
         if (environment.getEnvironment() == null) {
             return bindingConfigurations;
@@ -110,7 +113,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                 LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
                 //add any injection targets
-                processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, puRef, EntityManagerFactory.class);
+                processInjectionTargets(moduleDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, puRef, EntityManagerFactory.class);
 
                 BindingConfiguration bindingConfiguration = null;
                 if (!isEmpty(lookup)) {
@@ -138,6 +141,8 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
     private List<BindingConfiguration> getPersistenceContextRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws
         DeploymentUnitProcessingException {
 
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+
         List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
         if (environment.getEnvironment() == null) {
             return bindingConfigurations;
@@ -160,7 +165,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                 // our injection (source) comes from the local (ENC) lookup, no matter what.
                 LookupInjectionSource injectionSource = new LookupInjectionSource(name);
                 //add any injection targets
-                processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, puRef, EntityManager.class);
+                processInjectionTargets(moduleDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, puRef, EntityManager.class);
 
                 BindingConfiguration bindingConfiguration = null;
                 if (!isEmpty(lookup)) {

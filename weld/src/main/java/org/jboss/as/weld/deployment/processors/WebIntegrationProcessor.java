@@ -22,6 +22,7 @@
 package org.jboss.as.weld.deployment.processors;
 
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -89,6 +90,7 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription module = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
 
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return; // Skip non web deployments
@@ -118,7 +120,7 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
         listeners.add(1, JIL);
 
         //This uses resource injection, so it needs to be a component
-        final WebComponentDescription componentDescription = new WebComponentDescription(JSP_LISTENER, JSP_LISTENER, module, deploymentUnit.getServiceName());
+        final WebComponentDescription componentDescription = new WebComponentDescription(JSP_LISTENER, JSP_LISTENER, module, deploymentUnit.getServiceName(), applicationClasses);
         module.addComponent(componentDescription);
         final Map<String, ComponentInstantiator> instantiators = deploymentUnit.getAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS);
         instantiators.put(JSP_LISTENER, new WebComponentInstantiator(deploymentUnit, componentDescription));

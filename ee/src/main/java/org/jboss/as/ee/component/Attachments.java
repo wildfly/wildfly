@@ -31,6 +31,8 @@ import org.jboss.as.server.deployment.AttachmentKey;
 public class Attachments {
 
     public static final AttachmentKey<EEApplicationDescription> EE_APPLICATION_DESCRIPTION = AttachmentKey.create(EEApplicationDescription.class);
+    public static final AttachmentKey<EEApplicationClasses> EE_APPLICATION_CLASSES_DESCRIPTION = AttachmentKey.create(EEApplicationClasses.class);
+
 
     public static final AttachmentKey<EEModuleDescription> EE_MODULE_DESCRIPTION = AttachmentKey.create(EEModuleDescription.class);
     public static final AttachmentKey<EEModuleConfiguration> EE_MODULE_CONFIGURATION = AttachmentKey.create(EEModuleConfiguration.class);

@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
@@ -75,8 +76,9 @@ public class TransactionManagementAnnotationProcessorTestCase {
 
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        final EEApplicationClasses applicationClassesDescription = new EEApplicationClasses();
         final ServiceName duServiceName = deploymentUnit.getServiceName();
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, applicationClassesDescription, false);
         EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), ejbJarDescription, duServiceName);
         TransactionManagementAnnotationProcessor processor = new TransactionManagementAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
@@ -91,7 +93,8 @@ public class TransactionManagementAnnotationProcessorTestCase {
     public void testDefault() {
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
+        final EEApplicationClasses applicationClassesDescription = new EEApplicationClasses();
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, applicationClassesDescription, false);
         final ServiceName duServiceName = Services.deploymentUnitName("Dummy deployment unit");
         EJBComponentDescription componentDescription = new StatelessComponentDescription("TestBean", "TestClass", ejbJarDescription, duServiceName);
         assertEquals(TransactionManagementType.CONTAINER, componentDescription.getTransactionManagementType());
@@ -113,8 +116,9 @@ public class TransactionManagementAnnotationProcessorTestCase {
 
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        final EEApplicationClasses applicationClassesDescription = new EEApplicationClasses();
         final ServiceName duServiceName = deploymentUnit.getServiceName();
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, applicationClassesDescription, false);
         EJBComponentDescription componentDescription = new StatelessComponentDescription(SubBean.class.getSimpleName(), SubBean.class.getName(), ejbJarDescription, duServiceName);
         TransactionManagementAnnotationProcessor processor = new TransactionManagementAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);

@@ -47,6 +47,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
     public final void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentDescriptorEnvironment environment = deploymentUnit.getAttachment(Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final EEModuleDescription description = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
@@ -56,7 +57,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
 
 
         if (environment != null) {
-            final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex);
+            final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex, applicationClasses);
             handleLazyBindings(description, bindings);
             description.getConfigurators().add(new EEModuleConfigurator() {
                 @Override
@@ -67,7 +68,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
         }
         for (final ComponentDescription componentDescription : description.getComponentDescriptions()) {
             if (componentDescription.getDeploymentDescriptorEnvironment() != null) {
-                final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), description, componentDescription, module.getClassLoader(), deploymentReflectionIndex);
+                final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), description, componentDescription, module.getClassLoader(), deploymentReflectionIndex, applicationClasses);
                 handleLazyBindings(description, bindings);
                 componentDescription.getBindingConfigurations().addAll(bindings);
             }
@@ -91,7 +92,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
         }
     }
 
-    protected abstract List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException;
+    protected abstract List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException;
 
     @Override
     public void undeploy(DeploymentUnit context) {
@@ -100,6 +101,8 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
     /**
      * Processes the injection targets of a resource binding
      *
+     *
+     * @param applicationClasses
      * @param injectionSource           The injection source for the injection target
      * @param classLoader               The module class loader
      * @param deploymentReflectionIndex The deployment reflection index
@@ -109,7 +112,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
      * @throws DeploymentUnitProcessingException
      *          If the injection points could not be resolved
      */
-    protected Class<?> processInjectionTargets(EEModuleDescription moduleDescription, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaDataWithDescriptions entry, Class<?> classType) throws DeploymentUnitProcessingException {
+    protected Class<?> processInjectionTargets(EEModuleDescription moduleDescription, final EEApplicationClasses applicationClasses, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaDataWithDescriptions entry, Class<?> classType) throws DeploymentUnitProcessingException {
 
         if (entry.getInjectionTargets() != null) {
             for (ResourceInjectionTargetMetaData injectionTarget : entry.getInjectionTargets()) {
@@ -120,7 +123,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                 } catch (ClassNotFoundException e) {
                     throw new DeploymentUnitProcessingException("Could not load " + injectionTarget.getInjectionTargetClass() + " referenced in env-entry injection point ", e);
                 }
-                EEModuleClassDescription eeModuleClassDescription = moduleDescription.getOrAddClassByName(injectionTargetClass.getName());
+                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(injectionTargetClass.getName());
                 final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(injectionTargetClass);
                 String methodName = "set" + injectionTarget.getInjectionTargetName().substring(0, 1).toUpperCase() + injectionTarget.getInjectionTargetName().substring(1);
 

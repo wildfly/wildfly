@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.deployment.processors.dd;
 
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
@@ -48,6 +49,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentReflectionIndex index = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
+        final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 
@@ -60,17 +62,17 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
                         for (String aroundInvoke : ejb.getAroundInvokeDDMethods()) {
                             final MethodIdentifier aroundInvokeIdentifier = MethodIdentifier.getIdentifier(Object.class, aroundInvoke, InvocationContext.class);
                             Method method = ClassReflectionIndexUtil.findRequiredMethod(index, index.getClassIndex(clazz), aroundInvokeIdentifier);
-                            eeModuleDescription.getOrAddClassByName(method.getDeclaringClass().getName()).setAroundInvokeMethod(aroundInvokeIdentifier);
+                            applicationClassesDescription.getOrAddClassByName(method.getDeclaringClass().getName()).setAroundInvokeMethod(aroundInvokeIdentifier);
                         }
                         for (String preDestroy : ejb.getPreDestroyDDMethods()) {
                             final MethodIdentifier preDestroyIdentifier = MethodIdentifier.getIdentifier(void.class, preDestroy);
                             final Method method = ClassReflectionIndexUtil.findRequiredMethod(index, index.getClassIndex(clazz), preDestroyIdentifier);
-                            eeModuleDescription.getOrAddClassByName(method.getDeclaringClass().getName()).setPreDestroyMethod(preDestroyIdentifier);
+                            applicationClassesDescription.getOrAddClassByName(method.getDeclaringClass().getName()).setPreDestroyMethod(preDestroyIdentifier);
                         }
                         for (String postConstruct : ejb.getPostConstructDDMethods()) {
                             final MethodIdentifier postConstructIdentifier = MethodIdentifier.getIdentifier(void.class, postConstruct);
                             final Method method = ClassReflectionIndexUtil.findRequiredMethod(index, index.getClassIndex(clazz), postConstructIdentifier);
-                            eeModuleDescription.getOrAddClassByName(method.getDeclaringClass().getName()).setPostConstructMethod(postConstructIdentifier);
+                            applicationClassesDescription.getOrAddClassByName(method.getDeclaringClass().getName()).setPostConstructMethod(postConstructIdentifier);
                         }
 
                     } catch (ClassNotFoundException e) {

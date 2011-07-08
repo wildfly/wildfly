@@ -22,6 +22,7 @@
 package org.jboss.as.web.deployment.jsf;
 
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -81,11 +82,12 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (index == null) {
             return;
         }
-        if(module == null) {
+        if (module == null) {
             return;
         }
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
@@ -108,7 +110,7 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
                 log.error("JSF managed bean class " + managedBean + " has no default constructor");
                 continue;
             }
-            installManagedBeanComponent(managedBean, moduleDescription, deploymentUnit);
+            installManagedBeanComponent(managedBean, moduleDescription, deploymentUnit, applicationClassesDescription);
         }
 
     }
@@ -154,7 +156,7 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
                         if (indent == 1) {
                             managedBean = false;
                         }
-                        if(className != null) {
+                        if (className != null) {
                             managedBeanClasses.add(className.toString().trim());
                             className = null;
                         }
@@ -242,8 +244,8 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private void installManagedBeanComponent(String className, final EEModuleDescription moduleDescription, final DeploymentUnit deploymentUnit) {
-        final ComponentDescription componentDescription = new WebComponentDescription(MANAGED_BEAN.toString() + "." + className, className, moduleDescription, deploymentUnit.getServiceName());
+    private void installManagedBeanComponent(String className, final EEModuleDescription moduleDescription, final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClassesDescription) {
+        final ComponentDescription componentDescription = new WebComponentDescription(MANAGED_BEAN.toString() + "." + className, className, moduleDescription, deploymentUnit.getServiceName(), applicationClassesDescription);
         moduleDescription.addComponent(componentDescription);
         deploymentUnit.getAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS).put(componentDescription.getComponentClassName(), new WebComponentInstantiator(deploymentUnit, componentDescription));
     }

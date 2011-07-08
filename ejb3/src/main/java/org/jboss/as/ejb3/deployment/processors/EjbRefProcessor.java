@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.AbstractDeploymentDescriptorBindingsProcessor;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -50,13 +51,15 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
     /**
      * Resolves ejb-ref and ejb-local-ref elements
      *
+     *
      * @param deploymentUnit
      * @param environment               The environment to resolve the elements for
      * @param classLoader               The deployment class loader
      * @param deploymentReflectionIndex The reflection index
+     * @param applicationClasses
      * @return The bindings for the environment entries
      */
-    protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+    protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         EJBLocalReferencesMetaData ejbLocalRefs = environment.getEnvironment().getEjbLocalReferences();
         List<BindingConfiguration> bindingDescriptions = new ArrayList<BindingConfiguration>();
         //TODO: this needs a lot more work
@@ -84,7 +87,7 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                 LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
                 //add any injection targets
-                localInterfaceType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, ejbRef, localInterfaceType);
+                localInterfaceType = processInjectionTargets(moduleDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, ejbRef, localInterfaceType);
 
                 if (localInterfaceType == null) {
                     throw new DeploymentUnitProcessingException("Could not determine type of ejb-local-ref " + name + " for component " + componentDescription);

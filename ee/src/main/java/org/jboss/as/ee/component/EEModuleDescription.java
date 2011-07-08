@@ -41,7 +41,6 @@ public final class EEModuleDescription {
     private volatile String moduleName;
     private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
     private final Map<String, List<ComponentDescription>> componentsByClassName = new HashMap<String, List<ComponentDescription>>();
-    private final Map<String, EEModuleClassDescription> classesByName = new HashMap<String, EEModuleClassDescription>();
     /**
      * Resource injections that only get installed if a binding is set up
      * See EE 5.4.1.3
@@ -117,17 +116,6 @@ public final class EEModuleDescription {
         list.add(description);
     }
 
-    public void addClass(EEModuleClassDescription description) {
-        String className = description.getClassName();
-        if (className == null) {
-            throw new IllegalArgumentException("className is null");
-        }
-        if (classesByName.containsKey(className)) {
-            throw new IllegalArgumentException("A class named '" + className + "' is already defined in this module");
-        }
-        classesByName.put(className, description);
-    }
-
     public String getApplicationName() {
         return applicationName;
     }
@@ -155,25 +143,6 @@ public final class EEModuleDescription {
 
     public Collection<ComponentDescription> getComponentDescriptions() {
         return componentsByName.values();
-    }
-
-    public EEModuleClassDescription getClassByName(String name) {
-        return classesByName.get(name);
-    }
-
-    public EEModuleClassDescription getOrAddClassByName(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("Name cannot be null");
-        }
-        EEModuleClassDescription description = classesByName.get(name);
-        if (description == null) {
-            classesByName.put(name, description = new EEModuleClassDescription(name));
-        }
-        return description;
-    }
-
-    public Collection<EEModuleClassDescription> getClassDescriptions() {
-        return classesByName.values();
     }
 
     public Deque<EEModuleConfigurator> getConfigurators() {

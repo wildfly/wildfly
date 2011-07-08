@@ -25,6 +25,7 @@ package org.jboss.as.jpa.processor;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ClassConfigurator;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -81,16 +82,17 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
 
         // @PersistenceContext
         List<AnnotationInstance> persistenceContexts = index.getAnnotations(PERSISTENCE_CONTEXT_ANNOTATION_NAME);
         // create binding and injection configurations out of the @PersistenceContext annotations
-        this.processPersistenceAnnotations(deploymentUnit, eeModuleDescription, persistenceContexts);
+        this.processPersistenceAnnotations(deploymentUnit, eeModuleDescription, persistenceContexts, applicationClasses);
 
         // @PersistenceUnit
         List<AnnotationInstance> persistenceUnits = index.getAnnotations(PERSISTENCE_UNIT_ANNOTATION_NAME);
         // create binding and injection configurations out of the @PersistenceUnit annotaitons
-        this.processPersistenceAnnotations(deploymentUnit, eeModuleDescription, persistenceUnits);
+        this.processPersistenceAnnotations(deploymentUnit, eeModuleDescription, persistenceUnits, applicationClasses);
 
         // if we found any @PersistenceContext or @PersistenceUnit annotations then mark this as a JPA deployment
         if (!persistenceContexts.isEmpty() || !persistenceUnits.isEmpty()) {
@@ -103,7 +105,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
     }
 
-    private void processPersistenceAnnotations(final DeploymentUnit deploymentUnit, final EEModuleDescription eeModuleDescription, List<AnnotationInstance> persistenceContexts) throws
+    private void processPersistenceAnnotations(final DeploymentUnit deploymentUnit, final EEModuleDescription eeModuleDescription, List<AnnotationInstance> persistenceContexts, final EEApplicationClasses applicationClasses) throws
             DeploymentUnitProcessingException {
 
         for (AnnotationInstance annotation : persistenceContexts) {
@@ -112,16 +114,16 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             if (annotationTarget instanceof FieldInfo) {
                 FieldInfo fieldInfo = (FieldInfo) annotationTarget;
                 declaringClass = fieldInfo.declaringClass();
-                EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.getOrAddClassByName(declaringClass.name().toString());
+                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(declaringClass.name().toString());
                 this.processField(deploymentUnit, annotation, fieldInfo, eeModuleClassDescription);
             } else if (annotationTarget instanceof MethodInfo) {
                 MethodInfo methodInfo = (MethodInfo) annotationTarget;
                 declaringClass = methodInfo.declaringClass();
-                EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.getOrAddClassByName(declaringClass.name().toString());
+                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(declaringClass.name().toString());
                 this.processMethod(deploymentUnit, annotation, methodInfo, eeModuleClassDescription);
             } else if (annotationTarget instanceof ClassInfo) {
                 declaringClass = (ClassInfo) annotationTarget;
-                EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.getOrAddClassByName(declaringClass.name().toString());
+                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(declaringClass.name().toString());
                 this.processClass(deploymentUnit, annotation, eeModuleClassDescription);
             }
         }

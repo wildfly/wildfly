@@ -32,7 +32,9 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
@@ -51,6 +53,7 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (moduleDescription == null) {
             return;
@@ -67,11 +70,12 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
              * into a single index, so that inter-module resolution will work.
              */
             // Add the application description
+            final Set<String> processed = new HashSet<String>();
             final List<DeploymentUnit> subdeployments = deploymentUnit.getAttachmentList(SUB_DEPLOYMENTS);
-            processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, deploymentUnit);
             for (DeploymentUnit subdeployment : subdeployments) {
-                processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, subdeployment);
+                processClasses(phaseContext, applicationDescription,  deploymentReflectionIndex, subdeployment, processed);
             }
+            processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, deploymentUnit, processed);
         } else if (deploymentUnit.getParent() == null) {
             /*
              * We are a top-level EE deployment, or a non-EE deployment.  Our "aggregate" index is just a copy of
@@ -81,7 +85,7 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
                 // Not an EE deployment.
                 return;
             }
-            final Collection<EEModuleClassDescription> classDescriptions = moduleDescription.getClassDescriptions();
+            final Collection<EEModuleClassDescription> classDescriptions = applicationClasses.getClassDescriptions();
             if (classDescriptions != null) {
                 for (EEModuleClassDescription classDescription : classDescriptions) {
                     Class<?> clazz = null;
@@ -102,16 +106,21 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
 
     }
 
-    private void processClasses(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final DeploymentReflectionIndex deploymentReflectionIndex, final DeploymentUnit subdeployment) throws DeploymentUnitProcessingException {
+    private void processClasses(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final DeploymentReflectionIndex deploymentReflectionIndex, final DeploymentUnit subdeployment, final Set<String> processed) throws DeploymentUnitProcessingException {
         final EEModuleDescription subModuleDescription = subdeployment.getAttachment(EE_MODULE_DESCRIPTION);
         if (subModuleDescription == null) {
             // Not an EE deployment.
             return;
         }
         Module subModule = subdeployment.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final Collection<EEModuleClassDescription> classDescriptions = subModuleDescription.getClassDescriptions();
+        final EEApplicationClasses applicationClasses = subdeployment.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+        final Collection<EEModuleClassDescription> classDescriptions = applicationClasses.getClassDescriptions();
         if (classDescriptions != null) {
             for (EEModuleClassDescription classDescription : classDescriptions) {
+                if(processed.contains(classDescription.getClassName())) {
+                    continue;
+                }
+                processed.add(classDescription.getClassName());
                 Class<?> clazz = null;
                 try {
                     clazz = Class.forName(classDescription.getClassName(), false, subModule.getClassLoader());
