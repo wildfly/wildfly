@@ -313,6 +313,7 @@ public class CommandLineMain {
         } finally {
             System.exit(0);
         }
+        System.exit(0);
     }
 
     private static void processCommands(String[] commands, String defaultControllerHost, int defaultControllerPort, final boolean connect) {
