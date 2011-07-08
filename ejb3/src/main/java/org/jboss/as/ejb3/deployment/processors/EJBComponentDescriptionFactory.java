@@ -25,6 +25,7 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
@@ -47,13 +48,16 @@ import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeansMetaData;
+import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionType;
 import org.jboss.msc.service.ServiceName;
 
+import javax.ejb.MessageDriven;
 import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -62,6 +66,7 @@ import java.util.List;
 public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
     private static final Logger logger = Logger.getLogger(EJBComponentDescriptionFactory.class);
 
+    private static final DotName MESSAGE_DRIVEN_ANNOTATION_NAME = DotName.createSimple(MessageDriven.class.getName());
     private static final DotName STATELESS_ANNOTATION = DotName.createSimple(Stateless.class.getName());
     private static final DotName STATEFUL_ANNOTATION = DotName.createSimple(Stateful.class.getName());
     private static final DotName SINGLETON_ANNOTATION = DotName.createSimple(Singleton.class.getName());
@@ -132,6 +137,8 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
             return;
         }
 
+        processMessageBeans(deploymentUnit, compositeIndex.getAnnotations(MESSAGE_DRIVEN_ANNOTATION_NAME));
+
         // Find and process any @Stateless bean annotations
         final List<AnnotationInstance> slsbAnnotations = compositeIndex.getAnnotations(STATELESS_ANNOTATION);
         if (!slsbAnnotations.isEmpty()) {
@@ -171,6 +178,39 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
                 processBeanMetaData(deploymentUnit, ejb);
             }
         }
+        EjbDeploymentMarker.mark(deploymentUnit);
+    }
+
+    private static void processMessageBeans(final DeploymentUnit deploymentUnit, final Collection<AnnotationInstance> messageBeanAnnotations) {
+        if (messageBeanAnnotations.isEmpty())
+            return;
+
+        final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
+        final ServiceName deploymentUnitServiceName = deploymentUnit.getServiceName();
+
+        for (final AnnotationInstance messageBeanAnnotation : messageBeanAnnotations) {
+            final AnnotationTarget target = messageBeanAnnotation.target();
+            final ClassInfo beanClassInfo = (ClassInfo) target;
+            final String ejbName = beanClassInfo.name().local();
+            final AnnotationValue nameValue = messageBeanAnnotation.value("name");
+            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : nameValue.asString();
+            final MessageDrivenBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName, MessageDrivenBeanMetaData.class);
+            final String beanClassName;
+            if (beanMetaData != null) {
+                beanClassName = override(beanClassInfo.name().toString(), beanMetaData.getEjbClass());
+            } else {
+                beanClassName = beanClassInfo.name().toString();
+            }
+
+            final String messageListenerInterfaceName = messageBeanAnnotation.value("messageListenerInterface").asClass().name().toString();
+            // TODO: if messageListenerInterface is not set use the implemented interface
+
+            final MessageDrivenComponentDescription beanDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, messageListenerInterfaceName);
+
+            // Add this component description to module description
+            ejbJarDescription.getEEModuleDescription().addComponent(beanDescription);
+        }
+
         EjbDeploymentMarker.mark(deploymentUnit);
     }
 

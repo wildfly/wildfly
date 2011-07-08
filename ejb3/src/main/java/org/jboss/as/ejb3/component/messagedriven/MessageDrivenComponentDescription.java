@@ -31,7 +31,6 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -44,8 +43,8 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class MessageDrivenComponentDescription extends EJBComponentDescription {
-    private String messageListenerInterfaceName;
     private String resourceAdapterName;
+    private ServiceName resourceAdapterServiceName;
 
     /**
      * Construct a new instance.
@@ -55,8 +54,11 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
      * @param ejbJarDescription  the module description
      */
     public MessageDrivenComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
-                                             final ServiceName deploymentUnitServiceName) {
+                                             final ServiceName deploymentUnitServiceName, final String messageListenerInterfaceName) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
+        if (messageListenerInterfaceName == null || messageListenerInterfaceName.isEmpty())
+            throw new IllegalArgumentException("Cannot set null or empty string as message listener interface");
+        registerView(messageListenerInterfaceName, MethodIntf.MESSAGE_ENDPOINT);
     }
 
     @Override
@@ -67,39 +69,15 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         return mdbComponentConfiguration;
     }
 
-    String getMessageListenerInterfaceName() {
-        return messageListenerInterfaceName;
-    }
-
-    String getResourceAdapterName() {
-        return resourceAdapterName;
-    }
-
-//    @Override
-//    protected void prepareComponentConfiguration(ComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-//        super.prepareComponentConfiguration(configuration, phaseContext);
-//
-//        final MessageDrivenComponentConfiguration messageDrivenComponentConfiguration = (MessageDrivenComponentConfiguration) configuration;
-//        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-//        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-//        final ClassLoader classLoader = module.getClassLoader();
-//
-//        try {
-//            messageDrivenComponentConfiguration.setMessageListenerInterface(classLoader.loadClass(getMessageListenerInterfaceName()));
-//        } catch (ClassNotFoundException e) {
-//            throw new DeploymentUnitProcessingException("Failed to load message listener interface " + getMessageListenerInterfaceName());
+//    public void setMessageListenerInterfaceName(String messageListenerInterfaceName) {
+//        if (messageListenerInterfaceName == null || messageListenerInterfaceName.isEmpty()) {
+//            throw new IllegalArgumentException("Cannot set null or empty string as message listener interface");
 //        }
+//        this.messageListenerInterfaceName = messageListenerInterfaceName;
+//        // add it to the view description
+//        ViewDescription viewDescription = new EJBViewDescription(this, messageListenerInterfaceName, MethodIntf.MESSAGE_ENDPOINT);
+//        this.getViews().add(viewDescription);
 //    }
-
-    public void setMessageListenerInterfaceName(String messageListenerInterfaceName) {
-        if (messageListenerInterfaceName == null || messageListenerInterfaceName.isEmpty()) {
-            throw new IllegalArgumentException("Cannot set null or empty string as message listener interface");
-        }
-        this.messageListenerInterfaceName = messageListenerInterfaceName;
-        // add it to the view description
-        ViewDescription viewDescription = new EJBViewDescription(this, messageListenerInterfaceName, MethodIntf.MESSAGE_ENDPOINT);
-        this.getViews().add(viewDescription);
-    }
 
     public void setResourceAdapterName(String resourceAdapterName) {
         if (resourceAdapterName == null || resourceAdapterName.trim().isEmpty()) {
@@ -113,8 +91,8 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
             raDeploymentName = this.resourceAdapterName.substring(0, resourceAdapterName.indexOf(".rar"));
         }
         // See ResourceAdapterDeploymentService
-        ServiceName raServiceName = ServiceName.of(raDeploymentName);
-        this.addDependency(raServiceName, ServiceBuilder.DependencyType.REQUIRED);
+        this.resourceAdapterServiceName = ServiceName.of(raDeploymentName);
+        this.addDependency(resourceAdapterServiceName, ServiceBuilder.DependencyType.REQUIRED);
     }
 
     @Override
@@ -152,6 +130,10 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
                 configuration.addViewInterceptor(MessageDrivenInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
             }
         });
+    }
+
+    ServiceName getResourceAdapterServiceName() {
+        return resourceAdapterServiceName;
     }
 
     @Override

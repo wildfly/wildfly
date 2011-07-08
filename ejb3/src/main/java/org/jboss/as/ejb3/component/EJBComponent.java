@@ -22,15 +22,19 @@
 package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.security.service.SimpleSecurityManager;
+import org.jboss.as.server.CurrentServiceRegistry;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.spi.InvocationContext;
 import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.ApplicationException;
 import javax.ejb.EJBException;
@@ -72,6 +76,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
     private static volatile boolean youHaveBeenWarnedEJBTHREE2120 = false;
     private final Map<Class<?>, ApplicationException> applicationExceptions;
     private final EJBSecurityMetaData securityMetaData;
+    private final Map<String, ServiceName> viewServices;
 
     /**
      * Construct a new instance.
@@ -95,6 +100,21 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
         // security metadata
         this.securityMetaData = ejbComponentCreateService.getSecurityMetaData();
+
+        this.viewServices = ejbComponentCreateService.getViewServices();
+    }
+
+    protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
+        if (viewInterface == null)
+            throw new IllegalArgumentException("View interface is null");
+        if (viewServices.containsKey(viewInterface.getName())) {
+            final ServiceController<?> serviceController = CurrentServiceRegistry.getServiceRegistry().getRequiredService(viewServices.get(viewInterface.getName()));
+            final ComponentView view = (ComponentView) serviceController.getValue();
+            final ComponentViewInstance instance = view.createInstance(contextData);
+            return viewInterface.cast(instance.createProxy());
+        } else {
+            throw new IllegalStateException("View of type " + viewInterface + " not found on bean " + this);
+        }
     }
 
     @Override

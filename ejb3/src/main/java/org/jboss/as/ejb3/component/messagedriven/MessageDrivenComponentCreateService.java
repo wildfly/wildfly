@@ -26,11 +26,19 @@ import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+
+import javax.resource.spi.ResourceAdapter;
 
 /**
  * @author Stuart Douglas
  */
 public class MessageDrivenComponentCreateService extends EJBComponentCreateService {
+
+    private final ServiceName raServiceName;
+    private final Class<?> messageListenerInterface;
 
     /**
      * Construct a new instance.
@@ -39,11 +47,27 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
      */
     public MessageDrivenComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
         super(componentConfiguration, ejbJarConfiguration);
+
+        this.raServiceName = ((MessageDrivenComponentDescription) componentConfiguration.getComponentDescription()).getResourceAdapterServiceName();
+
+        // see MessageDrivenComponentDescription.<init>
+        this.messageListenerInterface = componentConfiguration.getViews().get(0).getViewClass();
     }
 
     @Override
     protected BasicComponent createComponent() {
-        return new MessageDrivenComponent(this);
+        final MessageDrivenComponent component = new MessageDrivenComponent(this, messageListenerInterface);
+        // TODO: should be injected by start service
+        final ResourceAdapter resourceAdapter = getRequiredService(raServiceName, ResourceAdapter.class).getValue();
+        component.setResourceAdapter(resourceAdapter);
+        return component;
     }
 
+    private <S> ServiceController<S> getRequiredService(final ServiceName serviceName, final Class<S> expectedType) {
+        return (ServiceController<S>) getServiceRegistry().getRequiredService(serviceName);
+    }
+
+    private ServiceRegistry getServiceRegistry() {
+        return getDeploymentUnitInjector().getValue().getServiceRegistry();
+    }
 }
