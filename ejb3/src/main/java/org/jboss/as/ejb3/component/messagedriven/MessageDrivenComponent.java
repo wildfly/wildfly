@@ -23,7 +23,6 @@ package org.jboss.as.ejb3.component.messagedriven;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
 import org.jboss.as.ejb3.inflow.MessageEndpointService;
@@ -45,6 +44,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.Collections.emptyMap;
 import static javax.ejb.TransactionAttributeType.REQUIRED;
 import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
 
@@ -65,7 +65,7 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
      *
      * @param ejbComponentCreateService the component configuration
      */
-    protected MessageDrivenComponent(final EJBComponentCreateService ejbComponentCreateService) {
+    protected MessageDrivenComponent(final MessageDrivenComponentCreateService ejbComponentCreateService, final Class<?> messageListenerInterface) {
         super(ejbComponentCreateService);
 
         StatelessObjectFactory<MessageDrivenComponentInstance> factory = new StatelessObjectFactory<MessageDrivenComponentInstance>() {
@@ -82,7 +82,7 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
         };
         this.pool = new StrictMaxPool<MessageDrivenComponentInstance>(factory, 20, 5, TimeUnit.MINUTES);
 
-        this.messageListenerInterface = null; //ejbComponentCreateService.getMessageListenerInterface();
+        this.messageListenerInterface = messageListenerInterface;
         final MessageEndpointService<?> service = new MessageEndpointService<Object>() {
             @Override
             public Class<Object> getMessageListenerInterface() {
@@ -104,7 +104,7 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
             public Object obtain(long timeout, TimeUnit unit) {
                 // like this it's a disconnected invocation
 //                return getComponentView(messageListenerInterface).getViewForInstance(null);
-                throw new RuntimeException("NYI");
+                return createViewInstanceProxy(messageListenerInterface, emptyMap());
             }
 
             @Override
@@ -154,6 +154,9 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
 
     @Override
     public void start() {
+        if (resourceAdapter == null)
+            throw new IllegalStateException("No resource-adapter has been specified for " + this);
+
         super.start();
 
         try {
