@@ -44,7 +44,6 @@ import org.jboss.modules.filter.PathFilters;
 public class WarClassloadingDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier JAVAX_EE_API = ModuleIdentifier.create("javaee.api");
-    private static final ModuleIdentifier APACHE_XERCES = ModuleIdentifier.create("org.apache.xerces");
 
     private static final ModuleIdentifier JSF_IMPL = ModuleIdentifier.create("com.sun.jsf-impl");
     private static final ModuleIdentifier JSF_API = ModuleIdentifier.create("javax.faces.api");
@@ -81,7 +80,6 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         // Add module dependencies on Java EE apis
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, APACHE_XERCES, false, false, true));
 
         // Add modules for JSF
 

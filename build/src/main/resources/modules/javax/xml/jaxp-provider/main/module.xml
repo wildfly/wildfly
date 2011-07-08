@@ -27,6 +27,7 @@
 <module xmlns="urn:jboss:module:1.0" name="javax.xml.jaxp-provider">
     <dependencies>
         <module name="org.apache.xalan" services="import"/>
+        <module name="org.apache.xerces" services="import"/>
         <module name="org.codehaus.woodstox" services="import"/>
     </dependencies>
 </module>

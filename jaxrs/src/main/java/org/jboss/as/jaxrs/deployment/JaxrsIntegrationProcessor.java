@@ -165,12 +165,8 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         boolean mappingSet = false;
 
         if (useScannedClass) {
-            //add a servlet named after the application class
-            JBossServletMetaData servlet = new JBossServletMetaData();
-            servlet.setName(servletName);
-            servlet.setServletClass(HttpServlet30Dispatcher.class.getName());
-            addServlet(webdata, servlet);
-            //look for mappings:
+
+            //look for servlet mappings
             if (!servletMappingsExist(webdata, servletName)) {
                 //no mappings, add our own
                 List<String> patterns = new ArrayList<String>();
@@ -190,7 +186,8 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                     setContextParameter(webdata, "resteasy.servlet.mapping.prefix", prefix);
                     mappingSet = true;
                 } else {
-                    throw new DeploymentUnitProcessingException("No Servlet mappings found for JAX-RS application: " + servletName + " either annotate it with @ApplicationPath or add a servlet-mapping in web.xml");
+                    log.warn("No Servlet mappings found for JAX-RS application: " + servletName + " either annotate it with @ApplicationPath or add a servlet-mapping in web.xml");
+                    return;
                 }
                 ServletMappingMetaData mapping = new ServletMappingMetaData();
                 mapping.setServletName(servletName);
@@ -200,6 +197,13 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 }
                 webdata.getServletMappings().add(mapping);
             }
+
+            //add a servlet named after the application class
+            JBossServletMetaData servlet = new JBossServletMetaData();
+            servlet.setName(servletName);
+            servlet.setServletClass(HttpServlet30Dispatcher.class.getName());
+            addServlet(webdata, servlet);
+
         }
 
         if (!mappingSet) {
