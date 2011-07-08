@@ -48,7 +48,7 @@ public class MessageDrivenComponentInstance extends BasicComponentInstance {
 
     protected class MessageDrivenComponentInstanceContext extends BaseMessageDrivenContext {
         protected MessageDrivenComponentInstanceContext() {
-            super(MessageDrivenComponentInstance.this.getComponent(), getInstance());
+            super(MessageDrivenComponentInstance.this.getComponent(), MessageDrivenComponentInstance.this);
         }
     };
 

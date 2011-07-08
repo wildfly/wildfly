@@ -609,6 +609,18 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         roleLinks.add(toRole);
     }
 
+    protected EJBViewDescription registerView(final String viewClassName, final MethodIntf viewType) {
+        // setup the ViewDescription
+        final EJBViewDescription viewDescription = new EJBViewDescription(this, viewClassName, viewType);
+        getViews().add(viewDescription);
+        // setup server side view interceptors
+        setupViewInterceptors(viewDescription);
+        // setup client side view interceptors
+        setupClientViewInterceptors(viewDescription);
+        // return created view
+        return viewDescription;
+    }
+
     public Map<String, Collection<String>> getSecurityRoleLinks() {
         return Collections.unmodifiableMap(this.securityRoleLinks);
     }

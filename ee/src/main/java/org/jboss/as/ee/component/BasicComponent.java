@@ -231,4 +231,9 @@ public class BasicComponent implements Component {
     void finishDestroy() {
 
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " " + componentName;
+    }
 }
