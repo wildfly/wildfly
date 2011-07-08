@@ -101,6 +101,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
     static final String SKIP_DEPLOY = ".skipdeploy";
     static final String PENDING = ".pending";
 
+    static final String WEB_INF = "WEB-INF";
+    static final String META_INF = "META-INF";
+
     /** Max period an incomplete auto-deploy file can have no change in content */
     static final long MAX_NO_PROGRESS = 60000;
 
@@ -117,6 +120,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private final Map<String, DeploymentMarker> deployed = new HashMap<String, DeploymentMarker>();
     private final HashSet<String> ignoredMissingDeployments = new HashSet<String>();
     private final HashSet<String> noticeLogged = new HashSet<String>();
+    private final HashSet<String> illegalDirLogged = new HashSet<String>();
     private final HashSet<File> nonscannableLogged = new HashSet<File>();
     private final Map<File, IncompleteDeploymentStatus> incompleteDeployments = new HashMap<File, IncompleteDeploymentStatus>();
 
@@ -334,6 +338,19 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     }
                 }
 
+                // Log ERROR about META-INF and WEB-INF dirs outside a deployment
+                illegalDirLogged.retainAll(scanContext.illegalDir);
+                for (String fileName : scanContext.illegalDir) {
+                    if (illegalDirLogged.add(fileName)) {
+                    log.errorf("The deployment scanner found a directory named %s that was not inside a directory whose " +
+                            "name ends with .ear, .jar, .rar, .sar or .war. This is likely the result of unzipping an " +
+                            "archive directly inside the %s directory, which is a user error. " +
+                            "The %s directory will not be scanned for deployments, but it is possible that the scanner may" +
+                            "find other files from the unzipped archive and attempt to deploy them, leading to errors.",
+                            fileName, deploymentDir.getAbsolutePath(), fileName);
+                    }
+                }
+
                 // Deal with any incomplete or non-scannable auto-deploy content
                 ScanStatus status = handleAutoDeployFailures(scanContext);
                 if (status != ScanStatus.PROCEED) {
@@ -529,7 +546,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 }
             }
             else if (child.isDirectory()) { // exploded deployments would have been caught by isEEArchive(fileName) above
-                scanDirectory(child, scanContext);
+
+                if (WEB_INF.equalsIgnoreCase(fileName) || META_INF.equalsIgnoreCase(fileName)) {
+                    // Track for possible ERROR logging of the need for a marker
+                    scanContext.illegalDir.add(fileName);
+                } else {
+                    scanDirectory(child, scanContext);
+                }
             }
         }
     }
@@ -1067,6 +1090,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
         private Map<File, IncompleteDeploymentStatus> incompleteFiles = new HashMap<File, IncompleteDeploymentStatus>();
         /** Non-auto-deployable files detected by the scan without an appropriate marker */
         private final HashSet<String> nonDeployable = new HashSet<String>();
+        /** WEB-INF and META-INF dirs not enclosed by a deployment */
+        private final HashSet<String> illegalDir = new HashSet<String>();
         /** Auto-deployable files detected by the scan where ZipScanner threw a NonScannableZipException */
         private final Map<File, NonScannableZipException> nonscannable = new HashMap<File, NonScannableZipException>();
     }
