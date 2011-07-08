@@ -33,6 +33,7 @@ import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.deployment.JndiNamingDependencySetupProcessor;
+import org.jboss.as.naming.management.JndiViewExtensionRegistry;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -89,11 +90,7 @@ public class NamingSubsystemAdd extends AbstractAddStepHandler {
         // Provide the {@link InitialContext} as OSGi service
         newControllers.add(InitialContextFactoryService.addService(target, verificationHandler));
 
-        final JndiView jndiView = new JndiView();
-        newControllers.add(target.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)
-                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector())
-                .addListener(verificationHandler)
-                .install());
+        newControllers.add(target.addService(JndiViewExtensionRegistry.SERVICE_NAME, new JndiViewExtensionRegistry()).install());
 
         if (context.isBooting()) {
             context.addStep(new AbstractDeploymentChainStep() {
