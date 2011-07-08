@@ -139,7 +139,7 @@
         <version.org.jboss.metadata.ejb>7.0.0.Beta5</version.org.jboss.metadata.ejb>
         <version.org.jboss.metadata.web>7.0.0.Beta5</version.org.jboss.metadata.web>
         <version.org.jboss.mod_cluster>1.1.2.Final</version.org.jboss.mod_cluster>
-        <version.org.jboss.modules.jboss-modules>1.0.0.GA</version.org.jboss.modules.jboss-modules>
+        <version.org.jboss.modules.jboss-modules>1.0.1.GA</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.0.GA</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.netty>3.2.3.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.blueprint>1.0.2</version.org.jboss.osgi.blueprint>
