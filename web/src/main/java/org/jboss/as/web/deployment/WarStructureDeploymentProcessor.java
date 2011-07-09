@@ -30,7 +30,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
-import org.jboss.as.server.deployment.module.IgnoreMetaInfMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.MountHandle;
@@ -74,7 +73,9 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         this.sharedTldsMetaData = sharedTldsMetaData;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
@@ -84,7 +85,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         final ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         final VirtualFile deploymentRoot = deploymentResourceRoot.getRoot();
-        if(deploymentRoot == null) {
+        if (deploymentRoot == null) {
             return;
         }
 
@@ -113,7 +114,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
                 deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, root);
             }
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
         }
         // Add the war metadata
@@ -133,7 +134,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
      * Create the resource roots for a .war deployment
      *
      * @param deploymentRoot the deployment root
-     * @param mountHandle the root mount handle
+     * @param mountHandle    the root mount handle
      * @return the resource roots
      * @throws IOException for any error
      */
@@ -144,13 +145,6 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         // WEB-INF classes
         final ResourceRoot webInfClassesRoot = new ResourceRoot(deploymentRoot.getChild(WEB_INF_CLASSES).getName(), deploymentRoot
                 .getChild(WEB_INF_CLASSES), null);
-        final VirtualFile webInfClassMetaInf = webInfClassesRoot.getRoot().getChild("META-INF");
-        // ignore all other files, except persistence.xml from the WEB-INF/classes/META-INF folder.
-        if (this.containsNonPersistenceXmlFiles(webInfClassMetaInf)) {
-            IgnoreMetaInfMarker.mark(webInfClassesRoot);
-            logger.warnf("Files, except persistence.xml, under META-INF directory %s ignored as it is not a " +
-                    "valid location for META-INF", webInfClassMetaInf.getPathName());
-        }
         ModuleRootMarker.mark(webInfClassesRoot);
         entries.add(webInfClassesRoot);
         // WEB-INF lib
@@ -167,9 +161,9 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
     void createWebInfLibResources(final VirtualFile deploymentRoot, List<ResourceRoot> entries) throws IOException,
             DeploymentUnitProcessingException {
         final VirtualFile webinfLib = deploymentRoot.getChild(WEB_INF_LIB);
-        if(webinfLib.exists()) {
+        if (webinfLib.exists()) {
             final List<VirtualFile> archives = webinfLib.getChildren(DEFAULT_WEB_INF_LIB_FILTER);
-            for(final VirtualFile archive : archives) {
+            for (final VirtualFile archive : archives) {
                 try {
                     final Closeable closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
                     final ResourceRoot webInfArchiveRoot = new ResourceRoot(archive.getName(), archive, new MountHandle(closable));
@@ -179,36 +173,6 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
                     throw new DeploymentUnitProcessingException("failed to process " + archive, e);
                 }
             }
-        }
-    }
-
-    private boolean containsNonPersistenceXmlFiles(final VirtualFile webInfClassesMetaInf) {
-        if (webInfClassesMetaInf == null) {
-            return false;
-        }
-        try {
-            List<VirtualFile> children = webInfClassesMetaInf.getChildren(new NonPersistenceXmlFileFilter());
-            if (children != null && !children.isEmpty()) {
-                // we found a file which isn't persistence.xml, so return true.
-                return true;
-            }
-        } catch (IOException ioe) {
-            // just log and ignore
-            logger.debug("Ignoring exception while looking for file under: " + webInfClassesMetaInf, ioe);
-            // let's return that we didn't find any non persistence.xml files
-            return false;
-        }
-        return false;
-    }
-
-    /**
-     * Filter which accepts all files *except* persistence.xml
-     */
-    private class NonPersistenceXmlFileFilter implements VirtualFileFilter {
-
-        @Override
-        public boolean accepts(VirtualFile file) {
-            return file.getName().equals("persistence.xml") == false;
         }
     }
 }
