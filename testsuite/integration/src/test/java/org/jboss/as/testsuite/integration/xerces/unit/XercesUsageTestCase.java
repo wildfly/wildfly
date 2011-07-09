@@ -35,7 +35,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.xerces.JSFManagedBean;
 import org.jboss.as.testsuite.integration.xerces.XercesUsageServlet;
 import org.jboss.logging.Logger;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -44,7 +43,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * User: jpai
+ * Tests that packaging the xerces jar within a deployment does not cause deployment or runtime failures in the application
+ *
+ * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -58,7 +59,12 @@ public class XercesUsageTestCase {
 
     private static final Logger logger = Logger.getLogger(XercesUsageTestCase.class);
 
-    @Deployment (name = "app-without-jsf", testable = false)
+    /**
+     * Create a .ear, containing a web application (without any JSF constructs) and also the xerces jar in the .ear/lib
+     *
+     * @return
+     */
+    @Deployment(name = "app-without-jsf", testable = false)
     public static EnterpriseArchive createDeployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEB_APP_CONTEXT + ".war");
         war.addClasses(XercesUsageServlet.class);
@@ -75,7 +81,12 @@ public class XercesUsageTestCase {
         return ear;
     }
 
-    @Deployment (name = "app-with-jsf", testable = false)
+    /**
+     * Create a .ear, containing a JSF web application and also the xerces jar in the .ear/lib
+     *
+     * @return
+     */
+    @Deployment(name = "app-with-jsf", testable = false)
     public static EnterpriseArchive createJSFDeployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, JSF_WEB_APP_CONTEXT + ".war");
         war.addClasses(XercesUsageServlet.class, JSFManagedBean.class);
@@ -92,6 +103,13 @@ public class XercesUsageTestCase {
         return ear;
     }
 
+
+    /**
+     * Test that a non-JSF web application, with xerces jar packaged within the deployment, functions correctly
+     * while using the packaged xerces API.
+     *
+     * @throws Exception
+     */
     @OperateOnDeployment("app-without-jsf")
     @Test
     public void testXercesUsageInServletInNonJSFApp() throws Exception {
@@ -110,6 +128,12 @@ public class XercesUsageTestCase {
         Assert.assertEquals("Unexpected echo message from servlet", XercesUsageServlet.SUCCESS_MESSAGE, responseMessage);
     }
 
+    /**
+     * Test that a JSF web application, with xerces jar packaged within the deployment, functions correctly while using
+     * the packaged xerces API.
+     *
+     * @throws Exception
+     */
     @OperateOnDeployment("app-with-jsf")
     @Test
     public void testXercesUsageInServletInJSFApp() throws Exception {
@@ -127,4 +151,6 @@ public class XercesUsageTestCase {
         final String responseMessage = EntityUtils.toString(entity);
         Assert.assertEquals("Unexpected echo message from servlet", XercesUsageServlet.SUCCESS_MESSAGE, responseMessage);
     }
+
+
 }
