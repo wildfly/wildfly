@@ -56,6 +56,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
@@ -71,6 +72,8 @@ import org.junit.Test;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class FileSystemDeploymentServiceUnitTestCase {
+
+    private static Logger logger = Logger.getLogger(FileSystemDeploymentServiceUnitTestCase.class);
 
     private static long count = System.currentTimeMillis();
 
@@ -935,6 +938,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(deployed.exists());
 
         // Confirm it doesn't come back
+        ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
 
         assertTrue(undeployed.exists());
@@ -1006,6 +1010,111 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertTrue(war.exists());
         assertFalse(dodeploy.exists());
         assertTrue(deployed.exists());
+    }
+
+    /**
+     * Tests that a deployment which had failed earlier, is redeployed (i.e. picked for deployment) when the deployment
+     * file is updated (i.e. timestamp changes).
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testFailedArchiveRedeployedAfterDeploymentUpdate() throws Exception {
+        final String warName = "helloworld.war";
+        // create our deployment file
+        File war = new File(tmpDir, warName);
+        testSupport.createZip(war, 0, false, false, false, false);
+        // trigger deployment
+        TesteeSet ts = createTestee();
+        ts.controller.addCompositeFailureResponse(1, 1);
+        // set the auto-deploy of zipped content on the scanner
+        ts.testee.setAutoDeployZippedContent(true);
+        ts.testee.scan();
+
+        // make sure the deployment exists after the scan
+        assertTrue(war.getAbsolutePath() + " is missing after deployment", war.exists());
+
+        // failed marker file
+        File failed = new File(tmpDir, warName + FileSystemDeploymentService.FAILED_DEPLOY);
+        // make sure the failed marker exists
+        assertTrue(failed.getAbsolutePath() + " marker file not found after deployment", failed.exists());
+
+        // Now update the timestamp of the deployment war and retrigger a deployment scan expecting it to process
+        // the deployment war and create a deployed (a.k.a successful) deployment marker. This simulates the case where the
+        // original deployment file is "fixed" and the deployment scanner should pick it up even in the presence of the
+        // (previous) failed marker
+        long newLastModifiedTime = failed.lastModified() + 1000;
+        logger.info("Updating last modified time of war " + war + " from " + war.lastModified() + " to " + newLastModifiedTime + " to simulate changes to the deployment");
+        war.setLastModified(newLastModifiedTime);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+
+        // make sure the deployment exists after the scan
+        assertTrue(war.getAbsolutePath() + " is missing after re-deployment", war.exists());
+        // make sure the deployed marker exists
+        File deployed = createFile(warName + FileSystemDeploymentService.DEPLOYED);
+        assertTrue(deployed.getAbsolutePath() + " marker file not found after re-deployment", deployed.exists());
+        // make sure the failed marker *no longer exists*
+        failed = new File(tmpDir, warName + FileSystemDeploymentService.FAILED_DEPLOY);
+        assertFalse(failed.getAbsolutePath() + " marker file (unexpectedly) exists after re-deployment", failed.exists());
+
+    }
+
+    /**
+     * Tests that a deployment which had been undeployed earlier, is redeployed (i.e. picked for deployment) when the deployment
+     * file is updated (i.e. timestamp changes).
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testUndeployedArchiveRedeployedAfterDeploymentUpdate() throws Exception {
+        final String warName = "helloworld2.war";
+        // create our deployment file
+        File war = new File(tmpDir, warName);
+        testSupport.createZip(war, 0, false, false, false, false);
+        // trigger deployment
+        TesteeSet ts = createTestee();
+        ts.controller.addCompositeSuccessResponse(1);
+        // set the auto-deploy of zipped content on the scanner
+        ts.testee.setAutoDeployZippedContent(true);
+        ts.testee.scan();
+
+        // make sure the deployment exists after the scan
+        assertTrue(war.getAbsolutePath() + " is missing after deployment", war.exists());
+
+        // deployed marker file
+        File deployed = new File(tmpDir, warName + FileSystemDeploymentService.DEPLOYED);
+        // make sure the deployed marker exists
+        assertTrue(deployed.getAbsolutePath() + " marker file not found after deployment", deployed.exists());
+
+        // now trigger a undeployment by removed the "deployed" marker file
+        assertTrue("Could not delete " + deployed.getAbsolutePath() + " marker file", deployed.delete());
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+
+        // make sure undeployed marker exists
+        File undeployed = new File(tmpDir, warName + FileSystemDeploymentService.UNDEPLOYED);
+        assertTrue(undeployed.getAbsolutePath() + " marker file not found after undeployment", undeployed.exists());
+        
+        // Now update the timestamp of the deployment war and retrigger a deployment scan expecting it to process
+        // the deployment war and create a deployed (a.k.a successful) deployment marker. This simulates the case where the
+        // original deployment file is redeployed and the deployment scanner should pick it up even in the presence of the
+        // (previous) undeployed marker
+        long newLastModifiedTime = undeployed.lastModified() + 1000;
+        logger.info("Updating last modified time of war " + war + " from " + war.lastModified() + " to " + newLastModifiedTime + " to simulate changes to the deployment");
+        war.setLastModified(newLastModifiedTime);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+
+        // make sure the deployment exists after the scan
+        assertTrue(war.getAbsolutePath() + " is missing after re-deployment", war.exists());
+        // make sure the deployed marker exists
+        deployed = createFile(warName + FileSystemDeploymentService.DEPLOYED);
+        assertTrue(deployed.getAbsolutePath() + " marker file not found after re-deployment", deployed.exists());
+        // make sure the undeployed marker *no longer exists*
+        undeployed = new File(tmpDir, warName + FileSystemDeploymentService.UNDEPLOYED);
+        assertFalse(undeployed.getAbsolutePath() + " marker file (unexpectedly) exists after re-deployment", undeployed.exists());
+
     }
 
     private TesteeSet createTestee(String... existingContent) throws OperationFailedException {

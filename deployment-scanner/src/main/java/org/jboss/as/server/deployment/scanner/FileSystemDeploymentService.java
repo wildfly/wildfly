@@ -500,12 +500,26 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (autoDeployable) {
                     if (!isAutoDeployDisabled(child)) {
                         final File failedMarker = new File(directory, fileName + FAILED_DEPLOY);
-                        if(failedMarker.exists()) {// && child.lastModified() <= failedMarker.lastModified()) {
-                            continue;  // Don't auto-retry failed deployments
+                        if(failedMarker.exists()) {
+                            // check if the original deployment has been updated. If yes, then pick up the deployment
+                            // for processing, else skip
+                            if (child.lastModified() > failedMarker.lastModified()) {
+                                // remove the (previous) failed marker
+                                this.removeExtraneousMarker(failedMarker, failedMarker.getName());
+                            } else {
+                                continue;  // Don't auto-retry failed deployments if the deployment file hasn't been updated
+                            }
                         }
                         final File undeployedMarker = new File(directory, fileName + UNDEPLOYED);
-                        if(undeployedMarker.exists()) {// && child.lastModified() <= undeployedMarker.lastModified()) {
-                            continue;  // Don't auto-deploy undeployed deployments
+                        if(undeployedMarker.exists()) {
+                            // check if the original deployment has been updated. If yes, then pick up the deployment
+                            // for processing, else skip
+                            if (child.lastModified() > undeployedMarker.lastModified()) {
+                                // remove the (previous) "undeployed" marker
+                                this.removeExtraneousMarker(undeployedMarker, undeployedMarker.getName());
+                            } else {
+                                continue;  // Don't auto-deploy undeployed deployments if the deployment file hasn't been updated
+                            }
                         }
 
                         DeploymentMarker marker = deployed.get(fileName);
