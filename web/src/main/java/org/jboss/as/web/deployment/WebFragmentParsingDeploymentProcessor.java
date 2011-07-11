@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.ee.structure.DeploymentType;
@@ -50,6 +51,7 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
 
     private static final String WEB_FRAGMENT_XML = "META-INF/web-fragment.xml";
 
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
@@ -77,7 +79,9 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
                         inputFactory.setXMLResolver(NoopXmlResolver.create());
                         XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                         webFragments.put(resourceRoot.getRootName(), WebFragmentMetaDataParser.parse(xmlReader));
-                    } catch (Exception e) {
+                    } catch (XMLStreamException e) {
+                        throw new DeploymentUnitProcessingException("Failed to parse " + webFragment + " at [" + e.getLocation().getLineNumber() + "," +  e.getLocation().getColumnNumber() + "]");
+                    } catch (IOException e) {
                         throw new DeploymentUnitProcessingException("Failed to parse " + webFragment, e);
                     } finally {
                         try {
@@ -93,6 +97,7 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
         }
     }
 
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 }
