@@ -31,9 +31,9 @@ public class DelegatingInterceptorInvocationContext implements InvocationContext
 
     private InvocationContext delegateInvocationContext;
 
-    private List<Interceptor> invocationQueue;
-    private List<Object> interceptorInstances;
-    int position;
+    private final List<Interceptor> invocationQueue;
+    private final List<Object> interceptorInstances;
+    private int position;
 
     private InterceptionType interceptionType;
 
