@@ -28,6 +28,8 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.TransactionAttributeType;
@@ -113,6 +115,13 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected EJBUtilities getEJBUtilities() {
+        // constructs
+        final DeploymentUnit deploymentUnit = getDeploymentUnitInjector().getValue();
+        final ServiceController<EJBUtilities> serviceController = (ServiceController<EJBUtilities>) deploymentUnit.getServiceRegistry().getRequiredService(EJBUtilities.SERVICE_NAME);
+        return serviceController.getValue();
     }
 
     ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> getTxAttrs() {

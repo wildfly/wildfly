@@ -28,7 +28,6 @@ import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.server.CurrentServiceRegistry;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.spi.InvocationContext;
 import org.jboss.logging.Logger;
@@ -106,10 +105,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
         this.applicationExceptions = Collections.unmodifiableMap(ejbComponentCreateService.getEjbJarConfiguration().getApplicationExceptions());
 
-        // constructs
-        final DeploymentUnit deploymentUnit = ejbComponentCreateService.getDeploymentUnitInjector().getValue();
-        final ServiceController<EJBUtilities> serviceController = (ServiceController<EJBUtilities>) deploymentUnit.getServiceRegistry().getRequiredService(EJBUtilities.SERVICE_NAME);
-        this.utilities = serviceController.getValue();
+        this.utilities = ejbComponentCreateService.getEJBUtilities();
 
 
         txAttrs = ejbComponentCreateService.getTxAttrs();
