@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.ee.structure.DeploymentType;
@@ -45,6 +46,7 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
 
     private static final String JBOSS_WEB_XML = "WEB-INF/jboss-web.xml";
 
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
@@ -62,7 +64,9 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
                 inputFactory.setXMLResolver(NoopXmlResolver.create());
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                 warMetaData.setJbossWebMetaData(JBossWebMetaDataParser.parse(xmlReader));
-            } catch (Exception e) {
+            } catch (XMLStreamException e) {
+                throw new DeploymentUnitProcessingException("Failed to parse " + jbossWebXml + " at [" + e.getLocation().getLineNumber() + "," +  e.getLocation().getColumnNumber() + "]");
+            } catch (IOException e) {
                 throw new DeploymentUnitProcessingException("Failed to parse " + jbossWebXml, e);
             } finally {
                 try {
@@ -76,6 +80,7 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
         }
     }
 
+    @Override
     public void undeploy(DeploymentUnit context) {
     }
 }
