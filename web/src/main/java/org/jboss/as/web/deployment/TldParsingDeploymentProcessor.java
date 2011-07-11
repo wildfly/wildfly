@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.ee.structure.DeploymentType;
@@ -55,6 +56,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private static final String LIB = "lib";
     private static final String IMPLICIT_TLD = "implicit.tld";
 
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
@@ -92,6 +94,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 
@@ -119,7 +122,9 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
             inputFactory.setXMLResolver(NoopXmlResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
             return TldMetaDataParser.parse(xmlReader);
-        } catch (Exception e) {
+        } catch (XMLStreamException e) {
+            throw new DeploymentUnitProcessingException("Failed to parse " + tld + " at [" + e.getLocation().getLineNumber() + "," +  e.getLocation().getColumnNumber() + "]");
+        } catch (IOException e) {
             throw new DeploymentUnitProcessingException("Failed to parse " + tld, e);
         } finally {
             try {
