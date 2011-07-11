@@ -121,6 +121,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private final HashSet<String> ignoredMissingDeployments = new HashSet<String>();
     private final HashSet<String> noticeLogged = new HashSet<String>();
     private final HashSet<String> illegalDirLogged = new HashSet<String>();
+    private final HashSet<String> prematureExplodedContentDeletionLogged = new HashSet<String>();
     private final HashSet<File> nonscannableLogged = new HashSet<File>();
     private final Map<File, IncompleteDeploymentStatus> incompleteDeployments = new HashMap<File, IncompleteDeploymentStatus>();
 
@@ -287,7 +288,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
             } else if (fileName.endsWith(DEPLOYED)) {
                 final String deploymentName = fileName.substring(0, fileName.length() - DEPLOYED.length());
                 if (deploymentNames.contains(deploymentName)) {
-                    deployed.put(deploymentName, new DeploymentMarker(child.lastModified()));
+                    File deployment = new File(dir, deploymentName);
+                    deployed.put(deploymentName, new DeploymentMarker(child.lastModified(), !deployment.isDirectory()));
                 } else {
                     if (!child.delete()) {
                         log.warnf("Cannot removed extraneous deployment marker file %s", fileName);
@@ -342,7 +344,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 illegalDirLogged.retainAll(scanContext.illegalDir);
                 for (String fileName : scanContext.illegalDir) {
                     if (illegalDirLogged.add(fileName)) {
-                    log.errorf("The deployment scanner found a directory named %s that was not inside a directory whose " +
+                        log.errorf("The deployment scanner found a directory named %s that was not inside a directory whose " +
                             "name ends with .ear, .jar, .rar, .sar or .war. This is likely the result of unzipping an " +
                             "archive directly inside the %s directory, which is a user error. " +
                             "The %s directory will not be scanned for deployments, but it is possible that the scanner may" +
@@ -350,6 +352,20 @@ class FileSystemDeploymentService implements DeploymentScanner {
                             fileName, deploymentDir.getAbsolutePath(), fileName);
                     }
                 }
+
+                // Log about deleting exploded deployments without first triggering undeploy by deleting .deployed
+                prematureExplodedContentDeletionLogged.retainAll(scanContext.prematureExplodedDeletions);
+                for (String fileName : scanContext.prematureExplodedDeletions) {
+                    if (prematureExplodedContentDeletionLogged.add(fileName)) {
+                        log.warnf("The deployment scanner found that the content for exploded deployment %s has been " +
+                                "deleted, but auto-deploy/undeploy for exploded deployments is not enabled and the %s " +
+                                "marker file for this deployment has not been removed. As a result, the deployment is " +
+                                "not being undeployed, but resources needed by the deployment may have been deleted " +
+                                "and application errors may occur. Deleting the %s marker file to trigger undeploy is recommended.",
+                                fileName, fileName + DEPLOYED, fileName + DEPLOYED);
+                    }
+                }
+
 
                 // Deal with any incomplete or non-scannable auto-deploy content
                 ScanStatus status = handleAutoDeployFailures(scanContext);
@@ -468,7 +484,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
             final String fileName = child.getName();
             if (fileName.endsWith(DEPLOYED)) {
                 final String deploymentName = fileName.substring(0, fileName.length() - DEPLOYED.length());
-                if (!deployed.containsKey(deploymentName)) {
+                DeploymentMarker deploymentMarker = deployed.get(deploymentName);
+                if (deploymentMarker == null) {
                     scanContext.toRemove.remove(deploymentName);
                     removeExtraneousMarker(child, fileName);
                 }
@@ -477,10 +494,19 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     if (deploymentFile.exists()) {
                         scanContext.toRemove.remove(deploymentName);
                         if (deployed.get(deploymentName).lastModified != child.lastModified()) {
-                            scanContext.scannerTasks.add(new RedeployTask(deploymentName, child.lastModified(), directory));
+                            scanContext.scannerTasks.add(new RedeployTask(deploymentName, child.lastModified(), directory, !child.isDirectory()));
                         }
+                    } else {
+                        boolean autoDeployable = deploymentMarker.archive ? autoDeployZip : autoDeployExploded;
+                        if (!autoDeployable) {
+                            // Don't undeploy but log a warn if this is exploded content
+                            scanContext.toRemove.remove(deploymentName);
+                            if (!deploymentMarker.archive) {
+                                scanContext.prematureExplodedDeletions.add(deploymentName);
+                            }
+                        }
+                        // else AS7-1240 -- content is gone, leave deploymentName in scanContext.toRemove to trigger undeploy
                     }
-                    // else AS7-120 -- content is gone, leave deploymentName in scanContext.toRemove to trigger undeploy
                 }
             }
             else if (fileName.endsWith(DO_DEPLOY)) {
@@ -961,7 +987,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             if (deployed.containsKey(deploymentName)) {
                 deployed.remove(deploymentName);
             }
-            deployed.put(deploymentName, new DeploymentMarker(deployedMarker.lastModified()));
+            deployed.put(deploymentName, new DeploymentMarker(deployedMarker.lastModified(), archive));
         }
     }
 
@@ -1016,10 +1042,12 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private final class RedeployTask extends ScannerTask {
         private final long markerLastModified;
+        private final boolean archive;
 
-        private RedeployTask(final String deploymentName, final long markerLastModified, final File parent) {
+        private RedeployTask(final String deploymentName, final long markerLastModified, final File parent, boolean archive) {
             super(deploymentName, parent, DEPLOYING);
             this.markerLastModified = markerLastModified;
+            this.archive = archive;
         }
 
         @Override
@@ -1035,7 +1063,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             removeInProgressMarker();
 
             deployed.remove(deploymentName);
-            deployed.put(deploymentName, new DeploymentMarker(markerLastModified));
+            deployed.put(deploymentName, new DeploymentMarker(markerLastModified, archive));
 
         }
 
@@ -1091,10 +1119,12 @@ class FileSystemDeploymentService implements DeploymentScanner {
     }
 
     private class DeploymentMarker {
-        private long lastModified;
+        private final long lastModified;
+        private boolean archive;
 
-        private DeploymentMarker(final long lastModified) {
+        private DeploymentMarker(final long lastModified, boolean archive) {
             this.lastModified = lastModified;
+            this.archive = archive;
         }
     }
 
@@ -1113,6 +1143,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
         private final HashSet<String> nonDeployable = new HashSet<String>();
         /** WEB-INF and META-INF dirs not enclosed by a deployment */
         private final HashSet<String> illegalDir = new HashSet<String>();
+        /** Exploded deployment content removed without first removing the .deployed marker */
+        private final HashSet<String> prematureExplodedDeletions = new HashSet<String>();
         /** Auto-deployable files detected by the scan where ZipScanner threw a NonScannableZipException */
         private final Map<File, NonScannableStatus> nonscannable = new HashMap<File, NonScannableStatus>();
         /** Timestamp when the scan started */
