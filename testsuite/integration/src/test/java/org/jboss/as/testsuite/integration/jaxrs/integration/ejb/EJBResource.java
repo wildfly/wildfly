@@ -19,15 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.jaxrs.cdiintegration;
+package org.jboss.as.testsuite.integration.jaxrs.integration.ejb;
 
-/**
- * @author Stuart Douglas
- */
-public class CDIBean {
+import javax.ejb.Stateless;
+import javax.interceptor.Interceptors;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 
-    public String message() {
-        return "Hello World!";
+@Path("ejbInterceptor")
+@Produces({"text/plain"})
+@Stateless
+@Interceptors(EjbInterceptor.class)
+public class EJBResource {
+
+    @GET
+    public String getMessage() {
+        return "Hello";
     }
-
 }

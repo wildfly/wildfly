@@ -19,15 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.jaxrs.cdiintegration;
+package org.jboss.as.testsuite.integration.jaxrs.integration.ejb;
 
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
 
 /**
- * Application with a predefined path
- *@author Stuart Douglas
+ * @author Stuart Douglas
  */
-@ApplicationPath("/cdipath")
-public class CDIPathApplication extends Application {
+public class EjbInterceptor {
+
+    @AroundInvoke
+    public Object intercept(final InvocationContext invocationContext) throws Exception {
+        return invocationContext.proceed().toString() + " World";
+    }
+
 }

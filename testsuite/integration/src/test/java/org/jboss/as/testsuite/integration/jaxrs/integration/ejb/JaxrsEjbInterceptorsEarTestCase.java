@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.jaxrs.cdiintegration;
+package org.jboss.as.testsuite.integration.jaxrs.integration.ejb;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -28,8 +28,8 @@ import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.as.testsuite.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,19 +45,19 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class CDIResourceInjectionEarTestCase {
+public class JaxrsEjbInterceptorsEarTestCase {
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "jaxrsnoap.ear");
 
-
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejbjar.jar");
+        ejbJar.addClasses(EJBResource.class, EjbInterceptor.class);
+        ear.addAsModule(ejbJar);
 
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
-        war.add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
-        war.addClasses(CDIResourceInjectionEarTestCase.class, CDIResource.class, CDIBean.class);
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
                 "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
@@ -75,8 +75,8 @@ public class CDIResourceInjectionEarTestCase {
 
     @Test
     public void testJaxRsWithNoApplication() throws Exception {
-        String result = performCall("myjaxrs/cdiInject");
-        assertEquals("Hello World!", result);
+        String result = performCall("myjaxrs/ejbInterceptor");
+        assertEquals("Hello World", result);
     }
 
 

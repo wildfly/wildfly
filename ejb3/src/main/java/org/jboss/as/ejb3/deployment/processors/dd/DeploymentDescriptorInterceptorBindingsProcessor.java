@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EjbJar3xMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorBindingMetaData;
@@ -55,6 +56,10 @@ import java.util.Set;
  * @author Stuart Douglas
  */
 public class DeploymentDescriptorInterceptorBindingsProcessor implements DeploymentUnitProcessor {
+
+
+    private static final Logger log = Logger.getLogger(DeploymentDescriptorInterceptorBindingsProcessor.class);
+
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
@@ -115,6 +120,8 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                     //we only want default interceptors referenced in the interceptors section
                     if (interceptorClasses.contains(clazz)) {
                         defaultInterceptors.add(new InterceptorDescription(clazz));
+                    } else {
+                        log.warnf("Default interceptor class %s is not listed in the <interceptors> section of ejb-jar.xml and will not be applied", clazz);
                     }
                 }
             }
