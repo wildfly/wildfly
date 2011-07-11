@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -136,40 +137,32 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
             // scan the ear looking for wars and jars
             final List<VirtualFile> childArchives = new ArrayList<VirtualFile>(virtualFile.getChildren(new SuffixMatchFilter(
                     CHILD_ARCHIVE_EXTENSIONS, new VisitorAttributes() {
-                        @Override
-                        public boolean isLeavesOnly() {
+                @Override
+                public boolean isLeavesOnly() {
+                    return false;
+                }
+
+                @Override
+                public boolean isRecurse(VirtualFile file) {
+                    // don't recurse into /lib
+                    if (file.equals(libDir)) {
+                        return false;
+                    }
+                    for (String suffix : CHILD_ARCHIVE_EXTENSIONS) {
+                        if (file.getName().endsWith(suffix)) {
+                            // don't recurse into sub deployments
                             return false;
                         }
-
-                        @Override
-                        public boolean isRecurse(VirtualFile file) {
-                            // don't recurse into /lib
-                            if (file.equals(libDir)) {
-                                return false;
-                            }
-                            for (String suffix : CHILD_ARCHIVE_EXTENSIONS) {
-                                if (file.getName().endsWith(suffix)) {
-                                    // don't recurse into sub deployments
-                                    return false;
-                                }
-                            }
-                            return true;
-                        }
-                    })));
+                    }
+                    return true;
+                }
+            })));
 
             // if there is no application.xml then look in the ear root for modules
             if (earMetaData == null) {
                 for (final VirtualFile child : childArchives) {
-                    final boolean war = child.getName().toLowerCase().endsWith(WAR_EXTENSION);
-                    final Closeable closable = child.isFile() ? mount(child, war)
-                            : null;
-                    final MountHandle mountHandle = new MountHandle(closable);
-                    final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
-                    deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
-                    if (war) {
-                        SubDeploymentMarker.mark(childResource);
-                        childResource.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
-                    }
+                    final boolean isWarFile = child.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION);
+                    this.createResourceRoot(deploymentUnit, child, isWarFile, isWarFile);
                 }
             } else {
                 Set<VirtualFile> subDeploymentFiles = new HashSet<VirtualFile>();
@@ -181,28 +174,21 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                         throw new DeploymentUnitProcessingException("Unable to process modules in application.xml for EAR ["
                                 + virtualFile + "], module file " + module.getFileName() + " not found");
                     }
-                    boolean war = module.getType() == ModuleType.Web;
-                    final Closeable closable = moduleFile.isFile() ? mount(moduleFile, war) : null;
-                    final MountHandle mountHandle = new MountHandle(closable);
-                    final ResourceRoot childResource = new ResourceRoot(moduleFile, mountHandle);
-                    deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
-                    childResource.putAttachment(org.jboss.as.ee.structure.Attachments.MODULE_META_DATA, module);
+                    // maintain this in a collection of subdeployment virtual files, to be used later
                     subDeploymentFiles.add(moduleFile);
-                    SubDeploymentMarker.mark(childResource);
-                    if (war) {
-                        childResource.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
-                    }
+
+                    boolean explodeDuringMount = module.getType() == ModuleType.Web;
+                    final ResourceRoot childResource = this.createResourceRoot(deploymentUnit, moduleFile, true, explodeDuringMount);
+                    childResource.putAttachment(org.jboss.as.ee.structure.Attachments.MODULE_META_DATA, module);
                 }
-                // now check the rest of the archive for any other jar files
+                // now check the rest of the archive for any other jar/sar files
                 for (final VirtualFile child : childArchives) {
                     if (subDeploymentFiles.contains(child)) {
                         continue;
                     }
-                    if (child.getLowerCaseName().toLowerCase().endsWith(JAR_EXTENSION)) {
-                        final Closeable closable = child.isFile() ? mount(child, false) : null;
-                        final MountHandle mountHandle = new MountHandle(closable);
-                        final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
-                        deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
+                    final String fileName = child.getName().toLowerCase(Locale.ENGLISH);
+                    if (fileName.endsWith(SAR_EXTENSION) || fileName.endsWith(JAR_EXTENSION)) {
+                        this.createResourceRoot(deploymentUnit, child, false, false);
                     }
                 }
             }
@@ -214,7 +200,35 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
     private static Closeable mount(VirtualFile moduleFile, boolean explode) throws IOException {
         return explode ? VFS.mountZipExpanded(moduleFile, moduleFile, TempFileProviderService.provider())
-                       : VFS.mountZip(moduleFile, moduleFile, TempFileProviderService.provider());
+                : VFS.mountZip(moduleFile, moduleFile, TempFileProviderService.provider());
+    }
+
+    /**
+     * Creates a {@link ResourceRoot} for the passed {@link VirtualFile file} and adds it to the list of {@link ResourceRoot}s
+     * in the {@link DeploymentUnit deploymentUnit}
+     *
+     * @param deploymentUnit      The deployment unit
+     * @param file                The file for which the resource root will be created
+     * @param markAsSubDeployment If this is true, then the {@link ResourceRoot} that is created will be marked as a subdeployment
+     *                            through a call to {@link SubDeploymentMarker#mark(org.jboss.as.server.deployment.module.ResourceRoot)}
+     * @param explodeDuringMount  If this is true then the {@link VirtualFile file} will be exploded during mount,
+     *                            while creating the {@link ResourceRoot}
+     * @return Returns the created {@link ResourceRoot}
+     * @throws IOException
+     */
+    private ResourceRoot createResourceRoot(final DeploymentUnit deploymentUnit, final VirtualFile file, final boolean markAsSubDeployment, final boolean explodeDuringMount) throws IOException {
+        final boolean war = file.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION);
+        final Closeable closable = file.isFile() ? mount(file, explodeDuringMount) : null;
+        final MountHandle mountHandle = new MountHandle(closable);
+        final ResourceRoot resourceRoot = new ResourceRoot(file, mountHandle);
+        deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
+        if (markAsSubDeployment) {
+            SubDeploymentMarker.mark(resourceRoot);
+        }
+        if (war) {
+            resourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
+        }
+        return resourceRoot;
     }
 
     public void undeploy(DeploymentUnit context) {

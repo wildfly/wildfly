@@ -23,10 +23,11 @@
 package org.jboss.as.testsuite.integration.sar.unit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.testsuite.integration.sar.SarWithinEarServiceMBean;
 import org.jboss.as.testsuite.integration.sar.SarWithinEarService;
+import org.jboss.as.testsuite.integration.sar.SarWithinEarServiceMBean;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -42,36 +43,77 @@ import java.io.IOException;
 import java.util.HashMap;
 
 /**
- * Test that a service configured in a .sar within a .ear deployment works fine.
- *
+ * Test that a service configured in a .sar within a .ear deployment works fine, both when the .ear contains a application.xml
+ * and when it doesn't.
+ * <p/>
  * User: Jaikiran Pai
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class SarWithinEarTestCase {
 
-    private static final String EAR_NAME = "sar-within-ear.ear";
+    private static final String EAR_WITHOUT_APPLICATION_XML = "sar-within-ear-without-application-xml.ear";
 
-    @Deployment (testable = false)
-    public static EnterpriseArchive getDeployment() {
+    private static final String EAR_WITH_APPLICATION_XML = "sar-within-ear-with-application-xml.ear";
+
+    /**
+     * Create a .ear, without an application.xml, with a nested .sar deployment
+     *
+     * @return
+     */
+    @Deployment(name = "ear-without-application-xml", testable = false)
+    public static EnterpriseArchive getEarWithoutApplicationDotXml() {
         final JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "simple-sar.sar");
         sar.addClasses(SarWithinEarServiceMBean.class, SarWithinEarService.class);
-        sar.addAsManifestResource("sar/jboss-service.xml", "jboss-service.xml");
+        sar.addAsManifestResource("sar/jboss-service-without-application-xml.xml", "jboss-service.xml");
 
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_NAME);
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_WITHOUT_APPLICATION_XML);
         ear.addAsModule(sar);
         return ear;
     }
 
     /**
-     * Tests that invocation on a service deployed within a .sar, inside a .ear, is successful.
-     * 
+     * Create a .ear with an application.xml and a nested .sar deployment
+     *
+     * @return
+     */
+    @Deployment(name = "ear-with-application-xml", testable = false)
+    public static EnterpriseArchive getEarWithApplicationDotXml() {
+        final JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "simple-sar.sar");
+        sar.addClasses(SarWithinEarServiceMBean.class, SarWithinEarService.class);
+        sar.addAsManifestResource("sar/jboss-service-with-application-xml.xml", "jboss-service.xml");
+
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_WITH_APPLICATION_XML);
+        ear.addAsModule(sar);
+        ear.addAsManifestResource("sar/application.xml", "application.xml");
+        return ear;
+    }
+
+    /**
+     * Tests that invocation on a service deployed within a .sar, inside a .ear without an application.xml, is successful.
+     *
      * @throws Exception
      */
+    @OperateOnDeployment("ear-without-application-xml")
     @Test
-    public void testSarWithinEar() throws Exception {
+    public void testSarWithinEarWithoutApplicationXml() throws Exception {
+        this.testSarWithinEar("jboss:name=service-in-sar-within-a-ear-without-application-xml");
+    }
+
+    /**
+     * Tests that invocation on a service deployed within a .sar, inside a .ear with an application.xml, is successful.
+     *
+     * @throws Exception
+     */
+    @OperateOnDeployment("ear-with-application-xml")
+    @Test
+    public void testSarWithinEarWithApplicationXml() throws Exception {
+        this.testSarWithinEar("jboss:name=service-in-sar-within-a-ear-with-application-xml");
+    }
+
+    private void testSarWithinEar(final String serviceName) throws Exception {
         final MBeanServerConnection mBeanServerConnection = this.getMBeanServerConnection();
-        final ObjectName mbeanObjectName = new ObjectName("jboss:name=service-in-sar-within-a-ear");
+        final ObjectName mbeanObjectName = new ObjectName(serviceName);
         final int num1 = 3;
         final int num2 = 4;
         // invoke the operation on MBean
