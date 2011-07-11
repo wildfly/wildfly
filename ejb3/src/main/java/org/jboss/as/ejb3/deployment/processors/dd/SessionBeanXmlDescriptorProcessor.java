@@ -22,7 +22,9 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
@@ -90,6 +92,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
     protected void processBeanMetaData(SessionBeanMetaData sessionBean, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
+        final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         // get the module description
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final String applicationName = moduleDescription.getApplicationName();
@@ -140,7 +143,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         }
 
         // interceptors
-        this.processInterceptors(sessionBean, sessionBeanDescription);
+        this.processInterceptors(sessionBean, sessionBeanDescription, applicationClassesDescription);
 
         // process EJB3.1 specific session bean description
         if (sessionBean instanceof SessionBean31MetaData) {
@@ -161,7 +164,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
             description.setBeforeCompletion(null, metaData.getBeforeCompletionMethod().getMethodName());
     }
 
-    protected void processInterceptors(SessionBeanMetaData enterpriseBean, EJBComponentDescription ejbComponentDescription) {
+    protected void processInterceptors(SessionBeanMetaData enterpriseBean, EJBComponentDescription ejbComponentDescription, final EEApplicationClasses applicationClassesDescription) {
 
         //for interceptor methods that specify a null class we cannot deal with them here
         //instead we stick them on the component configuration, and deal with them once we have a module
@@ -172,7 +175,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
                 if (interceptor.getClassName() == null) {
                     ejbComponentDescription.getAroundInvokeDDMethods().add(interceptor.getMethodName());
                 } else {
-                    EEModuleClassDescription interceptorModuleClassDescription = ejbComponentDescription.getModuleDescription().getOrAddClassByName(interceptor.getClassName());
+                    EEModuleClassDescription interceptorModuleClassDescription = applicationClassesDescription.getOrAddClassByName(interceptor.getClassName());
                     final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
                     interceptorModuleClassDescription.setAroundInvokeMethod(identifier);
                 }
@@ -183,7 +186,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
                 if (interceptor.getClassName() == null) {
                     ejbComponentDescription.getPreDestroyDDMethods().add(interceptor.getMethodName());
                 } else {
-                    final EEModuleClassDescription interceptorModuleClassDescription = ejbComponentDescription.getModuleDescription().getOrAddClassByName(interceptor.getClassName());
+                    final EEModuleClassDescription interceptorModuleClassDescription = applicationClassesDescription.getOrAddClassByName(interceptor.getClassName());
                     final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
                     interceptorModuleClassDescription.setPreDestroyMethod(identifier);
                 }
@@ -195,7 +198,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
                 if (interceptor.getClassName() == null) {
                     ejbComponentDescription.getPostConstructDDMethods().add(interceptor.getMethodName());
                 } else {
-                    final EEModuleClassDescription interceptorModuleClassDescription = ejbComponentDescription.getModuleDescription().getOrAddClassByName(interceptor.getClassName());
+                    final EEModuleClassDescription interceptorModuleClassDescription = applicationClassesDescription.getOrAddClassByName(interceptor.getClassName());
                     final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
                     interceptorModuleClassDescription.setPostConstructMethod(identifier);
                 }

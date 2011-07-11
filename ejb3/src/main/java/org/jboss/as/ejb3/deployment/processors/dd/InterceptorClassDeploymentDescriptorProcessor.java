@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.deployment.processors.dd;
 
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
@@ -52,6 +53,7 @@ public class InterceptorClassDeploymentDescriptorProcessor implements Deployment
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         if (ejbJarMetaData == null) {
             return;
         }
@@ -67,7 +69,7 @@ public class InterceptorClassDeploymentDescriptorProcessor implements Deployment
         for (InterceptorMetaData interceptor : metaData.getInterceptors()) {
             String interceptorClassName = interceptor.getInterceptorClass();
             // get (or create the interceptor description)
-            EEModuleClassDescription interceptorModuleClassDescription = eeModuleDescription.getOrAddClassByName(interceptorClassName);
+            EEModuleClassDescription interceptorModuleClassDescription = applicationClassesDescription.getOrAddClassByName(interceptorClassName);
             // around-invoke(s) of the interceptor configured (if any) in the deployment descriptor
             AroundInvokesMetaData aroundInvokes = interceptor.getAroundInvokes();
             if (aroundInvokes != null) {

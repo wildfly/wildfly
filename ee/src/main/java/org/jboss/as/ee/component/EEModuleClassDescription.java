@@ -32,14 +32,16 @@ import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * The description of a (possibly annotated) class in an EE module.
+ *
+ * This class must be thread safe as it may be used by sub deployments at the same time
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -48,7 +50,7 @@ public final class EEModuleClassDescription {
     private static final DefaultConfigurator DEFAULT_CONFIGURATOR = new DefaultConfigurator();
 
     private final String className;
-    private final Deque<ClassConfigurator> configurators = new ArrayDeque<ClassConfigurator>();
+    private final Deque<ClassConfigurator> configurators = new LinkedBlockingDeque();
     private MethodIdentifier postConstructMethod;
     private MethodIdentifier preDestroyMethod;
     private MethodIdentifier aroundInvokeMethod;
@@ -154,7 +156,7 @@ public final class EEModuleClassDescription {
         }
     }
 
-    public void setInvalid(String message) {
+    public synchronized void setInvalid(String message) {
         if(!invalid) {
             invalid = true;
             invalidMessageBuilder = new StringBuilder();

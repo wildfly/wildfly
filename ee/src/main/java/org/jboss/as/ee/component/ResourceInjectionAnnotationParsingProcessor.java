@@ -115,6 +115,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final List<AnnotationInstance> resourceAnnotations = index.getAnnotations(RESOURCE_ANNOTATION_NAME);
         for (AnnotationInstance annotation : resourceAnnotations) {
@@ -126,16 +127,16 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             if (annotationTarget instanceof FieldInfo) {
                 FieldInfo fieldInfo = (FieldInfo) annotationTarget;
                 ClassInfo classInfo = fieldInfo.declaringClass();
-                EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
+                EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
                 processFieldResource(phaseContext, fieldInfo, name, type, classDescription, annotation, eeModuleDescription, module);
             } else if (annotationTarget instanceof MethodInfo) {
                 MethodInfo methodInfo = (MethodInfo) annotationTarget;
                 ClassInfo classInfo = methodInfo.declaringClass();
-                EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
+                EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
                 processMethodResource(phaseContext, methodInfo, name, type, classDescription, annotation, eeModuleDescription, module);
             } else if (annotationTarget instanceof ClassInfo) {
                 ClassInfo classInfo = (ClassInfo) annotationTarget;
-                EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
+                EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
                 processClassResource(phaseContext, name, type, classDescription, annotation, eeModuleDescription, module);
             }
         }
@@ -150,7 +151,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
                     final String name = nameValue != null ? nameValue.asString() : null;
                     final AnnotationValue typeValue = annotation.value("type");
                     final String type = typeValue != null ? typeValue.asClass().name().toString() : null;
-                    EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
+                    EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
                     processClassResource(phaseContext, name, type, classDescription, annotation, eeModuleDescription, module);
                 }
             }

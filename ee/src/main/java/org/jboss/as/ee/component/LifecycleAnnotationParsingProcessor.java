@@ -56,12 +56,13 @@ public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProces
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
 
         for (DotName annotationName : LIFE_CYCLE_ANNOTATIONS) {
             final List<AnnotationInstance> lifecycles = index.getAnnotations(annotationName);
             for (AnnotationInstance annotation : lifecycles) {
-                processLifeCycle(eeModuleDescription, annotation.target(), annotationName);
+                processLifeCycle(eeModuleDescription, annotation.target(), annotationName, applicationClasses);
             }
         }
     }
@@ -69,13 +70,13 @@ public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProces
     public void undeploy(DeploymentUnit context) {
     }
 
-    private void processLifeCycle(final EEModuleDescription eeModuleDescription, final AnnotationTarget target, final DotName annotationType) {
+    private void processLifeCycle(final EEModuleDescription eeModuleDescription, final AnnotationTarget target, final DotName annotationType, final EEApplicationClasses applicationClasses) {
         if (!(target instanceof MethodInfo)) {
             throw new IllegalArgumentException(annotationType + " is only valid on method targets.");
         }
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         final ClassInfo classInfo = methodInfo.declaringClass();
-        final EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
+        final EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
 
         final Type[] args = methodInfo.args();
         if (args.length > 1) {

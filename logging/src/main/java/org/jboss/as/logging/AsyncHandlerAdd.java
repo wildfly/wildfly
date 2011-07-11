@@ -64,7 +64,7 @@ class AsyncHandlerAdd extends AbstractAddStepHandler {
         final AsyncHandlerService service = new AsyncHandlerService();
         final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
         final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
-        for (final ModelNode handlerName : operation.get(SUBHANDLERS).asList()) {
+        if (operation.hasDefined(SUBHANDLERS)) for (final ModelNode handlerName : operation.get(SUBHANDLERS).asList()) {
             final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
             serviceBuilder.addDependency(LogServices.handlerName(handlerName.asString()), Handler.class, injectedValue);
             list.add(injectedValue);

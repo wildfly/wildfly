@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,15 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.jaxrs.cdiintegration;
 
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
+package org.jboss.as.naming.management;
+
+import org.jboss.as.controller.OperationFailedException;
 
 /**
- * Application with a predefined path
- *@author Stuart Douglas
+ * An extension to the JndiViewOperation.  This will be executed along with the normal JndiViewOperation.
+ *
+ * @author John Bailey
  */
-@ApplicationPath("/cdipath")
-public class CDIPathApplication extends Application {
+public interface JndiViewExtension {
+    /**
+     * Execute the extension and provide additional JNDI information in the result.
+     *
+     * @param context The extension context.
+     * @throws OperationFailedException
+     */
+    void execute(final JndiViewExtensionContext context) throws OperationFailedException;
 }

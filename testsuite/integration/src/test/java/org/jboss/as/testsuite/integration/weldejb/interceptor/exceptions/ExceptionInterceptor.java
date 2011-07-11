@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,17 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.testsuite.integration.weldejb.interceptor.exceptions;
 
-package org.jboss.as.naming.service;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
 
-/**
- * Reincarnation of the classic JNDIView mbean.
- *
- * @author John Bailey
- */
-public interface JndiViewMBean {
+@Interceptor
+@ExceptionBinding
+public class ExceptionInterceptor {
 
-  java.lang.String list(boolean verbose) ;
+    @AroundInvoke
+    public Object invoke(InvocationContext ctx) throws Exception {
+        return ctx.proceed();
+    }
 
-  java.lang.String listXML() ;
 }

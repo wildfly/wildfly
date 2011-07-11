@@ -790,6 +790,7 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                     this.writeOptional(writer, Attribute.SITE, transport, ModelKeys.SITE);
                     this.writeOptional(writer, Attribute.RACK, transport, ModelKeys.RACK);
                     this.writeOptional(writer, Attribute.MACHINE, transport, ModelKeys.MACHINE);
+                    writer.writeEndElement();
                 }
 
                 for (ModelNode cache: container.get(ModelKeys.CACHE).asList()) {

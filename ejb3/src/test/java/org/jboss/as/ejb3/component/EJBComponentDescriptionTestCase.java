@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component;
 
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ee.component.ViewDescription;
@@ -55,7 +56,8 @@ public class EJBComponentDescriptionTestCase {
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
         final ServiceName duServiceName = Services.deploymentUnitName("Dummy Deployment Unit");
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
+        final EEApplicationClasses applicationClassesDescription = new EEApplicationClasses();
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, applicationClassesDescription, false);
         final EJBComponentDescription description = new EJBComponentDescription("Test", "TestBean", ejbJarDescription, duServiceName) {
 
             @Override

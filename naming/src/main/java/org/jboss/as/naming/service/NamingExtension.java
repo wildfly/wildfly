@@ -45,6 +45,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.naming.management.JndiViewOperation;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -70,6 +71,7 @@ public class NamingExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(NamingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NamingSubsystemAdd.INSTANCE, NamingSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, NamingSubsystemDescribeHandler.INSTANCE, NamingSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(JndiViewOperation.OPERATION_NAME, JndiViewOperation.INSTANCE, NamingSubsystemProviders.JNDI_VIEW, false);
         subsystem.registerXMLElementWriter(parser);
     }
 

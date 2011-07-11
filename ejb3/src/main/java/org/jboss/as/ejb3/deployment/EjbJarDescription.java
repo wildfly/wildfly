@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.deployment;
 
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -52,17 +53,20 @@ public class EjbJarDescription {
 
     private final Set<String> applicationLevelSecurityRoles = new HashSet<String>();
 
+    private final EEApplicationClasses applicationClassesDescription;
+
     /**
      * True if this represents EJB's packaged in a war
      */
     private final boolean war;
 
-    public EjbJarDescription(EEModuleDescription eeModuleDescription, boolean war) {
+    public EjbJarDescription(EEModuleDescription eeModuleDescription, final EEApplicationClasses applicationClassesDescription, boolean war) {
         this.war = war;
         if (eeModuleDescription == null) {
             throw new IllegalArgumentException(EEModuleDescription.class.getSimpleName() + " cannot be null");
         }
         this.eeModuleDescription = eeModuleDescription;
+        this.applicationClassesDescription = applicationClassesDescription;
     }
 
     public void addSecurityRole(final String role) {
@@ -188,5 +192,9 @@ public class EjbJarDescription {
 
     public boolean isWar() {
         return war;
+    }
+
+    public EEApplicationClasses getApplicationClassesDescription() {
+        return applicationClassesDescription;
     }
 }

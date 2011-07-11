@@ -101,6 +101,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
     static final String SKIP_DEPLOY = ".skipdeploy";
     static final String PENDING = ".pending";
 
+    static final String WEB_INF = "WEB-INF";
+    static final String META_INF = "META-INF";
+
     /** Max period an incomplete auto-deploy file can have no change in content */
     static final long MAX_NO_PROGRESS = 60000;
 
@@ -117,6 +120,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private final Map<String, DeploymentMarker> deployed = new HashMap<String, DeploymentMarker>();
     private final HashSet<String> ignoredMissingDeployments = new HashSet<String>();
     private final HashSet<String> noticeLogged = new HashSet<String>();
+    private final HashSet<String> illegalDirLogged = new HashSet<String>();
     private final HashSet<File> nonscannableLogged = new HashSet<File>();
     private final Map<File, IncompleteDeploymentStatus> incompleteDeployments = new HashMap<File, IncompleteDeploymentStatus>();
 
@@ -315,7 +319,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 log.tracef("Scanning directory %s for deployment content changes", deploymentDir.getAbsolutePath());
 
                 ScanContext scanContext = new ScanContext();
-                scanDirectory(deploymentDir, scanContext);
+                scanDirectory(deploymentDir, relativePath, scanContext);
 
                 // WARN about markers with no associated content. Do this first in case any auto-deploy issue
                 // is due to a file that wasn't meant to be auto-deployed, but has a misspelled marker
@@ -331,6 +335,19 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 for (String fileName : scanContext.nonDeployable) {
                     if (noticeLogged.add(fileName)) {
                         log.infof("Found %s in deployment directory. To trigger deployment create a file called %s%s", fileName, fileName, DO_DEPLOY);
+                    }
+                }
+
+                // Log ERROR about META-INF and WEB-INF dirs outside a deployment
+                illegalDirLogged.retainAll(scanContext.illegalDir);
+                for (String fileName : scanContext.illegalDir) {
+                    if (illegalDirLogged.add(fileName)) {
+                    log.errorf("The deployment scanner found a directory named %s that was not inside a directory whose " +
+                            "name ends with .ear, .jar, .rar, .sar or .war. This is likely the result of unzipping an " +
+                            "archive directly inside the %s directory, which is a user error. " +
+                            "The %s directory will not be scanned for deployments, but it is possible that the scanner may" +
+                            "find other files from the unzipped archive and attempt to deploy them, leading to errors.",
+                            fileName, deploymentDir.getAbsolutePath(), fileName);
                     }
                 }
 
@@ -352,7 +369,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     // TODO -- minor -- this assumes the deployment was in the root deploymentDir,
                     // not a child dir, and therefore puts the '.isundeploying' file there
                     File parent = deploymentDir;
-                    scannerTasks.add(new UndeployTask(missing, parent));
+                    scannerTasks.add(new UndeployTask(missing, parent, scanContext.scanStartTime));
                 }
 
                 // Process the tasks
@@ -441,7 +458,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
      * @param directory the directory to scan
      * @param scanContext context of the scan
      */
-    private void scanDirectory(final File directory, final ScanContext scanContext) {
+    private void scanDirectory(final File directory, final String relativePath, final ScanContext scanContext) {
         final File[] children = directory.listFiles(filter);
         if (children == null) {
             return;
@@ -451,12 +468,19 @@ class FileSystemDeploymentService implements DeploymentScanner {
             final String fileName = child.getName();
             if (fileName.endsWith(DEPLOYED)) {
                 final String deploymentName = fileName.substring(0, fileName.length() - DEPLOYED.length());
-                scanContext.toRemove.remove(deploymentName);
                 if (!deployed.containsKey(deploymentName)) {
+                    scanContext.toRemove.remove(deploymentName);
                     removeExtraneousMarker(child, fileName);
                 }
-                else if (deployed.get(deploymentName).lastModified != child.lastModified()) {
-                    scanContext.scannerTasks.add(new RedeployTask(deploymentName, child.lastModified(), directory));
+                else {
+                    final File deploymentFile = new File(directory, deploymentName);
+                    if (deploymentFile.exists()) {
+                        scanContext.toRemove.remove(deploymentName);
+                        if (deployed.get(deploymentName).lastModified != child.lastModified()) {
+                            scanContext.scannerTasks.add(new RedeployTask(deploymentName, child.lastModified(), directory));
+                        }
+                    }
+                    // else AS7-120 -- content is gone, leave deploymentName in scanContext.toRemove to trigger undeploy
                 }
             }
             else if (fileName.endsWith(DO_DEPLOY)) {
@@ -482,17 +506,17 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 boolean autoDeployable = child.isDirectory() ? autoDeployExploded : autoDeployZip;
                 if (autoDeployable) {
                     if (!isAutoDeployDisabled(child)) {
+                        long timestamp = getDeploymentTimestamp(child);
                         final File failedMarker = new File(directory, fileName + FAILED_DEPLOY);
-                        if(failedMarker.exists()) {// && child.lastModified() <= failedMarker.lastModified()) {
-                            continue;  // Don't auto-retry failed deployments
+                        if(failedMarker.exists() && timestamp <= failedMarker.lastModified()) {
+                            continue;
                         }
                         final File undeployedMarker = new File(directory, fileName + UNDEPLOYED);
-                        if(undeployedMarker.exists()) {// && child.lastModified() <= undeployedMarker.lastModified()) {
-                            continue;  // Don't auto-deploy undeployed deployments
+                        if(undeployedMarker.exists()  && timestamp <= undeployedMarker.lastModified()) {
+                            continue;
                         }
 
                         DeploymentMarker marker = deployed.get(fileName);
-                        long timestamp = getDeploymentTimestamp(child);
                         if (marker == null || marker.lastModified != timestamp) {
                             try {
                                 if (isZipComplete(child)) {
@@ -501,11 +525,11 @@ class FileSystemDeploymentService implements DeploymentScanner {
                                     addContentAddingTask(path, archive, fileName, child, timestamp, scanContext);
                                 }
                                 else {
-                                    scanContext.incompleteFiles.put(child, new IncompleteDeploymentStatus(child));
+                                    scanContext.incompleteFiles.put(child, new IncompleteDeploymentStatus(child, timestamp));
                                 }
                             } catch (NonScannableZipException e) {
                                 // Track for possible logging in scan()
-                                scanContext.nonscannable.put(child, e);
+                                scanContext.nonscannable.put(child, new NonScannableStatus(e, timestamp));
                             }
                         }
                     }
@@ -529,7 +553,14 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 }
             }
             else if (child.isDirectory()) { // exploded deployments would have been caught by isEEArchive(fileName) above
-                scanDirectory(child, scanContext);
+
+                if (WEB_INF.equalsIgnoreCase(fileName) || META_INF.equalsIgnoreCase(fileName)) {
+                    // Looks like someone unzipped an archive in the scanned dir
+                    // Track for possible ERROR logging
+                    scanContext.illegalDir.add(fileName);
+                } else {
+                    scanDirectory(child, relativePath + child.getName() + File.separator, scanContext);
+                }
             }
         }
     }
@@ -640,7 +671,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                                             : "";
                         String msg = String.format("Deployment content %s appears to be incomplete and is not progressing toward " +
                                 "completion. This content cannot be auto-deployed.%s", incompleteFile, suffix, DO_DEPLOY, SKIP_DEPLOY);
-                        writeFailedMarker(incompleteFile, new ModelNode().set(msg));
+                        writeFailedMarker(incompleteFile, new ModelNode().set(msg), status.timestamp);
                         log.error(msg);
                         status.warned = true;
                         warnLogged = true;
@@ -680,15 +711,16 @@ class FileSystemDeploymentService implements DeploymentScanner {
             // If user dealt with some nonscannable stuff but others remain, log everything again
             boolean logAll = nonscannableLogged.size() != oldNonScannableCount;
 
-            for (Map.Entry<File, NonScannableZipException> entry : scanContext.nonscannable.entrySet()) {
+            for (Map.Entry<File, NonScannableStatus> entry : scanContext.nonscannable.entrySet()) {
                 File nonScannable = entry.getKey();
                 String fileName = nonScannable.getName();
                 if (nonscannableLogged.add(nonScannable) || logAll) {
-                    NonScannableZipException e = entry.getValue();
+                    NonScannableStatus nonScannableStatus = entry.getValue();
+                    NonScannableZipException e = nonScannableStatus.exception;
                     String msg = String.format("File %s was configured for auto-deploy but could not be safely auto-deployed. The reason the file " +
                             "could not be auto-deployed was: %s.  To enable deployment of this file create a file called %s%s",
                             fileName, e.getLocalizedMessage(), fileName, DO_DEPLOY);
-                    writeFailedMarker(nonScannable, new ModelNode().set(msg));
+                    writeFailedMarker(nonScannable, new ModelNode().set(msg), nonScannableStatus.timestamp);
                     log.error(msg);
                     warnLogged = true;
 
@@ -800,7 +832,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
-    private void writeFailedMarker(final File deploymentFile, final ModelNode failureDescription) {
+    private void writeFailedMarker(final File deploymentFile, final ModelNode failureDescription, long failureTimestamp) {
         final File failedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + FAILED_DEPLOY);
         final File deployMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + DO_DEPLOY);
         if (deployMarker.exists() && !deployMarker.delete()) {
@@ -865,6 +897,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
             final File undeployedMarker = new File(parent, deploymentName + UNDEPLOYED);
             if (undeployedMarker.exists() && !undeployedMarker.delete()) {
                 log.warnf("Unable to remove marker file %s", undeployedMarker);
+            }
+        }
+
+        protected void deleteDeployedMarker() {
+            final File deployedMarker = new File(parent, deploymentName + DEPLOYED);
+            if (deployedMarker.exists() && !deployedMarker.delete()) {
+                log.warnf("Unable to remove marker file %s", deployedMarker);
             }
         }
 
@@ -948,7 +987,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             // Remove the in-progress marker
             removeInProgressMarker();
 
-            writeFailedMarker(deploymentFile, result.get(FAILURE_DESCRIPTION));
+            writeFailedMarker(deploymentFile, result.get(FAILURE_DESCRIPTION), doDeployTimestamp);
         }
     }
 
@@ -971,7 +1010,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             // Remove the in-progress marker
             removeInProgressMarker();
 
-            writeFailedMarker(deploymentFile, result.get(FAILURE_DESCRIPTION));
+            writeFailedMarker(deploymentFile, result.get(FAILURE_DESCRIPTION), doDeployTimestamp);
         }
     }
 
@@ -1006,13 +1045,16 @@ class FileSystemDeploymentService implements DeploymentScanner {
             // Remove the in-progress marker
             removeInProgressMarker();
 
-            writeFailedMarker(new File(parent, deploymentName), result.get(FAILURE_DESCRIPTION));
+            writeFailedMarker(new File(parent, deploymentName), result.get(FAILURE_DESCRIPTION), markerLastModified);
         }
     }
 
     private final class UndeployTask extends ScannerTask {
-        private UndeployTask(final String deploymentName, final File parent) {
+
+        private final long scanStartTime;
+        private UndeployTask(final String deploymentName, final File parent, final long scanStartTime) {
             super(deploymentName, parent, UNDEPLOYING);
+            this.scanStartTime = scanStartTime;
         }
 
         @Override
@@ -1026,11 +1068,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
         @Override
         protected void handleSuccessResult() {
 
-            // Remove the in-progress marker
+            // Remove the in-progress marker and any .deployed marker
             removeInProgressMarker();
+            deleteDeployedMarker();
 
-            final File deployedMarker = new File(parent, deploymentName + UNDEPLOYED);
-            createMarkerFile(deployedMarker, deploymentName);
+            final File undeployedMarker = new File(parent, deploymentName + UNDEPLOYED);
+            createMarkerFile(undeployedMarker, deploymentName);
+            undeployedMarker.setLastModified(scanStartTime);
 
             deployed.remove(deploymentName);
             noticeLogged.remove(deploymentName);
@@ -1042,7 +1086,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             // Remove the in-progress marker
             removeInProgressMarker();
 
-            writeFailedMarker(new File(parent, deploymentName), result.get(FAILURE_DESCRIPTION));
+            writeFailedMarker(new File(parent, deploymentName), result.get(FAILURE_DESCRIPTION), scanStartTime);
         }
     }
 
@@ -1067,17 +1111,32 @@ class FileSystemDeploymentService implements DeploymentScanner {
         private Map<File, IncompleteDeploymentStatus> incompleteFiles = new HashMap<File, IncompleteDeploymentStatus>();
         /** Non-auto-deployable files detected by the scan without an appropriate marker */
         private final HashSet<String> nonDeployable = new HashSet<String>();
+        /** WEB-INF and META-INF dirs not enclosed by a deployment */
+        private final HashSet<String> illegalDir = new HashSet<String>();
         /** Auto-deployable files detected by the scan where ZipScanner threw a NonScannableZipException */
-        private final Map<File, NonScannableZipException> nonscannable = new HashMap<File, NonScannableZipException>();
+        private final Map<File, NonScannableStatus> nonscannable = new HashMap<File, NonScannableStatus>();
+        /** Timestamp when the scan started */
+        private final long scanStartTime = System.currentTimeMillis();
     }
 
-    private class IncompleteDeploymentStatus {
-        private final long timestamp = System.currentTimeMillis();
+    private static class IncompleteDeploymentStatus {
+        private final long timestamp;
         private final long size;
         private boolean warned;
 
-        IncompleteDeploymentStatus(File file) {
+        IncompleteDeploymentStatus(final File file, final long timestamp) {
             this.size = file.length();
+            this.timestamp = timestamp;
+        }
+    }
+
+    private static class NonScannableStatus {
+        private final long timestamp;
+        private final NonScannableZipException exception;
+
+        public NonScannableStatus(NonScannableZipException exception, long timestamp) {
+            this.exception = exception;
+            this.timestamp = timestamp;
         }
     }
 

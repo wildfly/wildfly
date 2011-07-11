@@ -19,51 +19,56 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.jaxrs.cdiintegration;
-
-import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.TimeUnit;
+package org.jboss.as.testsuite.integration.jaxrs.integration.ejb;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
+import org.jboss.as.testsuite.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
+
 /**
- * Tests that JAX-RS + CDI work together when using @ApplicationPath
+ * Tests injections of CDI beans into JAX-RS resources
  *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class CDIApplicationPathIntegrationTestCase {
+public class JaxrsEjbInterceptorsTestCase {
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsapp.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
-        war.addClasses(CDIApplicationPathIntegrationTestCase.class, CDIBean.class, CDIPathApplication.class, CDIResource.class);
         war.add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
+        war.addClasses(EJBResource.class, EjbInterceptor.class);
+        war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n" +
+                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
+                "    </servlet-mapping>\n" +
+                "\n"),"web.xml");
         return war;
     }
 
 
     private static String performCall(String urlPattern) throws Exception {
-        return HttpRequest.get("http://localhost:8080/jaxrsapp/" + urlPattern, 10, TimeUnit.SECONDS);
+        return HttpRequest.get("http://localhost:8080/jaxrsnoap/" + urlPattern, 10, TimeUnit.SECONDS);
     }
 
     @Test
     public void testJaxRsWithNoApplication() throws Exception {
-        String result = performCall("cdipath/cdiInject");
-        assertEquals("Hello World!", result);
+        String result = performCall("myjaxrs/ejbInterceptor");
+        assertEquals("Hello World", result);
     }
 
 

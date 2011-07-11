@@ -53,8 +53,8 @@ import org.jboss.as.cli.batch.impl.DefaultBatchManager;
 import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
 import org.jboss.as.cli.handlers.CommandCommandHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
-import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
+import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.HistoryHandler;
 import org.jboss.as.cli.handlers.LsHandler;
@@ -156,160 +156,163 @@ public class CommandLineMain {
     }
 
     public static void main(String[] args) throws Exception {
-        Security.addProvider(new JBossSaslProvider());
+        try {
+            Security.addProvider(new JBossSaslProvider());
 
-        String argError = null;
-        String[] commands = null;
-        File file = null;
-        boolean connect = false;
-        String defaultControllerHost = null;
-        int defaultControllerPort = -1;
-        boolean version = false;
-        for(String arg : args) {
-            if(arg.startsWith("controller=") || arg.startsWith("--controller=")) {
-                final String value;
-                if(arg.startsWith("--")) {
-                    value = arg.substring(13);
-                } else {
-                    value = arg.substring(11);
-                }
-                String portStr = null;
-                int colonIndex = value.indexOf(':');
-                if(colonIndex < 0) {
-                    // default port
-                    defaultControllerHost = value;
-                } else if(colonIndex == 0) {
-                    // default host
-                    portStr = value.substring(1);
-                } else {
-                    defaultControllerHost = value.substring(0, colonIndex);
-                    portStr = value.substring(colonIndex + 1);
-                }
-
-                if(portStr != null) {
-                    int port = -1;
-                    try {
-                        port = Integer.parseInt(portStr);
-                        if(port < 0) {
-                            argError = "The port must be a valid non-negative integer: '" + args + "'";
-                        } else {
-                            defaultControllerPort = port;
-                        }
-                    } catch(NumberFormatException e) {
-                        argError = "The port must be a valid non-negative integer: '" + arg + "'";
+            String argError = null;
+            String[] commands = null;
+            File file = null;
+            boolean connect = false;
+            String defaultControllerHost = null;
+            int defaultControllerPort = -1;
+            boolean version = false;
+            for(String arg : args) {
+                if(arg.startsWith("controller=") || arg.startsWith("--controller=")) {
+                    final String value;
+                    if(arg.startsWith("--")) {
+                        value = arg.substring(13);
+                    } else {
+                        value = arg.substring(11);
                     }
-                }
-            } else if("--connect".equals(arg) || "-c".equals(arg)) {
-                connect = true;
-            } else if("--version".equals(arg)) {
-                version = true;
-            } else if(arg.startsWith("file=") || arg.startsWith("--file=")) {
-                if(file != null) {
-                    argError = "Duplicate argument 'file'.";
-                    break;
-                }
-                if(commands != null) {
-                    argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
-                    break;
-                }
+                    String portStr = null;
+                    int colonIndex = value.indexOf(':');
+                    if(colonIndex < 0) {
+                        // default port
+                        defaultControllerHost = value;
+                    } else if(colonIndex == 0) {
+                        // default host
+                        portStr = value.substring(1);
+                    } else {
+                        defaultControllerHost = value.substring(0, colonIndex);
+                        portStr = value.substring(colonIndex + 1);
+                    }
 
-                final String fileName = arg.startsWith("--") ? arg.substring(7) : arg.substring(5);
-                if(!fileName.isEmpty()) {
-                    file = new File(fileName);
-                    if(!file.exists()) {
-                        argError = "File " + file.getAbsolutePath() + " doesn't exist.";
+                    if(portStr != null) {
+                        int port = -1;
+                        try {
+                            port = Integer.parseInt(portStr);
+                            if(port < 0) {
+                                argError = "The port must be a valid non-negative integer: '" + args + "'";
+                            } else {
+                                defaultControllerPort = port;
+                            }
+                        } catch(NumberFormatException e) {
+                            argError = "The port must be a valid non-negative integer: '" + arg + "'";
+                        }
+                    }
+                } else if("--connect".equals(arg) || "-c".equals(arg)) {
+                    connect = true;
+                } else if("--version".equals(arg)) {
+                    version = true;
+                } else if(arg.startsWith("file=") || arg.startsWith("--file=")) {
+                    if(file != null) {
+                        argError = "Duplicate argument 'file'.";
                         break;
                     }
-                } else {
-                    argError = "Argument 'file' is missing value.";
-                    break;
+                    if(commands != null) {
+                        argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
+                        break;
+                    }
+
+                    final String fileName = arg.startsWith("--") ? arg.substring(7) : arg.substring(5);
+                    if(!fileName.isEmpty()) {
+                        file = new File(fileName);
+                        if(!file.exists()) {
+                            argError = "File " + file.getAbsolutePath() + " doesn't exist.";
+                            break;
+                        }
+                    } else {
+                        argError = "Argument 'file' is missing value.";
+                        break;
+                    }
+                } else if(arg.startsWith("commands=") || arg.startsWith("--commands=")) {
+                    if(file != null) {
+                        argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
+                        break;
+                    }
+                    if(commands != null) {
+                        argError = "Duplicate argument 'command'/'commands'.";
+                        break;
+                    }
+                    final String value = arg.startsWith("--") ? arg.substring(11) : arg.substring(9);
+                    commands = value.split(",+");
+                } else if(arg.startsWith("command=") || arg.startsWith("--command=")) {
+                    if(file != null) {
+                        argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
+                        break;
+                    }
+                    if(commands != null) {
+                        argError = "Duplicate argument 'command'/'commands'.";
+                        break;
+                    }
+                    final String value = arg.startsWith("--") ? arg.substring(10) : arg.substring(8);
+                    commands = new String[]{value};
                 }
-            } else if(arg.startsWith("commands=") || arg.startsWith("--commands=")) {
-                if(file != null) {
-                    argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
-                    break;
-                }
-                if(commands != null) {
-                    argError = "Duplicate argument 'command'/'commands'.";
-                    break;
-                }
-                final String value = arg.startsWith("--") ? arg.substring(11) : arg.substring(9);
-                commands = value.split(",+");
-            } else if(arg.startsWith("command=") || arg.startsWith("--command=")) {
-                if(file != null) {
-                    argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
-                    break;
-                }
-                if(commands != null) {
-                    argError = "Duplicate argument 'command'/'commands'.";
-                    break;
-                }
-                final String value = arg.startsWith("--") ? arg.substring(10) : arg.substring(8);
-                commands = new String[]{value};
             }
-        }
 
-        if(argError != null) {
-            System.err.println(argError);
-            return;
-        }
+            if(argError != null) {
+                System.err.println(argError);
+                return;
+            }
 
-        if(version) {
-            final CommandContextImpl cmdCtx = new CommandContextImpl();
-            VersionHandler.INSTANCE.handle(cmdCtx);
-            return;
-        }
+            if(version) {
+                final CommandContextImpl cmdCtx = new CommandContextImpl();
+                VersionHandler.INSTANCE.handle(cmdCtx);
+                return;
+            }
 
-        if(file != null) {
-            processFile(file, defaultControllerHost, defaultControllerPort, connect);
-            return;
-        }
+            if(file != null) {
+                processFile(file, defaultControllerHost, defaultControllerPort, connect);
+                return;
+            }
 
-        if(commands != null) {
-            processCommands(commands, defaultControllerHost, defaultControllerPort, connect);
-            return;
-        }
+            if(commands != null) {
+                processCommands(commands, defaultControllerHost, defaultControllerPort, connect);
+                return;
+            }
 
-        // Interactive mode
+            // Interactive mode
 
-        final jline.ConsoleReader console = initConsoleReader();
-        final CommandContextImpl cmdCtx = new CommandContextImpl(console);
-        SecurityActions.addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
+            final jline.ConsoleReader console = initConsoleReader();
+            final CommandContextImpl cmdCtx = new CommandContextImpl(console);
+            SecurityActions.addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    cmdCtx.disconnectController();
+                }
+            }));
+            console.addCompletor(cmdCtx.cmdCompleter);
+
+            if(defaultControllerHost != null) {
+                cmdCtx.defaultControllerHost = defaultControllerHost;
+            }
+            if(defaultControllerPort != -1) {
+                cmdCtx.defaultControllerPort = defaultControllerPort;
+            }
+
+            if(connect) {
+                cmdCtx.connectController(null, -1);
+            } else {
+                cmdCtx.printLine("You are disconnected at the moment." +
+                    " Type 'connect' to connect to the server or" +
+                    " 'help' for the list of supported commands.");
+            }
+
+            try {
+                while (!cmdCtx.terminate) {
+                    final String line = console.readLine(cmdCtx.getPrompt());
+                    if(line == null) {
+                        cmdCtx.terminateSession();
+                    } else {
+                        processLine(cmdCtx, line.trim());
+                    }
+                }
+            } finally {
                 cmdCtx.disconnectController();
             }
-        }));
-        console.addCompletor(cmdCtx.cmdCompleter);
-
-        if(defaultControllerHost != null) {
-            cmdCtx.defaultControllerHost = defaultControllerHost;
-        }
-        if(defaultControllerPort != -1) {
-            cmdCtx.defaultControllerPort = defaultControllerPort;
-        }
-
-        if(connect) {
-            cmdCtx.connectController(null, -1);
-        } else {
-            cmdCtx.printLine("You are disconnected at the moment." +
-                " Type 'connect' to connect to the server or" +
-                " 'help' for the list of supported commands.");
-        }
-
-        try {
-            while (!cmdCtx.terminate) {
-                final String line = console.readLine(cmdCtx.getPrompt());
-                if(line == null) {
-                    cmdCtx.terminateSession();
-                } else {
-                    processLine(cmdCtx, line.trim());
-                }
-            }
         } finally {
-            cmdCtx.disconnectController();
+            System.exit(0);
         }
-        System.exit(0);
     }
 
     private static void processCommands(String[] commands, String defaultControllerHost, int defaultControllerPort, final boolean connect) {
@@ -669,15 +672,16 @@ public class CommandLineMain {
                     disconnectController();
                 }
 
+                client = newClient;
+                this.controllerHost = host;
+                this.controllerPort = port;
+
                 List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
                 if (!nodeTypes.isEmpty()) {
                     domainMode = nodeTypes.contains("server-group");
                     printLine("Connected to "
                             + (domainMode ? "domain controller at " : "standalone controller at ")
                             + host + ":" + port);
-                    client = newClient;
-                    this.controllerHost = host;
-                    this.controllerPort = port;
                 } else {
                     printLine("The controller is not available at " + host + ":" + port);
                 }

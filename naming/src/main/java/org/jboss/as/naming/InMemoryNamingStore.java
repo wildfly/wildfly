@@ -332,11 +332,13 @@ public class InMemoryNamingStore implements NamingStore {
     private abstract class NodeTraversingVisitor<T> implements NodeVisitor<T> {
         private final boolean createIfMissing;
         private Name currentName;
+        private Name traversedName;
         protected final Name targetName;
 
         protected NodeTraversingVisitor(final boolean createIfMissing, final Name targetName) {
             this.createIfMissing = createIfMissing;
             this.targetName = currentName = targetName;
+            this.traversedName = new CompositeName();
         }
 
         protected NodeTraversingVisitor(final Name targetName) {
@@ -355,12 +357,13 @@ public class InMemoryNamingStore implements NamingStore {
                 return found(contextNode);
             }
             final String childName = currentName.get(0);
+            traversedName.add(childName);
             currentName = currentName.getSuffix(1);
             final TreeNode node = contextNode.children.get(childName);
             if (node == null) {
                 if (createIfMissing) {
-                    final NamingContext subContext = new NamingContext(targetName, InMemoryNamingStore.this, new Hashtable<String, Object>());
-                    return contextNode.addOrGetChild(childName, new ContextNode(contextNode, childName, targetName, subContext)).accept(this);
+                    final NamingContext subContext = new NamingContext(traversedName, InMemoryNamingStore.this, new Hashtable<String, Object>());
+                    return contextNode.addOrGetChild(childName, new ContextNode(contextNode, childName, traversedName, subContext)).accept(this);
                 } else {
                     throw nameNotFoundException(childName, contextNode.fullName);
                 }

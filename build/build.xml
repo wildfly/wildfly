@@ -973,6 +973,10 @@
             <maven-bundle group="org.apache.felix" artifact="org.apache.felix.metatype"/>
         </bundle-def>
 
+        <bundle-def name="org.apache.felix.scr">
+            <maven-bundle group="org.apache.felix" artifact="org.apache.felix.scr"/>
+        </bundle-def>
+
         <bundle-def name="org.apache.felix.webconsole">
             <maven-bundle group="org.apache.felix" artifact="org.apache.felix.webconsole"/>
         </bundle-def>

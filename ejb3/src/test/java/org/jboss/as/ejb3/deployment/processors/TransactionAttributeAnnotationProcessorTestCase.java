@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -55,10 +56,12 @@ import static org.junit.Assert.assertEquals;
 public class TransactionAttributeAnnotationProcessorTestCase {
     private static class ABean extends SomeClass {
         @Override
-        public void aMethod() { }
+        public void aMethod() {
+        }
 
         @TransactionAttribute(REQUIRES_NEW)
-        public void cMethod() { }
+        public void cMethod() {
+        }
     }
 
     @TransactionAttribute(MANDATORY)
@@ -69,8 +72,11 @@ public class TransactionAttributeAnnotationProcessorTestCase {
 
     @TransactionAttribute(SUPPORTS)
     private static class SomeClass {
-        public void aMethod() { }
-        public void bMethod() { }
+        public void aMethod() {
+        }
+
+        public void bMethod() {
+        }
     }
 
     private static interface ViewA {
@@ -95,7 +101,8 @@ public class TransactionAttributeAnnotationProcessorTestCase {
 
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
+        final EEApplicationClasses applicationClassesDescription = new EEApplicationClasses();
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, applicationClassesDescription, false);
         final ServiceName duServiceName = deploymentUnit.getServiceName();
         EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), ejbJarDescription, duServiceName);
         TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
@@ -120,7 +127,8 @@ public class TransactionAttributeAnnotationProcessorTestCase {
 
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
+        final EEApplicationClasses applicationClassesDescription = new EEApplicationClasses();
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, applicationClassesDescription, false);
         final ServiceName duServiceName = deploymentUnit.getServiceName();
         EJBComponentDescription componentDescription = new StatelessComponentDescription(ABean.class.getSimpleName(), ABean.class.getName(), ejbJarDescription, duServiceName);
         TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
@@ -144,7 +152,8 @@ public class TransactionAttributeAnnotationProcessorTestCase {
 
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
+        final EEApplicationClasses applicationClassesDescription = new EEApplicationClasses();
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, applicationClassesDescription, false);
         final ServiceName duServiceName = deploymentUnit.getServiceName();
         StatelessComponentDescription componentDescription = new StatelessComponentDescription(SomeClass.class.getSimpleName(), SomeClass.class.getName(), ejbJarDescription, duServiceName);
         componentDescription.addNoInterfaceView();
@@ -169,8 +178,9 @@ public class TransactionAttributeAnnotationProcessorTestCase {
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        final EEApplicationClasses applicationClassesDescription = new EEApplicationClasses();
         final ServiceName duServiceName = deploymentUnit.getServiceName();
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, applicationClassesDescription, false);
         SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), ejbJarDescription, duServiceName);
         Collection<String> views = new HashSet<String>();
         views.add(ViewA.class.getName());

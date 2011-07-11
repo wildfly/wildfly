@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 
@@ -105,6 +106,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
 
         // Locate a ejb-jar.xml
         VirtualFile ejbJarXml = null;
@@ -128,7 +130,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         EjbDeploymentMarker.mark(deploymentUnit);
         if (!deploymentUnit.hasAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION)) {
             final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-            final EjbJarDescription ejbModuleDescription = new EjbJarDescription(moduleDescription, deploymentUnit.getName().endsWith(".war"));
+            final EjbJarDescription ejbModuleDescription = new EjbJarDescription(moduleDescription, applicationClassesDescription, deploymentUnit.getName().endsWith(".war"));
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION, ejbModuleDescription);
         }
 
@@ -144,9 +146,9 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             // attach the EjbJarMetaData to the deployment unit
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA, ejbJarMetaData);
 
-            if(ejbJarMetaData instanceof EjbJar31MetaData) {
-                EjbJar31MetaData ejbJar31MetaData = (EjbJar31MetaData)ejbJarMetaData;
-                if(ejbJar31MetaData.getModuleName() != null) {
+            if (ejbJarMetaData instanceof EjbJar31MetaData) {
+                EjbJar31MetaData ejbJar31MetaData = (EjbJar31MetaData) ejbJarMetaData;
+                if (ejbJar31MetaData.getModuleName() != null) {
                     eeModuleDescription.setModuleName(ejbJar31MetaData.getModuleName());
                 }
             }

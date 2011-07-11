@@ -24,6 +24,7 @@ package org.jboss.as.web.deployment.component;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -67,6 +68,12 @@ import java.util.Set;
  */
 public class WebComponentProcessor implements DeploymentUnitProcessor {
 
+    /**
+     * Tags in these packages do not need to be computerized
+     */
+    private static final String[] BUILTIN_TAGLIBS = {"org.apache.taglibs.standard", "com.sun.faces.taglib.jsf_core",  "com.sun.faces.ext.taglib", "com.sun.faces.taglib.html_basic",};
+
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -78,6 +85,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
         final Map<String, ComponentDescription> componentByClass = new HashMap<String, ComponentDescription>();
         final Map<String, ComponentInstantiator> webComponents = new HashMap<String, ComponentInstantiator>();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
         final String applicationName = deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName();
         if (moduleDescription == null) {
@@ -102,11 +110,20 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
                 ManagedBeanComponentInstantiator instantiator = new ManagedBeanComponentInstantiator(deploymentUnit, description);
                 webComponents.put(clazz, instantiator);
             } else {
-                //there is no point making these items a component if there is no annotation index info
-                if(compositeIndex.getClassByName(DotName.createSimple(clazz)) == null) {
-                    continue;
+                //we do not make the standard tags into components, as there is no need
+                if (compositeIndex.getClassByName(DotName.createSimple(clazz)) == null) {
+                    boolean found = false;
+                    for (String pack : BUILTIN_TAGLIBS) {
+                        if (clazz.startsWith(pack)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(found) {
+                        continue;
+                    }
                 }
-                description = new WebComponentDescription(clazz, clazz, moduleDescription, deploymentUnit.getServiceName());
+                description = new WebComponentDescription(clazz, clazz, moduleDescription, deploymentUnit.getServiceName(), applicationClassesDescription);
                 moduleDescription.addComponent(description);
                 webComponents.put(clazz, new WebComponentInstantiator(deploymentUnit, description));
             }

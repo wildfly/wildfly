@@ -57,6 +57,7 @@ import org.jboss.as.ee.structure.EjbJarDeploymentProcessor;
 import org.jboss.as.ee.structure.GlobalModuleDependencyProcessor;
 import org.jboss.as.ee.structure.InitalizeInOrderProcessor;
 import org.jboss.as.ee.structure.JBossAppMetaDataParsingProcessor;
+import org.jboss.as.naming.management.JndiViewExtensionRegistry;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -88,6 +89,12 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     protected void performBoottime(OperationContext context, final ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final EEJndiViewExtension extension = new EEJndiViewExtension();
+        context.getServiceTarget().addService(EEJndiViewExtension.SERVICE_NAME, extension)
+                .addDependency(JndiViewExtensionRegistry.SERVICE_NAME, JndiViewExtensionRegistry.class, extension.getRegistryInjector())
+                .addListener(verificationHandler)
+                .install();
+
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 final ModelNode globalModules = operation.get(CommonAttributes.GLOBAL_MODULES);

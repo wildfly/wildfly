@@ -19,22 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.jaxrs.cdiintegration;
+package org.jboss.as.testsuite.integration.jaxrs.integration.ejb;
 
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
 
-@Path("cdiInject")
-@Produces({"text/plain"})
-public class CDIResource {
+/**
+ * @author Stuart Douglas
+ */
+public class EjbInterceptor {
 
-    @Inject
-    CDIBean bean;
-
-    @GET
-    public String getMessage() {
-        return bean.message();
+    @AroundInvoke
+    public Object intercept(final InvocationContext invocationContext) throws Exception {
+        return invocationContext.proceed().toString() + " World";
     }
+
 }

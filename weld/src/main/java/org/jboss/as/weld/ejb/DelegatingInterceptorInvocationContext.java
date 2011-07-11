@@ -17,6 +17,8 @@
 
 package org.jboss.as.weld.ejb;
 
+import org.jboss.weld.exceptions.WeldException;
+
 import javax.enterprise.inject.spi.InterceptionType;
 import javax.enterprise.inject.spi.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -29,9 +31,9 @@ public class DelegatingInterceptorInvocationContext implements InvocationContext
 
     private InvocationContext delegateInvocationContext;
 
-    private List<Interceptor> invocationQueue;
-    private List<Object> interceptorInstances;
-    int position;
+    private final List<Interceptor> invocationQueue;
+    private final List<Object> interceptorInstances;
+    private int position;
 
     private InterceptionType interceptionType;
 
@@ -64,7 +66,16 @@ public class DelegatingInterceptorInvocationContext implements InvocationContext
         try {
             if (position < invocationQueue.size()) {
                 Object interceptorInstance = interceptorInstances.get(position);
-                return invocationQueue.get(position++).intercept(interceptionType, interceptorInstance, this);
+                try {
+                    return invocationQueue.get(position++).intercept(interceptionType, interceptorInstance, this);
+                } catch (Exception e) {
+                    // Unwrap WeldException
+                    if (e instanceof WeldException && e.getCause() instanceof Exception) {
+                        throw ((Exception) e.getCause());
+                    } else {
+                        throw e;
+                    }
+                }
             } else {
                 return delegateInvocationContext.proceed();
             }

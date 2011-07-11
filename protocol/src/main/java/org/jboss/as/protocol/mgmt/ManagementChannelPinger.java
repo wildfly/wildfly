@@ -47,6 +47,7 @@ public class ManagementChannelPinger extends Thread {
                 ManagementChannelPinger.this.interrupt();
             }
         });
+        super.setDaemon(true);
     }
 
     static ManagementChannelPinger getInstance() {

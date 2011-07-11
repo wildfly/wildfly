@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -96,9 +97,10 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
 
     private static EjbJarDescription getEjbJarDescription(final DeploymentUnit deploymentUnit) {
         EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
+        final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         if (ejbJarDescription == null) {
             final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-            ejbJarDescription = new EjbJarDescription(moduleDescription, deploymentUnit.getName().endsWith(".war"));
+            ejbJarDescription = new EjbJarDescription(moduleDescription, applicationClassesDescription, deploymentUnit.getName().endsWith(".war"));
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION, ejbJarDescription);
         }
         return ejbJarDescription;

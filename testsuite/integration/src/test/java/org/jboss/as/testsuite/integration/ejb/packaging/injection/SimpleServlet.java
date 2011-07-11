@@ -19,15 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.jaxrs.cdiintegration;
+package org.jboss.as.testsuite.integration.ejb.packaging.injection;
+
+import javax.ejb.EJB;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @author Stuart Douglas
  */
-public class CDIBean {
+public class SimpleServlet extends HttpServlet {
 
-    public String message() {
-        return "Hello World!";
+    @EJB
+    private BaseBean bean;
+
+    @Override
+    protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+        resp.getWriter().append(bean.sayHello());
     }
-
 }

@@ -143,7 +143,7 @@ public class BundleStartTracker implements Service<BundleStartTracker> {
                             try {
                                 int bundleType = packageAdmin.getBundleType(bundle);
                                 if (bundleType != BUNDLE_TYPE_FRAGMENT) {
-                                    bundle.start(Bundle.START_TRANSIENT);
+                                    bundle.start(Bundle.START_TRANSIENT | Bundle.START_ACTIVATION_POLICY);
                                 }
                             } catch (BundleException ex) {
                                 log.errorf(ex, "Cannot start bundle: %s", bundle);
