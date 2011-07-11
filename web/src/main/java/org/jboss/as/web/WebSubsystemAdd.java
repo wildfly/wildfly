@@ -66,7 +66,7 @@ import org.jboss.msc.service.ServiceName;
 class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
 
     static final WebSubsystemAdd INSTANCE = new WebSubsystemAdd();
-    private static final String DEFAULT_VIRTUAL_SERVER = "localhost";
+    private static final String DEFAULT_VIRTUAL_SERVER = "default-host";
     private static final boolean DEFAULT_NATIVE = true;
     private static final String TEMP_DIR = "jboss.server.temp.dir";
 
@@ -101,6 +101,9 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
         }
         if (opConfig.hasDefined(Constants.WELCOME_FILE)) {
             ourContainerConfig.get(Constants.WELCOME_FILE).set(opConfig.get(Constants.WELCOME_FILE));
+        }
+        if(operation.hasDefined(Constants.DEFAULT_VIRTUAL_SERVER)) {
+            model.get(Constants.DEFAULT_VIRTUAL_SERVER).set(operation.get(Constants.DEFAULT_VIRTUAL_SERVER));
         }
 
         model.get(Constants.CONTAINER_CONFIG).set(ourContainerConfig);
