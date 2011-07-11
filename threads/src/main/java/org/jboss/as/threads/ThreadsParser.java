@@ -879,7 +879,7 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
         writer.writeStartElement(elementName);
 
         if (includeName && node.hasDefined(NAME)) {
-            writeAttribute(writer, Attribute.BLOCKING, node.get(NAME));
+            writeAttribute(writer, Attribute.NAME, node.get(NAME));
         }
 
         writeRef(writer, node, Element.THREAD_FACTORY, THREAD_FACTORY);
