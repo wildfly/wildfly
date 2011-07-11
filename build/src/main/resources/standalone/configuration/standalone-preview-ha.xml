@@ -387,6 +387,7 @@
                 <module identifier="org.apache.aries.jmx" startlevel="2"/>
                 <module identifier="org.apache.felix.eventadmin" startlevel="2"/>
                 <module identifier="org.apache.felix.metatype" startlevel="2"/>
+                <module identifier="org.apache.felix.scr" startlevel="2"/>
                 <module identifier="org.apache.felix.webconsole" startlevel="2"/>
                 <module identifier="org.jboss.osgi.jmx" startlevel="2"/>
                 <module identifier="org.jboss.osgi.http" startlevel="2"/>
