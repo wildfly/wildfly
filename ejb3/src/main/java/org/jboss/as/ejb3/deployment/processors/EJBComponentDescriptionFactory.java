@@ -45,6 +45,9 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.spec.ActivationConfigMetaData;
+import org.jboss.metadata.ejb.spec.ActivationConfigPropertiesMetaData;
+import org.jboss.metadata.ejb.spec.ActivationConfigPropertyMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeansMetaData;
@@ -60,6 +63,10 @@ import javax.ejb.Stateless;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -101,6 +108,17 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
         }
     }
 
+    private static Properties getActivationConfigProperties(final AnnotationInstance messageBeanAnnotation) {
+        final Properties props = new Properties();
+        final AnnotationValue activationConfig = messageBeanAnnotation.value("activationConfig");
+        if (activationConfig == null)
+            return props;
+        for (final AnnotationInstance propAnnotation : activationConfig.asNestedArray()) {
+            props.put(propAnnotation.value("propertyName").asString(), propAnnotation.value("propertyValue").asString());
+        }
+        return props;
+    }
+
     private static EjbJarDescription getEjbJarDescription(final DeploymentUnit deploymentUnit) {
         EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
         final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
@@ -126,10 +144,21 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
         return expectedType.cast(enterpriseBeansMetaData.get(name));
     }
 
+    private static String getMessageListenerInterface(final AnnotationInstance messageBeanAnnotation) throws DeploymentUnitProcessingException {
+        final AnnotationValue value = messageBeanAnnotation.value("messageListenerInterface");
+        if (value != null)
+            return value.asClass().name().toString();
+        final ClassInfo beanClass = (ClassInfo) messageBeanAnnotation.target();
+        final Set<DotName> interfaces = getPotentialViewInterfaces(beanClass);
+        if (interfaces.size() != 1)
+            throw new DeploymentUnitProcessingException("EJB 3.1 FR 5.4.2 MessageDrivenBean " + beanClass + " does not implement 1 interface nor specifies message listener interface");
+        return interfaces.iterator().next().toString();
+    }
+
     /**
      * Process annotations and merge any available metadata at the same time.
      */
-    private static void processAnnotations(final DeploymentUnit deploymentUnit) {
+    private static void processAnnotations(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (compositeIndex == null) {
             if (logger.isTraceEnabled()) {
@@ -182,7 +211,7 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
         EjbDeploymentMarker.mark(deploymentUnit);
     }
 
-    private static void processMessageBeans(final DeploymentUnit deploymentUnit, final Collection<AnnotationInstance> messageBeanAnnotations) {
+    private static void processMessageBeans(final DeploymentUnit deploymentUnit, final Collection<AnnotationInstance> messageBeanAnnotations) throws DeploymentUnitProcessingException {
         if (messageBeanAnnotations.isEmpty())
             return;
 
@@ -197,16 +226,27 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : nameValue.asString();
             final MessageDrivenBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName, MessageDrivenBeanMetaData.class);
             final String beanClassName;
+            final String messageListenerInterfaceName;
+            final Properties activationConfigProperties = getActivationConfigProperties(messageBeanAnnotation);
             if (beanMetaData != null) {
                 beanClassName = override(beanClassInfo.name().toString(), beanMetaData.getEjbClass());
+                final String messagingType = beanMetaData.getMessagingType();
+                messageListenerInterfaceName = messagingType != null ? messagingType : getMessageListenerInterface(messageBeanAnnotation);
+                final ActivationConfigMetaData activationConfigMetaData = beanMetaData.getActivationConfig();
+                if (activationConfigMetaData != null) {
+                    final ActivationConfigPropertiesMetaData propertiesMetaData = activationConfigMetaData.getActivationConfigProperties();
+                    if (propertiesMetaData != null) {
+                        for (ActivationConfigPropertyMetaData propertyMetaData : propertiesMetaData) {
+                            activationConfigProperties.put(propertyMetaData.getKey(), propertyMetaData.getValue());
+                        }
+                    }
+                }
             } else {
                 beanClassName = beanClassInfo.name().toString();
+                messageListenerInterfaceName = getMessageListenerInterface(messageBeanAnnotation);
             }
 
-            final String messageListenerInterfaceName = messageBeanAnnotation.value("messageListenerInterface").asClass().name().toString();
-            // TODO: if messageListenerInterface is not set use the implemented interface
-
-            final MessageDrivenComponentDescription beanDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, messageListenerInterfaceName);
+            final MessageDrivenComponentDescription beanDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, messageListenerInterfaceName, activationConfigProperties);
 
             // Add this component description to module description
             ejbJarDescription.getEEModuleDescription().addComponent(beanDescription);

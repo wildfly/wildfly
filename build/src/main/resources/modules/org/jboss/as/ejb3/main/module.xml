@@ -48,6 +48,7 @@
         <module name="org.jboss.ejb3"/>
         <!-- For Interceptor -->
         <module name="org.jboss.invocation"/>
+        <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>
         <!-- the EE metadata -->
