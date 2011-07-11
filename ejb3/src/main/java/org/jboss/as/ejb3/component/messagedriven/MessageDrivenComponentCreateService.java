@@ -26,11 +26,15 @@ import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.inflow.EndpointDeployer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
+import javax.resource.ResourceException;
+import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.ResourceAdapter;
+import java.util.Properties;
 
 /**
  * @author Stuart Douglas
@@ -39,6 +43,8 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
     private final ServiceName raServiceName;
     private final Class<?> messageListenerInterface;
+    private final String resourceAdapterName;
+    private final Properties activationProps;
 
     /**
      * Construct a new instance.
@@ -48,19 +54,38 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     public MessageDrivenComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
         super(componentConfiguration, ejbJarConfiguration);
 
-        this.raServiceName = ((MessageDrivenComponentDescription) componentConfiguration.getComponentDescription()).getResourceAdapterServiceName();
+        final MessageDrivenComponentDescription componentDescription = (MessageDrivenComponentDescription) componentConfiguration.getComponentDescription();
+        this.resourceAdapterName = componentDescription.getResourceAdapterName();
+        this.raServiceName = componentDescription.getResourceAdapterServiceName();
 
         // see MessageDrivenComponentDescription.<init>
         this.messageListenerInterface = componentConfiguration.getViews().get(0).getViewClass();
+
+        this.activationProps = componentDescription.getActivationProps();
     }
 
     @Override
     protected BasicComponent createComponent() {
-        final MessageDrivenComponent component = new MessageDrivenComponent(this, messageListenerInterface);
+        final ActivationSpec activationSpec = getEndpointDeployer().createActivationSpecs(resourceAdapterName, messageListenerInterface, activationProps, getDeploymentClassLoader());
+        //final ActivationSpec activationSpec = null;
+        final MessageDrivenComponent component = new MessageDrivenComponent(this, messageListenerInterface, activationSpec);
         // TODO: should be injected by start service
         final ResourceAdapter resourceAdapter = getRequiredService(raServiceName, ResourceAdapter.class).getValue();
         component.setResourceAdapter(resourceAdapter);
+        try {
+            activationSpec.setResourceAdapter(resourceAdapter);
+        } catch (ResourceException e) {
+            throw new RuntimeException(e);
+        }
         return component;
+    }
+
+    private ClassLoader getDeploymentClassLoader() {
+        return getComponentClass().getClassLoader();
+    }
+
+    private EndpointDeployer getEndpointDeployer() {
+        return getEJBUtilities();
     }
 
     private <S> ServiceController<S> getRequiredService(final ServiceName serviceName, final Class<S> expectedType) {
