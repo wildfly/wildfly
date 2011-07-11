@@ -296,6 +296,9 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File f11 = createFile("spurious" + FileSystemDeploymentService.PENDING);
         File f12 = createFile(new File(tmpDir, "nested"), "nested" + FileSystemDeploymentService.PENDING);
 
+        File ok = createFile("ok");
+        File nestedOK = createFile(new File(tmpDir, "nested"), "nested-ok");
+
         // We expect 2 requests for children names due to subdir "nested"
         MockServerController sc = new MockServerController(new MockDeploymentRepository(), "ok", "nested-ok");
 //        sc.responses.add(sc.responses.get(0));
@@ -306,8 +309,10 @@ public class FileSystemDeploymentServiceUnitTestCase {
         Assert.assertFalse(f2.exists());
         Assert.assertTrue(f3.exists());
         Assert.assertTrue(f4.exists());
+        Assert.assertTrue(ok.exists());
+        Assert.assertTrue(nestedOK.exists());
 
-        // These should get cleaned in a scan
+        // The others should get cleaned in a scan
 
         ts.testee.scan();
 
@@ -320,6 +325,9 @@ public class FileSystemDeploymentServiceUnitTestCase {
         Assert.assertFalse(f11.exists());
         Assert.assertFalse(f12.exists());
 
+        Assert.assertTrue(ok.exists());
+        Assert.assertTrue(nestedOK.exists());
+
         f1 = createFile("spurious" + FileSystemDeploymentService.DEPLOYED);
         f2 = createFile(new File(tmpDir, "nested"), "nested" + FileSystemDeploymentService.DEPLOYED);
 
@@ -327,6 +335,9 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
         Assert.assertFalse(f1.exists());
         Assert.assertFalse(f2.exists());
+
+        Assert.assertTrue(ok.exists());
+        Assert.assertTrue(nestedOK.exists());
     }
 
     @Test
@@ -499,6 +510,34 @@ public class FileSystemDeploymentServiceUnitTestCase {
     }
 
     @Test
+    public void testFailedRedeployNoMarker() throws Exception {
+        File war = createFile("foo.war");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File failed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.FAILED_DEPLOY);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+        ts.controller.addCompositeFailureResponse(1, 1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+        assertTrue(failed.exists());
+
+        // New deployment won't work unless content timestamp is newer than failed marker, so...
+        failed.setLastModified(0);
+
+        testSupport.createZip(war, 0, false, false, true, false);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertFalse(failed.exists());
+
+    }
+
+    @Test
     public void testSuccessfulRetryRedeploy() throws Exception {
         File war1 = createFile("bar.war");
         File dodeploy1 = createFile("bar.war" + FileSystemDeploymentService.DO_DEPLOY);
@@ -539,7 +578,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
     }
 
     @Test
-    public void testUndeploy() throws Exception {
+    public void testUndeployByMarkerDeletion() throws Exception {
         File war = createFile("foo.war");
         File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
         File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
@@ -562,6 +601,30 @@ public class FileSystemDeploymentServiceUnitTestCase {
         // Since AS7-431 the content is no longer managed
         //assertEquals(1, ts.repo.content.size());
         assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+        assertEquals(0, ts.controller.added.size());
+        assertEquals(0, ts.controller.deployed.size());
+    }
+
+    @Test
+    public void testUndeployByContentDeletion() throws Exception {
+        File war = createFile("foo.war");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        TesteeSet ts = createTestee();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+
+        assertTrue(war.delete());
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertFalse(war.exists());
         assertFalse(dodeploy.exists());
         assertFalse(deployed.exists());
         assertEquals(0, ts.controller.added.size());
@@ -613,6 +676,50 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(deployed.exists());
         assertEquals(0, ts.controller.added.size());
         assertEquals(0, ts.controller.deployed.size());
+    }
+
+    @Test
+    public void testRedeployUndeployedNoMarker() throws Exception {
+        File war = createFile("foo.war");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File undeployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.UNDEPLOYED);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+        byte[] bytes = ts.controller.deployed.get("foo.war");
+
+        assertTrue(deployed.delete());
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+        assertTrue(undeployed.exists());
+        assertEquals(0, ts.controller.added.size());
+        assertEquals(0, ts.controller.deployed.size());
+
+        // new content will be ignored unless it has a timestamp newer than .undeployed
+        // so, rather than sleeping...
+        undeployed.setLastModified(0);
+
+        testSupport.createZip(war, 0, false, false, false, false);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertFalse(undeployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+        byte[] newbytes = ts.controller.deployed.get("foo.war");
+        assertFalse(Arrays.equals(newbytes, bytes));
     }
 
     @Test
@@ -1015,7 +1122,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
     /**
      * Tests that a deployment which had failed earlier, is redeployed (i.e. picked for deployment) when the deployment
      * file is updated (i.e. timestamp changes).
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -1095,7 +1202,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         // make sure undeployed marker exists
         File undeployed = new File(tmpDir, warName + FileSystemDeploymentService.UNDEPLOYED);
         assertTrue(undeployed.getAbsolutePath() + " marker file not found after undeployment", undeployed.exists());
-        
+
         // Now update the timestamp of the deployment war and retrigger a deployment scan expecting it to process
         // the deployment war and create a deployed (a.k.a successful) deployment marker. This simulates the case where the
         // original deployment file is redeployed and the deployment scanner should pick it up even in the presence of the
