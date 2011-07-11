@@ -61,7 +61,6 @@ public class JndiViewOperation implements OperationStepHandler {
                     try {
                         addEntries(contextsNode.get("java:jboss"), new NamingContext(jbossContextNamingStore, null));
                     } catch (NamingException e) {
-                        e.printStackTrace();
                         throw new OperationFailedException(e, new ModelNode().set("Failed to read java:jboss context entries."));
                     }
 
@@ -70,7 +69,6 @@ public class JndiViewOperation implements OperationStepHandler {
                     try {
                         addEntries(contextsNode.get("java:global"), new NamingContext(globalContextNamingStore, null));
                     } catch (NamingException e) {
-                        e.printStackTrace();
                         throw new OperationFailedException(e, new ModelNode().set("Failed to read java:global context entries."));
                     }
 
