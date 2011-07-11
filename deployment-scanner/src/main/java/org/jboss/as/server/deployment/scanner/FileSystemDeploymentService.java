@@ -319,7 +319,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 log.tracef("Scanning directory %s for deployment content changes", deploymentDir.getAbsolutePath());
 
                 ScanContext scanContext = new ScanContext();
-                scanDirectory(deploymentDir, scanContext);
+                scanDirectory(deploymentDir, relativePath, scanContext);
 
                 // WARN about markers with no associated content. Do this first in case any auto-deploy issue
                 // is due to a file that wasn't meant to be auto-deployed, but has a misspelled marker
@@ -458,7 +458,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
      * @param directory the directory to scan
      * @param scanContext context of the scan
      */
-    private void scanDirectory(final File directory, final ScanContext scanContext) {
+    private void scanDirectory(final File directory, final String relativePath, final ScanContext scanContext) {
         final File[] children = directory.listFiles(filter);
         if (children == null) {
             return;
@@ -565,7 +565,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     // Track for possible ERROR logging of the need for a marker
                     scanContext.illegalDir.add(fileName);
                 } else {
-                    scanDirectory(child, scanContext);
+                    scanDirectory(child, relativePath + child.getName() + File.separator, scanContext);
                 }
             }
         }
