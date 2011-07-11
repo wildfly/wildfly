@@ -39,12 +39,15 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
+import java.util.Properties;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class MessageDrivenComponentDescription extends EJBComponentDescription {
-    private String resourceAdapterName;
-    private ServiceName resourceAdapterServiceName;
+    private final Properties activationProps;
+    // by default we want to connect with HornetQ
+    private String resourceAdapterName = "hornetq-ra";
 
     /**
      * Construct a new instance.
@@ -54,11 +57,21 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
      * @param ejbJarDescription  the module description
      */
     public MessageDrivenComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
-                                             final ServiceName deploymentUnitServiceName, final String messageListenerInterfaceName) {
+                                             final ServiceName deploymentUnitServiceName, final String messageListenerInterfaceName, final Properties activationProps) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
         if (messageListenerInterfaceName == null || messageListenerInterfaceName.isEmpty())
             throw new IllegalArgumentException("Cannot set null or empty string as message listener interface");
+
+        this.activationProps = activationProps;
+
         registerView(messageListenerInterfaceName, MethodIntf.MESSAGE_ENDPOINT);
+
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                description.addDependency(getResourceAdapterServiceName(), ServiceBuilder.DependencyType.REQUIRED);
+            }
+        });
     }
 
     @Override
@@ -69,30 +82,19 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         return mdbComponentConfiguration;
     }
 
-//    public void setMessageListenerInterfaceName(String messageListenerInterfaceName) {
-//        if (messageListenerInterfaceName == null || messageListenerInterfaceName.isEmpty()) {
-//            throw new IllegalArgumentException("Cannot set null or empty string as message listener interface");
-//        }
-//        this.messageListenerInterfaceName = messageListenerInterfaceName;
-//        // add it to the view description
-//        ViewDescription viewDescription = new EJBViewDescription(this, messageListenerInterfaceName, MethodIntf.MESSAGE_ENDPOINT);
-//        this.getViews().add(viewDescription);
-//    }
+    public Properties getActivationProps() {
+        return activationProps;
+    }
+
+    public String getResourceAdapterName() {
+        return resourceAdapterName;
+    }
 
     public void setResourceAdapterName(String resourceAdapterName) {
         if (resourceAdapterName == null || resourceAdapterName.trim().isEmpty()) {
             throw new IllegalArgumentException("Resource adapter name cannot be null or empty");
         }
         this.resourceAdapterName = resourceAdapterName;
-        // setup the dependency
-        String raDeploymentName = resourceAdapterName;
-        // See RaDeploymentParsingProcessor
-        if (this.resourceAdapterName.endsWith(".rar")) {
-            raDeploymentName = this.resourceAdapterName.substring(0, resourceAdapterName.indexOf(".rar"));
-        }
-        // See ResourceAdapterDeploymentService
-        this.resourceAdapterServiceName = ServiceName.of(raDeploymentName);
-        this.addDependency(resourceAdapterServiceName, ServiceBuilder.DependencyType.REQUIRED);
     }
 
     @Override
@@ -132,8 +134,15 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         });
     }
 
+    // can't be part of Configuration
     ServiceName getResourceAdapterServiceName() {
-        return resourceAdapterServiceName;
+        String raDeploymentName = resourceAdapterName;
+        // See RaDeploymentParsingProcessor
+        if (this.resourceAdapterName.endsWith(".rar")) {
+            raDeploymentName = this.resourceAdapterName.substring(0, resourceAdapterName.indexOf(".rar"));
+        }
+        // See ResourceAdapterDeploymentService
+        return ServiceName.of(raDeploymentName);
     }
 
     @Override

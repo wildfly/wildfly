@@ -54,8 +54,7 @@ import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
 public class MessageDrivenComponent extends EJBComponent implements MessageDrivenBeanComponent, PooledComponent<MessageDrivenComponentInstance> {
     private final Pool<MessageDrivenComponentInstance> pool;
 
-    // TODO: implement creation of ActivationSpec
-    private final ActivationSpec activationSpec = null;
+    private final ActivationSpec activationSpec;
     private final MessageEndpointFactory endpointFactory;
     private final Class<?> messageListenerInterface;
     private ResourceAdapter resourceAdapter;
@@ -65,7 +64,7 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
      *
      * @param ejbComponentCreateService the component configuration
      */
-    protected MessageDrivenComponent(final MessageDrivenComponentCreateService ejbComponentCreateService, final Class<?> messageListenerInterface) {
+    protected MessageDrivenComponent(final MessageDrivenComponentCreateService ejbComponentCreateService, final Class<?> messageListenerInterface, final ActivationSpec activationSpec) {
         super(ejbComponentCreateService);
 
         StatelessObjectFactory<MessageDrivenComponentInstance> factory = new StatelessObjectFactory<MessageDrivenComponentInstance>() {
@@ -82,6 +81,7 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
         };
         this.pool = new StrictMaxPool<MessageDrivenComponentInstance>(factory, 20, 5, TimeUnit.MINUTES);
 
+        this.activationSpec = activationSpec;
         this.messageListenerInterface = messageListenerInterface;
         final MessageEndpointService<?> service = new MessageEndpointService<Object>() {
             @Override
