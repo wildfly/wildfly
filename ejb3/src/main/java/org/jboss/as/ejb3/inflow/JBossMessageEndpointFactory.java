@@ -34,10 +34,12 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class JBossMessageEndpointFactory implements MessageEndpointFactory {
+    private final ClassLoader classLoader;
     private final Class<?>[] interfaces;
-    private MessageEndpointService service;
+    private final MessageEndpointService service;
 
-    public JBossMessageEndpointFactory(final MessageEndpointService service) {
+    public JBossMessageEndpointFactory(final ClassLoader classLoader, final MessageEndpointService service) {
+        this.classLoader = classLoader;
         this.service = service;
         this.interfaces = new Class[] { service.getMessageListenerInterface(), MessageEndpoint.class };
     }
@@ -51,7 +53,6 @@ public class JBossMessageEndpointFactory implements MessageEndpointFactory {
     public MessageEndpoint createEndpoint(XAResource xaResource, long timeout) throws UnavailableException {
         Object delegate = service.obtain(timeout, MILLISECONDS);
         MessageEndpointInvocationHandler handler = new MessageEndpointInvocationHandler(service, delegate, xaResource);
-        ClassLoader classLoader = service.getMessageListenerInterface().getClassLoader();
         return (MessageEndpoint) Proxy.newProxyInstance(classLoader, interfaces, handler);
     }
 
