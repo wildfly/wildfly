@@ -29,6 +29,23 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -43,7 +60,28 @@ public class JMSMessageDrivenBeanTestCase {
     }
 
     @Test
-    public void testSendMessage() {
-        
+    public void testSendMessage() throws JMSException, NamingException {
+        final InitialContext ctx = new InitialContext();
+        final QueueConnectionFactory factory = (QueueConnectionFactory) ctx.lookup("java:/JmsXA");
+        final QueueConnection connection = factory.createQueueConnection();
+        connection.start();
+        try {
+            final QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+            final Queue replyDestination = session.createTemporaryQueue();
+            final QueueReceiver receiver = session.createReceiver(replyDestination);
+            final Message message = session.createTextMessage("Test");
+            message.setJMSReplyTo(replyDestination);
+            final Destination destination = (Destination) ctx.lookup("queue/test");
+            final MessageProducer producer = session.createProducer(destination);
+            producer.send(message);
+            producer.close();
+
+            final Message reply = receiver.receive(1000);
+            assertNotNull(reply);
+            final String result = ((TextMessage) reply).getText();
+            assertEquals("replying Test", result);
+        } finally {
+            //connection.stop();
+        }
     }
 }
