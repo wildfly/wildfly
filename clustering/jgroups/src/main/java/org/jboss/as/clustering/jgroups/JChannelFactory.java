@@ -147,8 +147,8 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
     public List<org.jgroups.conf.ProtocolConfiguration> getProtocolStack() {
         List<org.jgroups.conf.ProtocolConfiguration> configs = new ArrayList<org.jgroups.conf.ProtocolConfiguration>(this.configuration.getProtocols().size() + 1);
         TransportConfiguration transport = this.configuration.getTransport();
+        Map<String, String> properties = transport.getProperties();
         org.jgroups.conf.ProtocolConfiguration config = this.createProtocol(this.configuration.getTransport());
-        Map<String, String> properties = config.getProperties();
 
         if (transport.isShared() && !transport.getProperties().containsKey(Global.SINGLETON_NAME)) {
             properties.put(Global.SINGLETON_NAME, this.configuration.getName());
@@ -156,16 +156,16 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
 
         SocketBinding binding = transport.getSocketBinding();
         if (binding != null) {
-            this.configureBindAddress(config, binding);
-            this.configureServerSocket(config, "bind_port", binding);
-            this.configureMulticastSocket(config, "mcast_addr", "mcast_port", binding);
+            this.configureBindAddress(transport, config, binding);
+            this.configureServerSocket(transport, config, "bind_port", binding);
+            this.configureMulticastSocket(transport, config, "mcast_addr", "mcast_port", binding);
         }
 
         SocketBinding diagnosticsSocketBinding = transport.getDiagnosticsSocketBinding();
         boolean diagnostics = (diagnosticsSocketBinding != null);
         properties.put("enable_diagnostics", String.valueOf(diagnostics));
         if (diagnostics) {
-            this.configureMulticastSocket(config, "diagnostics_addr", "diagnostics_port", diagnosticsSocketBinding);
+            this.configureMulticastSocket(transport, config, "diagnostics_addr", "diagnostics_port", diagnosticsSocketBinding);
         }
 
         configs.add(config);
@@ -174,13 +174,13 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
             config = this.createProtocol(protocol);
             binding = protocol.getSocketBinding();
             if (binding != null) {
-                this.configureBindAddress(config, binding);
-                this.configureServerSocket(config, "bind_port", binding);
-                this.configureServerSocket(config, "start_port", binding);
-                this.configureMulticastSocket(config, "mcast_addr", "mcast_port", binding);
+                this.configureBindAddress(protocol, config, binding);
+                this.configureServerSocket(protocol, config, "bind_port", binding);
+                this.configureServerSocket(protocol, config, "start_port", binding);
+                this.configureMulticastSocket(protocol, config, "mcast_addr", "mcast_port", binding);
             } else if (transport.getSocketBinding() != null) {
-                // If no socket-binding was specified, use bind address transport
-                this.configureBindAddress(config, transport.getSocketBinding());
+                // If no socket-binding was specified, use bind address of transport
+                this.configureBindAddress(protocol, config, transport.getSocketBinding());
             }
 
             configs.add(config);
@@ -188,20 +188,29 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
         return configs;
     }
 
-    private void configureBindAddress(org.jgroups.conf.ProtocolConfiguration config, SocketBinding binding) {
-        config.getProperties().put("bind_addr", binding.getSocketAddress().getAddress().getHostAddress());
+    private void configureBindAddress(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, SocketBinding binding) {
+        final String property = "bind_addr";
+        if (protocol.hasProperty(property)) {
+            config.getProperties().put(property, binding.getSocketAddress().getAddress().getHostAddress());
+        }
     }
 
-    private void configureServerSocket(org.jgroups.conf.ProtocolConfiguration config, String portProperty, SocketBinding binding) {
-        config.getProperties().put(portProperty, String.valueOf(binding.getSocketAddress().getPort()));
+    private void configureServerSocket(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String property, SocketBinding binding) {
+        if (protocol.hasProperty(property)) {
+            config.getProperties().put(property, String.valueOf(binding.getSocketAddress().getPort()));
+        }
     }
 
-    private void configureMulticastSocket(org.jgroups.conf.ProtocolConfiguration config, String addressProperty, String portProperty, SocketBinding binding) {
+    private void configureMulticastSocket(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String addressProperty, String portProperty, SocketBinding binding) {
         Map<String, String> properties = config.getProperties();
         try {
             InetSocketAddress mcastSocketAddress = binding.getMulticastSocketAddress();
-            properties.put(addressProperty, mcastSocketAddress.getAddress().getHostAddress());
-            properties.put(portProperty, String.valueOf(mcastSocketAddress.getPort()));
+            if (protocol.hasProperty(addressProperty)) {
+                properties.put(addressProperty, mcastSocketAddress.getAddress().getHostAddress());
+            }
+            if (protocol.hasProperty(portProperty)) {
+                properties.put(portProperty, String.valueOf(mcastSocketAddress.getPort()));
+            }
         } catch (IllegalStateException e) {
             log.tracef(e, "Could not set %s.%s and %s.%s, %s socket binding does not specify a multicast socket", config.getProtocolName(), addressProperty, config.getProtocolName(), portProperty, binding.getName());
         }

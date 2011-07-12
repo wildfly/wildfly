@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.config.Configuration;
+import org.infinispan.config.FluentConfiguration;
 import org.infinispan.config.FluentGlobalConfiguration;
 import org.infinispan.config.GlobalConfiguration;
 import org.infinispan.jmx.CacheJmxRegistration;
@@ -128,16 +129,6 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
             fluentTransport.transportClass(null);
         }
 
-        FluentGlobalConfiguration.GlobalJmxStatisticsConfig globalJmx = fluentTransport.globalJmxStatistics();
-        globalJmx.cacheManagerName(this.configuration.getName());
-
-        MBeanServer server = this.configuration.getMBeanServer();
-        if (server != null) {
-            globalJmx.mBeanServerLookup(new MBeanServerProvider(server)).jmxDomain(server.getDefaultDomain());
-        } else {
-            globalJmx.disable();
-        }
-
         Executor listenerExecutor = this.configuration.getListenerExecutor();
         if (listenerExecutor != null) {
             ExecutorProvider.initListenerExecutor(global, listenerExecutor);
@@ -151,18 +142,29 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
             ExecutorProvider.initReplicationQueueExecutor(global, replicationQueueExecutor);
         }
 
-        Configuration defaultConfig = new Configuration();
+        FluentGlobalConfiguration.GlobalJmxStatisticsConfig globalJmx = fluentTransport.globalJmxStatistics();
+        globalJmx.cacheManagerName(this.configuration.getName());
 
-        TransactionManager transactionManager = this.configuration.getTransactionManager();
-        if (transactionManager != null) {
-            defaultConfig.fluent().transaction().transactionManagerLookup(new TransactionManagerProvider(transactionManager));
+        Configuration defaultConfig = new Configuration();
+        FluentConfiguration fluent = defaultConfig.fluent();
+
+        MBeanServer server = this.configuration.getMBeanServer();
+        if (server != null) {
+            globalJmx.mBeanServerLookup(new MBeanServerProvider(server)).jmxDomain(SERVICE_NAME.getCanonicalName());
+            fluent.jmxStatistics();
+        } else {
+            globalJmx.disable();
         }
 
-        TransactionSynchronizationRegistry transactionSynchronizationRegistry =
-            this.configuration.getTransactionSynchronizationRegistry();
-        if (transactionSynchronizationRegistry != null) {
-            defaultConfig.fluent().transaction().transactionSynchronizationRegistryLookup(
-                new TransactionSynchronizationRegistryProvider(transactionSynchronizationRegistry));
+        FluentConfiguration.TransactionConfig tx = fluent.transaction();
+        TransactionManager txManager = this.configuration.getTransactionManager();
+        if (txManager != null) {
+            tx.transactionManagerLookup(new TransactionManagerProvider(txManager));
+        }
+
+        TransactionSynchronizationRegistry txSyncRegistry = this.configuration.getTransactionSynchronizationRegistry();
+        if (txSyncRegistry != null) {
+            tx.transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(txSyncRegistry));
         }
 
         EmbeddedCacheManager manager = new DefaultCacheManager(global, defaultConfig, false);
