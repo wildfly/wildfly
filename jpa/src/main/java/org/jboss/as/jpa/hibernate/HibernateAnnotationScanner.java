@@ -50,19 +50,15 @@ import java.util.Set;
  */
 public class HibernateAnnotationScanner implements Scanner {
 
-    private static ThreadLocal<PersistenceUnitMetadata> persistenceUnitMetadataTLS = new ThreadLocal() {
-        protected Object initialValue() {
-            return null;
-        }
+    private static ThreadLocal<PersistenceUnitMetadata> persistenceUnitMetadataTLS = new ThreadLocal<PersistenceUnitMetadata>();
 
-    };
 
-    public static void setThreadLocalPersistenceUnitMetadata(PersistenceUnitMetadata pu) {
+    public static void setThreadLocalPersistenceUnitMetadata(final PersistenceUnitMetadata pu) {
         persistenceUnitMetadataTLS.set(pu);
     }
 
     public static void clearThreadLocalPersistenceUnitMetadata() {
-        persistenceUnitMetadataTLS.set(null);
+        persistenceUnitMetadataTLS.remove();
     }
 
     @Override
@@ -77,7 +73,7 @@ public class HibernateAnnotationScanner implements Scanner {
             if (pu == null) {
                 throw new RuntimeException("Missing PersistenceUnitMetadata (thread local wasn't set)");
             }
-            Index index = pu.getAnnotationIndex();
+            Index index = getJarFileIndex(jartoScan, pu);
             if (index == null) {
                 throw new RuntimeException("Missing annotation index to scan entity classes");
             }
@@ -108,13 +104,17 @@ public class HibernateAnnotationScanner implements Scanner {
         return new HashSet<Package>(uniquePackages.values());
     }
 
+    private Index getJarFileIndex(final URL jartoScan, final PersistenceUnitMetadata pu) {
+        return pu.getAnnotationIndex().get(jartoScan);
+    }
+
     @Override
     public Set<Class<?>> getClassesInJar(URL jartoScan, Set<Class<? extends Annotation>> annotationsToLookFor) {
         PersistenceUnitMetadata pu = persistenceUnitMetadataTLS.get();
         if (pu == null) {
             throw new RuntimeException("Missing PersistenceUnitMetadata (thread local wasn't set)");
         }
-        Index index = pu.getAnnotationIndex();
+        Index index = getJarFileIndex(jartoScan, pu);
         if (index == null) {
             throw new RuntimeException("Missing annotation index to scan entity classes");
         }

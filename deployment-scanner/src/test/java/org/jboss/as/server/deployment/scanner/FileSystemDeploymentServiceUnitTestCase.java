@@ -608,11 +608,116 @@ public class FileSystemDeploymentServiceUnitTestCase {
     }
 
     @Test
-    public void testUndeployByContentDeletion() throws Exception {
+    public void testUndeployByContentDeletionZipped() throws Exception {
+
+        // First, zipped content
+
         File war = createFile("foo.war");
         File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
         File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
         TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+
+        assertTrue(war.delete());
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertFalse(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+        assertEquals(0, ts.controller.added.size());
+        assertEquals(0, ts.controller.deployed.size());
+
+        // Next, zipped content with auto-deploy disabled
+
+        war = createFile("foo.war");
+        dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(false);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+
+        assertTrue(war.delete());
+        ts.testee.scan();
+        assertFalse(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+    }
+
+    @Test
+    public void testUndeployByContentDeletionExploded() throws Exception {
+
+        // First, auto-deploy enabled
+
+        File war = new File(tmpDir, "foo.war");
+        war.mkdirs();
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployExplodedContent(true);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+
+        assertTrue(war.delete());
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertFalse(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+        assertEquals(0, ts.controller.added.size());
+        assertEquals(0, ts.controller.deployed.size());
+
+        // Next, with auto-deploy disabled
+
+        war = new File(tmpDir, "foo.war");
+        war.mkdirs();
+        dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        ts = createTestee();
+        ts.testee.setAutoDeployExplodedContent(false);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+
+        assertTrue(war.delete());
+        ts.testee.scan();
+        assertFalse(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+
+        // Now, exploded content
+
+        war = new File(tmpDir, "foo.war");
+        war.mkdirs();
+        dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        ts = createTestee();
+        ts.testee.setAutoDeployExplodedContent(true);
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
         assertTrue(war.exists());

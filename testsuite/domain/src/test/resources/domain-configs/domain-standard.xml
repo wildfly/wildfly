@@ -59,7 +59,8 @@
         <profile name="web-only">
             <subsystem xmlns="urn:jboss:domain:web:1.0">
                <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
-               <virtual-server name="localhost">
+               <virtual-server name="default-host">
+                  <alias name="localhost" />
                   <alias name="example.com" />
                </virtual-server>
              </subsystem>

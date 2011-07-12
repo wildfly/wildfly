@@ -103,7 +103,7 @@ public class PersistenceUnitMetadata implements PersistenceUnitInfo {
 
     private ClassLoader tempClassloader;
 
-    private Index annotationIndex;
+    private Map<URL,Index> annotationIndex;
 
     public void setPersistenceUnitName(String name) {
         this.name = name;
@@ -182,11 +182,11 @@ public class PersistenceUnitMetadata implements PersistenceUnitInfo {
         return persistenceUnitRootUrl;
     }
 
-    public void setAnnotationIndex(Index index) {
-        annotationIndex = index;
+    public void setAnnotationIndex(Map<URL, Index> indexs) {
+        annotationIndex = indexs;
     }
 
-    public Index getAnnotationIndex() {
+    public Map<URL, Index> getAnnotationIndex() {
         return annotationIndex;
     }
 

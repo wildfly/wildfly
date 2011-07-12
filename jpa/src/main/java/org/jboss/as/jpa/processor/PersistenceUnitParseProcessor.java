@@ -26,13 +26,13 @@ import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
-import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.puparser.PersistenceUnitXmlParser;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -175,8 +175,8 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 // look at lib/*.jar files that aren't subdeployments (subdeployments are passed
                 // to deploy(DeploymentPhaseContext)).
                 if (!SubDeploymentMarker.isSubDeployment(resourceRoot) &&
-                    resourceRoot.getRoot().getLowerCaseName().endsWith(JAR_FILE_EXTENSION) &&
-                    resourceRoot.getRoot().getParent().getName().equals(LIB_FOLDER)) {
+                        resourceRoot.getRoot().getLowerCaseName().endsWith(JAR_FILE_EXTENSION) &&
+                        resourceRoot.getRoot().getParent().getName().equals(LIB_FOLDER)) {
                     listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
                     persistence_xml = resourceRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
                     parse(persistence_xml, listPUHolders, deploymentUnit, resourceRoot);
@@ -190,11 +190,11 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     }
 
     private void parse(
-        final VirtualFile persistence_xml,
-        final List<PersistenceUnitMetadataHolder> listPUHolders,
-        final DeploymentUnit deploymentUnit,
-        final ResourceRoot deploymentRoot)
-        throws DeploymentUnitProcessingException {
+            final VirtualFile persistence_xml,
+            final List<PersistenceUnitMetadataHolder> listPUHolders,
+            final DeploymentUnit deploymentUnit,
+            final ResourceRoot deploymentRoot)
+            throws DeploymentUnitProcessingException {
 
         if (persistence_xml.exists() && persistence_xml.isFile()) {
             InputStream is = null;
@@ -228,12 +228,23 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
      * @param puHolder
      */
     private void postParseSteps(
-        final VirtualFile persistence_xml,
-        final PersistenceUnitMetadataHolder puHolder,
-        final DeploymentUnit deploymentUnit,
-        final ResourceRoot resourceRoot) {
+            final VirtualFile persistence_xml,
+            final PersistenceUnitMetadataHolder puHolder,
+            final DeploymentUnit deploymentUnit,
+            final ResourceRoot resourceRoot) {
 
-        final Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
+        final Map<URL, Index> annotationIndexes = new HashMap<URL, Index>();
+        for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
+            final Index index = root.getAttachment(Attachments.ANNOTATION_INDEX);
+            if (index != null) {
+                try {
+                    annotationIndexes.put(root.getRoot().toURL(), index);
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
 
         for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
 
@@ -248,7 +259,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             URL url = getPersistenceUnitURL(persistence_xml);
             pu.setPersistenceUnitRootUrl(url);
             pu.setScopedPersistenceUnitName(createBeanName(deploymentUnit, pu.getPersistenceUnitName()));
-            pu.setAnnotationIndex(index);   // hold onto the annotation index for Persistence Provider use during deployment
+            pu.setAnnotationIndex(annotationIndexes);   // hold onto the annotation index for Persistence Provider use during deployment
         }
     }
 
@@ -258,7 +269,8 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
         } catch (MalformedURLException e) {
             try {
                 VirtualFile deploymentUnitFile = persistence_xml;
-                VirtualFile parent = deploymentUnitFile.getParent();
+                //we need the parent 3 units up, 1 is META-INF, 2nd is the actual jar, 3rd is the jar files parent
+                VirtualFile parent = deploymentUnitFile.getParent().getParent().getParent();
                 VirtualFile baseDir = (parent != null ? parent : deploymentUnitFile);
                 VirtualFile jarFile = baseDir.getChild(jar);
                 if (jarFile == null)
@@ -301,10 +313,10 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                     PersistenceUnitMetadata first = flattened.get(pu.getPersistenceUnitName());
                     PersistenceUnitMetadata duplicate = pu;
                     log.warn("duplicate Persistence Unit definition for " + duplicate.getPersistenceUnitName() +
-                        " in application.  One of the duplicate persistence.xml should be removed from the application." +
-                        " Application deployment will continue with the persistence.xml definitions from " +
-                        first.getScopedPersistenceUnitName() + " used.  The persistence.xml definitions from " +
-                        duplicate.getScopedPersistenceUnitName() + " will be ignored."
+                            " in application.  One of the duplicate persistence.xml should be removed from the application." +
+                            " Application deployment will continue with the persistence.xml definitions from " +
+                            first.getScopedPersistenceUnitName() + " used.  The persistence.xml definitions from " +
+                            duplicate.getScopedPersistenceUnitName() + " will be ignored."
                     );
                 }
             }
