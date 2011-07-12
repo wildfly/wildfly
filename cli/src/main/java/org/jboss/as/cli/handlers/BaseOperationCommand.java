@@ -22,6 +22,7 @@
 package org.jboss.as.cli.handlers;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +32,11 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.RequestParameterArgument;
+import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.OperationRequestParser;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
+import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -41,13 +47,80 @@ import org.jboss.dmr.ModelNode;
 public abstract class BaseOperationCommand extends CommandHandlerWithHelp implements OperationCommand {
 
     protected List<RequestParameterArgument> params = new ArrayList<RequestParameterArgument>();
+    protected OperationRequestAddress requiredAddress;
 
     public BaseOperationCommand(String command) {
-        super(command);
+        super(command, true);
     }
 
     public BaseOperationCommand(String command, boolean connectionRequired) {
         super(command, connectionRequired);
+    }
+
+    /**
+     * Adds a node path which is required to exist before the command can be used.
+     * @param requiredPath  node path which is required to exist before the command can be used.
+     */
+    protected void addRequiredPath(String requiredPath) {
+        if(requiredPath == null) {
+            throw new IllegalArgumentException("Required path can't be null.");
+        }
+        // there perhaps could be more but for now only one is allowed
+        if(requiredAddress != null) {
+            throw new IllegalStateException("Only one required address is allowed, atm.");
+        }
+        requiredAddress = new DefaultOperationRequestAddress();
+        OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(requiredAddress);
+        try {
+            DefaultOperationRequestParser.INSTANCE.parse(requiredPath, handler);
+        } catch (CommandFormatException e) {
+            throw new IllegalArgumentException("Failed to parse nodeType: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Adds a node path which is required to exist before the command can be used.
+     * @param requiredPath  node path which is required to exist before the command can be used.
+     */
+    protected void addRequiredPath(OperationRequestAddress requiredPath) {
+        if(requiredPath == null) {
+            throw new IllegalArgumentException("Required path can't be null.");
+        }
+        // there perhaps could be more but for now only one is allowed
+        if(requiredAddress != null) {
+            throw new IllegalStateException("Only one required address is allowed, atm.");
+        }
+        requiredAddress = requiredPath;
+    }
+
+    @Override
+    public boolean isAvailable(CommandContext ctx) {
+        if(!super.isAvailable(ctx)) {
+            return false;
+        }
+        if(requiredAddress == null) {
+            return true;
+        }
+        ModelControllerClient client = ctx.getModelControllerClient();
+        if(client == null) {
+            return false;
+        }
+        if(ctx.isDomainMode()) {
+            return true;
+        }
+        ModelNode request = new ModelNode();
+        ModelNode address = request.get("address");
+        for(OperationRequestAddress.Node node : requiredAddress) {
+            address.add(node.getType(), node.getName());
+        }
+        request.get("operation").set("validate-address");
+        ModelNode result;
+        try {
+            result = ctx.getModelControllerClient().execute(request);
+        } catch (IOException e) {
+            return false;
+        }
+        return Util.isSuccess(result);
     }
 
     /* (non-Javadoc)

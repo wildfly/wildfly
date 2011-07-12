@@ -83,6 +83,8 @@ public class JmsQueueAddHandler extends BatchModeCommandHandler {
 
         durable = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{"false", "true"}), "--durable");
         durable.addRequiredPreceding(name);
+
+        this.addRequiredPath("/subsystem=messaging");
     }
 
     @Override

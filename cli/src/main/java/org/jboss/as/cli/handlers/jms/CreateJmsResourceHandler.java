@@ -41,6 +41,7 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
 
     public CreateJmsResourceHandler() {
         super("create-jms-resource", true);
+        this.addRequiredPath("/subsystem=messaging");
     }
 
     @Override

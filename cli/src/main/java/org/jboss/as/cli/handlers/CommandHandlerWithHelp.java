@@ -29,7 +29,6 @@ import java.util.List;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 
 /**
@@ -77,12 +76,9 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
             return;
         }
 
-        if(connectionRequired) {
-            ModelControllerClient client = ctx.getModelControllerClient();
-            if(client == null) {
-                ctx.printLine("The controller client is not available. Make sure you are connected.");
-                return;
-            }
+        if(!isAvailable(ctx)) {
+            ctx.printLine("The command is not available in the current context (e.g. required subsystems or connection to the controller might be unavailable).");
+            return;
         }
 
         doHandle(ctx);

@@ -38,6 +38,7 @@ public class DeleteJmsResourceHandler extends BatchModeCommandHandler {
 
     public DeleteJmsResourceHandler() {
         super("delete-jms-resource", true);
+        this.addRequiredPath("/subsystem=messaging");
     }
 
     @Override
