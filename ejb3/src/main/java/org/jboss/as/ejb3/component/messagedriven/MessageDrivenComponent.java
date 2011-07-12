@@ -91,7 +91,7 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
 
             @Override
             public TransactionManager getTransactionManager() {
-                return getTransactionManager();
+                return MessageDrivenComponent.this.getTransactionManager();
             }
 
             @Override
@@ -112,7 +112,7 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
                 // do nothing
             }
         };
-        this.endpointFactory = new JBossMessageEndpointFactory(service);
+        this.endpointFactory = new JBossMessageEndpointFactory(getComponentClass().getClassLoader(), service);
     }
 
     @Override
