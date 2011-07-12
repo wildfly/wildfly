@@ -110,7 +110,8 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
         ArchiveDeployer archiveDeployer = archiveDeployerInst.get();
         String runtimeName = archiveDeployer.deploy(archive);
         registry.put(archive, runtimeName);
-        return new ProtocolMetaData();
+
+        return new ProtocolMetaDataParser(modelControllerClient).parse(runtimeName);
     }
 
     @Override
