@@ -53,6 +53,9 @@ class WebSubsystemDescribe implements OperationStepHandler, DescriptionProvider 
         if (subModel.hasDefined(Constants.CONTAINER_CONFIG)) {
             subsystemAdd.get(Constants.CONTAINER_CONFIG).set(subModel.get(Constants.CONTAINER_CONFIG));
         }
+        if(subModel.hasDefined(Constants.DEFAULT_VIRTUAL_SERVER)) {
+            subsystemAdd.get(Constants.DEFAULT_VIRTUAL_SERVER).set(subModel.get(Constants.DEFAULT_VIRTUAL_SERVER));
+        }
         result.add(subsystemAdd);
         if (subModel.hasDefined(Constants.CONNECTOR)) {
             for (final Property connector : subModel.get(Constants.CONNECTOR).asPropertyList()) {
