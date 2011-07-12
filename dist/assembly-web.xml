@@ -14,6 +14,7 @@
             <outputDirectory>jboss-as-web-${project.version}</outputDirectory>
             <includes>
                 <include>*/**</include>
+                <include>./</include>
             </includes>
             <excludes>
                 <exclude>**/*.sh</exclude>
@@ -27,17 +28,20 @@
                 <exclude>**/jboss-webservices.xsd</exclude>
                 <exclude>**/jboss-messaging.xsd</exclude>
             </excludes>
+            <directoryMode>0755</directoryMode>
         </fileSet>
         <fileSet>
             <directory>../build/target/jboss-as-${project.version}</directory>
             <outputDirectory>jboss-as-web-${project.version}</outputDirectory>
             <includes>
                 <include>**/*.sh</include>
+                <include>./</include>
             </includes>
             <excludes>
                 <exclude>**/ws*.sh</exclude>
             </excludes>
             <fileMode>0777</fileMode>
+            <directoryMode>0755</directoryMode>
         </fileSet>
     </fileSets>
 </assembly>
