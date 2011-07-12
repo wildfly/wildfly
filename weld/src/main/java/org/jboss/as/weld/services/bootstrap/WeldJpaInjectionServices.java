@@ -21,11 +21,12 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
-import org.jboss.as.jpa.config.PersistenceUnitMetadata;
+
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.service.PersistenceUnitService;
+import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
