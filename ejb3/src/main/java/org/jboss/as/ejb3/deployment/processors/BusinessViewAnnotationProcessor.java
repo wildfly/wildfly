@@ -30,8 +30,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 
@@ -210,7 +208,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         try {
             return cl.loadClass(className);
         } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Could not load EJB class " + className);
+            throw new DeploymentUnitProcessingException("Could not load EJB class " + className, e);
         }
     }
 
