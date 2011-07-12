@@ -52,7 +52,11 @@ public class ReplyingMDB implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
+            System.out.println("Message " + message);
             final Destination destination = message.getJMSReplyTo();
+            // ignore messages that need no reply
+            if (destination == null)
+                return;
             final MessageProducer replyProducer = session.createProducer(destination);
             final Message replyMsg = session.createTextMessage("replying " + ((TextMessage) message).getText());
             replyMsg.setJMSCorrelationID(message.getJMSMessageID());
