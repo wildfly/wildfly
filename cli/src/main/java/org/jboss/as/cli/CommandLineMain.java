@@ -73,12 +73,6 @@ import org.jboss.as.cli.handlers.batch.BatchListHandler;
 import org.jboss.as.cli.handlers.batch.BatchMoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRemoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRunHandler;
-import org.jboss.as.cli.handlers.jca.DataSourceAddHandler;
-import org.jboss.as.cli.handlers.jca.DataSourceModifyHandler;
-import org.jboss.as.cli.handlers.jca.DataSourceRemoveHandler;
-import org.jboss.as.cli.handlers.jca.XADataSourceAddHandler;
-import org.jboss.as.cli.handlers.jca.XADataSourceModifyHandler;
-import org.jboss.as.cli.handlers.jca.XADataSourceRemoveHandler;
 import org.jboss.as.cli.handlers.jms.CreateJmsResourceHandler;
 import org.jboss.as.cli.handlers.jms.DeleteJmsResourceHandler;
 import org.jboss.as.cli.handlers.jms.JmsCFAddHandler;
@@ -142,17 +136,18 @@ public class CommandLineMain {
 
         cmdRegistry.registerHandler(new VersionHandler(), "version");
 
-        cmdRegistry.registerHandler(new DataSourceAddHandler(), "add-data-source");
+/*        cmdRegistry.registerHandler(new DataSourceAddHandler(), "add-data-source");
         cmdRegistry.registerHandler(new DataSourceModifyHandler(), "modify-data-source");
         cmdRegistry.registerHandler(new DataSourceRemoveHandler(), "remove-data-source");
         cmdRegistry.registerHandler(new XADataSourceAddHandler(), "add-xa-data-source");
         cmdRegistry.registerHandler(new XADataSourceRemoveHandler(), "remove-xa-data-source");
         cmdRegistry.registerHandler(new XADataSourceModifyHandler(), "modify-xa-data-source");
-
+*/
         cmdRegistry.registerHandler(new CommandCommandHandler(cmdRegistry), "command");
 
         // data-source
         cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=datasources/data-source", "jndi-name"), "data-source");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=datasources/xa-data-source", "jndi-name"), "xa-data-source");
     }
 
     public static void main(String[] args) throws Exception {

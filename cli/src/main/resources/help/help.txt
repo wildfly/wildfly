@@ -26,13 +26,8 @@ Here are some of the most common supported commands:
  add-jms-cf				- creates a new JMS connection factory
  remove-jms-cf			- removes an existing JMS connection factory
  
- add-data-source		- creates a new data source
- remove-data-source		- removes an existing data source
- modify-data-source		- modifies the configuration of an existing data source
- add-xa-data-source		- creates a new XA data source
- remove-xa-data-source	- removes an existing XA data source
- modify-xa-data-source	- modifies the configuration of an existing XA data source
- 
+ data-source			- allows to add new, modify and remove existing data sources
+ xa-data-source			- allows to add new, modify and remove existing XA data sources
  
 For a more detailed description of a specific command, execute the command with '--help' as the argument.
 
