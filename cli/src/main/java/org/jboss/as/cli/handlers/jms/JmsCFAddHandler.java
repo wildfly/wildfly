@@ -111,7 +111,9 @@ public class JmsCFAddHandler extends BatchModeCommandHandler {
 
 /*        clientId = new ArgumentWithValue("--client-id");
         addArgument(clientId);
-*/    }
+*/
+        this.addRequiredPath("/subsystem=messaging");
+    }
 
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {

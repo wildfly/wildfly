@@ -84,6 +84,7 @@ public class BaseDataSourceAddHandler extends BaseOperationCommand {
         };
 
         initArguments();
+        this.addRequiredPath("/subsystem=datasources");
     }
 
     /* (non-Javadoc)

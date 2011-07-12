@@ -91,6 +91,7 @@ public class JmsCFRemoveHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
+        this.addRequiredPath("/subsystem=messaging");
     }
 
     @Override

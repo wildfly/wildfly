@@ -91,6 +91,8 @@ public class JmsTopicRemoveHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
+
+        this.addRequiredPath("/subsystem=messaging");
     }
 
     @Override
