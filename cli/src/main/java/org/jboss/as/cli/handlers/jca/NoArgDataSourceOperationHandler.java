@@ -70,6 +70,7 @@ public class NoArgDataSourceOperationHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
+        this.addRequiredPath("/subsystem=datasources");
     }
 
     @Override

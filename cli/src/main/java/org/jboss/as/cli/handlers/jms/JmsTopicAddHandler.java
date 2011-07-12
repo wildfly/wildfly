@@ -75,6 +75,8 @@ public class JmsTopicAddHandler extends BatchModeCommandHandler {
 
         entries = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{"topic/"}), "--entries");
         entries.addRequiredPreceding(name);
+
+        this.addRequiredPath("/subsystem=messaging");
     }
 
     @Override
