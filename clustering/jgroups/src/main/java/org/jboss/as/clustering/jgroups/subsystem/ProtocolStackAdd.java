@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -265,14 +266,34 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
         private final String name;
         private final InjectedValue<SocketBinding> socketBinding = new InjectedValue<SocketBinding>();
         private final Map<String, String> properties = new HashMap<String, String>();
+        private final Class<?> protocolClass;
 
         Protocol(String name) {
             this.name = name;
+            try {
+                this.protocolClass = this.getClass().getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + name);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException(e);
+            }
         }
 
         @Override
         public String getName() {
             return this.name;
+        }
+
+        @Override
+        public boolean hasProperty(String property) {
+            return getField(this.protocolClass, property) != null;
+        }
+
+        private static Field getField(Class<?> targetClass, String property) {
+            try {
+                return targetClass.getDeclaredField(property);
+            } catch (NoSuchFieldException e) {
+                Class<?> superClass = targetClass.getSuperclass();
+                return (superClass != null) && (superClass.isAssignableFrom(org.jgroups.stack.Protocol.class)) ? getField(superClass, property) : null;
+            }
         }
 
         @Override
