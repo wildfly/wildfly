@@ -45,6 +45,7 @@ import org.jboss.msc.service.ServiceRegistry;
 public abstract class HandlerUpdateProperties implements OperationStepHandler {
     static final String OPERATION_NAME = "update-properties";
 
+    @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -65,7 +66,9 @@ public abstract class HandlerUpdateProperties implements OperationStepHandler {
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
+                @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    LoggingValidators.validate(operation);
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
                     if (controller != null) {

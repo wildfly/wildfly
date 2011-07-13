@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
@@ -43,7 +44,9 @@ public class RootLoggerLevelChange implements OperationStepHandler {
     static final String OPERATION_NAME = "change-root-log-level";
     static final RootLoggerLevelChange INSTANCE = new RootLoggerLevelChange();
 
-    public void execute(OperationContext context, ModelNode operation) {
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        LoggingValidators.validate(operation);
         final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         final String level = operation.get(LEVEL).asString();
         model.get(ROOT_LOGGER, LEVEL).set(level);
