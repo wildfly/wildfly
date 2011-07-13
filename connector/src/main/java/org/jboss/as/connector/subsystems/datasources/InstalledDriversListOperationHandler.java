@@ -53,8 +53,10 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                         } else {
                             driverNode.get(DEPLOYMENT_NAME);
                             driverNode.get(DRIVER_MODULE_NAME).set(driver.getModuleName().getName());
-                            driverNode.get(MODULE_SLOT).set(driver.getModuleName().getSlot());
-                            driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(driver.getXaDataSourceClassName());
+                            driverNode.get(MODULE_SLOT).set(
+                                    driver.getModuleName() != null ? driver.getModuleName().getSlot() : "");
+                            driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(
+                                    driver.getXaDataSourceClassName() != null ? driver.getXaDataSourceClassName() : "");
 
                         }
                         driverNode.get(DRIVER_CLASS_NAME).set(driver.getDriverClassName());

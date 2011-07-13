@@ -129,18 +129,6 @@ public class AddMySqlDataSourceOperationsUnitTestCase {
 
         final ModelNode result = getModelControllerClient().execute(operation);
 
-        final ModelNode address2 = new ModelNode();
-        address2.add("subsystem", "datasources");
-        address2.add("data-source", "MySqlDs");
-        address2.protect();
-
-        final ModelNode operation2 = new ModelNode();
-        operation2.get(OP).set("test-connection-in-pool");
-        operation2.get(OP_ADDR).set(address2);
-
-        final ModelNode result2 = getModelControllerClient().execute(operation2);
-        Assert.assertEquals(SUCCESS, result2.get(OUTCOME).asString());
-
         List<ModelNode> newList = marshalAndReparseDsResources();
 
         Assert.assertNotNull(newList);
