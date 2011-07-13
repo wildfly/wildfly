@@ -2,7 +2,11 @@ package org.jboss.as.connector.pool;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.resource.spi.IllegalStateException;
+
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.subsystems.datasources.Util;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
@@ -29,7 +33,7 @@ public abstract class PoolOperations implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String jndiName = address.getLastElement().getValue();
+        final String jndiName = Util.getJndiName(context.readModel(PathAddress.EMPTY_ADDRESS));
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
@@ -51,7 +55,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                             }
 
                         } catch (Exception e) {
-                            throw new OperationFailedException(new ModelNode().set("failed to set invoke operation: "
+                            throw new OperationFailedException(new ModelNode().set("failed to invoke operation: "
                                     + e.getMessage()));
                         }
                         if (operationResult != null) {
@@ -65,7 +69,7 @@ public abstract class PoolOperations implements OperationStepHandler {
         context.completeStep();
     }
 
-    protected abstract ModelNode invokeCommandOn(Pool pool);
+    protected abstract ModelNode invokeCommandOn(Pool pool) throws Exception;
 
     public static class FlushIdleConnectionInPool extends PoolOperations {
         public static FlushIdleConnectionInPool DS_INSTANCE = new FlushIdleConnectionInPool(new DsPoolMatcher());
@@ -108,8 +112,10 @@ public abstract class PoolOperations implements OperationStepHandler {
         }
 
         @Override
-        protected ModelNode invokeCommandOn(Pool pool) {
+        protected ModelNode invokeCommandOn(Pool pool) throws Exception {
             boolean returnedValue = pool.testConnection();
+            if (!returnedValue)
+                throw new IllegalStateException("Connection is not valid");
             ModelNode result = new ModelNode();
             result.add(returnedValue);
             return result;

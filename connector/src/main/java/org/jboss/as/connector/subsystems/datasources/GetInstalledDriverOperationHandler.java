@@ -39,8 +39,7 @@ public class GetInstalledDriverOperationHandler implements OperationStepHandler 
     }
 
     @Override
-    public void execute(final OperationContext context, final ModelNode operation)
-            throws OperationFailedException {
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
 
         validator.validate(operation);
 
@@ -65,7 +64,7 @@ public class GetInstalledDriverOperationHandler implements OperationStepHandler 
                     } else {
                         driverNode.get(DEPLOYMENT_NAME);
                         driverNode.get(DRIVER_MODULE_NAME).set(driver.getModuleName().getName());
-                        driverNode.get(MODULE_SLOT).set(driver.getModuleName().getSlot());
+                        driverNode.get(MODULE_SLOT).set(driver.getModuleName() != null ? driver.getModuleName().getSlot() : "");
                         driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(driver.getXaDataSourceClassName());
 
                     }
