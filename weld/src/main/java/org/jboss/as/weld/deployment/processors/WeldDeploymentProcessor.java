@@ -144,6 +144,11 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             beanDeploymentArchives.addAll(bdm.getBeanDeploymentArchives());
             bdmsByIdentifier.put(subDeploymentModule.getIdentifier(), bdm);
             moduleSpecByIdentifier.put(subDeploymentModule.getIdentifier(), subDeploymentModuleSpec);
+
+            //we have to do this here as the aggregate components are not available in earlier phases
+            final ResourceRoot subDeploymentRoot = subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, subDeploymentRoot.getRoot());
+            bdm.addService(EjbInjectionServices.class, ejbInjectionServices);
         }
 
         for (Map.Entry<ModuleIdentifier, BeanDeploymentModule> entry : bdmsByIdentifier.entrySet()) {
@@ -172,6 +177,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot());
         weldContainer.addWeldService(EjbInjectionServices.class, ejbInjectionServices);
+        rootBeanDeploymentModule.addService(EjbInjectionServices.class, ejbInjectionServices);
 
         weldContainer.addWeldService(EjbServices.class, new WeldEjbServices(deploymentUnit.getServiceRegistry()));
 
