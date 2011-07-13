@@ -54,7 +54,9 @@ class RootLoggerAdd implements OperationStepHandler {
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
+                @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    LoggingValidators.validate(operation);
                     final ServiceTarget target = context.getServiceTarget();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     try {

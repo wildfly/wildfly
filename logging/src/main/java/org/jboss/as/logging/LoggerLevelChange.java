@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -41,7 +42,9 @@ public class LoggerLevelChange implements OperationStepHandler {
     static final String OPERATION_NAME = "change-log-level";
     static final LoggerLevelChange INSTANCE = new LoggerLevelChange();
 
-    public void execute(OperationContext context, ModelNode operation) {
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        LoggingValidators.validate(operation);
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final String level = operation.get(CommonAttributes.LEVEL).asString();
