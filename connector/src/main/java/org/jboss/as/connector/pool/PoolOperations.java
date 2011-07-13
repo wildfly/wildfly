@@ -42,12 +42,17 @@ public abstract class PoolOperations implements OperationStepHandler {
                             final ManagementRepository repository = (ManagementRepository) managementRepoService.getValue();
                             List<Pool> pools = matcher.match(jndiName, repository);
 
+                            if (pools.isEmpty()) {
+                                throw new IllegalArgumentException("failed to match pool. Check JndiName: " + jndiName);
+                            }
+
                             for (Pool pool : pools) {
                                 operationResult = invokeCommandOn(pool);
                             }
 
                         } catch (Exception e) {
-                            throw new OperationFailedException(new ModelNode().set("failed to set attribute" + e.getMessage()));
+                            throw new OperationFailedException(new ModelNode().set("failed to set invoke operation: "
+                                    + e.getMessage()));
                         }
                         if (operationResult != null) {
                             context.getResult().set(operationResult);
