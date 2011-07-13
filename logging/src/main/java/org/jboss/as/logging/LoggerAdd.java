@@ -45,9 +45,11 @@ class LoggerAdd extends AbstractAddStepHandler {
 
     static final LoggerAdd INSTANCE = new LoggerAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        final String level = operation.require(LEVEL).asString();
-        final ModelNode handlers = operation.hasDefined(HANDLERS) ? operation.get(HANDLERS) : new ModelNode();
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        LoggingValidators.validate(operation);
+        final String level = operation.require(CommonAttributes.LEVEL).asString();
+        final ModelNode handlers = operation.hasDefined(CommonAttributes.HANDLERS) ? operation.get(CommonAttributes.HANDLERS) : new ModelNode();
 
         if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(level);
         model.get(HANDLERS).set(handlers);

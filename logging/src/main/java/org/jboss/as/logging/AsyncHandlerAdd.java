@@ -28,6 +28,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -49,7 +50,9 @@ class AsyncHandlerAdd extends AbstractAddStepHandler {
 
     static final AsyncHandlerAdd INSTANCE = new AsyncHandlerAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        LoggingValidators.validate(operation);
         model.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
         model.get(SUBHANDLERS).set(operation.get(SUBHANDLERS));
         if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(operation.get(LEVEL));

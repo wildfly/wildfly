@@ -354,7 +354,7 @@ final class OperationContextImpl implements OperationContext {
                     // Handler threw OFE before calling completeStep(); that's equivalent to
                     // a request that we set the failure description and call completeStep()
                     response.get(FAILURE_DESCRIPTION).set(ofe.getFailureDescription());
-                    log.warnf("Operation (%s) failed - address: (%s)", operation.get(OP), operation.get(OP_ADDR));
+                    log.errorf("Operation (%s) failed - address: (%s) - failure description: %s", operation.get(OP), operation.get(OP_ADDR), response.get(FAILURE_DESCRIPTION));
                     completeStep();
                 }
                 else {
