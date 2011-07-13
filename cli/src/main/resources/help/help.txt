@@ -47,7 +47,7 @@ Operation requests are expected to follow the format:
 
 [node-type=node-name (, node-type=node-name)*] : operation-name ['('[name=value [, name=value]*]')']
 
-e.g. /subsystem=web/connector=http:read-resource(recursive=1)
+e.g. /subsystem=web/connector=http:read-attribute(name=protocol)
 
 Whitespaces between the separators are insignificant.
 If the operation doesn't require arguments then the brackets '()' are optional.
