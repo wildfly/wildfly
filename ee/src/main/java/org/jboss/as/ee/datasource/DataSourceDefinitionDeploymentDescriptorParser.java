@@ -98,9 +98,13 @@ public class DataSourceDefinitionDeploymentDescriptorParser extends AbstractDepl
         final DirectDataSourceInjectionSource directDataSourceInjectionSource = new DirectDataSourceInjectionSource();
         directDataSourceInjectionSource.setClassName(className);
         directDataSourceInjectionSource.setDatabaseName(dataSource.getDatabaseName());
-        directDataSourceInjectionSource.setDescription(dataSource.getDescriptions().toString());
+        if (dataSource.getDescriptions() != null) {
+            directDataSourceInjectionSource.setDescription(dataSource.getDescriptions().toString());
+        }
         directDataSourceInjectionSource.setInitialPoolSize(dataSource.getInitialPoolSize());
-        directDataSourceInjectionSource.setIsolationLevel(dataSource.getIsolationLevel().ordinal());
+        if (dataSource.getIsolationLevel() != null) {
+            directDataSourceInjectionSource.setIsolationLevel(dataSource.getIsolationLevel().ordinal());
+        }
         directDataSourceInjectionSource.setLoginTimeout(dataSource.getLoginTimeout());
         directDataSourceInjectionSource.setMaxIdleTime(dataSource.getMaxIdleTime());
         directDataSourceInjectionSource.setMaxStatements(dataSource.getMaxStatements());
