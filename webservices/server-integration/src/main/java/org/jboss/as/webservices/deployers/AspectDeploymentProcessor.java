@@ -28,6 +28,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 
@@ -74,9 +75,9 @@ public final class AspectDeploymentProcessor extends TCCLDeploymentProcessor imp
             }
             log.debug(this.aspect + " start: " + unit.getName());
             final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
-            dep.addAttachment(DeploymentPhaseContext.class, phaseContext);
+            dep.addAttachment(ServiceTarget.class, phaseContext.getServiceTarget());
             aspect.start(dep);
-            dep.removeAttachment(DeploymentPhaseContext.class);
+            dep.removeAttachment(ServiceTarget.class);
         }
     }
 

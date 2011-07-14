@@ -32,6 +32,7 @@
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.jws.api"/>
+        <module name="javax.servlet.api"/>
         <module name="javax.xml.ws.api"/>
         <module name="org.jboss.ejb3"/>
         <module name="org.jboss.invocation"/>

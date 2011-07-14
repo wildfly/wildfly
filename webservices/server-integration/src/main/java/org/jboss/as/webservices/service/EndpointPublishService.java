@@ -1,0 +1,122 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.jboss.as.webservices.service;
+
+import java.util.Map;
+
+import org.jboss.as.web.VirtualHost;
+import org.jboss.as.web.WebSubsystemServices;
+import org.jboss.as.webservices.publish.EndpointPublisherImpl;
+import org.jboss.as.webservices.util.WSServices;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.wsf.spi.publish.Context;
+
+/**
+ * WS endpoint publish service, allows for publishing a WS endpoint on AS 7
+ *
+ * @author alessio.soldano@jboss.com
+ * @since 12-Jul-2011
+ */
+public final class EndpointPublishService implements Service<Context> {
+
+    private static final Logger log = Logger.getLogger(EndpointPublishService.class);
+    private final ServiceName name;
+    private Context wsctx;
+
+    private final ClassLoader loader;
+    private final String context;
+    private final Map<String,String> urlPatternToClassName;
+
+    private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
+
+    private EndpointPublishService(final String context, final ClassLoader loader,
+            final Map<String,String> urlPatternToClassName) {
+        this.name = WSServices.ENDPOINT_PUBLISH_SERVICE.append(context);
+        this.loader = loader;
+        this.context = context;
+        this.urlPatternToClassName = urlPatternToClassName;
+    }
+
+    @Override
+    public Context getValue() {
+        return wsctx;
+    }
+
+    public ServiceName getName() {
+        return name;
+    }
+
+    public InjectedValue<VirtualHost> getHostInjector() {
+        return hostInjector;
+    }
+
+    @Override
+    public void start(final StartContext ctx) throws StartException {
+        log.infof("Starting %s", name);
+        try {
+            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue().getHost());
+            wsctx = publisher.publish(context, loader, urlPatternToClassName);
+        } catch (Exception e) {
+            throw new StartException(e);
+        }
+    }
+
+    @Override
+    public void stop(final StopContext ctx) {
+        log.infof("Stopping %s", name);
+        try {
+            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue().getHost());
+            publisher.destroy(wsctx);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ServiceBuilder<Context> createServiceBuilder(final ServiceTarget serviceTarget, final String context,
+            final ClassLoader loader, final String hostName, final Map<String,String> urlPatternToClassName) {
+        final EndpointPublishService service = new EndpointPublishService(context, loader, urlPatternToClassName);
+        final ServiceBuilder<Context> builder = serviceTarget.addService(service.getName(), service);
+        builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
+        builder.addDependency(DependencyType.REQUIRED, WSServices.REGISTRY_SERVICE);
+        builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class,
+                service.getHostInjector());
+        return builder;
+    }
+
+    public static void install(final ServiceTarget serviceTarget, final String context, final ClassLoader loader,
+            final String hostName, final Map<String,String> urlPatternToClassName) {
+        ServiceBuilder<Context> builder = createServiceBuilder(serviceTarget, context, loader, hostName, urlPatternToClassName);
+        builder.setInitialMode(Mode.ACTIVE);
+        builder.install();
+    }
+
+}
