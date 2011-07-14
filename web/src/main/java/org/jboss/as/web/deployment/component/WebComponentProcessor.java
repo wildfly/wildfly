@@ -99,6 +99,9 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
         final TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         final Set<String> classes = getAllComponentClasses(warMetaData, tldsMetaData);
         for (String clazz : classes) {
+            if (clazz == null || clazz.trim().isEmpty()) {
+                continue;
+            }
             ComponentDescription description = componentByClass.get(clazz);
             if (description != null) {
                 //for now just make sure it has a single view
