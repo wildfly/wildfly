@@ -292,7 +292,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
                 return targetClass.getDeclaredField(property);
             } catch (NoSuchFieldException e) {
                 Class<?> superClass = targetClass.getSuperclass();
-                return (superClass != null) && (superClass.isAssignableFrom(org.jgroups.stack.Protocol.class)) ? getField(superClass, property) : null;
+                return (superClass != null) && org.jgroups.stack.Protocol.class.isAssignableFrom(superClass) ? getField(superClass, property) : null;
             }
         }
 

@@ -36,7 +36,6 @@ import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.stats.Stats;
 import org.jboss.util.loading.ContextClassLoaderSwitcher;
 import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
 
@@ -317,8 +316,8 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
         }
 
         @Override
-        public Stats getStats() {
-            return this.cache.getStats();
+        public AdvancedCache<K, V> with(ClassLoader loader) {
+            return new ClassLoaderAwareCache<K, V>(this.cache, loader);
         }
 
         @Override
