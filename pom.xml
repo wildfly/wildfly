@@ -267,6 +267,7 @@
         <module>security</module>
         <module>server</module>
         <module>spec-api</module>
+        <module>subsystem-test</module>
         <module>threads</module>
         <module>transactions</module>
         <module>web</module>
@@ -846,6 +847,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-subsystem-test</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
