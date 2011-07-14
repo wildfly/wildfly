@@ -97,6 +97,8 @@ public final class WorkManagerService implements Service<WorkManager> {
 
     @Override
     public void stop(StopContext context) {
+        value.shutdown();
+
         try {
             if (usersRoles != null)
                 usersRoles.stop();
