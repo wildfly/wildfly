@@ -29,6 +29,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.ejb.api.SessionObjectReference;
+import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,16 +44,32 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
     private volatile boolean removed = false;
     private final Map<String, ServiceName> viewServices;
 
-
     public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor, ServiceRegistry serviceRegistry) {
         final ServiceName createServiceName = descriptor.getCreateServiceName();
         final ServiceController<?> controller = serviceRegistry.getRequiredService(createServiceName);
 
         final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
-
-        for(ViewDescription view : descriptor.getComponentDescription().getViews()) {
-            viewServices.put(view.getViewClassName(), view.getServiceName());
+        final Map<String, Class<?>> views = new HashMap<String, Class<?>>();
+        for (BusinessInterfaceDescriptor<?> view : descriptor.getRemoteBusinessInterfaces()) {
+            views.put(view.getInterface().getName(), view.getInterface());
         }
+        for (BusinessInterfaceDescriptor<?> view : descriptor.getLocalBusinessInterfaces()) {
+            views.put(view.getInterface().getName(), view.getInterface());
+        }
+
+        for (ViewDescription view : descriptor.getComponentDescription().getViews()) {
+            final Class<?> viewClass = views.get(view.getViewClassName());
+            if (viewClass != null) {
+                //see WELD-921
+                //this is horrible, but until it is fixed there is not much that can be done
+                Class<?> clazz = viewClass;
+                while (clazz != Object.class && clazz != null) {
+                    viewServices.put(clazz.getName(), view.getServiceName());
+                    clazz = clazz.getSuperclass();
+                }
+            }
+        }
+
         this.viewServices = viewServices;
 
     }
@@ -61,12 +78,13 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
     @Override
     @SuppressWarnings({"unchecked"})
     public synchronized <S> S getBusinessObject(Class<S> businessInterfaceType) {
-        if(removed) {
+        if (removed) {
             return null;
         }
-        if(viewServices.containsKey(businessInterfaceType.getName())) {
+        //TODO: this should be cached
+        if (viewServices.containsKey(businessInterfaceType.getName())) {
             final ServiceController<?> serviceController = CurrentServiceRegistry.getServiceRegistry().getRequiredService(viewServices.get(businessInterfaceType.getName()));
-            final ComponentView view = (ComponentView)serviceController.getValue();
+            final ComponentView view = (ComponentView) serviceController.getValue();
             final ComponentViewInstance instance = view.createInstance();
             return (S) instance.createProxy();
         } else {

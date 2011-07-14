@@ -29,6 +29,7 @@ import org.jboss.as.server.CurrentServiceRegistry;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.ejb.api.SessionObjectReference;
+import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 
 import javax.ejb.NoSuchEJBException;
 import java.io.Serializable;
@@ -54,8 +55,25 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
         createServiceName = descriptor.getCreateServiceName();
 
         final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
+       final Map<String, Class<?>> views = new HashMap<String, Class<?>>();
+        for (BusinessInterfaceDescriptor<?> view : descriptor.getRemoteBusinessInterfaces()) {
+            views.put(view.getInterface().getName(), view.getInterface());
+        }
+        for (BusinessInterfaceDescriptor<?> view : descriptor.getLocalBusinessInterfaces()) {
+            views.put(view.getInterface().getName(), view.getInterface());
+        }
+
         for (ViewDescription view : descriptor.getComponentDescription().getViews()) {
-            viewServices.put(view.getViewClassName(), view.getServiceName());
+            final Class<?> viewClass = views.get(view.getViewClassName());
+            if (viewClass != null) {
+                //see WELD-921
+                //this is horrible, but until it is fixed there is not much that can be done
+                Class<?> clazz = viewClass;
+                while (clazz != Object.class && clazz != null) {
+                    viewServices.put(clazz.getName(), view.getServiceName());
+                    clazz = clazz.getSuperclass();
+                }
+            }
         }
         id = getComponent().createSession();
         this.viewServices = viewServices;
