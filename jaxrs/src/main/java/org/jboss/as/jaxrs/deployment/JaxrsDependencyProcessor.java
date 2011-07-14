@@ -51,6 +51,13 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
     public static ModuleIdentifier ASYNC_HTTP_SERVLET_30 = ModuleIdentifier.create("org.jboss.resteasy.async-http-servlet-30");
     public static ModuleIdentifier JAXB_API = ModuleIdentifier.create("javax.xml.bind.api");
 
+    /**
+     * We include this so that jackson annotations will be available, otherwise they will be ignored which leads
+     * to confusing behaviour.
+     *
+     */
+    public static ModuleIdentifier JACKSON_CORE_ASL = ModuleIdentifier.create("org.codehaus.jackson.jackson-core-asl");
+
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
@@ -68,6 +75,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JSAPI);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_MULTIPART);
         addDepdenency(moduleSpecification, moduleLoader, ASYNC_HTTP_SERVLET_30);
+        addDepdenency(moduleSpecification, moduleLoader, JACKSON_CORE_ASL);
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             addDepdenency(moduleSpecification, moduleLoader, RESTEASY_CDI);
