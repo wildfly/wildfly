@@ -21,8 +21,6 @@
  */
 package org.jboss.as.testsuite.integration.jaxrs.jackson;
 
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
@@ -33,6 +31,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests the resteasy multipart provider
@@ -61,9 +61,19 @@ public class JaxrsJacksonProviderTestCase {
     }
 
     @Test
-    public void testJaxRsWithNoApplication() throws Exception {
+    public void testSimpleJacksonResource() throws Exception {
         String result = performCall("myjaxrs/jackson");
         Assert.assertEquals("{\"first\":\"John\",\"last\":\"Citizen\"}", result);
     }
+
+    /**
+     * AS7-1276
+     */
+    @Test
+    public void testJacksonWithJsonIgnore() throws Exception {
+        String result = performCall("myjaxrs/country");
+        Assert.assertEquals("{\"name\":\"Australia\",\"temperature\":\"Hot\"}", result);
+    }
+
 
 }
