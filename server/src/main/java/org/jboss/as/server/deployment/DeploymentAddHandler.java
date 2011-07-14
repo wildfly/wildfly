@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
+import org.jboss.as.controller.registry.Resource;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.asString;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getInputStream;
@@ -166,7 +167,8 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
             contentItem = new DeploymentHandlerUtil.ContentItem(path, relativeTo, archive);
         }
 
-        ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+        ModelNode subModel = resource.getModel();
         subModel.get(NAME).set(name);
         subModel.get(RUNTIME_NAME).set(runtimeName);
         // content is a clone

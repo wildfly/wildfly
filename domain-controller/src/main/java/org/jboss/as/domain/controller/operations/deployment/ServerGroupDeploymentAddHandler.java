@@ -89,7 +89,8 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler, De
 
         final String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : deployment.get(RUNTIME_NAME).asString();
 
-        ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+        final ModelNode subModel = resource.getModel();
         subModel.get(NAME).set(name);
         subModel.get(RUNTIME_NAME).set(runtimeName);
         subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
