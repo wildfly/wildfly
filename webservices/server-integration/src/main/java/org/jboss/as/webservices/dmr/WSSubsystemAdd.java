@@ -89,6 +89,9 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 
+        log.info("Activating WebServices Extension");
+        ModuleClassLoaderProvider.register();
+
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 // add the DUP for dealing with WS deployments
@@ -97,12 +100,8 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        log.info("Activating WebServices Extension");
-        ModuleClassLoaderProvider.register();
         WSServices.saveContainerRegistry(context.getServiceRegistry(false));
-
         ServiceTarget serviceTarget = context.getServiceTarget();
-
         ServerConfigImpl serverConfig = createServerConfig(operation);
         newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
         newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
