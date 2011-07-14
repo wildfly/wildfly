@@ -42,10 +42,18 @@
 
     <packaging>pom</packaging>
 
+    <scm>
+        <connection>scm:git:${jboss.as.scm.connection}</connection>
+        <developerConnection>scm:git:${jboss.as.scm.connection}</developerConnection>
+        <url>${jboss.as.scm.url}</url>
+    </scm>
+
     <properties>
          <!-- Release Info -->
         <jboss.as.release.version>${project.version}</jboss.as.release.version>
         <jboss.as.release.codename>Lightning</jboss.as.release.codename>
+        <jboss.as.scm.url>https://github.com/jbossas/jboss-as</jboss.as.scm.url>
+        <jboss.as.scm.connection>git@github.com:jbossas/jboss-as.git</jboss.as.scm.connection>
 
         <!-- Build configuration -->
         <maven.compiler.source>1.6</maven.compiler.source>
@@ -319,7 +327,8 @@
                                         <Os-Name>${os.name}</Os-Name>
                                         <Os-Arch>${os.arch}</Os-Arch>
                                         <Os-Version>${os.version}</Os-Version>
-                                        <Scm-Url>${project.scm.developerConnection}</Scm-Url>
+                                        <Scm-Url>${jboss.as.scm.url}</Scm-Url>
+                                        <Scm-Connection>${jboss.as.scm.connection}</Scm-Connection>
                                         <Build-Time>${build.timestamp}</Build-Time>
                                         <Scm-Version>${buildNumber}</Scm-Version>
                                     </manifestEntries>
