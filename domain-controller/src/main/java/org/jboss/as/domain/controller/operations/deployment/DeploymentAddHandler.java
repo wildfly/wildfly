@@ -55,6 +55,7 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
@@ -162,7 +163,8 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
             unmanagedContentValidator.validate(contentItemNode);
         }
 
-        ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+        final ModelNode subModel = resource.getModel();
         subModel.get(NAME).set(name);
         subModel.get(RUNTIME_NAME).set(runtimeName);
         subModel.get(CONTENT).set(content);
