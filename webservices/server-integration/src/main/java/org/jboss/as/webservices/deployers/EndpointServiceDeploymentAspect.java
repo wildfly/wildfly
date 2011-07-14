@@ -21,7 +21,6 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.EndpointLifecycleDeploymentAspect;
@@ -39,10 +38,11 @@ public final class EndpointServiceDeploymentAspect extends EndpointLifecycleDepl
     @Override
     public void start(Deployment dep) {
         super.start(dep);
-        final DeploymentPhaseContext context = dep.getAttachment(DeploymentPhaseContext.class);
-        final ServiceTarget target = context.getServiceTarget();
-        for (Endpoint ep : dep.getService().getEndpoints()) {
-            EndpointService.install(target, ep);
+        final ServiceTarget target = dep.getAttachment(ServiceTarget.class);
+        if (target != null) {
+            for (Endpoint ep : dep.getService().getEndpoints()) {
+                EndpointService.install(target, ep);
+            }
         }
     }
 }
