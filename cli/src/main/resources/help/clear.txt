@@ -1,0 +1,6 @@
+Synopsis:	clear
+			cls
+
+Description:	clears the screen.
+
+Arguments: n/a.
