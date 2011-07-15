@@ -170,7 +170,7 @@ public class CommandLineMain {
             int defaultControllerPort = -1;
             boolean version = false;
             for(String arg : args) {
-                if(arg.startsWith("controller=") || arg.startsWith("--controller=")) {
+                if(arg.startsWith("--controller=") || arg.startsWith("controller=")) {
                     final String value;
                     if(arg.startsWith("--")) {
                         value = arg.substring(13);
@@ -207,13 +207,13 @@ public class CommandLineMain {
                     connect = true;
                 } else if("--version".equals(arg)) {
                     version = true;
-                } else if(arg.startsWith("file=") || arg.startsWith("--file=")) {
+                } else if(arg.startsWith("--file=") || arg.startsWith("file=")) {
                     if(file != null) {
-                        argError = "Duplicate argument 'file'.";
+                        argError = "Duplicate argument '--file'.";
                         break;
                     }
                     if(commands != null) {
-                        argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
+                        argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time.";
                         break;
                     }
 
@@ -225,31 +225,43 @@ public class CommandLineMain {
                             break;
                         }
                     } else {
-                        argError = "Argument 'file' is missing value.";
+                        argError = "Argument '--file' is missing value.";
                         break;
                     }
-                } else if(arg.startsWith("commands=") || arg.startsWith("--commands=")) {
+                } else if(arg.startsWith("--commands=") || arg.startsWith("commands=")) {
                     if(file != null) {
-                        argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
+                        argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time.";
                         break;
                     }
                     if(commands != null) {
-                        argError = "Duplicate argument 'command'/'commands'.";
+                        argError = "Duplicate argument '--command'/'--commands'.";
                         break;
                     }
                     final String value = arg.startsWith("--") ? arg.substring(11) : arg.substring(9);
                     commands = value.split(",+");
-                } else if(arg.startsWith("command=") || arg.startsWith("--command=")) {
+                } else if(arg.startsWith("--command=") || arg.startsWith("command=")) {
                     if(file != null) {
-                        argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
+                        argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time.";
                         break;
                     }
                     if(commands != null) {
-                        argError = "Duplicate argument 'command'/'commands'.";
+                        argError = "Duplicate argument '--command'/'--commands'.";
                         break;
                     }
                     final String value = arg.startsWith("--") ? arg.substring(10) : arg.substring(8);
                     commands = new String[]{value};
+                }
+                else {
+                    // assume it's a command
+                    if(file != null) {
+                        argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time.";
+                        break;
+                    }
+                    if(commands != null) {
+                        argError = "Duplicate argument '--command'/'--commands'.";
+                        break;
+                    }
+                    commands = new String[]{arg};
                 }
             }
 
