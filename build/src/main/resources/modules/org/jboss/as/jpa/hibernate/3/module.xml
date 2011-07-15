@@ -23,7 +23,7 @@
   -->
 
 <!-- contains the JPA integration classes for Hibernate 3.x --> 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.jpa.hibernate" slot="3">
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.jpa.hibernate" slot="3">
 
     <resources>
         <!-- Insert resources here -->

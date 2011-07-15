@@ -21,8 +21,9 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<!-- Represents the Hibernate 4.0.x module--> 
-<module xmlns="urn:jboss:module:1.0" name="org.hibernate">
+
+<!-- Represents the Hibernate 4.0.x module-->
+<module xmlns="urn:jboss:module:1.1" name="org.hibernate">
     <resources>
         <!-- Insert resources here -->
     </resources>
@@ -39,8 +40,8 @@
         <module name="org.dom4j"/>
         <module name="org.infinispan"/>
         <module name="org.javassist"/>
-        <module name="org.jboss.as.jpa.hibernate"  slot="4"/>
+        <module name="org.jboss.as.jpa.hibernate" slot="4"/>
         <module name="org.jboss.logging"/>
-        <module name="org.hibernate.envers" services="import" optional = "true"/>
+        <module name="org.hibernate.envers" services="import" optional="true"/>
     </dependencies>
 </module>
