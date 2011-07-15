@@ -252,7 +252,7 @@ public class CommandLineMain {
                     commands = new String[]{value};
                 }
                 else {
-                    // assume it's a command
+                    // assume it's commands
                     if(file != null) {
                         argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time.";
                         break;
@@ -261,7 +261,7 @@ public class CommandLineMain {
                         argError = "Duplicate argument '--command'/'--commands'.";
                         break;
                     }
-                    commands = new String[]{arg};
+                    commands = arg.split(",+");
                 }
             }
 
