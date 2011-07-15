@@ -19,6 +19,10 @@
 package org.jboss.as.host.controller.operations;
 
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
@@ -28,6 +32,7 @@ import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.DomainController;
@@ -43,7 +48,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision: 1.1 $
  */
-public class LocalDomainControllerAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class LocalDomainControllerAddHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "write-local-domain-controller";
 
@@ -84,7 +89,11 @@ public class LocalDomainControllerAddHandler extends AbstractAddStepHandler impl
         this.registry = registry;
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        final ModelNode model = resource.getModel();
+
         ModelNode dc = model.get(DOMAIN_CONTROLLER);
         dc.get(LOCAL).setEmptyObject();
 
@@ -100,7 +109,10 @@ public class LocalDomainControllerAddHandler extends AbstractAddStepHandler impl
 
         DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
                 contentRepo, fileRepository, domainController, registry);
+
+        context.completeStep();
     }
+
 
     //Done by DomainModelControllerService
 //    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,

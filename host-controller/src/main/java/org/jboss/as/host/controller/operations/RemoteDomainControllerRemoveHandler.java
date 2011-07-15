@@ -22,15 +22,19 @@ package org.jboss.as.host.controller.operations;
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class RemoteDomainControllerRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class RemoteDomainControllerRemoveHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "remove-remote-domain-controller";
 
@@ -42,7 +46,10 @@ public class RemoteDomainControllerRemoveHandler extends AbstractRemoveStepHandl
     protected RemoteDomainControllerRemoveHandler() {
     }
 
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) {
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        final ModelNode model = resource.getModel();
         model.get(DOMAIN_CONTROLLER).setEmptyObject();
         context.completeStep();
     }

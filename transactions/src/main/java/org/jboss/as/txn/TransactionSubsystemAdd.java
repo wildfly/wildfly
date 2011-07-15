@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -106,7 +107,9 @@ class TransactionSubsystemAdd implements OperationStepHandler {
         }
 
 
-        final ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+        final ModelNode subModel = resource.getModel();
+
         subModel.get(CORE_ENVIRONMENT, PROCESS_ID).set(operation.get(CORE_ENVIRONMENT).require(PROCESS_ID));
         subModel.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).set(operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER));
         subModel.get(CORE_ENVIRONMENT, RELATIVE_TO).set(operation.get(CORE_ENVIRONMENT, RELATIVE_TO));
