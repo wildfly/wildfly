@@ -51,6 +51,7 @@ import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.batch.impl.DefaultBatchManager;
 import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
+import org.jboss.as.cli.handlers.ClearScreenHandler;
 import org.jboss.as.cli.handlers.CommandCommandHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
@@ -115,6 +116,7 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new QuitHandler(), "quit", "q", "exit");
         cmdRegistry.registerHandler(new ConnectHandler(), "connect");
         cmdRegistry.registerHandler(new PrefixHandler(), "cd", "cn");
+        cmdRegistry.registerHandler(new ClearScreenHandler(), "clear", "cls");
         cmdRegistry.registerHandler(new LsHandler(), "ls");
         cmdRegistry.registerHandler(new HistoryHandler(), "history");
         cmdRegistry.registerHandler(new DeployHandler(), "deploy");
@@ -724,6 +726,16 @@ public class CommandLineMain {
         @Override
         public int getControllerPort() {
             return controllerPort;
+        }
+
+        @Override
+        public void clearScreen() {
+            try {
+                console.setDefaultPrompt("");// it has to be reset apparently because otherwise it'll be printed twice
+                console.clearScreen();
+            } catch (IOException e) {
+                printLine(e.getLocalizedMessage());
+            }
         }
 
         String promptConnectPart;

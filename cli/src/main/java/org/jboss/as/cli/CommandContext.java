@@ -69,6 +69,11 @@ public interface CommandContext {
     void printColumns(Collection<String> col);
 
     /**
+     * Clears the screen.
+     */
+    void clearScreen();
+
+    /**
      * Terminates the command line session.
      */
     void terminateSession();

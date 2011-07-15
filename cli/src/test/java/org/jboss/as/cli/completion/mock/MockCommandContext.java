@@ -239,4 +239,10 @@ public class MockCommandContext implements CommandContext {
         // TODO Auto-generated method stub
         return false;
     }
+
+    @Override
+    public void clearScreen() {
+        // TODO Auto-generated method stub
+
+    }
 }
