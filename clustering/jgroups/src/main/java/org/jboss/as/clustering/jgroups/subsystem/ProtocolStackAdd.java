@@ -73,9 +73,11 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
 
     private static void populate(ModelNode source, ModelNode target) {
         target.get(ModelKeys.TRANSPORT).set(source.require(ModelKeys.TRANSPORT));
-        ModelNode protocols = target.get(ModelKeys.PROTOCOL);
-        for (ModelNode protocol : source.require(ModelKeys.PROTOCOL).asList()) {
-            protocols.add(protocol);
+        if (source.hasDefined(ModelKeys.PROTOCOL)) {
+            ModelNode protocols = target.get(ModelKeys.PROTOCOL);
+            for (ModelNode protocol : source.get(ModelKeys.PROTOCOL).asList()) {
+                protocols.add(protocol);
+            }
         }
     }
 
