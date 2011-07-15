@@ -22,24 +22,24 @@
 
 package org.jboss.as.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Base class for {@link OperationStepHandler} implementations that add managed resource.
+ * Base class for {@link OperationStepHandler} implementations for updating an existing managed resource.
  *
- * @author John Bailey
+ * @author Emanuel Muckenhuber
  */
-public abstract class AbstractAddStepHandler implements OperationStepHandler {
+public abstract class AbstractModelUpdateHandler implements OperationStepHandler {
 
     /** {@inheritDoc */
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-        populateModel(operation, resource);
+        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        updateModel(operation, resource);
         final ModelNode model = resource.getModel();
 
         if (requiresRuntime(context)) {
@@ -63,26 +63,26 @@ public abstract class AbstractAddStepHandler implements OperationStepHandler {
     }
 
     /**
-     * Populate the given resource in the persistent configuration model based on the values in the given operation.
+     * Update the given resource in the persistent configuration model based on the values in the given operation.
      *
      * @param operation the operation
      * @param resource the resource that corresponds to the address of {@code operation}
      *
      * @throws OperationFailedException if {@code operation} is invalid or populating the model otherwise fails
      */
-    protected void populateModel(final ModelNode operation, final Resource resource) throws  OperationFailedException {
-        populateModel(operation, resource.getModel());
+    protected void updateModel(final ModelNode operation, final Resource resource) throws  OperationFailedException {
+        updateModel(operation, resource.getModel());
     }
 
     /**
-     * Populate the given node in the persistent configuration model based on the values in the given operation.
+     * Update the given node in the persistent configuration model based on the values in the given operation.
      *
      * @param operation the operation
      * @param model persistent configuration model node that corresponds to the address of {@code operation}
      *
      * @throws OperationFailedException if {@code operation} is invalid or populating the model otherwise fails
      */
-    protected abstract void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException;
+    protected abstract void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException;
 
     /**
      * Gets whether {@link #performRuntime(OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, ServiceVerificationHandler, java.util.List)}}
@@ -112,7 +112,7 @@ public abstract class AbstractAddStepHandler implements OperationStepHandler {
 
     /**
      * Make any runtime changes necessary to effect the changes indicated by the given {@code operation}. Executes
-     * after {@link #populateModel(org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode)}, so the given {@code model}
+     * after {@link #updateModel(org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode)}, so the given {@code model}
      * parameter will reflect any changes made in that method.
      * <p>
      * This default implementation does nothing.
@@ -153,4 +153,5 @@ public abstract class AbstractAddStepHandler implements OperationStepHandler {
             context.removeService(controller.getName());
         }
     }
+
 }

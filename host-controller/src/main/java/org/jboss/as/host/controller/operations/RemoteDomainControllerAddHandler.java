@@ -19,6 +19,9 @@
 package org.jboss.as.host.controller.operations;
 
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
@@ -35,6 +38,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
@@ -45,7 +49,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision: 1.1 $
  */
-public class RemoteDomainControllerAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class RemoteDomainControllerAddHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "write-remote-domain-controller";
 
@@ -79,8 +83,10 @@ public class RemoteDomainControllerAddHandler extends AbstractAddStepHandler imp
         this.parametersValidator.registerValidator(HOST, new StringLengthValidator(1, Integer.MAX_VALUE, false, true));
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        final ModelNode model = resource.getModel();
         parametersValidator.validate(operation);
         ModelNode dc = model.get(DOMAIN_CONTROLLER);
 
@@ -105,6 +111,7 @@ public class RemoteDomainControllerAddHandler extends AbstractAddStepHandler imp
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
         DomainModelUtil.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), fileRepository);
+        context.completeStep();
     }
 
   //Done by DomainModelControllerService

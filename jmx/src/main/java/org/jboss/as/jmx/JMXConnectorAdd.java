@@ -25,7 +25,11 @@ package org.jboss.as.jmx;
 import java.util.List;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -33,28 +37,39 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * @author Emanuel Muckenhuber
  */
-class JMXConnectorAdd extends AbstractAddStepHandler {
+class JMXConnectorAdd implements OperationStepHandler {
 
     static final JMXConnectorAdd INSTANCE = new JMXConnectorAdd();
-
     static final String OPERATION_NAME = "add-connector";
 
     private JMXConnectorAdd() {
         //
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    @Override
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        final Resource subsystem = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        final ModelNode model = subsystem.getModel();
+
         final String serverBinding = operation.require(CommonAttributes.SERVER_BINDING).asString();
         final String registryBinding = operation.require(CommonAttributes.REGISTRY_BINDING).asString();
 
         model.get(CommonAttributes.SERVER_BINDING).set(serverBinding);
         model.get(CommonAttributes.REGISTRY_BINDING).set(registryBinding);
-    }
-
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final String serverBinding = operation.require(CommonAttributes.SERVER_BINDING).asString();
-        final String registryBinding = operation.require(CommonAttributes.REGISTRY_BINDING).asString();
-        final ServiceTarget target = context.getServiceTarget();
-        newControllers.add(JMXConnectorService.addService(target, serverBinding, registryBinding, verificationHandler));
+        if(context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                    final ServiceTarget target = context.getServiceTarget();
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                    JMXConnectorService.addService(target, serverBinding, registryBinding, verificationHandler);
+                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+                    if(context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                        context.removeService(JMXConnectorService.SERVICE_NAME);
+                    }
+                }
+            }, OperationContext.Stage.RUNTIME);
+        }
+        context.completeStep();
     }
 }

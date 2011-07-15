@@ -22,6 +22,7 @@
 
 package org.jboss.as.security;
 
+import org.jboss.as.controller.registry.Resource;
 import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
@@ -124,7 +125,8 @@ class SecuritySubsystemAdd implements OperationStepHandler {
         String identityTrustManagerClassName = "default";
         String mappingManagerClassName = "default";
 
-        final ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+        final ModelNode subModel = resource.getModel();
 
         Properties securityProperties = null;
         final List<ModelNode> securityPropertiesList;

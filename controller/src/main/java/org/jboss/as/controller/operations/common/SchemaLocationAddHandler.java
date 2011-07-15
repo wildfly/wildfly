@@ -20,6 +20,7 @@ package org.jboss.as.controller.operations.common;
 
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -42,7 +43,7 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SchemaLocationAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class SchemaLocationAddHandler extends AbstractModelUpdateHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "add-schema-location";
 
@@ -64,7 +65,7 @@ public class SchemaLocationAddHandler extends AbstractAddStepHandler implements 
     private SchemaLocationAddHandler() {
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         ModelNode param = operation.get(SCHEMA_LOCATION);
         ModelNode locations = model.get(SCHEMA_LOCATIONS);
         validate(param, locations);
