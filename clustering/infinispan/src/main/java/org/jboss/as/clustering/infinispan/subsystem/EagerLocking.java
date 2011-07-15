@@ -27,8 +27,10 @@ package org.jboss.as.clustering.infinispan.subsystem;
  */
 public enum EagerLocking {
     NONE(false, false),
-    ALL_OWNERS(true, false),
-    SINGLE_OWNER(true, true),
+    ALL(true, false),
+    SINGLE(true, true),
+    @Deprecated ALL_OWNERS(true, false),
+    @Deprecated SINGLE_OWNER(true, true),
     ;
     private final boolean enabled;
     private final boolean singleOwner;

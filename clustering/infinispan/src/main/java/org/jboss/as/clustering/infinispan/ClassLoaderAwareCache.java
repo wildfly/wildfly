@@ -88,7 +88,7 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
         super.addListener(new ClassLoaderAwareListener(listener, this));
     }
 
-    private class ClassLoaderAwareCommandInterceptor extends CommandInterceptor {
+    class ClassLoaderAwareCommandInterceptor extends CommandInterceptor {
         private final AdvancedCache<?, ?> cache;
         ClassLoaderAwareCommandInterceptor(AdvancedCache<?, ?> cache) {
             this.cache = cache;

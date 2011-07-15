@@ -223,6 +223,10 @@ public class JGroupsExtension implements Extension, DescriptionProvider, XMLElem
                     }
                     break;
                 }
+                case SHARED: {
+                    protocol.get(ModelKeys.SHARED).set(Boolean.parseBoolean(value));
+                    break;
+                }
                 case SOCKET_BINDING: {
                     protocol.get(ModelKeys.SOCKET_BINDING).set(value);
                     break;
@@ -299,8 +303,10 @@ public class JGroupsExtension implements Extension, DescriptionProvider, XMLElem
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 ModelNode stack = property.getValue();
                 this.writeProtocol(writer, stack.get(ModelKeys.TRANSPORT), Element.TRANSPORT);
-                for (ModelNode protocol: stack.get(ModelKeys.PROTOCOL).asList()) {
-                    this.writeProtocol(writer, protocol, Element.PROTOCOL);
+                if (stack.hasDefined(ModelKeys.PROTOCOL)) {
+                    for (ModelNode protocol: stack.get(ModelKeys.PROTOCOL).asList()) {
+                        this.writeProtocol(writer, protocol, Element.PROTOCOL);
+                    }
                 }
                 writer.writeEndElement();
             }
@@ -311,6 +317,7 @@ public class JGroupsExtension implements Extension, DescriptionProvider, XMLElem
     private void writeProtocol(XMLExtendedStreamWriter writer, ModelNode protocol, Element element) throws XMLStreamException {
         writer.writeStartElement(element.getLocalName());
         this.writeRequired(writer, Attribute.TYPE, protocol, ModelKeys.TYPE);
+        this.writeOptional(writer, Attribute.SHARED, protocol, ModelKeys.SHARED);
         this.writeOptional(writer, Attribute.SOCKET_BINDING, protocol, ModelKeys.SOCKET_BINDING);
         this.writeOptional(writer, Attribute.DIAGNOSTICS_SOCKET_BINDING, protocol, ModelKeys.DIAGNOSTICS_SOCKET_BINDING);
         this.writeOptional(writer, Attribute.DEFAULT_EXECUTOR, protocol, ModelKeys.DEFAULT_EXECUTOR);
