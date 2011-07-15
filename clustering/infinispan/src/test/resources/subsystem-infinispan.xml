@@ -1,70 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="cluster">
-
-    <cache-container name="cluster" default-cache="default" listener-executor="infinispan-listener" eviction-executor="infinispan-eviction" replication-queue-executor="infinispan-repl-queue">
-        <alias>ha-partition</alias>
-        <transport executor="infinispan-transport"/>
-        <replicated-cache name="default" start="EAGER" mode="SYNC" batching="true"></replicated-cache>
+<subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="minimal">
+    <cache-container name="minimal" default-cache="local">
+        <local-cache name="local"></local-cache>
     </cache-container>
-
-    <cache-container name="web" default-cache="repl" listener-executor="infinispan-listener" eviction-executor="infinispan-eviction" replication-queue-executor="infinispan-repl-queue">
-        <alias>standard-session-cache</alias>
-        <transport executor="infinispan-transport"/>
-        <replicated-cache name="repl" mode="ASYNC" batching="true">
-            <file-store></file-store>
-        </replicated-cache>
-        <distributed-cache name="dist" mode="ASYNC" batching="true" owners="2" virtual-nodes="1">
-            <file-store></file-store>
-        </distributed-cache>
-    </cache-container>
-
-    <cache-container name="sfsb" default-cache="repl" listener-executor="infinispan-listener" eviction-executor="infinispan-eviction" replication-queue-executor="infinispan-repl-queue">
-        <alias>sfsb-cache</alias>
-        <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>
-        <transport executor="infinispan-transport"/>
-        <replicated-cache name="repl" mode="ASYNC" batching="true">
-            <eviction strategy="LRU"/>
-            <file-store></file-store>
-        </replicated-cache>
-        <distributed-cache name="dist" mode="ASYNC" batching="true">
-            <eviction strategy="LRU"/>
-            <file-store></file-store>
-        </distributed-cache>
-    </cache-container>
-
-    <cache-container name="hibernate" jndi-name="java:CacheManager/entity" default-cache="local-query" listener-executor="infinispan-listener" eviction-executor="infinispan-eviction" replication-queue-executor="infinispan-repl-queue">
-        <invalidation-cache name="entity" mode="SYNC">
-            <locking isolation="READ_COMMITTED"/>
-            <transaction mode="NON_XA"/>
-            <eviction strategy="LRU"/>
-            <expiration max-idle="100000"/>
-        </invalidation-cache>
-        <invalidation-cache name="entity-repeatable" mode="SYNC">
-            <locking isolation="REPEATABLE_READ"/>
-            <eviction strategy="LRU"/>
-            <expiration max-idle="100000"/>
-        </invalidation-cache>
-        <replicated-cache name="replicated-entity" mode="SYNC">
-            <locking isolation="READ_COMMITTED"/>
-            <transaction mode="NON_DURABLE_XA"/>
-            <eviction strategy="LRU"/>
-            <expiration max-idle="100000"/>
-            <state-transfer enabled="false"/>
-        </replicated-cache>
-        <local-cache name="local-query">
-            <locking isolation="READ_COMMITTED"/>
-            <eviction strategy="LRU"/>
-            <expiration max-idle="100000"/>
+    <cache-container name="maximal" default-cache="local" eviction-executor="infinispan-eviction" jndi-name="java:global/infinispan/maximal" listener-executor="infinispan-listener" replication-queue-executor="infinispan-repl-queue">
+        <alias>alias1</alias>
+        <alias>alias2</alias>
+        <transport executor="transport-executor" lock-timeout="120000" machine="machine1" rack="rack1" site="site1" stack="tcp"/>
+        <local-cache name="local" batching="true" indexing="LOCAL" start="EAGER">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
+            <transaction eager-locking="ALL" mode="FULL_XA" stop-timeout="60000"/>
+            <eviction interval="10000" max-entries="20000" strategy="LIRS"/>
+            <expiration lifespan="10" max-idle="10"/>
+            <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="true"/>
         </local-cache>
-        <replicated-cache name="replicated-query" mode="ASYNC">
-            <locking isolation="READ_COMMITTED"/>
-            <eviction strategy="LRU"/>
-            <expiration max-idle="100000"/>
-            <state-transfer enabled="false"/>
-        </replicated-cache>
-        <replicated-cache name="timestamps" mode="ASYNC">
-            <locking isolation="READ_COMMITTED"/>
-            <eviction strategy="NONE"/>
+        <distributed-cache name="dist" mode="SYNC" batching="true" indexing="ALL" l1-lifespan="1200000" owners="4" queue-flush-interval="20" queue-size="2000" remote-timeout="35000" start="EAGER" virtual-nodes="2">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
+            <transaction eager-locking="ALL" mode="FULL_XA" stop-timeout="60000"/>
+            <eviction interval="10000" max-entries="20000" strategy="UNORDERED"/>
+            <expiration lifespan="10" max-idle="10"/>
+            <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="true"/>
+            <rehashing enabled="false" timeout="1200000"/>
+        </distributed-cache>
+        <invalidation-cache name="invalid" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" remote-timeout="17500" start="LAZY">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
+            <transaction eager-locking="SINGLE" mode="NON_XA" stop-timeout="60000"/>
+            <eviction interval="10000" max-entries="20000" strategy="LRU"/>
+            <expiration lifespan="10" max-idle="10"/>
+            <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="true"/>
+        </invalidation-cache>
+        <replicated-cache name="invalid" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" remote-timeout="17500" start="EAGER">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
+            <transaction eager-locking="NONE" mode="NON_DURABLE_XA" stop-timeout="60000"/>
+            <eviction interval="10000" max-entries="20000" strategy="FIFO"/>
+            <expiration lifespan="10" max-idle="10"/>
+            <store class="org.infinispan.loaders.file.FileCacheStore" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" singleton="false">
+                <property name="location">${java.io.tmpdir}</property>
+            </store>
         </replicated-cache>
     </cache-container>
 </subsystem>

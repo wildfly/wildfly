@@ -33,6 +33,7 @@ class ModelKeys {
     static final String OOB_EXECUTOR = "oob-executor";
     static final String PROPERTY = "property";
     static final String PROTOCOL = "protocol";
+    static final String SHARED = "shared";
     static final String SOCKET_BINDING = "socket-binding";
     static final String STACK = "stack";
     static final String THREAD_FACTORY = "thread-factory";
