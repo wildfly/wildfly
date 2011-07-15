@@ -21,6 +21,7 @@ package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -37,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SocketBindingGroupIncludeAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class SocketBindingGroupIncludeAddHandler extends AbstractModelUpdateHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "add-include";
 
@@ -59,7 +60,7 @@ public class SocketBindingGroupIncludeAddHandler extends AbstractAddStepHandler 
     private SocketBindingGroupIncludeAddHandler() {
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         ModelNode param = operation.get(INCLUDE);
         ModelNode includes = model.get(INCLUDE);
         typeValidator.validateParameter(INCLUDE, param);

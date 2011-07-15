@@ -21,6 +21,7 @@ package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -40,7 +41,7 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NamespaceAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class NamespaceAddHandler extends AbstractModelUpdateHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "add-namespace";
 
@@ -62,7 +63,7 @@ public class NamespaceAddHandler extends AbstractAddStepHandler implements Descr
     private NamespaceAddHandler() {
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         ModelNode param = operation.get(NAMESPACE);
         ModelNode namespaces = model.get(NAMESPACES);
         validate(param, namespaces);
