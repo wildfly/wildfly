@@ -24,6 +24,8 @@ package org.jboss.as.weld.deployment.processors;
 import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.security.service.SimpleSecurityManager;
+import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -206,7 +208,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(WeldSecurityServices.SERVICE_NAME);
 
-        serviceTarget.addService(serviceName, service).install();
+        serviceTarget.addService(serviceName, service)
+                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, SimpleSecurityManagerService.SERVICE_NAME, SimpleSecurityManager.class, service.getSecurityManagerValue()).install();
 
         weldServiceBuilder.addDependency(serviceName, WeldSecurityServices.class, weldService.getSecurityServices());
 
