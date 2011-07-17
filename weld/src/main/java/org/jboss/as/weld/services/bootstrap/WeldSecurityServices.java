@@ -21,18 +21,23 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
-import java.security.Principal;
-
+import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.security.spi.SecurityServices;
+
+import java.security.Principal;
 
 public class WeldSecurityServices implements Service<WeldSecurityServices>, SecurityServices {
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("WeldSecurityServices");
+
+    private final InjectedValue<SimpleSecurityManager> securityManagerValue = new InjectedValue<SimpleSecurityManager>();
+
     @Override
     public void start(StartContext context) throws StartException {
 
@@ -50,11 +55,17 @@ public class WeldSecurityServices implements Service<WeldSecurityServices>, Secu
 
     @Override
     public Principal getPrincipal() {
-        throw new RuntimeException("not implemented");
+        final SimpleSecurityManager securityManager = securityManagerValue.getOptionalValue();
+        if (securityManager == null)
+            throw new UnsupportedOperationException("Security is not enabled");
+        return securityManager.getCallerPrincipal();
     }
 
     @Override
     public void cleanup() {
     }
 
+    public InjectedValue<SimpleSecurityManager> getSecurityManagerValue() {
+        return securityManagerValue;
+    }
 }
