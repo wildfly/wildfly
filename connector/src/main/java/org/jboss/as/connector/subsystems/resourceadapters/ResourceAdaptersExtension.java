@@ -55,6 +55,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABL
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLIVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDI_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
@@ -237,9 +238,10 @@ public class ResourceAdaptersExtension implements Extension {
 
         private void writeConfigProperties(XMLExtendedStreamWriter streamWriter, ModelNode ra) throws XMLStreamException {
             if (ra.has(CONFIG_PROPERTIES)) {
-                for (ModelNode property : ra.get(CONFIG_PROPERTIES).asList()) {
+                for (Property property : ra.get(CONFIG_PROPERTIES).asPropertyList()) {
                     streamWriter.writeStartElement(ResourceAdapter.Tag.CONFIG_PROPERTY.getLocalName());
-                    streamWriter.writeCharacters(property.asString());
+                    streamWriter.writeAttribute(NAME, property.getName());
+                    streamWriter.writeCharacters(property.getValue().asString());
                     streamWriter.writeEndElement();
                 }
             }
@@ -266,6 +268,7 @@ public class ResourceAdaptersExtension implements Extension {
             writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
             writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.POOL_NAME, POOL_NAME);
             writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.USECCM, USE_CCM);
+
 
             writeConfigProperties(streamWriter, conDef);
 
