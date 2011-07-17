@@ -24,6 +24,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
@@ -74,9 +75,9 @@ public class SnapshotDescriptions {
         ModelNode node = new ModelNode();
         node.get(OP).set(SnapshotDeleteHandler.OPERATION_NAME);
         node.get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.delete.description"));
-        node.get(REPLY_PROPERTIES).get(NAME).get(TYPE).set(ModelType.STRING);
-        node.get(REPLY_PROPERTIES).get(NAME).get(REQUIRED).set(true);
-        node.get(REPLY_PROPERTIES).get(NAME).get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.delete.name"));
+        node.get(REQUEST_PROPERTIES).get(NAME).get(TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES).get(NAME).get(REQUIRED).set(true);
+        node.get(REQUEST_PROPERTIES).get(NAME).get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.delete.name"));
 
         return node;
     }
