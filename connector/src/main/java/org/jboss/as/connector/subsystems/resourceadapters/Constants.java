@@ -126,4 +126,6 @@ class Constants {
     static final String RECOVERLUGIN_PROPERTIES = "recovery-plugin-properties";
 
     static final String NO_RECOVERY = "no-recovery";
+
+    static final String NAME = "name";
 }
