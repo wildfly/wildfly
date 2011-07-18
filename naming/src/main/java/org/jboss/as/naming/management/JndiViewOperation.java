@@ -96,7 +96,7 @@ public class JndiViewOperation implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
-            resultNode.set("Jndi view is only available in runtime mode.");
+            throw new OperationFailedException(new ModelNode().set("Jndi view is only available in runtime mode."));
         }
         context.completeStep();
     }
