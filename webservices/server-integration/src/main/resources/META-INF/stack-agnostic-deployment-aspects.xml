@@ -78,6 +78,11 @@
     <property name="provides" class="java.lang.String">ModelMetaData</property>
   </deploymentAspect>
 
+  <deploymentAspect class="org.jboss.as.webservices.deployers.EndpointRecordProcessorDeploymentAspect">
+    <property name="requires" class="java.lang.String">RegisteredEndpoint</property>
+    <property name="provides" class="java.lang.String">EndpointRecordProcessors</property>
+  </deploymentAspect>
+
   <!--
 
   <deploymentAspect class="org.jboss.ws.common.deployment.VirtualHostDeploymentAspect">

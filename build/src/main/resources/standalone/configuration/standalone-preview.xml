@@ -362,6 +362,21 @@
              <wsdl-port>8080</wsdl-port>
              <wsdl-secure-port>8443</wsdl-secure-port>
              -->
+             <endpoint-config xmlns:ws="urn:jboss:jbossws-jaxws-config:4.0">
+                <ws:config-name>Standard-Endpoint-Config</ws:config-name>
+             </endpoint-config>
+             <endpoint-config xmlns:ws="urn:jboss:jbossws-jaxws-config:4.0">
+                <ws:config-name>Recording-Endpoint-Config</ws:config-name>
+                <ws:pre-handler-chains>
+                    <handler-chain xmlns="http://java.sun.com/xml/ns/javaee">
+                        <protocol-bindings>##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM</protocol-bindings>
+                        <handler>
+                            <handler-name>RecordingHandler</handler-name>
+                            <handler-class>org.jboss.ws.common.invocation.RecordingServerHandler</handler-class>
+                        </handler>
+                    </handler-chain>
+                </ws:pre-handler-chains>
+             </endpoint-config>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:weld:1.0" />
     </profile>
