@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli.operation.parsing;
 
+import org.jboss.as.cli.CommandFormatException;
+
 
 /**
  *
@@ -32,13 +34,27 @@ public class OperationRequestState extends DefaultParsingState {
     public static final OperationRequestState INSTANCE = new OperationRequestState();
 
     public OperationRequestState() {
-        this(NodeState.INSTANCE, OperationState.INSTANCE);
+        this(NodeState.INSTANCE, OperationNameState.INSTANCE, PropertyListState.INSTANCE, OutputRedirectionState.INSTANCE);
     }
 
-    public OperationRequestState(final NodeState nodeState, final OperationState opState) {
+    public OperationRequestState(final NodeState nodeState, final OperationNameState opState, final PropertyListState propList, final OutputRedirectionState outRedirect) {
         super(ID);
         setDefaultHandler(new EnterStateCharacterHandler(nodeState));
         enterState(':', opState);
+        enterState('(', propList);
+        enterState(OutputRedirectionState.OUTPUT_REDIRECT_CHAR, outRedirect);
+        setReturnHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx)
+                    throws CommandFormatException {
+                if(ctx.isEndOfContent()) {
+                    return;
+                }
+                CharacterHandler handler = enterStateHandlers.getHandler(ctx.getCharacter());
+                if(handler != null) {
+                    handler.handle(ctx);
+                }
+            }});
         setIgnoreWhitespaces(true);
     }
 }

@@ -33,10 +33,6 @@ public class NodeState extends DefaultParsingState {
     public static final NodeState INSTANCE = new NodeState();
 
     public NodeState() {
-        this(OperationState.INSTANCE);
-    }
-
-    public NodeState(final OperationState opState) {
         super(ID);
 
         setEnterHandler(new CharacterHandler(){
@@ -68,14 +64,7 @@ public class NodeState extends DefaultParsingState {
                 ctx.leaveState();
             }});
 
-        final CharacterHandler colonHandler = new CharacterHandler(){
-            @Override
-            public void handle(ParsingContext ctx)
-                    throws CommandFormatException {
-                ctx.leaveState();
-                ctx.enterState(opState);
-            }};
-        putHandler(':', colonHandler);
+        putHandler(':', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
 
         enterState('"', QuotesState.QUOTES_EXCLUDED);
         enterState('\\', EscapeCharacterState.INSTANCE);

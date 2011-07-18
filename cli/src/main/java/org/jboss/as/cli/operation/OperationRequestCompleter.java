@@ -85,7 +85,9 @@ public class OperationRequestCompleter implements CommandLineCompleter, Completo
         try {
             ctx.getOperationRequestParser().parse(buffer, handler);
         } catch (OperationFormatException e1) {
-            return -1;
+            if(!handler.endsOnAddressOperationNameSeparator() || handler.getLastSeparatorIndex() != buffer.length() - 1) {
+                return -1;
+            }
         }
 
         if(handler.isRequestComplete()) {
