@@ -29,6 +29,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 
 /**
  * An interceptor which handles a invocation on a {@link javax.ejb.Remove} method of a stateful session bean. This interceptor
@@ -64,7 +65,7 @@ public class StatefulRemoveInterceptor implements Interceptor {
 
             // If it's an application exception and if the @Remove method has set "retainIfException" to true
             // then just throw back the exception and don't remove the session instance.
-            if (this.isApplicationException(statefulComponent, e.getClass()) && this.retainIfException) {
+            if (this.isApplicationException(statefulComponent, e.getClass(), context.getMethod()) && this.retainIfException) {
                 throw e;
             }
             // otherwise, just remove it and throw back the original exception
@@ -88,8 +89,8 @@ public class StatefulRemoveInterceptor implements Interceptor {
      * @param exceptionClass The exception class
      * @return
      */
-    private boolean isApplicationException(final EJBComponent ejbComponent, final Class<?> exceptionClass) {
-        return ejbComponent.getApplicationException(exceptionClass) != null;
+    private boolean isApplicationException(final EJBComponent ejbComponent, final Class<?> exceptionClass, final Method invokedMethod) {
+        return ejbComponent.getApplicationException(exceptionClass, invokedMethod) != null;
     }
 
 
