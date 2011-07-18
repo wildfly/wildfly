@@ -361,7 +361,16 @@ public class ConfigurationFile {
     }
 
     void deleteSnapshot(final String prefix) {
-        findSnapshotWithPrefix(prefix, true).delete();
+        if (prefix.equals("all")) {
+            if (snapshotsDirectory.exists() && snapshotsDirectory.isDirectory()) {
+                for (String curr : snapshotsDirectory.list()) {
+                    new File(snapshotsDirectory, curr).delete();
+                }
+            }
+
+        } else {
+            findSnapshotWithPrefix(prefix, true).delete();
+        }
     }
 
     private File findSnapshotWithPrefix(final String prefix, boolean errorIfNoFiles) {
