@@ -706,6 +706,7 @@ public class CommandLineMain {
                             + host + ":" + port);
                 } else {
                     printLine("The controller is not available at " + host + ":" + port);
+                    disconnectController(false);
                 }
             } catch (UnknownHostException e) {
                 printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
