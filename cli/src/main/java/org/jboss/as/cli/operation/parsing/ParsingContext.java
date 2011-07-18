@@ -42,4 +42,6 @@ public interface ParsingContext {
     char getCharacter();
 
     int getLocation();
+
+    boolean isEndOfContent();
 }

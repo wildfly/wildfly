@@ -31,10 +31,6 @@ import org.jboss.as.cli.operation.parsing.StateParser;
  *
  * @author Alexey Loubyansky
  */
-/**
- *
- * @author Alexey Loubyansky
- */
 public class CommandLineParser {
 
     public interface CallbackHandler {
