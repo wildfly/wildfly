@@ -484,6 +484,50 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertTrue(result2.hasDefined("driver-name"));
     }
 
+    /**
+     * AS7-1203 test for missing xa-datasource properties
+     * @throws Exception
+     */
+    @Test
+    public void testAddXaDsWithProperties() throws Exception {
+
+        final String xaDs = "MyNewXaDs";
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "datasources");
+        address.add("xa-data-source", xaDs);
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("add");
+        operation.get(OP_ADDR).set(address);
+
+        operation.get("name").set(xaDs);
+        operation.get("jndi-name").set("java:jboss/xa-datasources/" + xaDs);
+        operation.get("driver-name").set("h2");
+        operation.get("enabled").set(true);
+        operation.get("xa-data-source-properties", "URL").set("jdbc:h2:mem:test");
+        operation.get("pool-name").set(xaDs + "_Pool");
+        operation.get("user-name").set("sa");
+        operation.get("password").set("sa");
+
+        final ModelNode result = getModelControllerClient().execute(operation);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        List<ModelNode> newList = marshalAndReparseDsResources("xa-data-source");
+
+        Assert.assertNotNull(newList);
+
+        final Map<String, ModelNode> parseChildren = getChildren(newList.get(1));
+        Assert.assertFalse(parseChildren.isEmpty());
+        Assert.assertEquals("java:jboss/xa-datasources/" + xaDs, parseChildren.get("jndi-name").asString());
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set("remove");
+        compensatingOperation.get(OP_ADDR).set(address);
+
+        getModelControllerClient().execute(compensatingOperation);
+    }
+
     public List<ModelNode> marshalAndReparseDsResources(final String childType) throws Exception {
 
         final ModelNode address = new ModelNode();
