@@ -19,37 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.stateless;
-
-import org.jboss.ejb3.context.spi.InvocationContext;
-import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
-
-import javax.transaction.TransactionManager;
+package org.jboss.as.test.spec.ejb3.exception;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-class StatelessBMTInterceptor extends org.jboss.ejb3.tx2.impl.StatelessBMTInterceptor implements Interceptor {
-    private StatelessSessionComponent component;
-
-    StatelessBMTInterceptor(StatelessSessionComponent component) {
-        this.component = component;
-    }
-
-    @Override
-    protected String getComponentName() {
-        return component.getComponentName();
-    }
-
-    @Override
-    protected TransactionManager getTransactionManager() {
-        return component.getTransactionManager();
-    }
-
-    @Override
-    public Object processInvocation(InterceptorContext context) throws Exception {
-        return super.invoke((TransactionalInvocationContext) context.getPrivateData(InvocationContext.class));
-    }
+public interface BeanieLocal {
+    void callThrowException();
+    void throwException() throws Exception;
 }
