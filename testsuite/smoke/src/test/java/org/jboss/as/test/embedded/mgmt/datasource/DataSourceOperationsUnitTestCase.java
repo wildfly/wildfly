@@ -27,7 +27,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.test.embedded.mgmt.datasource.DataSourceOperationTestUtil.*;
+import static org.jboss.as.test.embedded.mgmt.datasource.DataSourceOperationTestUtil.getChildren;
+import static org.jboss.as.test.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnection;
+import static org.jboss.as.test.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnectionXA;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -43,9 +45,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.stream.StreamSource;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import junit.framework.Assert;
 
@@ -56,7 +55,6 @@ import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.NewDat
 import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
@@ -350,7 +348,7 @@ public class DataSourceOperationsUnitTestCase {
         final ModelNode result = getModelControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
-        testConnection(dsName, getModelControllerClient());
+        testConnectionXA(dsName, getModelControllerClient());
 
         final ModelNode compensatinResult = getModelControllerClient().execute(compensatingOperation);
         Assert.assertEquals(SUCCESS, compensatinResult.get(OUTCOME).asString());
@@ -404,6 +402,9 @@ public class DataSourceOperationsUnitTestCase {
         final ModelNode compensatinResult = getModelControllerClient().execute(compensatingOperation);
         Assert.assertEquals(SUCCESS, compensatinResult.get(OUTCOME).asString());
 
+        // remove from xml too
+        marshalAndReparseDsResources("xa-data-source");
+
     }
 
     /**
@@ -412,8 +413,8 @@ public class DataSourceOperationsUnitTestCase {
      */
     @Test
     public void DisableAndReEnableXaDs() throws Exception {
-        final String dsName = "XaDsName";
-        final String jndiDsName = "XaJndiDsName";
+        final String dsName = "XaDsNameDisEn";
+        final String jndiDsName = "XaJndiDsNameDisEn";
 
         final ModelNode address = new ModelNode();
         address.add("subsystem", "datasources");
@@ -450,12 +451,12 @@ public class DataSourceOperationsUnitTestCase {
         final ModelNode result = getModelControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
-        testConnection(dsName, getModelControllerClient());
+        testConnectionXA(dsName, getModelControllerClient());
 
         getModelControllerClient().execute(disableOperation);
         getModelControllerClient().execute(enableOperation);
 
-        testConnection(dsName, getModelControllerClient());
+        testConnectionXA(dsName, getModelControllerClient());
 
         final ModelNode compensatinResult = getModelControllerClient().execute(compensatingOperation);
         Assert.assertEquals(SUCCESS, compensatinResult.get(OUTCOME).asString());
@@ -498,7 +499,6 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertTrue(result.hasDefined(RESULT));
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         final Map<String, ModelNode> children = getChildren(result.get(RESULT));
-        Assert.assertFalse(children.isEmpty());
         for (final Entry<String, ModelNode> child : children.entrySet()) {
             Assert.assertTrue(child.getKey() != null);
             // Assert.assertTrue(child.getValue().hasDefined("connection-url"));
