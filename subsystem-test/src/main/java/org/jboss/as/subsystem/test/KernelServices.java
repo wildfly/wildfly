@@ -23,7 +23,7 @@ import org.jboss.msc.service.ServiceContainer;
  */
 public class KernelServices {
 
-    private final ServiceContainer container;
+    private volatile ServiceContainer container;
     private final ModelController controller;
     private final StringConfigurationPersister persister;
 
@@ -71,7 +71,7 @@ public class KernelServices {
         return AbstractSubsystemTest.checkResultAndGetContents(result);
     }
 
-    void shutdown() {
+    public void shutdown() {
         if (container != null) {
             container.shutdown();
             try {
@@ -79,6 +79,7 @@ public class KernelServices {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            container = null;
         }
     }
 }
