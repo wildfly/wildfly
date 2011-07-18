@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
+import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
 import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP;
 import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
@@ -48,6 +49,9 @@ import static org.jboss.as.messaging.CommonAttributes.DELETE_NON_DURABLE_QUEUE_N
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
+import static org.jboss.as.messaging.CommonAttributes.FAILBACK_DELAY;
+import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
+import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
@@ -69,10 +73,21 @@ import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.LOG_JOURNAL_WRITE_RATE;
 import static org.jboss.as.messaging.CommonAttributes.LVQ;
+import static org.jboss.as.messaging.CommonAttributes.MANAGEMENT_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.MANAGEMENT_NOTIFICATION_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.MANAGE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.MAX_DELIVERY_ATTEMPTS;
 import static org.jboss.as.messaging.CommonAttributes.MAX_SIZE_BYTES_NODE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.MEMORY_MEASURE_INTERVAL;
+import static org.jboss.as.messaging.CommonAttributes.MEMORY_WARNING_THRESHOLD;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HISTORY;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_SCAN_PERIOD;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_THREAD_PRIORITY;
+import static org.jboss.as.messaging.CommonAttributes.NAME;
+import static org.jboss.as.messaging.CommonAttributes.NAME_OPTIONAL;
 import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
@@ -84,11 +99,21 @@ import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.REDELIVERY_DELAY;
 import static org.jboss.as.messaging.CommonAttributes.REDISTRIBUTION_DELAY;
+import static org.jboss.as.messaging.CommonAttributes.RUN_SYNC_SPEED_TEST;
+import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.SECURITY_ENABLED;
+import static org.jboss.as.messaging.CommonAttributes.SECURITY_INVALIDATION_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.SEND_NAME;
 import static org.jboss.as.messaging.CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE;
+import static org.jboss.as.messaging.CommonAttributes.SERVER_DUMP_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
+import static org.jboss.as.messaging.CommonAttributes.SHARED_STORE;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
+import static org.jboss.as.messaging.CommonAttributes.THREAD_POOL_MAX_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_PERIOD;
+import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
 
 import javax.management.MBeanServer;
 import java.util.ArrayList;
@@ -113,7 +138,9 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.MessagingServices.TransportConfigType;
 import org.jboss.as.messaging.jms.JMSService;
@@ -129,8 +156,11 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
+ * Add handler for the messaging subsystem.
+ *
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 class MessagingSubsystemAdd extends AbstractAddStepHandler {
 
@@ -145,13 +175,21 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
 
     static final MessagingSubsystemAdd INSTANCE = new MessagingSubsystemAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         model.setEmptyObject();
-        for (final String attribute : MessagingSubsystemProviders.MESSAGING_ROOT_ATTRIBUTES) {
+        for (final AttributeDefinition attributeDefinition : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
+            ModelNode attributeValue = attributeDefinition.validateOperation(operation);
+            if (attributeValue.isDefined()) {
+                model.get(attributeDefinition.getName()).set(attributeValue);
+            }
+        }
+
+        for (final String attribute : CommonAttributes.COMPLEX_ROOT_RESOURCE_ATTRIBUTES) {
             if (operation.hasDefined(attribute)) {
                 model.get(attribute).set(operation.get(attribute));
             }
         }
+
         model.get(QUEUE);
         model.get(CONNECTION_FACTORY).setEmptyObject();
         model.get(JMS_QUEUE).setEmptyObject();
@@ -159,12 +197,12 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
         model.get(POOLED_CONNECTION_FACTORY).setEmptyObject();
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ServiceTarget serviceTarget = context.getServiceTarget();
         // Create the HornetQ Service
         final HornetQService hqService = new HornetQService();
         // Transform the configuration
-        final Configuration configuration = transformConfig(operation);
+        final Configuration configuration = transformConfig(model);
 
         // Add the HornetQ Service
         final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(MessagingServices.JBOSS_MESSAGING, hqService)
@@ -179,7 +217,7 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
         serviceBuilder.addDependency(createDirectoryService(DEFAULT_PAGING_DIR, operation.get(PAGING_DIRECTORY), serviceTarget),
                 String.class, hqService.getPathInjector(DEFAULT_PAGING_DIR));
 
-        // Proccess acceptors and connectors
+        // Process acceptors and connectors
         final Set<String> socketBindings = new HashSet<String>();
         processAcceptors(configuration, operation, socketBindings);
         processConnectors(configuration, operation, socketBindings);
@@ -200,60 +238,89 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
     /**
      * Transform the detyped operation parameters into the hornetQ configuration.
      *
-     * @param params the detyped operation parameters
+     * @param model the subsystem root resource model
      * @return the hornetQ configuration
      */
-    static Configuration transformConfig(final ModelNode params) {
+    static Configuration transformConfig(final ModelNode model) throws OperationFailedException {
         final Configuration configuration = new ConfigurationImpl();
         // --
-        configuration.setBackup(params.get(BACKUP).asBoolean(ConfigurationImpl.DEFAULT_BACKUP));
-        if(params.has(LIVE_CONNECTOR_REF)) {
-            configuration.setLiveConnectorName(params.get(LIVE_CONNECTOR_REF).asString());
+        configuration.setAllowAutoFailBack(ALLOW_FAILBACK.validateResolvedOperation(model).asBoolean());
+        configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.validateResolvedOperation(model).asBoolean());
+
+        configuration.setBackup(BACKUP.validateResolvedOperation(model).asBoolean());
+        if(model.hasDefined(LIVE_CONNECTOR_REF)) {
+            configuration.setLiveConnectorName(model.get(LIVE_CONNECTOR_REF).asString());
         }
-        configuration.setClustered(params.get(CLUSTERED).asBoolean(ConfigurationImpl.DEFAULT_CLUSTERED));
-        configuration.setClusterPassword(params.get(CLUSTER_PASSWORD).asString());
-        configuration.setClusterUser(params.get(CLUSTER_USER).asString());
-        configuration.setConnectionTTLOverride(params.get(CONNECTION_TTL_OVERRIDE).asInt((int) ConfigurationImpl.DEFAULT_CONNECTION_TTL_OVERRIDE));
-        configuration.setCreateBindingsDir(params.get(CREATE_BINDINGS_DIR).asBoolean(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR));
-        configuration.setCreateJournalDir(params.get(CREATE_JOURNAL_DIR).asBoolean(ConfigurationImpl.DEFAULT_CREATE_JOURNAL_DIR));
-        configuration.setEnabledAsyncConnectionExecution(params.get(ASYNC_CONNECTION_EXECUTION_ENABLED).asBoolean(ConfigurationImpl.DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED));
-        configuration.setIDCacheSize(params.get(ID_CACHE_SIZE).asInt(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE));
+        configuration.setClustered(CLUSTERED.validateResolvedOperation(model).asBoolean());
+        configuration.setClusterPassword(CLUSTER_PASSWORD.validateResolvedOperation(model).asString());
+        configuration.setClusterUser(CLUSTER_USER.validateResolvedOperation(model).asString());
+        configuration.setConnectionTTLOverride(CONNECTION_TTL_OVERRIDE.validateResolvedOperation(model).asInt());
+        configuration.setCreateBindingsDir(CREATE_BINDINGS_DIR.validateResolvedOperation(model).asBoolean());
+        configuration.setCreateJournalDir(CREATE_JOURNAL_DIR.validateResolvedOperation(model).asBoolean());
+        configuration.setFailbackDelay(FAILBACK_DELAY.validateResolvedOperation(model).asLong());
+        configuration.setFailoverOnServerShutdown(FAILOVER_ON_SHUTDOWN.validateResolvedOperation(model).asBoolean());
+
+        configuration.setIDCacheSize(ID_CACHE_SIZE.validateResolvedOperation(model).asInt());
         // TODO do we want to allow the jmx configuration ?
-        if (params.hasDefined(JMX_DOMAIN)) configuration.setJMXDomain(params.get(JMX_DOMAIN).asString());
-        configuration.setJMXManagementEnabled(params.get(JMX_MANAGEMENT_ENABLED).asBoolean(ConfigurationImpl.DEFAULT_JMX_MANAGEMENT_ENABLED));
+        configuration.setJMXDomain(JMX_DOMAIN.validateResolvedOperation(model).asString());
+        configuration.setJMXManagementEnabled(JMX_MANAGEMENT_ENABLED.validateResolvedOperation(model).asBoolean());
         // Journal
-        final JournalType journalType = params.hasDefined(JOURNAL_TYPE) ? JournalType.valueOf(params.get(JOURNAL_TYPE).asString()) : ConfigurationImpl.DEFAULT_JOURNAL_TYPE;
+        final JournalType journalType = JournalType.valueOf(JOURNAL_TYPE.validateResolvedOperation(model).asString());
         configuration.setJournalType(journalType);
+
         // AIO Journal
-        configuration.setJournalBufferSize_AIO(params.get(JOURNAL_BUFFER_SIZE).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO));
-        configuration.setJournalBufferTimeout_AIO(params.get(JOURNAL_BUFFER_TIMEOUT).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO));
-        configuration.setJournalMaxIO_AIO(params.get(JOURNAL_MAX_IO).asInt(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_AIO));
+        configuration.setJournalBufferSize_AIO(JOURNAL_BUFFER_SIZE.validateResolvedOperation(model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO));
+        configuration.setJournalBufferTimeout_AIO(JOURNAL_BUFFER_TIMEOUT.validateResolvedOperation(model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO));
+        configuration.setJournalMaxIO_AIO(JOURNAL_MAX_IO.validateResolvedOperation(model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_AIO));
         // NIO Journal
-        configuration.setJournalBufferSize_NIO(params.get(JOURNAL_BUFFER_SIZE).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO));
-        configuration.setJournalBufferTimeout_NIO(params.get(JOURNAL_BUFFER_TIMEOUT).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO));
-        configuration.setJournalMaxIO_NIO(params.get(JOURNAL_MAX_IO).asInt(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO));
+        configuration.setJournalBufferSize_NIO(JOURNAL_BUFFER_SIZE.validateResolvedOperation(model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO));
+        configuration.setJournalBufferTimeout_NIO(JOURNAL_BUFFER_TIMEOUT.validateResolvedOperation(model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO));
+        configuration.setJournalMaxIO_NIO(JOURNAL_MAX_IO.validateResolvedOperation(model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO));
         //
-        configuration.setJournalCompactMinFiles(params.get(JOURNAL_COMPACT_MIN_FILES).asInt(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES));
-        configuration.setJournalCompactPercentage(params.get(JOURNAL_COMPACT_PERCENTAGE).asInt(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE));
-        configuration.setJournalFileSize(params.get(JOURNAL_FILE_SIZE).asInt(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE));
-        configuration.setJournalMinFiles(params.get(JOURNAL_MIN_FILES).asInt(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES));
-        configuration.setJournalPerfBlastPages(params.get(PERF_BLAST_PAGES).asInt(ConfigurationImpl.DEFAULT_JOURNAL_PERF_BLAST_PAGES));
-        configuration.setJournalSyncNonTransactional(params.get(JOURNAL_SYNC_NON_TRANSACTIONAL).asBoolean(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL));
-        configuration.setJournalSyncTransactional(params.get(JOURNAL_SYNC_TRANSACTIONAL).asBoolean(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_TRANSACTIONAL));
-        configuration.setLogJournalWriteRate(params.get(LOG_JOURNAL_WRITE_RATE).asBoolean(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE));
+        configuration.setJournalCompactMinFiles(JOURNAL_COMPACT_MIN_FILES.validateResolvedOperation(model).asInt());
+        configuration.setJournalCompactPercentage(JOURNAL_COMPACT_PERCENTAGE.validateResolvedOperation(model).asInt());
+        configuration.setJournalFileSize(JOURNAL_FILE_SIZE.validateResolvedOperation(model).asInt());
+        configuration.setJournalMinFiles(JOURNAL_MIN_FILES.validateResolvedOperation(model).asInt());
+        configuration.setJournalSyncNonTransactional(JOURNAL_SYNC_NON_TRANSACTIONAL.validateResolvedOperation(model).asBoolean());
+        configuration.setJournalSyncTransactional(JOURNAL_SYNC_TRANSACTIONAL.validateResolvedOperation(model).asBoolean());
+        configuration.setLogJournalWriteRate(LOG_JOURNAL_WRITE_RATE.validateResolvedOperation(model).asBoolean());
 
-        // configuration.setManagementAddress(address)
-        // configuration.setManagementNotificationAddress(address)
-        // TODO more
+        configuration.setManagementAddress(SimpleString.toSimpleString(MANAGEMENT_ADDRESS.validateResolvedOperation(model).asString()));
+        configuration.setManagementNotificationAddress(SimpleString.toSimpleString(MANAGEMENT_NOTIFICATION_ADDRESS.validateResolvedOperation(model).asString()));
 
-        configuration.setPersistDeliveryCountBeforeDelivery(params.get(PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY).asBoolean(ConfigurationImpl.DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY));
-        configuration.setPersistenceEnabled(params.get(PERSISTENCE_ENABLED).asBoolean(ConfigurationImpl.DEFAULT_PERSISTENCE_ENABLED));
-        configuration.setPersistIDCache(params.get(PERSIST_ID_CACHE).asBoolean(ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE));
+        configuration.setMemoryMeasureInterval(MEMORY_MEASURE_INTERVAL.validateResolvedOperation(model).asLong());
+        configuration.setMemoryWarningThreshold(MEMORY_WARNING_THRESHOLD.validateResolvedOperation(model).asInt());
 
+        configuration.setMessageCounterEnabled(MESSAGE_COUNTER_ENABLED.validateResolvedOperation(model).asBoolean());
+        configuration.setMessageCounterSamplePeriod(MESSAGE_COUNTER_SAMPLE_PERIOD.validateResolvedOperation(model).asInt());
+        configuration.setMessageCounterMaxDayHistory(MESSAGE_COUNTER_MAX_DAY_HISTORY.validateResolvedOperation(model).asInt());
+        configuration.setMessageExpiryScanPeriod(MESSAGE_EXPIRY_SCAN_PERIOD.validateResolvedOperation(model).asLong());
+        configuration.setMessageExpiryThreadPriority(MESSAGE_EXPIRY_THREAD_PRIORITY.validateResolvedOperation(model).asInt());
+
+        if (model.hasDefined(NAME_OPTIONAL.getName())) {
+            configuration.setName(NAME_OPTIONAL.validateResolvedOperation(model).asString());
+        }
+
+        configuration.setJournalPerfBlastPages(PERF_BLAST_PAGES.validateResolvedOperation(model).asInt());
+        configuration.setPersistDeliveryCountBeforeDelivery(PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY.validateResolvedOperation(model).asBoolean());
+        configuration.setPersistenceEnabled(PERSISTENCE_ENABLED.validateResolvedOperation(model).asBoolean());
+        configuration.setPersistIDCache(PERSIST_ID_CACHE.validateResolvedOperation(model).asBoolean());
+
+        configuration.setRunSyncSpeedTest(RUN_SYNC_SPEED_TEST.validateResolvedOperation(model).asBoolean());
+
+        configuration.setScheduledThreadPoolMaxSize(SCHEDULED_THREAD_POOL_MAX_SIZE.validateResolvedOperation(model).asInt());
+        configuration.setSecurityEnabled(SECURITY_ENABLED.validateResolvedOperation(model).asBoolean());
+        configuration.setSecurityInvalidationInterval(SECURITY_INVALIDATION_INTERVAL.validateResolvedOperation(model).asLong());
+        configuration.setServerDumpInterval(SERVER_DUMP_INTERVAL.validateResolvedOperation(model).asLong());
+        configuration.setSharedStore(SHARED_STORE.validateResolvedOperation(model).asBoolean());
+        configuration.setThreadPoolMaxSize(THREAD_POOL_MAX_SIZE.validateResolvedOperation(model).asInt());
+        configuration.setTransactionTimeout(TRANSACTION_TIMEOUT.validateResolvedOperation(model).asLong());
+        configuration.setTransactionTimeoutScanPeriod(TRANSACTION_TIMEOUT_SCAN_PERIOD.validateResolvedOperation(model).asLong());
+        configuration.setWildcardRoutingEnabled(WILD_CARD_ROUTING_ENABLED.validateResolvedOperation(model).asBoolean());
         // --
-        processAddressSettings(configuration, params);
-        processCoreQueues(configuration, params);
-        processSecuritySettings(configuration, params);
+        processAddressSettings(configuration, model);
+        processCoreQueues(configuration, model);
+        processSecuritySettings(configuration, model);
         return configuration;
     }
 

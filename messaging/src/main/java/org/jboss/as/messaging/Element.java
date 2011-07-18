@@ -25,6 +25,8 @@ package org.jboss.as.messaging;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.AttributeDefinition;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author scott.stark@jboss.org
@@ -32,24 +34,33 @@ import java.util.Map;
  */
 enum Element {
    // must be first
-   UNKNOWN(null),
+   UNKNOWN((String) null),
    // Messaging 1.0 elements in alpha order
    ACCEPTORS(CommonAttributes.ACCEPTORS),
    ADDRESS(CommonAttributes.ADDRESS),
    ADDRESS_SETTINGS(CommonAttributes.ADDRESS_SETTINGS),
+   ALLOW_FAILBACK(CommonAttributes.ALLOW_FAILBACK),
    ASYNC_CONNECTION_EXECUTION_ENABLED(CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED),
    BACKUP(CommonAttributes.BACKUP),
    BINDINGS_DIRECTORY(CommonAttributes.BINDINGS_DIRECTORY),
+   BRIDGES(CommonAttributes.BRIDGES),
+   BROADCAST_GROUPS(CommonAttributes.BROADCAST_GROUPS),
    BROADCAST_PERIOD(CommonAttributes.BROADCAST_PERIOD),
+   CLUSTERED(CommonAttributes.CLUSTERED),
+   CLUSTER_CONNECTIONS(CommonAttributes.CLUSTER_CONNECTIONS),
    CLUSTER_PASSWORD(CommonAttributes.CLUSTER_PASSWORD),
    CLUSTER_USER(CommonAttributes.CLUSTER_USER),
-   CLUSTERED(CommonAttributes.CLUSTERED),
    CONNECTION_TTL_OVERRIDE(CommonAttributes.CONNECTION_TTL_OVERRIDE),
+   CONNECTOR_SERVICES(CommonAttributes.CONNECTOR_SERVICES),
    CONNECTOR_REF(CommonAttributes.CONNECTOR_REF),
    CORE_QUEUES(CommonAttributes.CORE_QUEUES),
    CREATE_BINDINGS_DIR(CommonAttributes.CREATE_BINDINGS_DIR),
    CREATE_JOURNAL_DIR(CommonAttributes.CREATE_JOURNAL_DIR),
+   DISCOVERY_GROUPS(CommonAttributes.DISCOVERY_GROUPS),
+   DIVERTS(CommonAttributes.DIVERTS),
    DURABLE(CommonAttributes.DURABLE),
+   FAILBACK_DELAY(CommonAttributes.FAILBACK_DELAY),
+   FAILOVER_ON_SHUTDOWN(CommonAttributes.FAILOVER_ON_SHUTDOWN),
    FILE_DEPLOYMENT_ENABLED(CommonAttributes.FILE_DEPLOYMENT_ENABLED),
    GROUP_ADDRESS(CommonAttributes.GROUP_ADDRESS),
    GROUP_PORT(CommonAttributes.GROUP_PORT),
@@ -71,6 +82,7 @@ enum Element {
    JOURNAL_SYNC_TRANSACTIONAL(CommonAttributes.JOURNAL_SYNC_TRANSACTIONAL),
    JOURNAL_TYPE(CommonAttributes.JOURNAL_TYPE),
    LARGE_MESSAGES_DIRECTORY(CommonAttributes.LARGE_MESSAGES_DIRECTORY),
+   LIVE_CONNECTOR_REF(CommonAttributes.LIVE_CONNECTOR_REF),
    LOCAL_BIND_ADDRESS(CommonAttributes.LOCAL_BIND_ADDRESS),
    LOCAL_BIND_PORT(CommonAttributes.LOCAL_BIND_PORT),
    LOG_JOURNAL_WRITE_RATE(CommonAttributes.LOG_JOURNAL_WRITE_RATE),
@@ -83,6 +95,7 @@ enum Element {
    MESSAGE_COUNTER_SAMPLE_PERIOD(CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD),
    MESSAGE_EXPIRY_SCAN_PERIOD(CommonAttributes.MESSAGE_EXPIRY_SCAN_PERIOD),
    MESSAGE_EXPIRY_THREAD_PRIORITY(CommonAttributes.MESSAGE_EXPIRY_THREAD_PRIORITY),
+   NAME(CommonAttributes.NAME),
    NETTY_ACCEPTOR(CommonAttributes.NETTY_ACCEPTOR),
    NETTY_CONNECTOR(CommonAttributes.NETTY_CONNECTOR),
    PAGING_DIRECTORY(CommonAttributes.PAGING_DIRECTORY),
@@ -134,7 +147,7 @@ enum Element {
    CLIENT_FAILURE_CHECK_PERIOD(CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD),
    CLIENT_ID(CommonAttributes.CLIENT_ID),
    CONNECTION_FACTORY(CommonAttributes.CONNECTION_FACTORY),
-   CONNECTION_FACTORIES(CommonAttributes.CONNECTION_FACTORIES),
+   CONNECTION_FACTORIES(CommonAttributes.JMS_CONNECTION_FACTORIES),
    CONNECTION_TTL(CommonAttributes.CONNECTION_TTL),
    CONFIRMATION_WINDOW_SIZE(CommonAttributes.CONFIRMATION_WINDOW_SIZE),
    CONSUMER_MAX_RATE(CommonAttributes.CONSUMER_MAX_RATE),
@@ -176,9 +189,16 @@ enum Element {
    ;
 
    private final String name;
+   private final AttributeDefinition definition;
 
    Element(final String name) {
       this.name = name;
+       this.definition = null;
+   }
+
+   Element(final AttributeDefinition definition) {
+       this.name = definition.getXmlName();
+       this.definition = definition;
    }
 
    /**
@@ -188,6 +208,10 @@ enum Element {
     */
    public String getLocalName() {
       return name;
+   }
+
+   public AttributeDefinition getDefinition() {
+       return definition;
    }
 
    private static final Map<String, Element> MAP;

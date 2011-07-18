@@ -1,0 +1,291 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.controller;
+
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import java.util.ResourceBundle;
+
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
+/**
+ * Defining characteristics of an attribute in a {@link org.jboss.as.controller.registry.Resource}, with utility
+ * methods for conversion to and from xml and for validation.
+ *
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ */
+public class AttributeDefinition {
+
+    private final String name;
+    private final String xmlName;
+    private final ModelType type;
+    private final boolean allowNull;
+    private final boolean allowExpression;
+    private final ModelNode defaultValue;
+    private final ParameterValidator validator;
+
+    public AttributeDefinition(final String name, final ModelType type, final boolean allowNull) {
+        this(name, name, null, type, allowNull, false);
+    }
+
+    public AttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull) {
+        this(name, name, defaultValue, type, allowNull, false);
+    }
+
+    public AttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
+                               final boolean allowNull, final boolean allowExpression) {
+        this(name, xmlName, defaultValue, type, allowNull, allowExpression, new ModelTypeValidator(type, allowNull, allowExpression));
+    }
+
+    public AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
+                               final boolean allowNull, final boolean allowExpression, final ParameterValidator validator) {
+        this.name = name;
+        this.xmlName = xmlName;
+        this.type = type;
+        this.allowNull = allowNull;
+        this.allowExpression = allowExpression;
+        this.defaultValue = new ModelNode();
+        if (defaultValue != null) {
+            this.defaultValue.set(defaultValue);
+        }
+        this.defaultValue.protect();
+        this.validator = validator;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getXmlName() {
+        return xmlName;
+    }
+
+    public ModelType getType() {
+        return type;
+    }
+
+    public boolean isAllowNull() {
+        return allowNull;
+    }
+
+    public boolean isAllowExpression() {
+        return allowExpression;
+    }
+
+    public ModelNode getDefaultValue() {
+        return defaultValue.isDefined() ? defaultValue : null;
+    }
+
+    public ParameterValidator getValidator() {
+        return validator;
+    }
+
+    /**
+     * Creates and returns a {@link ModelNode} using the given {@code value} after first validating the node
+     * against {@link #getValidator() this object's validator}.
+     * <p>
+     * If {@code value} is {@code null} and a {@link #getDefaultValue() default value} is available, the value of that
+     * default value will be used.
+     * </p>
+     *
+     * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
+     * @param location current location of the parser's {@link javax.xml.stream.XMLStreamReader}. Used for any exception
+     *                 message
+     *
+     * @return {@code ModelNode} representing the parsed value
+     *
+     * @throws XMLStreamException if {@code value} is not valid
+     */
+    public ModelNode parse(final String value, final Location location) throws XMLStreamException {
+
+        final String trimmed = value == null ? null : value.trim();
+        ModelNode node;
+        if (trimmed != null ) {
+            if (allowExpression) {
+                node = ParseUtils.parsePossibleExpression(trimmed);
+            } else {
+                node = new ModelNode().set(trimmed);
+            }
+        } else if (defaultValue.isDefined()) {
+            node = new ModelNode().set(defaultValue);
+        } else {
+            node = new ModelNode();
+        }
+
+        try {
+            validator.validateParameter(xmlName, node);
+        } catch (OperationFailedException e) {
+            throw new XMLStreamException(e.getFailureDescription().toString(), location);
+        }
+
+        return node;
+    }
+
+    public void parseAndSetParameter(final String value, final ModelNode operation, final Location location) throws XMLStreamException {
+        ModelNode paramVal = parse(value, location);
+        operation.get(name).set(paramVal);
+    }
+
+    /**
+     * Gets whether the given {@code resourceModel} has a value for this attribute that should be marshalled to XML.
+     *
+     * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
+     * @param marshallDefault {@code true} if the value should be marshalled even if it matches the default value
+     *
+     * @return {@true} if the given {@code resourceModel} has a defined value under this attribute's {@link #getName()} () name}
+     * and {@code marshallDefault} is {@code true} or that value differs from this attribute's {@link #getDefaultValue() default value}.
+     */
+    public boolean isMarshallable(final ModelNode resourceModel, final boolean marshallDefault) {
+         if (resourceModel.hasDefined(name)) {
+            ModelNode node = resourceModel.get(name);
+            if (marshallDefault || !node.equals(defaultValue)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Marshalls the value from the given {@code resourceModel} as an xml attribute, if it
+     * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
+     * <p>
+     * Invoking this method is the same as calling {@code marshallAsAttribute(resourceModel, false, writer)}
+     * </p>
+     *
+     * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
+     * @param writer stream writer to use for writing the attribute
+     * @throws XMLStreamException
+     */
+    public void marshallAsAttribute(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
+        marshallAsAttribute(resourceModel, false, writer);
+    }
+
+    /**
+     * Marshalls the value from the given {@code resourceModel} as an xml attribute, if it
+     * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
+     * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
+     * @param marshallDefault {@code true} if the value should be marshalled even if it matches the default value
+     * @param writer stream writer to use for writing the attribute
+     * @throws XMLStreamException
+     */
+    public void marshallAsAttribute(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
+        if (isMarshallable(resourceModel, marshallDefault)) {
+            writer.writeAttribute(xmlName, resourceModel.get(name).asString());
+        }
+    }
+
+    /**
+     * Marshalls the value from the given {@code resourceModel} as an xml element with text content, if it
+     * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
+     * <p>
+     * Invoking this method is the same as calling {@code marshallAsElementText(resourceModel, false, writer)}
+     * </p>
+     *
+     * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
+     * @param writer stream writer to use for writing the attribute
+     * @throws XMLStreamException
+     */
+    public void marshallAsElementText(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
+        marshallAsElementText(resourceModel, false, writer);
+    }
+
+    /**
+     * Marshalls the value from the given {@code resourceModel} as an xml element with text content, if it
+     * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
+     *
+     * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
+     * @param marshallDefault {@code true} if the value should be marshalled even if it matches the default value
+     * @param writer stream writer to use for writing the attribute
+     * @throws XMLStreamException
+     */
+    public void marshallAsElementText(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
+        if (isMarshallable(resourceModel, marshallDefault)) {
+            writer.writeStartElement(xmlName);
+            writer.writeCharacters(resourceModel.get(name).asString());
+            writer.writeEndElement();
+        }
+    }
+
+    /**
+     * Finds a value in the given {@code operationObject} whose key matches this attribute's {@link #getName() name} and
+     * validates it using this attribute's {@link #getValidator() validator}.
+     *
+     * @param operationObject model node of type {@link ModelType#OBJECT}, typically representing an operation request
+     *
+     * @return the value
+     * @throws OperationFailedException if the value is not valid
+     */
+    public ModelNode validateOperation(final ModelNode operationObject) throws OperationFailedException {
+
+        ModelNode node = new ModelNode();
+        if (operationObject.has(name)) {
+            node.set(operationObject.get(name)) ;
+        }
+        if (!node.isDefined() && defaultValue.isDefined()) {
+            node.set(defaultValue);
+        }
+        validator.validateParameter(name, node);
+
+        return node;
+    }
+
+    /**
+     * Finds a value in the given {@code operationObject} whose key matches this attribute's {@link #getName() name},
+     * resolves it and validates it using this attribute's {@link #getValidator() validator}.
+     *
+     * @param operationObject model node of type {@link ModelType#OBJECT}, typically representing an operation request
+     *
+     * @return the resolved value
+     * @throws OperationFailedException if the value is not valid
+     */
+    public ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
+        ModelNode node = new ModelNode();
+        if (operationObject.has(name)) {
+            node.set(operationObject.get(name)) ;
+        }
+        if (!node.isDefined() && defaultValue.isDefined()) {
+            node.set(defaultValue);
+        }
+        validator.validateParameter(name, node);
+
+        return node.resolve();
+    }
+
+    public String getResourceAttributeDescription(final ResourceBundle bundle, final String prefix) {
+        final String bundleKey = prefix == null ? ("attribute." + name) : (prefix + ".attribute." + name);
+        return bundle.getString(bundleKey);
+    }
+
+    public String getOperationParameterDescription(final ResourceBundle bundle, final String prefix) {
+        final String bundleKey = prefix == null ? ("parameter." + name) : (prefix + ".parameter." + name);
+        return bundle.getString(bundleKey);
+    }
+
+
+}

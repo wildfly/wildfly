@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
@@ -53,6 +54,12 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler {
         subsystemAdd.get(OP).set(ADD);
         subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
         //
+        for(final AttributeDefinition attribute : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
+            String attrName = attribute.getName();
+            if(subModel.hasDefined(attrName)) {
+                subsystemAdd.get(attrName).set(subModel.get(attrName));
+            }
+        }
         for(final String attribute : MessagingSubsystemProviders.MESSAGING_ROOT_ATTRIBUTES) {
             if(subModel.hasDefined(attribute)) {
                 subsystemAdd.get(attribute).set(subModel.get(attribute));
