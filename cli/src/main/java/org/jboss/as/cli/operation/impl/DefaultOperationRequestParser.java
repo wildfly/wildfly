@@ -27,7 +27,6 @@ import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.parsing.NodeState;
 import org.jboss.as.cli.operation.parsing.OperationNameState;
 import org.jboss.as.cli.operation.parsing.OperationRequestState;
-import org.jboss.as.cli.operation.parsing.OperationState;
 import org.jboss.as.cli.operation.parsing.ParsingContext;
 import org.jboss.as.cli.operation.parsing.ParsingStateCallbackHandler;
 import org.jboss.as.cli.operation.parsing.PropertyListState;
@@ -90,7 +89,7 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                 String stateId = ctx.getState().getId();
                 //System.out.println("entered " + stateId + " '" + ctx.getCharacter() + "'");
 
-                if(stateId.equals(OperationState.ID)) {
+                if(stateId.equals(OperationNameState.ID)) {
                     handler.addressOperationSeparator(ctx.getLocation());
                 } else if (stateId.equals(PropertyListState.ID)) {
                     handler.propertyListStart(ctx.getLocation());

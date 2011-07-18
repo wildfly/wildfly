@@ -105,7 +105,10 @@ public class OperationParsingTestCase extends TestCase {
     public void testNoOperation() throws Exception {
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
 
-        parse("./subsystem=logging:", handler);
+        try {
+            parse("./subsystem=logging:", handler);
+        } catch(OperationFormatException e) {
+        }
 
         assertTrue(handler.hasAddress());
         assertFalse(handler.hasOperationName());
