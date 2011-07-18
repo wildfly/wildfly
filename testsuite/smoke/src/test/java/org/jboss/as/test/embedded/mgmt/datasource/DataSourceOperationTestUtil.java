@@ -48,7 +48,21 @@ public class DataSourceOperationTestUtil {
     static void testConnection(final String dsName, final ModelControllerClient client) throws Exception {
         final ModelNode address3 = new ModelNode();
         address3.add("subsystem", "datasources");
-        address3.add("data-source", "MyNewDs");
+        address3.add("data-source", dsName);
+        address3.protect();
+
+        final ModelNode operation3 = new ModelNode();
+        operation3.get(OP).set("test-connection-in-pool");
+        operation3.get(OP_ADDR).set(address3);
+
+        final ModelNode result3 = client.execute(operation3);
+        Assert.assertEquals(SUCCESS, result3.get(OUTCOME).asString());
+    }
+
+    static void testConnectionXA(final String dsName, final ModelControllerClient client) throws Exception {
+        final ModelNode address3 = new ModelNode();
+        address3.add("subsystem", "datasources");
+        address3.add("xa-data-source", dsName);
         address3.protect();
 
         final ModelNode operation3 = new ModelNode();
