@@ -22,13 +22,6 @@
 
 package org.jboss.as.server.deployment.annotation;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-
-import java.util.Set;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -37,11 +30,18 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
+import org.jboss.logging.Logger;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Deployment unit processor responsible for creating and attaching an annotation index for a resource root
@@ -50,6 +50,8 @@ import org.jboss.vfs.util.SuffixMatchFilter;
  * @author Stuart Douglas
  */
 public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
+
+    private static final Logger logger = Logger.getLogger(AnnotationIndexProcessor.class);
 
     /**
      * Process this deployment for annotations.  This will use an annotation indexer to create an index of all annotations
@@ -101,8 +103,8 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
                     try {
                         inputStream = classFile.openStream();
                         indexer.index(inputStream);
-                    }catch (Exception e){
-                        throw new IOException("Could not index class "+classFile.getPathNameRelativeTo(virtualFile)+" in archive '"+virtualFile+"'",e);
+                    } catch (Exception e) {
+                        logger.warn("Could not index class " + classFile.getPathNameRelativeTo(virtualFile) + " in archive '" + virtualFile + "'", e);
                     } finally {
                         VFSUtils.safeClose(inputStream);
                     }
