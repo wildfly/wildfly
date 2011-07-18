@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.component.CancellationFlag;
@@ -29,11 +30,14 @@ import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.spi.InvocationContext;
 import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.ejb3.context.spi.SessionInvocationContext;
+import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
+import javax.ejb.ApplicationException;
+import javax.ejb.TransactionAttributeType;
 import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.Map;
@@ -71,7 +75,7 @@ public class SessionInvocationContextInterceptor implements Interceptor {
         }
     }
 
-    protected static class CustomSessionInvocationContext extends BaseSessionInvocationContext {
+    protected static class CustomSessionInvocationContext extends BaseSessionInvocationContext implements TransactionalInvocationContext {
         private InterceptorContext context;
 
         protected CustomSessionInvocationContext(boolean lifecycleCallback, InterceptorContext context, Class<?> invokedBusinessInterface, Method method, Object[] parameters) {
@@ -81,8 +85,20 @@ public class SessionInvocationContextInterceptor implements Interceptor {
         }
 
         @Override
+        public ApplicationException getApplicationException(Class<?> e) {
+            return getComponent().getApplicationException(e, getMethod());
+        }
+
+        @Override
         public Principal getCallerPrincipal() {
-            return ((SessionBeanComponent) getComponent()).getCallerPrincipal();
+            return getComponent().getCallerPrincipal();
+        }
+
+        @Override
+        public SessionBeanComponent getComponent() {
+            //return (SessionBeanComponent) super.getComponent();
+            // this is faster
+            return (SessionBeanComponent) context.getPrivateData(Component.class);
         }
 
         @Override
@@ -93,6 +109,16 @@ public class SessionInvocationContextInterceptor implements Interceptor {
         @Override
         public SessionContext getEJBContext() {
             return ((SessionBeanComponentInstance) context.getPrivateData(ComponentInstance.class)).getSessionContext();
+        }
+
+        @Override
+        public TransactionAttributeType getTransactionAttribute() {
+            return getComponent().getTransactionAttributeType(getMethod());
+        }
+
+        @Override
+        public int getTransactionTimeout() {
+            return getComponent().getTransactionTimeout(getMethod());
         }
 
         @Override

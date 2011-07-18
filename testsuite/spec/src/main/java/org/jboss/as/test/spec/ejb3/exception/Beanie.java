@@ -19,37 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.stateless;
+package org.jboss.as.test.spec.ejb3.exception;
 
-import org.jboss.ejb3.context.spi.InvocationContext;
-import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
 
-import javax.transaction.TransactionManager;
+import static javax.ejb.TransactionAttributeType.NOT_SUPPORTED;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-class StatelessBMTInterceptor extends org.jboss.ejb3.tx2.impl.StatelessBMTInterceptor implements Interceptor {
-    private StatelessSessionComponent component;
+@Stateless
+public class Beanie implements BeanieLocal {
+    @Resource
+    private SessionContext ctx;
 
-    StatelessBMTInterceptor(StatelessSessionComponent component) {
-        this.component = component;
+    public void callThrowException() {
+        try {
+            ctx.getBusinessObject(BeanieLocal.class).throwException();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    @Override
-    protected String getComponentName() {
-        return component.getComponentName();
-    }
-
-    @Override
-    protected TransactionManager getTransactionManager() {
-        return component.getTransactionManager();
-    }
-
-    @Override
-    public Object processInvocation(InterceptorContext context) throws Exception {
-        return super.invoke((TransactionalInvocationContext) context.getPrivateData(InvocationContext.class));
+    @TransactionAttribute(NOT_SUPPORTED)
+    public void throwException() throws Exception {
+        throw new Exception("This is an app exception");
     }
 }

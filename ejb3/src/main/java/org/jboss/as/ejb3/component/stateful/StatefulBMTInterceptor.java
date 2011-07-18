@@ -21,7 +21,8 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.ejb3.tx2.spi.TransactionalComponent;
+import org.jboss.ejb3.context.spi.InvocationContext;
+import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
@@ -38,8 +39,8 @@ class StatefulBMTInterceptor extends org.jboss.ejb3.tx2.impl.StatefulBMTIntercep
     }
 
     @Override
-    protected TransactionalComponent getTransactionalComponent() {
-        return this.component;
+    protected String getComponentName() {
+        return component.getComponentName();
     }
 
     @Override
@@ -49,6 +50,6 @@ class StatefulBMTInterceptor extends org.jboss.ejb3.tx2.impl.StatefulBMTIntercep
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
-        return super.invoke(context.getInvocationContext());
+        return super.invoke((TransactionalInvocationContext) context.getPrivateData(InvocationContext.class));
     }
 }

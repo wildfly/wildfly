@@ -23,7 +23,7 @@ package org.jboss.as.ejb3.tx;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
-import org.jboss.ejb3.tx2.spi.TransactionalComponent;
+import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
@@ -41,10 +41,8 @@ public class CMTTxInterceptorFactory extends ComponentInterceptorFactory {
 
     @Override
     protected Interceptor create(Component component, InterceptorFactoryContext context) {
-        if (!(component instanceof TransactionalComponent)) {
-            throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
-                    " isn't a transactional component. Tx interceptors cannot be applied");
-        }
-        return new CMTTxInterceptor((TransactionalComponent) component);
+        final CMTTxInterceptor interceptor = new CMTTxInterceptor();
+        interceptor.setTransactionManager(((EJBComponent) component).getTransactionManager());
+        return interceptor;
     }
 }
