@@ -3,12 +3,15 @@ package org.jboss.as.messaging;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.AttributeDefinition;
+
 /**
  *
  */
 public enum Attribute {
-   UNKNOWN(null),
+   UNKNOWN((String) null),
    /* Messaging 1.0 attributes, in alpha order */
+   CONNECTOR_NAME(CommonAttributes.CONNECTOR_NAME),
    CONSUME_NAME(CommonAttributes.CONSUME_NAME),
    CREATEDURABLEQUEUE_NAME(CommonAttributes.CREATEDURABLEQUEUE_NAME),
    CREATE_NON_DURABLE_QUEUE_NAME(CommonAttributes.CREATE_NON_DURABLE_QUEUE_NAME),
@@ -16,6 +19,7 @@ public enum Attribute {
    DELETE_NON_DURABLE_QUEUE_NAME(CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME),
    DELETEDURABLEQUEUE_NAME(CommonAttributes.DELETEDURABLEQUEUE_NAME),
    DELETETEMPQUEUE_NAME(CommonAttributes.DELETETEMPQUEUE_NAME),
+   DISCOVERY_GROUP_NAME(CommonAttributes.DISCOVERY_GROUP_NAME),
    KEY(CommonAttributes.KEY),
    MANAGE_NAME(CommonAttributes.MANAGE_NAME),
    MATCH(CommonAttributes.MATCH),
@@ -28,15 +32,19 @@ public enum Attribute {
    SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
    STRING(CommonAttributes.STRING),
    TYPE_ATTR_NAME(CommonAttributes.TYPE_ATTR_NAME),
-   VALUE(CommonAttributes.VALUE),
-   //JMS Stuff
-   CONNECTOR_NAME(CommonAttributes.CONNECTOR_NAME),
-   DISCOVERY_GROUP_NAME(CommonAttributes.DISCOVERY_GROUP_NAME),
-   ;
+   VALUE(CommonAttributes.VALUE);
+
    private final String name;
+   private final AttributeDefinition definition;
 
    Attribute(final String name) {
       this.name = name;
+       this.definition = null;
+   }
+
+   Attribute(final AttributeDefinition definition) {
+       this.name = definition.getXmlName();
+       this.definition = definition;
    }
 
    /**
@@ -46,6 +54,10 @@ public enum Attribute {
     */
    public String getLocalName() {
       return name;
+   }
+
+   public AttributeDefinition getDefinition() {
+       return definition;
    }
 
    private static final Map<String, Attribute> MAP;
