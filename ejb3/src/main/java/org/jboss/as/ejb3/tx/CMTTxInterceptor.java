@@ -21,7 +21,8 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import org.jboss.ejb3.tx2.spi.TransactionalComponent;
+import org.jboss.ejb3.context.spi.InvocationContext;
+import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
@@ -29,21 +30,8 @@ import org.jboss.invocation.InterceptorContext;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class CMTTxInterceptor extends org.jboss.ejb3.tx2.impl.CMTTxInterceptor implements Interceptor {
-    private TransactionalComponent component;
-
-    public CMTTxInterceptor(TransactionalComponent component) {
-        assert component != null : "component is null";
-
-        this.component = component;
-    }
-
-    @Override
-    protected TransactionalComponent getTransactionalComponent() {
-        return component;
-    }
-
     @Override
     public Object processInvocation(InterceptorContext invocation) throws Exception {
-        return super.invoke(invocation.getInvocationContext());
+        return super.invoke((TransactionalInvocationContext) invocation.getPrivateData(InvocationContext.class));
     }
 }

@@ -61,7 +61,7 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
             return context.proceed();
         } catch (Exception ex) {
             // Detect app exception
-            if (component.getApplicationException(ex.getClass()) != null) {
+            if (component.getApplicationException(ex.getClass(), context.getMethod()) != null) {
                 // it's an application exception, just throw it back.
                 throw ex;
             }
