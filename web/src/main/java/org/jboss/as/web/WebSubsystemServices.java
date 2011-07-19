@@ -9,8 +9,9 @@ import org.jboss.msc.service.ServiceName;
  * Service name constants.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author Emanuel Muckenhuber
  */
-public class WebSubsystemServices {
+public final class WebSubsystemServices {
 
     /** The base name for jboss.web services. */
     public static final ServiceName JBOSS_WEB = ServiceName.JBOSS.append("web");
@@ -20,8 +21,12 @@ public class WebSubsystemServices {
     public static final ServiceName JBOSS_WEB_CONNECTOR = JBOSS_WEB.append("connector");
     /** The base name for jboss.web host services. */
     public static final ServiceName JBOSS_WEB_HOST = JBOSS_WEB.append("host");
-    /** The base name for jboss.web realm services. */
-    public static final ServiceName JBOSS_WEB_REALM = JBOSS_WEB.append("realm");
+    /** The base name for jboss.web deployemnts. */
+    static final ServiceName JBOSS_WEB_DEPLOYMENT_BASE = JBOSS_WEB.append("deployment");
+
+    public static ServiceName deploymentServiceName(final String virtualHost, final String contextPath) {
+        return JBOSS_WEB_DEPLOYMENT_BASE.append(virtualHost).append("".equals(contextPath) ? "/" : contextPath);
+    }
 
     private WebSubsystemServices() {
     }

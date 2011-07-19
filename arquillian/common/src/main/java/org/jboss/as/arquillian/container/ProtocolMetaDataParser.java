@@ -17,6 +17,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.jboss.dmr.Property;
 
 /**
  * A {@link ProtocolMetaData} provider that uses the JBoss AS 7 admin API
@@ -106,16 +107,16 @@ public class ProtocolMetaDataParser {
         operation.get(OP_ADDR).set(address);
         ModelNode result = executeForResult(operation);
         ModelNode webNode = result.get(WEB);
-        if (webNode.isDefined()) {
-            for (ModelNode servletNode : webNode.get(SERVLET).asList()) {
-                for (String servletName : servletNode.keys()) {
-                    context.add(new Servlet(servletName,
-                            toContextName(deploymentName)));
+        if (webNode.isDefined() && webNode.hasDefined("context-root")) {
+            final String contextName = webNode.get("context-root").asString();
+            if(webNode.hasDefined(SERVLET)) {
+                for (Property property : webNode.get(SERVLET).asPropertyList()) {
+                    final String servletName = property.getValue().get("servlet-name").asString();
+                        context.add(new Servlet(servletName, toContextName(contextName)));
                 }
             }
+            context.add(new Servlet("default", toContextName(contextName)));
         }
-
-        context.add(new Servlet("default", toContextName(deploymentName)));
     }
 
     private boolean isEnterpriseArchive(String deploymentName) {

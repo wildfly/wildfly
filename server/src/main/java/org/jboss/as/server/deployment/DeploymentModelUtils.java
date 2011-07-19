@@ -43,6 +43,13 @@ class DeploymentModelUtils {
     static final String SUBSYSTEM = ModelDescriptionConstants.SUBSYSTEM;
     static final String SUB_DEPLOYMENT = "subdeployment";
 
+    static ModelNode getSubsystemRoot(final String subsystemName, final DeploymentUnit unit) {
+        final Resource root = unit.getAttachment(DEPLOYMENT_RESOURCE);
+        synchronized (root) {
+            return getOrCreate(root, PathElement.pathElement(SUBSYSTEM, subsystemName)).getModel();
+        }
+    }
+
     static ModelNode createDeploymentSubModel(final String subsystemName, final PathElement address, final DeploymentUnit unit) {
         final Resource root = unit.getAttachment(DEPLOYMENT_RESOURCE);
         synchronized (root) {

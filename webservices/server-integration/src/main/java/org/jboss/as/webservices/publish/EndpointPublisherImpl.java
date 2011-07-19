@@ -293,6 +293,11 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         }
 
         @Override
+        public ModelNode getDeploymentSubsystemModel(String subsystemName) {
+            throw new RuntimeException("Can't get the deployment submodel from a " + WSEndpointDeploymentUnit.class + " instance");
+        }
+
+        @Override
         public ModelNode createDeploymentSubModel(String subsystemName, PathElement address) {
             throw new RuntimeException("Can't create a deployment submodel from a " + WSEndpointDeploymentUnit.class + " instance");
         }

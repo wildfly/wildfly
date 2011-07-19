@@ -32,6 +32,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -91,12 +92,19 @@ public class ServletDeploymentStats {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-            final String deploymentName = address.getElement(address.size() -3).getValue();
-            final ModelNode node  = context.readModel(PathAddress.EMPTY_ADDRESS);
+
+            final Resource web = context.getRootResource().navigate(address.subAddress(0, address.size() -1));
+            final ModelNode subModel = web.getModel();
+
+            final String host = subModel.require("virtual-host").asString();
+            final String path = subModel.require("context-root").asString();
+
+            final ModelNode node  = web.requireChild(address.getLastElement()).getModel();
+
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(WebSubsystemServices.JBOSS_WEB.append(deploymentName));
+                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(WebSubsystemServices.deploymentServiceName(host, path));
                     if(controller != null) {
                         final String name = node.get("servlet-name").asString();
                         final Context webContext = Context.class.cast(controller.getValue());

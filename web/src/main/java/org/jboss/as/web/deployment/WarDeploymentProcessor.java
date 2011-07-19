@@ -52,6 +52,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
@@ -69,6 +70,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * {@code DeploymentUnitProcessor} creating the actual deployment services.
+ *
  * @author Emanuel Muckenhuber
  * @author Anil.Saldhana@redhat.com
  */
@@ -107,6 +110,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit context) {
+        //
     }
 
     protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentUnit deploymentUnit,
@@ -143,9 +147,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
         webContext.addLifecycleListener(config);
 
-        // Set the path name
-        final String deploymentName = deploymentUnit.getName();
-        String pathName = null;
+        String pathName;
         if (metaData.getContextRoot() == null) {
             pathName = "/" + deploymentUnit.getName().substring(0, deploymentUnit.getName().length() - 4);
         } else {
@@ -203,39 +205,46 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         try {
-            JBossWebRealmService realmService = new JBossWebRealmService(principalVersusRolesMap);
-            ServiceBuilder<?> builder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_REALM.append(deploymentName),
-                    realmService);
+
+            final ServiceName deploymentServiceName = WebSubsystemServices.deploymentServiceName(hostName, pathName);
+            final ServiceName realmServiceName = deploymentServiceName.append("realm");
+
+            final JBossWebRealmService realmService = new JBossWebRealmService(principalVersusRolesMap);
+            ServiceBuilder<?> builder = serviceTarget.addService(realmServiceName, realmService);
             builder.addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain),
                     SecurityDomainContext.class, realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE)
                     .install();
-            WebDeploymentService webDeploymentService = new WebDeploymentService(webContext, injectionContainer);
 
+            WebDeploymentService webDeploymentService = new WebDeploymentService(webContext, injectionContainer);
             if(moduleDescription != null ) {
                 webDeploymentService.getNamespaceSelector().setValue(new ImmediateValue<NamespaceContextSelector>(moduleDescription.getNamespaceContextSelector()));
             }
-            builder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName), webDeploymentService);
+            builder = serviceTarget.addService(deploymentServiceName, webDeploymentService)
+                        .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class,
+                                    new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames())
+                        .addDependency(realmServiceName, Realm.class, webDeploymentService.getRealm())
+                        .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
+                        .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
 
-            builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class,
-                    new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames());
-            builder.addDependency(WebSubsystemServices.JBOSS_WEB_REALM.append(deploymentName), Realm.class,
-                    webDeploymentService.getRealm());
-
-            builder.addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES));
-            builder.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
             if (metaData.getDistributable() != null) {
-                DistributedCacheManagerFactory factory = DistributableSessionManager.getDistributedCacheManagerFactory();
+                final DistributedCacheManagerFactory factory = DistributableSessionManager.getDistributedCacheManagerFactory();
                 if (factory != null) {
                     builder.addDependencies(factory.getDependencies(metaData));
                 }
             }
+
             builder.install();
+
         } catch (ServiceRegistryException e) {
             throw new DeploymentUnitProcessingException("Failed to add JBoss web deployment service", e);
         }
+
+        // Process the web related mgmt information
+        final ModelNode node = deploymentUnit.getDeploymentSubsystemModel("web");
+        node.get("context-root").set("".equals(pathName) ? "/" : pathName);
+        node.get("virtual-host").set(hostName);
         processManagement(deploymentUnit, metaData);
     }
-
 
     void processManagement(final DeploymentUnit unit, JBossWebMetaData metaData) {
         for(final JBossServletMetaData servlet : metaData.getServlets()) {
