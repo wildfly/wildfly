@@ -49,7 +49,9 @@ public class JBWS3207TestCase {
         SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
         Deployer deployer = spiProvider.getSPI(Deployer.class);
         assertTrue(deployer instanceof RemoteDeployer);
-        File archiveFile = new File(System.getProperty("test.archive.directory"), "jbws3207.war");
+        final String basedir = System.getProperty("basedir");
+        final String testdir = basedir + File.separatorChar + "target" + File.separatorChar + "test-libs";
+        File archiveFile = new File( testdir, "jbws3207.war");
         URL archiveURL = archiveFile.toURI().toURL();
         try {
             deployer.deploy(archiveURL);
