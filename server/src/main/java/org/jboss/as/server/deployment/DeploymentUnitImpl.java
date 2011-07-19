@@ -85,6 +85,11 @@ class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
     }
 
     @Override
+    public ModelNode getDeploymentSubsystemModel(final String subsystemName) {
+        return DeploymentModelUtils.getSubsystemRoot(subsystemName, this);
+    }
+
+    @Override
     public ModelNode createDeploymentSubModel(final String subsystemName, final PathElement address) {
         return DeploymentModelUtils.createDeploymentSubModel(subsystemName, address, this);
     }
