@@ -62,6 +62,14 @@ public interface DeploymentUnit extends Attachable {
     ServiceRegistry getServiceRegistry();
 
     /**
+     * Get the extension deployment model root.
+     *
+     * @param subsystemName the subsystem name.
+     * @return the model
+     */
+    ModelNode getDeploymentSubsystemModel(final String subsystemName);
+
+    /**
      * Create a management sub-model for components from the deployment itself. Operations, metrics and descriptions
      * have to be registered as part of the subsystem registration {@link org.jboss.as.controller.ExtensionContext} and
      * {@linkplain org.jboss.as.controller.SubsystemRegistration.registerDeploymentModel}.

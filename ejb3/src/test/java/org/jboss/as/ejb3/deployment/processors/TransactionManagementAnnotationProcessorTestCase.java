@@ -187,6 +187,11 @@ public class TransactionManagementAnnotationProcessorTestCase {
             }
 
             @Override
+            public ModelNode getDeploymentSubsystemModel(String subsystemName) {
+                return new ModelNode();
+            }
+
+            @Override
             public ModelNode createDeploymentSubModel(String subsystemName, PathElement address) {
                 return new ModelNode();
             }
