@@ -113,7 +113,7 @@ class Constants {
 
     static final String SAME_RM_OVERRIDE = "same-rm-override";
 
-    static final String WRAP_XA_DATASOURCE = "wrap-xa-datasource";
+    static final String WRAP_XA_RESOURCE = "wrap-xa-resource";
 
     static final String RECOVERY_USERNAME = "recovery-username";
 

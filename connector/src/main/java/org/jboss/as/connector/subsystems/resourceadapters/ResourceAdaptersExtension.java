@@ -73,7 +73,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECUR
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_DATASOURCE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_RESOURCEADAPTER_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.FLUSH_ALL_CONNECTION_DESC;
@@ -274,7 +274,7 @@ public class ResourceAdaptersExtension implements Extension {
 
             if (conDef.has(MAX_POOL_SIZE) || conDef.has(MIN_POOL_SIZE) || conDef.has(POOL_USE_STRICT_MIN)
                     || conDef.has(POOL_PREFILL)) {
-                if (conDef.has(INTERLIVING) || conDef.has(WRAP_XA_DATASOURCE) || conDef.has(NOTXSEPARATEPOOL)
+                if (conDef.has(INTERLIVING) || conDef.has(WRAP_XA_RESOURCE) || conDef.has(NOTXSEPARATEPOOL)
                         || conDef.has(PAD_XID) || conDef.has(SAME_RM_OVERRIDE)) {
                     streamWriter.writeStartElement(CommonConnDef.Tag.XA_POOL.getLocalName());
                     writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MIN_POOL_SIZE, MIN_POOL_SIZE);
@@ -287,7 +287,7 @@ public class ResourceAdaptersExtension implements Extension {
                     writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.INTERLEAVING, INTERLIVING);
                     writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.NO_TX_SEPARATE_POOLS, NOTXSEPARATEPOOL);
                     writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.PAD_XID, PAD_XID);
-                    writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.WRAP_XA_RESOURCE, WRAP_XA_DATASOURCE);
+                    writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.WRAP_XA_RESOURCE, WRAP_XA_RESOURCE);
 
                     streamWriter.writeEndElement();
                 } else {
@@ -558,7 +558,7 @@ public class ResourceAdaptersExtension implements Extension {
                     setBooleanIfNotNull(condefModel, PAD_XID, xaPool.isPadXid());
                     setBooleanIfNotNull(condefModel, SAME_RM_OVERRIDE, xaPool.isSameRmOverride());
                     setBooleanIfNotNull(condefModel, NOTXSEPARATEPOOL, xaPool.isNoTxSeparatePool());
-                    setBooleanIfNotNull(condefModel, WRAP_XA_DATASOURCE, xaPool.isWrapXaDataSource());
+                    setBooleanIfNotNull(condefModel, WRAP_XA_RESOURCE, xaPool.isWrapXaDataSource());
 
                 }
             }
