@@ -476,6 +476,10 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.DEFAULT_WEB_MODULE, REQUIRED).set(false);
         node.get(type, Constants.DEFAULT_WEB_MODULE, DEFAULT).set("ROOT.war");
 
+        node.get(type, Constants.ENABLE_WELCOME_ROOT, TYPE).set(ModelType.BOOLEAN);
+        node.get(type, Constants.ENABLE_WELCOME_ROOT, DESCRIPTION).set(bundle.getString("web.virtual-server.enable-welcome-root"));
+        node.get(type, Constants.ENABLE_WELCOME_ROOT, REQUIRED).set(false);
+
         getAccessLogCommonDescription(node.get(type, Constants.ACCESS_LOG), type, bundle);
         getRewriteCommonDescription(node.get(type, Constants.REWRITE), type, bundle);
 
