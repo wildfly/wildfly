@@ -35,7 +35,45 @@
     <artifactId>jboss-as-testsuite-spec</artifactId>
     <name>JBoss Application Server Test Suite: Specification Tests</name>
 
-    <!-- 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*TestCase.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>org/jboss/as/test/spec/ejb3/mdb/**/*TestCase.java</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>preview</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                            <enableAssertions>true</enableAssertions>
+                            <systemPropertyVariables>
+                                <jboss.server.config.file.name>standalone-preview.xml</jboss.server.config.file.name>
+                            </systemPropertyVariables>
+                            <includes>
+                                <include>org/jboss/as/test/spec/ejb3/mdb/**/*TestCase.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>none</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!--
     ONLY the Java EE Spec APIs are to be allowed in compile scope here
     (inherited from parent)
      -->
@@ -55,5 +93,5 @@
         <scope>test</scope>
       </dependency>
     </dependencies>
-    
+
 </project>
