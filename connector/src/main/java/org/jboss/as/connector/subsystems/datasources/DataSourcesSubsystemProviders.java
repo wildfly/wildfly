@@ -96,7 +96,7 @@ class DataSourcesSubsystemProviders {
             AttributeDefinition.ENABLED, AttributeDefinition.MAX_POOL_SIZE, AttributeDefinition.MIN_POOL_SIZE,
             AttributeDefinition.POOL_PREFILL, AttributeDefinition.POOL_USE_STRICT_MIN, AttributeDefinition.INTERLIVING,
             AttributeDefinition.NOTXSEPARATEPOOL, AttributeDefinition.PAD_XID, AttributeDefinition.SAME_RM_OVERRIDE,
-            AttributeDefinition.WRAP_XA_DATASOURCE, AttributeDefinition.USERNAME, AttributeDefinition.PASSWORD,
+            AttributeDefinition.WRAP_XA_RESOURCE, AttributeDefinition.USERNAME, AttributeDefinition.PASSWORD,
             AttributeDefinition.SECURITY_DOMAIN, AttributeDefinition.RECOVERLUGIN_CLASSNAME,
             AttributeDefinition.REAUTHPLUGIN_CLASSNAME, AttributeDefinition.REAUTHPLUGIN_PROPERTIES,
             AttributeDefinition.FLUSH_STRATEGY, AttributeDefinition.PREPAREDSTATEMENTSCACHESIZE,

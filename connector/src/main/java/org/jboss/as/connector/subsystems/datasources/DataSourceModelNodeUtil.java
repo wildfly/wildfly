@@ -78,7 +78,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_C
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATEONMATCH;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_DATASOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
@@ -226,7 +226,7 @@ class DataSourceModelNodeUtil {
             setBooleanIfNotNull(xaDataSourceModel, NOTXSEPARATEPOOL, pool.isNoTxSeparatePool());
             setBooleanIfNotNull(xaDataSourceModel, PAD_XID, pool.isPadXid());
             setBooleanIfNotNull(xaDataSourceModel, SAME_RM_OVERRIDE, pool.isSameRmOverride());
-            setBooleanIfNotNull(xaDataSourceModel, WRAP_XA_DATASOURCE, pool.isWrapXaDataSource());
+            setBooleanIfNotNull(xaDataSourceModel, WRAP_XA_RESOURCE, pool.isWrapXaDataSource());
         }
         final DsSecurity security = xaDataSource.getSecurity();
         if (security != null) {
@@ -400,7 +400,7 @@ class DataSourceModelNodeUtil {
         final boolean noTxSeparatePool = getBooleanIfSetOrGetDefault(dataSourceNode, NOTXSEPARATEPOOL, false);
         final boolean padXid = getBooleanIfSetOrGetDefault(dataSourceNode, PAD_XID, false);
         final boolean isSameRmOverride = getBooleanIfSetOrGetDefault(dataSourceNode, SAME_RM_OVERRIDE, false);
-        final boolean wrapXaDataSource = getBooleanIfSetOrGetDefault(dataSourceNode, WRAP_XA_DATASOURCE, false);
+        final boolean wrapXaDataSource = getBooleanIfSetOrGetDefault(dataSourceNode, WRAP_XA_RESOURCE, true);
         final FlushStrategy flushStrategy = dataSourceNode.hasDefined(FLUSH_STRATEGY) ? FlushStrategy.forName(dataSourceNode
                 .get(FLUSH_STRATEGY).asString()) : FlushStrategy.FAILING_CONNECTION_ONLY;
 
