@@ -558,8 +558,11 @@ public class ResourceAdaptersExtension implements Extension {
                     setBooleanIfNotNull(condefModel, PAD_XID, xaPool.isPadXid());
                     setBooleanIfNotNull(condefModel, SAME_RM_OVERRIDE, xaPool.isSameRmOverride());
                     setBooleanIfNotNull(condefModel, NOTXSEPARATEPOOL, xaPool.isNoTxSeparatePool());
-                    setBooleanIfNotNull(condefModel, WRAP_XA_RESOURCE, xaPool.isWrapXaDataSource());
-
+                    setBooleanIfNotNull(condefModel, WRAP_XA_RESOURCE, xaPool.isWrapXaDataSource(), Boolean.TRUE);
+                }
+            } else {
+                if (conDef.isXa()) {
+                    setBooleanIfNotNull(condefModel, WRAP_XA_RESOURCE, null, Boolean.TRUE);
                 }
             }
 
@@ -623,6 +626,15 @@ public class ResourceAdaptersExtension implements Extension {
     private static void setBooleanIfNotNull(final ModelNode node, final String identifier, final Boolean value) {
         if (value != null) {
             node.get(identifier).set(value);
+        }
+    }
+
+    private static void setBooleanIfNotNull(final ModelNode node, final String identifier,
+                                            final Boolean value, final Boolean defaultValue) {
+        if (value != null) {
+            node.get(identifier).set(value);
+        } else if (defaultValue != null) {
+            node.get(identifier).set(defaultValue);
         }
     }
 
