@@ -60,8 +60,8 @@ public enum AttributeDefinition {
             org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION, ModelType.BOOLEAN, false), USE_FAST_FAIL(
             org.jboss.as.connector.pool.Constants.USE_FAST_FAIL, ModelType.BOOLEAN, false), VALIDATEONMATCH(
             Constants.VALIDATEONMATCH, ModelType.BOOLEAN, false), SPY(Constants.SPY, ModelType.BOOLEAN, false), USE_CCM(
-            Constants.USE_CCM, ModelType.BOOLEAN, false), XADATASOURCECLASS(Constants.XADATASOURCECLASS, ModelType.STRING, true), INTERLIVING(
-            Constants.INTERLIVING, ModelType.BOOLEAN, false), NOTXSEPARATEPOOL(Constants.NOTXSEPARATEPOOL, ModelType.BOOLEAN,
+            Constants.USE_CCM, ModelType.BOOLEAN, false), XADATASOURCECLASS(Constants.XADATASOURCECLASS, ModelType.STRING, true), INTERLEAVING(
+            Constants.INTERLEAVING, ModelType.BOOLEAN, false), NOTXSEPARATEPOOL(Constants.NOTXSEPARATEPOOL, ModelType.BOOLEAN,
             false), PAD_XID(Constants.PAD_XID, ModelType.BOOLEAN, false), SAME_RM_OVERRIDE(Constants.SAME_RM_OVERRIDE,
             ModelType.BOOLEAN, false), WRAP_XA_RESOURCE(Constants.WRAP_XA_RESOURCE, ModelType.BOOLEAN, true), XA_RESOURCE_TIMEOUT(
             Constants.XA_RESOURCE_TIMEOUT, ModelType.INT, false), REAUTHPLUGIN_CLASSNAME(Constants.REAUTHPLUGIN_CLASSNAME,
