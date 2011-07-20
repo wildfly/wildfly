@@ -110,4 +110,22 @@ public final class AsyncHandlerService implements Service<Handler> {
     public synchronized void addHandlers(final List<InjectedValue<Handler>> list) {
         subhandlers.addAll(list);
     }
+
+    public synchronized void addHandler(final InjectedValue<Handler> injectedHandler) {
+        subhandlers.add(injectedHandler);
+        final AsyncHandler handler = value;
+        handler.addHandler(injectedHandler.getValue());
+    }
+
+    public synchronized void removeHandler(final Handler subHandler) {
+        InjectedValue<Handler> valueToRemove = null;
+        for (InjectedValue<Handler> injectedHandler : subhandlers) {
+            if (injectedHandler.getValue().equals(subHandler)) valueToRemove = injectedHandler;
+        }
+
+        subhandlers.remove(valueToRemove);
+
+        final AsyncHandler handler = value;
+        handler.removeHandler(valueToRemove.getValue());
+    }
 }
