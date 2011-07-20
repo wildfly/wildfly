@@ -57,6 +57,7 @@ public class SimpleStatelessWebserviceEndpointTestCase {
         return jar;
     }
 
+    @Ignore
     @Test
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.testsuite.integration.wsejb", "SimpleService");
