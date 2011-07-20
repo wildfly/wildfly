@@ -56,6 +56,7 @@ class AsyncHandlerAdd extends AbstractAddStepHandler {
         model.get(OVERFLOW_ACTION).set(operation.get(OVERFLOW_ACTION));
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -73,7 +74,8 @@ class AsyncHandlerAdd extends AbstractAddStepHandler {
         if (operation.hasDefined(QUEUE_LENGTH))
             service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
         service.setLevel(Level.parse(operation.get(LEVEL).asString()));
-        service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
+        if (operation.hasDefined(OVERFLOW_ACTION))
+            service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
 
         serviceBuilder.addListener(verificationHandler);
         serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
