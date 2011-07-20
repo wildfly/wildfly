@@ -21,10 +21,14 @@
  */
 package org.jboss.as.clustering.jgroups;
 
+import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.jgroups.util.ThreadDecorator;
@@ -33,6 +37,8 @@ import org.jgroups.util.TimeScheduler;
 
 /**
  * Adapts a {@link ScheduledExecutorService} to a {@link TimeScheduler}.
+ * Disallow modification of the pool itself - this should be done via
+ * the threading subsystem directly.
  * @author Paul Ferraro
  */
 public class TimerSchedulerAdapter implements TimeScheduler {
@@ -45,13 +51,12 @@ public class TimerSchedulerAdapter implements TimeScheduler {
 
     @Override
     public ThreadDecorator getThreadDecorator() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public void setThreadDecorator(ThreadDecorator decorator) {
-        // TODO Auto-generated method stub
+        // Do nothing
     }
 
     @Override
@@ -105,52 +110,52 @@ public class TimerSchedulerAdapter implements TimeScheduler {
 
     @Override
     public void setThreadFactory(ThreadFactory factory) {
-        this.getExecutor().setThreadFactory(factory);
+        // Do nothing
     }
 
     @Override
     public String dumpTimerTasks() {
-        return this.getExecutor().getQueue().toString();
+        return this.getThreadPool().getQueue().toString();
     }
 
     @Override
     public int getMinThreads() {
-        return this.getExecutor().getCorePoolSize();
+        return this.getThreadPool().getCorePoolSize();
     }
 
     @Override
     public void setMinThreads(int size) {
-        this.getExecutor().setCorePoolSize(size);
+        // Do nothing
     }
 
     @Override
     public int getMaxThreads() {
-        return this.getExecutor().getMaximumPoolSize();
+        return this.getThreadPool().getMaximumPoolSize();
     }
 
     @Override
     public void setMaxThreads(int size) {
-        this.getExecutor().setMaximumPoolSize(size);
+        // Do nothing
     }
 
     @Override
     public long getKeepAliveTime() {
-        return this.getExecutor().getKeepAliveTime(TimeUnit.MILLISECONDS);
+        return this.getThreadPool().getKeepAliveTime(TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void setKeepAliveTime(long time) {
-        this.getExecutor().setKeepAliveTime(time, TimeUnit.MILLISECONDS);
+        // Do nothing
     }
 
     @Override
     public int getCurrentThreads() {
-        return this.getExecutor().getActiveCount();
+        return this.getThreadPool().getActiveCount();
     }
 
     @Override
     public int size() {
-        return this.getExecutor().getPoolSize();
+        return this.getThreadPool().getPoolSize();
     }
 
     @Override
@@ -163,10 +168,42 @@ public class TimerSchedulerAdapter implements TimeScheduler {
         return this.executor.isShutdown();
     }
 
-    private ScheduledThreadPoolExecutor getExecutor() {
-        if (!(this.executor instanceof ScheduledThreadPoolExecutor)) {
-            throw new UnsupportedOperationException();
+    private ThreadPoolExecutor getThreadPool() {
+        return getThreadPool(this.executor);
+    }
+
+    private static ThreadPoolExecutor getThreadPool(Executor executor) {
+        if (executor instanceof ThreadPoolExecutor) {
+            return (ThreadPoolExecutor) executor;
+        } else {
+            // This must be a decorator - try to hack out the delegate
+            final Field field = getField(executor.getClass(), Executor.class);
+            if (field != null) {
+                PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
+                    @Override
+                    public Void run() {
+                        field.setAccessible(true);
+                        return null;
+                    }
+                };
+                AccessController.doPrivileged(action);
+                try {
+                    return getThreadPool((Executor) field.get(executor));
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
         }
-        return (ScheduledThreadPoolExecutor) this.executor;
+        throw new UnsupportedOperationException();
+    }
+
+    private static <T> Field getField(Class<? extends T> targetClass, Class<T> fieldClass) {
+        for (Field field: targetClass.getDeclaredFields()) {
+            if (fieldClass.isAssignableFrom(field.getType())) {
+                return field;
+            }
+        }
+        Class<?> superClass = targetClass.getSuperclass();
+        return (superClass != null) && fieldClass.isAssignableFrom(superClass) ? getField(superClass.asSubclass(fieldClass), fieldClass) : null;
     }
 }
