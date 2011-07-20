@@ -66,6 +66,8 @@ public class LoggingExtension implements Extension {
         registration.registerOperationHandler(RootLoggerAdd.OPERATION_NAME, RootLoggerAdd.INSTANCE, LoggingSubsystemProviders.SET_ROOT_LOGGER, false);
         registration.registerOperationHandler(RootLoggerRemove.OPERATION_NAME, RootLoggerRemove.INSTANCE, LoggingSubsystemProviders.REMOVE_ROOT_LOGGER, false);
         registration.registerOperationHandler(RootLoggerLevelChange.OPERATION_NAME, RootLoggerLevelChange.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_CHANGE_LEVEL, false);
+        registration.registerOperationHandler(RootLoggerAssignHandler.getOperationName(), RootLoggerAssignHandler.getInstance(), LoggingSubsystemProviders.ROOT_LOGGER_ASSIGN_HANDLER, false);
+        registration.registerOperationHandler(RootLoggerUnassignHandler.getOperationName(), RootLoggerUnassignHandler.getInstance(), LoggingSubsystemProviders.ROOT_LOGGER_UNASSIGN_HANDLER, false);
 
         subsystem.registerXMLElementWriter(LoggingSubsystemParser.getInstance());
         // loggers
@@ -73,6 +75,8 @@ public class LoggingExtension implements Extension {
         loggers.registerOperationHandler(ADD, LoggerAdd.INSTANCE, LoggingSubsystemProviders.LOGGER_ADD, false);
         loggers.registerOperationHandler(REMOVE, LoggerRemove.INSTANCE, LoggingSubsystemProviders.LOGGER_REMOVE, false);
         loggers.registerOperationHandler(LoggerLevelChange.OPERATION_NAME, LoggerLevelChange.INSTANCE, LoggingSubsystemProviders.LOGGER_CHANGE_LEVEL, false);
+        loggers.registerOperationHandler(LoggerAssignHandler.getOperationName(), LoggerAssignHandler.getInstance(), LoggingSubsystemProviders.LOGGER_ASSIGN_HANDLER, false);
+        loggers.registerOperationHandler(LoggerUnassignHandler.getOperationName(), LoggerUnassignHandler.getInstance(), LoggingSubsystemProviders.LOGGER_UNASSIGN_HANDLER, false);
 
         //  Async handlers
         final ManagementResourceRegistration asyncHandler = registration.registerSubModel(asyncHandlersPath, LoggingSubsystemProviders.ASYNC_HANDLER);
@@ -82,6 +86,8 @@ public class LoggingExtension implements Extension {
         asyncHandler.registerOperationHandler(DISABLE, HandlerDisable.INSTANCE, LoggingSubsystemProviders.HANDLER_DISABLE, false);
         asyncHandler.registerOperationHandler(HandlerLevelChange.OPERATION_NAME, HandlerLevelChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_LEVEL, false);
         asyncHandler.registerOperationHandler(AsyncHandlerUpdateProperties.OPERATION_NAME, AsyncHandlerUpdateProperties.INSTANCE, LoggingSubsystemProviders.ASYNC_HANDLER_UPDATE, false);
+        asyncHandler.registerOperationHandler(AsyncHandlerAssignSubhandler.getOperationName(), AsyncHandlerAssignSubhandler.getInstance(), LoggingSubsystemProviders.ASYNC_HANDLER_ASSIGN_SUBHANDLER, false);
+        asyncHandler.registerOperationHandler(AsyncHandlerUnassignSubhandler.getOperationName(), AsyncHandlerUnassignSubhandler.getInstance(), LoggingSubsystemProviders.ASYNC_HANDLER_UNASSIGN_SUBHANDLER, false);
 
         //  Console handlers
         final ManagementResourceRegistration consoleHandler = registration.registerSubModel(consoleHandlersPath, LoggingSubsystemProviders.CONSOLE_HANDLER);

@@ -164,6 +164,40 @@ class LoggingSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider ROOT_LOGGER_ASSIGN_HANDLER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+
+            node.get(OPERATION_NAME).set(RootLoggerAssignHandler.getOperationName());
+            node.get(DESCRIPTION).set(bundle.getString("root.logger.assign-handler"));
+            node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("handler.name"));
+            node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+
+            return node;
+        }
+    };
+
+    static final DescriptionProvider ROOT_LOGGER_UNASSIGN_HANDLER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+
+            node.get(OPERATION_NAME).set(RootLoggerUnassignHandler.getOperationName());
+            node.get(DESCRIPTION).set(bundle.getString("root.logger.unassign-handler"));
+            node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("handler.name"));
+            node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+
+            return node;
+        }
+    };
+
     static final DescriptionProvider LOGGER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
@@ -227,6 +261,38 @@ class LoggingSubsystemProviders {
             node.get(REQUEST_PROPERTIES, LEVEL, TYPE).set(ModelType.STRING);
             node.get(REQUEST_PROPERTIES, LEVEL, DESCRIPTION).set(bundle.getString("logger.level"));
             node.get(REQUEST_PROPERTIES, LEVEL, REQUIRED).set(true);
+
+            return node;
+        }
+    };
+
+    static final DescriptionProvider LOGGER_ASSIGN_HANDLER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set(LoggerAssignHandler.getOperationName());
+            node.get(DESCRIPTION).set(bundle.getString("logger.assign-handler"));
+            node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("handler.name"));
+            node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+
+            return node;
+        }
+    };
+
+    static final DescriptionProvider LOGGER_UNASSIGN_HANDLER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set(LoggerUnassignHandler.getOperationName());
+            node.get(DESCRIPTION).set(bundle.getString("logger.unassign-handler"));
+            node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("handler.name"));
+            node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
 
             return node;
         }
@@ -373,6 +439,38 @@ class LoggingSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, REQUIRED).set(true);
 
             return operation;
+        }
+    };
+
+    static final DescriptionProvider ASYNC_HANDLER_ASSIGN_SUBHANDLER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set(LoggerAssignHandler.getOperationName());
+            node.get(DESCRIPTION).set(bundle.getString("async.handler.assign-subhandler"));
+            node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("handler.name"));
+            node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+
+            return node;
+        }
+    };
+
+    static final DescriptionProvider ASYNC_HANDLER_UNASSIGN_SUBHANDLER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set(LoggerUnassignHandler.getOperationName());
+            node.get(DESCRIPTION).set(bundle.getString("async.handler.unassign-subhandler"));
+            node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("handler.name"));
+            node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+
+            return node;
         }
     };
 
