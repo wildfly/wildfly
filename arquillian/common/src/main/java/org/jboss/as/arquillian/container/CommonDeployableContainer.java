@@ -28,6 +28,7 @@ import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
+import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
@@ -111,7 +112,8 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
         String runtimeName = archiveDeployer.deploy(archive);
         registry.put(archive, runtimeName);
 
-        return new ProtocolMetaDataParser(modelControllerClient).parse(runtimeName);
+        HTTPContext ctx = new HTTPContext(containerConfig.getBindAddress().getHostName(), containerConfig.getHttpPort());
+        return new ProtocolMetaDataParser(modelControllerClient).parse(runtimeName, ctx);
     }
 
     @Override
