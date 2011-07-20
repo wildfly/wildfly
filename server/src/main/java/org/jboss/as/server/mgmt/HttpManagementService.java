@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.mgmt;
 
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
@@ -85,6 +86,13 @@ public class HttpManagementService implements Service<HttpManagementService> {
         try {
             serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient, executorService, securityRealmService);
             serverManagement.start();
+        } catch (BindException e) {
+            final StringBuilder sb = new StringBuilder().append(e.getMessage());
+            if (port > 0)
+                sb.append(" ").append(bindAddress);
+            if (securePort > 0)
+                sb.append(" ").append(secureBindAddress);
+            throw new StartException(sb.toString(), e);
         } catch (Exception e) {
             throw new StartException("Failed to start serverManagement socket", e);
         }
