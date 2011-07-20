@@ -19,13 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.domain;
+package org.jboss.as.test.integration.respawn;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,14 +47,12 @@ import junit.framework.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.process.Main;
 import org.jboss.as.process.ProcessController;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -51,14 +62,13 @@ import org.junit.Test;
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Ignore("[AS7-814] Fix or remove ignored smoke tests")
 public class RespawnTestCase {
 
     private static final int TIMEOUT = 15000;
     private static final String HOST_CONTROLLER = "host-controller";
     private static final String PROCESS_CONTROLLER = "process";
-    private static final String SERVER_ONE = "server-one";
-    private static final String SERVER_TWO = "server-two";
+    private static final String SERVER_ONE = "respawn-one";
+    private static final String SERVER_TWO = "respawn-two";
     private static final int HC_PORT = 9999;
 
 
@@ -66,7 +76,7 @@ public class RespawnTestCase {
     static ProcessUtil processUtil;
 
     @BeforeClass
-    public static void createProcessController() throws IOException {
+    public static void createProcessController() throws IOException, URISyntaxException {
         if (File.pathSeparatorChar == ':'){
             processUtil = new UnixProcessUtil();
         } else {
@@ -74,7 +84,20 @@ public class RespawnTestCase {
         }
 
         String jbossHome = System.getProperty("jboss.home");
-        System.out.println("---- " + jbossHome);
+        if (jbossHome == null) {
+            throw new IllegalStateException("-Djboss.home must be set");
+        }
+
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        URL url = tccl.getResource("domain-configs/domain-standard.xml");
+        Assert.assertNotNull(url);
+        File domainXml = new File(url.toURI());
+        url = tccl.getResource("host-configs/respawn-master.xml");
+        File hostXml = new File(url.toURI());
+
+        Assert.assertTrue(domainXml.exists());
+        Assert.assertTrue(hostXml.exists());
+
         List<String> args = new ArrayList<String>();
         args.add("-jboss-home");
         args.add(jbossHome);
@@ -83,6 +106,7 @@ public class RespawnTestCase {
         args.add("--");
         args.add("-Dorg.jboss.boot.log.file=" + jbossHome + "/domain/log/host-controller/boot.log");
         args.add("-Dlogging.configuration=file:" + jbossHome + "/domain/configuration/logging.properties");
+        args.add("-Djboss.test.host.master.address=" + System.getProperty("jboss.test.host.master.address", "127.0.0.1"));
         args.add("-Xms64m");
         args.add("-Xmx512m");
         args.add("-XX:MaxPermSize=256m");
@@ -92,6 +116,9 @@ public class RespawnTestCase {
         args.add("--");
         args.add("-default-jvm");
         args.add(processUtil.getJavaCommand());
+        args.add("--host-config=" + hostXml.getAbsolutePath());
+        args.add("--domain-config=" + domainXml.getAbsolutePath());
+        args.add("-Djboss.test.host.master.address=" + System.getProperty("jboss.test.host.master.address", "127.0.0.1"));
 
         processController = Main.start(args.toArray(new String[args.size()]));
     }
@@ -110,19 +137,14 @@ public class RespawnTestCase {
         List<RunningProcess> processes = waitForAllProcesses();
         readHostControllerServers();
 
-        //Kill the HC and make sure that it gets restarted
+        //Kill the master HC and make sure that it gets restarted
         RunningProcess originalHc = processUtil.getProcess(processes, HOST_CONTROLLER);
         Assert.assertNotNull(originalHc);
-        System.out.println("!!!!!!!!!! KILLING");
         processUtil.killProcess(originalHc);
         processes = waitForAllProcesses();
         RunningProcess respawnedHc = processUtil.getProcess(processes, HOST_CONTROLLER);
         Assert.assertNotNull(respawnedHc);
         Assert.assertFalse(originalHc.getProcessId().equals(respawnedHc.getProcessId()));
-
-
-        //Hack - protocol hangs if the remote message handler does not exist yet
-        Thread.sleep(5000);
 
         readHostControllerServers();
 
@@ -139,47 +161,50 @@ public class RespawnTestCase {
 
 
     private void readHostControllerServers() throws Exception {
+
         final ModelNode operation = new ModelNode();
-        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
-        operation.get(ModelDescriptionConstants.OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement("host", "master")).toModelNode());
-        operation.get(ModelDescriptionConstants.RECURSIVE).set(true);
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(HOST, "master")).toModelNode());
+        operation.get(RECURSIVE).set(true);
 
         final long time = System.currentTimeMillis() + TIMEOUT;
         boolean hasOne = false;
         boolean hasTwo = false;
         do {
-            final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getLocalHost(), HC_PORT);
-            Thread hack = new Thread(new Runnable() {
-               @Override
-               public void run() {
-                   try {
-                       Thread.sleep(1000);
-                   } catch (InterruptedException e) {
-                   }
-                   StreamUtils.safeClose(client);
-               }
-           });
-           hack.start();
-            try {
-                final ModelNode result = client.execute(operation);
-                if (result.get(ModelDescriptionConstants.OUTCOME).asString().equals(ModelDescriptionConstants.SUCCESS)){
-                    final ModelNode model = result.require(ModelDescriptionConstants.RESULT);
-                    hasOne = model.get(ModelDescriptionConstants.HOST, ModelDescriptionConstants.LOCAL, ModelDescriptionConstants.RUNNING_SERVER).hasDefined(SERVER_ONE);
-                    hasTwo = model.get(ModelDescriptionConstants.HOST, ModelDescriptionConstants.LOCAL, ModelDescriptionConstants.RUNNING_SERVER).hasDefined(SERVER_TWO);
-                    if (hasOne && hasTwo){
-                        return;
-                    }
-                }
-            } catch (IOException e) {
-            } finally {
-                hack.interrupt();
-                StreamUtils.safeClose(client);
+            hasOne = lookupServerInModel(MASTER, SERVER_ONE);
+            hasTwo = lookupServerInModel(MASTER, SERVER_TWO);
+            if (hasOne && hasTwo) {
+                break;
             }
-
             Thread.sleep(200);
         } while (System.currentTimeMillis() < time);
         Assert.assertTrue(hasOne);
         Assert.assertTrue(hasTwo);
+    }
+
+    private boolean lookupServerInModel(String host, String server) throws Exception {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).set(getHostControllerServerAddress(host, server));
+
+        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", HC_PORT);
+        try {
+            final ModelNode result = client.execute(operation);
+            if (result.get(OUTCOME).asString().equals(SUCCESS)){
+                final ModelNode model = result.require(RESULT);
+                if (model.hasDefined(NAME) && model.get(NAME).asString().equals(server)) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+        }finally {
+            StreamUtils.safeClose(client);
+        }
+        return false;
+    }
+
+    private ModelNode getHostControllerServerAddress(String host, String server) {
+        return PathAddress.pathAddress(PathElement.pathElement(HOST, host), PathElement.pathElement(RUNNING_SERVER, server)).toModelNode();
     }
 
     private List<RunningProcess> waitForAllProcesses() throws Exception {
