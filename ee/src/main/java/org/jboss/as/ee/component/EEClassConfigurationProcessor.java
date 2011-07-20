@@ -125,7 +125,9 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
                 try {
                     clazz = Class.forName(classDescription.getClassName(), false, subModule.getClassLoader());
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Failed to load class " + classDescription.getClassName(), e);
+                    classDescription.setInvalid("Failed to load class " + classDescription.getClassName() + e.getMessage());
+                    logger.debug("Failed to load class " + classDescription.getClassName(), e);
+                    continue;
                 }
                 final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz, classDescription, deploymentReflectionIndex);
                 logger.debug("Configuring EE module class: " + clazz);
