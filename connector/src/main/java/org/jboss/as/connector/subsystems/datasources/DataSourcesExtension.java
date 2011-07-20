@@ -50,7 +50,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_STRATEGY;
-import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVING;
+import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
@@ -348,7 +348,7 @@ public class DataSourcesExtension implements Extension {
                             POOL_USE_STRICT_MIN, FLUSH_STRATEGY);
                     if (isXADataSource) {
                         poolRequired = poolRequired
-                                || hasAnyOf(dataSourceNode, SAME_RM_OVERRIDE, INTERLIVING, NOTXSEPARATEPOOL, PAD_XID,
+                                || hasAnyOf(dataSourceNode, SAME_RM_OVERRIDE, INTERLEAVING, NOTXSEPARATEPOOL, PAD_XID,
                                         WRAP_XA_RESOURCE);
                     }
                     if (poolRequired) {
@@ -363,7 +363,7 @@ public class DataSourcesExtension implements Extension {
                         if (isXADataSource) {
                             writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.ISSAMERMOVERRIDEVALUE,
                                     SAME_RM_OVERRIDE);
-                            writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.INTERLEAVING, INTERLIVING);
+                            writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.INTERLEAVING, INTERLEAVING);
                             writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.NO_TX_SEPARATE_POOLS,
                                     NOTXSEPARATEPOOL);
                             writeElementIfHas(writer, dataSourceNode, CommonXaPool.Tag.PAD_XID, PAD_XID);

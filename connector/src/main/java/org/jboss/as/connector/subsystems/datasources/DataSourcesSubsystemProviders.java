@@ -94,7 +94,7 @@ class DataSourcesSubsystemProviders {
             AttributeDefinition.NEW_CONNECTION_SQL, AttributeDefinition.POOLNAME, AttributeDefinition.URL_DELIMITER,
             AttributeDefinition.URL_SELECTOR_STRATEGY_CLASS_NAME, AttributeDefinition.USE_JAVA_CONTEXT,
             AttributeDefinition.ENABLED, AttributeDefinition.MAX_POOL_SIZE, AttributeDefinition.MIN_POOL_SIZE,
-            AttributeDefinition.POOL_PREFILL, AttributeDefinition.POOL_USE_STRICT_MIN, AttributeDefinition.INTERLIVING,
+            AttributeDefinition.POOL_PREFILL, AttributeDefinition.POOL_USE_STRICT_MIN, AttributeDefinition.INTERLEAVING,
             AttributeDefinition.NOTXSEPARATEPOOL, AttributeDefinition.PAD_XID, AttributeDefinition.SAME_RM_OVERRIDE,
             AttributeDefinition.WRAP_XA_RESOURCE, AttributeDefinition.USERNAME, AttributeDefinition.PASSWORD,
             AttributeDefinition.SECURITY_DOMAIN, AttributeDefinition.RECOVERLUGIN_CLASSNAME,
