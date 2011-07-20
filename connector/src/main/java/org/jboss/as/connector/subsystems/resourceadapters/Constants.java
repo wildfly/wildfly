@@ -105,7 +105,7 @@ class Constants {
 
     static final String ADMIN_OBJECTS = "admin-objects";
 
-    static final String INTERLIVING = "interliving";
+    static final String INTERLEAVING = "interleaving";
 
     static final String NOTXSEPARATEPOOL = "no-tx-separate-pool";
 

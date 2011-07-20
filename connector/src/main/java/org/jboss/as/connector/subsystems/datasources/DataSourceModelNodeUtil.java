@@ -42,7 +42,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_STRATEGY;
-import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVING;
+import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
@@ -222,7 +222,7 @@ class DataSourceModelNodeUtil {
             if (pool.getFlushStrategy() != null) {
                 setStringIfNotNull(xaDataSourceModel, FLUSH_STRATEGY, pool.getFlushStrategy().getName());
             }
-            setBooleanIfNotNull(xaDataSourceModel, INTERLIVING, pool.isInterleaving());
+            setBooleanIfNotNull(xaDataSourceModel, INTERLEAVING, pool.isInterleaving());
             setBooleanIfNotNull(xaDataSourceModel, NOTXSEPARATEPOOL, pool.isNoTxSeparatePool());
             setBooleanIfNotNull(xaDataSourceModel, PAD_XID, pool.isPadXid());
             setBooleanIfNotNull(xaDataSourceModel, SAME_RM_OVERRIDE, pool.isSameRmOverride());
@@ -396,7 +396,7 @@ class DataSourceModelNodeUtil {
         final Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, null);
         final boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, false);
         final boolean useStrictMin = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_USE_STRICT_MIN, false);
-        final boolean interleaving = getBooleanIfSetOrGetDefault(dataSourceNode, INTERLIVING, false);
+        final boolean interleaving = getBooleanIfSetOrGetDefault(dataSourceNode, INTERLEAVING, false);
         final boolean noTxSeparatePool = getBooleanIfSetOrGetDefault(dataSourceNode, NOTXSEPARATEPOOL, false);
         final boolean padXid = getBooleanIfSetOrGetDefault(dataSourceNode, PAD_XID, false);
         final boolean isSameRmOverride = getBooleanIfSetOrGetDefault(dataSourceNode, SAME_RM_OVERRIDE, false);

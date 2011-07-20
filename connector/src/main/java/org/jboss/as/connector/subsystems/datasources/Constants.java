@@ -131,7 +131,7 @@ class Constants {
 
     static final String XADATASOURCECLASS = "xa-data-source-class";
 
-    static final String INTERLIVING = "interliving";
+    static final String INTERLEAVING = "interleaving";
 
     static final String NOTXSEPARATEPOOL = "no-tx-separate-pool";
 
