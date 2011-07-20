@@ -55,6 +55,7 @@ import static org.jboss.as.domain.http.server.Constants.*;
 public class ConsoleHandler implements ManagementHttpHandler {
 
     public  static final String CONTEXT = "/console";
+    private static final String HOST_HEADER = "Host";
     private static final String EXPIRES_HEADER = "Expires";
     private static final String NOCACHE_JS = ".nocache.js";
     private static final String WILDCARD = "*";
@@ -107,6 +108,24 @@ public class ConsoleHandler implements ManagementHttpHandler {
             InetSocketAddress address = http.getHttpContext().getServer().getAddress();
             String hostName = address.getHostName();
             int port = address.getPort();
+
+            // Use Host header value if available
+            String hostHeader = http.getRequestHeaders().getFirst(HOST_HEADER);
+            if (hostHeader != null) {
+                // Parse the hostHeader using URI
+                try {
+                    URI hostURI = new URI("http://" + hostHeader);
+                    if (hostURI.getHost() != null) {
+                        hostName = hostURI.getHost();
+                    }
+                    if (hostURI.getPort() != -1) {
+                        port = hostURI.getPort();
+                    }
+                } catch (java.net.URISyntaxException ex) {
+                    // invalid Host header value, just ignore
+                }
+            }
+
             final Headers responseHeaders = http.getResponseHeaders();
             responseHeaders.add(CONTENT_TYPE, TEXT_HTML);
             responseHeaders.add(LOCATION, "http://"+hostName + ":"+port+"/console/index.html");
