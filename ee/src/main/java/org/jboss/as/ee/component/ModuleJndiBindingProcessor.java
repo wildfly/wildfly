@@ -96,7 +96,6 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                 }
 
                 final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
-
                 deploymentDescriptorBindings.put(serviceName, binding);
                 addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, moduleOwnerName, moduleCount, dependencies);
             }
@@ -106,7 +105,6 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         final Set<String> handledClasses = new HashSet<String>();
 
         for (final ComponentConfiguration componentConfiguration : moduleConfiguration.getComponentConfigurations()) {
-
             final Set<EEModuleClassConfiguration> classConfigurations = new HashSet<EEModuleClassConfiguration>();
             classConfigurations.add(componentConfiguration.getModuleClassConfiguration());
             for (final InterceptorDescription interceptor : componentConfiguration.getComponentDescription().getAllInterceptors()) {
@@ -123,7 +121,6 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
     private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<EEModuleClassConfiguration> classConfigurations, final String componentName, final ServiceName ownerName, final IntHolder handleCount, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
         for (final EEModuleClassConfiguration classConfiguration : classConfigurations) {
             new ClassDescriptionTraversal(classConfiguration, applicationDescription) {
-
                 @Override
                 protected void handle(final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                     if (classDescription.isInvalid()) {
@@ -136,7 +133,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     handledClasses.add(classDescription.getClassName());
                     // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
                     // handle these duplicates?
-                    final Set<BindingConfiguration> classLevelBindings = new HashSet(configuration.getBindingConfigurations());
+                    final Set<BindingConfiguration> classLevelBindings = new HashSet<BindingConfiguration>(configuration.getBindingConfigurations());
                     for (BindingConfiguration binding : classLevelBindings) {
                         final String bindingName = binding.getName();
                         final boolean compBinding = bindingName.startsWith("java:comp") || !bindingName.startsWith("java:");
