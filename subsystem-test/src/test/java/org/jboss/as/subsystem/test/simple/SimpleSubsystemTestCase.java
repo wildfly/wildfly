@@ -31,10 +31,14 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.EmptyAdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.simple.subsystem.SimpleService;
 import org.jboss.as.subsystem.test.simple.subsystem.SimpleSubsystemExtension;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -75,7 +79,7 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     /**
-     * Test that the model created from the xml looks as expected
+     * Test that the model created from the xml looks as expected, and that the services are installed
      */
     @Test
     public void testInstallIntoController() throws Exception {
@@ -88,6 +92,34 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
         Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(SimpleSubsystemExtension.SUBSYSTEM_NAME));
+
+        //Test that the service was installed
+        services.getContainer().getRequiredService(SimpleService.NAME);
+    }
+
+    /**
+     * Test that the model created from the xml looks as expected, and that the services are NOT installed
+     */
+    @Test
+    public void testInstallIntoControllerModelOnly() throws Exception {
+        //Parse the subsystem xml and install into the controller
+        String subsystemXml =
+                "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
+                "</subsystem>";
+        KernelServices services = super.installInController(
+                new EmptyAdditionalInitialization() {
+                    public OperationContext.Type getType() {
+                        return Type.MANAGEMENT;
+                    }
+                },
+                subsystemXml);
+
+        //Read the whole model and make sure it looks as expected
+        ModelNode model = services.readWholeModel();
+        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(SimpleSubsystemExtension.SUBSYSTEM_NAME));
+
+        //Test that the service was not installed
+        Assert.assertNull(services.getContainer().getService(SimpleService.NAME));
     }
 
     /**
@@ -140,7 +172,33 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
 
         //Make sure the models from the two controllers are identical
         super.compare(modelA, modelB);
-
     }
 
+    /**
+     * Tests that we can trigger output of the model, i.e. that outputModel() works as it should
+     */
+    @Test
+    public void testOutputModel() throws Exception {
+        String subsystemXml =
+                "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
+                "</subsystem>";
+
+        ModelNode testModel = new ModelNode();
+        testModel.get(SUBSYSTEM).get(SimpleSubsystemExtension.SUBSYSTEM_NAME).setEmptyObject();
+        String triggered = outputModel(testModel);
+
+        KernelServices services = super.installInController(
+                new EmptyAdditionalInitialization() {
+                    public boolean isModelOnly() {
+                        return true;
+                    }
+                },
+                subsystemXml);
+        //Get the model and the persisted xml from the first controller
+        ModelNode model = services.readWholeModel();
+        String marshalled = services.getPersistedSubsystemXml();
+
+
+        Assert.assertEquals(marshalled, triggered);
+    }
 }
