@@ -155,7 +155,7 @@ public class SessionTestUtil {
         } else {
             transport.transportClass(null);
         }
-        transport.clusterName("test-session").strictPeerToPeer(false).globalJmxStatistics().jmxDomain("org.infinispan").cacheManagerName("container" + containerIndex++).allowDuplicateDomains(true);
+        transport.clusterName("test-session").strictPeerToPeer(false).globalJmxStatistics().jmxDomain("org.infinispan").cacheManagerName("container" + containerIndex++).allowDuplicateDomains(true).disable();
 
         Configuration config = defaults.getDefaultConfiguration(mode).clone();
         FluentConfiguration fluent = config.fluent();
@@ -172,12 +172,12 @@ public class SessionTestUtil {
         }
         // Otherwise, we need a separate cache manager for address -> jvm route mapping
         global = global.clone();
-        global.fluent().transport().clusterName("test-jvmroute").globalJmxStatistics().cacheManagerName("container" + containerIndex++);
+        global.fluent().transport().clusterName("test-jvmroute").globalJmxStatistics().cacheManagerName("container" + containerIndex++).disable();
 
         config = defaults.getDefaultConfiguration(Configuration.CacheMode.REPL_SYNC).clone();
         config.fluent().syncCommitPhase(true).syncRollbackPhase(true).invocationBatching().locking().isolationLevel(IsolationLevel.REPEATABLE_READ).transaction().useSynchronization(false);
 
-        final EmbeddedCacheManager jvmRouteContainer = new DefaultCacheManager(global, config, false);
+        final EmbeddedCacheManager jvmRouteContainer = new org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager(new DefaultCacheManager(global, config, false), CacheContainer.DEFAULT_CACHE_NAME);
 
         return new EmbeddedCacheManager() {
             @Override
