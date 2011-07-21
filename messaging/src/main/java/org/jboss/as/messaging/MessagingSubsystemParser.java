@@ -161,6 +161,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     // add acceptors
                     final ModelNode acceptors = processAcceptors(reader);
                     // TODO these should be resources
+                    // see processAcceptors(reader, address, list);
                     operation.get(ACCEPTOR).set(acceptors);
                     break;
                 } case ADDRESS_SETTINGS: {
@@ -188,6 +189,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case CONNECTORS: {
                     final ModelNode connectors = processConnectors(reader);
                     // TODO these should be resources
+                    // see processConnectors(reader, address, list);
                     operation.get(CONNECTOR).set(connectors);
                     break;
                 }
@@ -793,6 +795,74 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         return acceptors;
     }
 
+    /** TODO make acceptors/connectors resources for 7.1
+    static void processAcceptors(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            String name = null;
+            String socketBinding = null;
+            int serverId = 0;
+
+            int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String attrValue = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = attrValue;
+                        break;
+                    }
+                    case SOCKET_BINDING: {
+                        socketBinding = attrValue;
+                        break;
+                    }
+                    case SERVER_ID: {
+                        serverId = Integer.valueOf(attrValue);
+                        break;
+                    }
+                    default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            if(name == null) {
+                ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+            }
+
+            final ModelNode acceptorAddress = address.clone();
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set(ADD);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ACCEPTOR: {
+                    acceptorAddress.add(ACCEPTOR, name);
+                    if(socketBinding != null) operation.get(SOCKET_BINDING).set(socketBinding);
+                    parseTransportConfigurationParams(reader, operation, true);
+                    break;
+                } case NETTY_ACCEPTOR: {
+                    acceptorAddress.add(REMOTE_ACCEPTOR, name);
+                    if(socketBinding == null) {
+                        ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
+                    }
+                    operation.get(SOCKET_BINDING).set(socketBinding);
+                    parseTransportConfigurationParams(reader, operation, false);
+                    break;
+                } case IN_VM_ACCEPTOR: {
+                    acceptorAddress.add(IN_VM_ACCEPTOR, name);
+                    operation.get(SERVER_ID).set(serverId);
+                    parseTransportConfigurationParams(reader, operation, false);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+            //
+            operation.get(OP_ADDR).set(acceptorAddress);
+            updates.add(operation);
+        }
+    }
+    */
+
     static void parseQueues(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
 
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -1009,6 +1079,74 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
         return connectors;
     }
+
+    /** TODO make acceptors/connectors resources for 7.1
+    static void processConnectors(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            String name = null;
+            String socketBinding = null;
+            int serverId = 0;
+
+            int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String attrValue = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = attrValue;
+                        break;
+                    }
+                    case SOCKET_BINDING: {
+                        socketBinding = attrValue;
+                        break;
+                    }
+                    case SERVER_ID: {
+                        serverId = Integer.valueOf(attrValue);
+                        break;
+                    }
+                    default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            if(name == null) {
+                ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+            }
+
+            final ModelNode connectorAddress = address.clone();
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set(ADD);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case CONNECTOR: {
+                    connectorAddress.add(CONNECTOR, name);
+                    if(socketBinding != null) operation.get(SOCKET_BINDING).set(socketBinding);
+                    parseTransportConfigurationParams(reader, operation, true);
+                    break;
+                } case NETTY_CONNECTOR: {
+                    connectorAddress.add(REMOTE_CONNECTOR, name);
+                    if(socketBinding == null) {
+                        ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
+                    }
+                    operation.get(SOCKET_BINDING).set(socketBinding);
+                    parseTransportConfigurationParams(reader, operation, false);
+                    break;
+                } case IN_VM_CONNECTOR: {
+                    connectorAddress.add(IN_VM_CONNECTOR, name);
+                    operation.get(SERVER_ID).set(serverId);
+                    parseTransportConfigurationParams(reader, operation, false);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+
+            operation.get(OP_ADDR).set(connectorAddress);
+            updates.add(operation);
+        }
+    }
+     */
 
     static ModelNode processAddressSettings(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode settings = new ModelNode();
@@ -1511,6 +1649,66 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
         writer.writeEndElement();
     }
+
+    /** TODO acceptors/connectors
+    static void writeAcceptors(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        writer.writeStartElement(Element.ACCEPTORS.getLocalName());
+        if(node.hasDefined(ACCEPTOR)) {
+            for(final Property property : node.get(ACCEPTOR).asPropertyList()) {
+                final ModelNode value = property.getValue();
+                writer.writeStartElement(Element.ACCEPTOR.getLocalName());
+                writeAcceptorAndConnectorContent(writer, property);
+                writer.writeEndElement();
+            }
+        }
+        if(node.hasDefined(REMOTE_ACCEPTOR)) {
+            for(final Property property : node.get(REMOTE_ACCEPTOR).asPropertyList()) {
+                final ModelNode value = property.getValue();
+                writer.writeStartElement(Element.NETTY_ACCEPTOR.getLocalName());
+                writeAcceptorAndConnectorContent(writer, property);
+                writer.writeEndElement();
+            }
+        }
+        if(node.hasDefined(IN_VM_ACCEPTOR)) {
+            for(final Property property : node.get(IN_VM_ACCEPTOR).asPropertyList()) {
+                final ModelNode value = property.getValue();
+                writer.writeStartElement(Element.IN_VM_ACCEPTOR.getLocalName());
+                writeAcceptorAndConnectorContent(writer, property);
+                writer.writeEndElement();
+            }
+        }
+        writer.writeEndElement();
+    }
+
+    static void writeConnectors(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        writer.writeStartElement(Element.CONNECTORS.getLocalName());
+        if(node.hasDefined(CONNECTOR)) {
+            for(final Property property : node.get(CONNECTOR).asPropertyList()) {
+                final ModelNode value = property.getValue();
+                writer.writeStartElement(Element.CONNECTOR.getLocalName());
+                writeAcceptorAndConnectorContent(writer, property);
+                writer.writeEndElement();
+            }
+        }
+        if(node.hasDefined(REMOTE_CONNECTOR)) {
+            for(final Property property : node.get(REMOTE_CONNECTOR).asPropertyList()) {
+                final ModelNode value = property.getValue();
+                writer.writeStartElement(Element.NETTY_CONNECTOR.getLocalName());
+                writeAcceptorAndConnectorContent(writer, property);
+                writer.writeEndElement();
+            }
+        }
+        if(node.hasDefined(IN_VM_CONNECTOR)) {
+            for(final Property property : node.get(IN_VM_CONNECTOR).asPropertyList()) {
+                final ModelNode value = property.getValue();
+                writer.writeStartElement(Element.IN_VM_CONNECTOR.getLocalName());
+                writeAcceptorAndConnectorContent(writer, property);
+                writer.writeEndElement();
+            }
+        }
+        writer.writeEndElement();
+    }
+     */
 
     private void writeAcceptorAndConnectorContent(final XMLExtendedStreamWriter writer, final Property property) throws XMLStreamException {
         writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());

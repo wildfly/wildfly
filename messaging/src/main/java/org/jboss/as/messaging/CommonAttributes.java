@@ -459,6 +459,10 @@ public interface CommonAttributes {
     String REDISTRIBUTION_DELAY ="redistribution-delay";
     String RELATIVE_TO ="relative-to";
     String REMOTING_INTERCEPTORS_STRING ="remoting-interceptors";
+    String REMOTE_ACCEPTOR = "remote-acceptor";
+    String REMOTE_CONNECTOR = "remote-connector";
+    String REMOTING_INTERCEPTOR ="remoting-interceptor";
+    String REMOTING_INTERCEPTORS ="remoting-interceptors";
     String RESOURCE_ADAPTER = "resource-adapter";
     String ROLE = "role";
     String ROLES_ATTR_NAME ="roles";

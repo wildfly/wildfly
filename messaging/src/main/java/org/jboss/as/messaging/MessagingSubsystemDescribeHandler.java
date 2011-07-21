@@ -47,6 +47,9 @@ import org.jboss.dmr.Property;
  */
 class MessagingSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
 
+    static final String[] TRANSPORT = new String[] {CommonAttributes.ACCEPTOR, CommonAttributes.REMOTE_ACCEPTOR, CommonAttributes.IN_VM_ACCEPTOR,
+                                CommonAttributes.CONNECTOR, CommonAttributes.REMOTE_CONNECTOR, CommonAttributes.IN_VM_CONNECTOR};
+
     static final MessagingSubsystemDescribeHandler INSTANCE = new MessagingSubsystemDescribeHandler();
 
     /** {@inheritDoc} */
@@ -70,6 +73,27 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
         }
         final ModelNode result = context.getResult();
         result.add(subsystemAdd);
+
+        /**
+        // TODO make acceptors/connectors resource for 7.1
+        for(final String transport : TRANSPORT) {
+            if(subModel.hasDefined(transport)) {
+                for(final Property property : subModel.get(transport).asPropertyList()) {
+                    final ModelNode address = rootAddress.toModelNode();
+                    address.add(transport, property.getName());
+                    result.add(TransportConfigOperations.createAddOperation(address, property.getValue()));
+                }
+            }
+        }
+        */
+
+        if(subModel.hasDefined(CommonAttributes.CONNECTION_FACTORY)) {
+            for(final Property property : subModel.get(CommonAttributes.CONNECTION_FACTORY).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(CommonAttributes.CONNECTION_FACTORY, property.getName());
+                result.add(ConnectionFactoryAdd.getAddOperation(address, property.getValue()));
+            }
+        }
 
         if (subModel.hasDefined(CommonAttributes.BROADCAST_GROUP)) {
             for(final Property property : subModel.get(CommonAttributes.BROADCAST_GROUP).asPropertyList()) {
