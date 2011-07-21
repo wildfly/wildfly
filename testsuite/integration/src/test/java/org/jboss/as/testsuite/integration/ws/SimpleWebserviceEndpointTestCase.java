@@ -65,7 +65,7 @@ public class SimpleWebserviceEndpointTestCase {
         return war;
     }
 
-    @Ignore
+    @Ignore(value="[CXF-3675] - enable this test once CXF 2.4.2 is available in AS distro")
     @Test
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.testsuite.integration.ws", "SimpleService");
