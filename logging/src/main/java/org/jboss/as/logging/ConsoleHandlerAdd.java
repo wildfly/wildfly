@@ -53,7 +53,7 @@ class ConsoleHandlerAdd extends AbstractAddStepHandler {
         model.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
         model.get(ENCODING).set(operation.get(ENCODING));
         model.get(FORMATTER).set(operation.get(FORMATTER));
-        model.get(LEVEL).set(operation.get(LEVEL));
+        if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(operation.get(LEVEL));
         model.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
     }
 
@@ -65,7 +65,7 @@ class ConsoleHandlerAdd extends AbstractAddStepHandler {
 
         final ConsoleHandlerService service = new ConsoleHandlerService();
         final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-        service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+        if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(operation.get(LEVEL).asString()));
         final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
         if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
         try {
