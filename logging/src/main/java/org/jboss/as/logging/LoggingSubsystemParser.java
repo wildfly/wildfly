@@ -301,7 +301,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(ASYNC_HANDLER, name);
-        node.get(LEVEL).set(levelName);
+        if (levelName != null) node.get(LEVEL).set(levelName);
         if(subhandlers != null) node.get(SUBHANDLERS).set(subhandlers);
         node.get(AUTOFLUSH).set(Boolean.valueOf(autoflush));
         node.get(QUEUE_LENGTH).set(queueLength);
@@ -425,7 +425,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(CONSOLE_HANDLER, name);
         node.get(AUTOFLUSH).set(autoflush);
-        node.get(LEVEL).set(levelName);
+        if (levelName != null) node.get(LEVEL).set(levelName);
         if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
         if(encoding != null) node.get(ENCODING).set(encoding);
         list.add(node);
@@ -509,7 +509,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(FILE_HANDLER, name);
         node.get(AUTOFLUSH).set(autoflush);
-        node.get(LEVEL).set(levelName);
+        if (levelName != null) node.get(LEVEL).set(levelName);
         if(encoding != null) node.get(ENCODING).set(encoding);
         if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
         node.get(FILE).set(fileSpec);
@@ -600,7 +600,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(PERIODIC_ROTATING_FILE_HANDLER, name);
         node.get(AUTOFLUSH).set(autoflush);
-        node.get(LEVEL).set(levelName);
+        if (levelName != null) node.get(LEVEL).set(levelName);
         if(encoding != null) node.get(ENCODING).set(encoding);
         if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
         node.get(FILE).set(fileSpec);
@@ -701,7 +701,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(SIZE_ROTATING_FILE_HANDLER, name);
         node.get(AUTOFLUSH).set(autoflush);
-        node.get(LEVEL).set(levelName);
+        if (levelName != null) node.get(LEVEL).set(levelName);
         if(encoding != null) node.get(ENCODING).set(encoding);
         if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
         node.get(FILE).set(fileSpec);
