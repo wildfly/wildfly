@@ -27,6 +27,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
@@ -47,16 +49,17 @@ public class LoggerLevelChange implements OperationStepHandler {
         LoggingValidators.validate(operation);
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final String level = operation.get(CommonAttributes.LEVEL).asString();
+        final String level = operation.get(LEVEL).asString();
 
-        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(CommonAttributes.LEVEL).set(level);
+        if (operation.hasDefined(LEVEL))
+            context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(LEVEL).set(level);
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) {
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.loggerName(name));
-                    if (controller != null) {
+                    if (controller != null && operation.hasDefined(LEVEL)) {
                         controller.getValue().setLevel(Level.parse(level));
                     }
                     context.completeStep();

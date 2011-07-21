@@ -32,6 +32,9 @@ import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
+
 /**
  * Operation responsible for changing the logging level of the root logger.
  *
@@ -45,15 +48,15 @@ public class RootLoggerLevelChange implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         LoggingValidators.validate(operation);
         final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-        final String level = operation.get(CommonAttributes.LEVEL).asString();
-        model.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.LEVEL).set(level);
+        final String level = operation.get(LEVEL).asString();
+        model.get(ROOT_LOGGER, LEVEL).set(level);
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) {
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.ROOT_LOGGER);
-                    if (controller != null) {
+                    if (controller != null && operation.hasDefined(LEVEL)) {
                         controller.getValue().setLevel(Level.parse(level));
                     }
                     context.completeStep();
