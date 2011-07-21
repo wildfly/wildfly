@@ -1,6 +1,7 @@
 package org.jboss.as.subsystem.test;
 
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.msc.service.ServiceTarget;
@@ -13,6 +14,14 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public interface AdditionalInitialization extends AdditionalParsers {
+
+    /**
+     * Return {@code OperationContext.Type#MANAGEMENT} to only affect the model from your tested operations, and thus avoid installing services into the service controller.
+     * Return {@code OperationContext.Type#SERVER} to install services
+     *
+     * @return whether to only affect the model
+     */
+    OperationContext.Type getType();
 
     /**
      * Allows easy initialization of commonly used parts of the model and invocation of associated boottime operations

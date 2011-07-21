@@ -19,43 +19,33 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.subsystem.test;
+package org.jboss.as.subsystem.test.simple.subsystem;
 
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationContext.Type;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
- * Empty implmentation of AdditionalInitialization so that you only need to override the methods you actually need.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class EmptyAdditionalInitialization implements AdditionalInitialization {
+public class SimpleService implements Service<SimpleService> {
+
+    public static ServiceName NAME = ServiceName.of("test", "service", "simple");
 
     @Override
-    public OperationContext.Type getType() {
-        return Type.SERVER;
+    public SimpleService getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
     }
 
     @Override
-    public void addParsers(ExtensionParsingContext context) {
+    public void start(StartContext context) throws StartException {
     }
 
     @Override
-    public void setupController(ControllerInitializer controllerInitializer) {
-    }
-
-    @Override
-    public void addExtraServices(ServiceTarget target) {
-    }
-
-    @Override
-    public void initializeExtraSubystemsAndModel(ExtensionContext context, Resource rootResource,
-            ManagementResourceRegistration rootRegistration) {
+    public void stop(StopContext context) {
     }
 
 }

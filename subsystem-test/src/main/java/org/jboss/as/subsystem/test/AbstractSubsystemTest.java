@@ -19,8 +19,11 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,7 +46,10 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.Util;
@@ -54,9 +60,15 @@ import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.EntryType;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -94,6 +106,7 @@ public abstract class AbstractSubsystemTest {
     private final Extension mainExtension;
     private TestParser testParser;
     private boolean addedExtraParsers;
+    private StringConfigurationPersister persister;
 
     protected AbstractSubsystemTest(final String mainSubsystemName, final Extension mainExtension) {
         this.mainSubsystemName = mainSubsystemName;
@@ -144,16 +157,12 @@ public abstract class AbstractSubsystemTest {
      * Parse the subsystem xml and create the operations that will be passed into the controller
      *
      * @param additionalParsers additional initialization that should be done to the parsers before initializing our extension. These parsers
-     * will only be initialized the first time this method is called from within a test
+     * will only be initialized the first time this method or {@link #outputModel(AdditionalParsers, ModelNode)} is called from within a test
      * @param subsystemXml the subsystem xml to be parsed
      * @return the created operations
      */
     protected List<ModelNode> parse(AdditionalParsers additionalParsers, String subsystemXml) throws XMLStreamException {
-        if (additionalParsers != null && !addedExtraParsers) {
-            additionalParsers.addParsers(parsingContext);
-            addedExtraParsers = true;
-        }
-
+        addAdditionalParsers(additionalParsers);
         String xml = "<test xmlns=\"" + TEST_NAMESPACE + "\">" +
                 subsystemXml +
                 "</test>";
@@ -161,6 +170,36 @@ public abstract class AbstractSubsystemTest {
         final List<ModelNode> operationList = new ArrayList<ModelNode>();
         parsingContext.getMapper().parseDocument(operationList, reader);
         return operationList;
+    }
+
+    /**
+     * Output the model to xml
+     *
+     * @param model the model to marshall
+     * @return the xml
+     */
+    protected String outputModel(ModelNode model) throws Exception {
+        return outputModel(null, model);
+    }
+
+    /**
+     * Output the model to xml
+     *
+     * @param additionalParsers additional initialization that should be done to the parsers before initializing our extension. These parsers
+     * will only be initialized the first time this method or {@link #parse(AdditionalParsers, String)} is called from within a test
+     * @param model the model to marshall
+     * @return the xml
+     */
+    protected String outputModel(AdditionalParsers additionalParsers, ModelNode model) throws Exception {
+        addAdditionalParsers(additionalParsers);
+        StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), testParser);
+
+        Extension extension = mainExtension.getClass().newInstance();
+        extension.initialize(new ExtensionContextImpl(MOCK_RESOURCE_REG, MOCK_RESOURCE_REG, persister));
+
+        ConfigurationPersister.PersistenceResource resource = persister.store(model, Collections.<PathAddress>emptySet());
+        resource.commit();
+        return persister.marshalled;
     }
 
     /**
@@ -181,6 +220,9 @@ public abstract class AbstractSubsystemTest {
      * @return the kernel services allowing access to the controller and service container
      */
     protected KernelServices installInController(AdditionalInitialization additionalInit, String subsystemXml) throws Exception {
+        if (additionalInit == null) {
+            additionalInit = new EmptyAdditionalInitialization();
+        }
         List<ModelNode> operations = parse(additionalInit, subsystemXml);
         KernelServices services = installInController(additionalInit, operations);
         return services;
@@ -200,10 +242,11 @@ public abstract class AbstractSubsystemTest {
      * @param bootOperations the operations
      */
     protected KernelServices installInController(AdditionalInitialization additionalInit, List<ModelNode> bootOperations) throws Exception {
-        ControllerInitializer controllerInitializer = createControllerInitializer();
-        if (additionalInit != null) {
-            additionalInit.setupController(controllerInitializer);
+        if (additionalInit == null) {
+            additionalInit = new EmptyAdditionalInitialization();
         }
+        ControllerInitializer controllerInitializer = createControllerInitializer();
+        additionalInit.setupController(controllerInitializer);
 
         //Initialize the controller
         ServiceContainer container = ServiceContainer.Factory.create("test" + counter.incrementAndGet());
@@ -216,13 +259,11 @@ public abstract class AbstractSubsystemTest {
         }
         allOps.addAll(bootOperations);
         StringConfigurationPersister persister = new StringConfigurationPersister(allOps, testParser);
-        ModelControllerService svc = new ModelControllerService(mainExtension, controllerInitializer, additionalInit, processState, persister);
+        ModelControllerService svc = new ModelControllerService(additionalInit.getType(), mainExtension, controllerInitializer, additionalInit, processState, persister);
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
 
-        if (additionalInit != null) {
-            additionalInit.addExtraServices(target);
-        }
+        additionalInit.addExtraServices(target);
 
         //sharedState = svc.state;
         svc.latch.await();
@@ -306,6 +347,13 @@ public abstract class AbstractSubsystemTest {
         return new ControllerInitializer();
     }
 
+    private void addAdditionalParsers(AdditionalParsers additionalParsers) {
+        if (additionalParsers != null && !addedExtraParsers) {
+            additionalParsers.addParsers(parsingContext);
+            addedExtraParsers = true;
+        }
+    }
+
     private final class ExtensionParsingContextImpl implements ExtensionParsingContext {
         private final XMLMapper mapper;
 
@@ -326,8 +374,6 @@ public abstract class AbstractSubsystemTest {
             return mapper;
         }
     }
-
-
 
     private final class TestParser implements  XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelMarshallingContext> {
 
@@ -375,8 +421,8 @@ public abstract class AbstractSubsystemTest {
         final ControllerInitializer controllerInitializer;
         final Extension mainExtension;
 
-        ModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer, final AdditionalInitialization additionalPreStep, final ControlledProcessState processState, final StringConfigurationPersister persister) {
-            super(OperationContext.Type.SERVER, persister, processState, DESC_PROVIDER, null);
+        ModelControllerService(final OperationContext.Type type, final Extension mainExtension, final ControllerInitializer controllerInitializer, final AdditionalInitialization additionalPreStep, final ControlledProcessState processState, final StringConfigurationPersister persister) {
+            super(type, persister, processState, DESC_PROVIDER, null);
             this.persister = persister;
             this.additionalInit = additionalPreStep;
             this.mainExtension = mainExtension;
@@ -399,9 +445,7 @@ public abstract class AbstractSubsystemTest {
             controllerInitializer.initializeModel(rootResource, rootRegistration);
 
             ExtensionContext context = new ExtensionContextImpl(rootRegistration, null, persister);
-            if (additionalInit != null) {
-                additionalInit.initializeExtraSubystemsAndModel(context, rootResource, rootRegistration);
-            }
+            additionalInit.initializeExtraSubystemsAndModel(context, rootResource, rootRegistration);
             mainExtension.initialize(context);
         }
 
@@ -481,4 +525,128 @@ public abstract class AbstractSubsystemTest {
             }
         }
     }
+
+    private final ManagementResourceRegistration MOCK_RESOURCE_REG = new ManagementResourceRegistration() {
+
+        @Override
+        public boolean isRuntimeOnly() {
+            return false;
+        }
+
+        @Override
+        public boolean isRemote() {
+            return false;
+        }
+
+        @Override
+        public OperationStepHandler getOperationHandler(PathAddress address, String operationName) {
+            return null;
+        }
+
+        @Override
+        public DescriptionProvider getOperationDescription(PathAddress address, String operationName) {
+            return null;
+        }
+
+        @Override
+        public Set<Flag> getOperationFlags(PathAddress address, String operationName) {
+            return null;
+        }
+
+        @Override
+        public Set<String> getAttributeNames(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public AttributeAccess getAttributeAccess(PathAddress address, String attributeName) {
+            return null;
+        }
+
+        @Override
+        public Set<String> getChildNames(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public Set<PathElement> getChildAddresses(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public DescriptionProvider getModelDescription(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public Map<String, OperationEntry> getOperationDescriptions(PathAddress address, boolean inherited) {
+            return null;
+        }
+
+        @Override
+        public ProxyController getProxyController(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public Set<ProxyController> getProxyControllers(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public ManagementResourceRegistration getSubModel(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider) {
+            return MOCK_RESOURCE_REG;
+        }
+
+        @Override
+        public void registerSubModel(PathElement address, ManagementResourceRegistration subModel) {
+        }
+
+        @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler,
+                DescriptionProvider descriptionProvider) {
+        }
+
+        @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler,
+                DescriptionProvider descriptionProvider, boolean inherited) {
+        }
+
+        @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler,
+                DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType) {
+        }
+
+        @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler,
+                DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType, EnumSet<Flag> flags) {
+        }
+
+        @Override
+        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler,
+                OperationStepHandler writeHandler, Storage storage) {
+        }
+
+        @Override
+        public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, Storage storage) {
+        }
+
+        @Override
+        public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
+        }
+
+        @Override
+        public void registerProxyController(PathElement address, ProxyController proxyController) {
+        }
+
+        @Override
+        public void unregisterProxyController(PathElement address) {
+        }
+
+    };
 }

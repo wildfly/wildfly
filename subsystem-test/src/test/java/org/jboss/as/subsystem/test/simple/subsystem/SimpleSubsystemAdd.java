@@ -44,9 +44,9 @@ class SimpleSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(SimpleSubsystemDeploymentProcessor.PHASE, SimpleSubsystemDeploymentProcessor.PRIORITY, new SimpleSubsystemDeploymentProcessor());
-
             }
         }, OperationContext.Stage.RUNTIME);
 
+        context.getServiceTarget().addService(SimpleService.NAME, new SimpleService()).install();
     }
 }
