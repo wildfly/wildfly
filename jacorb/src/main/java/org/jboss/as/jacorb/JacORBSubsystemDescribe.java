@@ -69,6 +69,9 @@ public class JacORBSubsystemDescribe implements OperationStepHandler {
             }
         }
         result.add(subsystemAdd);
+
+        context.getResult().set(result);
+
         context.completeStep();
     }
 }

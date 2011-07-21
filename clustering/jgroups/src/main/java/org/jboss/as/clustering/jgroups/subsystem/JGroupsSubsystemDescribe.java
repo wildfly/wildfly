@@ -63,6 +63,8 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler, Descripti
             }
         }
 
+        context.getResult().set(result);
+
         context.completeStep();
     }
 }
