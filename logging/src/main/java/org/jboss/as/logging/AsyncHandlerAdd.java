@@ -52,7 +52,7 @@ class AsyncHandlerAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
         model.get(SUBHANDLERS).set(operation.get(SUBHANDLERS));
-        model.get(LEVEL).set(operation.get(LEVEL));
+        if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(operation.get(LEVEL));
         model.get(OVERFLOW_ACTION).set(operation.get(OVERFLOW_ACTION));
     }
 
@@ -73,7 +73,7 @@ class AsyncHandlerAdd extends AbstractAddStepHandler {
         service.addHandlers(list);
         if (operation.hasDefined(QUEUE_LENGTH))
             service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
-        service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+        if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(operation.get(LEVEL).asString()));
         if (operation.hasDefined(OVERFLOW_ACTION))
             service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
 
