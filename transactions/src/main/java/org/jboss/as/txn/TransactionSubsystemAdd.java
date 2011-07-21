@@ -252,6 +252,24 @@ class TransactionSubsystemAdd implements OperationStepHandler {
                             });
                             tsrBuilder.install();
 
+                            // Bind the UserTransaction into JNDI
+                            final BinderService utBinderService = new BinderService("java:jboss/UserTransaction");
+                            final ServiceBuilder<ManagedReferenceFactory> utBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("UserTransaction"), utBinderService);
+                            utBuilder.addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("java:jboss/UserTransaction"));
+                            utBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, utBinderService.getNamingStoreInjector());
+                            utBuilder.addDependency(UserTransactionService.SERVICE_NAME, javax.transaction.UserTransaction.class, new Injector<javax.transaction.UserTransaction>() {
+                                @Override
+                                public void inject(final javax.transaction.UserTransaction value) throws InjectionException {
+                                    utBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
+                                }
+
+                                @Override
+                                public void uninject() {
+                                    utBinderService.getNamingStoreInjector().uninject();
+                                }
+                            });
+                            utBuilder.install();
+
                             //we need to initialize this class when we have the correct TCCL set
                             //so we force it to be initialized here
                             try {
