@@ -54,6 +54,7 @@ import org.jboss.msc.service.ServiceName;
 import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 /**
@@ -215,10 +216,14 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
             final AnnotationTarget target = sessionBeanAnnotation.target();
             if (!(target instanceof ClassInfo)) {
                 // Let's just WARN and move on. No need to throw an error
-                logger.warn(sessionBeanAnnotation.name() + " annotation is expected to be only on classes. " + target + " is not a class");
+                logger.warn(sessionBeanAnnotation.name() + " annotation is expected to be applied on class level. " + target + " is not a class");
                 continue;
             }
             final ClassInfo sessionBeanClassInfo = (ClassInfo) target;
+            // skip if it's not a valid class for session bean
+            if (!assertSessionBeanClassValidity(sessionBeanClassInfo)) {
+                continue;
+            }
             final String ejbName = sessionBeanClassInfo.name().local();
             final AnnotationValue nameValue = sessionBeanAnnotation.value("name");
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : nameValue.asString();
@@ -262,5 +267,32 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
     @Override
     public void undeploy(DeploymentUnit context) {
         // do nothing
+    }
+
+    /**
+     * Returns true if the passed <code>sessionBeanClass</code> meets the requirements set by the EJB3 spec about
+     * bean implementation classes. The passed <code>sessionBeanClass</code> must not be an interface and must be public
+     * and not final and not abstract. If it passes these requirements then this method returns true. Else it returns false.
+     *
+     * @param sessionBeanClass The session bean class
+     * @return
+     */
+    private static boolean assertSessionBeanClassValidity(final ClassInfo sessionBeanClass) {
+        final short flags = sessionBeanClass.flags();
+        final String className = sessionBeanClass.name().toString();
+        // must *not* be a interface
+        if (Modifier.isInterface(flags)) {
+            logger.warn("[EJB3.1 spec, section 4.9.2] Session bean implementation class MUST NOT be a interface - "
+                    + className + " is an interface, hence won't be considered as a session bean");
+            return false;
+        }
+        // bean class must be public, must *not* be abstract or final
+        if (!Modifier.isPublic(flags) || Modifier.isAbstract(flags) || Modifier.isFinal(flags)) {
+            logger.warn("[EJB3.1 spec, section 4.9.2] Session bean implementation class MUST be public, not abstract and not final - "
+                    + className + " won't be considered as a session bean, since it doesn't meet that requirement");
+            return false;
+        }
+        // valid class
+        return true;
     }
 }
