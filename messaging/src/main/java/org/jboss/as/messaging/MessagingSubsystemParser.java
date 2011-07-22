@@ -27,8 +27,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
+import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.messaging.CommonAttributes.*;
 
@@ -368,7 +370,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME.getLocalName()));
                     }
                     parseQueue(reader, queues.get(name));
-                    if(! queues.get(name).has(ADDRESS)) {
+                    if(! queues.get(name).has(ADDRESS.getName())) {
                         throw ParseUtils.missingRequired(reader, Collections.singleton(Element.ADDRESS.getLocalName()));
                     }
                     break;
@@ -385,11 +387,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case ADDRESS: {
-                    queue.get(CommonAttributes.ADDRESS).set(reader.getElementText().trim());
+                    handleElementText(reader, element, queue);
                     break;
                 } case FILTER: {
-                    queue.get(FILTER).set(reader.getAttributeValue(0).trim());
-                    ParseUtils.requireNoContent(reader);
+                    Location location = reader.getLocation();
+                    String string = readStringAttributeElement(reader, CommonAttributes.STRING);
+                    FILTER.parseAndSetParameter(string, queue, location);
                     break;
                 } case DURABLE: {
                     queue.get(DURABLE).set(Boolean.valueOf(reader.getElementText()));
@@ -1080,10 +1083,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writer.writeStartElement(Element.QUEUE.getLocalName());
             writer.writeAttribute(Attribute.NAME.getLocalName(), queueProp.getName());
             final ModelNode queue = queueProp.getValue();
-            if (has(queue, ADDRESS)) {
+            if (has(queue, ADDRESS.getName())) {
                 writeSimpleElement(writer, Element.ADDRESS, queue);
             }
-            if (has(queue, FILTER)) {
+            if (has(queue, FILTER.getName())) {
                 writer.writeStartElement(Element.FILTER.getLocalName());
                 writeAttribute(writer, Attribute.STRING, queue);
                 writer.writeEndElement();

@@ -108,8 +108,8 @@ public class MessagingDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("queue"));
         node.get(ATTRIBUTES, CommonAttributes.QUEUE_ADDRESS, TYPE).set(ModelType.STRING);
         node.get(ATTRIBUTES, CommonAttributes.QUEUE_ADDRESS, DESCRIPTION).set(bundle.getString("queue.address"));
-        node.get(ATTRIBUTES, CommonAttributes.FILTER, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, CommonAttributes.FILTER, DESCRIPTION).set(bundle.getString("queue.filter"));
+        node.get(ATTRIBUTES, CommonAttributes.FILTER.getName(), TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, CommonAttributes.FILTER.getName(), DESCRIPTION).set(bundle.getString("queue.filter"));
         node.get(ATTRIBUTES, CommonAttributes.DURABLE, TYPE).set(ModelType.BOOLEAN);
         node.get(ATTRIBUTES, CommonAttributes.DURABLE, DESCRIPTION).set(bundle.getString("queue.durable"));
         return node;
@@ -124,8 +124,8 @@ public class MessagingDescriptions {
 
         node.get(REQUEST_PROPERTIES, CommonAttributes.QUEUE_ADDRESS, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, CommonAttributes.QUEUE_ADDRESS, DESCRIPTION).set(bundle.getString("queue.address"));
-        node.get(REQUEST_PROPERTIES, CommonAttributes.FILTER, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, CommonAttributes.FILTER, DESCRIPTION).set(bundle.getString("queue.filter"));
+        node.get(REQUEST_PROPERTIES, CommonAttributes.FILTER.getName(), TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, CommonAttributes.FILTER.getName(), DESCRIPTION).set(bundle.getString("queue.filter"));
         node.get(REQUEST_PROPERTIES, CommonAttributes.DURABLE, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, CommonAttributes.DURABLE, DESCRIPTION).set(bundle.getString("queue.durable"));
 

@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
+import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
@@ -141,6 +142,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.MessagingServices.TransportConfigType;
 import org.jboss.as.messaging.jms.JMSService;
@@ -173,15 +175,17 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
     static final String DEFAULT_LARGE_MESSSAGE_DIR = "largemessages";
     static final String DEFAULT_PAGING_DIR = "paging";
 
-    static final MessagingSubsystemAdd INSTANCE = new MessagingSubsystemAdd();
+    private final Configuration configuration;
+
+    public MessagingSubsystemAdd(final Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         model.setEmptyObject();
+
         for (final AttributeDefinition attributeDefinition : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
-            ModelNode attributeValue = attributeDefinition.validateOperation(operation);
-            if (attributeValue.isDefined()) {
-                model.get(attributeDefinition.getName()).set(attributeValue);
-            }
+            attributeDefinition.validateAndSet(operation, model);
         }
 
         for (final String attribute : CommonAttributes.COMPLEX_ROOT_RESOURCE_ATTRIBUTES) {
@@ -197,42 +201,63 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
         model.get(POOLED_CONNECTION_FACTORY).setEmptyObject();
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                  final ServiceVerificationHandler verificationHandler,
+                                  final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        // Create the HornetQ Service
-        final HornetQService hqService = new HornetQService();
         // Transform the configuration
         final Configuration configuration = transformConfig(model);
 
-        // Add the HornetQ Service
-        final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(MessagingServices.JBOSS_MESSAGING, hqService)
-                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqService.getMBeanServer());
         // Create path services
-        serviceBuilder.addDependency(createDirectoryService(DEFAULT_BINDINGS_DIR, operation.get(BINDINGS_DIRECTORY), serviceTarget),
-                String.class, hqService.getPathInjector(DEFAULT_BINDINGS_DIR));
-        serviceBuilder.addDependency(createDirectoryService(DEFAULT_JOURNAL_DIR, operation.get(JOURNAL_DIRECTORY), serviceTarget),
-                String.class, hqService.getPathInjector(DEFAULT_JOURNAL_DIR));
-        serviceBuilder.addDependency(createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, operation.get(LARGE_MESSAGES_DIRECTORY), serviceTarget),
-                String.class, hqService.getPathInjector(DEFAULT_LARGE_MESSSAGE_DIR));
-        serviceBuilder.addDependency(createDirectoryService(DEFAULT_PAGING_DIR, operation.get(PAGING_DIRECTORY), serviceTarget),
-                String.class, hqService.getPathInjector(DEFAULT_PAGING_DIR));
+        // TODO move into child resource handlers
+        final ServiceName bindingsPath = createDirectoryService(DEFAULT_BINDINGS_DIR, operation.get(BINDINGS_DIRECTORY), serviceTarget);
+        final ServiceName journalPath = createDirectoryService(DEFAULT_JOURNAL_DIR, operation.get(JOURNAL_DIRECTORY), serviceTarget);
+        final ServiceName largeMessagePath = createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, operation.get(LARGE_MESSAGES_DIRECTORY), serviceTarget);
+        final ServiceName pagingPath = createDirectoryService(DEFAULT_PAGING_DIR, operation.get(PAGING_DIRECTORY), serviceTarget);
 
         // Process acceptors and connectors
+        // TODO move into child resource handlers
         final Set<String> socketBindings = new HashSet<String>();
         processAcceptors(configuration, operation, socketBindings);
         processConnectors(configuration, operation, socketBindings);
-        for (final String socketBinding : socketBindings) {
-            final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
-            serviceBuilder.addDependency(socketName, SocketBinding.class, hqService.getSocketBindingInjector(socketBinding));
-        }
-        hqService.setConfiguration(configuration);
 
-        serviceBuilder.addListener(verificationHandler);
+        // Add a RUNTIME step to actually install the HQ Service. This will execute after the runtime step
+        // added by any child resources whose ADD handler executes after this one in the model stage.
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        // Install the HornetQ Service
-        newControllers.add(serviceBuilder.install());
+                // Create the HornetQ Service
+                final HornetQService hqService = new HornetQService();
+                hqService.setConfiguration(configuration);
 
-        newControllers.add(JMSService.addService(serviceTarget, verificationHandler));
+                // Add the HornetQ Service
+                final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(MessagingServices.JBOSS_MESSAGING, hqService)
+                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqService.getMBeanServer());
+
+                // Depend on path services
+                // TODO once the above "path service" installs are moved to child resource handlers,
+                // in this step handler we have to ensure the paths exist, creating them if not
+                serviceBuilder.addDependency(bindingsPath, String.class, hqService.getPathInjector(DEFAULT_BINDINGS_DIR));
+                serviceBuilder.addDependency(journalPath, String.class, hqService.getPathInjector(DEFAULT_JOURNAL_DIR));
+                serviceBuilder.addDependency(largeMessagePath, String.class, hqService.getPathInjector(DEFAULT_LARGE_MESSSAGE_DIR));
+                serviceBuilder.addDependency(pagingPath, String.class, hqService.getPathInjector(DEFAULT_PAGING_DIR));
+
+                for (final String socketBinding : socketBindings) {
+                    final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
+                    serviceBuilder.addDependency(socketName, SocketBinding.class, hqService.getSocketBindingInjector(socketBinding));
+                }
+
+                serviceBuilder.addListener(verificationHandler);
+
+                // Install the HornetQ Service
+                newControllers.add(serviceBuilder.install());
+
+                newControllers.add(JMSService.addService(serviceTarget, verificationHandler));
+
+                context.completeStep();
+            }
+        }, OperationContext.Stage.RUNTIME);
     }
 
     /**
@@ -241,8 +266,8 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
      * @param model the subsystem root resource model
      * @return the hornetQ configuration
      */
-    static Configuration transformConfig(final ModelNode model) throws OperationFailedException {
-        final Configuration configuration = new ConfigurationImpl();
+    Configuration transformConfig(final ModelNode model) throws OperationFailedException {
+
         // --
         configuration.setAllowAutoFailBack(ALLOW_FAILBACK.validateResolvedOperation(model).asBoolean());
         configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.validateResolvedOperation(model).asBoolean());
@@ -428,15 +453,15 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
      * @param configuration the hornetQ configuration
      * @param params        the detyped operation parameters
      */
-    static void processCoreQueues(final Configuration configuration, final ModelNode params) {
+    static void processCoreQueues(final Configuration configuration, final ModelNode params) throws OperationFailedException {
         if (params.get(QUEUE).isDefined()) {
             final List<CoreQueueConfiguration> queues = new ArrayList<CoreQueueConfiguration>();
             for (final Property property : params.get(QUEUE).asPropertyList()) {
                 final String queueName = property.getName();
                 final ModelNode config = property.getValue();
                boolean durable = config.get(DURABLE).isDefined()?config.get(DURABLE).asBoolean():true;
-               final CoreQueueConfiguration queue = new CoreQueueConfiguration(config.get(CommonAttributes.ADDRESS).asString(), queueName,
-                        config.get(FILTER).asString(), durable);
+               final CoreQueueConfiguration queue = new CoreQueueConfiguration(ADDRESS.validateResolvedOperation(config).asString(), queueName,
+                        FILTER.validateResolvedOperation(config).asString(), durable);
                 queues.add(queue);
             }
             configuration.setQueueConfigurations(queues);

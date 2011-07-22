@@ -34,6 +34,9 @@ import org.jboss.dmr.ModelType;
  */
 public interface CommonAttributes {
 
+
+    AttributeDefinition ADDRESS = new AttributeDefinition("address", ModelType.STRING, false);
+
     AttributeDefinition ALLOW_FAILBACK =  new AttributeDefinition("allow-failback",
             new ModelNode().set(ConfigurationImpl.DEFAULT_ALLOW_AUTO_FAILBACK), ModelType.BOOLEAN,  true);
     AttributeDefinition ASYNC_CONNECTION_EXECUTION_ENABLED = new AttributeDefinition("async-connection-execution-enabled",
@@ -52,11 +55,18 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR), ModelType.BOOLEAN,  true);
     AttributeDefinition CREATE_JOURNAL_DIR = new AttributeDefinition("create-journal-dir",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CREATE_JOURNAL_DIR), ModelType.BOOLEAN,  true);
+
+    AttributeDefinition EXCLUSIVE = new AttributeDefinition("exclusive", ModelType.BOOLEAN,  true);
+
     AttributeDefinition FAILBACK_DELAY = new AttributeDefinition("failback-delay",
             new ModelNode().set(ConfigurationImpl.DEFAULT_FAILBACK_DELAY), ModelType.LONG,  true);
-    AttributeDefinition FAILOVER_ON_SHUTDOWN =  new AttributeDefinition("failover-on-shutdown",
+    AttributeDefinition FAILOVER_ON_SHUTDOWN = new AttributeDefinition("failover-on-shutdown",
             new ModelNode().set(false /*TODO should be ConfigurationImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN but field is private*/), ModelType.BOOLEAN,  true);
-    AttributeDefinition ID_CACHE_SIZE =new AttributeDefinition("id-cache-size",
+
+    AttributeDefinition FILTER = new AttributeDefinition("filter", ModelType.STRING, true);
+    AttributeDefinition FORWARDING_ADDRESS = new AttributeDefinition("forwarding-address", ModelType.STRING, false);
+
+    AttributeDefinition ID_CACHE_SIZE = new AttributeDefinition("id-cache-size",
             new ModelNode().set(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE), ModelType.INT,  true);
     AttributeDefinition JMX_DOMAIN = new AttributeDefinition("jmx-domain",
             new ModelNode().set(ConfigurationImpl.DEFAULT_JMX_DOMAIN), ModelType.STRING, true);
@@ -109,6 +119,9 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_PERSISTENCE_ENABLED), ModelType.BOOLEAN,  true);
     AttributeDefinition PERSIST_ID_CACHE = new AttributeDefinition("persist-id-cache",
             new ModelNode().set(ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE), ModelType.BOOLEAN,  true);
+
+    AttributeDefinition ROUTING_NAME = new AttributeDefinition("routing-name", ModelType.STRING, true);
+
     AttributeDefinition RUN_SYNC_SPEED_TEST = new AttributeDefinition("run-sync-speed-test",
             new ModelNode().set(ConfigurationImpl.DEFAULT_RUN_SYNC_SPEED_TEST), ModelType.BOOLEAN,  true);
     AttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = new AttributeDefinition("scheduled-thread-pool-max-size",
@@ -127,12 +140,14 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT), ModelType.LONG,  true);
     AttributeDefinition TRANSACTION_TIMEOUT_SCAN_PERIOD = new AttributeDefinition("transaction-timeout-scan-period",
             new ModelNode().set(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD), ModelType.LONG,  true);
+
+    AttributeDefinition TRANSFORMER_CLASS_NAME = new AttributeDefinition("transformer-class-name", ModelType.STRING, true);
+
     AttributeDefinition WILD_CARD_ROUTING_ENABLED = new AttributeDefinition("wild-card-routing-enabled",
             new ModelNode().set(ConfigurationImpl.DEFAULT_WILDCARD_ROUTING_ENABLED), ModelType.BOOLEAN,  true);
 
     String ACCEPTOR ="acceptor";
     String ACCEPTORS ="acceptors";
-    String ADDRESS ="address";
     String ADDRESS_FULL_MESSAGE_POLICY ="address-full-policy";
     String ADDRESS_SETTING ="address-setting";
     String ADDRESS_SETTINGS ="address-settings";
@@ -187,14 +202,11 @@ public interface CommonAttributes {
     String DURABLE ="durable";
     String ENTRIES ="entries";
     String ENTRY ="entry";
-    String EXCLUSIVE = "exclusive";
     String EXPIRY_ADDRESS ="expiry-address";
     String FACTORY_CLASS ="factory-class";
     String FAILOVER_ON_INITIAL_CONNECTION = "failover-on-initial-connection";
     String FAILOVER_ON_SERVER_SHUTDOWN = "failover-on-server-shutdown";
     String FILE_DEPLOYMENT_ENABLED ="file-deployment-enabled";
-    String FILTER ="filter";
-    String FORWARDING_ADDRESS ="forwarding-address";
     String FORWARD_WHEN_NO_CONSUMERS = "forward-when-no-consumers";
     String GROUP_ADDRESS ="group-address";
     String GROUPING_HANDLER ="grouping-handler";
@@ -260,7 +272,6 @@ public interface CommonAttributes {
     String RETRY_INTERVAL_MULTIPLIER ="retry-interval-multiplier";
     String ROLE = "role";
     String ROLES_ATTR_NAME ="roles";
-    String ROUTING_NAME = "routing-name";
     String SECURITY_SETTING ="security-setting";
     String SECURITY_SETTINGS ="security-settings";
     String SELECTOR ="selector";
@@ -276,7 +287,6 @@ public interface CommonAttributes {
     String TIMEOUT = "timeout";
     String TRANSACTION = "transaction";
     String TRANSACTION_BATCH_SIZE ="transaction-batch-size";
-    String TRANSFORMER_CLASS_NAME = "transformer-class-name";
     String TYPE_ATTR_NAME ="type";
     String USE_DUPLICATE_DETECTION = "use-duplicate-detection";
     String USE_GLOBAL_POOLS ="use-global-pools";
@@ -308,6 +318,10 @@ public interface CommonAttributes {
         /* TODO remove */ GROUPING_HANDLER, /* TODO remove */ PAGING_DIRECTORY, /* TODO remove */ BINDINGS_DIRECTORY,
         /* TODO remove */ JOURNAL_DIRECTORY, /* TODO remove */ LARGE_MESSAGES_DIRECTORY,
         /* TODO remove */ SECURITY_SETTINGS, /* TODO remove */ ADDRESS_SETTINGS, /* TODO remove */ CONNECTOR_SERVICES
+    };
+
+    AttributeDefinition[] DIVERT_ATTRIBUTES = {
+        ROUTING_NAME, ADDRESS, FORWARDING_ADDRESS, FILTER, TRANSFORMER_CLASS_NAME, EXCLUSIVE
     };
 
 }

@@ -38,25 +38,13 @@ public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvi
 
     public static final String OPERATION_NAME = ADD;
 
-    public static ModelNode getOperation(ModelNode address, ModelNode existing) {
-        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
-        op.get(QUEUE_ADDRESS).set(existing.get(ADDRESS));
-        if (existing.hasDefined(FILTER)) {
-            op.get(FILTER).set(existing.get(FILTER));
-        }
-        if (existing.hasDefined(DURABLE)) {
-            op.get(DURABLE).set(existing.get(DURABLE));
-        }
-        return op;
-    }
-
     public static QueueAdd INSTANCE = new QueueAdd();
 
     private final ParametersValidator validator = new ParametersValidator();
 
     private QueueAdd() {
         validator.registerValidator(QUEUE_ADDRESS, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-        validator.registerValidator(FILTER, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
+        validator.registerValidator(FILTER.getName(), new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         validator.registerValidator(DURABLE, new ModelTypeValidator(ModelType.BOOLEAN, true));
     }
 
@@ -66,15 +54,15 @@ public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvi
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final String queueAddress = operation.hasDefined(QUEUE_ADDRESS) ? operation.get(QUEUE_ADDRESS).asString() : null;
-        final String filter = operation.hasDefined(FILTER) ? operation.get(FILTER).asString() : null;
+        final String filter = operation.hasDefined(FILTER.getName()) ? operation.get(FILTER.getName()).asString() : null;
         final Boolean durable = operation.hasDefined(DURABLE) ? operation.get(DURABLE).asBoolean() : null;
 
         model.get(NAME).set(name);
         if (queueAddress != null) {
-            model.get(ADDRESS).set(queueAddress);
+            model.get(ADDRESS.getName()).set(queueAddress);
         }
         if (filter != null) {
-            model.get(FILTER).set(filter);
+            model.get(FILTER.getName()).set(filter);
         }
         if (durable != null) {
             model.get(DURABLE).set(durable);
@@ -85,7 +73,7 @@ public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvi
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final String queueAddress = operation.hasDefined(QUEUE_ADDRESS) ? operation.get(QUEUE_ADDRESS).asString() : null;
-        final String filter = operation.hasDefined(FILTER) ? operation.get(FILTER).asString() : null;
+        final String filter = operation.hasDefined(FILTER.getName()) ? operation.get(FILTER.getName()).asString() : null;
         final Boolean durable = operation.hasDefined(DURABLE) ? operation.get(DURABLE).asBoolean() : null;
 
         final QueueService service = new QueueService(queueAddress, name, filter, durable != null ? durable : true, false);
