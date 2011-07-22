@@ -192,6 +192,7 @@
                 <module>spec</module>
                 <module>integration</module>
                 <module>clustering</module>
+                <module>compat</module>
                 <module>domain</module>
             </modules>
         </profile>
