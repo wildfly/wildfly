@@ -22,21 +22,20 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DEPLOYMENT_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.*;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INSTALLED_DRIVERS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SOURCE;
-
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
-import org.jboss.as.connector.pool.PoolMetrics;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -56,6 +55,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.jboss.as.connector.pool.PoolMetrics;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.adapters.jdbc.statistics.JdbcStatisticsPlugin;
@@ -113,7 +117,8 @@ class DataSourcesSubsystemProviders {
             AttributeDefinition.SPY, AttributeDefinition.USE_CCM, AttributeDefinition.REAUTHPLUGIN_PROPERTIES,
             AttributeDefinition.RECOVERY_USERNAME, AttributeDefinition.RECOVERY_PASSWORD,
             AttributeDefinition.RECOVERY_SECURITY_DOMAIN, AttributeDefinition.RECOVERLUGIN_CLASSNAME,
-            AttributeDefinition.RECOVERLUGIN_PROPERTIES, AttributeDefinition.NO_RECOVERY };
+            AttributeDefinition.RECOVERLUGIN_PROPERTIES, AttributeDefinition.NO_RECOVERY,
+            AttributeDefinition.XADATASOURCE_PROPERTIES };
 
     static final String RESOURCE_NAME = DataSourcesSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
