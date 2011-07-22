@@ -70,7 +70,7 @@ public enum AttributeDefinition {
             ModelType.STRING, false), RECOVERY_SECURITY_DOMAIN(Constants.RECOVERY_SECURITY_DOMAIN, ModelType.STRING, false), RECOVERLUGIN_CLASSNAME(
             Constants.RECOVERLUGIN_CLASSNAME, ModelType.STRING, false), RECOVERLUGIN_PROPERTIES(
             Constants.RECOVERLUGIN_PROPERTIES, ModelType.OBJECT, false), NO_RECOVERY(Constants.NO_RECOVERY, ModelType.BOOLEAN,
-            false);
+            false), XADATASOURCE_PROPERTIES(Constants.XADATASOURCEPROPERTIES, ModelType.OBJECT, true);
 
     private final String propertyName;
     private final ModelType modelType;
