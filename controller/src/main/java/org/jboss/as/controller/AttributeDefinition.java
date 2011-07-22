@@ -257,6 +257,24 @@ public class AttributeDefinition {
 
     /**
      * Finds a value in the given {@code operationObject} whose key matches this attribute's {@link #getName() name},
+     * validates it using this attribute's {@link #getValidator() validator}, and, if
+     * {@link org.jboss.dmr.ModelNode#isDefined() defined} stores under this attribute's name in the given {@code model}.
+     *
+     * @param operationObject model node of type {@link ModelType#OBJECT}, typically representing an operation request
+     * @parm model model node in which the value should be stored
+     *
+     * @throws OperationFailedException if the value is not valid
+     */
+    public void validateAndSet(final ModelNode operationObject, final ModelNode model) throws OperationFailedException {
+
+        ModelNode node = validateOperation(operationObject);
+        if (node.isDefined()) {
+            model.get(name).set(node);
+        }
+    }
+
+    /**
+     * Finds a value in the given {@code operationObject} whose key matches this attribute's {@link #getName() name},
      * resolves it and validates it using this attribute's {@link #getValidator() validator}.
      *
      * @param operationObject model node of type {@link ModelType#OBJECT}, typically representing an operation request
