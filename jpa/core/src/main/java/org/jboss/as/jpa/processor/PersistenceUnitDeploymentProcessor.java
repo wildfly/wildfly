@@ -79,7 +79,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ServiceLoader;
 
 /**
@@ -231,9 +230,12 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             ValidatorFactory validatorFactory = SerializableValidatorFactory.getINSTANCE();
                             properties.put("javax.persistence.validation.factory", validatorFactory);
                         }
+                        PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu,persistenceProviderDeploymentHolder);
 
-                        addProviderProperties(pu, properties, persistenceProviderDeploymentHolder);
+                        // add persistence provider specific properties
+                        adaptor.addProviderProperties(properties, pu);
 
+                        // ensure that the persistence provider module is loaded
                         loadPersistenceProviderModule(pu, persistenceProviderDeploymentHolder);
 
                         final ServiceName puServiceName = PersistenceUnitService.getPUServiceName(pu);
@@ -275,7 +277,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             }
                         }
 
-                        Iterable<ServiceName> providerDependencies = getProviderDependencies(pu, persistenceProviderDeploymentHolder);
+                        Iterable<ServiceName> providerDependencies1 = adaptor.getProviderDependencies(pu);
+                        Iterable<ServiceName> providerDependencies = providerDependencies1;
                         if (providerDependencies != null) {
                             builder.addDependencies(providerDependencies);
                         }
@@ -331,7 +334,15 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         return dataSourceName;
     }
 
-    private void addProviderProperties(PersistenceUnitMetadata pu, Map properties, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) throws
+    /**
+     * Get the persistence provider adaptor.  Will load the adapter module if needed.
+     *
+     * @param pu
+     * @param persistenceProviderDeploymentHolder
+     * @return
+     * @throws DeploymentUnitProcessingException
+     */
+    private PersistenceProviderAdaptor getPersistenceProviderAdaptor(PersistenceUnitMetadata pu, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) throws
         DeploymentUnitProcessingException {
         String adaptorModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
         PersistenceProviderAdaptor adaptor=null;
@@ -353,7 +364,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         if (adaptor == null) {
             throw new DeploymentUnitProcessingException("Failed to get adaptor for persistence provider '" + pu.getPersistenceProviderClassName() +"'");
         }
-        adaptor.addProviderProperties(properties, pu);
+        return adaptor;
     }
 
     /**
@@ -408,6 +419,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
     /**
      * Handles loading the persistence provider module into PersistenceProviderResolverImpl for later access
+     *
      * @param pu is the persistence unit
      * @param persistenceProviderDeploymentHolder holds the persistence provider if one is packaged with the app deployment
      * @throws DeploymentUnitProcessingException
@@ -463,29 +475,6 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         }
     }
 
-
-    private Iterable<ServiceName> getProviderDependencies(PersistenceUnitMetadata pu, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) throws
-        DeploymentUnitProcessingException {
-        String adaptorModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
-        PersistenceProviderAdaptor adaptor = null;
-
-        if (persistenceProviderDeploymentHolder != null) {
-            adaptor = persistenceProviderDeploymentHolder.getAdapter();
-        }
-        if (adaptor == null) {
-            if (adaptorModule != null) {
-                adaptor = PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(pu.getPersistenceProviderClassName(), adaptorModule);
-            } else {
-                adaptor = PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(pu.getPersistenceProviderClassName());
-            }
-        }
-        if (adaptor == null) {
-            throw new DeploymentUnitProcessingException("Failed to get adaptor for persistence provider '" + pu.getPersistenceProviderClassName() + "'");
-        }
-
-        Iterable<ServiceName> providerDependencies = adaptor.getProviderDependencies(pu);
-        return providerDependencies;
-    }
 
     static boolean isEarDeployment(final DeploymentUnit context) {
         return (DeploymentTypeMarker.isType(DeploymentType.EAR, context));

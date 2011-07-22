@@ -57,7 +57,7 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
 
         final ServicesAttachment servicesAttachment = deploymentUnit.getAttachment(Attachments.SERVICES);
         if (module != null && servicesAttachment != null) {
-            final ModuleClassLoader classLoader = module.getClassLoader();
+            final ModuleClassLoader deploymentModuleClassLoader = module.getClassLoader();
             PersistenceProvider provider = null;
             // collect list of persistence providers packaged with the application
             final List<String> providerNames = servicesAttachment.getServiceImplementations(PersistenceProvider.class.getName());
@@ -68,7 +68,7 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
             }
             for (String providerName : providerNames) {
                 try {
-                    final Class<? extends PersistenceProvider> providerClass = classLoader.loadClass(providerName).asSubclass(PersistenceProvider.class);
+                    final Class<? extends PersistenceProvider> providerClass = deploymentModuleClassLoader.loadClass(providerName).asSubclass(PersistenceProvider.class);
                     final Constructor<? extends PersistenceProvider> constructor = providerClass.getConstructor();
                     provider = constructor.newInstance();
                     log.infof("Deployment has its own Persistence Provider %s ", providerClass);
@@ -90,7 +90,7 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                 String adapterClass = holder.getPersistenceProviderAdaptorClassName();
                 if (adapterClass != null) {
                     try {
-                        PersistenceProviderAdaptor adaptor = (PersistenceProviderAdaptor)classLoader.loadClass(adapterClass).newInstance();
+                        PersistenceProviderAdaptor adaptor = (PersistenceProviderAdaptor)deploymentModuleClassLoader.loadClass(adapterClass).newInstance();
                         holder.setAdapter(adaptor);
                         adaptor.injectJtaManager(JtaManagerImpl.getInstance());
                     } catch (InstantiationException e) {

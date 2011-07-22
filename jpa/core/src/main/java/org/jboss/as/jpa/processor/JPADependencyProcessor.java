@@ -72,6 +72,9 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier HIBERNATE_3_PROVIDER = ModuleIdentifier.create("org.jboss.as.jpa.hibernate3");
     private static final String HIBERNATE3_PROVIDER_ADAPTOR = "org.jboss.as.jpa.hibernate3.HibernatePersistenceProviderAdaptor";
 
+    // module dependencies for hibernate3
+    private static final ModuleIdentifier JBOSS_AS_NAMING_ID = ModuleIdentifier.create("org.jboss.as.naming");
+    private static final ModuleIdentifier JBOSS_JANDEX_ID = ModuleIdentifier.create("org.jboss.jandex");
     /**
      * Add dependencies for modules required for JPA deployments
      */
@@ -141,20 +144,26 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                 String providerModule = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
                 String adapterModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
                 String adapterClass = pu.getProperties().getProperty(Configuration.ADAPTER_CLASS);
-                if(providerModule != null && providerModule.equals(Configuration.PROVIDER_MODULE_HIBERNATE3_BUNDLED)) {
-                    //in this case we add the persistence provider to the deployment as a resource root
-                    adapterClass = HIBERNATE3_PROVIDER_ADAPTOR;
-                    pu.getProperties().put(Configuration.ADAPTER_CLASS, adapterClass);
-                    pu.getProperties().put(Configuration.PROVIDER_MODULE, Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED);
-                    pu.getProperties().remove(Configuration.ADAPTER_MODULE);
+                if(providerModule != null) {
+                    if (providerModule.equals(Configuration.PROVIDER_MODULE_HIBERNATE3_BUNDLED)) {
+                        //in this case we add the persistence provider to the deployment as a resource root
+                        adapterClass = HIBERNATE3_PROVIDER_ADAPTOR;
+                        pu.getProperties().put(Configuration.ADAPTER_CLASS, adapterClass);
+                        pu.getProperties().put(Configuration.PROVIDER_MODULE, Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED);
+                        pu.getProperties().remove(Configuration.ADAPTER_MODULE);
 
-                    //for this special case we need to make a copy of the hibernate 3 adaptor inside the deployment
-
-                    addHibernate3AdaptorToDeployment(moduleLoader, deploymentUnit);
-
+                        //for this special case we need to make a copy of the hibernate 3 adaptor inside the deployment
+                        addHibernate3AdaptorToDeployment(moduleLoader, deploymentUnit);
+                    } else if (providerModule.equals(Configuration.PROVIDER_MODULE_HIBERNATE3)) {
+                        // if they are using hibernate 3, default the adapter module setting for them.
+                        if (adapterModule == null) {
+                            adapterModule = Configuration.ADAPTER_MODULE_HIBERNATE3;
+                            pu.getProperties().put(Configuration.ADAPTER_MODULE, adapterModule);
+                        }
+                    }
                 }
-                if (adapterModule != null && adapterClass != null) {
-                    log.info(pu.getPersistenceUnitName() + " is configured to use adapter module '" + adapterModule + "' and adapter class '" + adapterClass + "'");
+                if (adapterModule != null) {
+                    log.info(pu.getPersistenceUnitName() + " is configured to use adapter module '" + adapterModule + "'");
                     String persistenceProvider = pu.getPersistenceProviderClassName() != null
                             ? pu.getPersistenceProviderClassName() : Configuration.PROVIDER_CLASS_DEFAULT;
                     // load persistence provider adapter if not loaded yet
@@ -191,6 +200,11 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
             final URL jarUrl = new URL(baseJarUrl);
             JarFile jarFile = new JarFile(jarUrl.getFile());
             moduleSpecification.addResourceLoader(ResourceLoaderSpec.createResourceLoaderSpec(ResourceLoaders.createJarResourceLoader("hibernate3integration", jarFile)));
+
+            // hack in the dependencies which are part of hibernate3integration
+            // TODO:  do this automatically (adding dependencies found in HIBERNATE_3_PROVIDER).
+            addDependency(moduleSpecification, moduleLoader, JBOSS_AS_NAMING_ID);
+            addDependency(moduleSpecification, moduleLoader, JBOSS_JANDEX_ID);
         } catch (ModuleLoadException e) {
             throw new RuntimeException("Could not load module " + HIBERNATE_3_PROVIDER + " to add hibernate 3 adaptor to deployment", e);
         } catch (MalformedURLException e) {
@@ -220,7 +234,14 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         return deploymentUnit;
     }
 
-
+    /**
+     * Make sure that the specified persistence provider adaptor module is loaded.
+     *
+     * @param moduleLoader
+     * @param adapterModule is expected to be a unique identifier (with respect to persistenceProviderClass)
+     * @param persistenceProviderClass uniquely identifiers a provider (e.g. Hibernate) but not the version of the provider
+     * @throws DeploymentUnitProcessingException
+     */
     private void loadPersistenceAdapterModule(ModuleLoader moduleLoader, String adapterModule, String persistenceProviderClass) throws
             DeploymentUnitProcessingException {
 
