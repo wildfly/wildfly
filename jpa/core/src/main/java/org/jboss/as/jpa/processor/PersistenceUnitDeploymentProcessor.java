@@ -394,7 +394,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                     log.debugf("loaded persistence provider adapter %s", adapterModule);
                 }
                 if (persistenceProviderAdaptor != null) {
-                    persistenceProviderAdaptor.setJtaManager(JtaManagerImpl.getInstance());
+                    persistenceProviderAdaptor.injectJtaManager(JtaManagerImpl.getInstance());
                     PersistenceProviderAdapterRegistry.putPersistenceProviderAdaptor(persistenceProviderClass, persistenceProviderAdaptor);
                     PersistenceProviderAdapterRegistry.putPersistenceProviderAdaptor(persistenceProviderClass, adapterModule, persistenceProviderAdaptor);
                 }

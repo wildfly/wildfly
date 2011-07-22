@@ -43,10 +43,16 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.ResourceLoaderSpec;
+import org.jboss.modules.ResourceLoaders;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.jar.JarFile;
 
 /**
  * Deployment processor which adds a module dependencies for modules needed for JPA deployments.
@@ -57,12 +63,14 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.jpa");
 
-    private static ModuleIdentifier JAVAX_PERSISTENCE_API_ID = ModuleIdentifier.create("javax.persistence.api");
-    private static ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
-    private static ModuleIdentifier JBOSS_AS_JPA_ID = ModuleIdentifier.create("org.jboss.as.jpa");
-    private static ModuleIdentifier JBOSS_AS_JPA_SPI_ID = ModuleIdentifier.create("org.jboss.as.jpa.spi");
-    private static ModuleIdentifier JAVASSIST_ID = ModuleIdentifier.create("org.javassist");
+    private static final ModuleIdentifier JAVAX_PERSISTENCE_API_ID = ModuleIdentifier.create("javax.persistence.api");
+    private static final ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
+    private static final ModuleIdentifier JBOSS_AS_JPA_ID = ModuleIdentifier.create("org.jboss.as.jpa");
+    private static final ModuleIdentifier JBOSS_AS_JPA_SPI_ID = ModuleIdentifier.create("org.jboss.as.jpa.spi");
+    private static final ModuleIdentifier JAVASSIST_ID = ModuleIdentifier.create("org.javassist");
 
+    private static final ModuleIdentifier HIBERNATE_3_PROVIDER = ModuleIdentifier.create("org.jboss.as.jpa.hibernate3");
+    private static final String HIBERNATE3_PROVIDER_ADAPTOR = "org.jboss.as.jpa.hibernate3.HibernatePersistenceProviderAdaptor";
 
     /**
      * Add dependencies for modules required for JPA deployments
@@ -81,7 +89,8 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, JBOSS_AS_JPA_ID);
         addDependency(moduleSpecification, moduleLoader, JBOSS_AS_JPA_SPI_ID);  // cover when adapter jar is in app
         addDependency(moduleSpecification, moduleLoader, JAVASSIST_ID);
-        log.infof("added javax.persistence.api, javaee.api, org.jboss.as.jpa, org.javassist dependencies to %s",deploymentUnit.getName());
+
+        log.infof("added javax.persistence.api, javaee.api, org.jboss.as.jpa, org.javassist dependencies to %s", deploymentUnit.getName());
         addPersistenceProviderModuleDependencies(phaseContext, moduleSpecification, moduleLoader);
     }
 
@@ -97,27 +106,60 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
 
     private void addPersistenceProviderModuleDependencies(DeploymentPhaseContext phaseContext, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) throws
-        DeploymentUnitProcessingException {
+            DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         int defaultProviderCount = 0;
         HashMap<String, Object> providers = new HashMap<String, Object>();
         PersistenceUnitMetadataHolder holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
 
+        defaultProviderCount = loadPersistenceUnits(moduleLoader, deploymentUnit, defaultProviderCount, providers, holder);
+
+        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
+        assert resourceRoots != null;
+        for (ResourceRoot resourceRoot : resourceRoots) {
+            holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
+            defaultProviderCount = loadPersistenceUnits(moduleLoader, deploymentUnit, defaultProviderCount, providers, holder);
+        }
+        // add dependencies for the default persistence provider module
+        if (defaultProviderCount > 0) {
+            providers.put(Configuration.PROVIDER_MODULE_DEFAULT, null);
+            log.info("added (default provider) " + Configuration.PROVIDER_MODULE_DEFAULT +
+                    " dependency to application deployment (since " + defaultProviderCount + " PU(s) didn't specify " + Configuration.PROVIDER_MODULE + ")");
+        }
+
+        // add persistence provider dependency
+        for (String dependency : providers.keySet()) {
+            addDependency(moduleSpecification, moduleLoader, ModuleIdentifier.create(dependency));
+            log.info("added " + dependency + " dependency to application deployment");
+        }
+    }
+
+    private int loadPersistenceUnits(final ModuleLoader moduleLoader, final DeploymentUnit deploymentUnit, int defaultProviderCount, final HashMap<String, Object> providers, final PersistenceUnitMetadataHolder holder) throws DeploymentUnitProcessingException {
         if (holder != null) {
             for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+                String providerModule = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
                 String adapterModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
                 String adapterClass = pu.getProperties().getProperty(Configuration.ADAPTER_CLASS);
-                if (adapterModule!= null && adapterClass != null) {
-                    log.info(pu.getPersistenceUnitName() +
-                        " is configured to use adapter module '" +adapterModule+"' and adapter class '" + adapterClass+"'");
+                if(providerModule != null && providerModule.equals(Configuration.PROVIDER_MODULE_HIBERNATE3_BUNDLED)) {
+                    //in this case we add the persistence provider to the deployment as a resource root
+                    adapterClass = HIBERNATE3_PROVIDER_ADAPTOR;
+                    pu.getProperties().put(Configuration.ADAPTER_CLASS, adapterClass);
+                    pu.getProperties().put(Configuration.PROVIDER_MODULE, Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED);
+                    pu.getProperties().remove(Configuration.ADAPTER_MODULE);
 
+                    //for this special case we need to make a copy of the hibernate 3 adaptor inside the deployment
+
+                    addHibernate3AdaptorToDeployment(moduleLoader, deploymentUnit);
+
+                }
+                if (adapterModule != null && adapterClass != null) {
+                    log.info(pu.getPersistenceUnitName() + " is configured to use adapter module '" + adapterModule + "' and adapter class '" + adapterClass + "'");
                     String persistenceProvider = pu.getPersistenceProviderClassName() != null
-                        ? pu.getPersistenceProviderClassName() : Configuration.PROVIDER_CLASS_DEFAULT;
+                            ? pu.getPersistenceProviderClassName() : Configuration.PROVIDER_CLASS_DEFAULT;
                     // load persistence provider adapter if not loaded yet
                     loadPersistenceAdapterModule(moduleLoader, adapterModule, persistenceProvider);
-                }
-                else if (adapterClass != null) {    // adapter class is expected to be in deployment
+                } else if (adapterClass != null) {    // adapter class is expected to be in deployment
                     savePersistenceAdapterClass(deploymentUnit, adapterClass);
                 }
 
@@ -125,66 +167,36 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                 if (provider != null) {
                     if (provider.equals(Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED)) {
                         log.info(pu.getPersistenceUnitName() +
-                            " is configured to use application supplied persistence provider");
-                    }
-                    else {
+                                " is configured to use application supplied persistence provider");
+                    } else {
                         providers.put(provider, null);
                     }
-                }
-                else {
+                } else {
                     defaultProviderCount++;  // track number of references to default provider module
                 }
             }
         }
+        return defaultProviderCount;
+    }
 
-        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
-        assert resourceRoots != null;
-        for (ResourceRoot resourceRoot : resourceRoots) {
-            holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
-            if (holder != null) {
-                for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
-                    String adapterModule =pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
-                    String adapterClass = pu.getProperties().getProperty(Configuration.ADAPTER_CLASS);
-                    if (adapterModule!= null && adapterClass != null) {
-                        log.info(pu.getPersistenceUnitName() +
-                            " is configured to use adapter module '" +adapterModule+"' and adapter class '" + adapterClass+"'");
+    private void addHibernate3AdaptorToDeployment(final ModuleLoader moduleLoader, final DeploymentUnit deploymentUnit) {
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        try {
+            final Module module = moduleLoader.loadModule(HIBERNATE_3_PROVIDER);
+            //use a trick to get to the root of the class loader
+            final URL url = module.getClassLoader().getResource(HIBERNATE3_PROVIDER_ADAPTOR.replace('.','/') + ".class");
 
-                        String persistenceProvider = pu.getPersistenceProviderClassName() != null
-                            ? pu.getPersistenceProviderClassName() : Configuration.PROVIDER_CLASS_DEFAULT;
-                        // load persistence provider adapter if not loaded yet
-                        loadPersistenceAdapterModule(moduleLoader, adapterModule, persistenceProvider);
-                    }
-                    else if (adapterClass != null) {    // adapter class is expected to be in deployment
-                        savePersistenceAdapterClass(deploymentUnit, adapterClass);
-                    }
-
-                    String provider = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
-                    if (provider != null) {
-                        if (provider.equals(Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED)) {
-                            log.info(pu.getPersistenceUnitName() +
-                                " is configured to use application supplied persistence provider");
-                        }
-                        else {
-                            providers.put(provider, null);
-                        }
-                    }
-                    else {
-                        defaultProviderCount++;  // track number of references to default provider module
-                    }
-                }
-            }
-        }
-        // add dependencies for the default persistence provider module
-        if (defaultProviderCount > 0 ) {
-            providers.put(Configuration.PROVIDER_MODULE_DEFAULT, null);
-            log.info("added (default provider) "+ Configuration.PROVIDER_MODULE_DEFAULT +
-                " dependency to application deployment (since "+defaultProviderCount+" PU(s) didn't specify "+Configuration.PROVIDER_MODULE+")");
-        }
-
-        // add persistence provider dependency
-        for (String dependency : providers.keySet()) {
-            addDependency(moduleSpecification, moduleLoader, ModuleIdentifier.create(dependency));
-            log.info("added "+ dependency + " dependency to application deployment");
+            final String path = url.getPath();
+            final String baseJarUrl = path.substring(0, path.lastIndexOf("!"));
+            final URL jarUrl = new URL(baseJarUrl);
+            JarFile jarFile = new JarFile(jarUrl.getFile());
+            moduleSpecification.addResourceLoader(ResourceLoaderSpec.createResourceLoaderSpec(ResourceLoaders.createJarResourceLoader("hibernate3integration", jarFile)));
+        } catch (ModuleLoadException e) {
+            throw new RuntimeException("Could not load module " + HIBERNATE_3_PROVIDER + " to add hibernate 3 adaptor to deployment", e);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Could not add hibernate 3 integration module to deployment", e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -193,7 +205,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         Attachable topDu = top(deploymentUnit);
         PersistenceProviderDeploymentHolder holder;
         holder = topDu.getAttachment(PersistenceProviderDeploymentHolder.DEPLOYED_PERSISTENCE_PROVIDER);
-        if ( holder == null) {
+        if (holder == null) {
             holder = new PersistenceProviderDeploymentHolder();
         }
         holder.setPersistenceProviderAdaptorClassName(adapterClass);
@@ -210,31 +222,31 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
 
     private void loadPersistenceAdapterModule(ModuleLoader moduleLoader, String adapterModule, String persistenceProviderClass) throws
-        DeploymentUnitProcessingException {
+            DeploymentUnitProcessingException {
 
         if (PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(persistenceProviderClass, adapterModule) == null) {
             try {
                 Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(adapterModule));
                 final ServiceLoader<PersistenceProviderAdaptor> serviceLoader =
-                    module.loadService(PersistenceProviderAdaptor.class);
+                        module.loadService(PersistenceProviderAdaptor.class);
                 if (serviceLoader != null) {
                     PersistenceProviderAdaptor persistenceProviderAdaptor = null;
-                    for(PersistenceProviderAdaptor adaptor: serviceLoader) {
+                    for (PersistenceProviderAdaptor adaptor : serviceLoader) {
                         if (persistenceProviderAdaptor != null) {
                             throw new DeploymentUnitProcessingException(
-                                "persistence provider adapter module has more than one adapters"
-                                + adapterModule +"(class "+persistenceProviderClass+")");
+                                    "persistence provider adapter module has more than one adapters"
+                                            + adapterModule + "(class " + persistenceProviderClass + ")");
                         }
                         persistenceProviderAdaptor = adaptor;
                     }
                     if (persistenceProviderAdaptor != null) {
-                        persistenceProviderAdaptor.setJtaManager(JtaManagerImpl.getInstance());
+                        persistenceProviderAdaptor.injectJtaManager(JtaManagerImpl.getInstance());
                         PersistenceProviderAdapterRegistry.putPersistenceProviderAdaptor(persistenceProviderClass, adapterModule, persistenceProviderAdaptor);
                     }
                 }
             } catch (ModuleLoadException e) {
                 throw new DeploymentUnitProcessingException("persistence provider adapter module load error"
-                    + adapterModule +"(class "+persistenceProviderClass+")",e);
+                        + adapterModule + "(class " + persistenceProviderClass + ")", e);
             }
         }
     }

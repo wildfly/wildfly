@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Keeps the registry of Persistence Provider adapters.
- *
+ * <p/>
  * Different versions of an adapter class, will use more specific (composite) key to reference the adapter that they want.
  * The composite key will be adapter module name + persistenceProviderClassName
  *
@@ -40,27 +40,27 @@ public class PersistenceProviderAdapterRegistry {
      * Map from Persistence provider class name to the persistence provider adapter.
      */
     private static final ConcurrentHashMap<String, PersistenceProviderAdaptor>
-        adapterRegistry = new ConcurrentHashMap<String, PersistenceProviderAdaptor>();
+            adapterRegistry = new ConcurrentHashMap<String, PersistenceProviderAdaptor>();
 
     public static PersistenceProviderAdaptor getPersistenceProviderAdaptor(String persistenceProviderClassName) {
         return adapterRegistry.get(persistenceProviderClassName);
     }
 
     public static PersistenceProviderAdaptor getPersistenceProviderAdaptor(String persistenceProviderClassName, String adapterModule) {
-        return adapterRegistry.get(adapterModule+persistenceProviderClassName);
+        return adapterRegistry.get(adapterModule + persistenceProviderClassName);
     }
 
     public static void putPersistenceProviderAdaptor(
-        String persistenceProviderClassName,
-        PersistenceProviderAdaptor persistenceProviderAdaptor) {
+            String persistenceProviderClassName,
+            PersistenceProviderAdaptor persistenceProviderAdaptor) {
         adapterRegistry.putIfAbsent(persistenceProviderClassName, persistenceProviderAdaptor);
     }
 
     public static void putPersistenceProviderAdaptor(
-        String persistenceProviderClassName,
-        String adapterModule,
-        PersistenceProviderAdaptor persistenceProviderAdaptor) {
-        adapterRegistry.putIfAbsent(adapterModule+persistenceProviderClassName, persistenceProviderAdaptor);
+            String persistenceProviderClassName,
+            String adapterModule,
+            PersistenceProviderAdaptor persistenceProviderAdaptor) {
+        adapterRegistry.putIfAbsent(adapterModule + persistenceProviderClassName, persistenceProviderAdaptor);
     }
 
 }

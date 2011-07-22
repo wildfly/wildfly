@@ -51,7 +51,7 @@ import java.util.Set;
  */
 public class HibernateAnnotationScanner implements Scanner {
 
-    private static ThreadLocal<PersistenceUnitMetadata> persistenceUnitMetadataTLS = new ThreadLocal<PersistenceUnitMetadata>();
+    private static final ThreadLocal<PersistenceUnitMetadata> persistenceUnitMetadataTLS = new ThreadLocal<PersistenceUnitMetadata>();
     private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
     public static void setThreadLocalPersistenceUnitMetadata(final PersistenceUnitMetadata pu) {

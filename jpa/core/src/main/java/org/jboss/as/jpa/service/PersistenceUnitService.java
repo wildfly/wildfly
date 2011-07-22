@@ -65,7 +65,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     private EntityManagerFactory entityManagerFactory;
     private PersistenceUnitMetadata pu;
-    PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder;
+    private final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder;
 
     public PersistenceUnitService(final PersistenceUnitMetadata pu, final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) {
         this.pu = pu;
@@ -81,8 +81,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
                 persistenceProviderDeploymentHolder.getProvider() != null &&
                 persistenceProviderDeploymentHolder.getProvider().getClass().getName().equals(pu.getPersistenceProviderClassName())) {
                 provider = persistenceProviderDeploymentHolder.getProvider();
-            }
-            else {
+            } else {
                 provider = lookupProvider(pu.getPersistenceProviderClassName());
             }
 

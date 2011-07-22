@@ -32,15 +32,15 @@ import org.jboss.vfs.VirtualFileFilter;
  * @author Scott Marlow
  */
 public class HibernatePatternFilter implements VirtualFileFilter {
-    private String pattern;
-    private boolean exact = true;
+    private final String pattern;
+    private final boolean exact;
 
     public HibernatePatternFilter(String pattern) {
         if (pattern == null)
             throw new IllegalArgumentException("Null pattern");
 
-        exact = pattern.contains("/") == false; // no path split or glob
-        if (exact == false && (pattern.startsWith("**/*"))) {
+        exact = !pattern.contains("/"); // no path split or glob
+        if (!exact && (pattern.startsWith("**/*"))) {
             this.pattern = pattern.substring(4);
         } else {
             this.pattern = pattern;
