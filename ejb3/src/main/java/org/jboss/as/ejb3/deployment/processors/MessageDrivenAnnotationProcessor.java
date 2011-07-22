@@ -38,8 +38,10 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.logging.Logger;
 
 import javax.ejb.MessageDriven;
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 /**
@@ -47,6 +49,8 @@ import java.util.List;
  */
 public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor {
     static final DotName MESSAGE_DRIVEN_ANNOTATION_NAME = DotName.createSimple(MessageDriven.class.getName());
+
+    private static final Logger logger = Logger.getLogger(MessageDrivenAnnotationProcessor.class);
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -73,6 +77,10 @@ public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor
                 throw new DeploymentUnitProcessingException("The @MessageDriven annotation is only allowed at the class level: " + target);
             }
             final ClassInfo beanClassInfo = (ClassInfo) target;
+            // skip if not a valid MDB class
+            if (!assertMessageDrivenBeanClassValidity(beanClassInfo)) {
+                continue;
+            }
             final String beanClassName = beanClassInfo.name().toString();
             final String ejbName = beanClassInfo.name().local();
             final AnnotationValue nameValue = instance.value("name");
@@ -97,6 +105,34 @@ public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor
     public void undeploy(DeploymentUnit context) {
         // do nothing
     }
+
+    /**
+     * Returns true if the passed <code>messageDrivenBeanClass</code> meets the requirements set by the EJB3 spec about
+     * bean implementation classes. The passed <code>messageDrivenBeanClass</code> must not be an interface and must be public
+     * and not final and not abstract. If it passes these requirements then this method returns true. Else it returns false.
+     *
+     * @param messageDrivenBeanClass The session bean class
+     * @return
+     */
+    private static boolean assertMessageDrivenBeanClassValidity(final ClassInfo messageDrivenBeanClass) {
+        final short flags = messageDrivenBeanClass.flags();
+        final String className = messageDrivenBeanClass.name().toString();
+        // must *not* be a interface
+        if (Modifier.isInterface(flags)) {
+            logger.warn("[EJB3.1 spec, section 5.6.2] Message driven bean implementation class MUST NOT be a interface - "
+                    + className + " is an interface, hence won't be considered as a message driven bean");
+            return false;
+        }
+        // bean class must be public, must *not* be abstract or final
+        if (!Modifier.isPublic(flags) || Modifier.isAbstract(flags) || Modifier.isFinal(flags)) {
+            logger.warn("[EJB3.1 spec, section 5.6.2] Message driven bean implementation class MUST be public, not abstract and not final - "
+                    + className + " won't be considered as a message driven bean, since it doesn't meet that requirement");
+            return false;
+        }
+        // valid class
+        return true;
+    }
+
 
 
 }
