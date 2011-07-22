@@ -31,6 +31,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
  * @author Scott Marlow
  */
 public interface JtaManager {
+
     TransactionSynchronizationRegistry getSynchronizationRegistry();
 
     TransactionManager locateTransactionManager();

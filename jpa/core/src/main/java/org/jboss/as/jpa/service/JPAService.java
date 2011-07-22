@@ -51,7 +51,6 @@ public class JPAService implements Service<Void> {
 
     private static String defaultDataSourceName = null;
 
-
     public static String getDefaultDataSourceName() {
         return defaultDataSourceName;
     }

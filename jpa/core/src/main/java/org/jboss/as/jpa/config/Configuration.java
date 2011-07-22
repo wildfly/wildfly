@@ -50,6 +50,11 @@ public class Configuration {
     public static final String PROVIDER_MODULE_APPLICATION_SUPPLIED = "application";
 
     /**
+     * Provider module that represents a bundled hibernate 3
+     */
+    public static final String PROVIDER_MODULE_HIBERNATE3_BUNDLED = "hibernate3-bundled";
+
+    /**
      * name of the AS module that contains the persistence provider adapter
      */
     public static final String ADAPTER_MODULE = "jboss.as.jpa.adapterModule";

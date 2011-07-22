@@ -32,7 +32,7 @@
         <module name="javax.annotation.api"/>
         <module name="javax.persistence.api"/>
         <module name="javax.transaction.api"/>
-        <module name="org.hibernate3"/>  <!-- org.hibernate3 must be manually created by user and contain hibernate3 jars -->
+        <!--  <module name="org.hibernate3"/>  org.hibernate3 must be manually created by user and contain hibernate3 jars -->
         <module name="org.hibernate.validator"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.as.naming"/>
