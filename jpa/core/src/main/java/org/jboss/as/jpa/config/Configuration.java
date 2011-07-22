@@ -55,6 +55,16 @@ public class Configuration {
     public static final String PROVIDER_MODULE_HIBERNATE3_BUNDLED = "hibernate3-bundled";
 
     /**
+     * Hibernate 3 persistence provider, if this provider is chosen. ADAPTER_MODULE_HIBERNATE3 will be enabled
+     */
+    public static final String PROVIDER_MODULE_HIBERNATE3 = "org.hibernate3";
+
+    /**
+     * Hibernate 3 persistence provider adaptor
+     */
+    public static final String ADAPTER_MODULE_HIBERNATE3 = "org.jboss.as.jpa.hibernate3";
+
+    /**
      * name of the AS module that contains the persistence provider adapter
      */
     public static final String ADAPTER_MODULE = "jboss.as.jpa.adapterModule";
