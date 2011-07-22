@@ -34,7 +34,8 @@ import java.io.InputStream;
  * @author Scott Marlow
  */
 public class HibernateVirtualFileNamedInputStream extends HibernateLazyNamedInputStream {
-    private VirtualFile file;
+
+    private final VirtualFile file;
 
     private static String name(VirtualFile file) {
         if (file == null)

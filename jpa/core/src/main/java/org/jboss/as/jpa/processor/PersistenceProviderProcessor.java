@@ -92,7 +92,7 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                     try {
                         PersistenceProviderAdaptor adaptor = (PersistenceProviderAdaptor)classLoader.loadClass(adapterClass).newInstance();
                         holder.setAdapter(adaptor);
-                        adaptor.setJtaManager(JtaManagerImpl.getInstance());
+                        adaptor.injectJtaManager(JtaManagerImpl.getInstance());
                     } catch (InstantiationException e) {
                         throw new DeploymentUnitProcessingException("could not create instance of adapter class '" +
                             adapterClass +"'", e);

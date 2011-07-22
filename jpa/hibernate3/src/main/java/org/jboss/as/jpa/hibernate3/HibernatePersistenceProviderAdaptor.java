@@ -43,7 +43,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     private JtaManager jtaManager;
 
     @Override
-    public void setJtaManager(JtaManager jtaManager) {
+    public void injectJtaManager(JtaManager jtaManager) {
         this.jtaManager = jtaManager;
         JBossAppServerJtaPlatform.initJBossAppServerJtaPlatform(jtaManager);
     }

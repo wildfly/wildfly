@@ -37,7 +37,7 @@ public interface PersistenceProviderAdaptor {
      * pass the JtaManager in for internal use by PersistenceProviderAdaptor implementer
      * @param jtaManager
      */
-    void setJtaManager(JtaManager jtaManager);
+    void injectJtaManager(JtaManager jtaManager);
 
     /**
      * Adds any provider specific properties (e.g. hibernate.transaction.manager_lookup_class)

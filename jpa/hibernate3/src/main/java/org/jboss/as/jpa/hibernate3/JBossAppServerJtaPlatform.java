@@ -36,7 +36,7 @@ import java.util.Properties;
  */
 public class JBossAppServerJtaPlatform extends JNDITransactionManagerLookup {
 
-    private static JtaManager jtaManager;
+    private static volatile JtaManager jtaManager;
 
     public static void initJBossAppServerJtaPlatform(final JtaManager manager) {
         jtaManager = manager;

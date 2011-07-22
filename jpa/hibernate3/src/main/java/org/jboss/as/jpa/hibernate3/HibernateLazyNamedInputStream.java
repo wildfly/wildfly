@@ -34,6 +34,7 @@ import java.io.InputStream;
  *         Scott Marlow
  */
 public abstract class HibernateLazyNamedInputStream extends NamedInputStream {
+
     public HibernateLazyNamedInputStream(String name) {
         super(name, null);
     }
