@@ -26,8 +26,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
@@ -42,8 +44,10 @@ import java.util.List;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.hornetq.core.server.JournalType;
+import org.jboss.as.connector.subsystems.datasources.Util;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -143,7 +147,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     unhandledElement(reader, element);
                     break;
                 case DIVERTS:
-                    unhandledElement(reader, element);
+                    parseDiverts(reader, address, list);
                     break;
                 case FILE_DEPLOYMENT_ENABLED:
                     unhandledElement(reader, element); // no filesystem support in AS
@@ -682,6 +686,72 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         return directory;
     }
 
+    private static void parseDiverts(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        requireNoAttributes(reader);
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case DIVERT: {
+                    parseDivert(reader, address, list);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseDivert(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+
+        requireSingleAttribute(reader, CommonAttributes.NAME);
+        String name = reader.getAttributeValue(0);
+
+        ModelNode divertAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.DIVERT, name));
+
+        EnumSet<Element> required = EnumSet.of(Element.ADDRESS, Element.FORWARDING_ADDRESS);
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            required.remove(element);
+            switch (element) {
+                case ROUTING_NAME: {
+                    handleElementText(reader, element, divertAdd);
+                    break;
+                }
+                case ADDRESS: {
+                    handleElementText(reader, element, divertAdd);
+                    break;
+                }
+                case FORWARDING_ADDRESS: {
+                    handleElementText(reader, element, divertAdd);
+                    break;
+                }
+                case FILTER: {
+                    Location location = reader.getLocation();
+                    String string = readStringAttributeElement(reader, CommonAttributes.STRING);
+                    FILTER.parseAndSetParameter(string, divertAdd, location);
+                    break;
+                }
+                case TRANSFORMER_CLASS_NAME: {
+                    handleElementText(reader, element, divertAdd);
+                    break;
+                }
+                case EXCLUSIVE: {
+                    handleElementText(reader, element, divertAdd);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+
+        if(!required.isEmpty()) {
+            missingRequired(reader, required);
+        }
+
+        list.add(divertAdd);
+    }
+
     static void unhandledElement(XMLExtendedStreamReader reader, Element element) throws XMLStreamException {
         throw new XMLStreamException(String.format("Ignoring unhandled element: %s, at: %s", element, reader.getLocation().toString()));
     }
@@ -697,18 +767,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    static void handleElementTextBoolean(final XMLExtendedStreamReader reader, final Element element, final ModelNode node) throws XMLStreamException {
-        handleElementText(reader, element, node, ModelType.BOOLEAN, false, false);
-    }
-
-    static void handleElementTextInt(final XMLExtendedStreamReader reader, final Element element, final ModelNode node) throws XMLStreamException {
-        handleElementText(reader, element, node, ModelType.INT, false, false);
-    }
-
-    static void handleElementTextLong(final XMLExtendedStreamReader reader, final Element element, final ModelNode node) throws XMLStreamException {
-        handleElementText(reader, element, node, ModelType.LONG, false, false);
-    }
-
+    /** @deprecated use AttributeDefinition */
+    @Deprecated
     static void handleElementText(final XMLExtendedStreamReader reader, final Element element, final ModelNode node, final ModelType expectedType,
                                   final boolean allowNull, final boolean allowExpression) throws XMLStreamException {
         Location location = reader.getLocation();
@@ -765,6 +825,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         for (AttributeDefinition simpleAttribute : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
             simpleAttribute.marshallAsElementText(node, writer);
         }
+
         if (has(node, ACCEPTOR)) {
             writeAcceptors(writer, node.get(ACCEPTOR));
         }
@@ -785,6 +846,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
         if (has(node, CONNECTOR_REF)) {
             //unhandled
+        }
+        if (node.hasDefined(DIVERT)) {
+            writeDiverts(writer, node.get(DIVERT));
         }
         if (has(node, CommonAttributes.FILE_DEPLOYMENT_ENABLED)) {
             //unhandled
@@ -1098,6 +1162,22 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writer.writeEndElement();
         }
         writer.writeEndElement();
+    }
+
+    private void writeDiverts(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        List<Property> properties = node.asPropertyList();
+        if (!properties.isEmpty()) {
+            writer.writeStartElement(Element.DIVERTS.getLocalName());
+            for(final Property property : node.asPropertyList()) {
+                writer.writeStartElement(Element.DIVERTS.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                for (AttributeDefinition attribute : CommonAttributes.DIVERT_ATTRIBUTES) {
+                    attribute.marshallAsElementText(node, writer);
+                }
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
     }
 
     static void writeSimpleElement(final XMLExtendedStreamWriter writer, final Element element, final ModelNode node) throws XMLStreamException {
