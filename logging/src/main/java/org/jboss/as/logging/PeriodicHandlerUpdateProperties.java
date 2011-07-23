@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import java.util.logging.Handler;
+import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.PeriodicRotatingFileHandler;
@@ -35,6 +36,7 @@ import org.jboss.logmanager.handlers.PeriodicRotatingFileHandler;
 public class PeriodicHandlerUpdateProperties extends FlushingHandlerUpdateProperties {
     static final PeriodicHandlerUpdateProperties INSTANCE = new PeriodicHandlerUpdateProperties();
 
+    @Override
     protected void updateModel(final ModelNode operation, final ModelNode model) {
         super.updateModel(operation, model);
 
@@ -43,7 +45,8 @@ public class PeriodicHandlerUpdateProperties extends FlushingHandlerUpdateProper
         }
     }
 
-    protected void updateRuntime(final ModelNode operation, final Handler handler) {
+    @Override
+    protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
         super.updateRuntime(operation, handler);
         if (operation.hasDefined(SUFFIX)) {
             PeriodicRotatingFileHandler.class.cast(handler).setSuffix(operation.get(SUFFIX).asString());

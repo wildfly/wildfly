@@ -97,7 +97,7 @@ public abstract class HandlerUpdateProperties implements OperationStepHandler {
 
     protected abstract void updateModel(final ModelNode operation, final ModelNode model);
 
-    protected abstract void updateRuntime(final ModelNode operation, final Handler handler);
+    protected abstract void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException;
 
     protected void apply(ModelNode from, ModelNode to, String... attributePath) {
         if (from.get(attributePath).isDefined()) {
