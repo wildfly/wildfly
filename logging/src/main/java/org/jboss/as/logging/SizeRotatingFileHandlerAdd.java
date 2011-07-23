@@ -91,8 +91,17 @@ class SizeRotatingFileHandlerAdd extends AbstractAddStepHandler {
             if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
             if (operation.hasDefined(MAX_BACKUP_INDEX))
                 service.setMaxBackupIndex(operation.get(MAX_BACKUP_INDEX).asInt());
-            if (operation.hasDefined(ROTATE_SIZE))
-                service.setRotateSize(operation.get(ROTATE_SIZE).asLong(DEFAULT_ROTATE_SIZE));
+
+            long rotateSize = DEFAULT_ROTATE_SIZE;
+            if (operation.hasDefined(ROTATE_SIZE)) {
+                try {
+                    rotateSize = LoggingSubsystemParser.parseSize(operation.get(ROTATE_SIZE).asString());
+                } catch (Throwable t) {
+                    throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+                }
+            }
+            service.setRotateSize(rotateSize);
+
             serviceBuilder.addListener(verificationHandler);
             serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
             newControllers.add(serviceBuilder.install());
