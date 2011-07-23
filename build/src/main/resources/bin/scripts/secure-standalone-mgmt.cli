@@ -1,9 +1,9 @@
 ##
 ## Basic script which can be run against the default standalone.xml configuration to
 ## secure the management interfaces. This requires the 'PropertiesMgmtSecurityRealm'
-## security-realm to be configured.
+## security-realm to be configured. It also requires that the server is running.
 ##
-## ./jboss-admin.sh -c --file=scripts/secure-standalone-mgmt.cli
+## ./jboss-admin.sh -c --file=bin/scripts/secure-standalone-mgmt.cli
 ##
 
 # Use a batch, so that in case the validation does not pass we don't apply the subsequent changes.

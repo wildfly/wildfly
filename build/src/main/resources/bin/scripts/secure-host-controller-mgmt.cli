@@ -1,9 +1,9 @@
 ##
 ## Basic script which can be run against the default host.xml configuration to
 ## secure the Host Controller's management interfaces. This requires the 'PropertiesMgmtSecurityRealm'
-## security-realm to be configured.
+## security-realm to be configured. It also requires that the host controller is running.
 ##
-## ./jboss-admin.sh -c --file=scripts/secure-host-controller-mgmt.cli
+## ./jboss-admin.sh -c --file=bin/scripts/secure-host-controller-mgmt.cli
 ##
 ## Note that the commands below are addressed to "host=master", which is the name of the host in
 ## in the default host.xml that comes with the JBoss Application Server distribution. You must
