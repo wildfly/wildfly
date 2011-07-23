@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import java.util.logging.Handler;
+import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.ConsoleHandler;
@@ -35,6 +36,7 @@ import org.jboss.logmanager.handlers.ConsoleHandler;
 public class ConsoleHandlerUpdateProperties extends FlushingHandlerUpdateProperties {
     static final ConsoleHandlerUpdateProperties INSTANCE = new ConsoleHandlerUpdateProperties();
 
+    @Override
     protected void updateModel(final ModelNode operation, ModelNode model) {
         super.updateModel(operation, model);
         if (operation.hasDefined(TARGET)) {
@@ -42,7 +44,8 @@ public class ConsoleHandlerUpdateProperties extends FlushingHandlerUpdatePropert
         }
     }
 
-    protected void updateRuntime(final ModelNode operation, final Handler handler) {
+    @Override
+    protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
         super.updateRuntime(operation, handler);
         if (operation.hasDefined(TARGET)) {
             switch (Target.fromString(operation.get(TARGET).asString())) {

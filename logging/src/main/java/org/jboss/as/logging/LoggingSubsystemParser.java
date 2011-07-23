@@ -644,7 +644,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         String encoding = null;
         ModelNode fileSpec = null;
         boolean append = true;
-        long rotateSize = 0L;
+        String rotateSize = null;
         int maxBackupIndex = 1;
         String formatterSpec = null;
 
@@ -678,7 +678,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case ROTATE_SIZE: {
-                    rotateSize = parseSize(readStringAttributeElement(reader, "value"));
+                    rotateSize = readStringAttributeElement(reader, "value");
                     break;
                 }
                 case MAX_BACKUP_INDEX: {
@@ -706,7 +706,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
         node.get(FILE).set(fileSpec);
         node.get(APPEND).set(append);
-        if (rotateSize > 0L) {
+        if (rotateSize != null) {
             node.get(ROTATE_SIZE).set(rotateSize);
         }
         if (maxBackupIndex > 0) {
@@ -717,7 +717,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
     private static final Pattern SIZE_PATTERN = Pattern.compile("(\\d+)([kKmMgGbBtT])?");
 
-    private static long parseSize(final String value) {
+    public static long parseSize(final String value) {
         final Matcher matcher = SIZE_PATTERN.matcher(value);
         if (!matcher.matches()) {
             throw new IllegalArgumentException();

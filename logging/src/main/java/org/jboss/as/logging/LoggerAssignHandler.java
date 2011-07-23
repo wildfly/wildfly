@@ -24,9 +24,9 @@ package org.jboss.as.logging;
 
 import java.util.List;
 import java.util.logging.Handler;
+import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.msc.service.ServiceBuilder;
@@ -44,7 +44,7 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Stan Silvert
  */
-public class LoggerAssignHandler extends AbstractAddStepHandler {
+public class LoggerAssignHandler extends AbstractModelUpdateHandler {
     private static final String OPERATION_NAME = "assign-handler";
     private static final LoggerAssignHandler INSTANCE = new LoggerAssignHandler();
 
@@ -62,7 +62,8 @@ public class LoggerAssignHandler extends AbstractAddStepHandler {
         return INSTANCE;
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    @Override
+    protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         final String handlerName = getHandlerName(operation);
         ModelNode assignedHandlers = getAssignedHandlers(model);
         if (assignedHandlers.isDefined() && assignedHandlers.asList().contains(operation.get(CommonAttributes.NAME)))
