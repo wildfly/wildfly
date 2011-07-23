@@ -24,7 +24,7 @@ package org.jboss.as.logging;
 
 import java.util.List;
 import java.util.logging.Handler;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -42,7 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
  *
  * @author Stan Silvert
  */
-public class AsyncHandlerAssignSubhandler extends AbstractAddStepHandler {
+public class AsyncHandlerAssignSubhandler extends AbstractModelUpdateHandler {
     private static final String OPERATION_NAME = "assign-subhandler";
     private static final AsyncHandlerAssignSubhandler INSTANCE = new AsyncHandlerAssignSubhandler();
 
@@ -66,7 +66,8 @@ public class AsyncHandlerAssignSubhandler extends AbstractAddStepHandler {
         throw new OperationFailedException(failure);
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    @Override
+    protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         String handlerName = operation.get(CommonAttributes.NAME).asString();
         ModelNode assignedHandlers = model.get(CommonAttributes.SUBHANDLERS);
         if (assignedHandlers.isDefined() && assignedHandlers.asList().contains(operation.get(CommonAttributes.NAME)))

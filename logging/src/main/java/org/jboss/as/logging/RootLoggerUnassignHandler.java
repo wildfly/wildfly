@@ -55,9 +55,13 @@ public class RootLoggerUnassignHandler extends LoggerUnassignHandler {
         return "";
     }
 
+    /**
+     * Get the ModelNode that has a "handlers" attribute.
+     * @param model The root model for the operation.
+     * @return The ModelNode that has a "handlers" attribute.
+     */
     @Override
-    protected ModelNode getUpdateableModel(OperationContext context) {
-        return context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(CommonAttributes.ROOT_LOGGER);
+    protected ModelNode getTargetModel(ModelNode model) {
+        return model.get(CommonAttributes.ROOT_LOGGER);
     }
-
 }

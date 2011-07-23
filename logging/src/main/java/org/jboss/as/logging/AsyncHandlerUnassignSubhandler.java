@@ -25,14 +25,14 @@ package org.jboss.as.logging;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Handler;
-import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.value.InjectedValue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 
@@ -42,7 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
  *
  * @author Stan Silvert
  */
-public class AsyncHandlerUnassignSubhandler extends AbstractRemoveStepHandler {
+public class AsyncHandlerUnassignSubhandler extends AbstractModelUpdateHandler {
     private static final String OPERATION_NAME = "unassign-subhandler";
     private static final AsyncHandlerUnassignSubhandler INSTANCE = new AsyncHandlerUnassignSubhandler();
 
@@ -67,12 +67,11 @@ public class AsyncHandlerUnassignSubhandler extends AbstractRemoveStepHandler {
     }
 
     @Override
-    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         ModelNode handlerNameNode = operation.get(CommonAttributes.NAME);
         String handlerName = handlerNameNode.asString();
 
-        ModelNode updateableModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-        ModelNode assignedHandlers = updateableModel.get(CommonAttributes.SUBHANDLERS);
+        ModelNode assignedHandlers = model.get(CommonAttributes.SUBHANDLERS);
         if (!assignedHandlers.isDefined() || !assignedHandlers.asList().contains(handlerNameNode)) {
             opFailed("Can not unassign handler.  Handler " + handlerName + " is not assigned.");
         }
@@ -83,11 +82,12 @@ public class AsyncHandlerUnassignSubhandler extends AbstractRemoveStepHandler {
             newList.add(node);
         }
 
-        updateableModel.get(CommonAttributes.SUBHANDLERS).set(newList);
+        model.get(CommonAttributes.SUBHANDLERS).set(newList);
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                  final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String asyncHandlerName = address.getLastElement().getValue();
         String handlerNameToUnassign = operation.get(CommonAttributes.NAME).asString();

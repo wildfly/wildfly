@@ -24,10 +24,12 @@ package org.jboss.as.logging;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.msc.service.ServiceController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import org.jboss.dmr.ModelNode;
@@ -38,7 +40,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Stan Silvert
  */
-public class LoggerUnassignHandler extends AbstractRemoveStepHandler {
+public class LoggerUnassignHandler extends AbstractModelUpdateHandler {
     private static final String OPERATION_NAME = "unassign-handler";
     private static final LoggerUnassignHandler INSTANCE = new LoggerUnassignHandler();
 
@@ -79,25 +81,32 @@ public class LoggerUnassignHandler extends AbstractRemoveStepHandler {
         return updateableModel.get(CommonAttributes.HANDLERS);
     }
 
-    protected ModelNode getUpdateableModel(OperationContext context) {
-        return context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-    }
-
     @Override
-    protected void performRuntime (final OperationContext context, final ModelNode operation, final ModelNode model) {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                  final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         String loggerName = getLoggerName(operation);
         String handlerName = getHandlerName(operation);
 
         context.removeService(LogServices.loggerHandlerName(loggerName, handlerName));
     }
 
+    /**
+     * Get the ModelNode that has a "handlers" attribute.
+     * @param model The root model for the operation.
+     * @return The ModelNode that has a "handlers" attribute.
+     */
+    protected ModelNode getTargetModel(ModelNode model) {
+        return model;
+    }
+
     @Override
-    protected void performRemove(OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         String handlerName = getHandlerName(operation);
         ModelNode handlerNameNode = getHandlerNameNode(operation);
 
-        ModelNode updateableModel = getUpdateableModel(context);
-        ModelNode assignedHandlers = getAssignedHandlers(updateableModel);
+        ModelNode targetModel = getTargetModel(model);
+
+        ModelNode assignedHandlers = getAssignedHandlers(targetModel);
         if (!assignedHandlers.isDefined() || !assignedHandlers.asList().contains(handlerNameNode))
             opFailed("Can not unassign handler.  Handler " + handlerName + " is not assigned.");
 
@@ -107,7 +116,7 @@ public class LoggerUnassignHandler extends AbstractRemoveStepHandler {
             newList.add(node);
         }
 
-        updateableModel.get(CommonAttributes.HANDLERS).set(newList);
+        targetModel.get(CommonAttributes.HANDLERS).set(newList);
     }
 
 }
