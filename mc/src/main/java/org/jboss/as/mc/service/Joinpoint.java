@@ -23,16 +23,15 @@
 package org.jboss.as.mc.service;
 
 /**
- * Instantiation action; ctor or factory method.
+ * Invoke a method or ctor.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public interface InstantiationAction {
+interface Joinpoint {
     /**
-     * Instantiate a bean.
+     * Dispatch this action.
      *
-     * @param parameters the parameters
-     * @return bean instance
+     * @return dispatch result
      */
-    Object instantiate(Object[] parameters);
+    Object dispatch();
 }

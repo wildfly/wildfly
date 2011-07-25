@@ -34,46 +34,29 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class InstantiatedPojoPhase implements Service<Object> {
+public class InstantiatedPojoPhase extends AbstractPojoPhase implements Service<Object> {
     private Object bean;
 
-    private InjectedValue<InstantiationAction> instantiationAction = new InjectedValue<InstantiationAction>();
-    private InjectedValue<Object>[] parameters; // dynamic size
-    private InjectedValue<BeanInfo> beanInfo = new InjectedValue<BeanInfo>();
+    private InjectedValue<Joinpoint> instantiationAction = new InjectedValue<Joinpoint>();
 
     public void start(StartContext context) throws StartException {
-        Object[] params;
-        if (parameters == null || parameters.length == 0) {
-            params = new Object[0];
-        } else {
-            params = new Object[parameters.length];
-            for (int i = 0; i < parameters.length; i++)
-                params[i] = parameters[i].getValue();
-        }
-        bean = instantiationAction.getValue().instantiate(params);
+        bean = instantiationAction.getValue().dispatch();
 
-        // TODO -- <install>
+        executeInstalls();
 
         final ServiceTarget serviceTarget = context.getChildTarget();
         // TODO
     }
 
     public void stop(StopContext context) {
+        executeUninstalls();
     }
 
     public Object getValue() throws IllegalStateException, IllegalArgumentException {
         return bean;
     }
 
-    public void setParameters(InjectedValue<Object>[] parameters) {
-        this.parameters = parameters;
-    }
-
-    public InjectedValue<InstantiationAction> getInstantiationAction() {
+    public InjectedValue<Joinpoint> getInstantiationAction() {
         return instantiationAction;
-    }
-
-    public InjectedValue<BeanInfo> getBeanInfo() {
-        return beanInfo;
     }
 }
