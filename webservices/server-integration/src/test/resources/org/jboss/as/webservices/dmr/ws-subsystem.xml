@@ -1,0 +1,6 @@
+<subsystem xmlns="urn:jboss:domain:webservices:1.0">
+	<modify-wsdl-address>true</modify-wsdl-address>
+	<wsdl-host>localhost</wsdl-host>
+	<wsdl-port>9090</wsdl-port>
+	<wsdl-secure-port>9443</wsdl-secure-port>
+</subsystem>
