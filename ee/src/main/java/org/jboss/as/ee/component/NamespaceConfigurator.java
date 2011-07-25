@@ -55,8 +55,8 @@ public final class NamespaceConfigurator implements ComponentConfigurator {
         final Injector<NamingStore> appInjector = selector.getAppContextInjector();
         final Injector<NamingStore> moduleInjector = selector.getModuleContextInjector();
         final Injector<NamingStore> compInjector = selector.getCompContextInjector();
-        configuration.getStartDependencies().add(new DependencyConfigurator() {
-            public void configureDependency(final ServiceBuilder<?> serviceBuilder) {
+        configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
+            public void configureDependency(final ServiceBuilder<?> serviceBuilder, ComponentStartService service) {
                 serviceBuilder.addDependency(appContextServiceName, NamingStore.class, appInjector);
                 serviceBuilder.addDependency(moduleContextServiceName, NamingStore.class, moduleInjector);
                 if (namingMode == ComponentNamingMode.CREATE) {
