@@ -14,10 +14,13 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:complexType>
-            <xs:all>
-                <xs:element maxOccurs="1" minOccurs="0" name="jndi-name" type="xs:string"/>
-            </xs:all>
-        </xs:complexType>
     </xs:element>
+
+    <xs:complexType name="subsystem">
+        <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="0" name="jndi-name" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+
 </xs:schema>

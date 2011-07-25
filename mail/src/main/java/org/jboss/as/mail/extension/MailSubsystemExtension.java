@@ -97,7 +97,7 @@ public class MailSubsystemExtension implements Extension {
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             // Require no content
-            ParseUtils.requireNoContent(reader);
+            //ParseUtils.requireNoContent(reader);
             list.add(createAddSubsystemOperation());
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 log.info("element: "+reader+" value: "+reader.getElementText());
