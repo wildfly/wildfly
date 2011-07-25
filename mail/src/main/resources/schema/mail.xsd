@@ -1,0 +1,23 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:jboss:domain:mail:1.0"
+           targetNamespace="urn:jboss:domain:mail:1.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.0">
+
+
+    <xs:element name="subsystem">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                The configuration of the mail subsystem.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:all>
+                <xs:element maxOccurs="1" minOccurs="0" name="jndi-name" type="xs:string"/>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
