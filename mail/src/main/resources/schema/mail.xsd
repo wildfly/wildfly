@@ -4,23 +4,38 @@
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">
+      <!-- The security subsystem root element -->
+   <xs:element name="subsystem" type="mail-subsystemType" />
 
-
-    <xs:element name="subsystem">
-        <xs:annotation>
+    <xs:complexType name="mail-subsystemType">
+         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
                 The configuration of the mail subsystem.
             ]]>
             </xs:documentation>
         </xs:annotation>
-    </xs:element>
-
-    <xs:complexType name="subsystem">
-        <xs:sequence>
-            <xs:element maxOccurs="1" minOccurs="0" name="jndi-name" type="xs:string"/>
-        </xs:sequence>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="mail-session" type="mail-sessionType"/>
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="mail-sessionType">
+        <xs:all>
+            <xs:element name="username" type="xs:string"/>
+            <xs:element name="password" type="xs:string"/>
+            <xs:element name="properties" type="properties-type" />
+        </xs:all>
+        <xs:attribute name="jndi-name" use="required"/>
     </xs:complexType>
 
+    <xs:complexType name="properties-type">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="property">
+                <xs:complexType mixed="true">
+                    <xs:attribute name="name" type="xs:string" use="required"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:choice>
+    </xs:complexType>
 
 </xs:schema>
