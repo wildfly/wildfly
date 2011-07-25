@@ -1,4 +1,4 @@
-cd b<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
   ~ JBoss, Home of Professional Open Source.
@@ -22,31 +22,18 @@ cd b<?xml version="1.0" encoding="UTF-8"?>
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.modcluster">
-
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.mail">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="javax.annotation.api"/>
         <module name="javax.api"/>
-        <module name="javax.servlet.api"/>
-        <module name="javax.servlet.jsp.api"/>
-        <module name="org.jboss.jandex"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.ee"/>
-        <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.server"/>
-        <module name="org.jboss.as.web"/>
-        <module name="org.jboss.threads"/>
-        <module name="org.jboss.metadata"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
-        <module name="org.jboss.vfs"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.common-core"/>
-        <module name="org.picketbox"/>
     </dependencies>
 </module>
