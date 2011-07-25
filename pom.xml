@@ -252,12 +252,12 @@
         <module>jpa</module>
         <module>logging</module>
         <module>mail</module>
-        <module>mc</module>
         <module>messaging</module>
         <module>modcluster</module>
         <module>naming</module>
         <module>network</module>
         <module>osgi</module>
+        <module>pojo</module>
         <module>process-controller</module>
         <module>protocol</module>
         <module>remoting</module>
@@ -811,6 +811,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-network</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-pojo</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

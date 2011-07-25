@@ -551,6 +551,10 @@
             <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster"/>
         </module-def>
 
+        <module-def name="org.jboss.as.pojo">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-pojo"/>
+        </module-def>
+
         <module-def name="org.jboss.as.naming">
             <maven-resource group="org.jboss.as" artifact="jboss-as-naming"/>
         </module-def>
