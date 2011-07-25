@@ -31,10 +31,10 @@
     <xs:element name="subsystem" type="subsystem"/>
 
     <xs:complexType name="subsystem">
-        <xs:choice>
+        <xs:sequence>
             <xs:element name="global-modules" type="modulesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="ear-subdeployments-isolated" default="false" type="ear-subdeployments-isolatedType" minOccurs="0" maxOccurs="1"/>
-        </xs:choice>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="modulesType">

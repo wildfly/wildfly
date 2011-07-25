@@ -36,6 +36,7 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
+import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -45,6 +46,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
+import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
@@ -139,6 +141,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private final List<String> aroundInvokeDDMethods = new ArrayList<String>(0);
     private final List<String> preDestroyDDMethods = new ArrayList<String>(0);
     private final List<String> postConstructDDMethods = new ArrayList<String>(0);
+
+    /**
+     * TODO: this should not be part of the description
+     */
+    private TimerService timerService = NonFunctionalTimerService.INSTANCE;
 
 
     private final PopulatingMap<MethodIntf, Map<String, TransactionAttributeType>> txPerViewStyle2 = new PopulatingMap<MethodIntf, Map<String, TransactionAttributeType>>() {
@@ -732,6 +739,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public List<String> getPreDestroyDDMethods() {
         return preDestroyDDMethods;
+    }
+
+    public TimerService getTimerService() {
+        return timerService;
+    }
+
+    public void setTimerService(final TimerService timerService) {
+        this.timerService = timerService;
     }
 
     @Override

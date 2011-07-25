@@ -33,6 +33,7 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
+import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
@@ -56,6 +57,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final EJBSecurityMetaData securityMetaData;
 
+    private final TimerService timerService;
+
+
     /**
      * Construct a new instance.
      *
@@ -65,9 +69,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         super(componentConfiguration);
 
         this.ejbJarConfiguration = ejbJarConfiguration;
-
-        EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
+        final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
         this.transactionManagementType = ejbComponentDescription.getTransactionManagementType();
+
+        this.timerService = ejbComponentDescription.getTimerService();
 
         // CMTTx
         if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
@@ -92,6 +97,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
                 }
             }
         }
+
         // FIXME: TODO: a temporary measure until EJBTHREE-2120 is fully resolved, let's create tx attribute map
         // for the component methods. Once the issue is resolved, we should get rid of this block and just rely on setting
         // up the tx attributes only for the views exposed by this component
@@ -134,7 +140,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return this.ejbJarConfiguration;
     }
 
-    private void processTxAttr(final EJBComponentDescription ejbComponentDescription, final MethodIntf methodIntf, final Method method) {
+    protected void processTxAttr(final EJBComponentDescription ejbComponentDescription, final MethodIntf methodIntf, final Method method) {
         if (this.getTransactionManagementType().equals(TransactionManagementType.BEAN)) {
             // it's a BMT bean
             return;
@@ -163,5 +169,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public EJBSecurityMetaData getSecurityMetaData() {
         return this.securityMetaData;
+    }
+
+    public TimerService getTimerService() {
+        return timerService;
     }
 }

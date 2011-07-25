@@ -39,7 +39,9 @@ public class InterceptorOrder {
         public static final int INITIAL_INTERCEPTOR                                         = 0x100;
         public static final int TCCL_INTERCEPTOR                                            = 0x200;
         public static final int JNDI_NAMESPACE_INTERCEPTOR                                  = 0x300;
+        public static final int TIMEOUT_INVOCATION_CONTEXT_INTERCEPTOR                      = 0x310;
         public static final int BMT_TRANSACTION_INTERCEPTOR                                 = 0x400;
+        public static final int TIMEOUT_CMT_INTERCEPTOR                                     = 0x410;
         public static final int SFSB_SYNCHRONIZATION_INTERCEPTOR                            = 0x500;
         public static final int JPA_SESSION_BEAN_INTERCEPTOR                                = 0x600;
         public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR         = 0x700;

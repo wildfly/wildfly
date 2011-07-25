@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.component.singleton;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.invocation.InvocationOnMock;
@@ -65,12 +67,13 @@ public class CreateComponentInstanceTestCase {
         final CountDownLatch done = new CountDownLatch(1);
         final CountDownLatch latch = new CountDownLatch(1);
         final SingletonComponent component = mock(SingletonComponent.class);
-        when(component.getComponentInstance()).thenCallRealMethod();
-        when(component.instantiateComponentInstance(Matchers.<AtomicReference<ManagedReference>>any(), Matchers.<Interceptor>any(), Matchers.<Map<Method, Interceptor>>any())).thenCallRealMethod();
+        final SimpleInterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
+        when(component.getComponentInstance()).thenCallRealMethod();    
+        when(component.instantiateComponentInstance(Matchers.<AtomicReference<ManagedReference>>any(), Matchers.<Interceptor>any(), Matchers.<Map<Method, Interceptor>>any(), Matchers.<InterceptorFactoryContext>any())).thenCallRealMethod();
         when(component.createInstance()).thenAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                ComponentInstance instance = component.instantiateComponentInstance(null, null, new HashMap<Method, Interceptor>());
+                ComponentInstance instance = component.instantiateComponentInstance(null, null, new HashMap<Method, Interceptor>(), context);
                 done.countDown();
                 latch.await(10, SECONDS);
                 return instance;

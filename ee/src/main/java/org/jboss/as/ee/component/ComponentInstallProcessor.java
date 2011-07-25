@@ -91,8 +91,9 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
 
         //create additional injectors
-        final ServiceName createServiceName = baseName.append("CREATE");
-        final ServiceName startServiceName = baseName.append("START");
+
+        final ServiceName createServiceName = configuration.getComponentDescription().getCreateServiceName();
+        final ServiceName startServiceName = configuration.getComponentDescription().getStartServiceName();
         final BasicComponentCreateService createService = configuration.getComponentCreateServiceFactory().constructService(configuration);
         final ServiceBuilder<Component> createBuilder = serviceTarget.addService(createServiceName, createService);
         // inject the DU

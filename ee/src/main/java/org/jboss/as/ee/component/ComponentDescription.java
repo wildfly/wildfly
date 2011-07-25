@@ -58,7 +58,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -118,11 +117,11 @@ public class ComponentDescription {
     /**
      * Construct a new instance.
      *
-     * @param componentName             the component name
-     * @param componentClassName        the component instance class name
-     * @param moduleDescription         the EE module description
-     * @param classDescription          the component class' description
-     * @param deploymentUnitServiceName the service name of the DU containing this component
+     * @param componentName                 the component name
+     * @param componentClassName            the component instance class name
+     * @param moduleDescription             the EE module description
+     * @param classDescription              the component class' description
+     * @param deploymentUnitServiceName     the service name of the DU containing this component
      * @param applicationClassesDescription
      */
     public ComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final EEModuleClassDescription classDescription, final ServiceName deploymentUnitServiceName, final EEApplicationClasses applicationClassesDescription) {
@@ -170,6 +169,24 @@ public class ComponentDescription {
      */
     public ServiceName getServiceName() {
         return serviceName;
+    }
+
+    /**
+     * Get the service name of this components start service
+     *
+     * @return The start service name
+     */
+    public ServiceName getStartServiceName() {
+        return serviceName.append("START");
+    }
+
+    /**
+     * Get the service name of this components create service
+     *
+     * @return The create service name
+     */
+    public ServiceName getCreateServiceName() {
+        return serviceName.append("CREATE");
     }
 
     /**
@@ -463,6 +480,15 @@ public class ComponentDescription {
     }
 
     /**
+     * TODO: change this to a per method setting
+     *
+     * @return true if timer service interceptor chains should be built for this component
+     */
+    public boolean isTimerServiceApplicable() {
+        return false;
+    }
+
+    /**
      * Get the configurators for this component.
      *
      * @return the configurators
@@ -505,10 +531,22 @@ public class ComponentDescription {
 
             final ClassReflectionIndex<?> componentClassIndex = deploymentReflectionIndex.getClassIndex(componentClassConfiguration.getModuleClass());
             final List<InterceptorFactory> componentUserAroundInvoke = new ArrayList<InterceptorFactory>();
+            final List<InterceptorFactory> componentUserAroundTimeout;
+
             final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+            final Map<String, List<InterceptorFactory>> userAroundTimeoutsByInterceptorClass;
 
             final Map<String, List<InterceptorFactory>> userPostConstructByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
             final Map<String, List<InterceptorFactory>> userPreDestroyByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+
+            if (description.isTimerServiceApplicable()) {
+                componentUserAroundTimeout = new ArrayList<InterceptorFactory>();
+                userAroundTimeoutsByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+            } else {
+                componentUserAroundTimeout = null;
+                userAroundTimeoutsByInterceptorClass = null;
+            }
+
 
             // Primary instance
             final ManagedReferenceFactory instanceFactory = configuration.getInstanceFactory();
@@ -541,7 +579,7 @@ public class ComponentDescription {
 
 
             //all interceptors with lifecycle callbacks, in the correct order
-            final LinkedHashSet<InterceptorDescription> interceptorWithLifecycleCallbacks = new LinkedHashSet<InterceptorDescription>();
+            final List<InterceptorDescription> interceptorWithLifecycleCallbacks = new ArrayList<InterceptorDescription>();
             if (!description.isExcludeDefaultInterceptors()) {
                 interceptorWithLifecycleCallbacks.addAll(description.getDefaultInterceptors());
             }
@@ -615,6 +653,19 @@ public class ComponentDescription {
                                 interceptors.add(new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, false));
                             }
                         }
+                        if (description.isTimerServiceApplicable()) {
+                            final MethodIdentifier aroundTimeoutMethodIdentifier = classDescription.getAroundTimeoutMethod();
+                            if (aroundTimeoutMethodIdentifier != null) {
+                                final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, interceptorClassIndex, aroundTimeoutMethodIdentifier);
+                                if (isNotOverriden(interceptorClassConfiguration, method, interceptorIndex, deploymentReflectionIndex)) {
+                                    List<InterceptorFactory> interceptors;
+                                    if ((interceptors = userAroundTimeoutsByInterceptorClass.get(interceptorClassName)) == null) {
+                                        userAroundTimeoutsByInterceptorClass.put(interceptorClassName, interceptors = new ArrayList<InterceptorFactory>());
+                                    }
+                                    interceptors.add(new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, false));
+                                }
+                            }
+                        }
                     }
                 }.run();
             }
@@ -663,6 +714,15 @@ public class ComponentDescription {
                             componentUserAroundInvoke.add(new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, false));
                         }
                     }
+                    if (description.isTimerServiceApplicable()) {
+                        final MethodIdentifier componentAroundTimeoutMethodIdentifier = classDescription.getAroundTimeoutMethod();
+                        if (componentAroundTimeoutMethodIdentifier != null) {
+                            final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classReflectionIndex, componentAroundTimeoutMethodIdentifier);
+                            if (isNotOverriden(configuration, method, componentClassIndex, deploymentReflectionIndex)) {
+                                componentUserAroundTimeout.add(new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, false));
+                            }
+                        }
+                    }
                 }
             }.run();
 
@@ -706,13 +766,20 @@ public class ComponentDescription {
 
                 configuration.addComponentInterceptor(method, Interceptors.getInitialInterceptorFactory(), InterceptorOrder.Component.INITIAL_INTERCEPTOR);
                 configuration.addComponentInterceptor(method, new ManagedReferenceMethodInterceptorFactory(instanceKey, method), InterceptorOrder.Component.TERMINAL_INTERCEPTOR);
+                if (description.isTimerServiceApplicable()) {
+                    configuration.addTimeoutInterceptor(method, new ManagedReferenceMethodInterceptorFactory(instanceKey, method), InterceptorOrder.Component.TERMINAL_INTERCEPTOR);
+                }
                 // and also add the tccl interceptor
                 configuration.addComponentInterceptor(method, tcclInterceptor, InterceptorOrder.Component.TCCL_INTERCEPTOR);
+                if (description.isTimerServiceApplicable()) {
+                    configuration.addTimeoutInterceptor(method, tcclInterceptor, InterceptorOrder.Component.TCCL_INTERCEPTOR);
+                }
 
 
                 final MethodIdentifier identifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
 
                 final List<InterceptorFactory> userAroundInvokes = new ArrayList<InterceptorFactory>();
+                final List<InterceptorFactory> userAroundTimeouts = new ArrayList<InterceptorFactory>();
                 // first add the default interceptors (if not excluded) to the deque
                 if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
                     for (InterceptorDescription interceptorDescription : description.getDefaultInterceptors()) {
@@ -720,6 +787,12 @@ public class ComponentDescription {
                         List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
                         if (aroundInvokes != null) {
                             userAroundInvokes.addAll(aroundInvokes);
+                        }
+                        if (description.isTimerServiceApplicable()) {
+                            List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
+                            if (aroundTimeouts != null) {
+                                userAroundTimeouts.addAll(aroundTimeouts);
+                            }
                         }
                     }
                 }
@@ -730,8 +803,12 @@ public class ComponentDescription {
                         String interceptorClassName = interceptorDescription.getInterceptorClassName();
                         List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
                         if (aroundInvokes != null) {
-                            if (aroundInvokes != null) {
-                                userAroundInvokes.addAll(aroundInvokes);
+                            userAroundInvokes.addAll(aroundInvokes);
+                        }
+                        if (description.isTimerServiceApplicable()) {
+                            List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
+                            if (aroundTimeouts != null) {
+                                userAroundTimeouts.addAll(aroundTimeouts);
                             }
                         }
                     }
@@ -744,21 +821,24 @@ public class ComponentDescription {
                         String interceptorClassName = methodLevelInterceptor.getInterceptorClassName();
                         List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
                         if (aroundInvokes != null) {
-                            if (aroundInvokes != null) {
-                                userAroundInvokes.addAll(aroundInvokes);
+                            userAroundInvokes.addAll(aroundInvokes);
+                        }
+                        if (description.isTimerServiceApplicable()) {
+                            List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
+                            if (aroundTimeouts != null) {
+                                userAroundTimeouts.addAll(aroundTimeouts);
                             }
                         }
-
                     }
                 }
 
                 // finally add the component level around invoke to the deque so that it's triggered last
-                if (componentUserAroundInvoke != null) {
-                    userAroundInvokes.addAll(componentUserAroundInvoke);
-                }
+                userAroundInvokes.addAll(componentUserAroundInvoke);
 
-                if (!userAroundInvokes.isEmpty()) {
-                    configuration.addComponentInterceptor(method, weaved(userAroundInvokes), InterceptorOrder.Component.USER_INTERCEPTORS);
+                configuration.addComponentInterceptor(method, weaved(userAroundInvokes), InterceptorOrder.Component.USER_INTERCEPTORS);
+                if (description.isTimerServiceApplicable()) {
+                    userAroundTimeouts.addAll(componentUserAroundTimeout);
+                    configuration.addTimeoutInterceptor(method, weaved(userAroundTimeouts), InterceptorOrder.Component.USER_INTERCEPTORS);
                 }
             }
 

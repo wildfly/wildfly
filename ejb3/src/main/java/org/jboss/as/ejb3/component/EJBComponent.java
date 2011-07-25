@@ -36,12 +36,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.ApplicationException;
-import javax.ejb.EJBException;
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
@@ -53,13 +49,10 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.security.Principal;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -93,6 +86,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
     private final Map<Class<?>, ApplicationException> applicationExceptions;
     private final EJBSecurityMetaData securityMetaData;
     private final Map<String, ServiceName> viewServices;
+    private final TimerService timerService;
 
     /**
      * Construct a new instance.
@@ -117,8 +111,8 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
         // security metadata
         this.securityMetaData = ejbComponentCreateService.getSecurityMetaData();
-
         this.viewServices = ejbComponentCreateService.getViewServices();
+        this.timerService = ejbComponentCreateService.getTimerService();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -244,16 +238,11 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
     @Override
     public TimerService getTimerService() throws IllegalStateException {
-        // TODO: Temporary, till we have a working timerservice integrated
-        return new NonFunctionalTimerService();
+        return timerService;
     }
 
     @Deprecated
     public TransactionAttributeType getTransactionAttributeType(Method method) {
-        if (!youHaveBeenWarnedEJBTHREE2120) {
-            log.warn("EJBTHREE-2120: deprecated getTransactionAttributeType method called (dev problem)");
-            youHaveBeenWarnedEJBTHREE2120 = true;
-        }
         return getTransactionAttributeType(MethodIntf.BEAN, method);
     }
 
@@ -367,69 +356,5 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
     public EJBSecurityMetaData getSecurityMetaData() {
         return this.securityMetaData;
-    }
-
-    /**
-     * TODO: Delete this non-functional timerservice once we have a working timerservice integrated with EJBs.
-     */
-    private class NonFunctionalTimerService implements TimerService {
-
-        private final UnsupportedOperationException UNSUPPORTED_OPERATION_EXCEPTION = new UnsupportedOperationException("This is a " +
-                "temporary non-functional timerservice. No operations are allowed on it.");
-
-        @Override
-        public Timer createCalendarTimer(ScheduleExpression schedule) throws IllegalArgumentException, IllegalStateException, EJBException {
-            throw UNSUPPORTED_OPERATION_EXCEPTION;
-        }
-
-        @Override
-        public Timer createCalendarTimer(ScheduleExpression schedule, TimerConfig timerConfig) throws IllegalArgumentException, IllegalStateException, EJBException {
-            throw UNSUPPORTED_OPERATION_EXCEPTION;
-        }
-
-        @Override
-        public Timer createIntervalTimer(Date initialExpiration, long intervalDuration, TimerConfig timerConfig) throws IllegalArgumentException, IllegalStateException, EJBException {
-            throw UNSUPPORTED_OPERATION_EXCEPTION;
-        }
-
-        @Override
-        public Timer createIntervalTimer(long initialDuration, long intervalDuration, TimerConfig timerConfig) throws IllegalArgumentException, IllegalStateException, EJBException {
-            throw UNSUPPORTED_OPERATION_EXCEPTION;
-        }
-
-        @Override
-        public Timer createSingleActionTimer(Date expiration, TimerConfig timerConfig) throws IllegalArgumentException, IllegalStateException, EJBException {
-            throw UNSUPPORTED_OPERATION_EXCEPTION;
-        }
-
-        @Override
-        public Timer createSingleActionTimer(long duration, TimerConfig timerConfig) throws IllegalArgumentException, IllegalStateException, EJBException {
-            throw UNSUPPORTED_OPERATION_EXCEPTION;
-        }
-
-        @Override
-        public Timer createTimer(long duration, Serializable info) throws IllegalArgumentException, IllegalStateException, EJBException {
-            throw UNSUPPORTED_OPERATION_EXCEPTION;
-        }
-
-        @Override
-        public Timer createTimer(long initialDuration, long intervalDuration, Serializable info) throws IllegalArgumentException, IllegalStateException, EJBException {
-            throw UNSUPPORTED_OPERATION_EXCEPTION;
-        }
-
-        @Override
-        public Timer createTimer(Date expiration, Serializable info) throws IllegalArgumentException, IllegalStateException, EJBException {
-            throw UNSUPPORTED_OPERATION_EXCEPTION;
-        }
-
-        @Override
-        public Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info) throws IllegalArgumentException, IllegalStateException, EJBException {
-            throw UNSUPPORTED_OPERATION_EXCEPTION;
-        }
-
-        @Override
-        public Collection<Timer> getTimers() throws IllegalStateException, EJBException {
-            throw UNSUPPORTED_OPERATION_EXCEPTION;
-        }
     }
 }

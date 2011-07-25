@@ -92,6 +92,9 @@ public class JPAInterceptorProcessor implements DeploymentUnitProcessor {
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws
                         DeploymentUnitProcessingException {
                     configuration.addComponentInterceptor(SBInvocationInterceptor.FACTORY, InterceptorOrder.Component.JPA_SESSION_BEAN_INTERCEPTOR, false);
+                    if(description.isTimerServiceApplicable()) {
+                        configuration.addTimeoutInterceptor(SBInvocationInterceptor.FACTORY, InterceptorOrder.Component.JPA_SESSION_BEAN_INTERCEPTOR);
+                    }
                 }
             });
         }

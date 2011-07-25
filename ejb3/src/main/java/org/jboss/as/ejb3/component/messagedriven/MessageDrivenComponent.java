@@ -32,6 +32,7 @@ import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.pool.StatelessObjectFactory;
 import org.jboss.ejb3.pool.strictmax.StrictMaxPool;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.StopContext;
 
 import javax.resource.ResourceException;
@@ -116,7 +117,7 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
     }
 
     @Override
-    protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors) {
+    protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
         return new MessageDrivenComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 

@@ -125,6 +125,7 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
                 }
             }
             injectionTarget = WeldEEInjection.createWeldEEInjection(componentClass, bean, beanManager);
+
         } finally {
             SecurityActions.setContextClassLoader(cl);
         }
