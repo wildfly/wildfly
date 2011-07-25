@@ -20,28 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.mc;
+package org.jboss.as.mc.service;
 
 /**
- * A MC bean state.
+ * Instantiation action; ctor or factory method.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public enum BeanState {
-    DESCRIBED,
-    INSTANTIATED,
-    CONFIGURED,
-    CREATE,
-    START,
-    INSTALLED;
-
+public interface InstantiationAction {
     /**
-     * Get the next state.
+     * Instantiate a bean.
      *
-     * @return the next state
+     * @param parameters the parameters
+     * @return bean instance
      */
-    public BeanState next() {
-        return values()[ordinal() + 1];
-    }
+    Object instantiate(Object[] parameters);
 }

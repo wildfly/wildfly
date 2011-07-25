@@ -20,28 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.mc;
+package org.jboss.as.mc.service;
 
 /**
- * A MC bean state.
+ * Bean info API.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public enum BeanState {
-    DESCRIBED,
-    INSTANTIATED,
-    CONFIGURED,
-    CREATE,
-    START,
-    INSTALLED;
-
-    /**
-     * Get the next state.
-     *
-     * @return the next state
-     */
-    public BeanState next() {
-        return values()[ordinal() + 1];
-    }
+interface BeanInfo {
 }

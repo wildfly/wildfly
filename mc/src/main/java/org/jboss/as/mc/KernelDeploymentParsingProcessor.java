@@ -23,6 +23,7 @@
 package org.jboss.as.mc;
 
 import java.io.InputStream;
+import java.util.List;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -35,6 +36,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -63,17 +65,31 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
      */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        DeploymentUnit unit = phaseContext.getDeploymentUnit();
+        final VirtualFile deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        parseDescriptor(unit, deploymentRoot);
+        final List<ResourceRoot> resourceRoots = unit.getAttachmentList(Attachments.RESOURCE_ROOTS);
+        for (ResourceRoot root : resourceRoots)
+            parseDescriptor(unit, root.getRoot());
+    }
 
-        if(deploymentRoot == null || deploymentRoot.exists() == false)
+    /**
+     * Find and parse -jboss-beans.xml files.
+     *
+     * @param unit the deployment unit
+     * @param root the root
+     * @throws DeploymentUnitProcessingException for any error
+     */
+    protected void parseDescriptor(DeploymentUnit unit, VirtualFile root) throws DeploymentUnitProcessingException {
+        if (root == null || root.exists() == false)
             return;
 
-        final String deploymentRootName = deploymentRoot.getLowerCaseName();
-        VirtualFile beansXmlFile = null;
-        if(deploymentRootName.endsWith(".jar")) {
-            beansXmlFile = deploymentRoot.getChild("META-INF/jboss-beans.xml");
-        } else if(deploymentRootName.endsWith("jboss-beans.xml")) {
-            beansXmlFile = deploymentRoot;
+        final String name = root.getName();
+        VirtualFile beansXmlFile;
+        if(name.endsWith("jboss-beans.xml")) {
+            beansXmlFile = root;
+        } else {
+            beansXmlFile = root.getChild("META-INF/jboss-beans.xml");
         }
         if(beansXmlFile == null || beansXmlFile.exists() == false)
             return;
@@ -86,7 +102,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
             xmlMapper.parseDocument(result, reader);
             final KernelDeploymentXmlDescriptor xmlDescriptor = result.getResult();
             if(xmlDescriptor != null)
-                phaseContext.getDeploymentUnit().putAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+                unit.addToAttachmentList(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             else
                 throw new DeploymentUnitProcessingException("Failed to parse MC beans xml [" + beansXmlFile + "]");
         } catch(Exception e) {

@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.mc.service.DescribedPojoPhase;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -45,7 +46,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
 
 /**
  * DeploymentUnit processor responsible for taking KernelDeploymentXmlDescriptor
@@ -68,27 +68,34 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final KernelDeploymentXmlDescriptor kdXmlDescriptor = phaseContext.getDeploymentUnit().getAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY);
-        if(kdXmlDescriptor == null)
+        final List<KernelDeploymentXmlDescriptor> kdXmlDescriptors = phaseContext.getDeploymentUnit().getAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY);
+        if(kdXmlDescriptors == null || kdXmlDescriptors.isEmpty())
             return;
 
         final Module module = phaseContext.getDeploymentUnit().getAttachment(Attachments.MODULE);
         if(module == null)
             throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
-        final DeploymentReflectionIndex index = phaseContext.getAttachment(Attachments.REFLECTION_INDEX);
-        final List<BeanMetaDataConfig> beanConfigs = kdXmlDescriptor.getBeans();
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        for(final BeanMetaDataConfig beanConfig : beanConfigs) {
-            final String className = beanConfig.getBeanClass();
-            try {
-                addBean(serviceTarget, beanConfig, Class.forName(className, false, module.getClassLoader()), index);
-            } catch (ClassNotFoundException e) {
-                throw new DeploymentUnitProcessingException("Bean class " + className + " not found", e);
+        final DeploymentReflectionIndex index = phaseContext.getAttachment(Attachments.REFLECTION_INDEX);
+
+        for (KernelDeploymentXmlDescriptor kdXmlDescriptor : kdXmlDescriptors) {
+            final List<BeanMetaDataConfig> beanConfigs = kdXmlDescriptor.getBeans();
+            for(final BeanMetaDataConfig beanConfig : beanConfigs) {
+                describeBean(module, serviceTarget, index, beanConfig);
             }
+            // TODO -- KD::classloader, KD::aliases
         }
     }
 
     public void undeploy(final DeploymentUnit context) {
+    }
+
+    protected void describeBean(final Module module, final ServiceTarget serviceTarget, DeploymentReflectionIndex deploymentIndex, BeanMetaDataConfig beanConfig) {
+        final ServiceName beanServiceName = JBOSS_MC_POJO.append(beanConfig.getName());
+        final ServiceName describedServiceName = beanServiceName.append(BeanState.DESCRIBED.name());
+        final DescribedPojoPhase describedService = new DescribedPojoPhase(module, deploymentIndex, beanConfig);
+        final ServiceBuilder describedServiceBuilder = serviceTarget.addService(describedServiceName, describedService);
+        describedServiceBuilder.install();
     }
 
     @SuppressWarnings({"unchecked"})

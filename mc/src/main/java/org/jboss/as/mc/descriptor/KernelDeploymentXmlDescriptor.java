@@ -23,6 +23,7 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -37,7 +38,7 @@ import java.util.Map;
 public class KernelDeploymentXmlDescriptor implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    public static final AttachmentKey<KernelDeploymentXmlDescriptor> ATTACHMENT_KEY = AttachmentKey.create(KernelDeploymentXmlDescriptor.class);
+    public static final AttachmentKey<AttachmentList<KernelDeploymentXmlDescriptor>> ATTACHMENT_KEY = AttachmentKey.createList(KernelDeploymentXmlDescriptor.class);
 
     private List<BeanMetaDataConfig> beans;
     private ControllerMode controllerMode;
