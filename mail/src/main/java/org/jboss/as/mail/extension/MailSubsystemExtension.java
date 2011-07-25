@@ -9,20 +9,10 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.List;
 import java.util.Locale;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -70,40 +60,11 @@ public class MailSubsystemExtension implements Extension {
         subsystem.registerXMLElementWriter(parser);
     }
 
-    private static ModelNode createAddSubsystemOperation() {
+    protected static ModelNode createAddSubsystemOperation() {
         final ModelNode subsystem = new ModelNode();
         subsystem.get(OP).set(ADD);
         subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
         return subsystem;
-    }
-
-    /**
-     * The subsystem parser, which uses stax to read and write to and from xml
-     */
-    private static class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-        private static final Logger log = Logger.getLogger(MailSubsystemParser.class);
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(MailSubsystemExtension.NAMESPACE, false);
-            writer.writeEndElement();
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-            // Require no content
-            //ParseUtils.requireNoContent(reader);
-            list.add(createAddSubsystemOperation());
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                log.info("element: "+reader+" value: "+reader.getElementText());
-            }
-
-        }
     }
 
 
