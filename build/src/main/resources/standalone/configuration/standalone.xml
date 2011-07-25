@@ -39,8 +39,14 @@
         <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
+	<!-- xts requires web services
+        <extension module="org.jboss.as.webservices" />
+	-->
         <extension module="org.jboss.as.web" />
         <extension module="org.jboss.as.weld" />
+	<!-- xts extension must be enabled
+        <extension module="org.jboss.as.xts"/>
+	-->
     </extensions>
 
     <management>
@@ -244,6 +250,16 @@
             </core-environment>
             <coordinator-environment default-timeout="300"/>
         </subsystem>
+	<!-- a minimal webservices configuration allowing xts can work
+        <subsystem xmlns="urn:jboss:domain:webservices:1.0" xmlns:javaee="http://java.sun.com/xml/ns/javaee" xmlns:jaxwsconfig="urn:jboss:jbossws-jaxws-config:4.0">
+            <wsdl-host>
+                localhost
+            </wsdl-host>
+            <modify-wsdl-address>
+                false
+            </modify-wsdl-address>
+        </subsystem>
+	-->
         <subsystem xmlns="urn:jboss:domain:web:1.0" default-virtual-server="default-host">
             <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
             <virtual-server name="default-host" enable-welcome-root="true">
@@ -252,6 +268,11 @@
             </virtual-server>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:weld:1.0" />
+	<!-- xts configuration still needs completing
+        <subsystem xmlns="urn:jboss:domain:xts:1.0">
+            <xts-environment url="http://localhost:8080/ws-c11/ActivationService"/>
+        </subsystem>
+	-->
     </profile>
 
     <interfaces>

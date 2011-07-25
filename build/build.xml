@@ -596,6 +596,9 @@
         <module-def name="org.jboss.as.weld">
             <maven-resource group="org.jboss.as" artifact="jboss-as-weld"/>
         </module-def>
+        <module-def name="org.jboss.as.xts">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-xts"/>
+        </module-def>
 
         <module-def name="org.jboss.as.threads">
             <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
@@ -894,6 +897,11 @@
 
         <module-def name="org.jboss.xnio">
             <maven-resource group="org.jboss.xnio" artifact="xnio-api"/>
+        </module-def>
+
+        <module-def name="org.jboss.xts">
+            <maven-resource group="org.jboss.jbossts" artifact="jbossxts"/>
+            <maven-resource group="org.jboss.jbossts" artifact="jbossxts-api"/>
         </module-def>
 
         <module-def name="org.jgroups">
