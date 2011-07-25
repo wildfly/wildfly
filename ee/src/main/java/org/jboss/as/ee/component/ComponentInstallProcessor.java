@@ -110,10 +110,10 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         }
         // Add all service dependencies
         for (DependencyConfigurator configurator : configuration.getCreateDependencies()) {
-            configurator.configureDependency(createBuilder);
+            configurator.configureDependency(createBuilder, createService);
         }
         for (DependencyConfigurator configurator : configuration.getStartDependencies()) {
-            configurator.configureDependency(startBuilder);
+            configurator.configureDependency(startBuilder, startService);
         }
 
         // START depends on CREATE

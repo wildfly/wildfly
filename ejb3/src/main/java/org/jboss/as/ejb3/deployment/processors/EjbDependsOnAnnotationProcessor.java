@@ -27,6 +27,7 @@ import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
@@ -110,9 +111,9 @@ public class EjbDependsOnAnnotationProcessor extends AbstractComponentConfigProc
         componentDescription.getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.getStartDependencies().add(new DependencyConfigurator() {
+                configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
                     @Override
-                    public void configureDependency(final ServiceBuilder<?> serviceBuilder) throws DeploymentUnitProcessingException {
+                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, ComponentStartService service) throws DeploymentUnitProcessingException {
                         for(ServiceName dep : singletonComponentDescription.getDependsOn()) {
                             serviceBuilder.addDependency(dep);
                         }

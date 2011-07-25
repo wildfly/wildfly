@@ -780,9 +780,9 @@ public class ComponentDescription {
                 configuration.getViews().add(viewConfiguration);
             }
 
-            configuration.getStartDependencies().add(new DependencyConfigurator() {
+            configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
                 @Override
-                public void configureDependency(final ServiceBuilder<?> serviceBuilder) throws DeploymentUnitProcessingException {
+                public void configureDependency(final ServiceBuilder<?> serviceBuilder, ComponentStartService service) throws DeploymentUnitProcessingException {
                     for (final Map.Entry<ServiceName, ServiceBuilder.DependencyType> entry : description.getDependencies().entrySet()) {
                         serviceBuilder.addDependency(entry.getValue(), entry.getKey());
                     }
@@ -796,7 +796,7 @@ public class ComponentDescription {
         }
     }
 
-    static class InjectedConfigurator implements DependencyConfigurator {
+    static class InjectedConfigurator implements DependencyConfigurator<ComponentStartService> {
 
         private final ResourceInjectionConfiguration injectionConfiguration;
         private final ComponentConfiguration configuration;
@@ -810,7 +810,7 @@ public class ComponentDescription {
             this.managedReferenceFactoryValue = managedReferenceFactoryValue;
         }
 
-        public void configureDependency(final ServiceBuilder<?> serviceBuilder) throws DeploymentUnitProcessingException {
+        public void configureDependency(final ServiceBuilder<?> serviceBuilder, ComponentStartService service) throws DeploymentUnitProcessingException {
             InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
                     configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.USE_MODULE,
                     configuration.getComponentName(),
