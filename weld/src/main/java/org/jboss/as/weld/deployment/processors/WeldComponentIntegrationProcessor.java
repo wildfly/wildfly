@@ -24,6 +24,7 @@ package org.jboss.as.weld.deployment.processors;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
@@ -122,9 +123,9 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
                 .addDependency(weldServiceName, WeldContainer.class, factory.getWeldContainer());
 
         configuration.setInstanceFactory(factory);
-        configuration.getStartDependencies().add(new DependencyConfigurator() {
+        configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
             @Override
-            public void configureDependency(final ServiceBuilder<?> serviceBuilder) throws DeploymentUnitProcessingException {
+            public void configureDependency(final ServiceBuilder<?> serviceBuilder, ComponentStartService service) throws DeploymentUnitProcessingException {
                 serviceBuilder.addDependency(serviceName);
             }
         });

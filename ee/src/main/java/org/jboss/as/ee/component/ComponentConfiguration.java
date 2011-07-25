@@ -25,6 +25,7 @@ package org.jboss.as.ee.component;
 import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.msc.service.Service;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -60,8 +61,8 @@ public class ComponentConfiguration {
     // Component instance management
     private ManagedReferenceFactory instanceFactory;
 
-    private final List<DependencyConfigurator> createDependencies = new ArrayList<DependencyConfigurator>();
-    private final List<DependencyConfigurator> startDependencies = new ArrayList<DependencyConfigurator>();
+    private final List<DependencyConfigurator<Service<Component>>> createDependencies = new ArrayList<DependencyConfigurator<Service<Component>>>();
+    private final List<DependencyConfigurator<ComponentStartService>> startDependencies = new ArrayList<DependencyConfigurator<ComponentStartService>>();
 
     // Views
     private final List<ViewConfiguration> views = new ArrayList<ViewConfiguration>();
@@ -168,7 +169,7 @@ public class ComponentConfiguration {
      *
      * @return the create dependencies list
      */
-    public List<DependencyConfigurator> getCreateDependencies() {
+    public List<DependencyConfigurator<Service<Component>>> getCreateDependencies() {
         return createDependencies;
     }
 
@@ -177,7 +178,7 @@ public class ComponentConfiguration {
      *
      * @return the start dependencies list
      */
-    public List<DependencyConfigurator> getStartDependencies() {
+    public List<DependencyConfigurator<ComponentStartService>> getStartDependencies() {
         return startDependencies;
     }
 
