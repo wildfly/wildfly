@@ -208,7 +208,22 @@
             <jpa default-datasource=""/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:mail:1.0">
-          <jndi-name>java:/Mail</jndi-name>
+            <mail-session jndi-name="java:/Mail">
+                <username>nobody</username>
+                <password>password</password>
+                <properties>
+                    <property name="mail.smtp.host">localhost</property>
+                    <property name="mail.smtp.port">9999</property>
+                </properties>
+           </mail-session>
+            <mail-session jndi-name="foo/MyMailServer1">
+                <username>myuser</username>
+                <password>mypassword</password>
+                <properties>
+                    <property name="mail.smtp.host">localhost</property>
+                    <property name="mail.smtp.port">9999</property>
+                </properties>
+           </mail-session>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
