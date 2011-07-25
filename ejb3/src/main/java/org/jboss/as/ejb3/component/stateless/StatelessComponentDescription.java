@@ -37,6 +37,7 @@ import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
 import org.jboss.as.ejb3.component.session.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.tx.TimerCMTTxInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.Interceptor;
@@ -76,10 +77,10 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
             getConfigurators().add(new ComponentConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                   final ComponentInstanceInterceptorFactory slsbBmtInterceptorFactory = new ComponentInstanceInterceptorFactory() {
+                    final ComponentInstanceInterceptorFactory slsbBmtInterceptorFactory = new ComponentInstanceInterceptorFactory() {
                         @Override
                         protected Interceptor create(Component component, InterceptorFactoryContext context) {
-                            if (component instanceof StatelessSessionComponent == false) {
+                            if (!(component instanceof StatelessSessionComponent)) {
                                 throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
                                         " isn't a stateless component");
                             }
@@ -88,6 +89,14 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
                     };
                     // add the bmt interceptor factory
                     configuration.addComponentInterceptor(slsbBmtInterceptorFactory, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR, false);
+                    configuration.addTimeoutInterceptor(slsbBmtInterceptorFactory, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR);
+                }
+            });
+        } else {
+            getConfigurators().add(new ComponentConfigurator() {
+                @Override
+                public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                    configuration.addTimeoutInterceptor(TimerCMTTxInterceptorFactory.INSTANCE, InterceptorOrder.Component.TIMEOUT_CMT_INTERCEPTOR);
                 }
             });
         }
@@ -118,9 +127,9 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
 
                 //add equals/hashCode interceptor
                 //add equals/hashCode interceptor
-                for(Method method : configuration.getProxyFactory().getCachedMethods()) {
-                    if((method.getName().equals("hashCode") && method.getParameterTypes().length==0) ||
-                            method.getName().equals("equals") && method.getParameterTypes().length ==1 &&
+                for (Method method : configuration.getProxyFactory().getCachedMethods()) {
+                    if ((method.getName().equals("hashCode") && method.getParameterTypes().length == 0) ||
+                            method.getName().equals("equals") && method.getParameterTypes().length == 1 &&
                                     method.getParameterTypes()[0] == Object.class) {
                         configuration.addViewInterceptor(method, ComponentTypeIdentityInterceptorFactory.INSTANCE, InterceptorOrder.View.SESSION_BEAN_EQUALS_HASHCODE);
                     }
@@ -130,5 +139,10 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
                 configuration.addViewInterceptor(PooledInstanceInterceptor.pooled(), InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
             }
         });
+    }
+
+    @Override
+    public boolean isTimerServiceApplicable() {
+        return true;
     }
 }

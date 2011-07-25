@@ -120,6 +120,8 @@ public class Jsr299BindingsInterceptor implements Serializable, org.jboss.invoca
         switch (interceptionType) {
             case AROUND_INVOKE:
                 return doMethodInterception(context.getInvocationContext(), InterceptionType.AROUND_INVOKE);
+            case AROUND_TIMEOUT:
+                return doMethodInterception(context.getInvocationContext(), InterceptionType.AROUND_TIMEOUT);
             case PRE_DESTROY:
                 try {
                     return doLifecycleInterception(context);

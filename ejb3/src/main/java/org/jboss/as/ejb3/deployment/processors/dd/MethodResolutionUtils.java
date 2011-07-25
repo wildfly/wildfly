@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.deployment.processors.dd;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.metadata.ejb.spec.MethodMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 import java.lang.reflect.Method;
@@ -65,10 +64,5 @@ public class MethodResolutionUtils {
         }
         throw new DeploymentUnitProcessingException("Could not find method" + componentClass.getName() + "." + methodData.getMethodName() + " referenced in ejb-jar.xml");
 
-    }
-
-    public static Method resolveRequiredMethod(final MethodMetaData method, final Class<?> componentClass, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
-
-        return null;
     }
 }

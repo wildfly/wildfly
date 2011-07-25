@@ -22,13 +22,7 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
@@ -37,6 +31,15 @@ import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.pool.StatelessObjectFactory;
 import org.jboss.ejb3.pool.strictmax.StrictMaxPool;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
+
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link org.jboss.as.ee.component.Component} responsible for managing EJB3 stateless session beans
@@ -47,6 +50,7 @@ import org.jboss.invocation.Interceptor;
 public class StatelessSessionComponent extends SessionBeanComponent implements PooledComponent<StatelessSessionComponentInstance> {
 
     private Pool<StatelessSessionComponentInstance> pool;
+    private final Method timeoutMethod;
 
     /**
      * Constructs a StatelessEJBComponent for a stateless session bean
@@ -68,6 +72,7 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
             }
         };
         this.pool = new StrictMaxPool<StatelessSessionComponentInstance>(factory, 20, 5, TimeUnit.MINUTES);
+        this.timeoutMethod = ejbComponentCreateService.getTimeoutMethod();
     }
 
 
@@ -100,13 +105,26 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
 
     @Override
-    protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors) {
-        return new StatelessSessionComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
+    protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
 
+        final Map<Method, Interceptor> timeouts;
+        if (timeoutInterceptors != null) {
+            timeouts = new IdentityHashMap<Method, Interceptor>();
+            for (Map.Entry<Method, InterceptorFactory> entry : timeoutInterceptors.entrySet()) {
+                timeouts.put(entry.getKey(), entry.getValue().create(interceptorContext));
+            }
+        } else {
+            timeouts = Collections.emptyMap();
+        }
+        return new StatelessSessionComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, timeouts);
     }
 
     @Override
     public Pool<StatelessSessionComponentInstance> getPool() {
         return pool;
+    }
+
+    public Method getTimeoutMethod() {
+        return timeoutMethod;
     }
 }

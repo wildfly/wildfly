@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component;
+package org.jboss.as.ejb3.timerservice;
 
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.naming.ManagedReference;
@@ -36,7 +36,7 @@ import org.jboss.msc.service.ServiceBuilder;
 /**
  * An {@link InjectionSource} which returns a {@link ManagedReference reference} to a {@link javax.ejb.TimerService}
  * <p/>
- * User: Jaikiran Pai
+ * @author Jaikiran Pai
  */
 public class TimerServiceBindingSource extends InjectionSource {
 

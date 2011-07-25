@@ -19,30 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.interceptor.defaultinterceptor;
+package org.jboss.as.testsuite.timerservice.schedule;
 
-import javax.ejb.LocalBean;
+import javax.ejb.Schedule;
 import javax.ejb.Stateless;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stuart Douglas
  */
 @Stateless
-@LocalBean
-public class InterceptedSLSB implements SessionBean {
+public class SimpleScheduleBean {
 
-    private boolean postConstructCalled;
+    private static final CountDownLatch latch = new CountDownLatch(1);
 
-    public String message() {
-        return "Hello";
+    private static boolean timerServiceCalled = false;
+
+
+    @Schedule(second="*", minute = "*", hour = "*")
+    public void timeout() {
+        timerServiceCalled = true;
+        latch.countDown();
     }
 
-    @Override
-    public void setPostConstructCalled() {
-        postConstructCalled = true;
+    public static boolean awaitTimerCall() {
+        try {
+            latch.await(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return timerServiceCalled;
     }
 
-    public boolean isPostConstructCalled() {
-        return postConstructCalled;
-    }
 }

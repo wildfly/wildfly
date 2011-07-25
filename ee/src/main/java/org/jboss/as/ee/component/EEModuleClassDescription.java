@@ -50,10 +50,11 @@ public final class EEModuleClassDescription {
     private static final DefaultConfigurator DEFAULT_CONFIGURATOR = new DefaultConfigurator();
 
     private final String className;
-    private final Deque<ClassConfigurator> configurators = new LinkedBlockingDeque();
+    private final Deque<ClassConfigurator> configurators = new LinkedBlockingDeque<ClassConfigurator>();
     private MethodIdentifier postConstructMethod;
     private MethodIdentifier preDestroyMethod;
     private MethodIdentifier aroundInvokeMethod;
+    private MethodIdentifier aroundTimeoutMethod;
     private boolean invalid;
     private StringBuilder invalidMessageBuilder;
 
@@ -87,6 +88,24 @@ public final class EEModuleClassDescription {
      */
     public void setAroundInvokeMethod(final MethodIdentifier aroundInvokeMethod) {
         this.aroundInvokeMethod = aroundInvokeMethod;
+    }
+
+    /**
+     * Get the method, if any, which has been marked as an around-timeout interceptor.
+     *
+     * @return the around-timout method or {@code null} for none
+     */
+    public MethodIdentifier getAroundTimeoutMethod() {
+        return aroundTimeoutMethod;
+    }
+
+    /**
+     * Set the method which has been marked as an around-timeout interceptor.
+     *
+     * @param aroundTimeoutMethod the around-timeout method or {@code null} for none
+     */
+    public void setAroundTimeoutMethod(final MethodIdentifier aroundTimeoutMethod) {
+        this.aroundTimeoutMethod = aroundTimeoutMethod;
     }
 
     /**

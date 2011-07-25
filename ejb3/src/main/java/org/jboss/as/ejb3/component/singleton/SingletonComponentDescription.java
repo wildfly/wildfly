@@ -38,6 +38,7 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.SingletonLifecycleCMTTxInterceptorFactory;
+import org.jboss.as.ejb3.tx.TimerCMTTxInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.Interceptor;
@@ -101,6 +102,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                         TransactionAttributeType txAttr = getTransactionAttribute(MethodIntf.BEAN, getClassDescription().getClassName(), getClassDescription().getPreDestroyMethod().getName(), getClassDescription().getPreDestroyMethod().getParameterTypes());
                         configuration.addPreDestroyInterceptor(new SingletonLifecycleCMTTxInterceptorFactory(txAttr), InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
                     }
+                    configuration.addTimeoutInterceptor(TimerCMTTxInterceptorFactory.INSTANCE, InterceptorOrder.Component.TIMEOUT_CMT_INTERCEPTOR);
                 }
             });
         } else {
@@ -126,6 +128,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                     }
                     // add the bmt interceptor factory
                     configuration.addComponentInterceptor(slsbBmtInterceptorFactory, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR, false);
+                    configuration.addTimeoutInterceptor(slsbBmtInterceptorFactory, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR);
                 }
             });
         }
@@ -197,11 +200,17 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                     return;
                 }
                 configuration.addComponentInterceptor(ContainerManagedConcurrencyInterceptorFactory.INSTANCE, InterceptorOrder.Component.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR, true);
+                configuration.addTimeoutInterceptor(ContainerManagedConcurrencyInterceptorFactory.INSTANCE, InterceptorOrder.Component.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR);
             }
         });
     }
 
     public List<ServiceName> getDependsOn() {
         return dependsOn;
+    }
+
+    @Override
+    public boolean isTimerServiceApplicable() {
+        return true;
     }
 }

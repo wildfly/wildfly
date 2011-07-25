@@ -70,6 +70,9 @@ public final class NamespaceConfigurator implements ComponentConfigurator {
         configuration.addPostConstructInterceptor(interceptorFactory, InterceptorOrder.ComponentPostConstruct.JNDI_NAMESPACE_INTERCEPTOR);
         configuration.addPreDestroyInterceptor(interceptorFactory, InterceptorOrder.ComponentPreDestroy.JNDI_NAMESPACE_INTERCEPTOR);
         configuration.addComponentInterceptor(interceptorFactory, InterceptorOrder.Component.JNDI_NAMESPACE_INTERCEPTOR, false);
+        if(description.isTimerServiceApplicable()) {
+            configuration.addTimeoutInterceptor(interceptorFactory, InterceptorOrder.Component.JNDI_NAMESPACE_INTERCEPTOR);
+        }
         configuration.setNamespaceContextInterceptorFactory(interceptorFactory);
     }
 }

@@ -165,6 +165,45 @@ public class ContextNames {
     }
 
     /**
+     * Get the service name of a globally accessible context, or {@code null} if there is no service mapping for the context name.
+     * <p/>
+     * This will throw an exception if a non-globally accessible context is passed in.
+     *
+     * @param context the context to check
+     * @return the service name or {@code null} if there is no service
+     */
+    public static ServiceName serviceNameOfGlobalEntry(String context) {
+        if (context.startsWith("java:")) {
+            final String namespace;
+            final int i = context.indexOf('/');
+            if (i == -1) {
+                namespace = context.substring(5);
+            } else if (i == 5) {
+                // Absolute path
+                return JAVA_CONTEXT_SERVICE_NAME.append(context.substring(6));
+            } else {
+                namespace = context.substring(5, i);
+            }
+
+            if (namespace.equals("global")) {
+                return GLOBAL_CONTEXT_SERVICE_NAME.append(context.substring(12));
+            } else if (namespace.equals("jboss")) {
+                return JBOSS_CONTEXT_SERVICE_NAME.append(context.substring(11));
+            } else if (namespace.equals("app")) {
+                throw new RuntimeException("No java:app namespace is available for jndi entry " + context);
+            } else if (namespace.equals("module")) {
+                throw new RuntimeException("No java:module namespace is available for jndi entry " + context);
+            } else if (namespace.equals("comp")) {
+                throw new RuntimeException("No java:comp namespace is available for jndi entry " + context);
+            } else {
+                return JAVA_CONTEXT_SERVICE_NAME.append(context);
+            }
+        } else {
+            return JAVA_CONTEXT_SERVICE_NAME.append(context);
+        }
+    }
+
+    /**
      * Get the service name of a NamingStore
      *
      * @param app the application name

@@ -879,6 +879,21 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.ejb3.timerservice</groupId>
+            <artifactId>ejb31-calendar-expr-parser</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3.timerservice</groupId>
+            <artifactId>jboss-ejb3-timerservice-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3.timerservice</groupId>
+            <artifactId>jboss-ejb3-timerservice-mk2</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.ejb3.tx2</groupId>
             <artifactId>jboss-ejb3-tx2-impl</artifactId>
         </dependency>

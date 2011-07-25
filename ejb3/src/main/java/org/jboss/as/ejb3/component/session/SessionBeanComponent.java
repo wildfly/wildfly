@@ -28,6 +28,7 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
@@ -57,6 +58,7 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
     protected Map<String, AccessTimeout> beanLevelAccessTimeout;
     private final Set<Method> asynchronousMethods;
     protected Executor asyncExecutor;
+    protected final Map<Method, InterceptorFactory> timeoutInterceptors;
 
     /**
      * Construct a new instance.
@@ -67,8 +69,10 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         super(ejbComponentCreateService);
 
         this.beanLevelAccessTimeout = ejbComponentCreateService.getBeanAccessTimeout();
-        this.asynchronousMethods = null; //ejbComponentCreateService.getAsynchronousMethods();
-//        this.asyncExecutor = (Executor) ejbComponentCreateService.getInjection(ASYNC_EXECUTOR_SERVICE_NAME).getValue();
+        this.asynchronousMethods = null;
+        this.timeoutInterceptors = ejbComponentCreateService.getTimeoutInterceptors();
+        //ejbComponentCreateService.getAsynchronousMethods();
+        //        this.asyncExecutor = (Executor) ejbComponentCreateService.getInjection(ASYNC_EXECUTOR_SERVICE_NAME).getValue();
     }
 
     @Override
@@ -219,7 +223,7 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
     public void setRollbackOnly() throws IllegalStateException {
         // NOT_SUPPORTED and NEVER will not have a transaction context, so we can ignore those
         if (getCurrentTransactionAttribute() == TransactionAttributeType.SUPPORTS) {
-            throw new IllegalStateException("EJB 3.1 FR 13.6.2.9 getRollbackOnly is not allowed with SUPPORTS attribute");
+            throw new IllegalStateException("EJB 3.1 FR 13.6.2.8 setRollbackOnly is not allowed with SUPPORTS attribute");
         }
         super.setRollbackOnly();
     }
