@@ -354,8 +354,14 @@ public class RespawnTestCase {
     private static class UnixProcessUtil extends ProcessUtil {
         @Override
         String getJpsCommand() {
-            return System.getProperty("java.home") + "/bin/jps -vl";
-
+            final File jreHome = new File(System.getProperty("java.home"));
+            Assert.assertTrue("JRE home not found. File: " + jreHome.getAbsoluteFile(), jreHome.exists());
+            File jpsExe = new File(jreHome, "bin/jps");
+            if (!jpsExe.exists()) {
+                jpsExe = new File(jreHome, "../bin/jps");
+            }
+            Assert.assertTrue("JPS executable not found. File: " + jpsExe, jpsExe.exists());
+            return String.format("%s -vl", jpsExe.getAbsolutePath());
         }
 
         @Override
@@ -373,7 +379,14 @@ public class RespawnTestCase {
 
         @Override
         String getJpsCommand() {
-            return System.getProperty("java.home") + "/bin/jps.exe -vl";
+            final File jreHome = new File(System.getProperty("java.home"));
+            Assert.assertTrue("JRE home not found. File: " + jreHome.getAbsoluteFile(), jreHome.exists());
+            File jpsExe = new File(jreHome, "bin/jps.exe");
+            if (!jpsExe.exists()) {
+                jpsExe = new File(jreHome, "../bin/jps.exe");
+            }
+            Assert.assertTrue("JPS executable not found. File: " + jpsExe, jpsExe.exists());
+            return String.format("%s -vl", jpsExe.getAbsolutePath());
         }
 
         @Override
