@@ -23,12 +23,9 @@
 package org.jboss.as.connector.rarepository;
 
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
-import org.jboss.jca.core.mdr.SimpleMetadataRepository;
 import org.jboss.jca.core.rar.SimpleResourceAdapterRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
-
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -58,7 +55,7 @@ public final class RaRepositoryService implements Service<ResourceAdapterReposit
     }
 
     @Override
-    public ResourceAdapterRepository getValue() throws IllegalStateException {
+    public ResourceAdapterRepository getValue() {
         return ConnectorServices.notNull(value);
     }
 
