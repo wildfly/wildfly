@@ -21,6 +21,7 @@
  */
 package org.jboss.as.weld.injection;
 
+import org.jboss.weld.bean.AbstractClassBean;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.resources.ClassTransformer;
 
@@ -32,6 +33,7 @@ import javax.enterprise.inject.spi.AnnotatedParameter;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
+import javax.enterprise.inject.spi.InjectionTarget;
 import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -52,13 +54,15 @@ class WeldEEInjection {
     private final List<InjectableField> injectableFields;
     private final List<InjectableMethod> injectableMethods;
     private final InjectableConstructor constructor;
+    private final InjectionTarget injectionTarget;
 
-    public WeldEEInjection(Class<?> componentClass, BeanManagerImpl beanManager, List<InjectableField> injectableFields, List<InjectableMethod> injectableMethods, InjectableConstructor constructor) {
+    public WeldEEInjection(Class<?> componentClass, BeanManagerImpl beanManager, List<InjectableField> injectableFields, List<InjectableMethod> injectableMethods, InjectableConstructor constructor, final InjectionTarget injectionTarget) {
         this.componentClass = componentClass;
         this.beanManager = beanManager;
         this.injectableFields = injectableFields;
         this.injectableMethods = injectableMethods;
         this.constructor = constructor;
+        this.injectionTarget = injectionTarget;
     }
 
     /**
@@ -68,6 +72,9 @@ class WeldEEInjection {
      * @param ctx      The creational context that was used to create the instance
      */
     public void inject(Object instance, CreationalContext<?> ctx) {
+        if (injectionTarget != null) {
+            injectionTarget.inject(instance, ctx);
+        }
         for (InjectableField field : injectableFields) {
             field.inject(instance, beanManager, ctx);
         }
@@ -120,53 +127,65 @@ class WeldEEInjection {
             constructor = new InjectableConstructor(injectConstructor, beanManager, bean);
         }
 
-        //look for field injection points
-        for (AnnotatedField<?> field : type.getFields()) {
-            if (field.isAnnotationPresent(Inject.class)) {
+        final InjectionTarget injectionTarget;
+        if (bean instanceof AbstractClassBean) {
+            //if we have the bean object we just use the CDI injectionTarget
 
-                if (InjectionPoint.class.isAssignableFrom(field.getJavaMember().getType())) {
-                    throw new RuntimeException("Component " + componentClass + " is attempting to inject the InjectionPoint into a field: " + field.getJavaMember());
-                }
+            injectionTarget = ((AbstractClassBean) bean).getInjectionTarget();
+        } else {
+            injectionTarget = null;
+            //if there is no bean we need to create all the injectable fields / methods ourselves
+            //we do not use createInjectionTarget as that will result in EE injections being performed
+            //twice
 
-                final Set<Annotation> qualifiers = new HashSet<Annotation>();
-                for (Annotation annotation : field.getAnnotations()) {
-                    if (beanManager.isQualifier(annotation.annotationType())) {
-                        qualifiers.add(annotation);
+            //look for field injection points
+            for (AnnotatedField<?> field : type.getFields()) {
+                if (field.isAnnotationPresent(Inject.class)) {
+
+                    if (InjectionPoint.class.isAssignableFrom(field.getJavaMember().getType())) {
+                        throw new RuntimeException("Component " + componentClass + " is attempting to inject the InjectionPoint into a field: " + field.getJavaMember());
                     }
-                }
-                FieldInjectionPoint ip = new FieldInjectionPoint(field, qualifiers, bean);
-                Set<Bean<?>> beans = beanManager.getBeans(ip);
-                Bean<?> ipBean = beanManager.resolve(beans);
-                injectableFields.add(new InjectableField(field.getJavaMember(), ipBean, ip));
-            }
-        }
 
-        //now look for @Inject methods
-        for (AnnotatedMethod<?> method : type.getMethods()) {
-            if (method.isAnnotationPresent(Inject.class)) {
-                final List<Bean<?>> parameterBeans = new ArrayList<Bean<?>>();
-                final List<InjectionPoint> ips = new ArrayList<InjectionPoint>();
-                for (AnnotatedParameter<?> param : method.getParameters()) {
                     final Set<Annotation> qualifiers = new HashSet<Annotation>();
-                    for (Annotation annotation : param.getAnnotations()) {
+                    for (Annotation annotation : field.getAnnotations()) {
                         if (beanManager.isQualifier(annotation.annotationType())) {
                             qualifiers.add(annotation);
                         }
                     }
-                    final Class<?> parameterType = method.getJavaMember().getParameterTypes()[param.getPosition()];
-                    if (InjectionPoint.class.isAssignableFrom(parameterType)) {
-                        throw new RuntimeException("Component " + componentClass + " is attempting to inject the InjectionPoint into a method on a component that is not a CDI bean " + method.getJavaMember());
-                    }
-
-                    ParameterInjectionPoint ip = new ParameterInjectionPoint(param, qualifiers, bean);
+                    FieldInjectionPoint ip = new FieldInjectionPoint(field, qualifiers, bean);
                     Set<Bean<?>> beans = beanManager.getBeans(ip);
                     Bean<?> ipBean = beanManager.resolve(beans);
-                    parameterBeans.add(ipBean);
-                    ips.add(ip);
+                    injectableFields.add(new InjectableField(field.getJavaMember(), ipBean, ip));
                 }
-                injectableMethods.add(new InjectableMethod(method.getJavaMember(), parameterBeans, ips));
+            }
+
+            //now look for @Inject methods
+            for (AnnotatedMethod<?> method : type.getMethods()) {
+                if (method.isAnnotationPresent(Inject.class)) {
+                    final List<Bean<?>> parameterBeans = new ArrayList<Bean<?>>();
+                    final List<InjectionPoint> ips = new ArrayList<InjectionPoint>();
+                    for (AnnotatedParameter<?> param : method.getParameters()) {
+                        final Set<Annotation> qualifiers = new HashSet<Annotation>();
+                        for (Annotation annotation : param.getAnnotations()) {
+                            if (beanManager.isQualifier(annotation.annotationType())) {
+                                qualifiers.add(annotation);
+                            }
+                        }
+                        final Class<?> parameterType = method.getJavaMember().getParameterTypes()[param.getPosition()];
+                        if (InjectionPoint.class.isAssignableFrom(parameterType)) {
+                            throw new RuntimeException("Component " + componentClass + " is attempting to inject the InjectionPoint into a method on a component that is not a CDI bean " + method.getJavaMember());
+                        }
+
+                        ParameterInjectionPoint ip = new ParameterInjectionPoint(param, qualifiers, bean);
+                        Set<Bean<?>> beans = beanManager.getBeans(ip);
+                        Bean<?> ipBean = beanManager.resolve(beans);
+                        parameterBeans.add(ipBean);
+                        ips.add(ip);
+                    }
+                    injectableMethods.add(new InjectableMethod(method.getJavaMember(), parameterBeans, ips));
+                }
             }
         }
-        return new WeldEEInjection(componentClass, beanManager, injectableFields, injectableMethods, constructor);
+        return new WeldEEInjection(componentClass, beanManager, injectableFields, injectableMethods, constructor, injectionTarget);
     }
 }
