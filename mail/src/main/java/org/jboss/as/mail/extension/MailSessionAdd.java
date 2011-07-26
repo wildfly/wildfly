@@ -27,7 +27,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
     static final MailSessionAdd INSTANCE = new MailSessionAdd();
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("mail-session");
 
-    private final Logger log = Logger.getLogger(MailSubsystemAdd.class);
+    private final Logger log = Logger.getLogger(MailSessionAdd.class);
 
     private MailSessionAdd() {
     }
