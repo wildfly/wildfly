@@ -8,6 +8,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 import javax.mail.Session;
+import java.util.Properties;
 
 /**
  * @author Tomaz Cerar
@@ -19,6 +20,7 @@ public class MailSessionService implements Service<Session> {
     private MailSessionConfig sessionConfig;
 
     public MailSessionService(MailSessionConfig sessionConfig) {
+        log.info("service construced with config: "+sessionConfig);
         this.sessionConfig = sessionConfig;
     }
 
@@ -36,6 +38,7 @@ public class MailSessionService implements Service<Session> {
     @Override
     public Session getValue() throws IllegalStateException, IllegalArgumentException {
         log.info("should return value");
-        return null;
+        return Session.getDefaultInstance(new Properties());
+
     }
 }
