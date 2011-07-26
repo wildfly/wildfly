@@ -344,7 +344,7 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
         configuration.setWildcardRoutingEnabled(WILD_CARD_ROUTING_ENABLED.validateResolvedOperation(model).asBoolean());
         // --
         processAddressSettings(configuration, model);
-        processCoreQueues(configuration, model);
+//        processCoreQueues(configuration, model);
         processSecuritySettings(configuration, model);
         return configuration;
     }
@@ -444,27 +444,6 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
                 connectors.put(connectorName, new TransportConfiguration(clazz, parameters, connectorName));
             }
             configuration.setConnectorConfigurations(connectors);
-        }
-    }
-
-    /**
-     * Process the HornetQ core queues.
-     *
-     * @param configuration the hornetQ configuration
-     * @param params        the detyped operation parameters
-     */
-    static void processCoreQueues(final Configuration configuration, final ModelNode params) throws OperationFailedException {
-        if (params.get(QUEUE).isDefined()) {
-            final List<CoreQueueConfiguration> queues = new ArrayList<CoreQueueConfiguration>();
-            for (final Property property : params.get(QUEUE).asPropertyList()) {
-                final String queueName = property.getName();
-                final ModelNode config = property.getValue();
-               boolean durable = config.get(DURABLE).isDefined()?config.get(DURABLE).asBoolean():true;
-               final CoreQueueConfiguration queue = new CoreQueueConfiguration(ADDRESS.validateResolvedOperation(config).asString(), queueName,
-                        FILTER.validateResolvedOperation(config).asString(), durable);
-                queues.add(queue);
-            }
-            configuration.setQueueConfigurations(queues);
         }
     }
 

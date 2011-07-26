@@ -32,7 +32,7 @@ import java.util.Map;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author scott.stark@jboss.org
  */
-enum Namespace {
+public enum Namespace {
    // must be first
    UNKNOWN(null),
 

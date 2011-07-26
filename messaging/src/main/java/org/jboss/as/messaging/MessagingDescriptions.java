@@ -3,19 +3,37 @@
  */
 package org.jboss.as.messaging;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.jboss.as.messaging.jms.JMSServices;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.messaging.jms.JMSServices;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 
 /**
@@ -35,8 +53,11 @@ public class MessagingDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("messaging"));
+
+        for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(bundle,  "messaging", node);
+        }
 
         node.get(ATTRIBUTES, CommonAttributes.ACCEPTOR, TYPE).set(ModelType.OBJECT);
         node.get(ATTRIBUTES, CommonAttributes.ACCEPTOR, DESCRIPTION).set(bundle.getString("acceptor"));
@@ -55,12 +76,31 @@ public class MessagingDescriptions {
         node.get(ATTRIBUTES, CommonAttributes.SECURITY_SETTING, TYPE).set(ModelType.OBJECT);
         node.get(ATTRIBUTES, CommonAttributes.SECURITY_SETTING, DESCRIPTION).set(bundle.getString("security-setting"));
 
-        node.get(CHILDREN, CommonAttributes.QUEUE).set(getQueueResource(locale));
+        node.get(OPERATIONS);
+
+        node.get(CHILDREN, CommonAttributes.QUEUE, DESCRIPTION).set(bundle.getString("queue"));
+        node.get(CHILDREN, CommonAttributes.QUEUE, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.QUEUE, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.DIVERT, DESCRIPTION).set(bundle.getString("divert"));
+        node.get(CHILDREN, CommonAttributes.DIVERT, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.DIVERT, MODEL_DESCRIPTION);
         //jms stuff
-        node.get(CHILDREN, CommonAttributes.CONNECTION_FACTORY).set(getConnectionFactory(locale));
-        node.get(CHILDREN, CommonAttributes.POOLED_CONNECTION_FACTORY).set(getPooledConnectionFactory(locale));
-        node.get(CHILDREN, CommonAttributes.JMS_QUEUE).set(getJmsQueueResource(locale));
-        node.get(CHILDREN, CommonAttributes.JMS_TOPIC).set(getTopic(locale));
+        node.get(CHILDREN, CommonAttributes.CONNECTION_FACTORY, DESCRIPTION).set(bundle.getString("connection-factory"));
+        node.get(CHILDREN, CommonAttributes.CONNECTION_FACTORY, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.CONNECTION_FACTORY, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.POOLED_CONNECTION_FACTORY, DESCRIPTION).set(bundle.getString("pooled-connection-factory"));
+        node.get(CHILDREN, CommonAttributes.POOLED_CONNECTION_FACTORY, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.POOLED_CONNECTION_FACTORY, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.JMS_QUEUE, DESCRIPTION).set(bundle.getString("jms-queue"));
+        node.get(CHILDREN, CommonAttributes.JMS_QUEUE, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.JMS_QUEUE, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.JMS_TOPIC, DESCRIPTION).set(bundle.getString("topic"));
+        node.get(CHILDREN, CommonAttributes.JMS_TOPIC, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.JMS_TOPIC, MODEL_DESCRIPTION);
 
         return node;
     }
@@ -71,6 +111,10 @@ public class MessagingDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("messaging.add"));
+
+        for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(bundle, "messaging", node);
+        }
 
         node.get(REQUEST_PROPERTIES, CommonAttributes.ACCEPTOR, TYPE).set(ModelType.OBJECT);
         node.get(REQUEST_PROPERTIES, CommonAttributes.ACCEPTOR, DESCRIPTION).set(bundle.getString("acceptor"));
@@ -93,11 +137,14 @@ public class MessagingDescriptions {
     }
 
     public static ModelNode getSubsystemRemove(Locale locale) {
-        return new ModelNode();
-    }
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-    public static ModelNode getSubsystemDescribe(Locale locale) {
-        return new ModelNode();
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("divert.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
     }
 
     public static ModelNode getQueueResource(Locale locale) {
@@ -106,12 +153,16 @@ public class MessagingDescriptions {
         final ModelNode node = new ModelNode();
         node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("queue"));
-        node.get(ATTRIBUTES, CommonAttributes.QUEUE_ADDRESS, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, CommonAttributes.QUEUE_ADDRESS, DESCRIPTION).set(bundle.getString("queue.address"));
-        node.get(ATTRIBUTES, CommonAttributes.FILTER.getName(), TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, CommonAttributes.FILTER.getName(), DESCRIPTION).set(bundle.getString("queue.filter"));
-        node.get(ATTRIBUTES, CommonAttributes.DURABLE, TYPE).set(ModelType.BOOLEAN);
-        node.get(ATTRIBUTES, CommonAttributes.DURABLE, DESCRIPTION).set(bundle.getString("queue.durable"));
+
+
+        for (AttributeDefinition attr : CommonAttributes.CORE_QUEUE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(bundle, "queue", node);
+        }
+
+        node.get(OPERATIONS); // placeholder
+
+        node.get(CHILDREN).setEmptyObject();
+
         return node;
     }
 
@@ -122,12 +173,9 @@ public class MessagingDescriptions {
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("queue.add"));
 
-        node.get(REQUEST_PROPERTIES, CommonAttributes.QUEUE_ADDRESS, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, CommonAttributes.QUEUE_ADDRESS, DESCRIPTION).set(bundle.getString("queue.address"));
-        node.get(REQUEST_PROPERTIES, CommonAttributes.FILTER.getName(), TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, CommonAttributes.FILTER.getName(), DESCRIPTION).set(bundle.getString("queue.filter"));
-        node.get(REQUEST_PROPERTIES, CommonAttributes.DURABLE, TYPE).set(ModelType.BOOLEAN);
-        node.get(REQUEST_PROPERTIES, CommonAttributes.DURABLE, DESCRIPTION).set(bundle.getString("queue.durable"));
+        for (AttributeDefinition attr : CommonAttributes.CORE_QUEUE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(bundle, "queue", node);
+        }
 
         return node;
     }
@@ -143,198 +191,251 @@ public class MessagingDescriptions {
     }
 
 
-      static ModelNode getJmsQueueResource(final Locale locale) {
-           final ResourceBundle bundle = getResourceBundle(locale);
+    static ModelNode getJmsQueueResource(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-           final ModelNode node = new ModelNode();
-           node.get(DESCRIPTION).set(bundle.getString("jms-queue"));
-           addQueueProperties(bundle, node, ATTRIBUTES);
+        final ModelNode node = new ModelNode();
+        node.get(DESCRIPTION).set(bundle.getString("jms-queue"));
+        addQueueProperties(bundle, node, ATTRIBUTES);
 
-           return node;
-       }
+        node.get(OPERATIONS); //placeholder
 
-          static ModelNode getJmsQueueAdd(final Locale locale) {
-           final ResourceBundle bundle = getResourceBundle(locale);
+        node.get(CHILDREN).setEmptyObject();
 
-           final ModelNode node = new ModelNode();
-           node.get(OPERATION_NAME).set(ADD);
-           node.get(DESCRIPTION).set(bundle.getString("jms-queue.add"));
-           addQueueProperties(bundle, node, REQUEST_PROPERTIES);
-           node.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
+    }
 
-           return node;
-       }
+    public static ModelNode getJmsQueueAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-       private static void addQueueProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
-           node.get(propType, ENTRIES, DESCRIPTION).set(bundle.getString("jms-queue.entries"));
-           node.get(propType, ENTRIES, TYPE).set(ModelType.LIST);
-           node.get(propType, ENTRIES, MIN_LENGTH).set(1);
-           node.get(propType, ENTRIES, VALUE_TYPE).set(ModelType.STRING);
-           node.get(propType, SELECTOR, DESCRIPTION).set(bundle.getString("jms-queue.selector"));
-           node.get(propType, SELECTOR, TYPE).set(ModelType.STRING);
-           node.get(propType, SELECTOR, NILLABLE).set(true);
-           node.get(propType, SELECTOR, REQUIRED).set(false);
-           node.get(propType, DURABLE, DESCRIPTION).set(bundle.getString("jms-queue.durable"));
-           node.get(propType, DURABLE, TYPE).set(ModelType.BOOLEAN);
-           node.get(propType, DURABLE, REQUIRED).set(false);
-           node.get(propType, DURABLE, DEFAULT).set(false);
-       }
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ADD);
+        node.get(DESCRIPTION).set(bundle.getString("jms-queue.add"));
+        addQueueProperties(bundle, node, REQUEST_PROPERTIES);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
 
-       static ModelNode getJmsQueueRemove(final Locale locale) {
-           final ResourceBundle bundle = getResourceBundle(locale);
+        return node;
+    }
 
-           final ModelNode op = new ModelNode();
-           op.get(OPERATION_NAME).set(REMOVE);
-           op.get(DESCRIPTION).set(bundle.getString("jms-queue.remove"));
-           op.get(REQUEST_PROPERTIES).setEmptyObject();
-           op.get(REPLY_PROPERTIES).setEmptyObject();
+    private static void addQueueProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
+        node.get(propType, ENTRIES, DESCRIPTION).set(bundle.getString("jms-queue.entries"));
+        node.get(propType, ENTRIES, TYPE).set(ModelType.LIST);
+        node.get(propType, ENTRIES, MIN_LENGTH).set(1);
+        node.get(propType, ENTRIES, VALUE_TYPE).set(ModelType.STRING);
+        node.get(propType, SELECTOR, DESCRIPTION).set(bundle.getString("jms-queue.selector"));
+        node.get(propType, SELECTOR, TYPE).set(ModelType.STRING);
+        node.get(propType, SELECTOR, NILLABLE).set(true);
+        node.get(propType, SELECTOR, REQUIRED).set(false);
+        DURABLE.addResourceAttributeDescription(bundle, "jms-queue", node);
+    }
 
-           return op;
-       }
+    public static ModelNode getJmsQueueRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-       static ModelNode getTopic(final Locale locale) {
-           final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("jms-queue.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
 
-           final ModelNode node = new ModelNode();
-           node.get(DESCRIPTION).set(bundle.getString("topic"));
-           addTopicProperties(bundle, node, ATTRIBUTES);
+        return op;
+    }
 
-           return node;
-       }
+    static ModelNode getTopic(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-       static ModelNode getTopicAdd(final Locale locale) {
-           final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(DESCRIPTION).set(bundle.getString("topic"));
+        addTopicProperties(bundle, node, ATTRIBUTES);
 
-           final ModelNode node = new ModelNode();
-           node.get(OPERATION_NAME).set(ADD);
-           node.get(DESCRIPTION).set(bundle.getString("topic.add"));
-           addTopicProperties(bundle, node, REQUEST_PROPERTIES);
-           node.get(REPLY_PROPERTIES).setEmptyObject();
+        node.get(OPERATIONS); // placeholder
 
-           return node;
-       }
+        node.get(CHILDREN).setEmptyObject();
 
-       private static void addTopicProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
-           node.get(propType, ENTRIES, DESCRIPTION).set(bundle.getString("topic.entries"));
-           node.get(propType, ENTRIES, TYPE).set(ModelType.LIST);
-           node.get(propType, ENTRIES, MIN_LENGTH).set(1);
-           node.get(propType, ENTRIES, VALUE_TYPE).set(ModelType.STRING);
-       }
+        return node;
+    }
 
-       static ModelNode getTopicRemove(final Locale locale) {
-           final ResourceBundle bundle = getResourceBundle(locale);
+    public static ModelNode getTopicAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-           final ModelNode op = new ModelNode();
-           op.get(OPERATION_NAME).set(REMOVE);
-           op.get(DESCRIPTION).set(bundle.getString("topic.remove"));
-           op.get(REQUEST_PROPERTIES).setEmptyObject();
-           op.get(REPLY_PROPERTIES).setEmptyObject();
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ADD);
+        node.get(DESCRIPTION).set(bundle.getString("topic.add"));
+        addTopicProperties(bundle, node, REQUEST_PROPERTIES);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
 
-           return op;
-       }
+        return node;
+    }
 
-       static ModelNode getConnectionFactory(final Locale locale) {
-           final ResourceBundle bundle = getResourceBundle(locale);
+    private static void addTopicProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
+        node.get(propType, ENTRIES, DESCRIPTION).set(bundle.getString("topic.entries"));
+        node.get(propType, ENTRIES, TYPE).set(ModelType.LIST);
+        node.get(propType, ENTRIES, MIN_LENGTH).set(1);
+        node.get(propType, ENTRIES, VALUE_TYPE).set(ModelType.STRING);
+    }
 
-           final ModelNode node = new ModelNode();
-           node.get(DESCRIPTION).set(bundle.getString("connection-factory"));
-           addConnectionFactoryProperties(bundle, node, ATTRIBUTES);
+    public static ModelNode getTopicRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-           return node;
-       }
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("topic.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
 
-       static ModelNode getConnectionFactoryAdd(final Locale locale) {
-           final ResourceBundle bundle = getResourceBundle(locale);
+        return op;
+    }
 
-           final ModelNode node = new ModelNode();
-           node.get(OPERATION_NAME).set(ADD);
-           node.get(DESCRIPTION).set(bundle.getString("connection-factory.add"));
-           addConnectionFactoryProperties(bundle, node, REQUEST_PROPERTIES);
-           node.get(REPLY_PROPERTIES).setEmptyObject();
+    static ModelNode getConnectionFactory(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-           return node;
-       }
+        final ModelNode node = new ModelNode();
+        node.get(DESCRIPTION).set(bundle.getString("connection-factory"));
+        addConnectionFactoryProperties(bundle, node, ATTRIBUTES);
 
-       static ModelNode getPooledConnectionFactory(final Locale locale) {
-           final ResourceBundle bundle = getResourceBundle(locale);
+        node.get(OPERATIONS); // placeholder
 
-           final ModelNode node = new ModelNode();
-           node.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory"));
-           addPooledConnectionFactoryProperties(bundle, node, ATTRIBUTES);
+        node.get(CHILDREN).setEmptyObject();
 
-           return node;
-       }
+        return node;
+    }
 
-       static ModelNode getPooledConnectionFactoryAdd(final Locale locale) {
-           final ResourceBundle bundle = getResourceBundle(locale);
+    static ModelNode getConnectionFactoryAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-           final ModelNode node = new ModelNode();
-           node.get(OPERATION_NAME).set(ADD);
-           node.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory.add"));
-           addPooledConnectionFactoryProperties(bundle, node, REQUEST_PROPERTIES);
-           node.get(REPLY_PROPERTIES).setEmptyObject();
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ADD);
+        node.get(DESCRIPTION).set(bundle.getString("connection-factory.add"));
+        addConnectionFactoryProperties(bundle, node, REQUEST_PROPERTIES);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
 
-           return node;
-       }
+        return node;
+    }
 
-       private static void addPooledConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
+    static ModelNode getPooledConnectionFactory(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-           for (JMSServices.NodeAttribute attr : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
-               node.get(propType, attr.getName(), DESCRIPTION).set(bundle.getString("pooled-connection-factory." + attr.getName()));
-               node.get(propType, attr.getName(), TYPE).set(attr.getType());
-               node.get(propType, attr.getName(), REQUIRED).set(attr.isRequired());
+        final ModelNode node = new ModelNode();
+        node.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory"));
+        addPooledConnectionFactoryProperties(bundle, node, ATTRIBUTES);
 
-               if (attr.getName().equals(CONNECTOR)) {
-                   node.get(propType, attr.getName(), VALUE_TYPE).set(getConnectionFactoryConnectionValueType(bundle, propType));
-               } else if (attr.getValueType() != null) {
-                   node.get(propType, attr.getName(), VALUE_TYPE).set(attr.getValueType());
-               }
-           }
-       }
+        node.get(OPERATIONS); // placeholder
 
-       static ModelNode getPooledConnectionFactoryRemove(final Locale locale) {
-           final ResourceBundle bundle = getResourceBundle(locale);
+        node.get(CHILDREN).setEmptyObject();
 
-           final ModelNode op = new ModelNode();
-           op.get(OPERATION_NAME).set(REMOVE);
-           op.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory.remove"));
-           op.get(REQUEST_PROPERTIES).setEmptyObject();
-           op.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
+    }
 
-           return op;
-       }
+    static ModelNode getPooledConnectionFactoryAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-       private static void addConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ADD);
+        node.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory.add"));
+        addPooledConnectionFactoryProperties(bundle, node, REQUEST_PROPERTIES);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
 
-           for (JMSServices.NodeAttribute attr : JMSServices.CONNECTION_FACTORY_ATTRS) {
-               node.get(propType, attr.getName(), DESCRIPTION).set(bundle.getString("connection-factory." + attr.getName()));
-               node.get(propType, attr.getName(), TYPE).set(attr.getType());
-               node.get(propType, attr.getName(), REQUIRED).set(attr.isRequired());
+        return node;
+    }
 
-               if (attr.getName().equals(CONNECTOR)) {
-                   node.get(propType, attr.getName(), VALUE_TYPE).set(getConnectionFactoryConnectionValueType(bundle, propType));
-               } else if (attr.getValueType() != null) {
-                   node.get(propType, attr.getName(), VALUE_TYPE).set(attr.getValueType());
-               }
-           }
-       }
+    private static void addPooledConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
 
-       private static ModelNode getConnectionFactoryConnectionValueType(final ResourceBundle bundle, final String propType) {
-           ModelNode node = new ModelNode().set("TBD");
-           return node;
-       }
+        for (JMSServices.NodeAttribute attr : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
+            node.get(propType, attr.getName(), DESCRIPTION).set(bundle.getString("pooled-connection-factory." + attr.getName()));
+            node.get(propType, attr.getName(), TYPE).set(attr.getType());
+            node.get(propType, attr.getName(), REQUIRED).set(attr.isRequired());
 
-       static ModelNode getConnectionFactoryRemove(final Locale locale) {
-           final ResourceBundle bundle = getResourceBundle(locale);
+            if (attr.getName().equals(CONNECTOR)) {
+                node.get(propType, attr.getName(), VALUE_TYPE).set(getConnectionFactoryConnectionValueType(bundle, propType));
+            } else if (attr.getValueType() != null) {
+                node.get(propType, attr.getName(), VALUE_TYPE).set(attr.getValueType());
+            }
+        }
+    }
 
-           final ModelNode op = new ModelNode();
-           op.get(OPERATION_NAME).set(REMOVE);
-           op.get(DESCRIPTION).set(bundle.getString("connection-factory.remove"));
-           op.get(REQUEST_PROPERTIES).setEmptyObject();
-           op.get(REPLY_PROPERTIES).setEmptyObject();
+    static ModelNode getPooledConnectionFactoryRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
-           return op;
-       }
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+
+        return op;
+    }
+
+    private static void addConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
+
+        for (JMSServices.NodeAttribute attr : JMSServices.CONNECTION_FACTORY_ATTRS) {
+            node.get(propType, attr.getName(), DESCRIPTION).set(bundle.getString("connection-factory." + attr.getName()));
+            node.get(propType, attr.getName(), TYPE).set(attr.getType());
+            node.get(propType, attr.getName(), REQUIRED).set(attr.isRequired());
+
+            if (attr.getName().equals(CONNECTOR)) {
+                node.get(propType, attr.getName(), VALUE_TYPE).set(getConnectionFactoryConnectionValueType(bundle, propType));
+            } else if (attr.getValueType() != null) {
+                node.get(propType, attr.getName(), VALUE_TYPE).set(attr.getValueType());
+            }
+        }
+    }
+
+    private static ModelNode getConnectionFactoryConnectionValueType(final ResourceBundle bundle, final String propType) {
+        ModelNode node = new ModelNode().set("TBD");
+        return node;
+    }
+
+    static ModelNode getConnectionFactoryRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("connection-factory.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+
+        return op;
+    }
+
+    static ModelNode getDivertResource(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("divert"));
+        // TODO divert add parameter details
+        for (AttributeDefinition attr : CommonAttributes.DIVERT_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(bundle, "divert", root);
+        }
+
+        root.get(OPERATIONS); // placeholder
+
+        root.get(CHILDREN).setEmptyObject();
+        return root;
+    }
+
+    static ModelNode getDivertAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("divert.add"));
+        for (AttributeDefinition attr : CommonAttributes.DIVERT_ATTRIBUTES) {
+            attr.addOperationParameterDescription(bundle, "divert", op);
+        }
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getDivertRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("divert.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
 
     private static ModelNode getPathDescription(final String description, final ResourceBundle bundle) {
         final ModelNode node = new ModelNode();
@@ -357,4 +458,6 @@ public class MessagingDescriptions {
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
+
+
 }

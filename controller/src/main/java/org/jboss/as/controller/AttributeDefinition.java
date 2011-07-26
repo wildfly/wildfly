@@ -28,6 +28,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -295,13 +296,54 @@ public class AttributeDefinition {
         return node.resolve();
     }
 
-    public String getResourceAttributeDescription(final ResourceBundle bundle, final String prefix) {
-        final String bundleKey = prefix == null ? ("attribute." + name) : (prefix + ".attribute." + name);
-        return bundle.getString(bundleKey);
+    /**
+     * Creates a returns a basic model node describing the attribute, after attaching it to the given overall resource
+     * description model node.  The node describing the attribute is returned to make it easy to perform further
+     * modification.
+     *
+     * @param bundle resource bundle to use for text descriptions
+     * @param prefix prefix to prepend to the attribute name key when looking up descriptions
+     * @param resourceDescription  the overall resource description
+     * @return  the attribute description node
+     */
+    public ModelNode addResourceAttributeDescription(final ResourceBundle bundle, final String prefix, final ModelNode resourceDescription) {
+        final ModelNode attr = new ModelNode();
+        attr.get(ModelDescriptionConstants.TYPE).set(attr.getType());
+        attr.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
+        // TODO enable when this metadata is finalized
+//        attr.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());
+        attr.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
+        if (defaultValue != null && defaultValue.isDefined()) {
+            attr.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
+        }
+        resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
+        return attr;
     }
 
-    public String getOperationParameterDescription(final ResourceBundle bundle, final String prefix) {
-        final String bundleKey = prefix == null ? ("parameter." + name) : (prefix + ".parameter." + name);
+    /**
+     * Creates a returns a basic model node describing a parameter that sets this attribute, after attaching it to the
+     * given overall operation description model node.  The node describing the parameter is returned to make it easy
+     * to perform further modification.
+     *
+     * @param bundle resource bundle to use for text descriptions
+     * @param prefix prefix to prepend to the attribute name key when looking up descriptions
+     * @param operationDescription  the overall resource description
+     * @return  the attribute description node
+     */
+    public ModelNode addOperationParameterDescription(final ResourceBundle bundle, final String prefix, final ModelNode operationDescription) {
+        final ModelNode param = new ModelNode();
+        param.get(ModelDescriptionConstants.TYPE).set(param.getType());
+        param.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
+        // TODO enable when this metadata is finalized
+//        param.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());
+        param.get(ModelDescriptionConstants.REQUIRED).set(!isAllowNull());
+        param.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
+        operationDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
+        return param;
+    }
+
+    public String getAttributeTextDescription(final ResourceBundle bundle, final String prefix) {
+        final String bundleKey = prefix == null ? name : (prefix + "." + name);
         return bundle.getString(bundleKey);
     }
 
