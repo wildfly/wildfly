@@ -22,11 +22,14 @@
 
 package org.jboss.as.messaging;
 
+import java.util.Locale;
+
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -37,7 +40,13 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DivertRemove extends AbstractRemoveStepHandler {
+public class DivertRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+
+    public static final DivertRemove INSTANCE = new DivertRemove();
+
+    private DivertRemove() {
+        super();
+    }
 
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -64,7 +73,7 @@ public class DivertRemove extends AbstractRemoveStepHandler {
         final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         final ModelNode routingNode = CommonAttributes.ROUTING_NAME.validateResolvedOperation(model);
         final String routingName = routingNode.isDefined() ? routingNode.asString() : null;
-        final String address = CommonAttributes.ADDRESS.validateResolvedOperation(model).asString();
+        final String address = CommonAttributes.DIVERT_ADDRESS.validateResolvedOperation(model).asString();
         final String forwardingAddress = CommonAttributes.FORWARDING_ADDRESS.validateResolvedOperation(model).asString();
         final boolean exclusive = CommonAttributes.EXCLUSIVE.validateResolvedOperation(model).asBoolean();
         final ModelNode filterNode = CommonAttributes.FILTER.validateResolvedOperation(model);
@@ -86,5 +95,10 @@ public class DivertRemove extends AbstractRemoveStepHandler {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return MessagingDescriptions.getDivertRemove(locale);
     }
 }

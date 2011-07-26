@@ -219,7 +219,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         System.out.println(marshalled);
 
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(additionalInit, subsystemXml);
+        KernelServices servicesB = super.installInController(additionalInit, marshalled);
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical

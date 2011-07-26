@@ -22,71 +22,92 @@
 
 package org.jboss.as.messaging.test;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import java.io.File;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-
-import junit.framework.TestCase;
-
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.MessagingSubsystemParser;
+import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.EmptyAdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLMapper;
-import org.junit.Assert;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class SubsystemParsingUnitTestCase extends TestCase {
+public class SubsystemParsingUnitTestCase  extends AbstractSubsystemTest {
 
     private static final String namespace = "urn:jboss:domain:messaging:1.0";
     private static final MessagingSubsystemParser parser = MessagingSubsystemParser.getInstance();
 
-    public void test() throws Exception {
+//    private static File tmpDir;
+//
+//    @BeforeClass
+//    public static void createDataDir() {
+//        File tmp =  new File(System.getProperty("java.io.tmpdir"));
+//        tmpDir = new File(tmp, SubsystemParsingUnitTestCase.class.getSimpleName());
+//    }
+//
+//    @AfterClass
+//    public static void deleteDataDir() {
+//        cleanDir(tmpDir);
+//    }
+//
+//    private static void cleanDir(File file) {
+//        if (file.isDirectory()) {
+//            for (File child : file.listFiles()) {
+//                cleanDir(child);
+//            }
+//        }
+//
+//        if (file.exists() && !file.delete()) {
+//            file.deleteOnExit();
+//        }
+//    }
 
-        List<ModelNode> operations = parse("subsystem.xml");
-        Assert.assertEquals(6, operations.size());
-        final ModelNode operation = operations.get(0);
-        System.err.println(operation);
-
-        operation.get(OP_ADDR).asPropertyList();
-
-        final ModelNode node = new ModelNode();
-        node.add("test", "test");
-
-        node.asPropertyList();
-
-        final ModelNode op = new ModelNode();
-        op.get("address").set(node);
-        op.get("address").asPropertyList();
-        final ModelNode op2 = new ModelNode();
-        op2.get("address").set(node).add("test", "test");
-        op2.get("address").asPropertyList();
+    public SubsystemParsingUnitTestCase() {
+        super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
 
-    List<ModelNode> parse(final String name) throws XMLStreamException, IOException {
-        final List<ModelNode> operations = new ArrayList<ModelNode>();
+    @Test
+    public void testParseAndMarshalModel() throws Exception {
+        //Parse the subsystem xml and install into the first controller
+        String subsystemXml = readResource("subsystem.xml");
 
-        XMLMapper mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(new QName(namespace, "subsystem"), parser);
+        AdditionalInitialization additionalInit = new EmptyAdditionalInitialization(){
 
-        URL configURL = getClass().getResource(name);
-        Assert.assertNotNull(name  + " url is not null", configURL);
-        System.out.println("configURL = " + configURL);
+            @Override
+            public OperationContext.Type getType() {
+                return OperationContext.Type.MANAGEMENT;
+            }
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(configURL.openStream()));
-        mapper.parseDocument(operations, XMLInputFactory.newInstance().createXMLStreamReader(reader));
+//            @Override
+//            public void setupController(ControllerInitializer controllerInitializer) {
+//                controllerInitializer.addSocketBinding("messaging", 12345);
+//                controllerInitializer.addSocketBinding("messaging-throughput", 12346);
+//                File dataDir = new File(tmpDir, "testParseAndMarshalModel");
+//                controllerInitializer.addPath("jboss.server.data.dir", dataDir.getAbsolutePath(), null);
+//            }
+        };
 
-        return operations;
+        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        //Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        String marshalled = servicesA.getPersistedSubsystemXml();
+        servicesA.shutdown();
+
+        System.out.println(marshalled);
+
+        //Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        ModelNode modelB = servicesB.readWholeModel();
+
+        //Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
     }
-
 }

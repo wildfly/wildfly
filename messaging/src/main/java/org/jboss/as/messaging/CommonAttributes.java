@@ -55,7 +55,9 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR), ModelType.BOOLEAN,  true);
     AttributeDefinition CREATE_JOURNAL_DIR = new AttributeDefinition("create-journal-dir",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CREATE_JOURNAL_DIR), ModelType.BOOLEAN,  true);
+    AttributeDefinition DIVERT_ADDRESS = new AttributeDefinition("divert-address", "address", null, ModelType.STRING, false, false);
 
+    AttributeDefinition DURABLE = new AttributeDefinition("durable", new ModelNode().set(false), ModelType.BOOLEAN,  true);
     AttributeDefinition EXCLUSIVE = new AttributeDefinition("exclusive", ModelType.BOOLEAN,  true);
 
     AttributeDefinition FAILBACK_DELAY = new AttributeDefinition("failback-delay",
@@ -120,6 +122,7 @@ public interface CommonAttributes {
     AttributeDefinition PERSIST_ID_CACHE = new AttributeDefinition("persist-id-cache",
             new ModelNode().set(ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE), ModelType.BOOLEAN,  true);
 
+    AttributeDefinition QUEUE_ADDRESS = new AttributeDefinition("queue-address", "address", null, ModelType.STRING, false, false);
     AttributeDefinition ROUTING_NAME = new AttributeDefinition("routing-name", ModelType.STRING, true);
 
     AttributeDefinition RUN_SYNC_SPEED_TEST = new AttributeDefinition("run-sync-speed-test",
@@ -199,7 +202,6 @@ public interface CommonAttributes {
     String DIVERT = "divert";
     String DIVERTS = "diverts";
     String DUPS_OK_BATCH_SIZE ="dups-ok-batch-size";
-    String DURABLE ="durable";
     String ENTRIES ="entries";
     String ENTRY ="entry";
     String EXPIRY_ADDRESS ="expiry-address";
@@ -258,7 +260,6 @@ public interface CommonAttributes {
     String PRODUCER_MAX_RATE ="producer-max-rate";
     String PRODUCER_WINDOW_SIZE ="producer-window-size";
     String QUEUE ="queue";
-    String QUEUE_ADDRESS ="queue-address";
     String QUEUE_NAME ="queue-name";
     String RECONNECT_ATTEMPTS ="reconnect-attempts";
     String REDELIVERY_DELAY ="redelivery-delay";
@@ -311,17 +312,22 @@ public interface CommonAttributes {
         SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL
     };
 
+    AttributeDefinition[]  SIMPLE_ROOT_RESOURCE_WRITE_ATTRIBUTES = {
+        FAILOVER_ON_SHUTDOWN, MESSAGE_COUNTER_ENABLED, MESSAGE_COUNTER_MAX_DAY_HISTORY, MESSAGE_COUNTER_SAMPLE_PERIOD
+    };
+
     String[] COMPLEX_ROOT_RESOURCE_ATTRIBUTES =  {
-        /*TODO remove */ REMOTING_INTERCEPTORS, LIVE_CONNECTOR_REF, /* TODO remove */ CONNECTORS, /* TODO remove */ ACCEPTORS,
-        /* TODO remove */ BROADCAST_GROUPS, /* TODO remove */ DISCOVERY_GROUPS, /* TODO remove */ DIVERTS,
-        /* TODO remove */ CORE_QUEUES, /* TODO remove */ BRIDGES, /* TODO remove */ CLUSTER_CONNECTIONS,
+        /*TODO remove */ REMOTING_INTERCEPTORS, LIVE_CONNECTOR_REF, /* TODO remove */ CONNECTOR, /* TODO remove */ ACCEPTOR,
+        /* TODO remove */ BROADCAST_GROUP, /* TODO remove */ DISCOVERY_GROUP,
+        /* TODO remove */ BRIDGE, /* TODO remove */ CLUSTER_CONNECTION,
         /* TODO remove */ GROUPING_HANDLER, /* TODO remove */ PAGING_DIRECTORY, /* TODO remove */ BINDINGS_DIRECTORY,
         /* TODO remove */ JOURNAL_DIRECTORY, /* TODO remove */ LARGE_MESSAGES_DIRECTORY,
-        /* TODO remove */ SECURITY_SETTINGS, /* TODO remove */ ADDRESS_SETTINGS, /* TODO remove */ CONNECTOR_SERVICES
+        /* TODO remove */ SECURITY_SETTING, /* TODO remove */ ADDRESS_SETTING, /* TODO remove */ CONNECTOR_SERVICE
     };
 
     AttributeDefinition[] DIVERT_ATTRIBUTES = {
-        ROUTING_NAME, ADDRESS, FORWARDING_ADDRESS, FILTER, TRANSFORMER_CLASS_NAME, EXCLUSIVE
+        ROUTING_NAME, DIVERT_ADDRESS, FORWARDING_ADDRESS, FILTER, TRANSFORMER_CLASS_NAME, EXCLUSIVE
     };
 
+    AttributeDefinition[] CORE_QUEUE_ATTRIBUTES = { QUEUE_ADDRESS, FILTER, DURABLE };
 }

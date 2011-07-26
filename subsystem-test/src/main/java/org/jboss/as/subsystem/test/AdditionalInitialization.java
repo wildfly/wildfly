@@ -44,6 +44,6 @@ public interface AdditionalInitialization extends AdditionalParsers {
      * @param rootResource the root model resource which allows you to for example add child elements to the model
      * @param rootRegistration the root resource registration which allows you to for example add additional operations to the model
      */
-    void initializeExtraSubystemsAndModel(ExtensionContext context, Resource rootResource, ManagementResourceRegistration rootRegistration);
+    void initializeExtraSubystemsAndModel(ExtensionContext extensionContext, Resource rootResource, ManagementResourceRegistration rootRegistration);
 
 }

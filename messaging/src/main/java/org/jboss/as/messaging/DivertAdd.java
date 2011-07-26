@@ -22,18 +22,27 @@
 
 package org.jboss.as.messaging;
 
-import java.util.List;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.List;
+import java.util.Locale;
+
+import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.server.HornetQServer;
+import org.jboss.as.connector.subsystems.datasources.Util;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
@@ -43,7 +52,17 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DivertAdd extends AbstractAddStepHandler {
+public class DivertAdd extends AbstractAddStepHandler implements DescriptionProvider {
+
+    /**
+     * Create an "add" operation using the existing model
+     */
+    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
+
+        final ModelNode operation = org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, subModel);
+
+        return operation;
+    }
 
     private final Configuration configuration;
 
@@ -67,7 +86,7 @@ public class DivertAdd extends AbstractAddStepHandler {
         final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         final ModelNode routingNode = CommonAttributes.ROUTING_NAME.validateResolvedOperation(model);
         final String routingName = routingNode.isDefined() ? routingNode.asString() : null;
-        final String address = CommonAttributes.ADDRESS.validateResolvedOperation(model).asString();
+        final String address = CommonAttributes.DIVERT_ADDRESS.validateResolvedOperation(model).asString();
         final String forwardingAddress = CommonAttributes.FORWARDING_ADDRESS.validateResolvedOperation(model).asString();
         final boolean exclusive = CommonAttributes.EXCLUSIVE.validateResolvedOperation(model).asBoolean();
         final ModelNode filterNode = CommonAttributes.FILTER.validateResolvedOperation(model);
@@ -85,9 +104,9 @@ public class DivertAdd extends AbstractAddStepHandler {
                         MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState()));
             }
 
-            HornetQServer server = HornetQServer.class.cast(hqService.getValue());
+            HornetQServerControl serverControl = HornetQServer.class.cast(hqService.getValue()).getHornetQServerControl();
             try {
-                server.getHornetQServerControl().createDivert(name, routingName, address, forwardingAddress, exclusive, filter, transformerClassName);
+                serverControl.createDivert(name, routingName, address, forwardingAddress, exclusive, filter, transformerClassName);
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {
@@ -101,5 +120,10 @@ public class DivertAdd extends AbstractAddStepHandler {
             DivertConfiguration divertConfig = new DivertConfiguration(name, routingName, address, forwardingAddress, exclusive, filter, transformerClassName);
             divertConfigs.add(divertConfig);
         }
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return MessagingDescriptions.getDivertAdd(locale);
     }
 }
