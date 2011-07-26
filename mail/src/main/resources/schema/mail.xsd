@@ -4,11 +4,17 @@
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">
-      <!-- The security subsystem root element -->
-   <xs:element name="subsystem" type="mail-subsystemType" />
+    <!-- The security subsystem root element -->
+    <xs:element name="subsystem" type="mail-subsystemType"/>
 
+    <!--
+    <mail-session jndi-name="java:/Mail">
+                <login name="nobody" password="pass"/>
+                <smtp-server address="localhost" port="9999"/>
+           </mail-session>
+    -->
     <xs:complexType name="mail-subsystemType">
-         <xs:annotation>
+        <xs:annotation>
             <xs:documentation>
                 <![CDATA[
                 The configuration of the mail subsystem.
@@ -21,14 +27,24 @@
     </xs:complexType>
     <xs:complexType name="mail-sessionType">
         <xs:all>
-            <xs:element name="username" type="xs:string"/>
-            <xs:element name="password" type="xs:string"/>
-            <xs:element name="properties" type="properties-type" />
+            <xs:element name="login">
+                <xs:complexType mixed="true">
+                    <xs:attribute name="name"/>
+                    <xs:attribute name="password"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="smtp-server">
+                <xs:complexType mixed="true">
+                    <xs:attribute name="address" use="required"/>
+                    <xs:attribute name="port" use="required"/>
+                </xs:complexType>
+            </xs:element>
         </xs:all>
         <xs:attribute name="jndi-name" use="required"/>
+        <xs:attribute name="debug" use="optional"/>
     </xs:complexType>
 
-    <xs:complexType name="properties-type">
+    <!--  <xs:complexType name="properties-type">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="property">
                 <xs:complexType mixed="true">
@@ -36,6 +52,6 @@
                 </xs:complexType>
             </xs:element>
         </xs:choice>
-    </xs:complexType>
+    </xs:complexType>-->
 
 </xs:schema>

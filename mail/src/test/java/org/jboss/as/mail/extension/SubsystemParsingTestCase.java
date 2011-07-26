@@ -1,40 +1,40 @@
 package org.jboss.as.mail.extension;
 
 
+import junit.framework.Assert;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.mail.support.AbstractParsingTest;
+import org.jboss.as.mail.support.KernelServices;
+import org.jboss.dmr.ModelNode;
+import org.junit.Test;
+
+import java.util.List;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.List;
-
-import junit.framework.Assert;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.dmr.ModelNode;
-import org.junit.Test;
-
-import org.jboss.as.mail.support.AbstractParsingTest;
-import org.jboss.as.mail.support.KernelServices;
-
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class SubsystemParsingTestCase extends AbstractParsingTest {
-
+    private String SUBSYSTEM_XML =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "<mail-session jndi-name=\"java:/Mail\">\n" +
+                "           <login name=\"nobody\" password=\"pass\"/>\n" +
+                "           <smtp-server address=\"localhost\" port=\"9999\"/>\n" +
+                "      </mail-session>" +
+                "</subsystem>";
     /**
      * Tests that the xml is parsed into the correct operations
      */
     @Test
     public void testParseSubsystem() throws Exception {
         //Parse the subsystem xml into operations
-        String subsystemXml =
-                "<subsystem xmlns=\"" + MailSubsystemExtension.NAMESPACE + "\">" +
-                "</subsystem>";
-        List<ModelNode> operations = super.parse(subsystemXml);
+        List<ModelNode> operations = super.parse(SUBSYSTEM_XML);
 
         ///Check that we have the expected number of operations
         Assert.assertEquals(1, operations.size());
@@ -55,10 +55,7 @@ public class SubsystemParsingTestCase extends AbstractParsingTest {
     @Test
     public void testInstallIntoController() throws Exception {
         //Parse the subsystem xml and install into the controller
-        String subsystemXml =
-                "<subsystem xmlns=\"" + MailSubsystemExtension.NAMESPACE + "\">" +
-                "</subsystem>";
-        KernelServices services = super.installInController(subsystemXml);
+        KernelServices services = super.installInController(SUBSYSTEM_XML);
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
@@ -72,10 +69,8 @@ public class SubsystemParsingTestCase extends AbstractParsingTest {
     @Test
     public void testParseAndMarshalModel() throws Exception {
         //Parse the subsystem xml and install into the first controller
-        String subsystemXml =
-                "<subsystem xmlns=\"" + MailSubsystemExtension.NAMESPACE + "\">" +
-                "</subsystem>";
-        KernelServices servicesA = super.installInController(subsystemXml);
+
+        KernelServices servicesA = super.installInController(SUBSYSTEM_XML);
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
@@ -95,10 +90,7 @@ public class SubsystemParsingTestCase extends AbstractParsingTest {
     @Test
     public void testDescribeHandler() throws Exception {
         //Parse the subsystem xml and install into the first controller
-        String subsystemXml =
-                "<subsystem xmlns=\"" + MailSubsystemExtension.NAMESPACE + "\">" +
-                "</subsystem>";
-        KernelServices servicesA = super.installInController(subsystemXml);
+        KernelServices servicesA = super.installInController(SUBSYSTEM_XML);
         //Get the model and the describe operations from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         ModelNode describeOp = new ModelNode();
