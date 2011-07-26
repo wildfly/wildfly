@@ -60,6 +60,7 @@ import javax.ejb.MessageDriven;
 import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
+import javax.jms.MessageListener;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
@@ -189,10 +190,13 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
     }
 
     private static void processBeanMetaData(final DeploymentUnit deploymentUnit, final EnterpriseBeanMetaData enterpriseBeanMetaData) throws DeploymentUnitProcessingException {
-        if (enterpriseBeanMetaData instanceof SessionBeanMetaData)
+        if (enterpriseBeanMetaData instanceof SessionBeanMetaData) {
             processSessionBeanMetaData(deploymentUnit, (SessionBeanMetaData) enterpriseBeanMetaData);
-        else
-            throw new IllegalArgumentException("Unable to process " + enterpriseBeanMetaData);
+        } else if (enterpriseBeanMetaData instanceof MessageDrivenBeanMetaData) {
+            processMessageDrivenBeanMetaData(deploymentUnit, (MessageDrivenBeanMetaData) enterpriseBeanMetaData);
+        } else {
+            throw new IllegalArgumentException("Only MDB and session beans are supported currently, unable to process " + enterpriseBeanMetaData);
+        }
     }
 
     private static void processDeploymentDescriptor(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
@@ -221,7 +225,7 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
         for (final AnnotationInstance messageBeanAnnotation : messageBeanAnnotations) {
             final AnnotationTarget target = messageBeanAnnotation.target();
             final ClassInfo beanClassInfo = (ClassInfo) target;
-            if(!assertSessionBeanClassValidity(beanClassInfo)) {
+            if (!assertSessionBeanClassValidity(beanClassInfo)) {
                 continue;
             }
             final String ejbName = beanClassInfo.name().local();
@@ -377,5 +381,45 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
         }
         // valid class
         return true;
+    }
+
+    private static void processMessageDrivenBeanMetaData(final DeploymentUnit deploymentUnit, final MessageDrivenBeanMetaData mdb) throws DeploymentUnitProcessingException {
+        final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
+
+        final String beanName = mdb.getName();
+        // the important bit is to skip already processed EJBs via annotations
+        if (ejbJarDescription.hasComponent(beanName)) {
+            return;
+        }
+
+        final String beanClassName = mdb.getEjbClass();
+        String messageListenerInterface = mdb.getMessagingType();
+        if (messageListenerInterface == null || messageListenerInterface.trim().isEmpty()) {
+            // TODO: This isn't really correct to default to MessageListener
+            messageListenerInterface = MessageListener.class.getName();
+        }
+        final Properties activationConfigProps = getActivationConfigProperties(mdb.getActivationConfig());
+        final MessageDrivenComponentDescription mdbComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), messageListenerInterface, activationConfigProps);
+        // add it to the ejb jar description
+        ejbJarDescription.getEEModuleDescription().addComponent(mdbComponentDescription);
+    }
+
+    private static Properties getActivationConfigProperties(final ActivationConfigMetaData activationConfig) {
+        final Properties activationConfigProps = new Properties();
+        if (activationConfig == null || activationConfig.getActivationConfigProperties() == null) {
+            return activationConfigProps;
+        }
+        final ActivationConfigPropertiesMetaData activationConfigPropertiesMetaData = activationConfig.getActivationConfigProperties();
+        for (ActivationConfigPropertyMetaData activationConfigProp : activationConfigPropertiesMetaData) {
+            if (activationConfigProp == null) {
+                continue;
+            }
+            final String propName = activationConfigProp.getActivationConfigPropertyName();
+            final String propValue = activationConfigProp.getValue();
+            if (propName != null) {
+                activationConfigProps.put(propName, propValue);
+            }
+        }
+        return activationConfigProps;
     }
 }

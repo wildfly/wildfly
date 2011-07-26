@@ -144,10 +144,7 @@
         <version.org.jboss.management.console>1.0.0.Beta15</version.org.jboss.management.console>
         <version.org.jboss.marshalling.jboss-marshalling>1.3.0.GA</version.org.jboss.marshalling.jboss-marshalling>
         <version.org.jboss.marshalling.jboss-marshalling-river>1.3.0.GA</version.org.jboss.marshalling.jboss-marshalling-river>
-        <version.org.jboss.metadata.common>7.0.0.Beta5</version.org.jboss.metadata.common>
-        <version.org.jboss.metadata.ear>7.0.0.Beta5</version.org.jboss.metadata.ear>
-        <version.org.jboss.metadata.ejb>7.0.0.Beta5</version.org.jboss.metadata.ejb>
-        <version.org.jboss.metadata.web>7.0.0.Beta5</version.org.jboss.metadata.web>
+        <version.org.jboss.metadata>7.0.0.Beta7-SNAPSHOT</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.1.2.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.0.1.GA</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.0.GA</version.org.jboss.msc.jboss-msc>
@@ -4155,7 +4152,7 @@
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
                 <artifactId>jboss-metadata-common</artifactId>
-                <version>${version.org.jboss.metadata.common}</version>
+                <version>${version.org.jboss.metadata}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss</groupId>
@@ -4199,7 +4196,7 @@
             <dependency>
                <groupId>org.jboss.metadata</groupId>
                <artifactId>jboss-metadata-ear</artifactId>
-               <version>${version.org.jboss.metadata.ear}</version>
+               <version>${version.org.jboss.metadata}</version>
                <exclusions>
                     <exclusion>
                         <groupId>org.jboss</groupId>
@@ -4215,13 +4212,13 @@
             <dependency>
                <groupId>org.jboss.metadata</groupId>
                <artifactId>jboss-metadata-ejb</artifactId>
-               <version>${version.org.jboss.metadata.ejb}</version>
+               <version>${version.org.jboss.metadata}</version>
             </dependency>
 
             <dependency>
                <groupId>org.jboss.metadata</groupId>
                <artifactId>jboss-metadata-web</artifactId>
-               <version>${version.org.jboss.metadata.web}</version>
+               <version>${version.org.jboss.metadata}</version>
                <exclusions>
                     <exclusion>
                         <groupId>org.jboss</groupId>
