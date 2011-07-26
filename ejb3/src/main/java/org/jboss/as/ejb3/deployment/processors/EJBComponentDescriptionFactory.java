@@ -221,6 +221,9 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
         for (final AnnotationInstance messageBeanAnnotation : messageBeanAnnotations) {
             final AnnotationTarget target = messageBeanAnnotation.target();
             final ClassInfo beanClassInfo = (ClassInfo) target;
+            if(!assertSessionBeanClassValidity(beanClassInfo)) {
+                continue;
+            }
             final String ejbName = beanClassInfo.name().local();
             final AnnotationValue nameValue = messageBeanAnnotation.value("name");
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : nameValue.asString();
