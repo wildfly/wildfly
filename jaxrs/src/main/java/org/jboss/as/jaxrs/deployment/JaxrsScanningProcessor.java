@@ -262,7 +262,8 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                 if (e.target() instanceof ClassInfo) {
                     info = (ClassInfo) e.target();
                 } else if (e.target() instanceof MethodInfo) {
-                    info = ((MethodInfo) e.target()).declaringClass();
+                    //ignore
+                    continue;
                 } else {
                     log.warnf("@Path annotation not on Class or Method: %s", e.target());
                     continue;
