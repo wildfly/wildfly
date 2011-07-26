@@ -22,8 +22,13 @@
 
 package org.jboss.as.messaging;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 
@@ -37,7 +42,7 @@ enum Element {
    UNKNOWN((String) null),
    // Messaging 1.0 elements in alpha order
    ACCEPTORS(CommonAttributes.ACCEPTORS),
-   ADDRESS(CommonAttributes.ADDRESS),
+   ADDRESS(Arrays.asList(CommonAttributes.QUEUE_ADDRESS, CommonAttributes.DIVERT_ADDRESS)),
    ADDRESS_SETTINGS(CommonAttributes.ADDRESS_SETTINGS),
    ALLOW_FAILBACK(CommonAttributes.ALLOW_FAILBACK),
    ASYNC_CONNECTION_EXECUTION_ENABLED(CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED),
@@ -195,15 +200,35 @@ enum Element {
 
    private final String name;
    private final AttributeDefinition definition;
+   private final Map<String, AttributeDefinition> definitions;
 
    Element(final String name) {
       this.name = name;
        this.definition = null;
+       this.definitions = null;
    }
 
    Element(final AttributeDefinition definition) {
        this.name = definition.getXmlName();
        this.definition = definition;
+       this.definitions = null;
+   }
+
+   Element(final List<AttributeDefinition> definitions) {
+        this.definition = null;
+       this.definitions = new HashMap<String, AttributeDefinition>();
+        String ourName = null;
+        for (AttributeDefinition def : definitions) {
+            if (ourName == null) {
+                ourName = def.getXmlName();
+            } else if (!ourName.equals(def.getXmlName())) {
+                throw new IllegalArgumentException(String.format("All attribute definitions must have the same xml name -- found %s but already had %s", def.getXmlName(), ourName));
+            }
+            if (this.definitions.put(def.getName(), def) != null) {
+                throw new IllegalArgumentException(String.format("All attribute definitions must have unique names -- already found", def.getName()));
+            }
+        }
+       this.name = ourName;
    }
 
    /**
@@ -217,6 +242,10 @@ enum Element {
 
    public AttributeDefinition getDefinition() {
        return definition;
+   }
+
+   public AttributeDefinition getDefinition(final String name) {
+       return definitions.get(name);
    }
 
    private static final Map<String, Element> MAP;

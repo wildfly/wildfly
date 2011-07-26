@@ -24,6 +24,32 @@
                </netty-acceptor>
             </acceptors>
 
+            <diverts>
+                <divert name="testDivert1">
+                    <routing-name>routing</routing-name>
+                    <address>address1</address>
+                    <forwarding-address>forwardingaddress1</forwarding-address>
+                    <filter string="afilter"/>
+                    <exclusive>true</exclusive>
+                    <transformer-class-name>org.jboss.test.Transformer</transformer-class-name>
+                </divert>
+                <divert name="testDivert2">
+                    <address>address2</address>
+                    <forwarding-address>forwardingaddress2</forwarding-address>
+                </divert>
+            </diverts>
+
+            <core-queues>
+                <queue name="coreQueueA">
+                    <address>addressA</address>
+                    <filter string="afilter"/>
+                    <durable>true</durable>
+                </queue>
+                <queue name="coreQueueB">
+                    <address>addressB</address>
+                </queue>
+            </core-queues>
+
             <security-settings>
                <security-setting match="#">
                    <permission type="createNonDurableQueue" roles="guest"/>

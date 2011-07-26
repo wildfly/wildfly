@@ -56,17 +56,11 @@ class MessagingSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getSubsystemDescribe(locale);
-        }
-    };
-
     static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getSubsystemRemove(locale);
+            // Private method; description not needed
+            return new ModelNode();
         }
     };
 
@@ -77,40 +71,12 @@ class MessagingSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider QUEUE_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getQueueAdd(locale);
-        }
-    };
-
-    static final DescriptionProvider QUEUE_REMOVE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getQueueRemove(locale);
-        }
-    };
-
     public static final DescriptionProvider JMS_QUEUE_RESOURCE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
             return MessagingDescriptions.getJmsQueueResource(locale);
         }
 
-    };
-
-    public static final DescriptionProvider JMS_QUEUE_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getQueueAdd(locale);
-        }
-    };
-
-    public static final DescriptionProvider JMS_QUEUE_REMOVE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getQueueRemove(locale);
-        }
     };
 
     public static final DescriptionProvider CF = new DescriptionProvider() {
@@ -142,21 +108,6 @@ class MessagingSubsystemProviders {
         }
     };
 
-    public static final DescriptionProvider JMS_TOPIC_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getTopicAdd(locale);
-        }
-    };
-
-    public static final DescriptionProvider JMS_TOPIC_REMOVE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getTopicRemove(locale);
-        }
-    };
-
-
     public static final DescriptionProvider RA = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
@@ -178,4 +129,10 @@ class MessagingSubsystemProviders {
         }
     };
 
+    public static final DescriptionProvider DIVERT_RESOURCE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getDivertResource(locale);
+        }
+    };
 }

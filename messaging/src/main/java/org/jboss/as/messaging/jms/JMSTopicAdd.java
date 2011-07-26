@@ -28,6 +28,7 @@ import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.hornetq.jms.server.JMSServerManager;
@@ -35,7 +36,9 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -48,7 +51,7 @@ import org.jboss.msc.service.ServiceName;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-public class JMSTopicAdd extends AbstractAddStepHandler {
+public class JMSTopicAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -94,6 +97,11 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
             return bindings.toArray(new String[bindings.size()]);
         }
         return NO_BINDINGS;
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return MessagingDescriptions.getTopicAdd(locale);
     }
 
 }

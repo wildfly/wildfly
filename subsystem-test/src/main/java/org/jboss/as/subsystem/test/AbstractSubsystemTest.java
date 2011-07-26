@@ -16,8 +16,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -140,6 +145,28 @@ public abstract class AbstractSubsystemTest {
 
     protected Extension getMainExtension() {
         return mainExtension;
+    }
+
+    /**
+     * Read the classpath resource with the given name and return its contents as a string. Hook to
+     * for reading in classpath resources for subsequent parsing.
+     *
+     * @param name the name of the resource
+     * @return the contents of the resource as a string
+     * @throws IOException
+     */
+    protected String readResource(final String name) throws IOException {
+
+        URL configURL = getClass().getResource(name);
+        org.junit.Assert.assertNotNull(name + " url is not null", configURL);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(configURL.openStream()));
+        StringWriter writer = new StringWriter();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            writer.write(line);
+        }
+        return writer.toString();
     }
 
 
