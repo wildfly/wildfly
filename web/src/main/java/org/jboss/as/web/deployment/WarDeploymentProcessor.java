@@ -229,7 +229,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             if (metaData.getDistributable() != null) {
                 final DistributedCacheManagerFactory factory = DistributableSessionManager.getDistributedCacheManagerFactory();
                 if (factory != null) {
-                    builder.addDependencies(factory.getDependencies(metaData));
+                    builder.addDependencies(DependencyType.OPTIONAL, factory.getDependencies(metaData));
                 }
             }
 
