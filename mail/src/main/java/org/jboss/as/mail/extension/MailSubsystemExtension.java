@@ -5,6 +5,7 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
@@ -30,7 +31,7 @@ public class MailSubsystemExtension implements Extension {
     /**
      * The name space used for the {@code substystem} element
      */
-    public static final String NAMESPACE = "urn:jboss:domain:mail:1.0";
+    //public static final String NAMESPACE =
 
     /**
      * The name of our subsystem within the model.
@@ -42,9 +43,10 @@ public class MailSubsystemExtension implements Extension {
      */
     private final MailSubsystemParser parser = new MailSubsystemParser();
 
+
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(NAMESPACE, parser);
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
     }
 
 
@@ -52,8 +54,13 @@ public class MailSubsystemExtension implements Extension {
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(MailSubsystemProviders.SUBSYSTEM);
-        //We always need to add an 'add' operation
+
         registration.registerOperationHandler(ADD, MailSubsystemAdd.INSTANCE, MailSubsystemProviders.SUBSYSTEM_ADD, false);
+
+        final ManagementResourceRegistration mailSessions = registration.registerSubModel(PathElement.pathElement(ModelKeys.MAIL_SESSION), MailSubsystemProviders.MAIL_SESSION_DESC);
+        mailSessions.registerOperationHandler(ADD, MailSessionAdd.INSTANCE, MailSubsystemProviders.ADD_MAIL_SESSION_DESC, false);
+        //dataSources.registerOperationHandler(REMOVE, MailSessionAdd.INSTANCE, REMOVE_DATA_SOURCE_DESC, false);
+
         //We always need to add a 'describe' operation
         registration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
