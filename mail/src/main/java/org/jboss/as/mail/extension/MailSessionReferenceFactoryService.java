@@ -22,12 +22,12 @@ import javax.mail.Session;
  */
 public class MailSessionReferenceFactoryService implements Service<ManagedReferenceFactory>, ManagedReferenceFactory {
     public static final ServiceName SERVICE_NAME_BASE = MailSessionAdd.SERVICE_NAME_BASE.append("reference-factory");
-    private final InjectedValue<Session> dataSourceValue = new InjectedValue<Session>();
+    private final InjectedValue<Session> mailSessionValue = new InjectedValue<Session>();
 
     private ManagedReference reference;
 
     public synchronized void start(StartContext startContext) throws StartException {
-        reference = new ValueManagedReference(new ImmediateValue<Object>(dataSourceValue.getValue()));
+        reference = new ValueManagedReference(new ImmediateValue<Object>(mailSessionValue.getValue()));
     }
 
     public synchronized void stop(StopContext stopContext) {
@@ -43,6 +43,6 @@ public class MailSessionReferenceFactoryService implements Service<ManagedRefere
     }
 
     public Injector<Session> getDataSourceInjector() {
-        return dataSourceValue;
+        return mailSessionValue;
     }
 }
