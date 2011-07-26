@@ -11,18 +11,18 @@ import org.jboss.logging.Logger;
 /**
  * An example deployment unit processor that does nothing. To add more deployment
  * processors copy this class, and add to the {@link AbstractDeploymentChainStep}
- * {@link SubsystemAdd#performBoottime(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, org.jboss.as.controller.ServiceVerificationHandler, java.util.List)}
+ * {@link org.jboss.as.mail.extension.MailSubsystemAdd#performBoottime(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, org.jboss.as.controller.ServiceVerificationHandler, java.util.List)}
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
+public class MailSubsystemDeploymentProcessor implements DeploymentUnitProcessor {
 
-    Logger log = Logger.getLogger(SubsystemDeploymentProcessor.class);
+    Logger log = Logger.getLogger(MailSubsystemDeploymentProcessor.class);
 
     /**
      * See {@link Phase} for a description of the different phases
      */
-    public static final Phase PHASE = Phase.DEPENDENCIES;
+    public static final Phase PHASE = Phase.INSTALL;
 
     /**
      * The relative order of this processor within the {@link #PHASE}.
@@ -38,6 +38,8 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(DeploymentUnit context) {
+        log.info("undeploy");
+
     }
 
 }
