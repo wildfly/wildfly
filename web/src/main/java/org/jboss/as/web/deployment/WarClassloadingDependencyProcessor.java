@@ -61,6 +61,11 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
+        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            return; // Skip non web deployments
+        }
+
         final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
@@ -74,9 +79,6 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSF_API, false, false, false));
         }
 
-        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
-            return; // Skip non web deployments
-        }
         // Add module dependencies on Java EE apis
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
