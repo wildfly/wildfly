@@ -1,0 +1,156 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.messaging;
+
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
+import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
+import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.LVQ;
+import static org.jboss.as.messaging.CommonAttributes.MAX_DELIVERY_ATTEMPTS;
+import static org.jboss.as.messaging.CommonAttributes.MAX_SIZE_BYTES_NODE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
+import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.REDELIVERY_DELAY;
+import static org.jboss.as.messaging.CommonAttributes.REDISTRIBUTION_DELAY;
+import static org.jboss.as.messaging.CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
+import org.jboss.msc.service.ServiceController;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+/**
+ * @author Emanuel Muckenhuber
+ */
+class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionProvider {
+
+    static final OperationStepHandler INSTANCE = new AddressSettingAdd();
+
+    static final SimpleAttributeDefinition[] ATTRIBUTES = new SimpleAttributeDefinition[] { ADDRESS_FULL_MESSAGE_POLICY,
+                                             DEAD_LETTER_ADDRESS, LVQ, MAX_DELIVERY_ATTEMPTS, MAX_SIZE_BYTES_NODE_NAME,
+                                             MESSAGE_COUNTER_HISTORY_DAY_LIMIT, EXPIRY_ADDRESS, REDELIVERY_DELAY,
+                                             REDISTRIBUTION_DELAY, PAGE_SIZE_BYTES_NODE_NAME, SEND_TO_DLA_ON_NO_ROUTE } ;
+
+    @Override
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        for(final SimpleAttributeDefinition attribute : ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
+    }
+
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                  final ServiceVerificationHandler verificationHandler,
+                                  final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final HornetQServer server = getServer(context);
+        if(server != null) {
+            final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+            final AddressSettings settings = createSettings(model);
+            server.getAddressSettingsRepository().addMatch(address.getLastElement().getValue(), settings);
+        }
+    }
+
+    /**
+     * Create the add operation based on an existing model.
+     *
+     * @param address the address
+     * @param subModel the sub model
+     * @return the add operation
+     */
+    static ModelNode createAddOperation(final ModelNode address, final ModelNode subModel) {
+        final ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        for(final SimpleAttributeDefinition definition : ATTRIBUTES) {
+            final String attribute = definition.getName();
+            if(subModel.hasDefined(attribute)) {
+                operation.get(attribute).set(subModel.get(attribute));
+            }
+        }
+        return operation;
+    }
+
+    /**
+     * Create a setting.
+     *
+     * @param config the detyped config
+     * @return the address settings
+     */
+    static AddressSettings createSettings(final ModelNode config) {
+        final AddressSettings settings = new AddressSettings();
+        final AddressFullMessagePolicy addressPolicy = config.hasDefined(ADDRESS_FULL_MESSAGE_POLICY.getName()) ?
+                AddressFullMessagePolicy.valueOf(config.get(ADDRESS_FULL_MESSAGE_POLICY.getName()).asString()) : AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY;
+        settings.setAddressFullMessagePolicy(addressPolicy);
+        settings.setDeadLetterAddress(asSimpleString(config.get(DEAD_LETTER_ADDRESS.getName()), null));
+        settings.setLastValueQueue(config.get(LVQ.getName()).asBoolean(AddressSettings.DEFAULT_LAST_VALUE_QUEUE));
+        settings.setMaxDeliveryAttempts(config.get(MAX_DELIVERY_ATTEMPTS.getName()).asInt(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS));
+        settings.setMaxSizeBytes(config.get(MAX_SIZE_BYTES_NODE_NAME.getName()).asInt((int) AddressSettings.DEFAULT_MAX_SIZE_BYTES));
+        settings.setMessageCounterHistoryDayLimit(config.get(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.getName()).asInt(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT));
+        settings.setExpiryAddress(asSimpleString(config.get(EXPIRY_ADDRESS.getName()), null));
+        settings.setRedeliveryDelay(config.get(REDELIVERY_DELAY.getName()).asInt((int) AddressSettings.DEFAULT_REDELIVER_DELAY));
+        settings.setRedistributionDelay(config.get(REDISTRIBUTION_DELAY.getName()).asInt((int) AddressSettings.DEFAULT_REDISTRIBUTION_DELAY));
+        settings.setPageSizeBytes(config.get(PAGE_SIZE_BYTES_NODE_NAME.getName()).asInt((int) AddressSettings.DEFAULT_PAGE_SIZE));
+        settings.setSendToDLAOnNoRoute(config.get(SEND_TO_DLA_ON_NO_ROUTE.getName()).asBoolean(AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE));
+        return settings;
+    }
+
+    static SimpleString asSimpleString(final ModelNode node, final String defVal) {
+        return SimpleString.toSimpleString(node.getType() != ModelType.UNDEFINED ? node.asString() : defVal);
+    }
+
+    static HornetQServer getServer(final OperationContext context) {
+        final ServiceController<?> controller = context.getServiceRegistry(true).getService(MessagingServices.JBOSS_MESSAGING);
+        if(controller != null) {
+            return HornetQServer.class.cast(controller.getValue());
+        }
+        return null;
+    }
+
+    @Override
+    public ModelNode getModelDescription(final Locale locale) {
+        return MessagingDescriptions.getAddressSettingAdd(locale);
+    }
+}

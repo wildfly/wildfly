@@ -165,10 +165,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     operation.get(ACCEPTOR).set(acceptors);
                     break;
                 } case ADDRESS_SETTINGS: {
-                    // add address settings
-                    final ModelNode addressSettings = processAddressSettings(reader);
-                    // TODO these should be resources
-                    operation.get(ADDRESS_SETTING).set(addressSettings);
+                    processAddressSettings(reader, address, list);
                     break;
                 }
                 case BINDINGS_DIRECTORY: {
@@ -772,19 +769,19 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case ACCEPTOR: {
                     final ModelNode acceptor = acceptors.get(name);
                     acceptor.get(TYPE).set(TransportConfigType.Generic.toString());
-                    if(socketBinding != null) acceptor.get(SOCKET_BINDING).set(socketBinding);
+                    if(socketBinding != null) acceptor.get(SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, acceptor, true);
                     break;
                 } case NETTY_ACCEPTOR: {
                     final ModelNode acceptor = acceptors.get(name);
                     acceptor.get(TYPE).set(TransportConfigType.Remote.toString());
-                    if(socketBinding != null) acceptor.get(SOCKET_BINDING).set(socketBinding);
+                    if(socketBinding != null) acceptor.get(SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, acceptor, false);
                     break;
                 } case IN_VM_ACCEPTOR: {
                     final ModelNode acceptor = acceptors.get(name);
                     acceptor.get(TYPE).set(TransportConfigType.InVM.toString());
-                    acceptor.get(SERVER_ID).set(serverId);
+                    acceptor.get(SERVER_ID.getName()).set(serverId);
                     parseTransportConfigurationParams(reader, acceptor, false);
                     break;
                 } default: {
@@ -1057,19 +1054,19 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case CONNECTOR: {
                     final ModelNode connector = connectors.get(name);
                     connector.get(TYPE).set(TransportConfigType.Generic.toString());
-                    if(socketBinding != null) connector.get(SOCKET_BINDING).set(socketBinding);
+                    if(socketBinding != null) connector.get(SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, connector, true);
                     break;
                 } case NETTY_CONNECTOR: {
                     final ModelNode connector = connectors.get(name);
                     connector.get(TYPE).set(TransportConfigType.Remote.toString());
-                    if(socketBinding != null) connector.get(SOCKET_BINDING).set(socketBinding);
+                    if(socketBinding != null) connector.get(SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, connector, false);
                     break;
                 } case IN_VM_CONNECTOR: {
                     final ModelNode connector = connectors.get(name);
                     connector.get(TYPE).set(TransportConfigType.InVM.toString());
-                    connector.get(SERVER_ID).set(serverId);
+                    connector.get(SERVER_ID.getName()).set(serverId);
                     parseTransportConfigurationParams(reader, connector, false);
                     break;
                 } default: {
@@ -1148,7 +1145,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     }
      */
 
-    static ModelNode processAddressSettings(XMLExtendedStreamReader reader) throws XMLStreamException {
+    static void processAddressSettings(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
         final ModelNode settings = new ModelNode();
 
         String localName = null;
@@ -1160,13 +1157,16 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             switch (element) {
                 case ADDRESS_SETTING:
                     // Add address settings
-                    String match = reader.getAttributeValue(0);
-                    settings.get(match).set(parseAddressSettings(reader));
+                    final String match = reader.getAttributeValue(0);
+                    final ModelNode operation = parseAddressSettings(reader);
+                    operation.get(OP).set(ADD);
+                    operation.get(OP_ADDR).set(address);
+                    operation.get(OP_ADDR).add(CommonAttributes.ADDRESS_SETTING, match);
+
+                    operations.add(operation);
                     break;
             }
         } while (reader.hasNext() && localName.equals(Element.ADDRESS_SETTING.getLocalName()));
-
-        return settings;
     }
 
     static ModelNode parseAddressSettings(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -1714,11 +1714,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
         final ModelNode value = property.getValue();
 
-        if (has(value, SOCKET_BINDING)) {
-            writeAttribute(writer, Attribute.SOCKET_BINDING, value.get(SOCKET_BINDING));
+        if (has(value, SOCKET_BINDING.getName())) {
+            writeAttribute(writer, Attribute.SOCKET_BINDING, value.get(SOCKET_BINDING.getName()));
         }
-        if (has(value, SERVER_ID)) {
-            writeAttribute(writer, Attribute.SERVER_ID, value.get(SERVER_ID));
+        if (has(value, SERVER_ID.getName())) {
+            writeAttribute(writer, Attribute.SERVER_ID, value.get(SERVER_ID.getName()));
         }
 
         if (has(value, FACTORY_CLASS.getName())) {
@@ -1812,39 +1812,17 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writer.writeStartElement(Element.ADDRESS_SETTING.getLocalName());
             writer.writeAttribute(Attribute.MATCH.getLocalName(), matchSetting.getName());
             final ModelNode setting = matchSetting.getValue();
-            if (has(setting, CommonAttributes.DEAD_LETTER_ADDRESS)) {
-                writeSimpleElement(writer, Element.DEAD_LETTER_ADDRESS_NODE_NAME, setting);
-            }
-            if (has(setting, CommonAttributes.EXPIRY_ADDRESS)) {
-                writeSimpleElement(writer, Element.EXPIRY_ADDRESS_NODE_NAME, setting);
-            }
-            if (has(setting, CommonAttributes.REDELIVERY_DELAY)) {
-                writeSimpleElement(writer, Element.REDELIVERY_DELAY_NODE_NAME, setting);
-            }
-            if (has(setting, CommonAttributes.MAX_SIZE_BYTES_NODE_NAME)) {
-                writeSimpleElement(writer, Element.MAX_SIZE_BYTES_NODE_NAME, setting);
-            }
-            if (has(setting, CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME)) {
-                writeSimpleElement(writer, Element.PAGE_SIZE_BYTES_NODE_NAME, setting);
-            }
-            if (has(setting, CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT)) {
-                writeSimpleElement(writer, Element.MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME, setting);
-            }
-            if (has(setting, CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY)) {
-                writeSimpleElement(writer, Element.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME, setting);
-            }
-            if (has(setting, CommonAttributes.LVQ)) {
-                writeSimpleElement(writer, Element.LVQ_NODE_NAME, setting);
-            }
-            if (has(setting, CommonAttributes.MAX_DELIVERY_ATTEMPTS)) {
-                writeSimpleElement(writer, Element.MAX_DELIVERY_ATTEMPTS, setting);
-            }
-            if (has(setting, CommonAttributes.REDISTRIBUTION_DELAY)) {
-                writeSimpleElement(writer, Element.REDISTRIBUTION_DELAY_NODE_NAME, setting);
-            }
-            if (has(setting, CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE)) {
-                writeSimpleElement(writer, Element.SEND_TO_DLA_ON_NO_ROUTE, setting);
-            }
+            writeSimpleElement(writer, Element.DEAD_LETTER_ADDRESS_NODE_NAME, setting);
+            writeSimpleElement(writer, Element.EXPIRY_ADDRESS_NODE_NAME, setting);
+            writeSimpleElement(writer, Element.REDELIVERY_DELAY_NODE_NAME, setting);
+            writeSimpleElement(writer, Element.MAX_SIZE_BYTES_NODE_NAME, setting);
+            writeSimpleElement(writer, Element.PAGE_SIZE_BYTES_NODE_NAME, setting);
+            writeSimpleElement(writer, Element.MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME, setting);
+            writeSimpleElement(writer, Element.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME, setting);
+            writeSimpleElement(writer, Element.LVQ_NODE_NAME, setting);
+            writeSimpleElement(writer, Element.MAX_DELIVERY_ATTEMPTS, setting);
+            writeSimpleElement(writer, Element.REDISTRIBUTION_DELAY_NODE_NAME, setting);
+            writeSimpleElement(writer, Element.SEND_TO_DLA_ON_NO_ROUTE, setting);
             writer.writeEndElement();
         }
         writer.writeEndElement();
