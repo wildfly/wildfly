@@ -28,6 +28,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.Stateful;
+import javax.ejb.Stateless;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -43,7 +44,7 @@ import java.io.Serializable;
 /**
  * User: jpai
  */
-@Stateful
+@Stateless
 public class JMSMessagingUtil {
 
     private ConnectionFactory connectionFactory;
