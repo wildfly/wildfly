@@ -44,6 +44,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A binding description for DataSourceDefinition annotations.
@@ -105,6 +106,8 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
 
     private String[] properties;
 
+    private static final AtomicInteger proxyNameCount = new AtomicInteger(0);
+
     public void getResourceValue(final ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final Module module = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final DeploymentReflectionIndex deploymentReflectionIndex = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
@@ -133,8 +136,8 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                 } else {
                     try {
                         TransactionSynchronizationRegistry transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) syncController.getValue();
-                        TransactionManager transactionManager = (TransactionManager)managerController.getValue();
-                        ProxyFactory<?> proxyFactory = new ProxyFactory(clazz);
+                        TransactionManager transactionManager = (TransactionManager) managerController.getValue();
+                        ProxyFactory<?> proxyFactory = new ProxyFactory(clazz.getName() + "$$DataSourceProxy" + proxyNameCount.incrementAndGet(), clazz, module.getClassLoader());
                         object = proxyFactory.newInstance(new DataSourceTransactionProxyHandler(object, transactionManager, transactionSynchronizationRegistry));
                     } catch (Exception e) {
                         logger.warn("Transactional datasource " + className + " could not be proxied and will not be enlisted in transactions automatically", e);

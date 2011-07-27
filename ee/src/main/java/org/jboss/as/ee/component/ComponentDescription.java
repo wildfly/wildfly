@@ -769,10 +769,12 @@ public class ComponentDescription {
                     throw new DeploymentUnitProcessingException("Could not load view class " + view.getViewClassName() + " for component " + configuration, e);
                 }
                 final ViewConfiguration viewConfiguration;
+
+                //we define it in the modules class loader to prevent permgen leaks
                 if (viewClass.isInterface()) {
-                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), Object.class, viewClass.getClassLoader(), viewClass.getProtectionDomain(), viewClass));
+                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), Object.class, module.getClassLoader(), viewClass.getProtectionDomain(), viewClass));
                 } else {
-                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), viewClass, viewClass.getClassLoader(), viewClass.getProtectionDomain()));
+                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), viewClass, module.getClassLoader(), viewClass.getProtectionDomain()));
                 }
                 for (final ViewConfigurator configurator : view.getConfigurators()) {
                     configurator.configure(context, configuration, view, viewConfiguration);
