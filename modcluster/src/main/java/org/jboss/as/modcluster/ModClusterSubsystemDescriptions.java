@@ -22,13 +22,21 @@
 
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * The modcluster subsystem description providers.
@@ -68,6 +76,95 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("list-proxies");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.list-proxies"));
+        return node;
+    }
+
+    static ModelNode getAddProxyDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("add-proxy");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.add-proxy"));
+        return node;
+    }
+
+    static ModelNode getRemoveProxyDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("remove-proxy");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.remove-proxy"));
+        return node;
+    }
+
+    static ModelNode getRefreshDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("refresh");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.refresh"));
+        return node;
+    }
+
+    static ModelNode getResetDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("reset");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.reset"));
+        return node;
+    }
+    static ModelNode getEnableDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("enable");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.enable"));
+        return node;
+    }
+
+    static ModelNode getStopDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("stop");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.stop"));
+        return node;
+    }
+
+    static ModelNode getDisableDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("disable");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.disable"));
+        return node;
+    }
+
+    static ModelNode getEnableContextDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("enable-context");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.enable-context"));
+        return node;
+    }
+
+    static ModelNode getDisableContextDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("disable-context");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.disable-context"));
+        return node;
+    }
+
+    static ModelNode getStopContextDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("stop-context");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.stop-context"));
         return node;
     }
 
