@@ -58,7 +58,7 @@ class PeriodicRotatingFileHandlerAdd extends AbstractAddStepHandler {
         model.get(ENCODING).set(operation.get(ENCODING));
         model.get(FORMATTER).set(operation.get(FORMATTER));
         model.get(LEVEL).set(operation.get(LEVEL));
-        model.get(FILE).set(operation.get(FILE));
+        if (operation.hasDefined(LEVEL)) model.get(FILE).set(operation.get(FILE));
         model.get(SUFFIX).set(operation.get(SUFFIX));
     }
 
@@ -78,7 +78,7 @@ class PeriodicRotatingFileHandlerAdd extends AbstractAddStepHandler {
                 fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
                 serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
             }
-            service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+            if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(operation.get(LEVEL).asString()));
             final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
             if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
             if (operation.hasDefined(SUFFIX)) service.setSuffix(operation.get(SUFFIX).asString());
