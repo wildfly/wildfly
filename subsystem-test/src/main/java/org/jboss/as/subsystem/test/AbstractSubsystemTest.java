@@ -79,10 +79,8 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -302,18 +300,8 @@ public abstract class AbstractSubsystemTest {
         }
         allOps.addAll(bootOperations);
         StringConfigurationPersister persister = new StringConfigurationPersister(allOps, testParser);
-        final ModelControllerService svc = new ModelControllerService(additionalInit.getType(), mainExtension, controllerInitializer, additionalInit, processState, persister);
+        ModelControllerService svc = new ModelControllerService(additionalInit.getType(), mainExtension, controllerInitializer, additionalInit, processState, persister, additionalInit.isValidateOperations());
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
-        builder.addListener(new AbstractServiceListener<Object>() {
-            @Override
-            public void transition(ServiceController<?> controller, ServiceController.Transition transition) {
-                switch(transition) {
-                    case STARTING_to_START_FAILED:
-                        svc.latch.countDown();
-                    break;
-                }
-            }
-        });
         builder.install();
 
         additionalInit.addExtraServices(target);

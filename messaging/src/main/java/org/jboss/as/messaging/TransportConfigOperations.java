@@ -28,6 +28,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnector;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -62,35 +63,18 @@ import java.util.Set;
  */
 class TransportConfigOperations {
 
-    /** The generic transport-config add operation handler. */
-    static final OperationStepHandler GENERIC_ADD = new AbstractAcceptorAdd() {
+    static AttributeDefinition[] GENERIC = new AttributeDefinition[] { CommonAttributes.FACTORY_CLASS, CommonAttributes.SOCKET_BINDING_OPTIONAL };
+    static AttributeDefinition[] REMOTE = new AttributeDefinition[] { CommonAttributes.SOCKET_BINDING };
+    static AttributeDefinition[] IN_VM = new AttributeDefinition[] { CommonAttributes.SERVER_ID };
 
-        @Override
-        void process(final ModelNode subModel, final ModelNode operation) {
-            if(operation.hasDefined(CommonAttributes.SOCKET_BINDING)) {
-                subModel.get(CommonAttributes.SOCKET_BINDING).set(operation.get(CommonAttributes.SOCKET_BINDING));
-            }
-            subModel.get(CommonAttributes.FACTORY_CLASS).set(operation.require(CommonAttributes.FACTORY_CLASS));
-        }
-    };
+    /** The generic transport-config add operation handler. */
+    static final OperationStepHandler GENERIC_ADD = new BasicTransportConfigAdd(GENERIC);
 
     /** The remote transport-config add operation handler. */
-    static final OperationStepHandler REMOTE_ADD = new AbstractAcceptorAdd() {
-
-        @Override
-        void process(final ModelNode subModel, final ModelNode operation) {
-            subModel.get(CommonAttributes.SOCKET_BINDING).set(operation.require(CommonAttributes.SOCKET_BINDING));
-        }
-    };
+    static final OperationStepHandler REMOTE_ADD = new BasicTransportConfigAdd(REMOTE);
 
     /** The in-vm transport-config add operation handler. */
-    static final OperationStepHandler IN_VM_ADD = new AbstractAcceptorAdd() {
-
-        @Override
-        void process(ModelNode subModel, ModelNode operation) {
-            subModel.get(CommonAttributes.SERVER_ID).set(operation.require(CommonAttributes.SERVER_ID));
-        }
-    };
+    static final OperationStepHandler IN_VM_ADD = new BasicTransportConfigAdd(IN_VM);
 
     /** The transport-config remove operation handler. */
     static final OperationStepHandler REMOVE = new OperationStepHandler() {
@@ -109,7 +93,7 @@ class TransportConfigOperations {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-            resource.getModel().get(VALUE).set(operation.require(VALUE));
+            VALUE.validateAndSet(operation, resource.getModel());
             reloadRequiredStep(context);
             context.completeStep();
         }
@@ -126,11 +110,11 @@ class TransportConfigOperations {
         final ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
-        if(node.hasDefined(CommonAttributes.SOCKET_BINDING)) {
-            operation.get(CommonAttributes.SOCKET_BINDING).set(node.get(CommonAttributes.SOCKET_BINDING));
+        if(node.hasDefined(CommonAttributes.SOCKET_BINDING.getName())) {
+            operation.get(CommonAttributes.SOCKET_BINDING.getName()).set(node.get(CommonAttributes.SOCKET_BINDING.getName()));
         }
-        if(node.hasDefined(CommonAttributes.SERVER_ID)) {
-            operation.get(CommonAttributes.SERVER_ID).set(node.get(CommonAttributes.SERVER_ID));
+        if(node.hasDefined(CommonAttributes.SERVER_ID.getName())) {
+            operation.get(CommonAttributes.SERVER_ID.getName()).set(node.get(CommonAttributes.SERVER_ID.getName()));
         }
         if(node.hasDefined(CommonAttributes.PARAM)) {
             for(final Property param : node.get(CommonAttributes.PARAM).asPropertyList()) {
@@ -176,7 +160,7 @@ class TransportConfigOperations {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(config);
-                final String clazz = config.get(FACTORY_CLASS).asString();
+                final String clazz = config.get(FACTORY_CLASS.getName()).asString();
                 acceptors.put(acceptorName, new TransportConfiguration(clazz, parameters, acceptorName));
             }
         }
@@ -185,8 +169,8 @@ class TransportConfigOperations {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(config);
-                final String binding = config.get(SOCKET_BINDING).asString();
-                parameters.put(SOCKET_BINDING, binding);
+                final String binding = config.get(SOCKET_BINDING.getName()).asString();
+                parameters.put(SOCKET_BINDING.getName(), binding);
                 bindings.add(binding);
                 acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName));
             }
@@ -196,7 +180,7 @@ class TransportConfigOperations {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(config);
-                parameters.put(SERVER_ID, config.get(SERVER_ID).asInt());
+                parameters.put(SERVER_ID.getName(), config.get(SERVER_ID.getName()).asInt());
                 acceptors.put(acceptorName, new TransportConfiguration(InVMAcceptorFactory.class.getName(), parameters, acceptorName));
             }
         }
@@ -233,7 +217,7 @@ class TransportConfigOperations {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(config);
-                final String clazz = config.get(FACTORY_CLASS).asString();
+                final String clazz = config.get(FACTORY_CLASS.getName()).asString();
                 connectors.put(connectorName, new TransportConfiguration(clazz, parameters, connectorName));
             }
         }
@@ -242,8 +226,8 @@ class TransportConfigOperations {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(config);
-                final String binding = config.get(SOCKET_BINDING).asString();
-                parameters.put(SOCKET_BINDING, binding);
+                final String binding = config.get(SOCKET_BINDING.getName()).asString();
+                parameters.put(SOCKET_BINDING.getName(), binding);
                 bindings.add(binding);
                 connectors.put(connectorName, new TransportConfiguration(NettyConnector.class.getName(), parameters, connectorName));
             }
@@ -253,20 +237,31 @@ class TransportConfigOperations {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(config);
-                parameters.put(SERVER_ID, config.get(SERVER_ID).asInt());
+                parameters.put(SERVER_ID.getName(), config.get(SERVER_ID.getName()).asInt());
                 connectors.put(connectorName, new TransportConfiguration(InVMConnector.class.getName(), parameters, connectorName));
             }
         }
         configuration.setConnectorConfigurations(connectors);
     }
 
-    private abstract static class AbstractAcceptorAdd implements OperationStepHandler {
+    private static class BasicTransportConfigAdd implements OperationStepHandler {
+
+        private final AttributeDefinition[] attributes;
+
+        BasicTransportConfigAdd(final AttributeDefinition[] attributes) {
+            this.attributes = attributes;
+        }
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+            final ModelNode subModel = resource.getModel();
+            // Process attributes
+            for(final AttributeDefinition attribute : attributes) {
+                attribute.validateAndSet(operation, subModel);
+            }
             // Process acceptor/connector type specific properties
-            process(resource.getModel(), operation);
+            process(subModel, operation);
             // The transport-config parameters
             if(operation.hasDefined(CommonAttributes.PARAM)) {
                 for(Property property : operation.get(CommonAttributes.PARAM).asPropertyList()) {
@@ -283,7 +278,9 @@ class TransportConfigOperations {
             context.completeStep();
         }
 
-        abstract void process(ModelNode subModel, ModelNode operation);
+        void process(ModelNode subModel, ModelNode operation) {
+            //
+        };
     }
 
 }
