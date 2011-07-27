@@ -41,6 +41,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Maintains a set of {@link Dictionary}s in the domain model keyd be persistent ID (PID).
@@ -52,49 +53,51 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
-    //private final InjectedValue<ServerConfigurationPersister> injectedConfigPersister = new InjectedValue<ServerConfigurationPersister>();
+    private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final Set<ConfigAdminListener> listeners = new CopyOnWriteArraySet<ConfigAdminListener>();
     private final AtomicLong updateCount = new AtomicLong();
-    private final SubsystemState subsystemState;
     private ServiceContainer serviceContainer;
 
-    ConfigAdminServiceImpl(SubsystemState subsystemState) {
-        this.subsystemState = subsystemState;
+    private ConfigAdminServiceImpl() {
     }
 
-    public static ServiceController<?> addService(final ServiceTarget target, SubsystemState subsystemState, final ServiceListener<Object>... listeners) {
-        ConfigAdminServiceImpl service = new ConfigAdminServiceImpl(subsystemState);
+    public static ServiceController<?> addService(final ServiceTarget target, final ServiceListener<Object>... listeners) {
+        ConfigAdminServiceImpl service = new ConfigAdminServiceImpl();
         ServiceBuilder<?> builder = target.addService(ConfigAdminService.SERVICE_NAME, service);
-        //builder.addSystemDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, service.injectedConfigPersister);
+        builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addListener(listeners);
         return builder.install();
     }
 
+    private SubsystemState getSubsystemState() {
+        return injectedSubsystemState.getValue();
+    }
+
     @Override
     public Set<String> getConfigurations() {
-        return subsystemState.getConfigurations();
+        return getSubsystemState().getConfigurations();
     }
 
     @Override
     public boolean hasConfiguration(String pid) {
-        return subsystemState.hasConfiguration(pid);
+        return getSubsystemState().hasConfiguration(pid);
     }
 
     @Override
     public Dictionary<String, String> getConfiguration(String pid) {
-        return subsystemState.getConfiguration(pid);
+        return getSubsystemState().getConfiguration(pid);
     }
 
     @Override
     public Dictionary<String, String> putConfiguration(String pid, Dictionary<String, String> newconfig) {
-        Dictionary<String, String> oldconfig = subsystemState.putConfiguration(pid, newconfig);
+        Dictionary<String, String> oldconfig = getSubsystemState().putConfiguration(pid, newconfig);
         new ConfigurationModifiedService(pid, newconfig).configurationModified();
         return oldconfig;
     }
 
     @Override
     public Dictionary<String, String> removeConfiguration(String pid) {
-        Dictionary<String, String> oldconfig = subsystemState.removeConfiguration(pid);
+        Dictionary<String, String> oldconfig = getSubsystemState().removeConfiguration(pid);
         new ConfigurationModifiedService(pid, oldconfig).configurationModified();
         return oldconfig;
     }
@@ -126,7 +129,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
         Set<String> pids = listener.getPIDs();
         if (pids != null) {
             for (String pid : pids) {
-                Dictionary<String, String> props = subsystemState.getConfiguration(pid);
+                Dictionary<String, String> props = getSubsystemState().getConfiguration(pid);
                 listener.configurationModified(pid, props);
             }
         }

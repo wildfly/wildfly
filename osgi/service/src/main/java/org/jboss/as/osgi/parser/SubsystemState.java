@@ -28,30 +28,68 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.osgi.service.FrameworkBootstrapService;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.osgi.spi.util.UnmodifiableDictionary;
 
 /**
  * The OSGi subsystem state.
  *
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  * @since 13-Oct-2010
  */
-public final class SubsystemState implements Serializable {
-
+public final class SubsystemState implements Serializable, Service<SubsystemState> {
     private static final long serialVersionUID = 6268537612248019022L;
 
+    public static final ServiceName SERVICE_NAME = FrameworkBootstrapService.FRAMEWORK_BASE_NAME.append("subsystemstate");
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES = "org.jboss.osgi.system.modules";
 
     private final Map<String, Dictionary<String, String>> configurations = new LinkedHashMap<String, Dictionary<String, String>>();
     private final Map<String, Object> properties = new LinkedHashMap<String, Object>();
     private final List<OSGiModule> modules = new ArrayList<OSGiModule>();
     private Activation activationPolicy = Activation.LAZY;
+
+    public static ServiceController<SubsystemState> addService(ServiceTarget serviceTarget, Activation activation) {
+        SubsystemState state = new SubsystemState();
+        state.setActivation(activation);
+
+        ServiceBuilder<SubsystemState> builder = serviceTarget.addService(SERVICE_NAME, state);
+        builder.setInitialMode(Mode.LAZY);
+        return builder.install();
+    }
+
+    SubsystemState() {}
+
+    @Override
+    public SubsystemState getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
+    }
+
+    @Override
+    public void start(StartContext context) throws StartException {
+        // Nothing to do
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        // Nothing to do
+    }
 
     public Set<String> getConfigurations() {
         synchronized (configurations) {
@@ -92,16 +130,33 @@ public final class SubsystemState implements Serializable {
         return Collections.unmodifiableMap(properties);
     }
 
-    void addProperty(String name, Object value) {
-        properties.put(name, value);
+    Object setProperty(String name, Object value) {
+        if (value == null)
+            return properties.remove(name);
+        else
+            return properties.put(name, value);
     }
 
     public List<OSGiModule> getModules() {
         return Collections.unmodifiableList(modules);
     }
 
-    void addModule(OSGiModule module) {
+    public void addModule(OSGiModule module) {
         modules.add(module);
+    }
+
+    public OSGiModule removeModule(String id) {
+        ModuleIdentifier identifier = ModuleIdentifier.fromString(id);
+        synchronized (modules) {
+            for (Iterator<OSGiModule> it = modules.iterator(); it.hasNext(); ) {
+                OSGiModule module = it.next();
+                if (module.getIdentifier().equals(identifier)) {
+                    it.remove();
+                    return module;
+                }
+            }
+            return null;
+        }
     }
 
     public Activation getActivationPolicy() {
@@ -133,6 +188,20 @@ public final class SubsystemState implements Serializable {
 
         public Integer getStartLevel() {
             return startlevel;
+        }
+
+        @Override
+        public int hashCode() {
+            return identifier.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof OSGiModule == false)
+                return false;
+
+            OSGiModule om = (OSGiModule) obj;
+            return identifier == null ? om.identifier == null : identifier.equals(om.identifier);
         }
     }
 }
