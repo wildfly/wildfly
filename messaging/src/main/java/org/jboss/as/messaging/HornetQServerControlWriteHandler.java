@@ -104,7 +104,7 @@ public class HornetQServerControlWriteHandler extends ServerWriteAttributeOperat
                 return false;
 
             } else {
-                throw new IllegalStateException(String.format("Cannot apply attribue %s ti runtime; service %s is not in state %s, it is in state %s",
+                throw new IllegalStateException(String.format("Cannot apply attribute %s to runtime; service %s is not in state %s, it is in state %s",
                             attributeName, MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState()));
             }
 

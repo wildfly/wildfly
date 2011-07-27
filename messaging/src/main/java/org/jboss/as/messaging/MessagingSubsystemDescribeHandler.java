@@ -87,11 +87,11 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
         }
         */
 
-        if(subModel.hasDefined(CommonAttributes.CONNECTION_FACTORY)) {
-            for(final Property property : subModel.get(CommonAttributes.CONNECTION_FACTORY).asPropertyList()) {
+        if(subModel.hasDefined(CommonAttributes.ADDRESS_SETTING)) {
+            for(final Property property : subModel.get(CommonAttributes.ADDRESS_SETTING).asPropertyList()) {
                 final ModelNode address = rootAddress.toModelNode();
-                address.add(CommonAttributes.CONNECTION_FACTORY, property.getName());
-                result.add(ConnectionFactoryAdd.getAddOperation(address, property.getValue()));
+                address.add(CommonAttributes.ADDRESS_SETTING, property.getName());
+                result.add(AddressSettingAdd.createAddOperation(address, property.getValue()));
             }
         }
 

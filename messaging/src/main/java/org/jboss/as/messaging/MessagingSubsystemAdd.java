@@ -370,27 +370,18 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
      * @param configuration the hornetQ configuration
      * @param params        the detyped operation parameters
      */
+    /**
+     * Process the address settings.
+     *
+     * @param configuration the hornetQ configuration
+     * @param params        the detyped operation parameters
+     */
     static void processAddressSettings(final Configuration configuration, final ModelNode params) {
         if (params.get(ADDRESS_SETTING).isDefined()) {
             for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
                 final String match = property.getName();
                 final ModelNode config = property.getValue();
-
-                final AddressSettings settings = new AddressSettings();
-                final AddressFullMessagePolicy addressPolicy = config.hasDefined(ADDRESS_FULL_MESSAGE_POLICY) ?
-                        AddressFullMessagePolicy.valueOf(config.get(ADDRESS_FULL_MESSAGE_POLICY).asString()) : AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY;
-                settings.setAddressFullMessagePolicy(addressPolicy);
-                settings.setDeadLetterAddress(asSimpleString(config.get(DEAD_LETTER_ADDRESS), null));
-                settings.setLastValueQueue(config.get(LVQ).asBoolean(AddressSettings.DEFAULT_LAST_VALUE_QUEUE));
-                settings.setMaxDeliveryAttempts(config.get(MAX_DELIVERY_ATTEMPTS).asInt(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS));
-                settings.setMaxSizeBytes(config.get(MAX_SIZE_BYTES_NODE_NAME).asInt((int) AddressSettings.DEFAULT_MAX_SIZE_BYTES));
-                settings.setMessageCounterHistoryDayLimit(config.get(MESSAGE_COUNTER_HISTORY_DAY_LIMIT).asInt(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT));
-                settings.setExpiryAddress(asSimpleString(config.get(EXPIRY_ADDRESS), null));
-                settings.setRedeliveryDelay(config.get(REDELIVERY_DELAY).asInt((int) AddressSettings.DEFAULT_REDELIVER_DELAY));
-                settings.setRedistributionDelay(config.get(REDISTRIBUTION_DELAY).asInt((int) AddressSettings.DEFAULT_REDISTRIBUTION_DELAY));
-                settings.setPageSizeBytes(config.get(PAGE_SIZE_BYTES_NODE_NAME).asInt((int) AddressSettings.DEFAULT_PAGE_SIZE));
-                settings.setSendToDLAOnNoRoute(config.get(SEND_TO_DLA_ON_NO_ROUTE).asBoolean(AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE));
-
+                final AddressSettings settings = AddressSettingAdd.createSettings(config);
                 configuration.getAddressesSettings().put(match, settings);
             }
         }
@@ -414,14 +405,14 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                 switch (type) {
                     case Remote: {
                         clazz = NettyAcceptorFactory.class.getName();
-                        final String binding = config.get(SOCKET_BINDING).asString();
-                        parameters.put(SOCKET_BINDING, binding);
+                        final String binding = config.get(SOCKET_BINDING.getName()).asString();
+                        parameters.put(SOCKET_BINDING.getName(), binding);
                         bindings.add(binding);
                         break;
                     }
                     case InVM: {
                         clazz = InVMAcceptorFactory.class.getName();
-                        parameters.put(SERVER_ID, config.get(SERVER_ID).asInt());
+                        parameters.put(SERVER_ID.getName(), config.get(SERVER_ID.getName()).asInt());
                         break;
                     }
                     case Generic: {
@@ -457,14 +448,14 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                 switch (type) {
                     case Remote: {
                         clazz = NettyConnectorFactory.class.getName();
-                        final String binding = config.get(SOCKET_BINDING).asString();
-                        parameters.put(SOCKET_BINDING, binding);
+                        final String binding = config.get(SOCKET_BINDING.getName()).asString();
+                        parameters.put(SOCKET_BINDING.getName(), binding);
                         bindings.add(binding);
                         break;
                     }
                     case InVM: {
                         clazz = InVMConnectorFactory.class.getName();
-                        parameters.put(SERVER_ID, config.get(SERVER_ID).asInt());
+                        parameters.put(SERVER_ID.getName(), config.get(SERVER_ID.getName()).asInt());
                         break;
                     }
                     case Generic: {
