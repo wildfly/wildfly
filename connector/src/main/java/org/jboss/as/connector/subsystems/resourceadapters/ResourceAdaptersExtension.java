@@ -21,12 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -36,11 +30,6 @@ import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler.RaPoolConfigurationWriteHandler;
-import org.jboss.as.connector.pool.PoolMetrics;
-import org.jboss.as.connector.pool.PoolOperations;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
@@ -83,21 +72,35 @@ import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapter
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.TEST_CONNECTION_DESC;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.RaPoolConfigurationWriteHandler;
+import org.jboss.as.connector.pool.PoolMetrics;
+import org.jboss.as.connector.pool.PoolOperations;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -126,12 +129,12 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
- *         Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
  */
 public class ResourceAdaptersExtension implements Extension {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.datasources");
+    private static final Logger log = Logger.getLogger("org.jboss.as.resourceadapters");
 
     @Override
     public void initialize(final ExtensionContext context) {
