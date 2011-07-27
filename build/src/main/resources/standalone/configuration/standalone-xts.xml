@@ -44,6 +44,7 @@
         <extension module="org.jboss.as.web" />
         <extension module="org.jboss.as.webservices" />
         <extension module="org.jboss.as.weld" />
+        <extension module="org.jboss.as.xts" />
     </extensions>
 
     <management>
@@ -379,6 +380,9 @@
              </endpoint-config>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:weld:1.0" />
+        <subsystem xmlns="urn:jboss:domain:xts:1.0">
+            <xts-environment url="http://localhost:8080/ws-c11/ActivationService"/>
+        </subsystem>
     </profile>
 
     <interfaces>
