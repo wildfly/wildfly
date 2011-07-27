@@ -65,7 +65,7 @@ public class JMSMessagingUtil {
         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
     }
 
-    @Resource(mappedName = "java:/JmsXA")
+    @Resource(mappedName = "java:/ConnectionFactory")
     public void setConnectionFactory(final ConnectionFactory connectionFactory) {
         this.connectionFactory = connectionFactory;
     }
