@@ -84,11 +84,9 @@ public class MDBTestCase {
 
     @AfterClass
     public static void afterTestClass() {
-        logger.info("***************removing");
         final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.removeJmsQueue("mdbtest/queue");
         jmsAdminOperations.removeJmsQueue("mdbtest/replyQueue");
-        logger.info("***************Done removing");
     }
     
     @Test
