@@ -32,7 +32,7 @@
             <activation-config>
                 <activation-config-property>
                     <activation-config-property-name>destination</activation-config-property-name>
-                    <activation-config-property-value>java:/mdbtest/queue</activation-config-property-value>
+                    <activation-config-property-value>java:jboss/mdbtest/queue</activation-config-property-value>
                 </activation-config-property>
                 <activation-config-property>
                     <activation-config-property-name>destinationType</activation-config-property-name>
