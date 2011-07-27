@@ -21,44 +21,51 @@
  */
 package org.jboss.as.osgi.parser;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.osgi.parser.CommonAttributes.ACTIVATION;
+import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION;
+import static org.jboss.as.osgi.parser.CommonAttributes.ENTRIES;
+import static org.jboss.as.osgi.parser.CommonAttributes.MODULE;
+import static org.jboss.as.osgi.parser.CommonAttributes.PROPERTY;
+import static org.jboss.as.osgi.parser.CommonAttributes.STARTLEVEL;
+import static org.jboss.as.osgi.parser.CommonAttributes.VALUE;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.TreeSet;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import static org.jboss.as.osgi.parser.CommonAttributes.ACTIVATION;
-import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION;
-import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION_PROPERTIES;
-import static org.jboss.as.osgi.parser.CommonAttributes.MODULES;
-import static org.jboss.as.osgi.parser.CommonAttributes.PID;
-import static org.jboss.as.osgi.parser.CommonAttributes.PROPERTIES;
-import static org.jboss.as.osgi.parser.CommonAttributes.STARTLEVEL;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -69,38 +76,58 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  * @author Thomas.Diesler@jboss.com
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author David Bosschaert
  */
 public class OSGiExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "osgi";
 
-    private static final OSGiSubsystemParser PARSER = new OSGiSubsystemParser();
+    private final OSGiSubsystemParser parser = new OSGiSubsystemParser();
+
+    @Override
+    public void initializeParsers(ExtensionParsingContext context) {
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
+    }
 
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(OSGiSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, OSGiSubsystemAdd.INSTANCE, OSGiSubsystemProviders.SUBSYSTEM_ADD, false);
-        registration.registerOperationHandler(DESCRIBE, OSGiSubsystemDescribeHandler.INSTANCE, OSGiSubsystemDescribeHandler.INSTANCE, false,
-                OperationEntry.EntryType.PRIVATE);
-        subsystem.registerXMLElementWriter(PARSER);
-    }
+        registration.registerOperationHandler(ADD, OSGiSubsystemAdd.INSTANCE, OSGiSubsystemAdd.INSTANCE, false);
+        registration.registerOperationHandler(DESCRIBE, OSGiSubsystemDescribeHandler.INSTANCE, OSGiSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), PARSER);
+        // Configuration Admin Setings
+        ManagementResourceRegistration casConfigs = registration.registerSubModel(PathElement.pathElement(CONFIGURATION), OSGiSubsystemProviders.OSGI_CONFIGURATION_RESOURCE);
+        casConfigs.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiCasConfigAdd.INSTANCE, OSGiCasConfigAdd.INSTANCE, false);
+        casConfigs.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiCasConfigRemove.INSTANCE, OSGiCasConfigRemove.INSTANCE, false);
+
+        // Framework Properties
+        ManagementResourceRegistration properties = registration.registerSubModel(PathElement.pathElement(PROPERTY), OSGiSubsystemProviders.OSGI_PROPERTY_RESOURCE);
+        properties.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiPropertyAdd.INSTANCE, OSGiPropertyAdd.INSTANCE, false);
+        properties.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiPropertyRemove.INSTANCE, OSGiPropertyRemove.INSTANCE, false);
+
+        // Pre loaded modules
+        ManagementResourceRegistration modules = registration.registerSubModel(PathElement.pathElement(MODULE), OSGiSubsystemProviders.OSGI_MODULE_RESOURCE);
+        modules.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiModuleAdd.INSTANCE, OSGiModuleAdd.INSTANCE, false);
+        modules.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiModuleRemove.INSTANCE, OSGiModuleRemove.INSTANCE, false);
+
+        subsystem.registerXMLElementWriter(parser);
     }
 
     static class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
-            final ModelNode addSubsystemOp = new ModelNode();
-            addSubsystemOp.get(OP).set(ADD);
-            addSubsystemOp.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+            ModelNode address = new ModelNode();
+            address.add(SUBSYSTEM, SUBSYSTEM_NAME);
+            address.protect();
 
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set(ADD);
+            operation.get(OP_ADDR).set(address);
             // Handle attributes
-            parseActivationAttribute(reader, addSubsystemOp);
+            parseActivationAttribute(reader, operation);
+
+            operations.add(operation);
 
             // Elements
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -109,22 +136,18 @@ public class OSGiExtension implements Extension {
                         final Element element = Element.forName(reader.getLocalName());
                         switch (element) {
                             case CONFIGURATION: {
-                                ModelNode configuration = parseConfigurationElement(reader);
-                                addSubsystemOp.get(CONFIGURATION).set(configuration);
+                                ModelNode configurations = parseConfigurationElement(reader, address);
+                                if (configurations != null) {
+                                    operations.add(configurations);
+                                }
                                 break;
                             }
                             case PROPERTIES: {
-                                ModelNode properties = parsePropertiesElement(reader);
-                                if (properties != null) {
-                                    addSubsystemOp.get(PROPERTIES).set(properties);
-                                }
+                                operations.addAll(parsePropertiesElement(reader, address, operations));
                                 break;
                             }
                             case MODULES: {
-                                ModelNode modules = parseModulesElement(reader);
-                                if (modules != null) {
-                                    addSubsystemOp.get(MODULES).set(modules);
-                                }
+                                operations.addAll(parseModulesElement(reader, address));
                                 break;
                             }
                             default:
@@ -136,12 +159,9 @@ public class OSGiExtension implements Extension {
                         throw unexpectedElement(reader);
                 }
             }
-
-            operations.add(addSubsystemOp);
         }
 
         private void parseActivationAttribute(XMLExtendedStreamReader reader, ModelNode addOperation) throws XMLStreamException {
-
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case OSGI_1_0: {
                     // Handle attributes
@@ -166,9 +186,7 @@ public class OSGiExtension implements Extension {
             }
         }
 
-        ModelNode parseConfigurationElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-            final ModelNode configuration = new ModelNode();
-
+        ModelNode parseConfigurationElement(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
             // Handle attributes
             String pid = null;
             int count = reader.getAttributeCount();
@@ -189,10 +207,12 @@ public class OSGiExtension implements Extension {
             if (pid == null)
                 throw missingRequired(reader, Collections.singleton(Attribute.PID));
 
-            configuration.get(PID).set(pid);
+            final ModelNode rootNode = new ModelNode();
+            rootNode.get(OP).set(ADD);
+            rootNode.get(OP_ADDR).set(address).add(CONFIGURATION, pid);
+            ModelNode configuration = rootNode.get(ENTRIES);
 
             // Handle elements
-            ModelNode configurationProperties = new ModelNode();
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
                     case OSGI_1_0: {
@@ -209,7 +229,7 @@ public class OSGiExtension implements Extension {
                                 switch (attribute) {
                                     case NAME: {
                                         name = attrValue;
-                                        if (configurationProperties.has(name))
+                                        if (configuration.has(name))
                                             throw new XMLStreamException("Property " + name + " already exists", reader.getLocation());
                                         break;
                                     }
@@ -224,7 +244,7 @@ public class OSGiExtension implements Extension {
                             if (value == null || value.length() == 0)
                                 throw new XMLStreamException("Value for property " + name + " is null", reader.getLocation());
 
-                            configurationProperties.get(name).set(value);
+                            configuration.get(name).set(value);
                             break;
                         } else {
                             throw unexpectedElement(reader);
@@ -235,18 +255,12 @@ public class OSGiExtension implements Extension {
                 }
             }
 
-            if (configurationProperties.asList().size() > 0)
-                configuration.get(CONFIGURATION_PROPERTIES).set(configurationProperties);
-
-            return configuration;
+            return rootNode;
         }
 
-        ModelNode parsePropertiesElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-
-            // Handle attributes
+        List<ModelNode> parsePropertiesElement(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> operations) throws XMLStreamException {
+            List<ModelNode> nodes = new ArrayList<ModelNode>();
             requireNoAttributes(reader);
-
-            ModelNode properties = null;
 
             // Handle elements
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -254,10 +268,6 @@ public class OSGiExtension implements Extension {
                     case OSGI_1_0: {
                         final Element element = Element.forName(reader.getLocalName());
                         if (element == Element.PROPERTY) {
-                            if (properties == null)
-                                properties = new ModelNode();
-
-                            // Handle attributes
                             String name = null;
                             String value = null;
                             int count = reader.getAttributeCount();
@@ -268,9 +278,6 @@ public class OSGiExtension implements Extension {
                                 switch (attribute) {
                                     case NAME: {
                                         name = attrValue;
-                                        if (properties.has(name)) {
-                                            throw new XMLStreamException("Property " + name + " already exists", reader.getLocation());
-                                        }
                                         break;
                                     }
                                     default:
@@ -281,7 +288,13 @@ public class OSGiExtension implements Extension {
                                 throw missingRequired(reader, Collections.singleton(Attribute.NAME));
                             }
                             value = reader.getElementText().trim();
-                            properties.get(name).set(value);
+
+                            ModelNode propNode = new ModelNode();
+                            propNode.get(OP).set(ADD);
+                            propNode.get(OP_ADDR).set(address).add(PROPERTY, name);
+                            propNode.get(VALUE).set(value);
+
+                            nodes.add(propNode);
                             break;
                         } else {
                             throw unexpectedElement(reader);
@@ -292,15 +305,12 @@ public class OSGiExtension implements Extension {
                 }
             }
 
-            return properties;
+            return nodes;
         }
 
-        ModelNode parseModulesElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-
-            // Handle attributes
+        List<ModelNode> parseModulesElement(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
+            List<ModelNode> nodes = new ArrayList<ModelNode>();
             requireNoAttributes(reader);
-
-            ModelNode modules = null;
 
             // Handle elements
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -308,8 +318,6 @@ public class OSGiExtension implements Extension {
                     case OSGI_1_0: {
                         final Element element = Element.forName(reader.getLocalName());
                         if (element == Element.MODULE) {
-                            if (modules == null)
-                                modules = new ModelNode();
                             String identifier = null;
                             String start = null;
                             final int count = reader.getAttributeCount();
@@ -331,27 +339,27 @@ public class OSGiExtension implements Extension {
                             }
                             if (identifier == null)
                                 throw missingRequired(reader, Collections.singleton(Attribute.IDENTIFIER));
-                            if (modules.has(identifier))
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
 
-                            ModelNode module = new ModelNode();
-                            if (start != null) {
-                                module.get(STARTLEVEL).set(start);
-                            }
-                            modules.get(identifier).set(module);
+                            ModelNode moduleNode = new ModelNode();
+                            moduleNode.get(OP).set(ADD);
+                            moduleNode.get(OP_ADDR).set(address).add(MODULE, identifier);
+                            if (start != null)
+                                moduleNode.get(STARTLEVEL).set(start);
+
+                            nodes.add(moduleNode);
 
                             requireNoContent(reader);
+                            break;
                         } else {
                             throw unexpectedElement(reader);
                         }
-                        break;
                     }
                     default:
                         throw unexpectedElement(reader);
                 }
             }
 
-            return modules;
+            return nodes;
         }
 
         @Override
@@ -365,46 +373,44 @@ public class OSGiExtension implements Extension {
 
             if (has(node, CONFIGURATION)) {
                 ModelNode configuration = node.get(CONFIGURATION);
-                writer.writeStartElement(Element.CONFIGURATION.getLocalName());
-                writeAttribute(writer, Attribute.PID, configuration.require(PID));
-                if (has(configuration, CONFIGURATION_PROPERTIES)) {
-                    ModelNode configurationProperties = configuration.get(CONFIGURATION_PROPERTIES);
-                    Set<String> keys = configurationProperties.keys();
-                    for (String current : keys) {
-                        String value = configurationProperties.get(current).asString();
+                for (String pid : new TreeSet<String>(configuration.keys())) {
+                    writer.writeStartElement(Element.CONFIGURATION.getLocalName());
+                    writer.writeAttribute(Attribute.PID.getLocalName(), pid);
+
+                    ModelNode properties = configuration.get(pid).get(ENTRIES);
+                    for (String propKey : properties.keys()) {
+                        String value = properties.get(propKey).asString();
                         writer.writeStartElement(Element.PROPERTY.getLocalName());
-                        writer.writeAttribute(Attribute.NAME.getLocalName(), current);
+                        writer.writeAttribute(Attribute.NAME.getLocalName(), propKey);
                         writer.writeCharacters(value);
                         writer.writeEndElement();
                     }
+                    writer.writeEndElement();
                 }
-                writer.writeEndElement();
             }
 
-            if (has(node, PROPERTIES)) {
-                ModelNode properties = node.get(PROPERTIES);
+            if (has(node, PROPERTY)) {
                 writer.writeStartElement(Element.PROPERTIES.getLocalName());
-                Set<String> keys = properties.keys();
-                for (String current : keys) {
-                    String value = properties.get(current).asString();
+                ModelNode properties = node.get(PROPERTY);
+                for (String key : new TreeSet<String>(properties.keys())) {
+                    String val = properties.get(key).get(VALUE).asString();
                     writer.writeStartElement(Element.PROPERTY.getLocalName());
-                    writer.writeAttribute(Attribute.NAME.getLocalName(), current);
-                    writer.writeCharacters(value);
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), key);
+                    writer.writeCharacters(val);
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
             }
 
-            if (has(node, MODULES)) {
-                ModelNode modules = node.get(MODULES);
+            if (has(node, MODULE)) {
                 writer.writeStartElement(Element.MODULES.getLocalName());
-                Set<String> keys = modules.keys();
-                for (String current : keys) {
-                    ModelNode currentModule = modules.get(current);
+                ModelNode modules = node.get(MODULE);
+                for (String key: modules.keys()) {
+                    ModelNode moduleNode = modules.get(key);
                     writer.writeEmptyElement(Element.MODULE.getLocalName());
-                    writer.writeAttribute(Attribute.IDENTIFIER.getLocalName(), current);
-                    if (has(currentModule, STARTLEVEL)) {
-                        writeAttribute(writer, Attribute.STARTLEVEL, currentModule.require(STARTLEVEL));
+                    writer.writeAttribute(Attribute.IDENTIFIER.getLocalName(), key);
+                    if (moduleNode.has(STARTLEVEL)) {
+                        writeAttribute(writer, Attribute.STARTLEVEL, moduleNode.require(STARTLEVEL));
                     }
                 }
                 writer.writeEndElement();
@@ -413,13 +419,22 @@ public class OSGiExtension implements Extension {
         }
 
         private boolean has(ModelNode node, String name) {
-            return node.has(name) && node.get(name).isDefined();
+            if (node.has(name) && node.get(name).isDefined()) {
+                ModelNode n = node.get(name);
+                switch (n.getType()) {
+                    case LIST:
+                    case OBJECT:
+                        return n.asList().size() > 0;
+                    default:
+                        return true;
+                }
+            }
+            return false;
         }
 
         private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
             writer.writeAttribute(attr.getLocalName(), value.asString());
         }
-
     }
 
     private static class OSGiSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
@@ -436,16 +451,33 @@ public class OSGiExtension implements Extension {
             if (model.has(ACTIVATION)) {
                 subsystem.get(ACTIVATION).set(model.get(ACTIVATION));
             }
+            ModelNode result = context.getResult();
+            result.add(subsystem);
+
             if (model.has(CONFIGURATION)) {
-                subsystem.get(CONFIGURATION).set(model.get(CONFIGURATION));
+                for(Property conf : model.get(CONFIGURATION).asPropertyList()) {
+                    ModelNode address = rootAddress.toModelNode();
+                    address.add(CommonAttributes.CONFIGURATION, conf.getName());
+                    result.add(OSGiCasConfigAdd.getAddOperation(address, conf.getValue()));
+                }
             }
-            if (model.has(PROPERTIES)) {
-                subsystem.get(PROPERTIES).set(model.get(PROPERTIES));
+
+            if (model.has(PROPERTY)) {
+                for (Property prop : model.get(PROPERTY).asPropertyList()) {
+                    ModelNode address = rootAddress.toModelNode();
+                    address.add(CommonAttributes.PROPERTY, prop.getName());
+                    result.add(OSGiPropertyAdd.getAddOperation(address, prop.getValue()));
+                }
             }
-            if (model.has(MODULES)) {
-                subsystem.get(MODULES).set(model.get(MODULES));
+
+            if (model.has(MODULE)) {
+                for (Property prop : model.get(MODULE).asPropertyList()) {
+                    ModelNode address = rootAddress.toModelNode();
+                    address.add(CommonAttributes.MODULE, prop.getName());
+                    result.add(OSGiModuleAdd.getAddOperation(address, prop.getValue()));
+                }
             }
-            context.getResult().add(subsystem);
+
             context.completeStep();
         }
 
@@ -454,5 +486,4 @@ public class OSGiExtension implements Extension {
             return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
     }
-
 }
