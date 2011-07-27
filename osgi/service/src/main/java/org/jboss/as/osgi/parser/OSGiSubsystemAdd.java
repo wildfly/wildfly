@@ -21,32 +21,28 @@
  */
 package org.jboss.as.osgi.parser;
 
-import java.util.Hashtable;
+import static org.jboss.as.osgi.parser.CommonAttributes.ACTIVATION;
+
 import java.util.List;
-import java.util.Set;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.osgi.deployment.BundleStartTracker;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
-import static org.jboss.as.osgi.parser.CommonAttributes.ACTIVATION;
-import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION;
-import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION_PROPERTIES;
-import static org.jboss.as.osgi.parser.CommonAttributes.MODULES;
-import static org.jboss.as.osgi.parser.CommonAttributes.PID;
-import static org.jboss.as.osgi.parser.CommonAttributes.PROPERTIES;
-import static org.jboss.as.osgi.parser.CommonAttributes.STARTLEVEL;
-
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
-import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
+import org.jboss.as.osgi.service.BundleInstallProviderIntegration;
 import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
-import org.jboss.as.osgi.service.BundleInstallProviderIntegration;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -55,13 +51,14 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author Thomas.Diesler@jboss.com
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author David Bosschaert
  * @since 11-Sep-2010
  */
-class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
+class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
-    private static final Activation DEFAULT_ACTIVATION = Activation.LAZY;
+    static final Activation DEFAULT_ACTIVATION = Activation.LAZY;
 
     static final OSGiSubsystemAdd INSTANCE = new OSGiSubsystemAdd();
 
@@ -73,18 +70,10 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (operation.has(ACTIVATION)) {
             subModel.get(ACTIVATION).set(operation.get(ACTIVATION));
         }
-        if (operation.has(CONFIGURATION)) {
-            subModel.get(CONFIGURATION).set(operation.get(CONFIGURATION));
-        }
-        if (operation.has(PROPERTIES)) {
-            subModel.get(PROPERTIES).set(operation.get(PROPERTIES));
-        }
-        if (operation.has(MODULES)) {
-            subModel.get(MODULES).set(operation.get(MODULES));
-        }
     }
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        log.infof("Activating OSGi Subsystem");
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -92,74 +81,44 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        log.infof("Activating OSGi Subsystem");
         long begin = System.currentTimeMillis();
-        SubsystemState subsystemState = createSubsystemState(operation);
 
         ServiceTarget serviceTarget = context.getServiceTarget();
+        newControllers.add(SubsystemState.addService(serviceTarget, getActivationMode(operation)));
         newControllers.add(BundleStartTracker.addService(serviceTarget));
         newControllers.add(BundleInstallProviderIntegration.addService(serviceTarget));
-        newControllers.addAll(FrameworkBootstrapService.addService(serviceTarget, subsystemState, verificationHandler));
-
-        newControllers.add(ConfigAdminServiceImpl.addService(serviceTarget, subsystemState, verificationHandler));
+        newControllers.addAll(FrameworkBootstrapService.addService(serviceTarget, verificationHandler));
+        newControllers.add(ConfigAdminServiceImpl.addService(serviceTarget, verificationHandler));
 
         long end = System.currentTimeMillis();
         log.debugf("Activated OSGi Subsystem in %dms", end - begin);
     }
 
-    // TODO - This conversion should be reviewed, initially this is to simplify
-    // the conversion to detyped so the services do not yet need the detyped
-    // API to be introduced.
-    private SubsystemState createSubsystemState(final ModelNode operation) {
-        SubsystemState subsystemState = new SubsystemState();
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
 
+        ModelNode node = new ModelNode();
+        node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
+        node.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("osgi.add"));
+        addModelProperties(resourceBundle, node, ModelDescriptionConstants.REQUEST_PROPERTIES);
+        node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
+        return node;
+    }
+
+    static void addModelProperties(ResourceBundle bundle, ModelNode node, String propType) {
+        node.get(propType, CommonAttributes.ACTIVATION, ModelDescriptionConstants.DESCRIPTION)
+            .set(bundle.getString("activation"));
+        node.get(propType, CommonAttributes.ACTIVATION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+        node.get(propType, CommonAttributes.ACTIVATION, ModelDescriptionConstants.DEFAULT)
+            .set(DEFAULT_ACTIVATION.toString());
+    }
+
+    private Activation getActivationMode(ModelNode operation) {
         Activation activation = DEFAULT_ACTIVATION;
         if (operation.has(ACTIVATION)) {
             activation = Activation.valueOf(operation.get(ACTIVATION).asString().toUpperCase());
         }
-        subsystemState.setActivation(activation);
-
-        if (operation.has(CONFIGURATION)) {
-            ModelNode configuration = operation.get(CONFIGURATION);
-            String pid = configuration.require(PID).asString();
-            Hashtable<String, String> dictionary = new Hashtable<String, String>();
-            if (configuration.has(CONFIGURATION_PROPERTIES)) {
-                ModelNode configurationProperties = configuration.get(CONFIGURATION_PROPERTIES);
-                Set<String> keys = configurationProperties.keys();
-                if (keys != null) {
-                    for (String current : keys) {
-                        String value = configurationProperties.get(current).asString();
-                        dictionary.put(current, value);
-                    }
-                }
-            }
-
-            subsystemState.putConfiguration(pid, dictionary);
-        }
-
-        if (operation.has(PROPERTIES)) {
-            ModelNode properties = operation.get(PROPERTIES);
-            Set<String> keys = properties.keys();
-            if (keys != null) {
-                for (String current : keys) {
-                    String value = properties.get(current).asString();
-                    subsystemState.addProperty(current, value);
-                }
-            }
-        }
-
-        if (operation.has(MODULES)) {
-            ModelNode modules = operation.get(MODULES);
-            Set<String> keys = modules.keys();
-            if (keys != null) {
-                for (String current : keys) {
-                    ModelNode modelNode = modules.get(current).get(STARTLEVEL);
-                    Integer startLevel = modelNode.isDefined() ? modelNode.asInt() : null;
-                    subsystemState.addModule(new OSGiModule(ModuleIdentifier.fromString(current), startLevel));
-                }
-            }
-        }
-
-        return subsystemState;
+        return activation;
     }
 }

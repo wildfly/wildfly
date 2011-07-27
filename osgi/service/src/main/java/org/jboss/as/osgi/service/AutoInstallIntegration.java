@@ -70,16 +70,17 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
-    private InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
+    private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
     private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
-    private InjectedValue<Bundle> injectedSystemBundle = new InjectedValue<Bundle>();
-    private InjectedValue<StartLevel> injectedStartLevel = new InjectedValue<StartLevel>();
-    private SubsystemState subsystemState;
+    private final InjectedValue<Bundle> injectedSystemBundle = new InjectedValue<Bundle>();
+    private final InjectedValue<StartLevel> injectedStartLevel = new InjectedValue<StartLevel>();
+    private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
 
-    static ServiceController<?> addService(final ServiceTarget target, final SubsystemState subsystemState) {
-        AutoInstallIntegration service = new AutoInstallIntegration(subsystemState);
+    static ServiceController<?> addService(final ServiceTarget target) {
+        AutoInstallIntegration service = new AutoInstallIntegration();
         ServiceBuilder<?> builder = target.addService(Services.AUTOINSTALL_PROVIDER, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
+        builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
         builder.addDependency(Services.SYSTEM_BUNDLE, Bundle.class, service.injectedSystemBundle);
         builder.addDependency(Services.START_LEVEL, StartLevel.class, service.injectedStartLevel);
@@ -88,8 +89,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
         return builder.install();
     }
 
-    private AutoInstallIntegration(SubsystemState subsystemState) {
-        this.subsystemState = subsystemState;
+    private AutoInstallIntegration() {
     }
 
     @Override
@@ -103,7 +103,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
             final ServiceTarget serviceTarget = context.getChildTarget();
             final File modulesDir = injectedEnvironment.getValue().getModulesDir();
             final File bundlesDir = new File(modulesDir.getPath() + "/../bundles").getCanonicalFile();
-            for (OSGiModule moduleMetaData : subsystemState.getModules()) {
+            for (OSGiModule moduleMetaData : injectedSubsystemState.getValue().getModules()) {
                 ServiceName serviceName;
                 ModuleIdentifier identifier = moduleMetaData.getIdentifier();
                 File bundleFile = getRepositoryEntry(bundlesDir, identifier);
