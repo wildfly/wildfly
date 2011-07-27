@@ -77,7 +77,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
     static final ServiceName NAME = ServiceName.JBOSS.append("mod-cluster");
 
-    private ModelNode modelconf;
+    private final ModelNode modelconf;
 
     private CatalinaEventHandlerAdapter adapter;
     private LoadBalanceFactorProvider load;
@@ -94,6 +94,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void start(StartContext context) throws StartException {
         log.debugf("Starting Mod_cluster Extension");
 
@@ -235,6 +236,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void stop(StopContext context) {
         // TODO need something...
         if (adapter != null)
@@ -260,7 +262,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         Iterator<ModelNode> it= array.iterator();
 
         while(it.hasNext()) {
-            final ModelNode node= (ModelNode)it.next();
+            final ModelNode node= it.next();
             int capacity = node.get(CommonAttributes.CAPACITY).asInt(512);
             int weight = node.get(CommonAttributes.WEIGHT).asInt(9);
             String type = node.get(CommonAttributes.TYPE).asString();
@@ -314,7 +316,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     private void addCustomLoadMetrics(Set<LoadMetric<LoadContext>> metrics, List<ModelNode> array) {
         Iterator<ModelNode> it= array.iterator();
         while(it.hasNext()) {
-            final ModelNode node= (ModelNode)it.next();
+            final ModelNode node= it.next();
             int capacity = node.get(CommonAttributes.CAPACITY).asInt(512);
             int weight = node.get(CommonAttributes.WEIGHT).asInt(9);
             String name = node.get(CommonAttributes.CLASS).asString();
@@ -373,5 +375,47 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     @Override
     public Map<InetSocketAddress, String> getProxyInfo() {
         return service.getProxyInfo();
+    }
+    @Override
+    public void refresh() {
+        service.refresh();
+    }
+    @Override
+    public void reset() {
+        service.reset();
+    }
+    @Override
+    public void enable() {
+        service.enable();
+    }
+    @Override
+    public void disable() {
+        service.disable();
+    }
+    @Override
+    public void stop() {
+        service.stop(10, TimeUnit.SECONDS);
+    }
+    @Override
+    public boolean enableContext(String host, String context) {
+        return service.enableContext(host, context);
+    }
+
+    @Override
+    public boolean disableContext(String host, String context) {
+        return service.disableContext(host, context);
+    }
+
+    @Override
+    public boolean stopContext(String host, String context) {
+        return service.stopContext(host, context, 10, TimeUnit.SECONDS);
+    }
+    @Override
+    public void addProxy(String host, int port) {
+        service.addProxy(host, port);
+    }
+    @Override
+    public void removeProxy(String host, int port) {
+        service.removeProxy(host, port);
     }
 }
