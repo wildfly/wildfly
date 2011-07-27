@@ -103,6 +103,8 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
             final ServiceTarget serviceTarget = context.getChildTarget();
             final File modulesDir = injectedEnvironment.getValue().getModulesDir();
             final File bundlesDir = new File(modulesDir.getPath() + "/../bundles").getCanonicalFile();
+            if (bundlesDir.isDirectory() == false)
+                throw new IllegalStateException("Cannot find bundles directory: " + bundlesDir);
             for (OSGiModule moduleMetaData : subsystemState.getModules()) {
                 ServiceName serviceName;
                 ModuleIdentifier identifier = moduleMetaData.getIdentifier();
