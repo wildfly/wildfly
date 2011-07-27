@@ -27,13 +27,11 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.JMSAdminOperations;
 import org.jboss.as.testsuite.integration.mdb.DDBasedMDB;
 import org.jboss.as.testsuite.integration.mdb.JMSMessagingUtil;
-import org.jboss.as.testsuite.integration.mdb.MessageReceipt;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,7 +41,6 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.jms.Message;
 import javax.jms.Queue;
-import javax.naming.InitialContext;
 
 /**
  * User: jpai
@@ -56,10 +53,10 @@ public class MDBTestCase {
     @EJB (mappedName = "java:module/JMSMessagingUtil")
     private JMSMessagingUtil jmsUtil;
 
-    @Resource (mappedName = "java:/mdbtest/queue")
+    @Resource (mappedName = "java:jboss/mdbtest/queue")
     private Queue queue;
 
-    @Resource (mappedName = "java:/mdbtest/replyQueue")
+    @Resource (mappedName = "java:jboss/mdbtest/replyQueue")
     private Queue replyQueue;
 
     @Deployment
@@ -78,8 +75,8 @@ public class MDBTestCase {
 
     public static void createJmsDestinations() {
         final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
-        jmsAdminOperations.createJmsQueue("mdbtest/queue", "mdbtest/queue");
-        jmsAdminOperations.createJmsQueue("mdbtest/replyQueue", "mdbtest/replyQueue");
+        jmsAdminOperations.createJmsQueue("mdbtest/queue", "java:jboss/mdbtest/queue");
+        jmsAdminOperations.createJmsQueue("mdbtest/replyQueue", "java:jboss/mdbtest/replyQueue");
     }
 
     @AfterClass

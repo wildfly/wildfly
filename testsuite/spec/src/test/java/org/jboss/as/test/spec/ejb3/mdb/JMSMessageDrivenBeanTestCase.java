@@ -71,7 +71,7 @@ public class JMSMessageDrivenBeanTestCase {
             final QueueReceiver receiver = session.createReceiver(replyDestination);
             final Message message = session.createTextMessage("Test");
             message.setJMSReplyTo(replyDestination);
-            final Destination destination = (Destination) ctx.lookup("queue/test");
+            final Destination destination = (Destination) ctx.lookup("java:jboss/queue/test");
             final MessageProducer producer = session.createProducer(destination);
             producer.send(message);
             producer.close();
