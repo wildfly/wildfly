@@ -23,15 +23,16 @@ package org.jboss.as.osgi.parser;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author David Bosschaert
  */
 interface CommonAttributes {
 
     String ACTIVATION = "activation";
     String CONFIGURATION = "configuration";
-    String CONFIGURATION_PROPERTIES = "configuration_properties";
-    String MODULES = "modules";
-    String PID = "pid";
-    String PROPERTIES = "properties";
+    String ENTRIES = "entries";
+    String MODULE = "module";
+    String PROPERTY = "property";
     String STARTLEVEL = "start";
+    String VALUE = "value";
 
 }
