@@ -62,9 +62,9 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
             // collect list of persistence providers packaged with the application
             final List<String> providerNames = servicesAttachment.getServiceImplementations(PersistenceProvider.class.getName());
             if (providerNames.size() > 1) {     // TODO: support more than one provider to be packaged, which requires
-                                                // knowing which adapter belongs with it.
+                // knowing which adapter belongs with it.
                 throw new DeploymentUnitProcessingException(
-                    "only one persistence provider can be packaged with an application " + providerNames);
+                        "only one persistence provider can be packaged with an application " + providerNames);
             }
             for (String providerName : providerNames) {
                 try {
@@ -74,37 +74,29 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                     log.infof("Deployment has its own Persistence Provider %s ", providerClass);
 
                 } catch (Exception e) {
-                    throw new DeploymentUnitProcessingException("Could not deploy application packaged persistence provider '" + providerName+"'", e);
+                    throw new DeploymentUnitProcessingException("Could not deploy application packaged persistence provider '" + providerName + "'", e);
                 }
             }
 
-            PersistenceProviderDeploymentHolder holder;
-            Attachable topDu = top(deploymentUnit);
-            holder = topDu.getAttachment(PersistenceProviderDeploymentHolder.DEPLOYED_PERSISTENCE_PROVIDER);
-            if(provider != null) {
-
-                if(holder == null) {
-                    holder = new PersistenceProviderDeploymentHolder();
-                }
-                holder.setProvider(provider);
-                String adapterClass = holder.getPersistenceProviderAdaptorClassName();
+            if (provider != null) {
+                final String adapterClass = deploymentUnit.getAttachment(JpaAttachments.ADAPTOR_CLASS_NAME);
+                PersistenceProviderAdaptor adaptor = null;
                 if (adapterClass != null) {
                     try {
-                        PersistenceProviderAdaptor adaptor = (PersistenceProviderAdaptor)deploymentModuleClassLoader.loadClass(adapterClass).newInstance();
-                        holder.setAdapter(adaptor);
+                        adaptor = (PersistenceProviderAdaptor) deploymentModuleClassLoader.loadClass(adapterClass).newInstance();
                         adaptor.injectJtaManager(JtaManagerImpl.getInstance());
                     } catch (InstantiationException e) {
                         throw new DeploymentUnitProcessingException("could not create instance of adapter class '" +
-                            adapterClass +"'", e);
+                                adapterClass + "'", e);
                     } catch (IllegalAccessException e) {
                         throw new DeploymentUnitProcessingException("could not create instance of adapter class '" +
-                            adapterClass +"'", e);
+                                adapterClass + "'", e);
                     } catch (ClassNotFoundException e) {
                         throw new DeploymentUnitProcessingException("could not create instance of adapter class '" +
-                            adapterClass +"'", e);
+                                adapterClass + "'", e);
                     }
                 }
-                topDu.putAttachment(PersistenceProviderDeploymentHolder.DEPLOYED_PERSISTENCE_PROVIDER, holder);
+                deploymentUnit.putAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER, new PersistenceProviderDeploymentHolder(provider, adaptor));
             }
         }
     }
