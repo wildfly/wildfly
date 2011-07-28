@@ -70,7 +70,8 @@ public class HornetQServerControlWriteHandler extends ServerWriteAttributeOperat
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
         AttributeDefinition attr = runtimeAttributes.get(attributeName);
-        if (attr != null) {ServiceRegistry registry = context.getServiceRegistry(true);
+        if (attr != null) {
+            ServiceRegistry registry = context.getServiceRegistry(true);
             ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
             if (hqService != null && hqService.getState() == ServiceController.State.UP) {
 
@@ -91,7 +92,7 @@ public class HornetQServerControlWriteHandler extends ServerWriteAttributeOperat
                         }
                     } else {
                         // Bug! Someone added the attribute to the set but did not implement
-                        throw new UnsupportedOperationException(String.format("Runime handling for %s is not implemented", attributeName));
+                        throw new UnsupportedOperationException(String.format("Runtime handling for %s is not implemented", attributeName));
                     }
 
                 } catch (RuntimeException e) {
@@ -108,7 +109,7 @@ public class HornetQServerControlWriteHandler extends ServerWriteAttributeOperat
             }
 
         } else {
-            // Not a runtime attribute; reatart required
+            // Not a runtime attribute; restart required
             return true;
         }
     }

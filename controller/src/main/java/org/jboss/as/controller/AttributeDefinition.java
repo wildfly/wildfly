@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class AttributeDefinition {
+public abstract class AttributeDefinition {
 
     private final String name;
     private final String xmlName;
@@ -108,52 +108,6 @@ public class AttributeDefinition {
     }
 
     /**
-     * Creates and returns a {@link ModelNode} using the given {@code value} after first validating the node
-     * against {@link #getValidator() this object's validator}.
-     * <p>
-     * If {@code value} is {@code null} and a {@link #getDefaultValue() default value} is available, the value of that
-     * default value will be used.
-     * </p>
-     *
-     * @param value the value. Will be {@link String#trim() trimmed} before use if not {@code null}.
-     * @param location current location of the parser's {@link javax.xml.stream.XMLStreamReader}. Used for any exception
-     *                 message
-     *
-     * @return {@code ModelNode} representing the parsed value
-     *
-     * @throws XMLStreamException if {@code value} is not valid
-     */
-    public ModelNode parse(final String value, final Location location) throws XMLStreamException {
-
-        final String trimmed = value == null ? null : value.trim();
-        ModelNode node;
-        if (trimmed != null ) {
-            if (allowExpression) {
-                node = ParseUtils.parsePossibleExpression(trimmed);
-            } else {
-                node = new ModelNode().set(trimmed);
-            }
-        } else if (defaultValue.isDefined()) {
-            node = new ModelNode().set(defaultValue);
-        } else {
-            node = new ModelNode();
-        }
-
-        try {
-            validator.validateParameter(xmlName, node);
-        } catch (OperationFailedException e) {
-            throw new XMLStreamException(e.getFailureDescription().toString(), location);
-        }
-
-        return node;
-    }
-
-    public void parseAndSetParameter(final String value, final ModelNode operation, final Location location) throws XMLStreamException {
-        ModelNode paramVal = parse(value, location);
-        operation.get(name).set(paramVal);
-    }
-
-    /**
      * Gets whether the given {@code resourceModel} has a value for this attribute that should be marshalled to XML.
      *
      * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
@@ -170,67 +124,6 @@ public class AttributeDefinition {
             }
         }
         return false;
-    }
-
-    /**
-     * Marshalls the value from the given {@code resourceModel} as an xml attribute, if it
-     * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
-     * <p>
-     * Invoking this method is the same as calling {@code marshallAsAttribute(resourceModel, false, writer)}
-     * </p>
-     *
-     * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
-     * @param writer stream writer to use for writing the attribute
-     * @throws XMLStreamException
-     */
-    public void marshallAsAttribute(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
-        marshallAsAttribute(resourceModel, false, writer);
-    }
-
-    /**
-     * Marshalls the value from the given {@code resourceModel} as an xml attribute, if it
-     * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
-     * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
-     * @param marshallDefault {@code true} if the value should be marshalled even if it matches the default value
-     * @param writer stream writer to use for writing the attribute
-     * @throws XMLStreamException
-     */
-    public void marshallAsAttribute(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
-        if (isMarshallable(resourceModel, marshallDefault)) {
-            writer.writeAttribute(xmlName, resourceModel.get(name).asString());
-        }
-    }
-
-    /**
-     * Marshalls the value from the given {@code resourceModel} as an xml element with text content, if it
-     * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
-     * <p>
-     * Invoking this method is the same as calling {@code marshallAsElementText(resourceModel, false, writer)}
-     * </p>
-     *
-     * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
-     * @param writer stream writer to use for writing the attribute
-     * @throws XMLStreamException
-     */
-    public void marshallAsElementText(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
-        marshallAsElementText(resourceModel, false, writer);
-    }
-
-    /**
-     * Marshalls the value from the given {@code resourceModel} as an xml element with text content, if it
-     * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
-     *
-     * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
-     * @param marshallDefault {@code true} if the value should be marshalled even if it matches the default value
-     * @param writer stream writer to use for writing the attribute
-     * @throws XMLStreamException
-     */
-    public void marshallAsElementText(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
-        if (isMarshallable(resourceModel, marshallDefault)) {
-            writer.writeStartElement(xmlName);
-            writer.writeCharacters(resourceModel.get(name).asString());
-            writer.writeEndElement();
-        }
     }
 
     /**
@@ -297,6 +190,16 @@ public class AttributeDefinition {
     }
 
     /**
+     * Marshalls the value from the given {@code resourceModel} as an xml element, if it
+     * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
+     *
+     * @param resourceModel the model, a non-null node of {@link org.jboss.dmr.ModelType#OBJECT}.
+     * @param writer stream writer to use for writing the attribute
+     * @throws javax.xml.stream.XMLStreamException
+     */
+    public abstract void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException;
+
+    /**
      * Creates a returns a basic model node describing the attribute, after attaching it to the given overall resource
      * description model node.  The node describing the attribute is returned to make it easy to perform further
      * modification.
@@ -346,6 +249,7 @@ public class AttributeDefinition {
         final String bundleKey = prefix == null ? name : (prefix + "." + name);
         return bundle.getString(bundleKey);
     }
+
 
 
 }

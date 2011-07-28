@@ -37,12 +37,13 @@ import org.jboss.as.controller.AttributeDefinition;
  * @author scott.stark@jboss.org
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-enum Element {
+public enum Element {
+
    // must be first
    UNKNOWN((String) null),
    // Messaging 1.0 elements in alpha order
    ACCEPTORS(CommonAttributes.ACCEPTORS),
-   ADDRESS(Arrays.asList(CommonAttributes.QUEUE_ADDRESS, CommonAttributes.DIVERT_ADDRESS)),
+   ADDRESS(getAttributeDefinitions(CommonAttributes.QUEUE_ADDRESS, CommonAttributes.DIVERT_ADDRESS)),
    ADDRESS_SETTINGS(CommonAttributes.ADDRESS_SETTINGS),
    ALLOW_FAILBACK(CommonAttributes.ALLOW_FAILBACK),
    ASYNC_CONNECTION_EXECUTION_ENABLED(CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED),
@@ -51,6 +52,7 @@ enum Element {
    BRIDGES(CommonAttributes.BRIDGES),
    BROADCAST_GROUPS(CommonAttributes.BROADCAST_GROUPS),
    BROADCAST_PERIOD(CommonAttributes.BROADCAST_PERIOD),
+   CLASS_NAME(CommonAttributes.CLASS_NAME),
    CLUSTERED(CommonAttributes.CLUSTERED),
    CLUSTER_CONNECTIONS(CommonAttributes.CLUSTER_CONNECTIONS),
    CLUSTER_PASSWORD(CommonAttributes.CLUSTER_PASSWORD),
@@ -183,8 +185,8 @@ enum Element {
    RETRY_INTERVAL(CommonAttributes.RETRY_INTERVAL),
    RETRY_INTERVAL_MULTIPLIER(CommonAttributes.RETRY_INTERVAL_MULTIPLIER),
    SELECTOR(CommonAttributes.SELECTOR),
-   SCHEDULED_THREAD_POOL_MAX_SIZE(CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE),
-   THREAD_POOL_MAX_SIZE(CommonAttributes.THREAD_POOL_MAX_SIZE),
+   SCHEDULED_THREAD_POOL_MAX_SIZE(getScheduledThreadPoolDefinitions()),
+   THREAD_POOL_MAX_SIZE(getThreadPoolDefinitions()),
    TRANSACTION_BATH_SIZE(CommonAttributes.TRANSACTION_BATCH_SIZE),
    USE_GLOBAL_POOLS(CommonAttributes.USE_GLOBAL_POOLS),
    POOLED_CONNECTION_FACTORY(CommonAttributes.POOLED_CONNECTION_FACTORY),
@@ -231,6 +233,22 @@ enum Element {
        this.name = ourName;
    }
 
+   Element(final Map<String, AttributeDefinition> definitions) {
+        this.definition = null;
+        this.definitions = new HashMap<String, AttributeDefinition>();
+        String ourName = null;
+        for (Map.Entry<String, AttributeDefinition> def : definitions.entrySet()) {
+            String xmlName = def.getValue().getXmlName();
+            if (ourName == null) {
+                ourName = xmlName;
+            } else if (!ourName.equals(xmlName)) {
+                throw new IllegalArgumentException(String.format("All attribute definitions must have the same xml name -- found %s but already had %s", xmlName, ourName));
+            }
+            this.definitions.put(def.getKey(), def.getValue());
+        }
+       this.name = ourName;
+   }
+
    /**
     * Get the local name of this element.
     *
@@ -263,4 +281,22 @@ enum Element {
       final Element element = MAP.get(localName);
       return element == null ? UNKNOWN : element;
    }
+
+    private static List<AttributeDefinition> getAttributeDefinitions(final AttributeDefinition... attributeDefinitions) {
+        return Arrays.asList(attributeDefinitions);
+    }
+
+    private static Map<String, AttributeDefinition> getScheduledThreadPoolDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("server", CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE);
+        result.put("connection", CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE);
+        return result;
+    }
+
+    private static Map<String, AttributeDefinition> getThreadPoolDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("server", CommonAttributes.THREAD_POOL_MAX_SIZE);
+        result.put("connection", CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE);
+        return result;
+    }
 }

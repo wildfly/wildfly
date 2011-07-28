@@ -1,5 +1,6 @@
 package org.jboss.as.messaging.test;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -7,6 +8,7 @@ import org.junit.Test;
  *
  * @author scott.stark@jboss.org
  */
+@Ignore("Convert to testing detyped model or remove altogether")
 public class ConfigParsingUnitTestCase {
 
     private final String namespace = "urn:jboss:domain:messaging:1.0";

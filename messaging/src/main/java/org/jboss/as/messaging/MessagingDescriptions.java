@@ -6,12 +6,9 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -23,9 +20,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
-import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -196,7 +191,10 @@ public class MessagingDescriptions {
 
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("jms-queue"));
-        addQueueProperties(bundle, node, ATTRIBUTES);
+
+        for (AttributeDefinition attr : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(bundle, "jms-queue", node);
+        }
 
         node.get(OPERATIONS); //placeholder
 
@@ -211,22 +209,12 @@ public class MessagingDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("jms-queue.add"));
-        addQueueProperties(bundle, node, REQUEST_PROPERTIES);
+        for (AttributeDefinition attr : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(bundle, "jms-queue", node);
+        }
         node.get(REPLY_PROPERTIES).setEmptyObject();
 
         return node;
-    }
-
-    private static void addQueueProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
-        node.get(propType, ENTRIES, DESCRIPTION).set(bundle.getString("jms-queue.entries"));
-        node.get(propType, ENTRIES, TYPE).set(ModelType.LIST);
-        node.get(propType, ENTRIES, MIN_LENGTH).set(1);
-        node.get(propType, ENTRIES, VALUE_TYPE).set(ModelType.STRING);
-        node.get(propType, SELECTOR, DESCRIPTION).set(bundle.getString("jms-queue.selector"));
-        node.get(propType, SELECTOR, TYPE).set(ModelType.STRING);
-        node.get(propType, SELECTOR, NILLABLE).set(true);
-        node.get(propType, SELECTOR, REQUIRED).set(false);
-        DURABLE.addResourceAttributeDescription(bundle, "jms-queue", node);
     }
 
     public static ModelNode getJmsQueueRemove(final Locale locale) {
@@ -246,7 +234,8 @@ public class MessagingDescriptions {
 
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("topic"));
-        addTopicProperties(bundle, node, ATTRIBUTES);
+
+        ENTRIES.addResourceAttributeDescription(bundle, "topic", node);
 
         node.get(OPERATIONS); // placeholder
 
@@ -261,17 +250,10 @@ public class MessagingDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("topic.add"));
-        addTopicProperties(bundle, node, REQUEST_PROPERTIES);
+        ENTRIES.addOperationParameterDescription(bundle, "topic", node);
         node.get(REPLY_PROPERTIES).setEmptyObject();
 
         return node;
-    }
-
-    private static void addTopicProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
-        node.get(propType, ENTRIES, DESCRIPTION).set(bundle.getString("topic.entries"));
-        node.get(propType, ENTRIES, TYPE).set(ModelType.LIST);
-        node.get(propType, ENTRIES, MIN_LENGTH).set(1);
-        node.get(propType, ENTRIES, VALUE_TYPE).set(ModelType.STRING);
     }
 
     public static ModelNode getTopicRemove(final Locale locale) {
@@ -291,7 +273,7 @@ public class MessagingDescriptions {
 
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("connection-factory"));
-        addConnectionFactoryProperties(bundle, node, ATTRIBUTES);
+        addConnectionFactoryProperties(bundle, node, true);
 
         node.get(OPERATIONS); // placeholder
 
@@ -306,7 +288,7 @@ public class MessagingDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("connection-factory.add"));
-        addConnectionFactoryProperties(bundle, node, REQUEST_PROPERTIES);
+        addConnectionFactoryProperties(bundle, node, false);
         node.get(REPLY_PROPERTIES).setEmptyObject();
 
         return node;
@@ -317,7 +299,7 @@ public class MessagingDescriptions {
 
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory"));
-        addPooledConnectionFactoryProperties(bundle, node, ATTRIBUTES);
+        addPooledConnectionFactoryProperties(bundle, node, true);
 
         node.get(OPERATIONS); // placeholder
 
@@ -332,23 +314,25 @@ public class MessagingDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory.add"));
-        addPooledConnectionFactoryProperties(bundle, node, REQUEST_PROPERTIES);
+        addPooledConnectionFactoryProperties(bundle, node, false);
         node.get(REPLY_PROPERTIES).setEmptyObject();
 
         return node;
     }
 
-    private static void addPooledConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
+    private static void addPooledConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, final boolean resource) {
 
-        for (JMSServices.NodeAttribute attr : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
-            node.get(propType, attr.getName(), DESCRIPTION).set(bundle.getString("pooled-connection-factory." + attr.getName()));
-            node.get(propType, attr.getName(), TYPE).set(attr.getType());
-            node.get(propType, attr.getName(), REQUIRED).set(attr.isRequired());
+        for (AttributeDefinition attr : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
+
+            if (resource) {
+                attr.addResourceAttributeDescription(bundle, "pooled-connection-factory", node);
+            } else {
+                attr.addOperationParameterDescription(bundle, "pooled-connection-factory", node);
+            }
 
             if (attr.getName().equals(CONNECTOR)) {
+                final String propType =  resource ? ATTRIBUTES : REQUEST_PROPERTIES;
                 node.get(propType, attr.getName(), VALUE_TYPE).set(getConnectionFactoryConnectionValueType(bundle, propType));
-            } else if (attr.getValueType() != null) {
-                node.get(propType, attr.getName(), VALUE_TYPE).set(attr.getValueType());
             }
         }
     }
@@ -365,17 +349,19 @@ public class MessagingDescriptions {
         return op;
     }
 
-    private static void addConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
+    private static void addConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, boolean resource) {
 
-        for (JMSServices.NodeAttribute attr : JMSServices.CONNECTION_FACTORY_ATTRS) {
-            node.get(propType, attr.getName(), DESCRIPTION).set(bundle.getString("connection-factory." + attr.getName()));
-            node.get(propType, attr.getName(), TYPE).set(attr.getType());
-            node.get(propType, attr.getName(), REQUIRED).set(attr.isRequired());
+        for (AttributeDefinition attr : JMSServices.CONNECTION_FACTORY_ATTRS) {
+
+            if (resource) {
+                attr.addResourceAttributeDescription(bundle, "connection-factory", node);
+            } else {
+                attr.addOperationParameterDescription(bundle, "connection-factory", node);
+            }
 
             if (attr.getName().equals(CONNECTOR)) {
+                String propType = resource ? ATTRIBUTES : REQUEST_PROPERTIES;
                 node.get(propType, attr.getName(), VALUE_TYPE).set(getConnectionFactoryConnectionValueType(bundle, propType));
-            } else if (attr.getValueType() != null) {
-                node.get(propType, attr.getName(), VALUE_TYPE).set(attr.getValueType());
             }
         }
     }
