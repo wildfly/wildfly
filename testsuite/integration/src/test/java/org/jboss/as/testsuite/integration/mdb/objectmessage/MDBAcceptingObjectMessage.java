@@ -56,11 +56,11 @@ public class MDBAcceptingObjectMessage implements MessageListener {
         }
         try {
             // get the underlying message
-            SimpleMessageInEarLibJar underlyingMessage = (SimpleMessageInEarLibJar) ((ObjectMessage) message).getObject();
+            SimpleMessageInEarLibJar[] underlyingMessage = (SimpleMessageInEarLibJar[]) ((ObjectMessage) message).getObject();
             if (message.getJMSReplyTo() != null) {
                 logger.info("Replying to " + message.getJMSReplyTo());
                 // create a TextMessage as a reply and send it to the reply queue
-                this.jmsMessagingUtil.sendTextMessage(underlyingMessage.getMessage(), message.getJMSReplyTo(), null);
+                this.jmsMessagingUtil.sendObjectMessage(underlyingMessage, message.getJMSReplyTo(), null);
             }
         } catch (JMSException jmse) {
             throw new RuntimeException(jmse);
