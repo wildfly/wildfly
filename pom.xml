@@ -110,9 +110,9 @@
         <version.org.apache.ws.xmlschema>2.0</version.org.apache.ws.xmlschema>
         <version.org.apache.ws.security>1.6.1</version.org.apache.ws.security>
         <version.org.codehaus.jackson>1.6.3</version.org.codehaus.jackson>
-        <version.org.hibernate>4.0.0.Beta1</version.org.hibernate>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
+        <version.org.hibernate>4.0.0.Beta1</version.org.hibernate>
         <version.org.hibernate.commons.annotations>3.2.0.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
@@ -126,13 +126,13 @@
         <version.org.jboss.ejb3>2.0.0-beta-2</version.org.jboss.ejb3>
         <version.org.jboss.ejb3.ext-api>2.0.0-beta-1</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
-        <version.org.jboss.jboss-transaction-spi>7.0.0.CR1</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.interceptor>2.0.0.Alpha3</version.org.jboss.interceptor>
         <version.org.jboss.invocaton>1.0.0.Final</version.org.jboss.invocaton>
         <version.org.jboss.ironjacamar>1.0.1.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.0.0.Final</version.org.jboss.jandex>
         <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>
         <version.org.jboss.jboss-dmr>1.0.0.Final</version.org.jboss.jboss-dmr>
+        <version.org.jboss.jboss-transaction-spi>7.0.0.CR1</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.jbossts.jbossjts>4.15.2.Final</version.org.jboss.jbossts.jbossjts>
         <version.org.jboss.jbossts.jbossjts-integration>4.15.2.Final</version.org.jboss.jbossts.jbossjts-integration>
         <version.org.jboss.jbossts.jbossxts>4.15.2.Final</version.org.jboss.jbossts.jbossxts>
@@ -924,6 +924,12 @@
             </dependency>
 
             <dependency>
+                <groupId>ch.qos.cal10n</groupId>
+                <artifactId>cal10n-api</artifactId>
+                <version>${version.ch.qos.cal10n.cal10n-api}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
                 <version>${version.commons-beanutils}</version>
@@ -931,6 +937,54 @@
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${version.com.h2database.h2}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${version.com.google.guava}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.faces</groupId>
+                <artifactId>jsf-impl</artifactId>
+                <version>${version.javax.faces.jsf-impl}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>${version.sun.jaxb}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-xjc</artifactId>
+                <version>${version.sun.jaxb}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.messaging.saaj</groupId>
+                <artifactId>saaj-impl</artifactId>
+                <version>${version.sun.saaj-impl}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.soap</groupId>
+                        <artifactId>saaj-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -972,9 +1026,73 @@
             </dependency>
 
             <dependency>
+                <groupId>gnu-getopt</groupId>
+                <artifactId>getopt</artifactId>
+                <version>${version.gnu.getopt}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>jacorb</groupId>
                 <artifactId>jacorb</artifactId>
                 <version>${version.jacorb}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javassist</groupId>
+                <artifactId>javassist</artifactId>
+                <version>${version.org.javassist}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>${version.javax.activation.activation}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.enterprise</groupId>
+                <artifactId>cdi-api</artifactId>
+                <version>${version.javax.enterprise.cdi-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.interceptor</groupId>
+                        <artifactId>jboss-interceptor-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>jsr250-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.faces</groupId>
+                <artifactId>jsf-api</artifactId>
+                <version>${version.javax.faces.jsf-api.1.2}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.faces</groupId>
+                <artifactId>jsf-impl</artifactId>
+                <version>${version.javax.faces.jsf-impl.1.2}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>${version.javax.inject.javax.inject}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.jws</groupId>
+                <artifactId>jsr181-api</artifactId>
+                <version>${version.javax.jws.jsr181-api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.mail</groupId>
+                <artifactId>mail</artifactId>
+                <version>${version.javax.mail.mail}</version>
             </dependency>
 
             <dependency>
@@ -1000,11 +1118,48 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            
+            <dependency>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${version.javax.validation.validation-api}</version>
+            </dependency>
 
             <dependency>
-                <groupId>gnu-getopt</groupId>
-                <artifactId>getopt</artifactId>
-                <version>${version.gnu.getopt}</version>
+                <groupId>jline</groupId>
+                <artifactId>jline</artifactId>
+                <version>${version.jline}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.junit}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>${version.log4j.log4j}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>ant</groupId>
+                        <artifactId>ant-nodeps</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>ant-contrib</groupId>
+                        <artifactId>ant-contrib</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>ant</groupId>
+                        <artifactId>ant-junit</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>sun.jdk</groupId>
+                        <artifactId>tools</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -1077,30 +1232,6 @@
                     <exclusion>
                         <groupId>oro</groupId>
                         <artifactId>oro</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>xalan</groupId>
-                <artifactId>serializer</artifactId>
-                <version>${version.org.apache.xalan}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>xalan</groupId>
-                <artifactId>xalan</artifactId>
-                <version>${version.org.apache.xalan}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>xerces</groupId>
-                <artifactId>xercesImpl</artifactId>
-                <version>${version.org.apache.xerces}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2546,172 +2677,79 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
+                        
             <dependency>
-                <groupId>ch.qos.cal10n</groupId>
-                <artifactId>cal10n-api</artifactId>
-                <version>${version.ch.qos.cal10n.cal10n-api}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>${version.com.h2database.h2}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${version.com.google.guava}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sun.faces</groupId>
-                <artifactId>jsf-impl</artifactId>
-                <version>${version.javax.faces.jsf-impl}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-impl</artifactId>
-                <version>${version.sun.jaxb}</version>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
+                        <groupId>com.fasterxml</groupId>
+                        <artifactId>classmate</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.transaction</groupId>
+                        <artifactId>jta</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
 
             <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-xjc</artifactId>
-                <version>${version.sun.jaxb}</version>
+              <groupId>org.hibernate</groupId>
+              <artifactId>hibernate-infinispan</artifactId>
+              <version>${version.org.hibernate}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.com.sun.httpserver</groupId>
-                <artifactId>httpserver</artifactId>
-                <version>${version.org.jboss.com.sun.httpserver}</version>
+               <groupId>org.hibernate</groupId>
+               <artifactId>hibernate-commons-annotations</artifactId>
+               <version>${version.org.hibernate.commons.annotations}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-entitymanager</artifactId>
+                <version>${version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>junit</groupId>
-                        <artifactId>junit</artifactId>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>ejb3-persistence</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.transaction</groupId>
+                        <artifactId>jta</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>cglib</groupId>
+                        <artifactId>cglib</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate.javax.persistence</groupId>
+                        <artifactId>hibernate-jpa-2.0-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
 
             <dependency>
-                <groupId>com.sun.xml.messaging.saaj</groupId>
-                <artifactId>saaj-impl</artifactId>
-                <version>${version.sun.saaj-impl}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.xml.soap</groupId>
-                        <artifactId>saaj-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>javassist</groupId>
-                <artifactId>javassist</artifactId>
-                <version>${version.org.javassist}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.activation</groupId>
-                <artifactId>activation</artifactId>
-                <version>${version.javax.activation.activation}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.enterprise</groupId>
-                <artifactId>cdi-api</artifactId>
-                <version>${version.javax.enterprise.cdi-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.interceptor</groupId>
-                        <artifactId>jboss-interceptor-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>jsr250-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.faces</groupId>
-                <artifactId>jsf-api</artifactId>
-                <version>${version.javax.faces.jsf-api.1.2}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.faces</groupId>
-                <artifactId>jsf-impl</artifactId>
-                <version>${version.javax.faces.jsf-impl.1.2}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.inject</groupId>
-                <artifactId>javax.inject</artifactId>
-                <version>${version.javax.inject.javax.inject}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.jws</groupId>
-                <artifactId>jsr181-api</artifactId>
-                <version>${version.javax.jws.jsr181-api}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>mail</artifactId>
-                <version>${version.javax.mail.mail}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${version.javax.validation.validation-api}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>jline</groupId>
-                <artifactId>jline</artifactId>
-                <version>${version.jline}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${version.junit}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>${version.log4j.log4j}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>ant</groupId>
-                        <artifactId>ant-nodeps</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>ant-contrib</groupId>
-                        <artifactId>ant-contrib</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>ant</groupId>
-                        <artifactId>ant-junit</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>sun.jdk</groupId>
-                        <artifactId>tools</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${version.org.hibernate.validator}</version>
             </dependency>
 
             <dependency>
@@ -2721,11 +2759,63 @@
             </dependency>
 
             <dependency>
+                <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-core</artifactId>
+                <version>${version.org.hornetq.hornetq-jms}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-jms</artifactId>
+                <version>${version.org.hornetq.hornetq-jms}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-ra</artifactId>
+                <version>${version.org.hornetq.hornetq-jms}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-core</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jgroups</groupId>
+                        <artifactId>jgroups</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.javaee</groupId>
+                        <artifactId>jboss-transaction-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.marshalling</groupId>
+                        <artifactId>jboss-marshalling</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.marshalling</groupId>
+                        <artifactId>jboss-marshalling-river</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>jandex</artifactId>
                 <version>${version.org.jboss.jandex}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-dmr</artifactId>
+                <version>${version.org.jboss.jboss-dmr}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-common-core</artifactId>
@@ -2737,30 +2827,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
-            <dependency>
-                <groupId>org.jboss.classfilewriter</groupId>
-                <artifactId>jboss-classfilewriter</artifactId>
-                <version>${version.org.jboss.classfilewriter}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss</groupId>
-                <artifactId>jboss-dmr</artifactId>
-                <version>${version.org.jboss.jboss-dmr}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.invocation</groupId>
-                <artifactId>jboss-invocation</artifactId>
-                <version>${version.org.jboss.invocaton}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.netty</groupId>
-                <artifactId>netty</artifactId>
-                <version>${version.org.jboss.netty}</version>
-           </dependency>
 
             <dependency>
                 <groupId>org.jboss</groupId>
@@ -2905,6 +2971,24 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.classfilewriter</groupId>
+                <artifactId>jboss-classfilewriter</artifactId>
+                <version>${version.org.jboss.classfilewriter}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.com.sun.httpserver</groupId>
+                <artifactId>httpserver</artifactId>
+                <version>${version.org.jboss.com.sun.httpserver}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>junit</groupId>
+                        <artifactId>junit</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.ejb3</groupId>
                 <artifactId>jboss-ejb3-cache</artifactId>
                 <version>${version.org.jboss.ejb3}</version>
@@ -3040,6 +3124,13 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>org.jboss.invocation</groupId>
+                <artifactId>jboss-invocation</artifactId>
+                <version>${version.org.jboss.invocaton}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-transaction-spi</artifactId>
@@ -3588,6 +3679,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.netty</groupId>
+                <artifactId>netty</artifactId>
+                <version>${version.org.jboss.netty}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-console</artifactId>
                 <version>${version.org.jboss.management.console}</version>
@@ -3920,6 +4017,66 @@
                 <groupId>org.jboss.sasl</groupId>
                 <artifactId>jboss-sasl</artifactId>
                 <version>${version.org.jboss.sasl}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.seam.integration</groupId>
+                <artifactId>jboss-seam-int-jbossas</artifactId>
+                <version>${version.org.jboss.seam.int}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.seam.integration</groupId>
+                        <artifactId>jboss-seam-int-microcontainer</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.deployers</groupId>
+                        <artifactId>jboss-deployers-vfs</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-common-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.cl</groupId>
+                        <artifactId>jboss-classloader</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.deployers</groupId>
+                        <artifactId>jboss-deployers-vfs-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.kernel</groupId>
+                        <artifactId>jboss-dependency</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.kernel</groupId>
+                        <artifactId>jboss-kernel</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jbossxb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.man</groupId>
+                        <artifactId>jboss-managed</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.seam</groupId>
+                        <artifactId>jboss-seam</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-vfs</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -4717,126 +4874,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <version>${version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.fasterxml</groupId>
-                        <artifactId>classmate</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.transaction</groupId>
-                        <artifactId>jta</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-              <groupId>org.hibernate</groupId>
-              <artifactId>hibernate-infinispan</artifactId>
-              <version>${version.org.hibernate}</version>
-            </dependency>
-
-            <dependency>
-               <groupId>org.hibernate</groupId>
-               <artifactId>hibernate-commons-annotations</artifactId>
-               <version>${version.org.hibernate.commons.annotations}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-entitymanager</artifactId>
-                <version>${version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>ejb3-persistence</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.transaction</groupId>
-                        <artifactId>jta</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>cglib</groupId>
-                        <artifactId>cglib</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate.javax.persistence</groupId>
-                        <artifactId>hibernate-jpa-2.0-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>${version.org.hibernate.validator}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hornetq</groupId>
-                <artifactId>hornetq-core</artifactId>
-                <version>${version.org.hornetq.hornetq-jms}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hornetq</groupId>
-                <artifactId>hornetq-jms</artifactId>
-                <version>${version.org.hornetq.hornetq-jms}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hornetq</groupId>
-                <artifactId>hornetq-ra</artifactId>
-                <version>${version.org.hornetq.hornetq-jms}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-core</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jgroups</groupId>
-                        <artifactId>jgroups</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.javaee</groupId>
-                        <artifactId>jboss-transaction-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.marshalling</groupId>
-                        <artifactId>jboss-marshalling</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.marshalling</groupId>
-                        <artifactId>jboss-marshalling-river</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jgroups</groupId>
                 <artifactId>jgroups</artifactId>
                 <version>${version.org.jgroups}</version>
@@ -4922,76 +4959,41 @@
             </dependency>
 
             <dependency>
+                <groupId>org.w3c.css</groupId>
+                <artifactId>sac</artifactId>
+                <version>${version.org.w3c.css.sac}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>wsdl4j</groupId>
                 <artifactId>wsdl4j</artifactId>
                 <version>${version.wsdl4j}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.seam.integration</groupId>
-                <artifactId>jboss-seam-int-jbossas</artifactId>
-                <version>${version.org.jboss.seam.int}</version>
+                <groupId>xalan</groupId>
+                <artifactId>serializer</artifactId>
+                <version>${version.org.apache.xalan}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>xalan</groupId>
+                <artifactId>xalan</artifactId>
+                <version>${version.org.apache.xalan}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
+                <version>${version.org.apache.xerces}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.seam.integration</groupId>
-                        <artifactId>jboss-seam-int-microcontainer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.deployers</groupId>
-                        <artifactId>jboss-deployers-vfs</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-common-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.cl</groupId>
-                        <artifactId>jboss-classloader</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.deployers</groupId>
-                        <artifactId>jboss-deployers-vfs-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.kernel</groupId>
-                        <artifactId>jboss-dependency</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.kernel</groupId>
-                        <artifactId>jboss-kernel</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jbossxb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.man</groupId>
-                        <artifactId>jboss-managed</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.seam</groupId>
-                        <artifactId>jboss-seam</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-vfs</artifactId>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
 
-            <dependency>
-                <groupId>org.w3c.css</groupId>
-                <artifactId>sac</artifactId>
-                <version>${version.org.w3c.css.sac}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
