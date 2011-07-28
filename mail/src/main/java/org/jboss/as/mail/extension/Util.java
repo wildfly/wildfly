@@ -21,11 +21,11 @@ public class Util {
 
       static MailSessionConfig from(final ModelNode model){
           MailSessionConfig cfg = new MailSessionConfig();
-          cfg.setJndiName(model.require(JNDI_NAME).toString());
-          cfg.setUsername(model.require(USERNAME).toString());
-          cfg.setPassword(model.require(PASSWORD).toString());
-          cfg.setSmtpServerAddress(model.require(SMTP_SERVER_ADDRESS).toString());
-          cfg.setSmtpServerPort(model.require(SMTP_SERVER_PORT).toString());
+          cfg.setJndiName(model.require(JNDI_NAME).asString());
+          cfg.setUsername(model.require(USERNAME).asString());
+          cfg.setPassword(model.require(PASSWORD).asString());
+          cfg.setSmtpServerAddress(model.require(SMTP_SERVER_ADDRESS).asString());
+          cfg.setSmtpServerPort(model.require(SMTP_SERVER_PORT).asString());
           return cfg;
       }
 

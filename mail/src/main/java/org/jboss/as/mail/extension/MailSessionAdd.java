@@ -36,10 +36,23 @@ public class MailSessionAdd extends AbstractAddStepHandler {
      * {@inheritDoc}
      */
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void populateModel(ModelNode existingModel, ModelNode newModel) throws OperationFailedException {
         log.info("Populating the model");
-        model.setEmptyObject();
+        //model.setEmptyObject();
+        //for (Property property : existingModel.asPropertyList()) {
+        copyModel(existingModel, newModel, ModelKeys.JNDI_NAME, ModelKeys.PASSWORD, ModelKeys.USERNAME, ModelKeys.SMTP_SERVER_ADDRESS, ModelKeys.SMTP_SERVER_PORT);
+        //  }
+        /* model.get(ModelKeys.SMTP_SERVER).set(operation.get())
+     populateAddModel(operation, model, CONNECTION_PROPERTIES, DATASOURCE_ATTRIBUTE);*/
+
     }
+
+    static void copyModel(ModelNode src, ModelNode target, String... params) {
+        for (String p : params) {
+            target.get(p).set(src.get(p).asString());
+        }
+    }
+
 
     /**
      * Make any runtime changes necessary to effect the changes indicated by the given {@code operation}. Executes
@@ -55,7 +68,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
      * @param verificationHandler step handler that can be added as a listener to any new services installed in order to
      *                            validate the services installed correctly during the
      *                            {@link org.jboss.as.controller.OperationContext.Stage#VERIFY VERIFY stage}
-     * @param controllers      holder for the {@link org.jboss.msc.service.ServiceController} for any new services installed by the method. The
+     * @param controllers         holder for the {@link org.jboss.msc.service.ServiceController} for any new services installed by the method. The
      *                            method should add the {@code ServiceController} for any new services to this list. If the
      *                            overall operation needs to be rolled back, the list will be used in
      *                            {@link #rollbackRuntime(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, java.util.List)}  to automatically removed
@@ -81,8 +94,6 @@ public class MailSessionAdd extends AbstractAddStepHandler {
 
 
         //controllers.add(startConfigAndAddDependency(dataSourceServiceBuilder, service, jndiName, serviceTarget, operation));
-
-
 
 
         final MailSessionReferenceFactoryService referenceFactoryService = new MailSessionReferenceFactoryService();
