@@ -39,6 +39,7 @@ import java.util.List;
 
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -69,7 +70,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).set(address);
 
-        for(final JMSServices.NodeAttribute attribute : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
+        for(final AttributeDefinition attribute : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
             final String attrName = attribute.getName();
             if(subModel.has(attrName)) {
                 operation.get(attrName).set(subModel.get(attrName));
@@ -83,20 +84,8 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        if(operation.hasDefined(CommonAttributes.ENTRIES)) {
-            List<ModelNode> entries = operation.get(CommonAttributes.ENTRIES).asList();
-            if(entries.size() == 0) {
-                throw new OperationFailedException("at least 1 jndi entry should be provided", operation);
-            }
-        } else {
-            throw new OperationFailedException("at least 1 jndi entry should be provided", operation);
-        }
-
-        for(final JMSServices.NodeAttribute attribute : CONNECTION_FACTORY_ATTRS) {
-            final String attrName = attribute.getName();
-            if(operation.hasDefined(attrName)) {
-                model.get(attrName).set(operation.get(attrName));
-            }
+        for(final AttributeDefinition attribute : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
+            attribute.validateAndSet(operation, model);
         }
 
     }
@@ -108,8 +97,13 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
 
+        for(final AttributeDefinition attribute : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
+            attribute.validateResolvedOperation(model);
+        }
+
         // We validated that jndiName part of the model in populateModel
-        final String jndiName = operation.get(CommonAttributes.ENTRIES).asList().get(0).asString();
+        // TODO we only use a single jndi name here but the xsd indicates support for many
+        final String jndiName = operation.get(CommonAttributes.ENTRIES.getName()).asList().get(0).asString();
 
         final String txSupport;
         if(operation.hasDefined(TRANSACTION)) {

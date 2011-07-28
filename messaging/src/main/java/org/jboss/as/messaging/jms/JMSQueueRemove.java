@@ -56,6 +56,6 @@ public class JMSQueueRemove extends AbstractRemoveStepHandler implements Descrip
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getJmsQueueAdd(locale);
+        return MessagingDescriptions.getJmsQueueRemove(locale);
     }
 }
