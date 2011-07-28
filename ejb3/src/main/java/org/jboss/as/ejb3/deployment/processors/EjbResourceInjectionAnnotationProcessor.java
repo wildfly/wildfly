@@ -69,7 +69,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
-        
+
         // process @EJB annotations
         processEjbAnnotations(deploymentUnit, index);
 
@@ -151,20 +151,16 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         process(deploymentUnit, annotation.beanInterface(), annotation.beanName(), annotation.lookup(), classInfo, null, annotation.name());
     }
 
-    private void process(final DeploymentUnit deploymentUnit, final String beanInterface, final String beanName, final String lookup, final ClassInfo classInfo, final InjectionTarget targetDescription, final String localContextName) {
-
+    private void process(final DeploymentUnit deploymentUnit, final String beanInterface, final String beanName, final String lookup, final ClassInfo classInfo, final InjectionTarget injectionTarget, final String localContextName) {
         if (!isEmpty(lookup) && !isEmpty(beanName)) {
             logger.debug("Both beanName = " + beanName + " and lookup = " + lookup + " have been specified in @EJB annotation." +
                     " lookup will be given preference. Class: " + classInfo.name());
         }
 
-        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-        final EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
-
         final InjectionSource valueSource;
         EjbInjectionSource ejbInjectionSource = null;
-        //give preference to lookup
         if (!isEmpty(lookup)) {
+            //give preference to lookup
             valueSource = new LookupInjectionSource(lookup);
         } else if (!isEmpty(beanName)) {
             valueSource = ejbInjectionSource = new EjbInjectionSource(beanName, beanInterface);
@@ -175,13 +171,15 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
             deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.EJB_INJECTIONS, ejbInjectionSource);
         }
         // our injection comes from the local lookup, no matter what.
-        final ResourceInjectionConfiguration injectionConfiguration = targetDescription != null ?
-                new ResourceInjectionConfiguration(targetDescription, new LookupInjectionSource(localContextName)) : null;
+        final ResourceInjectionConfiguration injectionConfiguration = injectionTarget != null ?
+                new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(localContextName)) : null;
 
         // Create the binding from whence our injection comes.
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
 
         // TODO: class hierarchies? shared bindings?
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+        final EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
         classDescription.getConfigurators().add(new ClassConfigurator() {
             public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
                 configuration.getBindingConfigurations().add(bindingConfiguration);
