@@ -71,7 +71,6 @@
             <version>1.6.1</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -124,60 +123,7 @@
                             <includes>
                                 <include>**/*TestCase.java</include>
                             </includes>
-                            <excludes>
-                                <!-- WebService tests are excluded since the default/web profile doesn't support webservices -->
-                                <exclude>org/jboss/as/testsuite/integration/ws/**/*TestCase.java</exclude>
-                                <exclude>org/jboss/as/testsuite/integration/wsejb/**/*TestCase.java</exclude>
-                                <exclude>org/jboss/as/testsuite/integration/xerces/ws/**/*TestCase.java</exclude>
-                            </excludes>
                         </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-         <profile>
-            <id>preview</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-arquillian-container-managed</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>preview</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                                    <enableAssertions>true</enableAssertions>
-                                    <systemPropertyVariables>
-                                        <jboss.server.config.file.name>standalone-preview.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                    <includes>
-                                        <!-- Enable the Webservice testcases since "preview" profile has support for webservices -->
-                                        <include>org/jboss/as/testsuite/integration/ws/**/*TestCase.java</include>
-                                        <include>org/jboss/as/testsuite/integration/wsejb/**/*TestCase.java</include>
-                                        <include>org/jboss/as/testsuite/integration/xerces/ws/**/*TestCase.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <exclude>none</exclude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>
