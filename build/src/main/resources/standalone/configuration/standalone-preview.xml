@@ -189,20 +189,6 @@
                 <login name="user" password="pass"/>
                 <smtp-server address="remote" port="25"/>
            </mail-session>
-            <!--<mail-session jndi-name="foo/MyMailServer1">
-                <username>myuser</username>
-                <password>mypassword</password>
-                <properties>
-                    <property name="mail.store.protocol">pop3</property>
-                    <property name="mail.transport.protocol">smtp</property>
-                    <property name="mail.user">nobody</property>
-                    <property name="mail.pop3.host">pop3.nosuchhost.nosuchdomain.com</property>
-                    <property name="mail.smtp.host">smtp.nosuchhost.nosuchdomain.com</property>
-                    <property name="mail.smtp.port">25</property>
-                    <property name="mail.from">nobody@nosuchhost.nosuchdomain.com</property>
-                    <property name="mail.debug">false</property>
-                </properties>
-           </mail-session>-->
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
