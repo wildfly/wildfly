@@ -4,6 +4,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -35,7 +36,34 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+        log.warn("we have to marshal the stuff");
+        log.info("model node: " + context.getModelNode());
+        ModelNode model = context.getModelNode();
+        List<Property> sessions = model.get(ModelKeys.MAIL_SESSION).asPropertyList();
+
+        /*List<Property> props = mailSession.getValue().asPropertyList();
+        log.info("properties: "+props);*/
+        for (Property mailSession : sessions) {
+            String jndi = mailSession.getName();
+            log.info("jndi: " + jndi);
+            writer.writeStartElement(ModelKeys.MAIL_SESSION);
+
+            writer.writeAttribute("jndi-name", jndi);
+            writer.writeEmptyElement(ModelKeys.LOGIN);
+            writer.writeAttribute("name", mailSession.getValue().get(ModelKeys.USERNAME).asString());
+            writer.writeAttribute("password", mailSession.getValue().get(ModelKeys.PASSWORD).asString());
+            //writer.writeEndElement();
+
+            writer.writeEmptyElement(ModelKeys.SMTP_SERVER);
+            writer.writeAttribute("address", mailSession.getValue().get(ModelKeys.SMTP_SERVER_ADDRESS).asString());
+            writer.writeAttribute("port", mailSession.getValue().get(ModelKeys.SMTP_SERVER_PORT).asString());
+            //writer.writeEndElement();
+
+            writer.writeEndElement();
+        }
+
         writer.writeEndElement();
+
     }
 
     /**
@@ -69,10 +97,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case MAIL_SESSION: {
-
                             sessionConfigList.add(parseMailSession(reader, list));
-
-
                             break;
                         }
                         default: {
@@ -99,12 +124,12 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
             Util.fillFrom(operation, c);
             list.add(operation);
-            log.info("operation: "+operation);
+            log.info("operation: " + operation);
 
         }
 
         log.info("parsing done, config is: " + sessionConfigList);
-        log.info("list is: "+list);
+        log.info("list is: " + list);
 
     }
 
