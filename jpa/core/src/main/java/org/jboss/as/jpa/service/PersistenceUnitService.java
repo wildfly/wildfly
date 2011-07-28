@@ -22,9 +22,6 @@
 
 package org.jboss.as.jpa.service;
 
-import org.jboss.as.jpa.config.Configuration;
-import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
-import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.logging.Logger;
@@ -55,39 +52,32 @@ import java.util.Map;
 public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("persistenceunit");
+    private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
     private final InjectedValue<Map> properties = new InjectedValue<Map>();
 
     private final InjectedValue<DataSource> jtaDataSource = new InjectedValue<DataSource>();
     private final InjectedValue<DataSource> nonJtaDataSource = new InjectedValue<DataSource>();
 
-    private static final Logger log = Logger.getLogger("org.jboss.jpa");
+    private final PersistenceProviderAdaptor persistenceProviderAdaptor;
+    private final PersistenceProvider persistenceProvider;
+    private final PersistenceUnitMetadata pu;
 
     private EntityManagerFactory entityManagerFactory;
-    private PersistenceUnitMetadata pu;
-    private final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder;
 
-    public PersistenceUnitService(final PersistenceUnitMetadata pu, final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) {
+    public PersistenceUnitService(final PersistenceUnitMetadata pu, final PersistenceProviderAdaptor persistenceProviderAdaptor, final PersistenceProvider persistenceProvider) {
         this.pu = pu;
-        this.persistenceProviderDeploymentHolder = persistenceProviderDeploymentHolder;
+        this.persistenceProviderAdaptor = persistenceProviderAdaptor;
+        this.persistenceProvider = persistenceProvider;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
         try {
             log.infof("starting Persistence Unit Service '%s' ", pu.getScopedPersistenceUnitName() );
-            PersistenceProvider provider;
-            if (persistenceProviderDeploymentHolder != null &&
-                persistenceProviderDeploymentHolder.getProvider() != null &&
-                persistenceProviderDeploymentHolder.getProvider().getClass().getName().equals(pu.getPersistenceProviderClassName())) {
-                provider = persistenceProviderDeploymentHolder.getProvider();
-            } else {
-                provider = lookupProvider(pu.getPersistenceProviderClassName());
-            }
-
             pu.setJtaDataSource(jtaDataSource.getOptionalValue());
             pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
-            this.entityManagerFactory = createContainerEntityManagerFactory(provider);
+            this.entityManagerFactory = createContainerEntityManagerFactory();
 
         } finally {
             pu.setTempClassloader(null);    // release the temp classloader (only needed when creating the EMF)
@@ -169,31 +159,16 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
     /**
      * Create EE container entity manager factory
      *
-     * @param provider
+     *
      * @return EntityManagerFactory
      */
-    private EntityManagerFactory createContainerEntityManagerFactory(PersistenceProvider provider) {
-        String adaptorModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
-        PersistenceProviderAdaptor adaptor=null;
-
-        if (persistenceProviderDeploymentHolder != null) {
-            adaptor = persistenceProviderDeploymentHolder.getAdapter();
-        }
-        if (adaptor == null) {
-            if (adaptorModule != null) {
-                adaptor = PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(pu.getPersistenceProviderClassName(), adaptorModule);
-            }
-            else {
-                adaptor = PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(pu.getPersistenceProviderClassName());
-            }
-        }
-
-        adaptor.beforeCreateContainerEntityManagerFactory(pu);
+    private EntityManagerFactory createContainerEntityManagerFactory() {
+        persistenceProviderAdaptor.beforeCreateContainerEntityManagerFactory(pu);
         try {
-            return provider.createContainerEntityManagerFactory(pu, properties.getValue());
+            return persistenceProvider.createContainerEntityManagerFactory(pu, properties.getValue());
         } finally {
             try {
-                adaptor.afterCreateContainerEntityManagerFactory(pu);
+                persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
             } finally {
                 pu.setAnnotationIndex(null);    // close reference to Annotation Index (only needed during call to createContainerEntityManagerFactory)
                 pu.setTempClassloader(null);    // close reference to temp classloader (only needed during call to createEntityManagerFactory)

@@ -23,18 +23,14 @@
 package org.jboss.as.jpa.processor;
 
 import org.jboss.as.jpa.config.Configuration;
-import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
-import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
-import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.as.jpa.transaction.JtaManagerImpl;
-import org.jboss.as.server.deployment.Attachable;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -49,9 +45,8 @@ import org.jboss.modules.ResourceLoaders;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ServiceLoader;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.jar.JarFile;
 
 /**
@@ -110,35 +105,32 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
     private void addPersistenceProviderModuleDependencies(DeploymentPhaseContext phaseContext, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) throws
             DeploymentUnitProcessingException {
+
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+
         int defaultProviderCount = 0;
-        HashMap<String, Object> providers = new HashMap<String, Object>();
-        PersistenceUnitMetadataHolder holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
-
-        defaultProviderCount = loadPersistenceUnits(moduleLoader, deploymentUnit, defaultProviderCount, providers, holder);
-
-        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
-        assert resourceRoots != null;
-        for (ResourceRoot resourceRoot : resourceRoots) {
-            holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
-            defaultProviderCount = loadPersistenceUnits(moduleLoader, deploymentUnit, defaultProviderCount, providers, holder);
+        Set<String> moduleDependencies = new HashSet<String>();
+        for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
+            PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
+            defaultProviderCount += loadPersistenceUnits(moduleLoader, deploymentUnit, moduleDependencies, holder);
         }
         // add dependencies for the default persistence provider module
         if (defaultProviderCount > 0) {
-            providers.put(Configuration.PROVIDER_MODULE_DEFAULT, null);
+            moduleDependencies.add(Configuration.PROVIDER_MODULE_DEFAULT);
             log.info("added (default provider) " + Configuration.PROVIDER_MODULE_DEFAULT +
                     " dependency to application deployment (since " + defaultProviderCount + " PU(s) didn't specify " + Configuration.PROVIDER_MODULE + ")");
         }
 
         // add persistence provider dependency
-        for (String dependency : providers.keySet()) {
+        for (String dependency : moduleDependencies) {
             addDependency(moduleSpecification, moduleLoader, ModuleIdentifier.create(dependency));
             log.info("added " + dependency + " dependency to application deployment");
         }
     }
 
-    private int loadPersistenceUnits(final ModuleLoader moduleLoader, final DeploymentUnit deploymentUnit, int defaultProviderCount, final HashMap<String, Object> providers, final PersistenceUnitMetadataHolder holder) throws DeploymentUnitProcessingException {
+    private int loadPersistenceUnits(final ModuleLoader moduleLoader, final DeploymentUnit deploymentUnit, final Set<String> moduleDependencies, final PersistenceUnitMetadataHolder holder) throws DeploymentUnitProcessingException {
+        int defaultProviderCount = 0;
         if (holder != null) {
             for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
                 String providerModule = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
@@ -164,21 +156,18 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                 }
                 if (adapterModule != null) {
                     log.info(pu.getPersistenceUnitName() + " is configured to use adapter module '" + adapterModule + "'");
-                    String persistenceProvider = pu.getPersistenceProviderClassName() != null
-                            ? pu.getPersistenceProviderClassName() : Configuration.PROVIDER_CLASS_DEFAULT;
+                    String persistenceProvider = pu.getPersistenceProviderClassName() != null ? pu.getPersistenceProviderClassName() : Configuration.PROVIDER_CLASS_DEFAULT;
                     // load persistence provider adapter if not loaded yet
-                    loadPersistenceAdapterModule(moduleLoader, adapterModule, persistenceProvider);
-                } else if (adapterClass != null) {    // adapter class is expected to be in deployment
-                    savePersistenceAdapterClass(deploymentUnit, adapterClass);
+                    moduleDependencies.add(adapterModule);
                 }
+                deploymentUnit.putAttachment(JpaAttachments.ADAPTOR_CLASS_NAME, adapterClass);
 
                 String provider = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
                 if (provider != null) {
                     if (provider.equals(Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED)) {
-                        log.info(pu.getPersistenceUnitName() +
-                                " is configured to use application supplied persistence provider");
+                        log.info(pu.getPersistenceUnitName() + " is configured to use application supplied persistence provider");
                     } else {
-                        providers.put(provider, null);
+                        moduleDependencies.add(provider);
                     }
                 } else {
                     defaultProviderCount++;  // track number of references to default provider module
@@ -214,61 +203,4 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    // adapter class is in deployment
-    private void savePersistenceAdapterClass(DeploymentUnit deploymentUnit, String adapterClass) {
-        Attachable topDu = top(deploymentUnit);
-        PersistenceProviderDeploymentHolder holder;
-        holder = topDu.getAttachment(PersistenceProviderDeploymentHolder.DEPLOYED_PERSISTENCE_PROVIDER);
-        if (holder == null) {
-            holder = new PersistenceProviderDeploymentHolder();
-        }
-        holder.setPersistenceProviderAdaptorClassName(adapterClass);
-        topDu.putAttachment(PersistenceProviderDeploymentHolder.DEPLOYED_PERSISTENCE_PROVIDER, holder);
-    }
-
-    // save in consistent location (top) for all deployments.
-    private Attachable top(DeploymentUnit deploymentUnit) {
-        while (deploymentUnit.getParent() != null) {
-            deploymentUnit = deploymentUnit.getParent();
-        }
-        return deploymentUnit;
-    }
-
-    /**
-     * Make sure that the specified persistence provider adaptor module is loaded.
-     *
-     * @param moduleLoader
-     * @param adapterModule is expected to be a unique identifier (with respect to persistenceProviderClass)
-     * @param persistenceProviderClass uniquely identifiers a provider (e.g. Hibernate) but not the version of the provider
-     * @throws DeploymentUnitProcessingException
-     */
-    private void loadPersistenceAdapterModule(ModuleLoader moduleLoader, String adapterModule, String persistenceProviderClass) throws
-            DeploymentUnitProcessingException {
-
-        if (PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(persistenceProviderClass, adapterModule) == null) {
-            try {
-                Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(adapterModule));
-                final ServiceLoader<PersistenceProviderAdaptor> serviceLoader =
-                        module.loadService(PersistenceProviderAdaptor.class);
-                if (serviceLoader != null) {
-                    PersistenceProviderAdaptor persistenceProviderAdaptor = null;
-                    for (PersistenceProviderAdaptor adaptor : serviceLoader) {
-                        if (persistenceProviderAdaptor != null) {
-                            throw new DeploymentUnitProcessingException(
-                                    "persistence provider adapter module has more than one adapters"
-                                            + adapterModule + "(class " + persistenceProviderClass + ")");
-                        }
-                        persistenceProviderAdaptor = adaptor;
-                    }
-                    if (persistenceProviderAdaptor != null) {
-                        persistenceProviderAdaptor.injectJtaManager(JtaManagerImpl.getInstance());
-                        PersistenceProviderAdapterRegistry.putPersistenceProviderAdaptor(persistenceProviderClass, adapterModule, persistenceProviderAdaptor);
-                    }
-                }
-            } catch (ModuleLoadException e) {
-                throw new DeploymentUnitProcessingException("persistence provider adapter module load error"
-                        + adapterModule + "(class " + persistenceProviderClass + ")", e);
-            }
-        }
-    }
 }

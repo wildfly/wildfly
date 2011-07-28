@@ -23,7 +23,6 @@
 package org.jboss.as.jpa.config;
 
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
-import org.jboss.as.server.deployment.AttachmentKey;
 
 import javax.persistence.spi.PersistenceProvider;
 
@@ -34,21 +33,17 @@ import javax.persistence.spi.PersistenceProvider;
  */
 public class PersistenceProviderDeploymentHolder {
 
-    /**
-     * List<PersistenceUnitMetadataImpl> that represents the JPA persistent units
-     */
-    public static final AttachmentKey<PersistenceProviderDeploymentHolder> DEPLOYED_PERSISTENCE_PROVIDER = AttachmentKey.create(PersistenceProviderDeploymentHolder.class);
 
-    private PersistenceProvider provider;
-    private PersistenceProviderAdaptor adapter;
-    private String persistenceProviderAdaptorClassName;
+    private final PersistenceProvider provider;
+    private final PersistenceProviderAdaptor adapter;
+
+    public PersistenceProviderDeploymentHolder(final PersistenceProvider provider, final PersistenceProviderAdaptor adapter) {
+        this.provider = provider;
+        this.adapter = adapter;
+    }
 
     public PersistenceProviderAdaptor getAdapter() {
         return adapter;
-    }
-
-    public void setAdapter(PersistenceProviderAdaptor adapter) {
-        this.adapter = adapter;
     }
 
     /**
@@ -59,17 +54,4 @@ public class PersistenceProviderDeploymentHolder {
     public PersistenceProvider getProvider() {
         return provider;
     }
-
-    public void setProvider(PersistenceProvider provider) {
-        this.provider = provider;
-    }
-
-    public String getPersistenceProviderAdaptorClassName() {
-        return persistenceProviderAdaptorClassName;
-    }
-
-    public void setPersistenceProviderAdaptorClassName(String persistenceProviderAdaptorClassName) {
-        this.persistenceProviderAdaptorClassName = persistenceProviderAdaptorClassName;
-    }
-
 }
