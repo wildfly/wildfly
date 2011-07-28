@@ -79,7 +79,7 @@ public class SAXParserTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(StartLevel.class);
+                builder.addImportPackages(StartLevel.class, SAXParser.class, SAXException.class, DefaultHandler.class);
                 return builder.openStream();
             }
         });
