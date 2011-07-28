@@ -35,6 +35,10 @@ import java.util.Map;
 import javax.management.MBeanServer;
 
 import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.StaticManagedObject;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
@@ -175,11 +179,18 @@ public class FrameworkBootstrapService implements Service<Void> {
 
     private static final class SystemServicesIntegration implements Service<SystemServicesProvider>, SystemServicesProvider {
 
+        private static String BASE_NAME = "global";
+        private static String CONTEXT_SHORT_NAME = "osgi/BundleContext";
+        private static String CONTEXT_LONG_NAME = "java:" + BASE_NAME + "/" + CONTEXT_SHORT_NAME;
+        private static ServiceName CONTEXT_BASE_SERVICE_NAME = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(BASE_NAME);
+        private static ServiceName CONTEXT_LONG_SERVICE_NAME = CONTEXT_BASE_SERVICE_NAME.append(CONTEXT_SHORT_NAME);
+
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
+        private final ServiceTarget target;
         private ServiceContainer serviceContainer;
 
         public static ServiceController<?> addService(final ServiceTarget target) {
-            SystemServicesIntegration service = new SystemServicesIntegration();
+            SystemServicesIntegration service = new SystemServicesIntegration(target);
             ServiceBuilder<SystemServicesProvider> builder = target.addService(Services.SYSTEM_SERVICES_PROVIDER, service);
             builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
             builder.addDependency(Services.FRAMEWORK_CREATE);
@@ -187,7 +198,8 @@ public class FrameworkBootstrapService implements Service<Void> {
             return builder.install();
         }
 
-        private SystemServicesIntegration() {
+        private SystemServicesIntegration(final ServiceTarget target) {
+            this.target = target;
         }
 
         @Override
@@ -209,14 +221,21 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
 
         @Override
-        public void registerSystemServices(BundleContext systemContext) {
+        public void registerSystemServices(final BundleContext context) {
 
             // Register the {@link MBeanServer} as OSGi service
             MBeanServer mbeanServer = injectedMBeanServer.getValue();
-            systemContext.registerService(MBeanServer.class.getName(), mbeanServer, null);
+            context.registerService(MBeanServer.class.getName(), mbeanServer, null);
 
             // Register the {@link ServiceContainer} as OSGi service
-            systemContext.registerService(ServiceContainer.class.getName(), serviceContainer, null);
+            context.registerService(ServiceContainer.class.getName(), serviceContainer, null);
+
+            // Register BundleContext in JNDI
+            BinderService service = new BinderService(CONTEXT_LONG_NAME, context);
+            service.getManagedObjectInjector().inject(new StaticManagedObject(context));
+            ServiceBuilder<?> builder = target.addService(CONTEXT_LONG_SERVICE_NAME, service);
+            builder.addDependency(CONTEXT_BASE_SERVICE_NAME, NamingStore.class, service.getNamingStoreInjector());
+            builder.install();
         }
     }
 
