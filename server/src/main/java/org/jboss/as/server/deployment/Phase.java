@@ -295,7 +295,7 @@ public enum Phase {
     public static final int DEPENDENCIES_WS                             = 0x0C00;
     public static final int DEPENDENCIES_JAXRS                          = 0x0D00;
     public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0x0E00;
-    public static final int DEPENDENCIES__INJECT_JPA_DEPENDENCIES       = 0x1000;
+    public static final int DEPENDENCIES_JPA = 0x1000;
     public static final int DEPENDENCIES_GLOBAL_MODULES                 = 0x1100;
     public static final int DEPENDENCIES_JDK                            = 0x1200;
     //must be last

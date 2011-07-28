@@ -101,7 +101,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 // handles persistence unit / context annotations in components
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_PERSISTENCE_ANNOTATION, new JPAAnnotationParseProcessor());
                 // injects JPA dependencies into an application
-                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES__INJECT_JPA_DEPENDENCIES, new JPADependencyProcessor());
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA, new JPADependencyProcessor());
                 // handles persistence unit / context references from deployment descriptors
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_PERSISTENCE_REF, new PersistenceRefProcessor());
                 // registers listeners/interceptors on session beans

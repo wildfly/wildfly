@@ -31,7 +31,6 @@ import org.jboss.as.jpa.classloader.TempClassLoader;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
-import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
 import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.service.PersistenceUnitService;
@@ -71,8 +70,10 @@ import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 
+import javax.persistence.PersistenceException;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceProvider;
+import javax.persistence.spi.PersistenceProviderResolverHolder;
 import javax.sql.DataSource;
 import javax.validation.ValidatorFactory;
 import java.util.ArrayList;
@@ -216,27 +217,37 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
             final ModuleClassLoader classLoader = module.getClassLoader();
-            final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder =
-                top(deploymentUnit).getAttachment(PersistenceProviderDeploymentHolder.DEPLOYED_PERSISTENCE_PROVIDER);
+            final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder = deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
 
             for (PersistenceUnitMetadataHolder holder : puList) {
                 for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
                     pu.setClassLoader(classLoader);
                     pu.setTempClassloader(new TempClassLoader(classLoader));
                     try {
-                        final PersistenceUnitService service = new PersistenceUnitService(pu, persistenceProviderDeploymentHolder);
                         final HashMap properties = new HashMap();
                         if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
                             ValidatorFactory validatorFactory = SerializableValidatorFactory.getINSTANCE();
                             properties.put("javax.persistence.validation.factory", validatorFactory);
                         }
-                        PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu,persistenceProviderDeploymentHolder);
+                        final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder);
+
+                        // ensure that the persistence provider module is loaded
+                        loadPersistenceProviderModule(pu, persistenceProviderDeploymentHolder);
+
+                        final PersistenceProvider provider;
+                        if (persistenceProviderDeploymentHolder != null &&
+                                persistenceProviderDeploymentHolder.getProvider() != null &&
+                                persistenceProviderDeploymentHolder.getProvider().getClass().getName().equals(pu.getPersistenceProviderClassName())) {
+                            provider = persistenceProviderDeploymentHolder.getProvider();
+                        } else {
+                            provider = lookupProvider(pu.getPersistenceProviderClassName());
+                        }
+
+                        final PersistenceUnitService service = new PersistenceUnitService(pu, adaptor, provider);
 
                         // add persistence provider specific properties
                         adaptor.addProviderProperties(properties, pu);
 
-                        // ensure that the persistence provider module is loaded
-                        loadPersistenceProviderModule(pu, persistenceProviderDeploymentHolder);
 
                         final ServiceName puServiceName = PersistenceUnitService.getPUServiceName(pu);
                         // add the PU service as a dependency to all EE components in this scope
@@ -277,8 +288,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             }
                         }
 
-                        Iterable<ServiceName> providerDependencies1 = adaptor.getProviderDependencies(pu);
-                        Iterable<ServiceName> providerDependencies = providerDependencies1;
+                        Iterable<ServiceName> providerDependencies = adaptor.getProviderDependencies(pu);
                         if (providerDependencies != null) {
                             builder.addDependencies(providerDependencies);
                         }
@@ -303,8 +313,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         }
 
                         builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                            .addInjection(service.getPropertiesInjector(), properties)
-                            .install();
+                                .addInjection(service.getPropertiesInjector(), properties)
+                                .install();
 
                         log.trace("added PersistenceUnitService for '" + puServiceName + "'.  PU is ready for injector action. ");
 
@@ -339,30 +349,23 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      *
      * @param pu
      * @param persistenceProviderDeploymentHolder
+     *
      * @return
      * @throws DeploymentUnitProcessingException
+     *
      */
-    private PersistenceProviderAdaptor getPersistenceProviderAdaptor(PersistenceUnitMetadata pu, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) throws
-        DeploymentUnitProcessingException {
+    private PersistenceProviderAdaptor getPersistenceProviderAdaptor(final PersistenceUnitMetadata pu, final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) throws
+            DeploymentUnitProcessingException {
         String adaptorModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
-        PersistenceProviderAdaptor adaptor=null;
+        PersistenceProviderAdaptor adaptor = null;
         if (persistenceProviderDeploymentHolder != null) {
             adaptor = persistenceProviderDeploymentHolder.getAdapter();
         }
         if (adaptor == null) {
-            if (adaptorModule != null) {
-                adaptor = PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(pu.getPersistenceProviderClassName(), adaptorModule);
-            }
-            else {
-                adaptor = PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(pu.getPersistenceProviderClassName());
-            }
-        }
-        if (adaptor == null) {
             adaptor = loadPersistenceAdapterModule(pu.getPersistenceProviderClassName(), adaptorModule);
         }
-
         if (adaptor == null) {
-            throw new DeploymentUnitProcessingException("Failed to get adaptor for persistence provider '" + pu.getPersistenceProviderClassName() +"'");
+            throw new DeploymentUnitProcessingException("Failed to get adaptor for persistence provider '" + pu.getPersistenceProviderClassName() + "'");
         }
         return adaptor;
     }
@@ -372,12 +375,13 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      * TODO:  test the case where app contains the persistence provider adapter but also uses a system provided adapter.
      *
      * @param persistenceProviderClass may specify the persistence provider class name (can be null for default Configuration.PROVIDER_CLASS_DEFAULT).
-     * @param adapterModule may specify the adapter module name (can be null to use default Configuration.ADAPTER_MODULE_DEFAULT)
+     * @param adapterModule            may specify the adapter module name (can be null to use default Configuration.ADAPTER_MODULE_DEFAULT)
      * @return the persistence provider adaptor for the provider class
      * @throws DeploymentUnitProcessingException
+     *
      */
     private PersistenceProviderAdaptor loadPersistenceAdapterModule(String persistenceProviderClass, String adapterModule) throws
-        DeploymentUnitProcessingException {
+            DeploymentUnitProcessingException {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         PersistenceProviderAdaptor persistenceProviderAdaptor = null;
 
@@ -393,26 +397,24 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
             Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(adapterModule));
             final ServiceLoader<PersistenceProviderAdaptor> serviceLoader =
-                module.loadService(PersistenceProviderAdaptor.class);
+                    module.loadService(PersistenceProviderAdaptor.class);
             if (serviceLoader != null) {
-                for(PersistenceProviderAdaptor adaptor: serviceLoader) {
+                for (PersistenceProviderAdaptor adaptor : serviceLoader) {
                     if (persistenceProviderAdaptor != null) {
                         throw new DeploymentUnitProcessingException(
-                            "persistence provider adapter module has more than one adapters "
-                            + adapterModule);
+                                "persistence provider adapter module has more than one adapters "
+                                        + adapterModule);
                     }
                     persistenceProviderAdaptor = adaptor;
                     log.debugf("loaded persistence provider adapter %s", adapterModule);
                 }
                 if (persistenceProviderAdaptor != null) {
                     persistenceProviderAdaptor.injectJtaManager(JtaManagerImpl.getInstance());
-                    PersistenceProviderAdapterRegistry.putPersistenceProviderAdaptor(persistenceProviderClass, persistenceProviderAdaptor);
-                    PersistenceProviderAdapterRegistry.putPersistenceProviderAdaptor(persistenceProviderClass, adapterModule, persistenceProviderAdaptor);
                 }
             }
         } catch (ModuleLoadException e) {
             throw new DeploymentUnitProcessingException("persistence provider adapter module load error"
-                + adapterModule +"(class "+persistenceProviderClass+")",e);
+                    + adapterModule + "(class " + persistenceProviderClass + ")", e);
         }
         return persistenceProviderAdaptor;
     }
@@ -421,11 +423,13 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      * Handles loading the persistence provider module into PersistenceProviderResolverImpl for later access
      *
      * @param pu is the persistence unit
-     * @param persistenceProviderDeploymentHolder holds the persistence provider if one is packaged with the app deployment
+     * @param persistenceProviderDeploymentHolder
+     *           holds the persistence provider if one is packaged with the app deployment
      * @throws DeploymentUnitProcessingException
+     *
      */
-    private void loadPersistenceProviderModule(PersistenceUnitMetadata pu, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) throws
-        DeploymentUnitProcessingException {
+    private void loadPersistenceProviderModule(final PersistenceUnitMetadata pu, final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) throws
+            DeploymentUnitProcessingException {
 
         // only load the persistence provider module if we don't have a persistence provider packaged with the app deployment
         if (persistenceProviderDeploymentHolder == null || persistenceProviderDeploymentHolder.getProvider() == null) {
@@ -445,7 +449,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
             // if we haven't loaded the provider yet, load it
             if (!PersistenceProviderResolverImpl.getInstance().getPersistenceProviders().
-                contains(persistenceProviderClassName)) {
+                    contains(persistenceProviderClassName)) {
                 if (persistenceProviderModule != null) {
                     final ModuleLoader moduleLoader = Module.getBootModuleLoader();
                     Module module = null;
@@ -453,17 +457,17 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         module = moduleLoader.loadModule(ModuleIdentifier.fromString(persistenceProviderModule));
                     } catch (ModuleLoadException e) {
                         throw new DeploymentUnitProcessingException("persistence provider module load error"
-                            + persistenceProviderModule + "(class " + persistenceProviderClassName + ")", e);
+                                + persistenceProviderModule + "(class " + persistenceProviderClassName + ")", e);
                     }
                     final ServiceLoader<PersistenceProvider> serviceLoader =
-                        module.loadService(PersistenceProvider.class);
+                            module.loadService(PersistenceProvider.class);
                     if (serviceLoader != null) {
                         PersistenceProvider persistenceProvider = null;
                         for (PersistenceProvider provider : serviceLoader) {
                             if (persistenceProvider != null) {
                                 throw new DeploymentUnitProcessingException(
-                                    "persistence provider module has more than one provider"
-                                        + persistenceProviderModule + "(class " + persistenceProviderClassName + ")");
+                                        "persistence provider module has more than one provider"
+                                                + persistenceProviderModule + "(class " + persistenceProviderClassName + ")");
                             }
                             persistenceProvider = provider;
                         }
@@ -473,6 +477,27 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                 }
             }
         }
+    }
+
+    /**
+     * Look up the persistence provider
+     *
+     * @param providerName
+     * @return
+     */
+    private PersistenceProvider lookupProvider(String providerName) {
+        List<PersistenceProvider> providers =
+                PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders();
+        for (PersistenceProvider provider : providers) {
+            if (provider.getClass().getName().equals(providerName)) {
+                return provider;
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (PersistenceProvider provider : providers) {
+            sb.append(provider.getClass().getName()).append(", ");
+        }
+        throw new PersistenceException("PersistenceProvider '" + providerName + "' not found in {" + sb.toString() + "}");
     }
 
 
