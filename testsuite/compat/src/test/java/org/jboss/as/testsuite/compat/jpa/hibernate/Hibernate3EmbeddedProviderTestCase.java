@@ -40,6 +40,9 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import java.io.File;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author Scott Marlow
  */
@@ -52,6 +55,20 @@ public class Hibernate3EmbeddedProviderTestCase {
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
             "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
             "  <persistence-unit name=\"hibernate3_pc\">" +
+            "    <description>Persistence Unit." +
+            "    </description>" +
+            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+            "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
+            "<property name=\"jboss.as.jpa.providerModule\" value=\"hibernate3-bundled\"/>" +
+            "</properties>" +
+            "  </persistence-unit>" +
+            "</persistence>";
+
+    private static final String web_persistence_xml =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
+            "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
+            "  <persistence-unit name=\"web_hibernate3_pc\">" +
             "    <description>Persistence Unit." +
             "    </description>" +
             "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
@@ -79,6 +96,7 @@ public class Hibernate3EmbeddedProviderTestCase {
         File slf4j = new File(testdir, "slf4j.jar");
         File slf4jApi = new File(testdir, "slf4j-api.jar");
         File commonCollections = new File(testdir, "commons-collections.jar");
+        File antlr = new File(testdir, "antlr.jar");
         ear.addAsLibraries(
             hibernatecore,
             hibernateannotations,
@@ -86,7 +104,8 @@ public class Hibernate3EmbeddedProviderTestCase {
             dom4j,
             slf4j,
             slf4jApi,
-            commonCollections
+            commonCollections,
+            antlr
         );
 
     }
@@ -94,11 +113,11 @@ public class Hibernate3EmbeddedProviderTestCase {
     @Deployment
     public static Archive<?> deploy() throws Exception {
 
-        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME +".ear");
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
         addHibernate3JarsToEar(ear);
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
-        lib.addClasses(SFSB1.class);
+        lib.addClasses(SFSB1.class, HttpRequest.class);
         ear.addAsModule(lib);
 
         lib = ShrinkWrap.create(JavaArchive.class, "entities.jar");
@@ -109,6 +128,28 @@ public class Hibernate3EmbeddedProviderTestCase {
         final WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
         main.addClasses(Hibernate3EmbeddedProviderTestCase.class);
         ear.addAsModule(main);
+
+        // add war that contains its own pu
+        WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
+        war.addClasses(SimpleServlet.class, WebLink.class);
+        war.addAsResource(new StringAsset(web_persistence_xml), "META-INF/persistence.xml");
+
+        war.addAsWebInfResource(
+            new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "\n" +
+                "<web-app version=\"3.0\"\n" +
+                "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
+                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
+                "         metadata-complete=\"false\">\n" +
+                "<servlet-mapping>\n" +
+                "        <servlet-name>SimpleServlet</servlet-name>\n" +
+                "        <url-pattern>/simple/*</url-pattern>\n" +
+                "    </servlet-mapping>\n" +
+                "</web-app>"),
+            "web.xml");
+
+        ear.addAsModule(war);
 
         return ear;
     }
@@ -151,5 +192,19 @@ public class Hibernate3EmbeddedProviderTestCase {
         sfsb1.getEmployeeNoTX(10);
         sfsb1.getEmployeeNoTX(20);
     }
+
+    private static String performCall(String urlPattern, String param) throws Exception {
+        return HttpRequest.get("http://localhost:8080/hibernate3_test/" + urlPattern + "?input=" + param, 10, SECONDS);
+    }
+
+    @Test
+    public void testServletSubDeploymentRead() throws Exception {
+        String result = performCall("simple", "Hello+world");
+        assertEquals("0", result);
+
+        result = performCall("simple", "Hello+world");
+        assertEquals("0", result);
+    }
+
 
 }

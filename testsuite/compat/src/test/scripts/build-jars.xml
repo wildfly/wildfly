@@ -31,5 +31,6 @@
     <copy file="${org.slf4j:slf4j-simple:jar}" tofile="${tests.output.dir}/test-libs/slf4j.jar"/>
     <copy file="${org.slf4j:slf4j-api:jar}"     tofile="${tests.output.dir}/test-libs/slf4j-api.jar"/>
     <copy file="${commons-collections:commons-collections:jar}" tofile="${tests.output.dir}/test-libs/commons-collections.jar"/>
+    <copy file="${antlr:antlr:jar}" tofile="${tests.output.dir}/test-libs/antlr.jar"/>
     </target>
 </project>
