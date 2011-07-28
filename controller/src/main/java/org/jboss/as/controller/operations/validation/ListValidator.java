@@ -25,7 +25,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Validates parameters of type {@link ModelType.LIST}.
+ * Validates parameters of type {@link ModelType#LIST}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  *
@@ -37,24 +37,27 @@ public class ListValidator extends ModelTypeValidator implements ParameterValida
     private final ParameterValidator elementValidator;
 
     /**
-     * @param type
+     * Constructs a new {@code ListValidator}
+     *
+     * @param elementValidator validator for list elements
      */
     public ListValidator(ParameterValidator elementValidator) {
         this(elementValidator, false, 1, Integer.MAX_VALUE);
     }
 
     /**
-     * @param type
-     * @param nullable
+     * @param elementValidator validator for list elements
+     * @param nullable {@code true} if the model node for the list can be {@code null} or {@link ModelType#UNDEFINED}
      */
     public ListValidator(ParameterValidator elementValidator, boolean nullable) {
         this(elementValidator, nullable, 1, Integer.MAX_VALUE);
     }
 
     /**
-     * @param type
-     * @param nullable
-     * @param allowExpressions
+     * @param elementValidator validator for list elements
+     * @param nullable {@code true} if the model node for the list can be {@code null} or {@link ModelType#UNDEFINED}
+     * @param minSize minimum number of elements in the list
+     * @param maxSize maximum number of elements in the list
      */
     public ListValidator(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
         super(ModelType.LIST, nullable, false, true);
@@ -71,10 +74,10 @@ public class ListValidator extends ModelTypeValidator implements ParameterValida
             List<ModelNode> list = value.asList();
             int size = list.size();
             if (size < min) {
-                throw new OperationFailedException(new ModelNode().set(size + " is an invalid size for parameter " + parameterName + ". A minimum length of " + min + " is required"));
+                throw new OperationFailedException(new ModelNode().set(String.format("[%d] is an invalid size for parameter %s. A minimum length of [%d] is required", size, parameterName, min)));
             }
             else if (size > max) {
-                throw new OperationFailedException(new ModelNode().set(size + " is an invalid size for parameter " + parameterName + ". A maximum length of " + max + " is required"));
+                throw new OperationFailedException(new ModelNode().set(String.format("[%d] is an invalid size for parameter %s. A maximum length of [%d] is required", size, parameterName, max)));
             }
             else {
                 for (ModelNode element : list) {
