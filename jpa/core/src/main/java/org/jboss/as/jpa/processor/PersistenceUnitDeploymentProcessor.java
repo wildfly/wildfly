@@ -456,8 +456,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                     try {
                         module = moduleLoader.loadModule(ModuleIdentifier.fromString(persistenceProviderModule));
                     } catch (ModuleLoadException e) {
-                        throw new DeploymentUnitProcessingException("persistence provider module load error"
-                                + persistenceProviderModule + "(class " + persistenceProviderClassName + ")", e);
+                        throw new DeploymentUnitProcessingException("persistence provider module load error "
+                                + persistenceProviderModule + " (class " + persistenceProviderClassName + ")", e);
                     }
                     final ServiceLoader<PersistenceProvider> serviceLoader =
                             module.loadService(PersistenceProvider.class);
@@ -466,7 +466,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         for (PersistenceProvider provider : serviceLoader) {
                             if (persistenceProvider != null) {
                                 throw new DeploymentUnitProcessingException(
-                                        "persistence provider module has more than one provider"
+                                        "persistence provider module has more than one provider "
                                                 + persistenceProviderModule + "(class " + persistenceProviderClassName + ")");
                             }
                             persistenceProvider = provider;
