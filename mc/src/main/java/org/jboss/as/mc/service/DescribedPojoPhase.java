@@ -24,6 +24,7 @@ package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
 import org.jboss.as.mc.descriptor.ConstructorConfig;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
@@ -43,6 +44,7 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
     private final Module module;
     private final DeploymentReflectionIndex index;
     private final BeanMetaDataConfig beanConfig;
+    private BeanInfo beanInfo;
 
     public DescribedPojoPhase(Module module, DeploymentReflectionIndex index, BeanMetaDataConfig beanConfig) {
         this.module = module;
@@ -52,6 +54,9 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
 
     public void start(StartContext context) throws StartException {
         try {
+            Class beanClass = Class.forName(beanConfig.getBeanClass(), false, module.getClassLoader());
+            beanInfo = new DefaultBeanInfo(index, beanClass);
+
             final ServiceTarget serviceTarget = context.getChildTarget();
 
             Joinpoint instantiateJoinpoint;
@@ -59,9 +64,7 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
             if (ctorConfig != null) {
 
             } else {
-                // TODO move this to BeanInfo
-                Class beanClass = Class.forName(beanConfig.getBeanClass(), false, module.getClassLoader());
-                Constructor ctor = beanClass.getConstructor();
+                Constructor ctor = beanInfo.getConstructor();
                 instantiateJoinpoint = new ConstructorJoinpoint(ctor);
             }
         } catch (Exception e) {
@@ -74,6 +77,6 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
     }
 
     public BeanInfo getValue() throws IllegalStateException, IllegalArgumentException {
-        return null; // TODO
+        return beanInfo;
     }
 }

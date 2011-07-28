@@ -22,10 +22,56 @@
 
 package org.jboss.as.mc.service;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 /**
  * Bean info API.
+ * It checks the whole bean's class hierarchy.
  *
+ * @param <T> the exacty bean type
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-interface BeanInfo {
+interface BeanInfo<T> {
+    /**
+     * Get ctor.
+     *
+     * @param parameterTypes the parameter types
+     * @return the found ctor
+     */
+    Constructor<T> getConstructor(String... parameterTypes);
+
+    /**
+     * Get bean's field.
+     *
+     * @param name the field name
+     * @return the found field
+     */
+    Field getField(String name);
+
+    /**
+     * Get method.
+     *
+     * @param name the method name
+     * @param parameterTypes the parameter types
+     * @return found method
+     */
+    Method getMethod(String name, String... parameterTypes);
+
+    /**
+     * Get getter.
+     *
+     * @param name the getter name
+     * @return the found getter
+     */
+    Method getGetter(String name);
+
+    /**
+     * Get setter.
+     *
+     * @param name the setter name
+     * @return the found setter
+     */
+    Method getSetter(String name);
 }
