@@ -25,38 +25,47 @@ package org.jboss.as.mc.descriptor;
 import java.io.Serializable;
 
 /**
- * The legacy bean meta data.
+ * Ctor meta data.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class BeanMetaDataConfig implements Serializable {
+public class ConstructorConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private String name;
-    private String beanClass;
-    private ConstructorConfig constructor;
+    private String factoryClass;
+    private String factoryMethod;
+    private ValueConfig factory;
+    private ValueConfig[] parameters;
 
-    public String getName() {
-        return name;
+    public String getFactoryClass() {
+        return factoryClass;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFactoryClass(String factoryClass) {
+        this.factoryClass = factoryClass;
     }
 
-    public String getBeanClass() {
-        return beanClass;
+    public String getFactoryMethod() {
+        return factoryMethod;
     }
 
-    public void setBeanClass(String beanClass) {
-        this.beanClass = beanClass;
+    public void setFactoryMethod(String factoryMethod) {
+        this.factoryMethod = factoryMethod;
     }
 
-    public ConstructorConfig getConstructor() {
-        return constructor;
+    public ValueConfig getFactory() {
+        return factory;
     }
 
-    public void setConstructor(ConstructorConfig constructor) {
-        this.constructor = constructor;
+    public void setFactory(ValueConfig factory) {
+        this.factory = factory;
+    }
+
+    public ValueConfig[] getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(ValueConfig[] parameters) {
+        this.parameters = parameters;
     }
 }

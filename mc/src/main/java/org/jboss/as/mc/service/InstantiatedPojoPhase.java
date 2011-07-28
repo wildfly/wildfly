@@ -40,12 +40,16 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase implements Service<
     private InjectedValue<Joinpoint> instantiationAction = new InjectedValue<Joinpoint>();
 
     public void start(StartContext context) throws StartException {
-        bean = instantiationAction.getValue().dispatch();
+        try {
+            bean = instantiationAction.getValue().dispatch();
 
-        executeInstalls();
+            executeInstalls();
 
-        final ServiceTarget serviceTarget = context.getChildTarget();
-        // TODO
+            final ServiceTarget serviceTarget = context.getChildTarget();
+            // TODO
+        } catch (Throwable t) {
+            throw new StartException(t);
+        }
     }
 
     public void stop(StopContext context) {

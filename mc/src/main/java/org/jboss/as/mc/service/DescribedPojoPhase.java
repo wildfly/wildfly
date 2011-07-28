@@ -23,6 +23,7 @@
 package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
+import org.jboss.as.mc.descriptor.ConstructorConfig;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
@@ -30,6 +31,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import java.lang.reflect.Constructor;
 
 /**
  * MC pojo described phase.
@@ -48,8 +51,22 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
     }
 
     public void start(StartContext context) throws StartException {
-        final ServiceTarget serviceTarget = context.getChildTarget();
+        try {
+            final ServiceTarget serviceTarget = context.getChildTarget();
 
+            Joinpoint instantiateJoinpoint;
+            ConstructorConfig ctorConfig = beanConfig.getConstructor();
+            if (ctorConfig != null) {
+
+            } else {
+                // TODO move this to BeanInfo
+                Class beanClass = Class.forName(beanConfig.getBeanClass(), false, module.getClassLoader());
+                Constructor ctor = beanClass.getConstructor();
+                instantiateJoinpoint = new ConstructorJoinpoint(ctor);
+            }
+        } catch (Exception e) {
+            throw new StartException(e);
+        }
     }
 
     public void stop(StopContext context) {

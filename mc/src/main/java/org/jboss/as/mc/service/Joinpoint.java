@@ -32,6 +32,7 @@ interface Joinpoint {
      * Dispatch this action.
      *
      * @return dispatch result
+     * @throws Throwable for any error
      */
-    Object dispatch();
+    Object dispatch() throws Throwable;
 }

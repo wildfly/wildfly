@@ -22,41 +22,21 @@
 
 package org.jboss.as.mc.descriptor;
 
+import org.jboss.msc.value.InjectedValue;
+
 import java.io.Serializable;
 
 /**
- * The legacy bean meta data.
+ * Value meta data.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class BeanMetaDataConfig implements Serializable {
+public class ValueConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private String name;
-    private String beanClass;
-    private ConstructorConfig constructor;
+    private InjectedValue<Object> value = new InjectedValue<Object>();
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getBeanClass() {
-        return beanClass;
-    }
-
-    public void setBeanClass(String beanClass) {
-        this.beanClass = beanClass;
-    }
-
-    public ConstructorConfig getConstructor() {
-        return constructor;
-    }
-
-    public void setConstructor(ConstructorConfig constructor) {
-        this.constructor = constructor;
+    public InjectedValue<Object> getValue() {
+        return value;
     }
 }
