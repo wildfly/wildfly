@@ -22,6 +22,8 @@
 
 package org.jboss.as.mc.descriptor;
 
+import org.jboss.msc.service.ServiceBuilder;
+
 import java.io.Serializable;
 
 /**
@@ -29,12 +31,18 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class BeanMetaDataConfig implements Serializable {
+public class BeanMetaDataConfig implements Serializable, ConfigVisitor {
     private static final long serialVersionUID = 1L;
 
     private String name;
     private String beanClass;
     private ConstructorConfig constructor;
+
+    @Override
+    public void visit(ServiceBuilder serviceBuilder) {
+        if (constructor != null)
+            constructor.visit(serviceBuilder);
+    }
 
     public String getName() {
         return name;

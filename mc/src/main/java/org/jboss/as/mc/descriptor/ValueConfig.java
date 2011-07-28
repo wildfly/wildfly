@@ -22,6 +22,7 @@
 
 package org.jboss.as.mc.descriptor;
 
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.value.InjectedValue;
 
 import java.io.Serializable;
@@ -31,10 +32,23 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class ValueConfig implements Serializable {
+public class ValueConfig implements Serializable, ConfigVisitor {
     private static final long serialVersionUID = 1L;
 
+    private String type;
     private InjectedValue<Object> value = new InjectedValue<Object>();
+
+    @Override
+    public void visit(ServiceBuilder serviceBuilder) {
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public InjectedValue<Object> getValue() {
         return value;

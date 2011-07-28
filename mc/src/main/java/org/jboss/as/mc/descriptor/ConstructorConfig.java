@@ -22,6 +22,8 @@
 
 package org.jboss.as.mc.descriptor;
 
+import org.jboss.msc.service.ServiceBuilder;
+
 import java.io.Serializable;
 
 /**
@@ -29,13 +31,22 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class ConstructorConfig implements Serializable {
+public class ConstructorConfig implements Serializable, ConfigVisitor {
     private static final long serialVersionUID = 1L;
 
     private String factoryClass;
     private String factoryMethod;
     private ValueConfig factory;
     private ValueConfig[] parameters;
+
+    @Override
+    public void visit(ServiceBuilder serviceBuilder) {
+        if (factory != null)
+            factory.visit(serviceBuilder);
+        if (parameters != null)
+            for (ValueConfig param : parameters)
+                param.visit(serviceBuilder);
+    }
 
     public String getFactoryClass() {
         return factoryClass;

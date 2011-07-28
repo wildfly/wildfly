@@ -20,23 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.mc.service;
+package org.jboss.as.mc.descriptor;
 
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.service.ServiceBuilder;
 
 /**
- * Target joinpoint; keeps target.
+ * Config visitor.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class TargetJoinpoint extends AbstractJoinpoint {
-    private InjectedValue<Object> target = new InjectedValue<Object>();
-
-    public InjectedValue<Object> getTarget() {
-        return target;
-    }
-
-    public void setTarget(InjectedValue<Object> target) {
-        this.target = target;
-    }
+public interface ConfigVisitor {
+    /**
+     * Add dependencies to service builder.
+     *
+     * @param serviceBuilder the service builder
+     */
+    void visit(ServiceBuilder serviceBuilder);
 }

@@ -24,16 +24,20 @@ package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
 import org.jboss.as.mc.descriptor.ConstructorConfig;
+import org.jboss.as.mc.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
 /**
  * MC pojo described phase.
@@ -58,15 +62,48 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
             beanInfo = new DefaultBeanInfo(index, beanClass);
 
             final ServiceTarget serviceTarget = context.getChildTarget();
+            final ServiceBuilder serviceBuilder = serviceTarget.addService(null, null);
+
+            beanConfig.visit(serviceBuilder);
 
             Joinpoint instantiateJoinpoint;
             ConstructorConfig ctorConfig = beanConfig.getConstructor();
             if (ctorConfig != null) {
+                String factoryMethod = ctorConfig.getFactoryMethod();
+                if (factoryMethod == null)
+                    throw new StartException("Missing factory method in ctor configuration: " + beanConfig);
 
+                Method method;
+                InjectedValue<Object> target;
+                String factoryClass = ctorConfig.getFactoryClass();
+                if (factoryClass != null) {
+                    Class<?> factoryClazz = Class.forName(factoryClass, false, module.getClassLoader());
+                    ClassReflectionIndex cri = index.getClassIndex(factoryClazz);
+                    method = null; // TODO
+                    target = new InjectedValue<Object>();
+                } else {
+                    ValueConfig factory = ctorConfig.getFactory();
+                    if (factory == null)
+                        throw new StartException("Missing factoy value: " + beanConfig);
+                    target = factory.getValue();
+                    method = null; // TODO
+                }
+                MethodJoinpoint mj = new MethodJoinpoint(method);
+                mj.setTarget(target);
+                ValueConfig[] parameters = ctorConfig.getParameters();
+                if (parameters != null) {
+                    InjectedValue<Object>[] ivs = new InjectedValue[parameters.length];
+                    for (int i = 0; i < ivs.length; i++)
+                        ivs[i] = parameters[i].getValue();
+                    mj.setParameters(ivs);
+                }
+                instantiateJoinpoint = mj;
             } else {
                 Constructor ctor = beanInfo.getConstructor();
                 instantiateJoinpoint = new ConstructorJoinpoint(ctor);
             }
+        } catch (StartException e) {
+            throw e;
         } catch (Exception e) {
             throw new StartException(e);
         }
