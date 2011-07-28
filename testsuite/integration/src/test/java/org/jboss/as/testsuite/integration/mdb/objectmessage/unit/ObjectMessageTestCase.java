@@ -45,6 +45,7 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.TextMessage;
+import java.util.Arrays;
 
 /**
  * Tests that a MDB can get hold of the underlying Object from a {@link ObjectMessage} without any classloading issues.
@@ -123,17 +124,23 @@ public class ObjectMessageTestCase {
      */
     @Test
     public void testObjectMessage() throws Exception {
-        final String greeting = "Hello world!";
+        final String goodMorning = "Good morning";
+        final String goodEvening = "Good evening";
         // create the message
-        final SimpleMessageInEarLibJar message = new SimpleMessageInEarLibJar(greeting);
+        final SimpleMessageInEarLibJar[] multipleGreetings = new SimpleMessageInEarLibJar[2];
+        final SimpleMessageInEarLibJar messageOne = new SimpleMessageInEarLibJar(goodMorning);
+        final SimpleMessageInEarLibJar messageTwo = new SimpleMessageInEarLibJar(goodEvening);
+        multipleGreetings[0] = messageOne;
+        multipleGreetings[1] = messageTwo;
+
         // send as ObjectMessage
-        this.jmsUtil.sendObjectMessage(message, this.queue, this.replyQueue);
+        this.jmsUtil.sendObjectMessage(multipleGreetings, this.queue, this.replyQueue);
         // wait for an reply
         final Message reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
         // test the reply
         Assert.assertNotNull("Reply message was null on reply queue: " + this.replyQueue, reply);
-        final TextMessage replyMessage = (TextMessage) reply;
-        Assert.assertEquals("Unexpected reply message on reply queue: " + this.replyQueue, greeting, replyMessage.getText());
+        final SimpleMessageInEarLibJar[] replyMessage = (SimpleMessageInEarLibJar[]) ((ObjectMessage) reply).getObject();
+        Assert.assertTrue("Unexpected reply message on reply queue: " + this.replyQueue, Arrays.equals(replyMessage, multipleGreetings));
 
     }
 }
