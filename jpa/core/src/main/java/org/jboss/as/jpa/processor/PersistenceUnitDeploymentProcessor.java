@@ -217,8 +217,10 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
             final ModuleClassLoader classLoader = module.getClassLoader();
-            final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder = deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
-
+            PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder = deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
+            if (persistenceProviderDeploymentHolder == null && deploymentUnit.getParent() != null) {
+                persistenceProviderDeploymentHolder = deploymentUnit.getParent().getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
+            }
             for (PersistenceUnitMetadataHolder holder : puList) {
                 for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
                     pu.setClassLoader(classLoader);
