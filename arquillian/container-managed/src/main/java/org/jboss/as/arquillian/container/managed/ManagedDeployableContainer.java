@@ -16,6 +16,31 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.UnknownHostException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.Provider;
+import java.security.Security;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
+
+import javax.management.MBeanServerConnection;
+
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
@@ -27,27 +52,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.JBossSaslProvider;
-
-import javax.management.MBeanServerConnection;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.Provider;
-import java.security.Security;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeoutException;
-import java.util.logging.Logger;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * JBossAsManagedContainer
@@ -84,18 +88,13 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     }
 
     @Override
-    public void setup(ManagedContainerConfiguration config) {
-        super.setup(config);
-        provider = new MBeanServerConnectionProvider(config.getBindAddress(), config.getJmxPort());
-    }
-
-    @Override
     protected void startInternal() throws LifecycleException {
         Security.addProvider(saslProvider);
         try {
             //if there is aleady an instance running we do not bother starting a new one
             //as it will not be able to bind the ports it needs anyway
             if(isServerStarted()) {
+                provider = getMBeanServerConnectionProvider();
                 mbeanServerInst.set(getMBeanServerConnection(5000));
                 return;
             }
@@ -175,6 +174,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 throw new TimeoutException(String.format("Managed server was not started within [%d] ms", getContainerConfiguration().getStartupTimeout()));
             }
 
+            provider = getMBeanServerConnectionProvider();
             mbeanServerInst.set(getMBeanServerConnection(5000));
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);
@@ -218,6 +218,17 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             // ignore, as we will get exceptions until the management comm services start
         }
         return false;
+    }
+
+    private MBeanServerConnectionProvider getMBeanServerConnectionProvider() {
+        URI jmxSubSystem = getManagementClient().getSubSystemURI("jmx");
+        InetAddress address = null;
+        try {
+            address = InetAddress.getByName(jmxSubSystem.getHost());
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("Could not get jmx subsystems InetAddress: " + jmxSubSystem.getHost(), e);
+        }
+        return new MBeanServerConnectionProvider(address, jmxSubSystem.getPort());
     }
 
     /**
