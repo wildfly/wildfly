@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
@@ -30,6 +31,9 @@ import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
+
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
 
 /**
  * Operation responsible for changing the logging level of the root logger.
@@ -40,17 +44,19 @@ public class RootLoggerLevelChange implements OperationStepHandler {
     static final String OPERATION_NAME = "change-root-log-level";
     static final RootLoggerLevelChange INSTANCE = new RootLoggerLevelChange();
 
-    public void execute(OperationContext context, ModelNode operation) {
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        LoggingValidators.validate(operation);
         final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-        final String level = operation.get(CommonAttributes.LEVEL).asString();
-        model.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.LEVEL).set(level);
+        final String level = operation.get(LEVEL).asString();
+        model.get(ROOT_LOGGER, LEVEL).set(level);
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) {
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.ROOT_LOGGER);
-                    if (controller != null) {
+                    if (controller != null && operation.hasDefined(LEVEL)) {
                         controller.getValue().setLevel(Level.parse(level));
                     }
                     context.completeStep();

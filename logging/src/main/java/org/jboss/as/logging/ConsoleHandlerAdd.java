@@ -31,11 +31,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.ACCEPT;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
+
+import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -49,11 +52,13 @@ class ConsoleHandlerAdd extends AbstractAddStepHandler {
 
     static final ConsoleHandlerAdd INSTANCE = new ConsoleHandlerAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        LoggingValidators.validate(operation);
         model.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
         model.get(ENCODING).set(operation.get(ENCODING));
         model.get(FORMATTER).set(operation.get(FORMATTER));
-        model.get(LEVEL).set(operation.get(LEVEL));
+        if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(operation.get(LEVEL));
         model.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
     }
 
@@ -65,7 +70,7 @@ class ConsoleHandlerAdd extends AbstractAddStepHandler {
 
         final ConsoleHandlerService service = new ConsoleHandlerService();
         final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-        service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+        if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(operation.get(LEVEL).asString()));
         final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
         if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
         try {

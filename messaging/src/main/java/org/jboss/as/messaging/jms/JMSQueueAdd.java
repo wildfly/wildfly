@@ -30,14 +30,20 @@ import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.hornetq.jms.server.JMSServerManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -50,7 +56,7 @@ import org.jboss.msc.service.ServiceName;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-public class JMSQueueAdd extends AbstractAddStepHandler {
+public class JMSQueueAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -59,49 +65,34 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
      */
     public static ModelNode getOperation(ModelNode address, ModelNode existing) {
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
-        if (existing.hasDefined(SELECTOR)) {
-            op.get(SELECTOR).set(existing.get(SELECTOR));
+        if (existing.hasDefined(SELECTOR.getName())) {
+            op.get(SELECTOR.getName()).set(existing.get(SELECTOR.getName()));
         }
-        if (existing.hasDefined(DURABLE)) {
-            op.get(DURABLE).set(existing.get(DURABLE));
+        if (existing.hasDefined(DURABLE.getName())) {
+            op.get(DURABLE.getName()).set(existing.get(DURABLE.getName()));
         }
-        if (existing.hasDefined(ENTRIES)) {
-            op.get(ENTRIES).set(existing.get(ENTRIES));
+        if (existing.hasDefined(ENTRIES.getName())) {
+            op.get(ENTRIES.getName()).set(existing.get(ENTRIES.getName()));
         }
         return op;
     }
 
     public static final JMSQueueAdd INSTANCE = new JMSQueueAdd();
-    private static final String[] NO_BINDINGS = new String[0];
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        final String selector;
-        if (operation.hasDefined(SELECTOR)) {
-            selector = operation.get(SELECTOR).asString();
-            model.get(SELECTOR).set(selector);
-        } else {
-            selector = null;
-        }
-        if (operation.hasDefined(DURABLE)) {
-            model.get(DURABLE).set(operation.get(DURABLE));
-        }
-        if (operation.hasDefined(ENTRIES)) {
-            model.get(ENTRIES).set(operation.get(ENTRIES));
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        for (AttributeDefinition attributeDefinition : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
+            attributeDefinition.validateAndSet(operation, model);
         }
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final String selector;
-        if (operation.hasDefined(SELECTOR)) {
-            selector = operation.get(SELECTOR).asString();
-        } else {
-            selector = null;
-        }
+        final ModelNode selectorNode = SELECTOR.validateResolvedOperation(model);
+        final String selector = selectorNode.isDefined() ? selectorNode.asString() : null;
 
         final JMSQueueService service = new JMSQueueService(name, selector,
-                operation.get(DURABLE).asBoolean(true), jndiBindings(operation));
+                DURABLE.validateResolvedOperation(model).asBoolean(), JndiEntriesAttribute.getJndiBindings(operation));
         final ServiceName serviceName = JMSServices.JMS_QUEUE_BASE.append(name);
         newControllers.add(context.getServiceTarget().addService(serviceName, service)
                 .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
@@ -111,16 +102,8 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
 
     }
 
-
-    static String[] jndiBindings(final ModelNode node) {
-        if (node.hasDefined(ENTRIES)) {
-            final Set<String> bindings = new HashSet<String>();
-            for (final ModelNode entry : node.get(ENTRIES).asList()) {
-                bindings.add(entry.asString());
-            }
-            return bindings.toArray(new String[bindings.size()]);
-        }
-        return NO_BINDINGS;
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return MessagingDescriptions.getJmsQueueAdd(locale);
     }
-
 }

@@ -814,6 +814,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-xts</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.classfilewriter</groupId>
             <artifactId>jboss-classfilewriter</artifactId>
         </dependency>
@@ -886,6 +891,21 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jpa-hibernate3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jpa-hibernate4</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jpa-spi</artifactId>
         </dependency>
 
         <dependency>

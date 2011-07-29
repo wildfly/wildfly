@@ -30,6 +30,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -42,26 +45,28 @@ class LoggerAdd extends AbstractAddStepHandler {
 
     static final LoggerAdd INSTANCE = new LoggerAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        LoggingValidators.validate(operation);
         final String level = operation.require(CommonAttributes.LEVEL).asString();
         final ModelNode handlers = operation.hasDefined(CommonAttributes.HANDLERS) ? operation.get(CommonAttributes.HANDLERS) : new ModelNode();
 
-        model.get(CommonAttributes.LEVEL).set(level);
-        model.get(CommonAttributes.HANDLERS).set(handlers);
+        if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(level);
+        model.get(HANDLERS).set(handlers);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final String level = operation.require(CommonAttributes.LEVEL).asString();
-        final ModelNode handlers = operation.hasDefined(CommonAttributes.HANDLERS) ? operation.get(CommonAttributes.HANDLERS) : new ModelNode();
+        final String level = operation.require(LEVEL).asString();
+        final ModelNode handlers = operation.hasDefined(HANDLERS) ? operation.get(HANDLERS) : new ModelNode();
 
         final ServiceTarget target = context.getServiceTarget();
         final String loggerName = name;
         try {
             // Install logger service
             final LoggerService service = new LoggerService(loggerName);
-            service.setLevel(Level.parse(level));
+            if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(level));
             newControllers.add(target.addService(LogServices.loggerName(loggerName), service)
                     .addListener(verificationHandler)
                     .setInitialMode(ServiceController.Mode.ACTIVE)

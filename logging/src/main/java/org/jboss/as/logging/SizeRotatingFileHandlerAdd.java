@@ -56,7 +56,9 @@ class SizeRotatingFileHandlerAdd extends AbstractAddStepHandler {
 
     static long DEFAULT_ROTATE_SIZE = 2L * 1024L * 1024L;
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        LoggingValidators.validate(operation);
         model.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
         model.get(ENCODING).set(operation.get(ENCODING));
         model.get(FORMATTER).set(operation.get(FORMATTER));

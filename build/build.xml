@@ -523,6 +523,18 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-jpa"/>
         </module-def>
 
+        <module-def name="org.jboss.as.jpa.hibernate3">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-hibernate3"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.jpa.hibernate4">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-hibernate4"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.jpa.spi">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-spi"/>
+        </module-def>
+
         <module-def name="org.jboss.as.logging">
             <maven-resource group="org.jboss.as" artifact="jboss-as-logging"/>
         </module-def>
@@ -599,6 +611,9 @@
 
         <module-def name="org.jboss.as.weld">
             <maven-resource group="org.jboss.as" artifact="jboss-as-weld"/>
+        </module-def>
+        <module-def name="org.jboss.as.xts">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-xts"/>
         </module-def>
 
         <module-def name="org.jboss.as.threads">
@@ -898,6 +913,11 @@
 
         <module-def name="org.jboss.xnio">
             <maven-resource group="org.jboss.xnio" artifact="xnio-api"/>
+        </module-def>
+
+        <module-def name="org.jboss.xts">
+            <maven-resource group="org.jboss.jbossts" artifact="jbossxts"/>
+            <maven-resource group="org.jboss.jbossts" artifact="jbossxts-api"/>
         </module-def>
 
         <module-def name="org.jgroups">

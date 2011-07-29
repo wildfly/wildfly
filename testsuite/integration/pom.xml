@@ -38,11 +38,41 @@
 
     <name>JBoss Application Server Test Suite: Integration Tests</name>
 
-    <properties>
-    </properties>
-
     <dependencies>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-webservices-tests-integration</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>build-jars</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>test-compile</phase>
+                        <configuration>
+                            <tasks>
+                                <property name="tests.resources.dir" value="${basedir}/src/test/resources" />
+                                <property name="tests.output.dir" value="${project.build.directory}" />
+                                <ant antfile="src/test/scripts/build-jars.xml">
+                                    <target name="build-jars" />
+                                </ant>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <profiles>
         <profile>
@@ -67,12 +97,11 @@
                                 <include>**/*TestCase.java</include>
                             </includes>
                             <excludes>
-                                <!-- WebService tests are excluded since the default/web profile doesn't support webservices
-                                    These are enabled in the "preview" profile which has webservice support
-                                -->
-                                <exclude>org/jboss/as/testsuite/integration/ws/*TestCase.java</exclude>
-                                <exclude>org/jboss/as/testsuite/integration/wsejb/*TestCase.java</exclude>
+                                <!-- WebService tests are excluded since the default/web profile doesn't support webservices -->
+                                <exclude>org/jboss/as/testsuite/integration/ws/**/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/testsuite/integration/wsejb/**/*TestCase.java</exclude>
                                 <exclude>org/jboss/as/testsuite/integration/xerces/ws/**/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/testsuite/integration/mdb/**/*TestCase.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -112,10 +141,14 @@
                                     </systemPropertyVariables>
                                     <includes>
                                         <!-- Enable the Webservice testcases since "preview" profile has support for webservices -->
-                                        <include>org/jboss/as/testsuite/integration/ws/*TestCase.java</include>
-                                        <include>org/jboss/as/testsuite/integration/wsejb/*TestCase.java</include>
+                                        <include>org/jboss/as/testsuite/integration/ws/**/*TestCase.java</include>
+                                        <include>org/jboss/as/testsuite/integration/wsejb/**/*TestCase.java</include>
                                         <include>org/jboss/as/testsuite/integration/xerces/ws/**/*TestCase.java</include>
+                                        <include>org/jboss/as/testsuite/integration/mdb/**/*TestCase.java</include>
                                     </includes>
+                                    <excludes>
+                                        <exclude>none</exclude>
+                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>

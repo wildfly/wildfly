@@ -28,14 +28,18 @@ import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.hornetq.jms.server.JMSServerManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -48,7 +52,7 @@ import org.jboss.msc.service.ServiceName;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-public class JMSTopicAdd extends AbstractAddStepHandler {
+public class JMSTopicAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -57,26 +61,25 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
      */
     public static ModelNode getOperation(ModelNode address, ModelNode existing) {
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
-        if (existing.hasDefined(ENTRIES)) {
-            op.get(ENTRIES).set(existing.get(ENTRIES));
+        if (existing.hasDefined(ENTRIES.getName())) {
+            op.get(ENTRIES.getName()).set(existing.get(ENTRIES.getName()));
         }
         return op;
     }
 
     public static final JMSTopicAdd INSTANCE = new JMSTopicAdd();
-    private static final String[] NO_BINDINGS = new String[0];
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        if (operation.hasDefined(ENTRIES)) {
-            model.get(ENTRIES).set(operation.get(ENTRIES));
-        }
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        ENTRIES.validateAndSet(operation, model);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        final JMSTopicService service = new JMSTopicService(name, jndiBindings(operation));
+        ENTRIES.validateResolvedOperation(model);
+
+        final JMSTopicService service = new JMSTopicService(name, JndiEntriesAttribute.getJndiBindings(operation));
         final ServiceName serviceName = JMSServices.JMS_TOPIC_BASE.append(name);
         newControllers.add(context.getServiceTarget().addService(serviceName, service)
                 .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
@@ -85,15 +88,9 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
                 .install());
     }
 
-    static String[] jndiBindings(final ModelNode node) {
-        if (node.hasDefined(ENTRIES)) {
-            final Set<String> bindings = new HashSet<String>();
-            for (final ModelNode entry : node.get(ENTRIES).asList()) {
-                bindings.add(entry.asString());
-            }
-            return bindings.toArray(new String[bindings.size()]);
-        }
-        return NO_BINDINGS;
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return MessagingDescriptions.getTopicAdd(locale);
     }
 
 }

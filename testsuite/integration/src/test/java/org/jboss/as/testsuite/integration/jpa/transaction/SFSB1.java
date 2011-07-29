@@ -25,8 +25,6 @@ package org.jboss.as.testsuite.integration.jpa.transaction;
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityManager;
@@ -49,9 +47,7 @@ public class SFSB1 {
     @Resource
     SessionContext sessionContext;
 
-
     // always throws a TransactionRequiredException
-    @TransactionAttribute(TransactionAttributeType.NEVER)
     public void createEmployeeNoTx(String name, String address, int id) {
 
 
@@ -75,13 +71,11 @@ public class SFSB1 {
     }
 
 
-    @TransactionAttribute(TransactionAttributeType.NEVER)
     public Employee getEmployeeNoTX(int id) {
 
         return em.find(Employee.class, id);
     }
 
-    @TransactionAttribute(TransactionAttributeType.NEVER)
     public String queryEmployeeNameNoTX(int id) {
         Query q = em.createQuery("SELECT e.name FROM Employee e");
         try {

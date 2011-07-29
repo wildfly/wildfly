@@ -34,6 +34,7 @@ import org.jboss.as.testsuite.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,6 +65,7 @@ public class SimpleWebserviceEndpointTestCase {
         return war;
     }
 
+    @Ignore(value="[CXF-3675] - enable this test once CXF 2.4.2 is available in AS distro")
     @Test
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.testsuite.integration.ws", "SimpleService");

@@ -26,6 +26,11 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.Locale;
+
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,7 +40,7 @@ import org.jboss.dmr.ModelNode;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-public class JMSTopicRemove extends AbstractRemoveStepHandler {
+public class JMSTopicRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final JMSTopicRemove INSTANCE = new JMSTopicRemove();
 
@@ -47,5 +52,10 @@ public class JMSTopicRemove extends AbstractRemoveStepHandler {
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return MessagingDescriptions.getTopicRemove(locale);
     }
 }

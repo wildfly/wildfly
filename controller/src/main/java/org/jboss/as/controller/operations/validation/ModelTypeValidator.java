@@ -66,7 +66,7 @@ public class ModelTypeValidator implements ParameterValidator {
      * Same as {@code ModelTypeValidator(type, nullable, false, false)}.
      *
      * @param type the valid type. Cannot be {@code null}
-     * @param whether {@link ModelType.UNDEFINED} is allowed
+     * @param nullable whether {@link ModelType#UNDEFINED} is allowed
      */
     public ModelTypeValidator(final ModelType type, final boolean nullable) {
         this(nullable, false, false, type);
@@ -122,7 +122,7 @@ public class ModelTypeValidator implements ParameterValidator {
     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
         if (!value.isDefined()) {
             if (!nullable)
-                throw new OperationFailedException(new ModelNode().set("Parameter " + parameterName + " may not be null ")); //TODO i18n
+                throw new OperationFailedException(new ModelNode().set(parameterName + " may not be null ")); //TODO i18n
         } else  {
             boolean matched = false;
             if (strictType) {

@@ -33,6 +33,8 @@
                 <include-set>
                     <path name="com/sun/script/javascript"/>
                     <path name="sun/misc"/>
+                    <path name="sun/nio"/>
+                    <path name="sun/nio/ch"/>
                     <path name="META-INF/services"/>
                 </include-set>
             </exports>

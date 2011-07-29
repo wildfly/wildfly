@@ -16,8 +16,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -25,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -94,6 +100,8 @@ import org.junit.Before;
  */
 public abstract class AbstractSubsystemTest {
 
+    private static final ThreadLocal<Stack<String>> stack = new ThreadLocal<Stack<String>>();
+
     private final String TEST_NAMESPACE = "urn.org.jboss.test:1.0";
 
     private ExtensionParsingContextImpl parsingContext;
@@ -123,6 +131,8 @@ public abstract class AbstractSubsystemTest {
         parsingContext = new ExtensionParsingContextImpl(mapper);
         mainExtension.initializeParsers(parsingContext);
         addedExtraParsers = false;
+
+        stack.set(new Stack<String>());
     }
 
     @After
@@ -136,10 +146,33 @@ public abstract class AbstractSubsystemTest {
         kernelServices.clear();
         parsingContext = null;
         testParser = null;
+        stack.remove();
     }
 
     protected Extension getMainExtension() {
         return mainExtension;
+    }
+
+    /**
+     * Read the classpath resource with the given name and return its contents as a string. Hook to
+     * for reading in classpath resources for subsequent parsing.
+     *
+     * @param name the name of the resource
+     * @return the contents of the resource as a string
+     * @throws IOException
+     */
+    protected String readResource(final String name) throws IOException {
+
+        URL configURL = getClass().getResource(name);
+        org.junit.Assert.assertNotNull(name + " url is not null", configURL);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(configURL.openStream()));
+        StringWriter writer = new StringWriter();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            writer.write(line);
+        }
+        return writer.toString();
     }
 
 
@@ -296,7 +329,7 @@ public abstract class AbstractSubsystemTest {
      * @throws AssertionFailedError if the models were not the same
      */
     protected void compare(ModelNode node1, ModelNode node2) {
-        Assert.assertEquals(node1.getType(), node2.getType());
+        Assert.assertEquals(getCompareStackAsString() + " types", node1.getType(), node2.getType());
         if (node1.getType() == ModelType.OBJECT) {
             final Set<String> keys1 = node1.keys();
             final Set<String> keys2 = node2.keys();
@@ -308,7 +341,9 @@ public abstract class AbstractSubsystemTest {
                 final ModelNode child2 = node2.get(key);
                 if (child1.isDefined()) {
                     Assert.assertTrue(child1.toString(), child2.isDefined());
+                    stack.get().push(key + "/");
                     compare(child1, child2);
+                    stack.get().pop();
                 } else {
                     Assert.assertFalse(child2.asString(), child2.isDefined());
                 }
@@ -319,22 +354,35 @@ public abstract class AbstractSubsystemTest {
             Assert.assertEquals(list1 + "\n" + list2, list1.size(), list2.size());
 
             for (int i = 0; i < list1.size(); i++) {
+                stack.get().push(i + "/");
                 compare(list1.get(i), list2.get(i));
+                stack.get().pop();
             }
 
         } else if (node1.getType() == ModelType.PROPERTY) {
             Property prop1 = node1.asProperty();
             Property prop2 = node2.asProperty();
             Assert.assertEquals(prop1 + "\n" + prop2, prop1.getName(), prop2.getName());
+            stack.get().push(prop1.getName() + "/");
             compare(prop1.getValue(), prop2.getValue());
+            stack.get().pop();
 
         } else {
             try {
-                Assert.assertEquals("\n\"" + node1.asString() + "\"\n\"" + node2.asString() + "\"\n-----", node2.asString().trim(), node1.asString().trim());
+                Assert.assertEquals(getCompareStackAsString() +
+                        "\n\"" + node1.asString() + "\"\n\"" + node2.asString() + "\"\n-----", node2.asString().trim(), node1.asString().trim());
             } catch (AssertionFailedError error) {
                 throw error;
             }
         }
+    }
+
+    private static String getCompareStackAsString() {
+         String result = "";
+         for (String element : stack.get()) {
+            result += element;
+         }
+        return result;
     }
 
     /**

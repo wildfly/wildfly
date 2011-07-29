@@ -36,8 +36,6 @@ import org.jboss.modules.Module;
 import javax.ejb.Local;
 import javax.ejb.LocalBean;
 import javax.ejb.Remote;
-import java.io.Externalizable;
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +43,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
 
 /**
  * Processes {@link Local @Local} and {@link @Remote} annotation of a session bean and sets up the {@link SessionBeanComponentDescription}
@@ -172,21 +172,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
      * @return A collection of all potential business interfaces
      */
     private static Set<Class<?>> getPotentialBusinessInterfaces(Class<?> sessionBeanClass) {
-        Class<?>[] interfaces = sessionBeanClass.getInterfaces();
-        if (interfaces == null) {
-            return Collections.emptySet();
-        }
-        final Set<Class<?>> potentialBusinessInterfaces = new HashSet<Class<?>>();
-        for (Class<?> klass : interfaces) {
-            // EJB 3.1 FR 4.9.7 bullet 5.3
-            if (klass.equals(Serializable.class) ||
-                    klass.equals(Externalizable.class) ||
-                    klass.getName().startsWith("javax.ejb.")) {
-                continue;
-            }
-            potentialBusinessInterfaces.add(klass);
-        }
-        return potentialBusinessInterfaces;
+        return getPotentialViewInterfaces(sessionBeanClass);
     }
 
     /**

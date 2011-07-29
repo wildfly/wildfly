@@ -57,7 +57,6 @@ import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.annotation.javaee.Icon;
-import org.jboss.as.clustering.web.ClusteringNotSupportedException;
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -280,7 +279,7 @@ public class JBossContextConfig extends ContextConfig {
             try {
                 context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.context.getParent(), metaData, this.deploymentUnitContext.getServiceRegistry()));
                 context.setDistributable(true);
-            } catch (ClusteringNotSupportedException e) {
+            } catch (Exception e) {
                 log.warn("Clustering not supported, falling back to non-clustered session manager.", e);
             }
         }

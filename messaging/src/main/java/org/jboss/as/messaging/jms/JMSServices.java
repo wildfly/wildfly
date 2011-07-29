@@ -22,11 +22,49 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.messaging.CommonAttributes.AUTO_GROUP;
+import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_ACK;
+import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_DURABLE_SEND;
+import static org.jboss.as.messaging.CommonAttributes.BLOCK_ON_NON_DURABLE_SEND;
+import static org.jboss.as.messaging.CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT;
+import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD;
+import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
+import static org.jboss.as.messaging.CommonAttributes.CONFIRMATION_WINDOW_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.CONSUMER_MAX_RATE;
+import static org.jboss.as.messaging.CommonAttributes.CONSUMER_WINDOW_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_INITIAL_WAIT_TIMEOUT;
+import static org.jboss.as.messaging.CommonAttributes.DUPS_OK_BATCH_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION;
+import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
+import static org.jboss.as.messaging.CommonAttributes.GROUP_ID;
+import static org.jboss.as.messaging.CommonAttributes.JNDI_PARAMS;
+import static org.jboss.as.messaging.CommonAttributes.LOAD_BALANCING_CLASS_NAME;
+import static org.jboss.as.messaging.CommonAttributes.MAX_RETRY_INTERVAL;
+import static org.jboss.as.messaging.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.PRE_ACK;
+import static org.jboss.as.messaging.CommonAttributes.PRODUCER_MAX_RATE;
+import static org.jboss.as.messaging.CommonAttributes.PRODUCER_WINDOW_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.RECONNECT_ATTEMPTS;
+import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL;
+import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.as.messaging.CommonAttributes.SETUP_ATTEMPTS;
+import static org.jboss.as.messaging.CommonAttributes.SETUP_INTERVAL;
+import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_BATCH_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.USE_GLOBAL_POOLS;
+import static org.jboss.as.messaging.CommonAttributes.USE_JNDI;
+import static org.jboss.as.messaging.CommonAttributes.USE_LOCAL_TX;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.messaging.CommonAttributes.*;
 
 /**
  * @author Emanuel Muckenhuber
@@ -45,25 +83,26 @@ public class JMSServices {
     static String BLOCK_ON_ACK_METHOD = "blockOnAcknowledge";
     static String BLOCK_ON_DURABLE_SEND_METHOD = "blockOnDurableSend";
     static String BLOCK_ON_NON_DURABLE_SEND_METHOD = "blockOnNonDurableSend";
-    static String CACHE_LARGE_MESSAGE_CLIENT_METHOD = "cacheLargeMessageClient";
+    static String CACHE_LARGE_MESSAGE_CLIENT_METHOD = "cacheLargeMessageClient"; // TODO HornetQResourceAdapter does not have this method
     static String CALL_TIMEOUT_METHOD = "callTimeout";
     static String CLIENT_FAILURE_CHECK_PERIOD_METHOD = "clientFailureCheckPeriod";
     static String CLIENT_ID_METHOD = "clientId";
     static String CONFIRMATION_WINDOW_SIZE_METHOD = "confirmationWindowSize";
-    static String CONNECTION_TTL_METHOD = "connectionTtl";
+    static String CONNECTION_TTL_METHOD = "connectionTTL";
     static String CONSUMER_MAX_RATE_METHOD = "consumerMaxRate";
     static String CONSUMER_WINDOW_SIZE_METHOD = "consumerWindowSize";
     static String DISCOVERY_GROUP_NAME_METHOD = "discoveryGroupName";
     static String DISCOVERY_INITIAL_WAIT_TIMEOUT_METHOD = "discoveryInitialWaitTimeout";
-    static String DUPS_OK_BATCH_SIZE_METHOD = "dupsOkBatchSize";
-    static String FAILOVER_ON_INITIAL_CONNECTION_METHOD = "failoverOnInitialConnection";
-    static String FAILOVER_ON_SERVER_SHUTDOWN_METHOD = "failoverOnServerShutdown";
+    static String DUPS_OK_BATCH_SIZE_METHOD = "dupsOKBatchSize";
+    static String FAILOVER_ON_INITIAL_CONNECTION_METHOD = "failoverOnInitialConnection";  // TODO HornetQResourceAdapter does not have this method
+    static String FAILOVER_ON_SERVER_SHUTDOWN_METHOD = "failoverOnServerShutdown";  // TODO HornetQResourceAdapter does not have this method
     static String GROUP_ID_METHOD = "groupId";
-    static String MAX_RETRY_INTERVAL_METHOD = "maxRetryInterval";
+    static String LOAD_BALANCE_POLICY_CLASS_NAME_METHOD = "loadBalancePolicyClassName";
+    static String MAX_RETRY_INTERVAL_METHOD = "maxRetryInterval";    // TODO HornetQResourceAdapter does not have this method
     static String MIN_LARGE_MESSAGE_SIZE_METHOD = "minLargeMessageSize";
     static String PRE_ACK_METHOD = "preAcknowledge";
     static String PRODUCER_MAX_RATE_METHOD = "producerMaxRate";
-    static String PRODUCER_WINDOW_SIZE_METHOD = "producerWindowSize";
+    static String PRODUCER_WINDOW_SIZE_METHOD = "producerWindowSize"; // TODO HornetQResourceAdapter does not have this method
     static String RECONNECT_ATTEMPTS_METHOD = "reconnectAttempts";
     static String RETRY_INTERVAL_METHOD = "retryInterval";
     static String RETRY_INTERVAL_MULTIPLIER_METHOD = "retryIntervalMultiplier";
@@ -77,172 +116,161 @@ public class JMSServices {
     static String SETUP_ATTEMPTS_METHOD = "setupAttempts";
     static String SETUP_INTERVAL_METHOD = "setupInterval";
 
-    public static NodeAttribute[] CONNECTION_FACTORY_ATTRS = new NodeAttribute[] {
+    public static AttributeDefinition[] CONNECTION_FACTORY_ATTRS = new AttributeDefinition[] {
         //Do these 2 most frequently used ones out of alphabetical order
-        new NodeAttribute(CONNECTOR, ModelType.OBJECT, false),   //<------
-        new NodeAttribute(ENTRIES, ModelType.LIST, ModelType.STRING, false),
+        new SimpleAttributeDefinition(CONNECTOR, ModelType.OBJECT, true),   //<------
+        JndiEntriesAttribute.DESTINATION,
 
-        new NodeAttribute(AUTO_GROUP, ModelType.BOOLEAN, false),
-        new NodeAttribute(BLOCK_ON_ACK, ModelType.BOOLEAN, false),
-        new NodeAttribute(BLOCK_ON_DURABLE_SEND, ModelType.BOOLEAN, false),
-        new NodeAttribute(BLOCK_ON_NON_DURABLE_SEND, ModelType.BOOLEAN, false),
-        new NodeAttribute(CACHE_LARGE_MESSAGE_CLIENT, ModelType.BOOLEAN, false),
-        new NodeAttribute(CALL_TIMEOUT, ModelType.LONG, false),
-        new NodeAttribute(CLIENT_FAILURE_CHECK_PERIOD, ModelType.LONG, false),
-        new NodeAttribute(CLIENT_ID, ModelType.STRING, false),
-        new NodeAttribute(CONFIRMATION_WINDOW_SIZE, ModelType.INT, false),
-        new NodeAttribute(CONNECTION_TTL, ModelType.LONG, false),
-        new NodeAttribute(CONSUMER_MAX_RATE, ModelType.INT, false),
-        new NodeAttribute(CONSUMER_WINDOW_SIZE, ModelType.INT, false),
-        new NodeAttribute(DISCOVERY_GROUP_NAME, ModelType.STRING, false),
-        new NodeAttribute(DISCOVERY_INITIAL_WAIT_TIMEOUT, ModelType.LONG, false),
-        new NodeAttribute(DUPS_OK_BATCH_SIZE, ModelType.INT, false),
-        new NodeAttribute(FAILOVER_ON_INITIAL_CONNECTION, ModelType.BOOLEAN, false),
-        new NodeAttribute(FAILOVER_ON_SERVER_SHUTDOWN, ModelType.BOOLEAN, false),
-        new NodeAttribute(GROUP_ID, ModelType.STRING, false),
-        new NodeAttribute(MAX_RETRY_INTERVAL, ModelType.LONG, false),
-        new NodeAttribute(MIN_LARGE_MESSAGE_SIZE, ModelType.LONG, false),
-        new NodeAttribute(PRE_ACK, ModelType.BOOLEAN, false),
-        new NodeAttribute(PRODUCER_MAX_RATE, ModelType.INT, false),
-        new NodeAttribute(PRODUCER_WINDOW_SIZE, ModelType.INT, false),
-        new NodeAttribute(RECONNECT_ATTEMPTS, ModelType.INT, false),
-        new NodeAttribute(RETRY_INTERVAL, ModelType.LONG, false),
-        new NodeAttribute(RETRY_INTERVAL_MULTIPLIER, ModelType.BIG_DECIMAL, false),
-        new NodeAttribute(SCHEDULED_THREAD_POOL_MAX_SIZE, ModelType.INT, false),
-        new NodeAttribute(THREAD_POOL_MAX_SIZE, ModelType.INT, false),
-        new NodeAttribute(TRANSACTION_BATCH_SIZE, ModelType.INT, false),
-        new NodeAttribute(USE_GLOBAL_POOLS, ModelType.BOOLEAN, false)};
+        AUTO_GROUP,
+        BLOCK_ON_ACK,
+        BLOCK_ON_DURABLE_SEND,
+        BLOCK_ON_NON_DURABLE_SEND,
+        CACHE_LARGE_MESSAGE_CLIENT,
+        CALL_TIMEOUT,
+        CLIENT_FAILURE_CHECK_PERIOD,
+        CLIENT_ID,
+        CONFIRMATION_WINDOW_SIZE,
+        CONNECTION_TTL,
+        CONSUMER_MAX_RATE,
+        CONSUMER_WINDOW_SIZE,
+        DISCOVERY_GROUP_NAME,
+        DISCOVERY_INITIAL_WAIT_TIMEOUT, // TODO not used in ConnectionFactoryConfiguration
+        DUPS_OK_BATCH_SIZE,
+        FAILOVER_ON_INITIAL_CONNECTION,
+        FAILOVER_ON_SERVER_SHUTDOWN, // TODO not used in ConnectionFactoryConfiguration
+        GROUP_ID,
+        LOAD_BALANCING_CLASS_NAME,
+        MAX_RETRY_INTERVAL,
+        MIN_LARGE_MESSAGE_SIZE,
+        PRE_ACK,
+        PRODUCER_MAX_RATE,
+        PRODUCER_WINDOW_SIZE,
+        RECONNECT_ATTEMPTS,
+        RETRY_INTERVAL,
+        RETRY_INTERVAL_MULTIPLIER,
+        CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE,
+        CONNECTION_THREAD_POOL_MAX_SIZE,
+        TRANSACTION_BATCH_SIZE,
+        USE_GLOBAL_POOLS
+    };
 
-    public static NodeAttribute[] POOLED_CONNECTION_FACTORY_ATTRS = new NodeAttribute[] {
+    public static AttributeDefinition[] POOLED_CONNECTION_FACTORY_ATTRS = new AttributeDefinition[] {
         //Do these 2 most frequently used ones out of alphabetical order
-        new NodeAttribute(CONNECTOR, ModelType.OBJECT, false),   //<------
-        new NodeAttribute(ENTRIES, ModelType.LIST, ModelType.STRING, false),
+        new SimpleAttributeDefinition(CONNECTOR, ModelType.OBJECT, true),   //<------
+        JndiEntriesAttribute.CONNECTION_FACTORY,
 
-        new NodeAttribute(AUTO_GROUP, ModelType.BOOLEAN, false),
-        new NodeAttribute(BLOCK_ON_ACK, ModelType.BOOLEAN, false),
-        new NodeAttribute(BLOCK_ON_DURABLE_SEND, ModelType.BOOLEAN, false),
-        new NodeAttribute(BLOCK_ON_NON_DURABLE_SEND, ModelType.BOOLEAN, false),
-        new NodeAttribute(CACHE_LARGE_MESSAGE_CLIENT, ModelType.BOOLEAN, false),
-        new NodeAttribute(CALL_TIMEOUT, ModelType.LONG, false),
-        new NodeAttribute(CLIENT_FAILURE_CHECK_PERIOD, ModelType.LONG, false),
-        new NodeAttribute(CLIENT_ID, ModelType.STRING, false),
-        new NodeAttribute(CONFIRMATION_WINDOW_SIZE, ModelType.INT, false),
-        new NodeAttribute(CONNECTION_TTL, ModelType.LONG, false),
-        new NodeAttribute(CONSUMER_MAX_RATE, ModelType.INT, false),
-        new NodeAttribute(CONSUMER_WINDOW_SIZE, ModelType.INT, false),
-        new NodeAttribute(DISCOVERY_GROUP_NAME, ModelType.STRING, false),
-        new NodeAttribute(DISCOVERY_INITIAL_WAIT_TIMEOUT, ModelType.LONG, false),
-        new NodeAttribute(DUPS_OK_BATCH_SIZE, ModelType.INT, false),
-        new NodeAttribute(FAILOVER_ON_INITIAL_CONNECTION, ModelType.BOOLEAN, false),
-        new NodeAttribute(FAILOVER_ON_SERVER_SHUTDOWN, ModelType.BOOLEAN, false),
-        new NodeAttribute(GROUP_ID, ModelType.STRING, false),
-        new NodeAttribute(MAX_RETRY_INTERVAL, ModelType.LONG, false),
-        new NodeAttribute(MIN_LARGE_MESSAGE_SIZE, ModelType.LONG, false),
-        new NodeAttribute(PRE_ACK, ModelType.BOOLEAN, false),
-        new NodeAttribute(PRODUCER_MAX_RATE, ModelType.INT, false),
-        new NodeAttribute(PRODUCER_WINDOW_SIZE, ModelType.INT, false),
-        new NodeAttribute(RECONNECT_ATTEMPTS, ModelType.INT, false),
-        new NodeAttribute(RETRY_INTERVAL, ModelType.LONG, false),
-        new NodeAttribute(RETRY_INTERVAL_MULTIPLIER, ModelType.BIG_DECIMAL, false),
-        new NodeAttribute(SCHEDULED_THREAD_POOL_MAX_SIZE, ModelType.INT, false),
-        new NodeAttribute(THREAD_POOL_MAX_SIZE, ModelType.INT, false),
-        new NodeAttribute(TRANSACTION_BATCH_SIZE, ModelType.INT, false),
-        new NodeAttribute(USE_GLOBAL_POOLS, ModelType.BOOLEAN, false),
-        new NodeAttribute(USE_JNDI, ModelType.BOOLEAN, false),
-        new NodeAttribute(JNDI_PARAMS, ModelType.STRING, false),
-        new NodeAttribute(USE_LOCAL_TX, ModelType.BOOLEAN, false),
-        new NodeAttribute(SETUP_ATTEMPTS, ModelType.STRING, false),
-        new NodeAttribute(SETUP_INTERVAL, ModelType.STRING, false)};
+        AUTO_GROUP,
+        BLOCK_ON_ACK,
+        BLOCK_ON_DURABLE_SEND,
+        BLOCK_ON_NON_DURABLE_SEND,
+        CACHE_LARGE_MESSAGE_CLIENT,   // TODO HornetQResourceAdapter does not have this method
+        CALL_TIMEOUT,
+        CLIENT_FAILURE_CHECK_PERIOD,   // TODO HornetQResourceAdapter does not have this method
+        CLIENT_ID,
+        CONFIRMATION_WINDOW_SIZE,
+        CONNECTION_TTL,
+        CONSUMER_MAX_RATE,
+        CONSUMER_WINDOW_SIZE,
+        DISCOVERY_GROUP_NAME,
+        DISCOVERY_INITIAL_WAIT_TIMEOUT,
+        DUPS_OK_BATCH_SIZE,
+        FAILOVER_ON_INITIAL_CONNECTION,  // TODO HornetQResourceAdapter does not have this method
+        FAILOVER_ON_SERVER_SHUTDOWN,   // TODO HornetQResourceAdapter does not have this method
+        GROUP_ID,
+        LOAD_BALANCING_CLASS_NAME,
+        MAX_RETRY_INTERVAL,          // TODO HornetQResourceAdapter does not have this method
+        MIN_LARGE_MESSAGE_SIZE,
+        PRE_ACK,
+        PRODUCER_MAX_RATE,
+        PRODUCER_WINDOW_SIZE,     // TODO HornetQResourceAdapter does not have this method
+        RECONNECT_ATTEMPTS,
+        RETRY_INTERVAL,
+        RETRY_INTERVAL_MULTIPLIER,
+        CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE,
+        CONNECTION_THREAD_POOL_MAX_SIZE,
+        TRANSACTION_BATCH_SIZE,
+        USE_GLOBAL_POOLS,
+        USE_JNDI,
+        JNDI_PARAMS,
+        USE_LOCAL_TX,
+        SETUP_ATTEMPTS,
+        SETUP_INTERVAL
+    };
 
     static PooledCFAttribute[] POOLED_CONNECTION_FACTORY_METHOD_ATTRS = new PooledCFAttribute[] {
-        new PooledCFAttribute(AUTO_GROUP, Boolean.class.getName(), AUTO_GROUP_METHOD),
-        new PooledCFAttribute(BLOCK_ON_ACK, Boolean.class.getName(), BLOCK_ON_ACK_METHOD),
-        new PooledCFAttribute(BLOCK_ON_DURABLE_SEND, Boolean.class.getName(), BLOCK_ON_DURABLE_SEND_METHOD),
-        new PooledCFAttribute(BLOCK_ON_NON_DURABLE_SEND, Boolean.class.getName(), BLOCK_ON_NON_DURABLE_SEND_METHOD),
-        new PooledCFAttribute(CACHE_LARGE_MESSAGE_CLIENT, Boolean.class.getName(), CACHE_LARGE_MESSAGE_CLIENT_METHOD),
-        new PooledCFAttribute(CALL_TIMEOUT, Long.class.getName(), CALL_TIMEOUT_METHOD),
-        new PooledCFAttribute(CLIENT_FAILURE_CHECK_PERIOD, Long.class.getName(), CLIENT_FAILURE_CHECK_PERIOD_METHOD),
-        new PooledCFAttribute(CLIENT_ID, String.class.getName(), CLIENT_ID_METHOD),
-        new PooledCFAttribute(CONFIRMATION_WINDOW_SIZE, Integer.class.getName(), CONFIRMATION_WINDOW_SIZE_METHOD),
-        new PooledCFAttribute(CONNECTION_TTL, Long.class.getName(), CONNECTION_TTL_METHOD),
-        new PooledCFAttribute(CONSUMER_MAX_RATE, Integer.class.getName(), CONSUMER_MAX_RATE_METHOD),
-        new PooledCFAttribute(CONSUMER_WINDOW_SIZE, Integer.class.getName(), CONSUMER_WINDOW_SIZE_METHOD),
-        new PooledCFAttribute(DISCOVERY_GROUP_NAME, String.class.getName(), DISCOVERY_GROUP_NAME_METHOD),
-        new PooledCFAttribute(DISCOVERY_INITIAL_WAIT_TIMEOUT, Long.class.getName(), DISCOVERY_INITIAL_WAIT_TIMEOUT_METHOD),
-        new PooledCFAttribute(DUPS_OK_BATCH_SIZE, Integer.class.getName(), DUPS_OK_BATCH_SIZE_METHOD),
-        new PooledCFAttribute(FAILOVER_ON_INITIAL_CONNECTION, Boolean.class.getName(), FAILOVER_ON_INITIAL_CONNECTION_METHOD),
-        new PooledCFAttribute(FAILOVER_ON_SERVER_SHUTDOWN, Boolean.class.getName(), FAILOVER_ON_SERVER_SHUTDOWN_METHOD),
-        new PooledCFAttribute(GROUP_ID, String.class.getName(), GROUP_ID_METHOD),
-        new PooledCFAttribute(MAX_RETRY_INTERVAL, Long.class.getName(), MAX_RETRY_INTERVAL_METHOD),
-        new PooledCFAttribute(MIN_LARGE_MESSAGE_SIZE, Long.class.getName(), MIN_LARGE_MESSAGE_SIZE_METHOD),
-        new PooledCFAttribute(PRE_ACK, Boolean.class.getName(), PRE_ACK_METHOD),
-        new PooledCFAttribute(PRODUCER_MAX_RATE, Integer.class.getName(), PRODUCER_MAX_RATE_METHOD),
-        new PooledCFAttribute(PRODUCER_WINDOW_SIZE, Integer.class.getName(), PRODUCER_WINDOW_SIZE_METHOD),
-        new PooledCFAttribute(RECONNECT_ATTEMPTS, Integer.class.getName(), RECONNECT_ATTEMPTS_METHOD),
-        new PooledCFAttribute(RETRY_INTERVAL, Long.class.getName(), RETRY_INTERVAL_METHOD),
-        new PooledCFAttribute(RETRY_INTERVAL_MULTIPLIER, Double.class.getName(), RETRY_INTERVAL_MULTIPLIER_METHOD),
-        new PooledCFAttribute(SCHEDULED_THREAD_POOL_MAX_SIZE, Integer.class.getName(), SCHEDULED_THREAD_POOL_MAX_SIZE_METHOD),
-        new PooledCFAttribute(THREAD_POOL_MAX_SIZE, Integer.class.getName(), THREAD_POOL_MAX_SIZE_METHOD),
-        new PooledCFAttribute(TRANSACTION_BATCH_SIZE, Integer.class.getName(), TRANSACTION_BATCH_SIZE_METHOD),
-        new PooledCFAttribute(USE_GLOBAL_POOLS, Boolean.class.getName(), USE_GLOBAL_POOLS_METHOD),
-        new PooledCFAttribute(USE_JNDI, Boolean.class.getName(), USE_JNDI_METHOD),
-        new PooledCFAttribute(JNDI_PARAMS, String.class.getName(), JNDI_PARAMS_METHOD),
-        new PooledCFAttribute(USE_LOCAL_TX, Boolean.class.getName(), USE_LOCAL_TX_METHOD),
-        new PooledCFAttribute(SETUP_ATTEMPTS, Integer.class.getName(), SETUP_ATTEMPTS_METHOD),
-        new PooledCFAttribute(SETUP_INTERVAL, Long.class.getName(), SETUP_INTERVAL_METHOD)};
-
-    public static class NodeAttribute {
-        private final String name;
-        private final ModelType type;
-        private final ModelType valueType;
-        private final boolean required;
-
-        NodeAttribute(String name, ModelType type, boolean required) {
-            this(name, type, null, required);
-        }
-
-
-        NodeAttribute(String name, ModelType type, ModelType valueType, boolean required) {
-            this.name = name;
-            this.type = type;
-            this.required = required;
-            this.valueType = valueType;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public ModelType getType() {
-            return type;
-        }
-
-        public ModelType getValueType() {
-            return valueType;
-        }
-
-        public boolean isRequired() {
-            return required;
-        }
-    }
+        new PooledCFAttribute(AUTO_GROUP, AUTO_GROUP_METHOD),
+        new PooledCFAttribute(BLOCK_ON_ACK, BLOCK_ON_ACK_METHOD),
+        new PooledCFAttribute(BLOCK_ON_DURABLE_SEND, BLOCK_ON_DURABLE_SEND_METHOD),
+        new PooledCFAttribute(BLOCK_ON_NON_DURABLE_SEND, BLOCK_ON_NON_DURABLE_SEND_METHOD),
+        // TODO HornetQResourceAdapter does not have this method
+        //new PooledCFAttribute(CACHE_LARGE_MESSAGE_CLIENT, CACHE_LARGE_MESSAGE_CLIENT_METHOD),
+        new PooledCFAttribute(CALL_TIMEOUT, CALL_TIMEOUT_METHOD),
+        // TODO HornetQResourceAdapter does not have this method
+        //new PooledCFAttribute(CLIENT_FAILURE_CHECK_PERIOD, CLIENT_FAILURE_CHECK_PERIOD_METHOD),
+        new PooledCFAttribute(CLIENT_ID, CLIENT_ID_METHOD),
+        new PooledCFAttribute(CONFIRMATION_WINDOW_SIZE, CONFIRMATION_WINDOW_SIZE_METHOD),
+        new PooledCFAttribute(CONNECTION_TTL, CONNECTION_TTL_METHOD),
+        new PooledCFAttribute(CONSUMER_MAX_RATE, CONSUMER_MAX_RATE_METHOD),
+        new PooledCFAttribute(CONSUMER_WINDOW_SIZE, CONSUMER_WINDOW_SIZE_METHOD),
+        new PooledCFAttribute(DISCOVERY_GROUP_NAME, DISCOVERY_GROUP_NAME_METHOD),
+        new PooledCFAttribute(DISCOVERY_INITIAL_WAIT_TIMEOUT, DISCOVERY_INITIAL_WAIT_TIMEOUT_METHOD),
+        new PooledCFAttribute(DUPS_OK_BATCH_SIZE, DUPS_OK_BATCH_SIZE_METHOD),
+        // TODO HornetQResourceAdapter does not have this method
+        //new PooledCFAttribute(FAILOVER_ON_INITIAL_CONNECTION, FAILOVER_ON_INITIAL_CONNECTION_METHOD),
+        // TODO HornetQResourceAdapter does not have this method
+        // new PooledCFAttribute(FAILOVER_ON_SERVER_SHUTDOWN, FAILOVER_ON_SERVER_SHUTDOWN_METHOD),
+        new PooledCFAttribute(GROUP_ID, GROUP_ID_METHOD),
+        new PooledCFAttribute(LOAD_BALANCING_CLASS_NAME, LOAD_BALANCE_POLICY_CLASS_NAME_METHOD),
+        // TODO HornetQResourceAdapter does not have this method
+        //new PooledCFAttribute(MAX_RETRY_INTERVAL, MAX_RETRY_INTERVAL_METHOD),
+        new PooledCFAttribute(MIN_LARGE_MESSAGE_SIZE, MIN_LARGE_MESSAGE_SIZE_METHOD),
+        new PooledCFAttribute(PRE_ACK, PRE_ACK_METHOD),
+        new PooledCFAttribute(PRODUCER_MAX_RATE, PRODUCER_MAX_RATE_METHOD),
+        // TODO HornetQResourceAdapter does not have this method
+        //new PooledCFAttribute(PRODUCER_WINDOW_SIZE, PRODUCER_WINDOW_SIZE_METHOD),
+        new PooledCFAttribute(RECONNECT_ATTEMPTS, RECONNECT_ATTEMPTS_METHOD),
+        new PooledCFAttribute(RETRY_INTERVAL, RETRY_INTERVAL_METHOD),
+        new PooledCFAttribute(RETRY_INTERVAL_MULTIPLIER, RETRY_INTERVAL_MULTIPLIER_METHOD),
+        new PooledCFAttribute(CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE, SCHEDULED_THREAD_POOL_MAX_SIZE_METHOD),
+        new PooledCFAttribute(CONNECTION_THREAD_POOL_MAX_SIZE, THREAD_POOL_MAX_SIZE_METHOD),
+        new PooledCFAttribute(TRANSACTION_BATCH_SIZE, TRANSACTION_BATCH_SIZE_METHOD),
+        new PooledCFAttribute(USE_GLOBAL_POOLS, USE_GLOBAL_POOLS_METHOD),
+        new PooledCFAttribute(USE_JNDI, USE_JNDI_METHOD),
+        new PooledCFAttribute(JNDI_PARAMS, JNDI_PARAMS_METHOD),
+        new PooledCFAttribute(USE_LOCAL_TX, USE_LOCAL_TX_METHOD),
+        new PooledCFAttribute(SETUP_ATTEMPTS, SETUP_ATTEMPTS_METHOD),
+        new PooledCFAttribute(SETUP_INTERVAL, SETUP_INTERVAL_METHOD)
+    };
 
     static class PooledCFAttribute {
-        private String name;
-        private String classType;
+        private final AttributeDefinition def;
         private String methodName;
 
-        public PooledCFAttribute(String name, String classType, String methodName) {
-            this.name = name;
-            this.classType = classType;
+        public PooledCFAttribute(final AttributeDefinition def, final String methodName) {
+            this.def = def;
             this.methodName = methodName;
         }
 
         public String getName() {
-            return name;
+            return def.getName();
         }
 
         public String getClassType() {
-            return classType;
+            switch (def.getType()) {
+                case BOOLEAN:
+                    return Boolean.class.getName();
+                case BIG_DECIMAL:
+                    return Double.class.getName();
+                case LONG:
+                    return Long.class.getName();
+                case INT:
+                    return Integer.class.getName();
+                case STRING:
+                    return String.class.getName();
+                default:
+                    throw new IllegalStateException(String.format("Attribute %s has unexpected type %s", def.getName(), def.getType()));
+
+            }
         }
 
         public String getMethodName() {

@@ -34,6 +34,10 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
@@ -45,22 +49,24 @@ class RootLoggerAdd implements OperationStepHandler {
     static final String OPERATION_NAME = "set-root-logger";
 
     public void execute(OperationContext context, ModelNode operation) {
-        final String level = operation.require(CommonAttributes.LEVEL).asString();
-        final ModelNode handlers = operation.get(CommonAttributes.HANDLERS);
+        final String level = operation.require(LEVEL).asString();
+        final ModelNode handlers = operation.get(HANDLERS);
 
         final ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-        subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.LEVEL).set(level);
-        subModel.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS).set(handlers);
+        subModel.get(ROOT_LOGGER, LEVEL).set(level);
+        subModel.get(ROOT_LOGGER, HANDLERS).set(handlers);
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
+                @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    LoggingValidators.validate(operation);
                     final ServiceTarget target = context.getServiceTarget();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     try {
 
                         final RootLoggerService service = new RootLoggerService();
-                        service.setLevel(Level.parse(level));
+                        if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(level));
                         target.addService(LogServices.ROOT_LOGGER, service)
                                 .addListener(verificationHandler)
                                 .setInitialMode(ServiceController.Mode.ACTIVE)

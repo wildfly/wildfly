@@ -26,10 +26,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.Locale;
+
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
@@ -41,7 +45,7 @@ import org.jboss.dmr.Property;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-class MessagingSubsystemDescribeHandler implements OperationStepHandler {
+class MessagingSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
 
     static final MessagingSubsystemDescribeHandler INSTANCE = new MessagingSubsystemDescribeHandler();
 
@@ -53,6 +57,12 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler {
         subsystemAdd.get(OP).set(ADD);
         subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
         //
+        for(final AttributeDefinition attribute : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
+            String attrName = attribute.getName();
+            if(subModel.hasDefined(attrName)) {
+                subsystemAdd.get(attrName).set(subModel.get(attrName));
+            }
+        }
         for(final String attribute : MessagingSubsystemProviders.MESSAGING_ROOT_ATTRIBUTES) {
             if(subModel.hasDefined(attribute)) {
                 subsystemAdd.get(attribute).set(subModel.get(attribute));
@@ -89,8 +99,20 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler {
                 result.add(PooledConnectionFactoryAdd.getAddOperation(address, property.getValue()));
             }
         }
+        if(subModel.hasDefined(CommonAttributes.DIVERT)) {
+            for(final Property property : subModel.get(CommonAttributes.DIVERT).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(CommonAttributes.DIVERT, property.getName());
+                result.add(DivertAdd.getAddOperation(address, property.getValue()));
+            }
+        }
 
         context.completeStep();
+    }
+
+    public ModelNode getModelDescription(Locale locale) {
+        // Private operation; no real description needed
+        return new ModelNode();
     }
 
 }

@@ -21,7 +21,16 @@
  */
 package org.jboss.as.ejb3.component;
 
+import org.jboss.as.ejb3.inflow.EndpointDeployer;
 import org.jboss.as.security.service.SimpleSecurityManager;
+import org.jboss.jca.common.api.metadata.ra.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
+import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.jca.core.spi.rar.Activation;
+import org.jboss.jca.core.spi.rar.MessageListener;
+import org.jboss.jca.core.spi.rar.NotFoundException;
+import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -29,23 +38,138 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.util.propertyeditor.PropertyEditors;
 
+import javax.resource.ResourceException;
+import javax.resource.spi.ActivationSpec;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
+import java.beans.IntrospectionException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * The gas, water & energy for the EJB subsystem.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author Jaikiran Pai
  */
-public class EJBUtilities implements Service<EJBUtilities> {
+public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
+
+    private static final Logger logger = Logger.getLogger("org.jboss.ejb3");
+
+    private static final Map<String, String> knownRar = new HashMap<String, String>(1);
+
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "utilities");
 
+    private final InjectedValue<MetadataRepository> mdrValue = new InjectedValue<MetadataRepository>();
+    private final InjectedValue<ResourceAdapterRepository> resourceAdapterRepositoryValue = new InjectedValue<ResourceAdapterRepository>();
     private final InjectedValue<SimpleSecurityManager> securityManagerValue = new InjectedValue<SimpleSecurityManager>();
     private final InjectedValue<TransactionManager> transactionManagerValue = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<UserTransaction> userTransactionValue = new InjectedValue<UserTransaction>();
+
+    static {
+        knownRar.put("hornetq-ra", "org.hornetq.ra");
+        knownRar.put("hornetq-ra.rar", "org.hornetq.ra");
+    }
+
+    public ActivationSpec createActivationSpecs(final String resourceAdapterName, final Class<?> messageListenerInterface,
+                                                final Properties activationConfigProperties, final ClassLoader classLoader) {
+        try {
+            ActivationSpec activationSpec = null;
+            boolean raFound = false;
+            String packageName = knownRar.get(resourceAdapterName);
+            if (packageName != null) {
+                raFound = true;
+            }
+
+            if (!raFound) {
+                for (String id : getMdr().getResourceAdapters()) {
+                    if (getMdr().getRoot(id).getName().indexOf(resourceAdapterName) != -1) {
+                        if (!raFound) {
+                            ResourceAdapter ra = getMdr().getResourceAdapter(id).getResourceadapter();
+                            if (ra instanceof ResourceAdapter1516
+                                    && ((ResourceAdapter1516) ra).getInboundResourceadapter() != null) {
+                                String className = ((ResourceAdapter1516) ra).getResourceadapterClass();
+                                if (className.lastIndexOf(".") != -1)
+                                    packageName = className.substring(0, className.lastIndexOf("."));
+                                else
+                                    packageName = "";
+                                raFound = true;
+                            }
+                        } else {
+                            throw new IllegalStateException("found more than one RA registered as " + resourceAdapterName);
+                        }
+                    }
+                }
+            }
+            if (!raFound) {
+                throw new IllegalStateException("Not found RA registered as " + resourceAdapterName);
+            }
+            Set<String> ids = getResourceAdapterRepository().getResourceAdapters(messageListenerInterface);
+            List<MessageListener> listeners = null;
+            boolean found = false;
+            for (String id : ids) {
+                if (id.startsWith(packageName)) {
+                    if (!found) {
+                        listeners = getResourceAdapterRepository().getMessageListeners(id);
+                        found = true;
+                    } else {
+                        throw new IllegalStateException("found more than one RA registered " + resourceAdapterName);
+                    }
+                }
+            }
+
+            if (found) {
+
+                final MessageListener messageListener = listeners.get(0);
+                final Activation activation = messageListener.getActivation();
+                // filter out the activation config properties, specified on the MDB, which aren't accepted by the resource
+                // adaptor
+                final Properties validActivationConfigProps = this.filterUnknownActivationConfigProperties(resourceAdapterName, activation, activationConfigProperties);
+                // now set the activation config properties on the ActivationSpec
+                activationSpec = activation.createInstance();
+                PropertyEditors.mapJavaBeanProperties(activationSpec, validActivationConfigProps);
+
+            }
+            return activationSpec;
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (ResourceException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (NotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IntrospectionException e) {
+            throw new RuntimeException(e);
+        } catch (org.jboss.jca.core.spi.mdr.NotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public MetadataRepository getMdr() {
+        return mdrValue.getOptionalValue();
+    }
+
+    public Injector<MetadataRepository> getMdrInjector() {
+        return mdrValue;
+    }
+
+    public ResourceAdapterRepository getResourceAdapterRepository() {
+        return resourceAdapterRepositoryValue.getOptionalValue();
+    }
+
+    public Injector<ResourceAdapterRepository> getResourceAdapterRepositoryInjector() {
+        return resourceAdapterRepositoryValue;
+    }
 
     public SimpleSecurityManager getSecurityManager() {
         final SimpleSecurityManager securityManager = securityManagerValue.getOptionalValue();
@@ -97,5 +221,36 @@ public class EJBUtilities implements Service<EJBUtilities> {
 
     @Override
     public void stop(StopContext context) {
+    }
+
+    /**
+     * Removes activation config properties which aren't recognized by the resource adapter <code>activation</code>, from the
+     * passed <code>activationConfigProps</code> and returns only those Properties which are valid.
+     *
+     * @param resourceAdapterName   The resource adapter name
+     * @param activation            {@link Activation}
+     * @param activationConfigProps Activation config properties which will be checked for validity
+     * @return
+     */
+    private Properties filterUnknownActivationConfigProperties(final String resourceAdapterName, final Activation activation, final Properties activationConfigProps) {
+        if (activationConfigProps == null) {
+            return null;
+        }
+        final Map<String, Class<?>> raActivationConfigProps = activation.getConfigProperties();
+        final Set<String> raRequiredConfigProps = activation.getRequiredConfigProperties();
+        final Enumeration<?> propNames = activationConfigProps.propertyNames();
+        final Properties validActivationConfigProps = new Properties();
+        // initialize to all the activation config properties that have been set on the MDB
+        validActivationConfigProps.putAll(activationConfigProps);
+        while (propNames.hasMoreElements()) {
+            final Object propName = propNames.nextElement();
+            if (raActivationConfigProps.containsKey(propName) == false && raRequiredConfigProps.contains(propName) == false) {
+                // not a valid activation config property, so log a WARN and filter it out from the valid activation config properties
+                validActivationConfigProps.remove(propName);
+                logger.warn("ActivationConfigProperty \"" + propName + "\" will be ignored since it is not allowed by " +
+                        "resource adapter: " + resourceAdapterName);
+            }
+        }
+        return validActivationConfigProps;
     }
 }

@@ -22,183 +22,436 @@
 
 package org.jboss.as.messaging;
 
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.messaging.jms.JndiEntriesAttribute;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 /**
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public interface CommonAttributes {
 
+
+    SimpleAttributeDefinition ADDRESS = new SimpleAttributeDefinition("address", ModelType.STRING, false);
+
+    SimpleAttributeDefinition ALLOW_FAILBACK =  new SimpleAttributeDefinition("allow-failback",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_ALLOW_AUTO_FAILBACK), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition ASYNC_CONNECTION_EXECUTION_ENABLED = new SimpleAttributeDefinition("async-connection-execution-enabled",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition AUTO_GROUP = new SimpleAttributeDefinition("auto-group",
+            new ModelNode().set(HornetQClient.DEFAULT_AUTO_GROUP), ModelType.BOOLEAN, true);
+
+    SimpleAttributeDefinition BACKUP = new SimpleAttributeDefinition("backup",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_BACKUP), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition BLOCK_ON_ACK = new SimpleAttributeDefinition("block-on-acknowledge",
+            new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE), ModelType.BOOLEAN, true);
+
+    SimpleAttributeDefinition BLOCK_ON_DURABLE_SEND = new SimpleAttributeDefinition("block-on-durable-send",
+            new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND), ModelType.BOOLEAN, true);
+
+    SimpleAttributeDefinition BLOCK_ON_NON_DURABLE_SEND = new SimpleAttributeDefinition("block-on-non-durable-send",
+            new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND), ModelType.BOOLEAN, true);
+
+    SimpleAttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = new SimpleAttributeDefinition("cache-large-message-client",
+            new ModelNode().set(HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT), ModelType.BOOLEAN, true);
+
+    SimpleAttributeDefinition CALL_TIMEOUT = new SimpleAttributeDefinition("call-timeout",
+            new ModelNode().set(HornetQClient.DEFAULT_CALL_TIMEOUT), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition CLIENT_FAILURE_CHECK_PERIOD = new SimpleAttributeDefinition("client-failure-check-period",
+            new ModelNode().set(HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD), ModelType.INT,  true);
+
+    SimpleAttributeDefinition CLIENT_ID = new SimpleAttributeDefinition("client-id",  ModelType.STRING, true);
+
+    SimpleAttributeDefinition CLUSTERED = new SimpleAttributeDefinition("clustered",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTERED), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition CLUSTER_PASSWORD = new SimpleAttributeDefinition("cluster-password",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD),  ModelType.STRING, true);
+
+    SimpleAttributeDefinition CLUSTER_USER = new SimpleAttributeDefinition("cluster-user",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true);
+
+    SimpleAttributeDefinition CONFIRMATION_WINDOW_SIZE = new SimpleAttributeDefinition("confirmation-window-size",
+            new ModelNode().set(HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE), ModelType.INT,  true);
+
+    JndiEntriesAttribute CONNECTION_ENTRIES = JndiEntriesAttribute.CONNECTION_FACTORY;
+
+    SimpleAttributeDefinition CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("scheduled-thread-pool-max-size",
+            new ModelNode().set(HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE), ModelType.INT,  true);
+
+    SimpleAttributeDefinition CONNECTION_THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("thread-pool-max-size",
+            new ModelNode().set(HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE), ModelType.INT,  true);
+
+    SimpleAttributeDefinition CONNECTION_TTL = new SimpleAttributeDefinition("connection-ttl",
+            new ModelNode().set(HornetQClient.DEFAULT_CONNECTION_TTL), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition CONNECTION_TTL_OVERRIDE = new SimpleAttributeDefinition("connection-ttl-override",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CONNECTION_TTL_OVERRIDE), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition CONSUMER_MAX_RATE = new SimpleAttributeDefinition("consumer-max-rate",
+            new ModelNode().set(HornetQClient.DEFAULT_CONSUMER_MAX_RATE), ModelType.INT,  true);
+
+    SimpleAttributeDefinition CONSUMER_WINDOW_SIZE = new SimpleAttributeDefinition("consumer-window-size",
+            new ModelNode().set(HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE), ModelType.INT,  true);
+
+    SimpleAttributeDefinition CREATE_BINDINGS_DIR = new SimpleAttributeDefinition("create-bindings-dir",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition CREATE_JOURNAL_DIR = new SimpleAttributeDefinition("create-journal-dir",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CREATE_JOURNAL_DIR), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition DISCOVERY_GROUP_NAME = new SimpleAttributeDefinition("discovery-group-name", ModelType.STRING, true);
+
+    SimpleAttributeDefinition DISCOVERY_INITIAL_WAIT_TIMEOUT = new SimpleAttributeDefinition("discovery-initial-wait-timeout", ModelType.LONG, true);
+
+    SimpleAttributeDefinition DIVERT_ADDRESS = new SimpleAttributeDefinition("divert-address", "address", null, ModelType.STRING, false, false);
+
+    SimpleAttributeDefinition DUPS_OK_BATCH_SIZE = new SimpleAttributeDefinition("dups-ok-batch-size",
+            new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE), ModelType.INT, true);
+
+    SimpleAttributeDefinition DURABLE = new SimpleAttributeDefinition("durable", new ModelNode().set(false), ModelType.BOOLEAN,  true);
+
+    JndiEntriesAttribute ENTRIES = JndiEntriesAttribute.DESTINATION;
+
+    SimpleAttributeDefinition EXCLUSIVE = new SimpleAttributeDefinition("exclusive", ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition FAILBACK_DELAY = new SimpleAttributeDefinition("failback-delay",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_FAILBACK_DELAY), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition FAILOVER_ON_INITIAL_CONNECTION =  new SimpleAttributeDefinition("failover-on-initial-connection",
+            new ModelNode().set(HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION), ModelType.BOOLEAN, true);
+
+    SimpleAttributeDefinition FAILOVER_ON_SERVER_SHUTDOWN = new SimpleAttributeDefinition("failover-on-server-shutdown", ModelType.BOOLEAN, true);
+
+    SimpleAttributeDefinition FAILOVER_ON_SHUTDOWN = new SimpleAttributeDefinition("failover-on-shutdown",
+            new ModelNode().set(false /*TODO should be ConfigurationImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN but field is private*/), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition FILTER = new SimpleAttributeDefinition("filter", ModelType.STRING, true);
+
+    SimpleAttributeDefinition FORWARDING_ADDRESS = new SimpleAttributeDefinition("forwarding-address", ModelType.STRING, false);
+
+    SimpleAttributeDefinition GROUP_ID = new SimpleAttributeDefinition("group-id", ModelType.STRING, true);
+
+    SimpleAttributeDefinition HA = new SimpleAttributeDefinition("forwarding-address", new ModelNode().set(HornetQClient.DEFAULT_HA),  ModelType.BOOLEAN, false);
+
+    SimpleAttributeDefinition ID_CACHE_SIZE = new SimpleAttributeDefinition("id-cache-size",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE), ModelType.INT,  true);
+
+    SimpleAttributeDefinition JMX_DOMAIN = new SimpleAttributeDefinition("jmx-domain",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JMX_DOMAIN), ModelType.STRING, true);
+
+    SimpleAttributeDefinition JMX_MANAGEMENT_ENABLED = new SimpleAttributeDefinition("jmx-management-enabled",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JMX_MANAGEMENT_ENABLED), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition JNDI_PARAMS = new SimpleAttributeDefinition("jndi-params", ModelType.STRING, true);
+
+    SimpleAttributeDefinition JOURNAL_BUFFER_SIZE = new SimpleAttributeDefinition("journal-buffer-size", ModelType.LONG,  true);
+
+    SimpleAttributeDefinition JOURNAL_BUFFER_TIMEOUT = new SimpleAttributeDefinition("journal-buffer-timeout", ModelType.LONG,  true);
+
+    SimpleAttributeDefinition JOURNAL_COMPACT_MIN_FILES = new SimpleAttributeDefinition("journal-compact-min-files",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_MIN_FILES), ModelType.INT,  true);
+
+    SimpleAttributeDefinition JOURNAL_COMPACT_PERCENTAGE = new SimpleAttributeDefinition("journal-compact-percentage",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE), ModelType.INT,  true);
+
+    SimpleAttributeDefinition JOURNAL_FILE_SIZE = new SimpleAttributeDefinition("journal-file-size",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition JOURNAL_MAX_IO = new SimpleAttributeDefinition("journal-max-io", ModelType.INT,  true);
+
+    SimpleAttributeDefinition JOURNAL_MIN_FILES = new SimpleAttributeDefinition("journal-min-files",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES), ModelType.INT,  true);
+
+    SimpleAttributeDefinition JOURNAL_SYNC_NON_TRANSACTIONAL = new SimpleAttributeDefinition("journal-sync-non-transactional",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition JOURNAL_SYNC_TRANSACTIONAL = new SimpleAttributeDefinition("journal-sync-transactional",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_TRANSACTIONAL), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition JOURNAL_TYPE = new SimpleAttributeDefinition("journal-type", "journal-type",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_TYPE.toString()), ModelType.STRING,  true, false, JournalTypeValidator.INSTANCE);
+
+    SimpleAttributeDefinition LOAD_BALANCING_CLASS_NAME = new SimpleAttributeDefinition("connection-load-balancing-policy-class-name", ModelType.STRING, true);
+
+    SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = new SimpleAttributeDefinition("log-journal-write-rate",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition MANAGEMENT_ADDRESS = new SimpleAttributeDefinition("management-address",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString()), ModelType.STRING, true);
+
+    SimpleAttributeDefinition MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleAttributeDefinition("management-notification-address",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS.toString()), ModelType.STRING, true);
+
+    SimpleAttributeDefinition MAX_RETRY_INTERVAL = new SimpleAttributeDefinition("max-retry-interval",
+            new ModelNode().set(HornetQClient.DEFAULT_MAX_RETRY_INTERVAL), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = new SimpleAttributeDefinition("memory-measure-interval",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition MEMORY_WARNING_THRESHOLD = new SimpleAttributeDefinition("memory-warning-threshold",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD), ModelType.INT,  true);
+
+    SimpleAttributeDefinition MESSAGE_COUNTER_ENABLED = new SimpleAttributeDefinition("message-counter-enabled",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_ENABLED), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition MESSAGE_COUNTER_MAX_DAY_HISTORY = new SimpleAttributeDefinition("message-counter-max-day-history",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY), ModelType.INT,  true);
+
+    SimpleAttributeDefinition MESSAGE_COUNTER_SAMPLE_PERIOD = new SimpleAttributeDefinition("message-counter-sample-period",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition MESSAGE_EXPIRY_SCAN_PERIOD = new SimpleAttributeDefinition("message-expiry-scan-period",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition MESSAGE_EXPIRY_THREAD_PRIORITY = new SimpleAttributeDefinition("message-expiry-thread-priority",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY), ModelType.INT,  true);
+
+    SimpleAttributeDefinition MIN_LARGE_MESSAGE_SIZE = new SimpleAttributeDefinition("min-large-message-size",
+            new ModelNode().set(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE), ModelType.INT,  true);
+
+    SimpleAttributeDefinition NAME_OPTIONAL = new SimpleAttributeDefinition("name", ModelType.STRING, true);
+
+    SimpleAttributeDefinition NAME_REQUIRED = new SimpleAttributeDefinition("name", "name", null, ModelType.STRING, false, false);
+
+    SimpleAttributeDefinition PERF_BLAST_PAGES = new SimpleAttributeDefinition("perf-blast-pages",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_PERF_BLAST_PAGES), ModelType.INT,  true);
+
+    SimpleAttributeDefinition PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = new SimpleAttributeDefinition("persist-delivery-count-before-delivery",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition PERSISTENCE_ENABLED = new SimpleAttributeDefinition("persistence-enabled",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_PERSISTENCE_ENABLED), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition PERSIST_ID_CACHE = new SimpleAttributeDefinition("persist-id-cache",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition PRE_ACK = new SimpleAttributeDefinition("pre-acknowledge",
+            new ModelNode().set(HornetQClient.DEFAULT_PRE_ACKNOWLEDGE), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition PRODUCER_MAX_RATE = new SimpleAttributeDefinition("producer-max-rate",
+            new ModelNode().set(HornetQClient.DEFAULT_PRODUCER_MAX_RATE), ModelType.INT,  true);
+
+    SimpleAttributeDefinition PRODUCER_WINDOW_SIZE = new SimpleAttributeDefinition("producer-window-size",
+            new ModelNode().set(HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE), ModelType.INT,  true);
+
+    SimpleAttributeDefinition QUEUE_ADDRESS = new SimpleAttributeDefinition("queue-address", "address", null, ModelType.STRING, false, false);
+
+    SimpleAttributeDefinition RECONNECT_ATTEMPTS = new SimpleAttributeDefinition("reconnect-attempts",
+            new ModelNode().set(HornetQClient.DEFAULT_RECONNECT_ATTEMPTS), ModelType.INT, true);
+
+    RemotingInterceptorsAttribute REMOTING_INTERCEPTORS = RemotingInterceptorsAttribute.INSTANCE;
+
+    SimpleAttributeDefinition RETRY_INTERVAL = new SimpleAttributeDefinition("retry-interval",
+            new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL), ModelType.LONG, true);
+
+    SimpleAttributeDefinition RETRY_INTERVAL_MULTIPLIER = new SimpleAttributeDefinition("retry-interval-multiplier",
+            new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER), ModelType.BIG_DECIMAL, true);
+
+    SimpleAttributeDefinition ROUTING_NAME = new SimpleAttributeDefinition("routing-name", ModelType.STRING, true);
+
+    SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = new SimpleAttributeDefinition("run-sync-speed-test",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_RUN_SYNC_SPEED_TEST), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("scheduled-thread-pool-max-size",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE), ModelType.INT,  true);
+
+    SimpleAttributeDefinition SECURITY_ENABLED = new SimpleAttributeDefinition("security-enabled",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_SECURITY_ENABLED), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition SECURITY_INVALIDATION_INTERVAL = new SimpleAttributeDefinition("security-invalidation-interval",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition SELECTOR = new SimpleAttributeDefinition("selector", ModelType.STRING, true);
+
+    SimpleAttributeDefinition SERVER_DUMP_INTERVAL = new SimpleAttributeDefinition("server-dump-interval",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition SETUP_ATTEMPTS = new SimpleAttributeDefinition("setup-attempts", ModelType.INT, true);
+
+    SimpleAttributeDefinition SETUP_INTERVAL = new SimpleAttributeDefinition("setup-interval", ModelType.LONG, true);
+
+    SimpleAttributeDefinition SHARED_STORE = new SimpleAttributeDefinition("shared-store",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_SHARED_STORE), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("thread-pool-max-size",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE), ModelType.INT,  true);
+
+    SimpleAttributeDefinition TRANSACTION_BATCH_SIZE = new SimpleAttributeDefinition("transaction-batch-size",
+            new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE), ModelType.INT,  true);
+
+    SimpleAttributeDefinition TRANSACTION_TIMEOUT = new SimpleAttributeDefinition("transaction-timeout",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition TRANSACTION_TIMEOUT_SCAN_PERIOD = new SimpleAttributeDefinition("transaction-timeout-scan-period",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD), ModelType.LONG,  true);
+
+    SimpleAttributeDefinition TRANSFORMER_CLASS_NAME = new SimpleAttributeDefinition("transformer-class-name", ModelType.STRING, true);
+
+    SimpleAttributeDefinition USE_GLOBAL_POOLS = new SimpleAttributeDefinition("use-global-pools",
+            new ModelNode().set(HornetQClient.DEFAULT_USE_GLOBAL_POOLS), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition USE_JNDI = new SimpleAttributeDefinition("use-jndi", ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition USE_LOCAL_TX = new SimpleAttributeDefinition("use-local-tx", ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition WILD_CARD_ROUTING_ENABLED = new SimpleAttributeDefinition("wild-card-routing-enabled",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_WILDCARD_ROUTING_ENABLED), ModelType.BOOLEAN,  true);
+
     String ACCEPTOR ="acceptor";
     String ACCEPTORS ="acceptors";
-    String ADDRESS ="address";
     String ADDRESS_FULL_MESSAGE_POLICY ="address-full-policy";
     String ADDRESS_SETTING ="address-setting";
     String ADDRESS_SETTINGS ="address-settings";
-    String ASYNC_CONNECTION_EXECUTION_ENABLED ="async-connection-execution-enabled";
-    String BACKUP ="backup";
-    String LIVE_CONNECTOR_REF ="live-connector-ref";
+    String ALLOW_DIRECT_CONNECTIONS_ONLY = "allow-direct-connections-only";
     String BINDINGS_DIRECTORY ="bindings-directory";
+    String BRIDGE = "bridge";
+    String BRIDGES = "bridges";
+    String BROADCAST_GROUP = "broadcast-group";
+    String BROADCAST_GROUPS = "broadcast-groups";
     String BROADCAST_PERIOD ="broadcast-period";
-    String CLUSTERED ="clustered";
-    String CLUSTER_PASSWORD ="cluster-password";
-    String CLUSTER_USER ="cluster-user";
-    String CONNECTION_TTL_OVERRIDE ="connection-ttl-override";
+    String CLASS_NAME = "class-name";
+    String CLUSTER_CONNECTION = "cluster-connection";
+    String CLUSTER_CONNECTIONS = "cluster-connections";
+    String CONNECTION_FACTORY ="connection-factory";
+    String CONNECTION_LOAD_BALANCING_CLASS_NAME = "connection-load-balancing-policy-class-name";
     String CONNECTOR ="connector";
     String CONNECTORS ="connectors";
+    String CONNECTOR_NAME ="connector-name";
     String CONNECTOR_REF ="connector-ref";
+    String CONNECTOR_SERVICE = "connector-service";
+    String CONNECTOR_SERVICES = "connector-services";
     String CONSUME_NAME ="consume";
+    String CORE_QUEUE ="core-queue";
     String CORE_QUEUES ="core-queues";
     String CREATEDURABLEQUEUE_NAME ="createDurableQueue";
     String CREATETEMPQUEUE_NAME ="createTempQueue";
-    String CREATE_BINDINGS_DIR ="create-bindings-dir";
-    String CREATE_JOURNAL_DIR ="create-journal-dir";
     String CREATE_NON_DURABLE_QUEUE_NAME ="createNonDurableQueue";
     String DEAD_LETTER_ADDRESS ="dead-letter-address";
     String DELETEDURABLEQUEUE_NAME ="deleteDurableQueue";
     String DELETETEMPQUEUE_NAME ="deleteTempQueue";
     String DELETE_NON_DURABLE_QUEUE_NAME ="deleteNonDurableQueue";
-    String DURABLE ="durable";
+    String DISCOVERY_GROUP = "discovery-group";
+    String DISCOVERY_GROUPS = "discovery-groups";
+    String DISCOVERY_GROUP_REF ="discovery-group-ref";
+    String DIVERT = "divert";
+    String DIVERTS = "diverts";
+    String ENTRIES_STRING = "entries";
+    String ENTRY ="entry";
     String EXPIRY_ADDRESS ="expiry-address";
     String FACTORY_CLASS ="factory-class";
     String FILE_DEPLOYMENT_ENABLED ="file-deployment-enabled";
-    String FILTER ="filter";
-    String GROUPING_HANDLER ="grouping-handler";
+    String FORWARD_WHEN_NO_CONSUMERS = "forward-when-no-consumers";
     String GROUP_ADDRESS ="group-address";
+    String GROUPING_HANDLER ="grouping-handler";
     String GROUP_PORT ="group-port";
-    String ID_CACHE_SIZE ="id-cache-size";
     String IN_VM_ACCEPTOR ="in-vm-acceptor";
     String IN_VM_CONNECTOR ="in-vm-connector";
-    String JMX_DOMAIN ="jmx-domain";
-    String JMX_MANAGEMENT_ENABLED ="jmx-management-enabled";
-    String JOURNAL_BUFFER_SIZE ="journal-buffer-size";
-    String JOURNAL_BUFFER_TIMEOUT ="journal-buffer-timeout";
-    String JOURNAL_COMPACT_MIN_FILES ="journal-compact-min-files";
-    String JOURNAL_COMPACT_PERCENTAGE ="journal-compact-percentage";
+    String JMS_CONNECTION_FACTORIES ="jms-connection-factories";
+    String JMS_DESTINATIONS = "jms-destinations";
+    String JMS_QUEUE ="jms-queue";
+    String JMS_TOPIC ="jms-topic";
     String JOURNAL_DIRECTORY ="journal-directory";
-    String JOURNAL_FILE_SIZE ="journal-file-size";
-    String JOURNAL_MAX_IO ="journal-max-io";
-    String JOURNAL_MIN_FILES ="journal-min-files";
-    String JOURNAL_SYNC_NON_TRANSACTIONAL ="journal-sync-non-transactional";
-    String JOURNAL_SYNC_TRANSACTIONAL ="journal-sync-transactional";
-    String JOURNAL_TYPE ="journal-type";
     String KEY ="key";
+    String INBOUND_CONFIG = "inbound-config";
     String LARGE_MESSAGES_DIRECTORY ="large-messages-directory";
+    String LAST_VALUE_QUEUE = "last-value=queue";
+    String LIVE_CONNECTOR_REF ="live-connector-ref";
+    String LOCAL = "local";
     String LOCAL_BIND_ADDRESS ="local-bind-address";
     String LOCAL_BIND_PORT ="local-bind-port";
-    String LOG_JOURNAL_WRITE_RATE ="log-journal-write-rate";
+    String LOCAL_TX = "LocalTransaction";
     String LVQ ="last-value-queue";
-    String MANAGEMENT_ADDRESS ="management-address";
-    String MANAGEMENT_NOTIFICATION_ADDRESS ="management-notification-address";
     String MANAGE_NAME ="manage";
     String MATCH ="match";
     String MAX_DELIVERY_ATTEMPTS ="max-delivery-attempts";
+    String MAX_HOPS ="max-hops";
     String MAX_SIZE_BYTES_NODE_NAME ="max-size-bytes";
-    String MEMORY_MEASURE_INTERVAL ="memory-measure-interval";
-    String MEMORY_WARNING_THRESHOLD ="memory-warning-threshold";
-    String MESSAGE_COUNTER_ENABLED ="message-counter-enabled";
-    String MESSAGE_COUNTER_HISTORY_DAY_LIMIT ="message-counter-history-day-limit";
-    String MESSAGE_COUNTER_MAX_DAY_HISTORY ="message-counter-max-day-history";
-    String MESSAGE_COUNTER_SAMPLE_PERIOD ="message-counter-sample-period";
-    String MESSAGE_EXPIRY_SCAN_PERIOD ="message-expiry-scan-period";
-    String MESSAGE_EXPIRY_THREAD_PRIORITY ="message-expiry-thread-priority";
+    String MESSAGE_COUNTER_HISTORY_DAY_LIMIT = "message-counter-history-day-limit";
+    String MODE = "mode";
     String NAME ="name";
     String NETTY_ACCEPTOR ="netty-acceptor";
     String NETTY_CONNECTOR ="netty-connector";
+    String NONE = "none";
+    String NO_TX = "NoTransaction";
+    String PAGE_MAX_CACHE_SIZE = "page-max-cache-size";
     String PAGE_SIZE_BYTES_NODE_NAME ="page-size-bytes";
     String PAGING_DIRECTORY ="paging-directory";
     String PARAM ="param";
+    String PASSWORD ="password";
     String PATH ="path";
-    String PERF_BLAST_PAGES ="perf-blast-pages";
     String PERMISSION_ELEMENT_NAME ="permission";
-    String PERSISTENCE_ENABLED ="persistence-enabled";
-    String PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY ="persist-delivery-count-before-delivery";
-    String PERSIST_ID_CACHE ="persist-id-cache";
-    String ROLE = "role";
+    String POOLED_CONNECTION_FACTORY = "pooled-connection-factory";
     String QUEUE ="queue";
-    String QUEUE_ADDRESS ="queue-address";
+    String QUEUE_NAME ="queue-name";
     String REDELIVERY_DELAY ="redelivery-delay";
     String REDISTRIBUTION_DELAY ="redistribution-delay";
     String REFRESH_TIMEOUT ="refresh-timeout";
     String RELATIVE_TO ="relative-to";
-    String REMOTING_INTERCEPTORS ="remoting-interceptors";
+    String REMOTING_INTERCEPTORS_STRING ="remoting-interceptors";
+    String RESOURCE_ADAPTER = "resource-adapter";
+    String ROLE = "role";
     String ROLES_ATTR_NAME ="roles";
-    String RUN_SYNC_SPEED_TEST ="run-sync-speed-test";
-    String SECURITY_ENABLED ="security-enabled";
-    String SECURITY_INVALIDATION_INTERVAL ="security-invalidation-interval";
     String SECURITY_SETTING ="security-setting";
     String SECURITY_SETTINGS ="security-settings";
     String SEND_NAME ="send";
     String SEND_TO_DLA_ON_NO_ROUTE ="send-to-dla-on-no-route";
-    String SERVER_DUMP_INTERVAL ="server-dump-interval";
     String SERVER_ID ="server-id";
-    String SHARED_STORE ="shared-store";
     String SOCKET_BINDING ="socket-binding";
+    String STATIC_CONNECTORS = "static-connectors";
     String STRING ="string";
     String SUBSYSTEM ="subsystem";
-    String TRANSACTION_TIMEOUT ="transaction-timeout";
-    String TRANSACTION_TIMEOUT_SCAN_PERIOD ="transaction-timeout-scan-period";
-    String TYPE_ATTR_NAME ="type";
-    String VALUE ="value";
-    String WILD_CARD_ROUTING_ENABLED ="wild-card-routing-enabled";
-
-   //JMS Stuff
-
-    String HA ="ha";
-    String AUTO_GROUP ="auto-group";
-    String BLOCK_ON_ACK ="block-on-acknowledge";
-    String BLOCK_ON_DURABLE_SEND ="block-on-durable-send";
-    String BLOCK_ON_NON_DURABLE_SEND ="block-on-non-durable-send";
-    String CACHE_LARGE_MESSAGE_CLIENT ="cache-large-message-client";
-    String CALL_TIMEOUT ="call-timeout";
-    String CLIENT_FAILURE_CHECK_PERIOD ="client-failure-check-period";
-    String CLIENT_ID ="client-id";
-    String CONFIRMATION_WINDOW_SIZE ="confirmation-window-size";
-    String CONNECTION_FACTORY ="connection-factory";
-    String CONNECTION_FACTORIES ="jms-connection-factories";
-    String CONNECTION_TTL ="connection-ttl";
-    String CONNECTOR_NAME ="connector-name";
-    String CONSUMER_MAX_RATE ="consumer-max-rate";
-    String CONSUMER_WINDOW_SIZE ="consumer-window-size";
-    String DISCOVERY_GROUP_NAME ="discovery-group-name";
-    String DISCOVERY_GROUP_REF ="discovery-group-ref";
-    String DISCOVERY_INITIAL_WAIT_TIMEOUT ="discovery-initial-wait-timeout";
-    String DUPS_OK_BATCH_SIZE ="dups-ok-batch-size";
-    String ENTRIES ="entries";
-    String ENTRY ="entry";
-    String FAILOVER_ON_INITIAL_CONNECTION ="failover-on-initial-connection";
-    String FAILOVER_ON_SERVER_SHUTDOWN ="failover-on-server-shutdown";
-    String GROUP_ID ="group-id";
-    String JMS_DESTINATIONS = "jms-destinations";
-    String JMS_TOPIC ="jms-topic";
-    String JMS_QUEUE ="jms-queue";
-    String LOAD_BALANCING_CLASS_NAME ="connection-load-balancing-policy-class-name";
-    String MAX_RETRY_INTERVAL ="max-retry-interval";
-    String MIN_LARGE_MESSAGE_SIZE ="min-large-message-size";
-    String PRE_ACK ="pre-acknowledge";
-    String PRODUCER_MAX_RATE ="producer-max-rate";
-    String PRODUCER_WINDOW_SIZE ="producer-window-size";
-    String RECONNECT_ATTEMPTS ="reconnect-attempts";
-    String RETRY_INTERVAL ="retry-interval";
-    String RETRY_INTERVAL_MULTIPLIER ="retry-interval-multiplier";
-    String SCHEDULED_THREAD_POOL_MAX_SIZE ="scheduled-thread-pool-max-size";
-    String SELECTOR ="selector";
-    String THREAD_POOL_MAX_SIZE ="thread-pool-max-size";
-    String TRANSACTION_BATCH_SIZE ="transaction-batch-size";
-    String USE_GLOBAL_POOLS ="use-global-pools";
-    String POOLED_CONNECTION_FACTORY = "pooled-connection-factory";
-    String INBOUND_CONFIG = "inbound-config";
-    String USE_JNDI = "use-jndi";
-    String JNDI_PARAMS = "jndi-params";
-    String USE_LOCAL_TX = "use-local-tx";
-    String SETUP_ATTEMPTS = "setup-attempts";
-    String SETUP_INTERVAL = "setup-interval";
+    String TIMEOUT = "timeout";
     String TRANSACTION = "transaction";
-    String LOCAL = "local";
-    String XA = "xa";
-    String NONE = "none";
-    String MODE = "mode";
-    String LOCAL_TX = "LocalTransaction";
+    String TYPE_ATTR_NAME ="type";
+    String USE_DUPLICATE_DETECTION = "use-duplicate-detection";
+    String USER = "user";
+    String VALUE ="value";
     String XA_TX = "XATransaction";
-    String NO_TX = "NoTransaction";
 
+
+
+    AttributeDefinition[] SIMPLE_ROOT_RESOURCE_ATTRIBUTES = {
+        NAME_OPTIONAL, CLUSTERED, PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,
+        THREAD_POOL_MAX_SIZE, SECURITY_ENABLED, SECURITY_INVALIDATION_INTERVAL, WILD_CARD_ROUTING_ENABLED, MANAGEMENT_ADDRESS,
+        MANAGEMENT_NOTIFICATION_ADDRESS, CLUSTER_USER, CLUSTER_PASSWORD, JMX_MANAGEMENT_ENABLED, JMX_DOMAIN, MESSAGE_COUNTER_ENABLED,
+        MESSAGE_COUNTER_SAMPLE_PERIOD, MESSAGE_COUNTER_MAX_DAY_HISTORY, CONNECTION_TTL_OVERRIDE, ASYNC_CONNECTION_EXECUTION_ENABLED,
+        TRANSACTION_TIMEOUT, TRANSACTION_TIMEOUT_SCAN_PERIOD, MESSAGE_EXPIRY_SCAN_PERIOD, MESSAGE_EXPIRY_THREAD_PRIORITY,
+        ID_CACHE_SIZE, PERSIST_ID_CACHE, REMOTING_INTERCEPTORS, BACKUP, ALLOW_FAILBACK, FAILBACK_DELAY, FAILOVER_ON_SHUTDOWN,
+        SHARED_STORE, PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, JOURNAL_TYPE, JOURNAL_BUFFER_TIMEOUT,
+        JOURNAL_BUFFER_SIZE, JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE, JOURNAL_FILE_SIZE,
+        JOURNAL_MIN_FILES, JOURNAL_COMPACT_MIN_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_MAX_IO, PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST,
+        SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL
+    };
+
+    AttributeDefinition[]  SIMPLE_ROOT_RESOURCE_WRITE_ATTRIBUTES = {
+        FAILOVER_ON_SHUTDOWN, MESSAGE_COUNTER_ENABLED, MESSAGE_COUNTER_MAX_DAY_HISTORY, MESSAGE_COUNTER_SAMPLE_PERIOD
+    };
+
+    String[] COMPLEX_ROOT_RESOURCE_ATTRIBUTES =  {
+        /*TODO remove */ LIVE_CONNECTOR_REF, /* TODO remove */ CONNECTOR, /* TODO remove */ ACCEPTOR,
+        /* TODO remove */ BROADCAST_GROUP, /* TODO remove */ DISCOVERY_GROUP,
+        /* TODO remove */ BRIDGE, /* TODO remove */ CLUSTER_CONNECTION,
+        /* TODO remove */ GROUPING_HANDLER, /* TODO remove */ PAGING_DIRECTORY, /* TODO remove */ BINDINGS_DIRECTORY,
+        /* TODO remove */ JOURNAL_DIRECTORY, /* TODO remove */ LARGE_MESSAGES_DIRECTORY,
+        /* TODO remove */ SECURITY_SETTING, /* TODO remove */ ADDRESS_SETTING, /* TODO remove */ CONNECTOR_SERVICE
+    };
+
+    AttributeDefinition[] DIVERT_ATTRIBUTES = {
+        ROUTING_NAME, DIVERT_ADDRESS, FORWARDING_ADDRESS, FILTER, TRANSFORMER_CLASS_NAME, EXCLUSIVE
+    };
+
+    AttributeDefinition[] CORE_QUEUE_ATTRIBUTES = { QUEUE_ADDRESS, FILTER, DURABLE };
+
+    AttributeDefinition[] JMS_QUEUE_ATTRIBUTES = { ENTRIES, SELECTOR, DURABLE };
 }

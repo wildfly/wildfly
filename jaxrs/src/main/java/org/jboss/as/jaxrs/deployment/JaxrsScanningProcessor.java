@@ -30,7 +30,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.moduleservice.ModuleIndexService;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
@@ -69,15 +68,6 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
     private static final Logger log = Logger.getLogger("org.jboss.jaxrs");
 
     public static final DotName APPLICATION = DotName.createSimple(Application.class.getName());
-
-    private static final ModuleIdentifier[] JAXRS_MODULES_TO_SCAN = {
-            JaxrsDependencyProcessor.RESTEASY_JAXRS,
-            JaxrsDependencyProcessor.RESTEASY_JAXB,
-            JaxrsDependencyProcessor.RESTEASY_ATOM,
-            JaxrsDependencyProcessor.RESTEASY_JSAPI,
-            JaxrsDependencyProcessor.RESTEASY_JACKSON,
-            JaxrsDependencyProcessor.RESTEASY_MULTIPART,
-    };
 
     private static CompositeIndex[] EMPTY_INDEXES = new CompositeIndex[0];
 
@@ -168,7 +158,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         }
 
         // set scanning on only if there are no boot classes
-        if (hasBoot == false && !webdata.isMetadataComplete()) {
+        if (!hasBoot && !webdata.isMetadataComplete()) {
             resteasyDeploymentData.setScanAll(true);
             resteasyDeploymentData.setScanProviders(true);
             resteasyDeploymentData.setScanResources(true);
@@ -197,21 +187,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
     protected void scan(final DeploymentUnit du, final ClassLoader classLoader, final ResteasyDeploymentData resteasyDeploymentData, final ModuleIndexService moduleIndexService, boolean webDeployment)
             throws DeploymentUnitProcessingException, ModuleLoadException {
 
-        ServiceModuleLoader moduleLoader = du.getAttachment(Attachments.SERVICE_MODULE_LOADER);
-
-        final List<CompositeIndex> indexes = new ArrayList<CompositeIndex>();
-        if (webDeployment) {
-            for (ModuleIdentifier moduleIdentifier : JAXRS_MODULES_TO_SCAN) {
-                final Module resteasy = moduleLoader.loadModule(moduleIdentifier);
-                indexes.add(moduleIndexService.getIndex(resteasy));
-            }
-        }
-
-
-        // Looked for annotated resources and providers
-        indexes.add(du.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX));
-        CompositeIndex index = new CompositeIndex(indexes.toArray(EMPTY_INDEXES));
-
+        final CompositeIndex index = du.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
 
         if (!resteasyDeploymentData.shouldScan()) {
             return;
@@ -262,7 +238,8 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                 if (e.target() instanceof ClassInfo) {
                     info = (ClassInfo) e.target();
                 } else if (e.target() instanceof MethodInfo) {
-                    info = ((MethodInfo) e.target()).declaringClass();
+                    //ignore
+                    continue;
                 } else {
                     log.warnf("@Path annotation not on Class or Method: %s", e.target());
                     continue;

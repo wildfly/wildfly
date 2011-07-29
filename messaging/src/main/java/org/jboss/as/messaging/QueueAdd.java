@@ -5,8 +5,13 @@ package org.jboss.as.messaging;
 
 import java.util.List;
 import java.util.Locale;
+
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.CoreQueueConfiguration;
+import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -27,6 +32,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Core queue add update.
@@ -38,26 +44,15 @@ public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvi
 
     public static final String OPERATION_NAME = ADD;
 
-    public static ModelNode getOperation(ModelNode address, ModelNode existing) {
-        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
-        op.get(QUEUE_ADDRESS).set(existing.get(ADDRESS));
-        if (existing.hasDefined(FILTER)) {
-            op.get(FILTER).set(existing.get(FILTER));
-        }
-        if (existing.hasDefined(DURABLE)) {
-            op.get(DURABLE).set(existing.get(DURABLE));
-        }
-        return op;
-    }
-
-    public static QueueAdd INSTANCE = new QueueAdd();
 
     private final ParametersValidator validator = new ParametersValidator();
+    private final Configuration configuration;
 
-    private QueueAdd() {
-        validator.registerValidator(QUEUE_ADDRESS, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-        validator.registerValidator(FILTER, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-        validator.registerValidator(DURABLE, new ModelTypeValidator(ModelType.BOOLEAN, true));
+    public QueueAdd(final Configuration configuration) {
+        this.configuration = configuration;
+        validator.registerValidator(QUEUE_ADDRESS.getName(), QUEUE_ADDRESS.getValidator());
+        validator.registerValidator(FILTER.getName(), new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
+        validator.registerValidator(DURABLE.getName(), DURABLE.getValidator());
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -65,35 +60,36 @@ public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvi
 
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final String queueAddress = operation.hasDefined(QUEUE_ADDRESS) ? operation.get(QUEUE_ADDRESS).asString() : null;
-        final String filter = operation.hasDefined(FILTER) ? operation.get(FILTER).asString() : null;
-        final Boolean durable = operation.hasDefined(DURABLE) ? operation.get(DURABLE).asBoolean() : null;
-
         model.get(NAME).set(name);
-        if (queueAddress != null) {
-            model.get(ADDRESS).set(queueAddress);
-        }
-        if (filter != null) {
-            model.get(FILTER).set(filter);
-        }
-        if (durable != null) {
-            model.get(DURABLE).set(durable);
+        for (final AttributeDefinition attributeDefinition : CommonAttributes.CORE_QUEUE_ATTRIBUTES) {
+            attributeDefinition.validateAndSet(operation, model);
         }
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        final String queueAddress = operation.hasDefined(QUEUE_ADDRESS) ? operation.get(QUEUE_ADDRESS).asString() : null;
-        final String filter = operation.hasDefined(FILTER) ? operation.get(FILTER).asString() : null;
-        final Boolean durable = operation.hasDefined(DURABLE) ? operation.get(DURABLE).asBoolean() : null;
+        final String queueName = address.getLastElement().getValue();
+        final String queueAddress = ADDRESS.validateResolvedOperation(model).asString();
+        final ModelNode filterNode =  FILTER.validateResolvedOperation(model);
+        final String filter = filterNode.isDefined() ? filterNode.asString() : null;
+        final boolean durable = DURABLE.validateResolvedOperation(model).asBoolean();
 
-        final QueueService service = new QueueService(queueAddress, name, filter, durable != null ? durable : true, false);
-        newControllers.add(context.getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(name), service)
-                .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
-                .addListener(verificationHandler)
-                .setInitialMode(Mode.ACTIVE)
-                .install());
+        ServiceRegistry registry = context.getServiceRegistry(true);
+        ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+        if (hqService != null) {
+            final QueueService service = new QueueService(queueAddress, queueName, filter, durable, false);
+            newControllers.add(context.getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(queueName), service)
+                    .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
+                    .addListener(verificationHandler)
+                    .setInitialMode(Mode.ACTIVE)
+                    .install());
+
+        } else {
+            // The initial subsystem install is not complete; just add our bit to the overall configuration
+            List<CoreQueueConfiguration> queueConfigs = configuration.getQueueConfigurations();
+            CoreQueueConfiguration queueConfig = new CoreQueueConfiguration(queueAddress, queueName, filter, durable);
+            queueConfigs.add(queueConfig);
+        }
     }
 
     @Override

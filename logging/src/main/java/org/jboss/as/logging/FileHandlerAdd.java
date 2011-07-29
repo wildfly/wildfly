@@ -52,11 +52,13 @@ class FileHandlerAdd extends AbstractAddStepHandler {
 
     static final FileHandlerAdd INSTANCE = new FileHandlerAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        LoggingValidators.validate(operation);
         model.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
         model.get(ENCODING).set(operation.get(ENCODING));
         model.get(FORMATTER).set(operation.get(FORMATTER));
-        model.get(LEVEL).set(operation.get(LEVEL));
+        if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(operation.get(LEVEL));
         model.get(FILE).set(operation.get(FILE));
     }
 
@@ -78,7 +80,7 @@ class FileHandlerAdd extends AbstractAddStepHandler {
                 fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
                 serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
             }
-            service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+            if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(operation.get(LEVEL).asString()));
             final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
             if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
             if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());

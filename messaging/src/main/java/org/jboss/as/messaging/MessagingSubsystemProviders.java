@@ -37,13 +37,10 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
  */
 class MessagingSubsystemProviders {
 
-    static final String[] MESSAGING_ROOT_ATTRIBUTES = new String[] { ACCEPTOR, ADDRESS_SETTING, BACKUP,
-        CONNECTOR_REF, BINDINGS_DIRECTORY, BROADCAST_PERIOD, CLUSTERED, CLUSTER_PASSWORD, CLUSTER_USER, CONNECTION_TTL_OVERRIDE, CONNECTOR,
-        CREATE_BINDINGS_DIR, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, ID_CACHE_SIZE, JMX_DOMAIN, JMX_MANAGEMENT_ENABLED,
-        JOURNAL_BUFFER_SIZE, JOURNAL_BUFFER_TIMEOUT, JOURNAL_COMPACT_MIN_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_DIRECTORY,
-        JOURNAL_MIN_FILES, JOURNAL_SYNC_NON_TRANSACTIONAL, JOURNAL_TYPE, JOURNAL_FILE_SIZE, JOURNAL_MAX_IO, LARGE_MESSAGES_DIRECTORY, PAGING_DIRECTORY,
-        PERF_BLAST_PAGES, PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY, PERSIST_ID_CACHE, PERSISTENCE_ENABLED, QUEUE,
-        SECURITY_SETTING, CONNECTION_FACTORY, POOLED_CONNECTION_FACTORY, JMS_QUEUE, JMS_TOPIC};
+    static final String[] MESSAGING_ROOT_ATTRIBUTES = new String[] { ACCEPTOR, ADDRESS_SETTING,
+        CONNECTION_FACTORY, CONNECTOR_REF, BINDINGS_DIRECTORY, BROADCAST_PERIOD, CONNECTOR,
+        GROUPING_HANDLER, JMS_QUEUE, JMS_TOPIC, JOURNAL_DIRECTORY, LARGE_MESSAGES_DIRECTORY,
+        PAGING_DIRECTORY, POOLED_CONNECTION_FACTORY, QUEUE, SECURITY_SETTING };
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
@@ -59,17 +56,11 @@ class MessagingSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getSubsystemDescribe(locale);
-        }
-    };
-
     static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getSubsystemRemove(locale);
+            // Private method; description not needed
+            return new ModelNode();
         }
     };
 
@@ -80,40 +71,12 @@ class MessagingSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider QUEUE_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getQueueAdd(locale);
-        }
-    };
-
-    static final DescriptionProvider QUEUE_REMOVE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getQueueRemove(locale);
-        }
-    };
-
     public static final DescriptionProvider JMS_QUEUE_RESOURCE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
             return MessagingDescriptions.getJmsQueueResource(locale);
         }
 
-    };
-
-    public static final DescriptionProvider JMS_QUEUE_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getQueueAdd(locale);
-        }
-    };
-
-    public static final DescriptionProvider JMS_QUEUE_REMOVE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getQueueRemove(locale);
-        }
     };
 
     public static final DescriptionProvider CF = new DescriptionProvider() {
@@ -145,21 +108,6 @@ class MessagingSubsystemProviders {
         }
     };
 
-    public static final DescriptionProvider JMS_TOPIC_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getTopicAdd(locale);
-        }
-    };
-
-    public static final DescriptionProvider JMS_TOPIC_REMOVE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getTopicRemove(locale);
-        }
-    };
-
-
     public static final DescriptionProvider RA = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
@@ -181,4 +129,10 @@ class MessagingSubsystemProviders {
         }
     };
 
+    public static final DescriptionProvider DIVERT_RESOURCE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getDivertResource(locale);
+        }
+    };
 }
