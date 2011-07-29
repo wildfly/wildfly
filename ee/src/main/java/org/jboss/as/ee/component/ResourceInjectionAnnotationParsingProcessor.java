@@ -22,6 +22,17 @@
 
 package org.jboss.as.ee.component;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Resource;
+import javax.annotation.Resources;
+import javax.validation.ValidatorFactory;
+
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -36,16 +47,6 @@ import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-
-import javax.annotation.Resource;
-import javax.annotation.Resources;
-import javax.validation.ValidatorFactory;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Deployment processor responsible for analyzing each attached {@link ComponentDescription} instance to configure
@@ -75,6 +76,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         locations.put("javax.ejb.SessionContext", "java:comp/EJBContext");
         locations.put("javax.ejb.TimerService", "java:comp/TimerService");
         locations.put("org.omg.CORBA.ORB", "java:comp/ORB");
+        locations.put("org.osgi.framework.BundleContext", "java:jboss/BundleContext");
         FIXED_LOCATIONS = Collections.unmodifiableMap(locations);
 
         final Set<String> simpleEntries = new HashSet<String>();
