@@ -28,7 +28,6 @@ import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
-import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
@@ -63,7 +62,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     }
 
     private T containerConfig;
-    private ModelControllerClient modelControllerClient;
+    private ManagementClient managementClient;
 
     @Inject
     @ContainerScoped
@@ -79,9 +78,15 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @Override
     public void setup(T config) {
         containerConfig = config;
-        modelControllerClient = ModelControllerClient.Factory.create(config.getBindAddress(), config.getManagementPort());
-        ArchiveDeployer archiveDeployer = new ArchiveDeployer(ServerDeploymentManager.Factory.create(modelControllerClient));
-        archiveDeployerInst.set(archiveDeployer);
+
+        ModelControllerClient modelControllerClient = ModelControllerClient.Factory.create(
+                config.getManagementAddress(),
+                config.getManagementPort());
+
+        managementClient = new ManagementClient(modelControllerClient);
+
+        archiveDeployerInst.set(new ArchiveDeployer(
+                ServerDeploymentManager.Factory.create(modelControllerClient)));
     }
 
     @Override
@@ -102,8 +107,12 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
         return containerConfig;
     }
 
+    protected ManagementClient getManagementClient() {
+        return managementClient;
+    }
+
     protected ModelControllerClient getModelControllerClient() {
-        return modelControllerClient;
+        return managementClient.getControllerClient();
     }
 
     @Override
@@ -112,8 +121,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
         String runtimeName = archiveDeployer.deploy(archive);
         registry.put(archive, runtimeName);
 
-        HTTPContext ctx = new HTTPContext(containerConfig.getBindAddress().getHostName(), containerConfig.getHttpPort());
-        return new ProtocolMetaDataParser(modelControllerClient).parse(runtimeName, ctx);
+        return managementClient.getDeploymentMetaData(runtimeName);
     }
 
     @Override
