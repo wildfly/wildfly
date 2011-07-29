@@ -62,9 +62,6 @@ public class SecondLevelCacheTestCase {
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
             "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
-            "<property name=\"hibernate.cache.use_query_cache\" value=\"false\"/>" +
-            "<property name=\"hibernate.cache.region.factory_class\" value=\"org.hibernate.cache.infinispan.JndiInfinispanRegionFactory\"/>"+
-            "<property name=\"hibernate.cache.infinispan.cachemanager\" value=\"java:jboss/infinispan/hibernate\"/>"+
             "</properties>" +
             "  </persistence-unit>" +
             "</persistence>";
