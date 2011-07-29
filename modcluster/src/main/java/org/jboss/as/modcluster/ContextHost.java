@@ -10,6 +10,7 @@ import org.jboss.dmr.Property;
 public class ContextHost {
     String webcontext = null;
     String webhost = null;
+    int waittime = 10;
 
     public ContextHost(ModelNode operation) throws OperationFailedException {
         List<Property> list = operation.asPropertyList();
@@ -21,8 +22,11 @@ public class ContextHost {
             if (prop.getName().equals("context")) {
                 webcontext = prop.getValue().toString();
             }
-            if (prop.getName().equals("alias")) {
+            if (prop.getName().equals("virtualhost")) {
                 webhost = prop.getValue().toString();
+            }
+            if (prop.getName().equals("waittime")) {
+                waittime = Integer.parseInt(RemoveQuotes(prop.getValue().toString()));
             }
         }
         if (webcontext == null || webhost == null)
@@ -34,7 +38,7 @@ public class ContextHost {
             webcontext = "";
     }
 
-    private String RemoveQuotes(String string) {
+    public static String RemoveQuotes(String string) {
         if (string.endsWith("\"") && string.startsWith("\""))
             return string.substring(1, string.length() -1);
         return null;

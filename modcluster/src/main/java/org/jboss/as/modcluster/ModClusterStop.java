@@ -22,6 +22,8 @@
 
 package org.jboss.as.modcluster;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
@@ -29,6 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
@@ -53,7 +56,16 @@ public class ModClusterStop implements OperationStepHandler, DescriptionProvider
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
                     ModCluster modcluster = (ModCluster) controller.getValue();
-                    modcluster.stop();
+                    List<Property> list = operation.asPropertyList();
+                    Iterator<Property> it= list.iterator();
+                    int waittime = 10;
+                    while(it.hasNext()) {
+                        Property prop= it.next();
+                        if (prop.getName().equals("waittime")) {
+                            waittime = Integer.parseInt(ContextHost.RemoveQuotes(prop.getValue().toString()));
+                        }
+                    }
+                    modcluster.stop(waittime);
                     context.completeStep();
                 }
             }, OperationContext.Stage.RUNTIME);

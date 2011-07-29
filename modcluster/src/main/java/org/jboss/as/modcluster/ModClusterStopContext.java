@@ -56,7 +56,7 @@ public class ModClusterStopContext implements OperationStepHandler, DescriptionP
                     log.debug("stop-context: " + operation);
                     ContextHost contexthost = new ContextHost(operation);
 
-                    modcluster.stopContext(contexthost.webhost, contexthost.webcontext);
+                    modcluster.stopContext(contexthost.webhost, contexthost.webcontext, contexthost.waittime);
                     context.completeStep();
                 }
             }, OperationContext.Stage.RUNTIME);
