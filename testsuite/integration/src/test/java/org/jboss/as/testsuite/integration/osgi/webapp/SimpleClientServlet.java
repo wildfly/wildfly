@@ -26,7 +26,9 @@ import static org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,9 +44,11 @@ import org.osgi.framework.ServiceReference;
  *
  * @author thomas.diesler@jboss.com
  */
+@WebServlet(name = "SimpleClientServlet", urlPatterns = { "/servlet" })
 public class SimpleClientServlet extends HttpServlet {
 
-    private static final long serialVersionUID = 1L;
+    @Resource
+    BundleContext context;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
@@ -55,14 +59,16 @@ public class SimpleClientServlet extends HttpServlet {
     }
 
     private String echo(String message) {
-        ClassLoader classLoader = Echo.class.getClassLoader();
-        Bundle bundle = ((BundleReference) classLoader).getBundle();
-        if (BUNDLE_SYMBOLICNAME.equals(message))
+        if (BUNDLE_SYMBOLICNAME.equals(message)) {
+            ClassLoader classLoader = Echo.class.getClassLoader();
+            Bundle bundle = ((BundleReference) classLoader).getBundle();
             return bundle.getSymbolicName();
-
-        BundleContext context = bundle.getBundleContext();
-        ServiceReference sref = context.getServiceReference(Echo.class.getName());
-        Echo service = (Echo) context.getService(sref);
-        return service.echo(message);
+        } else {
+            ServiceReference sref = context.getServiceReference(Echo.class.getName());
+            Echo service = (Echo) context.getService(sref);
+            return service.echo(message);
+        }
     }
+
+    private static final long serialVersionUID = 1L;
 }
