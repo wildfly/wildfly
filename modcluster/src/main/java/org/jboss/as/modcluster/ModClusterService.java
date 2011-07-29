@@ -393,8 +393,8 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         service.disable();
     }
     @Override
-    public void stop() {
-        service.stop(10, TimeUnit.SECONDS);
+    public void stop(int waittime) {
+        service.stop(waittime, TimeUnit.SECONDS);
     }
     @Override
     public boolean enableContext(String host, String context) {
@@ -407,8 +407,8 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     }
 
     @Override
-    public boolean stopContext(String host, String context) {
-        return service.stopContext(host, context, 10, TimeUnit.SECONDS);
+    public boolean stopContext(String host, String context, int waittime) {
+        return service.stopContext(host, context, waittime, TimeUnit.SECONDS);
     }
     @Override
     public void addProxy(String host, int port) {

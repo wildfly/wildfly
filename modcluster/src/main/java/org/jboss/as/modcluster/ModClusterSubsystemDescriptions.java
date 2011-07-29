@@ -28,6 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -76,15 +78,31 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("list-proxies");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.list-proxies"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("modcluster.proxy-list"));
+        node.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
         return node;
     }
 
+    static void AddHostPortDescription(ModelNode node, ResourceBundle bundle) {
+        node.get(REQUEST_PROPERTIES, "host", DESCRIPTION).set(bundle.getString("modcluster.proxy-host"));
+        node.get(REQUEST_PROPERTIES, "host", TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, "host", REQUIRED).set(true);
+
+        node.get(REQUEST_PROPERTIES, "port",DESCRIPTION).set(bundle.getString("modcluster.proxy-port"));
+        node.get(REQUEST_PROPERTIES, "port", TYPE).set(ModelType.INT);
+        node.get(REQUEST_PROPERTIES, "port", REQUIRED).set(true);
+    }
     static ModelNode getAddProxyDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("add-proxy");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.add-proxy"));
+
+        AddHostPortDescription(node, bundle);
+
+        node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
 
@@ -94,6 +112,10 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("remove-proxy");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.remove-proxy"));
+
+        AddHostPortDescription(node, bundle);
+
+        node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
 
@@ -103,6 +125,8 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("refresh");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.refresh"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
 
@@ -112,6 +136,8 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("reset");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.reset"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
     static ModelNode getEnableDescription(final Locale locale) {
@@ -120,15 +146,24 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("enable");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.enable"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
 
+    static void AddWaitTimeDescription(ModelNode node, ResourceBundle bundle) {
+        node.get(REQUEST_PROPERTIES, "waittime",DESCRIPTION).set(bundle.getString("modcluster.waittime"));
+        node.get(REQUEST_PROPERTIES, "waittime", TYPE).set(ModelType.INT);
+        node.get(REQUEST_PROPERTIES, "waittime", REQUIRED).set(false);
+    }
     static ModelNode getStopDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("stop");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.stop"));
+        AddWaitTimeDescription(node, bundle);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
 
@@ -138,7 +173,19 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("disable");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.disable"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
+    }
+
+    static void AddHostContextDescription(ModelNode node, ResourceBundle bundle) {
+        node.get(REQUEST_PROPERTIES, "virtualhost", DESCRIPTION).set(bundle.getString("modcluster.virtualhost"));
+        node.get(REQUEST_PROPERTIES, "virtualhost", TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, "virtualhost", REQUIRED).set(true);
+
+        node.get(REQUEST_PROPERTIES, "context",DESCRIPTION).set(bundle.getString("modcluster.context"));
+        node.get(REQUEST_PROPERTIES, "context", TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, "context", REQUIRED).set(true);
     }
 
     static ModelNode getEnableContextDescription(final Locale locale) {
@@ -147,6 +194,8 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("enable-context");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.enable-context"));
+        AddHostContextDescription(node, bundle);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
 
@@ -156,6 +205,8 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("disable-context");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.disable-context"));
+        AddHostContextDescription(node, bundle);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
 
@@ -165,6 +216,9 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("stop-context");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.stop-context"));
+        AddHostContextDescription(node, bundle);
+        AddWaitTimeDescription(node, bundle);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
 
