@@ -3,7 +3,12 @@ package org.jboss.as.mail.extension;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
-import static org.jboss.as.mail.extension.ModelKeys.*;
+
+import static org.jboss.as.mail.extension.ModelKeys.JNDI_NAME;
+import static org.jboss.as.mail.extension.ModelKeys.PASSWORD;
+import static org.jboss.as.mail.extension.ModelKeys.SMTP_SERVER_ADDRESS;
+import static org.jboss.as.mail.extension.ModelKeys.SMTP_SERVER_PORT;
+import static org.jboss.as.mail.extension.ModelKeys.USERNAME;
 
 /**
  * @author Tomaz Cerar
@@ -12,27 +17,27 @@ import static org.jboss.as.mail.extension.ModelKeys.*;
 public class Util {
 
     static void fillFrom(final ModelNode model, final MailSessionConfig sessionConfig) {
-          model.get(JNDI_NAME).set(sessionConfig.getJndiName());
-          model.get(USERNAME).set(sessionConfig.getUsername());
-          model.get(PASSWORD).set(sessionConfig.getPassword());
-          model.get(SMTP_SERVER_ADDRESS).set(sessionConfig.getSmtpServerAddress());
-          model.get(SMTP_SERVER_PORT).set(sessionConfig.getSmtpServerPort());
-      }
+        model.get(JNDI_NAME).set(sessionConfig.getJndiName());
+        model.get(USERNAME).set(sessionConfig.getUsername());
+        model.get(PASSWORD).set(sessionConfig.getPassword());
+        model.get(SMTP_SERVER_ADDRESS).set(sessionConfig.getSmtpServerAddress());
+        model.get(SMTP_SERVER_PORT).set(sessionConfig.getSmtpServerPort());
+    }
 
-      static MailSessionConfig from(final ModelNode model){
-          MailSessionConfig cfg = new MailSessionConfig();
-          cfg.setJndiName(model.require(JNDI_NAME).asString());
-          cfg.setUsername(model.require(USERNAME).asString());
-          cfg.setPassword(model.require(PASSWORD).asString());
-          cfg.setSmtpServerAddress(model.require(SMTP_SERVER_ADDRESS).asString());
-          cfg.setSmtpServerPort(model.require(SMTP_SERVER_PORT).asString());
-          return cfg;
-      }
+    static MailSessionConfig from(final ModelNode model) {
+        MailSessionConfig cfg = new MailSessionConfig();
+        cfg.setJndiName(model.require(JNDI_NAME).asString());
+        cfg.setUsername(model.require(USERNAME).asString());
+        cfg.setPassword(model.require(PASSWORD).asString());
+        cfg.setSmtpServerAddress(model.require(SMTP_SERVER_ADDRESS).asString());
+        cfg.setSmtpServerPort(model.require(SMTP_SERVER_PORT).asString());
+        return cfg;
+    }
 
     /**
      * Extracts the raw JNDI_NAME value from the given model node, and depending on the value and
      * the value of any USE_JAVA_CONTEXT child node, converts the raw name into a compliant jndi name.
-     *
+     * <p/>
      * copied from {@link org.jboss.as.connector.subsystems.datasources.Util} but should be placed somewhere that is commons place
      *
      * @param modelNode the model node; either an operation or the model behind a datasource resource
@@ -41,11 +46,11 @@ public class Util {
     public static String getJndiName(final ModelNode modelNode) {
         final String rawJndiName = modelNode.require(JNDI_NAME).asString();
         final String jndiName;
-        if (!rawJndiName.startsWith("java:") ) {
-            if(rawJndiName.startsWith("jboss/")) {
+        if (!rawJndiName.startsWith("java:")) {
+            if (rawJndiName.startsWith("jboss/")) {
                 jndiName = "java:/" + rawJndiName;
             } else {
-                jndiName= "java:jboss/mail/" + rawJndiName;
+                jndiName = "java:jboss/mail/" + rawJndiName;
             }
         } else {
             jndiName = rawJndiName;
@@ -55,9 +60,10 @@ public class Util {
 
     /**
      * Gets the appropriate ServiceName to use for the BinderService associated with the given {@code jndiName}
-     * @param jndiName  the jndi name
+     *
+     * @param jndiName the jndi name
      * @return the service name of the binder service
-     * * copied from {@link org.jboss.as.connector.subsystems.datasources.Util} but should be placed somewhere that is commons place
+     *         * copied from {@link org.jboss.as.connector.subsystems.datasources.Util} but should be placed somewhere that is commons place
      */
     public static ServiceName getBinderServiceName(final String jndiName) {
 
@@ -76,7 +82,7 @@ public class Util {
         String bindName;
         if (jndiName.startsWith("java:/")) {
             bindName = jndiName.substring(6);
-        } else if(jndiName.startsWith("java:")) {
+        } else if (jndiName.startsWith("java:")) {
             bindName = jndiName.substring(5);
         } else {
             bindName = jndiName;

@@ -20,19 +20,19 @@ public class MailSessionService implements Service<Session> {
     private MailSessionConfig sessionConfig;
 
     public MailSessionService(MailSessionConfig sessionConfig) {
-        log.info("service construced with config: " + sessionConfig);
+        log.trace("service constructed with config: " + sessionConfig);
         this.sessionConfig = sessionConfig;
     }
 
     @Override
     public void start(StartContext startContext) throws StartException {
-        log.info("start...");
+        log.trace("start...");
 
     }
 
     @Override
     public void stop(StopContext stopContext) {
-        log.info("stop...");
+        log.trace("stop...");
     }
 
     /*
@@ -57,18 +57,18 @@ public class MailSessionService implements Service<Session> {
         props.put("mail.smtp.port", sessionConfig.getSmtpServerPort());
         props.put("mail.user", sessionConfig.getUsername());
         props.put("mail.debug", true);
-        props.put("mail.from", "nobody@nosuchhost.nosuchdomain.com");
+        //props.put("mail.from", "nobody@nosuchhost.nosuchdomain.com");
 
-        log.info("props: "+props);
+        log.trace("props: "+props);
         return props;
     }
 
 
     @Override
     public Session getValue() throws IllegalStateException, IllegalArgumentException {
-        log.info("should return value");
+        //log.info("should return value");
         Session ses = Session.getDefaultInstance(getProperties());
-        log.info("session is: "+ses);
+        log.trace("session is: "+ses);
 
         return ses;
 

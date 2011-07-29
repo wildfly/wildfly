@@ -25,7 +25,7 @@ class MailSubsystemAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        log.info("Populating the model");
+        //log.info("Populating the model");
         model.setEmptyObject();
         model.get(ModelKeys.MAIL_SESSION);
     }
