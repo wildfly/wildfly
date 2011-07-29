@@ -27,6 +27,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.remote.servlet.Servlet1;
 import org.jboss.as.arquillian.container.remote.servlet.Servlet2;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -47,7 +48,7 @@ public class ServletClientTestCase {
     }
 
     @Deployment(name = "ear", testable = false)
-    public static EnterpriseArchive createDeployment() throws Exception {
+    public static EnterpriseArchive createEarDeployment() throws Exception {
         return ShrinkWrap
                 .create(EnterpriseArchive.class)
                 .addAsModule(
@@ -56,6 +57,13 @@ public class ServletClientTestCase {
                 .addAsModule(
                         ShrinkWrap.create(WebArchive.class).addClass(
                                 Servlet2.class));
+    }
+    
+    @Deployment(name = "war-no-servlet", testable = false)
+    public static WebArchive createNoContextWebDeployment() 
+    {
+        return ShrinkWrap.create(WebArchive.class)
+                .addAsWebResource(new StringAsset("JSP"), "index.jsp");
     }
 
     @Test @OperateOnDeployment("war")
@@ -80,6 +88,15 @@ public class ServletClientTestCase {
         Assert.assertEquals(Servlet2.class.getName(), getContent(new URL(servlet2BaseURL, Servlet2.PATTERN)));
     }
 
+    @Test @OperateOnDeployment("war-no-servlet")
+    public void shouldBeAbleToDeployWarWithNoServlets(@ArquillianResource URL baseURL) throws Exception
+    {
+        Assert.assertNotNull("Should have injected Base URL for deployed WebContext",
+                baseURL);
+
+        Assert.assertEquals("JSP", getContent(new URL(baseURL, "index.jsp")));
+    }
+    
     private String getContent(URL url) throws Exception {
         InputStream is = url.openStream();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -96,5 +113,4 @@ public class ServletClientTestCase {
         }
         return out.toString();
     }
-
 }

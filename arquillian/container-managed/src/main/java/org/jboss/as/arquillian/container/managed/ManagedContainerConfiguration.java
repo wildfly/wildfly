@@ -148,8 +148,4 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
     public void setModulePath(final String modulePath) {
         this.modulePath = modulePath;
     }
-
-    private static boolean isEmpty(String string) {
-        return string == null || string.isEmpty();
-    }
 }
