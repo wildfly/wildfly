@@ -16,6 +16,10 @@
  */
 package org.jboss.as.arquillian.container.remote;
 
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.UnknownHostException;
+
 import javax.management.MBeanServerConnection;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
@@ -43,8 +47,8 @@ public final class RemoteDeployableContainer extends
     @Override
     public void setup(RemoteContainerConfiguration config) {
         super.setup(config);
-        provider = new MBeanServerConnectionProvider(config.getBindAddress(),
-                config.getJmxPort());
+
+        provider = getMBeanServerConnectionProvider();
     }
 
     @Override
@@ -64,5 +68,16 @@ public final class RemoteDeployableContainer extends
     @Override
     protected MBeanServerConnection getMBeanServerConnection() {
         return provider.getConnection();
+    }
+
+    private MBeanServerConnectionProvider getMBeanServerConnectionProvider() {
+        URI jmxSubSystem = getManagementClient().getSubSystemURI("jmx");
+        InetAddress address = null;
+        try {
+            address = InetAddress.getByName(jmxSubSystem.getHost());
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("Could not get jmx subsystems InetAddress: " + jmxSubSystem.getHost(), e);
+        }
+        return new MBeanServerConnectionProvider(address, jmxSubSystem.getPort());
     }
 }
