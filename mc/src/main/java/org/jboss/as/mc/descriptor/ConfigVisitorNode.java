@@ -22,27 +22,17 @@
 
 package org.jboss.as.mc.descriptor;
 
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceName;
-
 /**
- * Config visitor.
+ * Config visitor node.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public interface ConfigVisitor {
+public interface ConfigVisitorNode {
     /**
-     * Add dependency.
+     * Visit metadata node.
+     * e.g. add dependencies to service builder.
      *
-     * @param name the dependency name
+     * @param visitor the config visitor
      */
-    void addDependency(ServiceName name);
-
-    /**
-     * Add dependency.
-     *
-     * @param name the dependency name
-     * @param injector the injector
-     */
-    void addDependency(ServiceName name, Injector injector);
+    void visit(ConfigVisitor visitor);
 }

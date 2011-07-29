@@ -23,7 +23,9 @@
 package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
+import org.jboss.as.mc.descriptor.ConfigVisitor;
 import org.jboss.as.mc.descriptor.ConstructorConfig;
+import org.jboss.as.mc.descriptor.DefaultConfigVisitor;
 import org.jboss.as.mc.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -63,8 +65,9 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
 
             final ServiceTarget serviceTarget = context.getChildTarget();
             final ServiceBuilder serviceBuilder = serviceTarget.addService(null, null);
+            final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder);
 
-            beanConfig.visit(serviceBuilder);
+            beanConfig.visit(visitor);
 
             Joinpoint instantiateJoinpoint;
             ConstructorConfig ctorConfig = beanConfig.getConstructor();

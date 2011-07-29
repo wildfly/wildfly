@@ -23,26 +23,26 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Config visitor.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public interface ConfigVisitor {
-    /**
-     * Add dependency.
-     *
-     * @param name the dependency name
-     */
-    void addDependency(ServiceName name);
+public class DefaultConfigVisitor implements ConfigVisitor {
+    private final ServiceBuilder builder;
 
-    /**
-     * Add dependency.
-     *
-     * @param name the dependency name
-     * @param injector the injector
-     */
-    void addDependency(ServiceName name, Injector injector);
+    public DefaultConfigVisitor(ServiceBuilder builder) {
+        this.builder = builder;
+    }
+
+    @Override
+    public void addDependency(ServiceName name) {
+        builder.addDependency(name);
+    }
+
+    @Override
+    public void addDependency(ServiceName name, Injector injector) {
+        builder.addDependency(name, injector);
+    }
 }
