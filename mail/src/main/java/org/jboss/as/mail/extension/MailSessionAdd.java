@@ -79,8 +79,8 @@ public class MailSessionAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> controllers) throws OperationFailedException {
         //super.performRuntime(context, operation, model, verificationHandler, newControllers);
-        log.info("starting mail runtime");
-        log.info("operation: " + operation);
+
+        log.trace("operation: " + operation);
 
         final String jndiName = Util.getJndiName(operation);
 
