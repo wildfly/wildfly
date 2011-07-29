@@ -36,8 +36,8 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
-        log.warn("we have to marshal the stuff");
-        log.info("model node: " + context.getModelNode());
+
+        log.trace("model node: " + context.getModelNode());
         ModelNode model = context.getModelNode();
         List<Property> sessions = model.get(ModelKeys.MAIL_SESSION).asPropertyList();
 
@@ -46,15 +46,15 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         for (Property mailSession : sessions) {
             String jndi = mailSession.getName();
             log.info("jndi: " + jndi);
-            writer.writeStartElement(ModelKeys.MAIL_SESSION);
+            writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
 
             writer.writeAttribute("jndi-name", jndi);
-            writer.writeEmptyElement(ModelKeys.LOGIN);
+            writer.writeEmptyElement(Element.LOGIN.getLocalName());
             writer.writeAttribute("name", mailSession.getValue().get(ModelKeys.USERNAME).asString());
             writer.writeAttribute("password", mailSession.getValue().get(ModelKeys.PASSWORD).asString());
             //writer.writeEndElement();
 
-            writer.writeEmptyElement(ModelKeys.SMTP_SERVER);
+            writer.writeEmptyElement(Element.SMTP_SERVER.getLocalName());
             writer.writeAttribute("address", mailSession.getValue().get(ModelKeys.SMTP_SERVER_ADDRESS).asString());
             writer.writeAttribute("port", mailSession.getValue().get(ModelKeys.SMTP_SERVER_PORT).asString());
             //writer.writeEndElement();
@@ -124,12 +124,12 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
             Util.fillFrom(operation, c);
             list.add(operation);
-            log.info("operation: " + operation);
+
 
         }
 
-        log.info("parsing done, config is: " + sessionConfigList);
-        log.info("list is: " + list);
+        log.trace("parsing done, config is: " + sessionConfigList);
+        log.trace("list is: " + list);
 
     }
 
