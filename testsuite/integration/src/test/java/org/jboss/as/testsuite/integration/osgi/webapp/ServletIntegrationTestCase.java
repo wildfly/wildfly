@@ -110,7 +110,6 @@ public class ServletIntegrationTestCase extends OSGiTestSupport {
     public static WebArchive getTestArchive() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, WAR_DEPLOYMENT_NAME);
         archive.addClass(SimpleClientServlet.class);
-        archive.addAsWebInfResource("osgi/webapp/webB.xml", "web.xml");
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
         archive.add(new Asset() {
             public InputStream openStream() {
