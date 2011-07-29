@@ -42,8 +42,8 @@ import org.osgi.framework.ServiceReference;
 @LocalBean
 public class SimpleStatelessSessionBean implements Echo {
 
-    @Resource(lookup = "java:global/osgi/BundleContext")
-    private BundleContext context;
+    @Resource
+    BundleContext context;
 
     public String echo(String message) {
         if (BUNDLE_SYMBOLICNAME.equals(message)) {
