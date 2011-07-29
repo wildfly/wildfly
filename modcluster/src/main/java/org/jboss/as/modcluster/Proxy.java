@@ -22,18 +22,12 @@ public class Proxy {
                 host = prop.getValue().toString();
             }
             if (prop.getName().equals("port")) {
-                port = Integer.parseInt(RemoveQuotes(prop.getValue().toString()));
+                port = Integer.parseInt(ContextHost.RemoveQuotes(prop.getValue().toString()));
             }
         }
         if (host == null || port == 0)
             throw new OperationFailedException(new ModelNode().set("need host and port"));
 
-        host = RemoveQuotes(host);
-    }
-
-    private String RemoveQuotes(String string) {
-        if (string.endsWith("\"") && string.startsWith("\""))
-            return string.substring(1, string.length() -1);
-        return null;
+        host = ContextHost.RemoveQuotes(host);
     }
 }
