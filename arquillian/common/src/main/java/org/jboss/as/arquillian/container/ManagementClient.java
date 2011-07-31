@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
+import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
 import org.jboss.as.controller.ControlledProcessState;
@@ -51,6 +52,7 @@ public class ManagementClient {
 
     private static final String SUBDEPLOYMENT = "subdeployment";
     private static final String WEB = "web";
+    private static final String JMX = "jmx";
 
     private static final String NAME = "name";
     private static final String SERVLET = "servlet";
@@ -92,7 +94,10 @@ public class ManagementClient {
 
     public ProtocolMetaData getDeploymentMetaData(String deploymentName) {
         URI webURI = getSubSystemURI(WEB);
+        URI jmxURI = getSubSystemURI(JMX);
+
         ProtocolMetaData metaData = new ProtocolMetaData();
+        metaData.addContext(new JMXContext(jmxURI.getHost(), jmxURI.getPort()));
         HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort());
         metaData.addContext(context);
         try {

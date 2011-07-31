@@ -16,24 +16,12 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
-import org.jboss.arquillian.core.api.InstanceProducer;
-import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
-import org.jboss.sasl.JBossSaslProvider;
-
-import javax.management.MBeanServerConnection;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.URI;
-import java.net.UnknownHostException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.Provider;
@@ -42,6 +30,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.sasl.JBossSaslProvider;
 
 /**
  * JBossAsManagedContainer
@@ -53,13 +45,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
     private final Logger log = Logger.getLogger(ManagedDeployableContainer.class.getName());
     private final Provider saslProvider = new JBossSaslProvider();
-    private MBeanServerConnectionProvider provider;
     private Thread shutdownThread;
     private Process process;
-
-    @Inject
-    @ContainerScoped
-    private InstanceProducer<MBeanServerConnection> mbeanServerInst;
 
     @Override
     public Class<ManagedContainerConfiguration> getConfigurationClass() {
@@ -152,8 +139,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 throw new TimeoutException(String.format("Managed server was not started within [%d] ms", getContainerConfiguration().getStartupTimeout()));
             }
 
-            provider = getMBeanServerConnectionProvider();
-            mbeanServerInst.set(getMBeanServerConnection(5000));
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);
         }
@@ -174,11 +159,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         } catch (Exception e) {
             throw new LifecycleException("Could not stop container", e);
         }
-    }
-
-    @Override
-    protected MBeanServerConnection getMBeanServerConnection() {
-        return provider.getConnection();
     }
 
     private void verifyNoRunningServer() throws LifecycleException {
@@ -217,17 +197,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private MBeanServerConnectionProvider getMBeanServerConnectionProvider() {
-        URI jmxSubSystem = getManagementClient().getSubSystemURI("jmx");
-        InetAddress address = null;
-        try {
-            address = InetAddress.getByName(jmxSubSystem.getHost());
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("Could not get jmx subsystems InetAddress: " + jmxSubSystem.getHost(), e);
-        }
-        return new MBeanServerConnectionProvider(address, jmxSubSystem.getPort());
     }
 
     /**
