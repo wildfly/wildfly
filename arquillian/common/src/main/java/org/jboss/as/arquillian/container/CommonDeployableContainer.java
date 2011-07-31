@@ -16,8 +16,6 @@
  */
 package org.jboss.as.arquillian.container;
 
-import javax.management.MBeanServerConnection;
-
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
@@ -114,24 +112,5 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @Override
     public void undeploy(Descriptor descriptor) throws DeploymentException {
         throw new NotImplementedException();
-    }
-
-    protected abstract MBeanServerConnection getMBeanServerConnection();
-
-    protected MBeanServerConnection getMBeanServerConnection(long timeout) {
-        while (timeout > 0) {
-            try {
-                return getMBeanServerConnection();
-            } catch (Exception ex) {
-                // ignore
-            }
-            try {
-                Thread.sleep(100);
-                timeout -= 100;
-            } catch (InterruptedException ex) {
-                // ignore
-            }
-        }
-        throw new IllegalStateException("MBeanServerConnection not available");
     }
 }
