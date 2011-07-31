@@ -219,7 +219,7 @@
         <version.wsdl4j>1.6.2</version.wsdl4j>
 
         <!-- Plugin versions -->
-        <version.surefire.plugin>2.8.1</version.surefire.plugin>
+        <version.surefire.plugin>2.9</version.surefire.plugin>
 
         <!-- Surefire args -->
         <surefire.jpda.args />
