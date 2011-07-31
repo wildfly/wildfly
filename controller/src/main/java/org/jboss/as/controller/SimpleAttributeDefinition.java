@@ -26,6 +26,7 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -41,21 +42,30 @@ import org.jboss.dmr.ModelType;
 public class SimpleAttributeDefinition extends AttributeDefinition {
 
     public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull) {
-        this(name, name, null, type, allowNull, false);
+        this(name, name, null, type, allowNull, false, MeasurementUnit.NONE);
+    }
+
+    public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull, final MeasurementUnit measurementUnit) {
+        this(name, name, null, type, allowNull, false, measurementUnit);
     }
 
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull) {
-        this(name, name, defaultValue, type, allowNull, false);
+        this(name, name, defaultValue, type, allowNull, false, MeasurementUnit.NONE);
+    }
+
+    public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull, final MeasurementUnit measurementUnit) {
+        this(name, name, defaultValue, type, allowNull, false, measurementUnit);
     }
 
     public SimpleAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
-                                     final boolean allowNull, final boolean allowExpression) {
-        this(name, xmlName, defaultValue, type, allowNull, allowExpression, new ModelTypeValidator(type, allowNull, allowExpression));
+                                     final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit) {
+        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, new ModelTypeValidator(type, allowNull, allowExpression));
     }
 
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
-                                     final boolean allowNull, final boolean allowExpression, final ParameterValidator validator) {
-        super(name, xmlName, defaultValue, type, allowNull, allowExpression, validator);
+                                     final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
+                                     final ParameterValidator validator) {
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, validator);
     }
 
     /**
