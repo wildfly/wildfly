@@ -6,8 +6,5 @@
 		<configuration>
 			<property name="jbossHome">target/jbossas</property>
 		</configuration>
-        <protocol type="jmx-as7">
-            <property name="executionType">REMOTE</property>
-        </protocol>
 	</container>
 </arquillian>

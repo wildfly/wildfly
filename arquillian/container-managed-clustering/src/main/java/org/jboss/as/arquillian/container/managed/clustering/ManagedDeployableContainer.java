@@ -58,13 +58,8 @@ import org.jboss.dmr.ModelNode;
 public final class ManagedDeployableContainer extends CommonDeployableContainer<ManagedContainerConfiguration> {
 
     private final Logger log = Logger.getLogger(ManagedDeployableContainer.class.getName());
-    private MBeanServerConnectionProvider provider;
     private Thread shutdownThread;
     private Process process;
-
-    @Inject
-    @ContainerScoped
-    private InstanceProducer<MBeanServerConnection> mbeanServerInst;
 
     private int destroyProcess() {
         if (process == null)
@@ -178,8 +173,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 throw new TimeoutException(String.format("Managed server was not started within [%d] ms", getContainerConfiguration().getStartupTimeout()));
             }
 
-            provider = getMBeanServerConnectionProvider();
-            mbeanServerInst.set(getMBeanServerConnection(5000));
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);
         }
@@ -202,11 +195,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         }
     }
 
-    @Override
-    protected MBeanServerConnection getMBeanServerConnection() {
-        return provider.getConnection();
-    }
-
     private boolean isServerStarted() {
         try {
             ModelNode op = Util.getEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.EMPTY_ADDRESS.toModelNode());
@@ -219,17 +207,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             // ignore, as we will get exceptions until the management comm services start
         }
         return false;
-    }
-
-    private MBeanServerConnectionProvider getMBeanServerConnectionProvider() {
-        URI jmxSubSystem = getManagementClient().getSubSystemURI("jmx");
-        InetAddress address = null;
-        try {
-            address = InetAddress.getByName(jmxSubSystem.getHost());
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("Could not get jmx subsystems InetAddress: " + jmxSubSystem.getHost(), e);
-        }
-        return new MBeanServerConnectionProvider(address, jmxSubSystem.getPort());
     }
 
     /**
