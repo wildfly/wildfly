@@ -227,6 +227,7 @@ public class ModelDescriptionConstants {
     public static final String UPLOAD_DEPLOYMENT_BYTES = "upload-deployment-bytes";
     public static final String UPLOAD_DEPLOYMENT_URL = "upload-deployment-url";
     public static final String UPLOAD_DEPLOYMENT_STREAM = "upload-deployment-stream";
+    public static final String UNIT = "unit";
     public static final String URL = "url";
     public static final String USER = "user";
     public static final String USER_DN = "user-dn";
