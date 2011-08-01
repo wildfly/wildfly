@@ -23,6 +23,7 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 import java.io.Serializable;
 
@@ -31,12 +32,17 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class ValueConfig implements Serializable, ConfigVisitorNode {
+public class ValueConfig implements Serializable, ConfigVisitorNode, Value<Object> {
     private static final long serialVersionUID = 1L;
 
     private String type;
     protected ConversionValue rawValue;
     private InjectedValue<Object> value = new InjectedValue<Object>();
+
+    @Override
+    public Object getValue() throws IllegalStateException, IllegalArgumentException {
+        return value.getValue();
+    }
 
     @Override
     public void visit(ConfigVisitor visitor) {
@@ -58,7 +64,7 @@ public class ValueConfig implements Serializable, ConfigVisitorNode {
         this.type = type;
     }
 
-    public InjectedValue<Object> getValue() {
+    public InjectedValue<Object> getInjectedValue() {
         return value;
     }
 

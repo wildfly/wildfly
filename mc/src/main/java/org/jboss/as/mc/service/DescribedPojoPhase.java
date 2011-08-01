@@ -23,14 +23,11 @@
 package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.BeanState;
-import org.jboss.as.mc.ParsedKernelDeploymentProcessor;
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
 import org.jboss.as.mc.descriptor.ConfigVisitor;
 import org.jboss.as.mc.descriptor.ConstructorConfig;
 import org.jboss.as.mc.descriptor.DefaultConfigVisitor;
-import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.as.mc.descriptor.ValueConfig;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
@@ -41,7 +38,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.InjectedValue;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -84,7 +80,6 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
                     throw new StartException("Missing factory method in ctor configuration: " + beanConfig);
 
                 ValueConfig[] parameters = ctorConfig.getParameters();
-                InjectedValue<Object>[] ivs = Configurator.getValues(parameters);
                 String[] types = Configurator.getTypes(parameters);
 
                 String factoryClass = ctorConfig.getFactoryClass();
@@ -92,8 +87,8 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
                     Class<?> factoryClazz = Class.forName(factoryClass, false, module.getClassLoader());
                     Method method = Configurator.findMethodInfo(index, factoryClazz, factoryMethod, types, true, true, true);
                     MethodJoinpoint mj = new MethodJoinpoint(method);
-                    mj.setTarget(new InjectedValue<Object>()); // null, since this is static call
-                    mj.setParameters(ivs);
+                    mj.setTarget(new ImmediateValue<Object>(null)); // null, since this is static call
+                    mj.setParameters(parameters);
                     instantiateJoinpoint = mj;
                 } else {
                     ValueConfig factory = ctorConfig.getFactory();
@@ -101,8 +96,8 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
                         throw new StartException("Missing factoy value: " + beanConfig);
 
                     ReflectionJoinpoint rj = new ReflectionJoinpoint(index, factoryMethod, types);
-                    rj.setTarget(factory.getValue());
-                    rj.setParameters(ivs);
+                    rj.setTarget(factory);
+                    rj.setParameters(parameters);
                     instantiateJoinpoint = rj;
                 }
             } else {
@@ -110,10 +105,10 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
                 instantiateJoinpoint = new ConstructorJoinpoint(ctor);
             }
             // set bean config, joinpoint & install
-            instantiatedPhase.getModule().setValue(new ImmediateValue<Module>(module));
-            instantiatedPhase.getBeanConfig().setValue(new ImmediateValue<BeanMetaDataConfig>(beanConfig));
-            instantiatedPhase.getBeanInfo().setValue(new ImmediateValue<BeanInfo>(beanInfo));
-            instantiatedPhase.getInstantiationJoinpoint().setValue(new ImmediateValue<Joinpoint>(instantiateJoinpoint));
+            instantiatedPhase.setModule(module);
+            instantiatedPhase.setBeanConfig(beanConfig);
+            instantiatedPhase.setBeanInfo(beanInfo);
+            instantiatedPhase.setInstantiationJoinpoint(instantiateJoinpoint);
             serviceBuilder.install();
         } catch (StartException e) {
             throw e;

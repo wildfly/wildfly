@@ -27,7 +27,6 @@ import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
 import org.jboss.as.mc.descriptor.ConfigVisitor;
 import org.jboss.as.mc.descriptor.DefaultConfigVisitor;
 import org.jboss.as.mc.descriptor.InstallConfig;
-import org.jboss.as.mc.descriptor.LifecycleConfig;
 import org.jboss.as.mc.descriptor.ValueConfig;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
@@ -39,9 +38,12 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Abstract MC pojo phase; it handles install/uninstall
@@ -51,13 +53,10 @@ import java.lang.reflect.Method;
 public abstract class AbstractPojoPhase implements Service {
     protected final Logger log = Logger.getLogger(getClass());
 
-    private final InjectedValue<Module> module = new InjectedValue<Module>();
-    private final InjectedValue<BeanMetaDataConfig> beanConfig = new InjectedValue<BeanMetaDataConfig>();
-    private final InjectedValue<BeanInfo> beanInfo = new InjectedValue<BeanInfo>();
-    private final InjectedValue<Object> bean = new InjectedValue<Object>();
-
-    private InjectedValue<Joinpoint>[] installs;
-    private InjectedValue<Joinpoint>[] uninstalls;
+    private Module module;
+    private BeanMetaDataConfig beanConfig;
+    private BeanInfo beanInfo;
+    private Object bean;
 
     protected abstract BeanState getLifecycleState();
     protected abstract AbstractPojoPhase createNextPhase();
@@ -69,16 +68,16 @@ public abstract class AbstractPojoPhase implements Service {
             final AbstractPojoPhase nextPhase = createNextPhase(); // do we have a next phase
             if (nextPhase != null) {
                 final BeanState state = getLifecycleState();
-                final BeanMetaDataConfig beanConfig = getBeanConfig().getValue();
+                final BeanMetaDataConfig beanConfig = getBeanConfig();
                 final ServiceName name = BeanMetaDataConfig.JBOSS_MC_POJO.append(beanConfig.getName()).append(state.next().name());
                 final ServiceTarget serviceTarget = context.getChildTarget();
                 final ServiceBuilder serviceBuilder = serviceTarget.addService(name, nextPhase);
-                final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, state, module.getValue().getClassLoader());
+                final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, state, module.getClassLoader());
                 beanConfig.visit(visitor);
-                nextPhase.getModule().setValue(new ImmediateValue<Module>(getModule().getValue()));
-                nextPhase.getBeanConfig().setValue(new ImmediateValue<BeanMetaDataConfig>(beanConfig));
-                nextPhase.getBeanInfo().setValue(new ImmediateValue<BeanInfo>(getBeanInfo().getValue()));
-                nextPhase.getBean().setValue(new ImmediateValue<Object>(getBean().getValue()));
+                nextPhase.setModule(getModule());
+                nextPhase.setBeanConfig(getBeanConfig());
+                nextPhase.setBeanInfo(getBeanInfo());
+                nextPhase.setBean(getBean());
                 serviceBuilder.install();
             }
 
@@ -89,11 +88,30 @@ public abstract class AbstractPojoPhase implements Service {
 
     @Override
     public Object getValue() throws IllegalStateException, IllegalArgumentException {
-        return getBean().getValue();
+        return getBean();
     }
 
     public void stop(StopContext context) {
         executeUninstalls();
+    }
+
+    private List<Joinpoint> getInstalls() {
+        List<InstallConfig> installs = getBeanConfig().getInstalls();
+        return (installs != null) ? toJoinpoints(installs) : Collections.<Joinpoint>emptyList();
+    }
+
+    private List<Joinpoint> getUninstalls() {
+        List<InstallConfig> uninstalls = getBeanConfig().getUninstalls();
+        return (uninstalls != null) ? toJoinpoints(uninstalls) : Collections.<Joinpoint>emptyList();
+    }
+
+    private List<Joinpoint> toJoinpoints(List<InstallConfig> installs) {
+        List<Joinpoint> joinpoints = new ArrayList<Joinpoint>();
+        for (InstallConfig ic : installs) {
+            if (ic.getWhenRequired() == getLifecycleState())
+                joinpoints.add(createJoinpoint(ic));
+        }
+        return joinpoints;
     }
 
     protected Joinpoint createJoinpoint(InstallConfig config) {
@@ -104,26 +122,26 @@ public abstract class AbstractPojoPhase implements Service {
         ValueConfig[] parameters = config.getParameters();
         String[] types = Configurator.getTypes(parameters);
         String dependency = config.getDependency();
-        InjectedValue<Object> target = (dependency != null) ? config.getBean() : getBean();
-        BeanInfo beanInfo = (dependency != null) ? config.getBeanInfo().getValue() : getBeanInfo().getValue();
+        Value<Object> target = (dependency != null) ? config.getBean() : new ImmediateValue<Object>(getBean());
+        BeanInfo beanInfo = (dependency != null) ? config.getBeanInfo().getValue() : getBeanInfo();
         Method method = beanInfo.findMethod(methodName, types);
-        InjectedValue<Object>[] params = Configurator.getValues(parameters);
         MethodJoinpoint joinpoint = new MethodJoinpoint(method);
         joinpoint.setTarget(target);
-        joinpoint.setParameters(params);
+        joinpoint.setParameters(parameters);
         return joinpoint;
     }
 
     protected void executeInstalls() throws StartException {
-        if (installs == null || installs.length == 0)
+        List<Joinpoint> installs = getInstalls();
+        if (installs.isEmpty())
             return;
 
         int i = 0;
         try {
-            for (i = 0; i < installs.length; i++)
-                installs[i].getValue().dispatch();
+            for (i = 0; i < installs.size(); i++)
+                installs.get(i).dispatch();
         } catch (Throwable t) {
-            considerUninstalls(uninstalls, i);
+            considerUninstalls(getUninstalls(), i);
             throw new StartException(t);
         }
     }
@@ -141,44 +159,52 @@ public abstract class AbstractPojoPhase implements Service {
      * @param uninstalls the uninstalls
      * @param index current installs index
      */
-    protected void considerUninstalls(InjectedValue<Joinpoint>[] uninstalls, int index) {
+    protected void considerUninstalls(List<Joinpoint> uninstalls, int index) {
         if (uninstalls == null)
             return;
 
-        for (int j = Math.min(index, uninstalls.length - 1); j >= 0; j--) {
+        for (int j = Math.min(index, uninstalls.size() - 1); j >= 0; j--) {
             try {
-                uninstalls[j].getValue().dispatch();
+                uninstalls.get(j).dispatch();
             } catch (Throwable t) {
-                log.warn("Ignoring uninstall action on target: " + uninstalls[j], t);
+                log.warn("Ignoring uninstall action on target: " + uninstalls.get(j), t);
             }
         }
     }
 
     protected void executeUninstalls() {
-        considerUninstalls(uninstalls, Integer.MAX_VALUE);
+        considerUninstalls(getUninstalls(), Integer.MAX_VALUE);
     }
 
-    protected InjectedValue<Module> getModule() {
+    protected Module getModule() {
         return module;
     }
 
-    protected InjectedValue<BeanMetaDataConfig> getBeanConfig() {
+    protected void setModule(Module module) {
+        this.module = module;
+    }
+
+    protected BeanMetaDataConfig getBeanConfig() {
         return beanConfig;
     }
 
-    protected InjectedValue<BeanInfo> getBeanInfo() {
+    protected void setBeanConfig(BeanMetaDataConfig beanConfig) {
+        this.beanConfig = beanConfig;
+    }
+
+    protected BeanInfo getBeanInfo() {
         return beanInfo;
     }
 
-    protected InjectedValue<Object> getBean() {
+    protected void setBeanInfo(BeanInfo beanInfo) {
+        this.beanInfo = beanInfo;
+    }
+
+    protected Object getBean() {
         return bean;
     }
 
-    public void setInstalls(InjectedValue<Joinpoint>[] installs) {
-        this.installs = installs;
-    }
-
-    public void setUninstalls(InjectedValue<Joinpoint>[] uninstalls) {
-        this.uninstalls = uninstalls;
+    protected void setBean(Object bean) {
+        this.bean = bean;
     }
 }

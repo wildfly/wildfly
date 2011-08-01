@@ -41,7 +41,7 @@ public class InjectedValueConfig extends ValueConfig {
             required = BeanState.INSTALLED;
 
         ServiceName name = BeanMetaDataConfig.JBOSS_MC_POJO.append(dependency).append(required.name());
-        visitor.addDependency(name, getValue());
+        visitor.addDependency(name, getInjectedValue());
     }
 
     public void setDependency(String dependency) {

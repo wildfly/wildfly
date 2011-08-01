@@ -38,6 +38,6 @@ public class MethodJoinpoint extends TargetJoinpoint {
 
     @Override
     public Object dispatch() throws Throwable {
-        return method.invoke(getTarget().getOptionalValue(), toObjects(method.getParameterTypes()));
+        return method.invoke(getTarget().getValue(), toObjects(method.getParameterTypes()));
     }
 }

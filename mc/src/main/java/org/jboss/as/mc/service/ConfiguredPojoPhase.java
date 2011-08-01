@@ -27,9 +27,12 @@ import org.jboss.as.mc.descriptor.PropertyConfig;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -49,24 +52,43 @@ public class ConfiguredPojoPhase extends AbstractPojoPhase {
     }
 
     protected void configure(boolean nullify) throws Throwable {
-        Set<PropertyConfig> properties = getBeanConfig().getValue().getProperties();
+        Set<PropertyConfig> properties = getBeanConfig().getProperties();
         if (properties != null) {
-            BeanInfo beanInfo = getBeanInfo().getValue();
+            List<PropertyConfig> used = new ArrayList<PropertyConfig>();
             for (PropertyConfig pc : properties) {
-                Method setter = beanInfo.getSetter(pc.getPropertyName()); // TODO -- multi-setters
-                MethodJoinpoint joinpoint = new MethodJoinpoint(setter);
-                InjectedValue<Object> param = (nullify == false) ? pc.getValue().getValue() : new InjectedValue<Object>();
-                joinpoint.setParameters(new InjectedValue[]{param});
-                joinpoint.setTarget(getBean());
-                joinpoint.dispatch();
+                try {
+                    configure(pc, nullify);
+                    used.add(pc);
+                } catch (Throwable t) {
+                    if (nullify == false) {
+                        for (PropertyConfig upc : used) {
+                            try {
+                                configure(upc, true);
+                            } catch (Throwable ignored) {
+                            }
+                        }
+                        throw new StartException(t);
+                    }
+                }
             }
         }
+    }
+
+    protected void configure(PropertyConfig pc, boolean nullify) throws Throwable {
+        Method setter = getBeanInfo().getSetter(pc.getPropertyName()); // TODO -- multi-setters
+        MethodJoinpoint joinpoint = new MethodJoinpoint(setter);
+        Value<Object> param = (nullify == false) ? pc.getValue() : new ImmediateValue<Object>(null);
+        joinpoint.setParameters(new Value[]{param});
+        joinpoint.setTarget(new ImmediateValue<Object>(getBean()));
+        joinpoint.dispatch();
     }
 
     @Override
     public void start(StartContext context) throws StartException {
         try {
             configure(false);
+        } catch (StartException t) {
+            throw t;
         } catch (Throwable t) {
             throw new StartException(t);
         }

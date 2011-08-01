@@ -42,12 +42,12 @@ public class StartStopPojoPhase extends LifecyclePojoPhase {
     }
     @Override
     protected LifecycleConfig getUpConfig() {
-        return getBeanConfig().getValue().getStart();
+        return getBeanConfig().getStart();
     }
 
     @Override
     protected LifecycleConfig getDownConfig() {
-        return getBeanConfig().getValue().getStop();
+        return getBeanConfig().getStop();
     }
 
     @Override

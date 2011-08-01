@@ -27,7 +27,8 @@ import org.jboss.as.mc.descriptor.ValueConfig;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Method;
 
@@ -44,11 +45,13 @@ public abstract class LifecyclePojoPhase extends AbstractPojoPhase {
 
     protected Joinpoint createJoinpoint(LifecycleConfig config, String defaultMethod) {
         Method method;
-        InjectedValue<Object>[] params = null;
+        Value<Object>[] params = null;
         if (config == null) {
             try {
-                method = getBeanInfo().getValue().getMethod(defaultMethod);
-            } catch (Exception ignored) {
+                method = getBeanInfo().getMethod(defaultMethod);
+            } catch (Exception t) {
+                if (log.isTraceEnabled())
+                    log.trace("Ignoring default " + defaultUp() + " invocation.", t);
                 return null;
             }
         } else {
@@ -58,11 +61,11 @@ public abstract class LifecyclePojoPhase extends AbstractPojoPhase {
             }
             ValueConfig[] parameters = config.getParameters();
             String[] types = Configurator.getTypes(parameters);
-            method = getBeanInfo().getValue().findMethod(methodName, types);
-            params = Configurator.getValues(parameters);
+            method = getBeanInfo().findMethod(methodName, types);
+            params = parameters;
         }
         MethodJoinpoint joinpoint = new MethodJoinpoint(method);
-        joinpoint.setTarget(getBean());
+        joinpoint.setTarget(new ImmediateValue<Object>(getBean()));
         joinpoint.setParameters(params);
         return joinpoint;
     }
@@ -86,7 +89,8 @@ public abstract class LifecyclePojoPhase extends AbstractPojoPhase {
             Joinpoint joinpoint = createJoinpoint(getDownConfig(), defaultDown());
             if (joinpoint != null)
                 joinpoint.dispatch();
-        } catch (Throwable ignored) {
+        } catch (Throwable t) {
+            log.debug("Exception at " + defaultDown() + " phase.", t);
         }
     }
 }

@@ -64,6 +64,10 @@ public class InstallConfig extends LifecycleConfig {
         this.dependency = dependency;
     }
 
+    public BeanState getWhenRequired() {
+        return whenRequired;
+    }
+
     public void setWhenRequired(BeanState whenRequired) {
         this.whenRequired = whenRequired;
     }

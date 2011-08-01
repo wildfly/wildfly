@@ -23,6 +23,7 @@
 package org.jboss.as.mc.service;
 
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 /**
  * Abstract joinpoint; keep parameters.
@@ -30,7 +31,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractJoinpoint implements Joinpoint {
-    private InjectedValue<Object>[] parameters;
+    private Value<Object>[] parameters;
 
     protected Object[] toObjects(Class[] types) {
         if (parameters == null || parameters.length == 0)
@@ -50,11 +51,11 @@ public abstract class AbstractJoinpoint implements Joinpoint {
         }
     }
 
-    public InjectedValue<Object>[] getParameters() {
+    public Value<Object>[] getParameters() {
         return parameters;
     }
 
-    public void setParameters(InjectedValue<Object>[] parameters) {
+    public void setParameters(Value<Object>[] parameters) {
         this.parameters = parameters;
     }
 }

@@ -22,7 +22,7 @@
 
 package org.jboss.as.mc.service;
 
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 /**
  * Target joinpoint; keeps target.
@@ -30,13 +30,13 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class TargetJoinpoint extends AbstractJoinpoint {
-    private InjectedValue<Object> target = new InjectedValue<Object>();
+    private Value<Object> target;
 
-    public InjectedValue<Object> getTarget() {
+    public Value<Object> getTarget() {
         return target;
     }
 
-    public void setTarget(InjectedValue<Object> target) {
+    public void setTarget(Value<Object> target) {
         this.target = target;
     }
 }

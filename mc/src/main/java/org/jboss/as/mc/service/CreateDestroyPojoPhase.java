@@ -43,12 +43,12 @@ public class CreateDestroyPojoPhase extends LifecyclePojoPhase {
 
     @Override
     protected LifecycleConfig getUpConfig() {
-        return getBeanConfig().getValue().getCreate();
+        return getBeanConfig().getCreate();
     }
 
     @Override
     protected LifecycleConfig getDownConfig() {
-        return getBeanConfig().getValue().getDestroy();
+        return getBeanConfig().getDestroy();
     }
 
     @Override

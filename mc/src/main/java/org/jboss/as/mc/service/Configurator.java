@@ -26,7 +26,6 @@ import org.jboss.as.mc.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.logging.Logger;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.util.StringPropertyReplacer;
 
 import java.beans.PropertyEditor;
@@ -135,22 +134,6 @@ public class Configurator {
         for (int i =0; i < types.length; i++)
             types[i] = values[i].getType();
         return types;
-    }
-
-    /**
-     * Get injected values from configs.
-     *
-     * @param configs the value configs
-     * @return injected values or null if null configs
-     */
-    public static InjectedValue<Object>[] getValues(ValueConfig[] configs) {
-        InjectedValue<Object>[] ivs = null;
-        if (configs != null) {
-            ivs = new InjectedValue[configs.length];
-            for (int i = 0; i < ivs.length; i++)
-                ivs[i] = configs[i].getValue();
-        }
-        return ivs;
     }
 
     /**
