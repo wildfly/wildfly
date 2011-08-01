@@ -6,7 +6,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
@@ -26,11 +29,13 @@ public class KernelServices {
     private volatile ServiceContainer container;
     private final ModelController controller;
     private final StringConfigurationPersister persister;
+    private final OperationValidator operationValidator;
 
-    KernelServices(ServiceContainer container, ModelController controller, StringConfigurationPersister persister) {
+    KernelServices(ServiceContainer container, ModelController controller, StringConfigurationPersister persister, OperationValidator operationValidator) {
         this.container = container;
         this.controller = controller;
         this.persister = persister;
+        this.operationValidator = operationValidator;
     }
 
     /**
@@ -69,6 +74,24 @@ public class KernelServices {
         op.get(RECURSIVE).set(true);
         ModelNode result = executeOperation(op);
         return AbstractSubsystemTest.checkResultAndGetContents(result);
+    }
+
+    /**
+     * Validates the operations against the description providers in the model controller
+     * @param operations the operations to validate
+     * @throws AssertionFailedError if the operations are not valid
+     */
+    public void validateOperations(List<ModelNode> operations) {
+        operationValidator.validateOperations(operations);
+    }
+
+    /**
+     * Validates the operation against the description providers in the model controller
+     * @param operations the operations to validate
+     * @throws AssertionFailedError if the operation is not valid
+     */
+    public void validateOperation(ModelNode operation) {
+        operationValidator.validateOperation(operation);
     }
 
     public void shutdown() {
