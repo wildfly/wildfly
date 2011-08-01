@@ -77,6 +77,10 @@
             <artifactId>jbossxts-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.jbossts</groupId>
+            <artifactId>jbosstxbridge</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.ws</groupId>
             <artifactId>jbossws-spi</artifactId>
         </dependency>

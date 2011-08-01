@@ -914,6 +914,7 @@
         <module-def name="org.jboss.xts">
             <maven-resource group="org.jboss.jbossts" artifact="jbossxts"/>
             <maven-resource group="org.jboss.jbossts" artifact="jbossxts-api"/>
+            <maven-resource group="org.jboss.jbossts" artifact="jbosstxbridge"/>
         </module-def>
 
         <module-def name="org.jgroups">
