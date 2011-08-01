@@ -23,12 +23,9 @@
 package org.jboss.as.messaging;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 
@@ -50,6 +47,7 @@ public enum Element {
    BACKUP(CommonAttributes.BACKUP),
    BINDINGS_DIRECTORY(CommonAttributes.BINDINGS_DIRECTORY),
    BRIDGES(CommonAttributes.BRIDGES),
+   BROADCAST_GROUP(CommonAttributes.BROADCAST_GROUP),
    BROADCAST_GROUPS(CommonAttributes.BROADCAST_GROUPS),
    BROADCAST_PERIOD(CommonAttributes.BROADCAST_PERIOD),
    CLASS_NAME(CommonAttributes.CLASS_NAME),
@@ -59,7 +57,7 @@ public enum Element {
    CLUSTER_USER(CommonAttributes.CLUSTER_USER),
    CONNECTION_TTL_OVERRIDE(CommonAttributes.CONNECTION_TTL_OVERRIDE),
    CONNECTOR_SERVICES(CommonAttributes.CONNECTOR_SERVICES),
-   CONNECTOR_REF(CommonAttributes.CONNECTOR_REF),
+   CONNECTOR_REF(getConnectorRefDefinitions()),
    CORE_QUEUES(CommonAttributes.CORE_QUEUES),
    CREATE_BINDINGS_DIR(CommonAttributes.CREATE_BINDINGS_DIR),
    CREATE_JOURNAL_DIR(CommonAttributes.CREATE_JOURNAL_DIR),
@@ -148,6 +146,7 @@ public enum Element {
    LVQ_NODE_NAME(CommonAttributes.LVQ),
    REDISTRIBUTION_DELAY_NODE_NAME(CommonAttributes.REDISTRIBUTION_DELAY),
    SEND_TO_DLA_ON_NO_ROUTE(CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE),
+   STATIC_CONNECTORS(CommonAttributes.STATIC_CONNECTORS),
 
    //JMS Stuff
    AUTO_GROUP(CommonAttributes.AUTO_GROUP),
@@ -298,5 +297,14 @@ public enum Element {
         result.put("server", CommonAttributes.THREAD_POOL_MAX_SIZE);
         result.put("connection", CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE);
         return result;
+    }
+
+    private static Map<String, AttributeDefinition> getConnectorRefDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("simple", CommonAttributes.CONNECTOR_REF);
+        result.put("broadcast-group", ConnectorRefsAttribute.BROADCAST_GROUP);
+        result.put("static-connectors", ConnectorRefsAttribute.STATIC_CONNECTORS);
+        return result;
+
     }
 }

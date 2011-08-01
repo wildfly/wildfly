@@ -24,6 +24,22 @@
                </netty-acceptor>
             </acceptors>
 
+            <broadcast-groups>
+                <broadcast-group name="groupA">
+                    <local-bind-address>localA</local-bind-address>
+                    <local-bind-port>12345</local-bind-port>
+                    <group-address>groupA</group-address>
+                    <group-port>23456</group-port>
+                    <broadcast-period>2500</broadcast-period>
+                    <connector-ref>netty</connector-ref>
+                    <connector-ref>netty-throughput</connector-ref>
+                </broadcast-group>
+                <broadcast-group name="groupB">
+                    <group-address>groupB</group-address>
+                    <group-port>34567</group-port>
+                </broadcast-group>
+            </broadcast-groups>
+
             <diverts>
                 <divert name="testDivert1">
                     <routing-name>routing</routing-name>

@@ -60,6 +60,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition BLOCK_ON_NON_DURABLE_SEND = new SimpleAttributeDefinition("block-on-non-durable-send",
             new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND), ModelType.BOOLEAN, true);
 
+    SimpleAttributeDefinition BROADCAST_PERIOD = new SimpleAttributeDefinition("broadcast-period",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_BROADCAST_PERIOD), ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
+
     SimpleAttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = new SimpleAttributeDefinition("cache-large-message-client",
             new ModelNode().set(HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT), ModelType.BOOLEAN, true);
 
@@ -96,6 +99,11 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition CONNECTION_TTL_OVERRIDE = new SimpleAttributeDefinition("connection-ttl-override",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CONNECTION_TTL_OVERRIDE), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+
+
+    SimpleAttributeDefinition CONNECTOR_REF = new SimpleAttributeDefinition("connector-ref", ModelType.STRING, true);
+
+    ConnectorRefsAttribute CONNECTOR_REFS_OPTIONAL = ConnectorRefsAttribute.BROADCAST_GROUP;
 
     SimpleAttributeDefinition CONSUMER_MAX_RATE = new SimpleAttributeDefinition("consumer-max-rate",
             new ModelNode().set(HornetQClient.DEFAULT_CONSUMER_MAX_RATE), ModelType.INT,  true, MeasurementUnit.PER_SECOND);
@@ -139,7 +147,11 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition FORWARDING_ADDRESS = new SimpleAttributeDefinition("forwarding-address", ModelType.STRING, false);
 
+    SimpleAttributeDefinition GROUP_ADDRESS = new SimpleAttributeDefinition("group-address", ModelType.STRING, false);
+
     SimpleAttributeDefinition GROUP_ID = new SimpleAttributeDefinition("group-id", ModelType.STRING, true);
+
+    SimpleAttributeDefinition GROUP_PORT = new SimpleAttributeDefinition("group-port", ModelType.INT, false);
 
     SimpleAttributeDefinition HA = new SimpleAttributeDefinition("forwarding-address", new ModelNode().set(HornetQClient.DEFAULT_HA),  ModelType.BOOLEAN, false);
 
@@ -182,6 +194,10 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_TYPE.toString()), ModelType.STRING,  true, false, MeasurementUnit.NONE, JournalTypeValidator.INSTANCE);
 
     SimpleAttributeDefinition LOAD_BALANCING_CLASS_NAME = new SimpleAttributeDefinition("connection-load-balancing-policy-class-name", ModelType.STRING, true);
+
+    SimpleAttributeDefinition LOCAL_BIND_ADDRESS = new SimpleAttributeDefinition("local-bind-address", ModelType.STRING, true);
+
+    SimpleAttributeDefinition LOCAL_BIND_PORT = new SimpleAttributeDefinition("local-bind-port", new ModelNode().set(-1), ModelType.INT, true);
 
     SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = new SimpleAttributeDefinition("log-journal-write-rate",
             new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE), ModelType.BOOLEAN,  true);
@@ -319,7 +335,6 @@ public interface CommonAttributes {
     String BRIDGES = "bridges";
     String BROADCAST_GROUP = "broadcast-group";
     String BROADCAST_GROUPS = "broadcast-groups";
-    String BROADCAST_PERIOD ="broadcast-period";
     String CLASS_NAME = "class-name";
     String CLUSTER_CONNECTION = "cluster-connection";
     String CLUSTER_CONNECTIONS = "cluster-connections";
@@ -328,7 +343,7 @@ public interface CommonAttributes {
     String CONNECTOR ="connector";
     String CONNECTORS ="connectors";
     String CONNECTOR_NAME ="connector-name";
-    String CONNECTOR_REF ="connector-ref";
+    String CONNECTOR_REF_STRING ="connector-ref";
     String CONNECTOR_SERVICE = "connector-service";
     String CONNECTOR_SERVICES = "connector-services";
     String CONSUME_NAME ="consume";
@@ -352,9 +367,7 @@ public interface CommonAttributes {
     String FACTORY_CLASS ="factory-class";
     String FILE_DEPLOYMENT_ENABLED ="file-deployment-enabled";
     String FORWARD_WHEN_NO_CONSUMERS = "forward-when-no-consumers";
-    String GROUP_ADDRESS ="group-address";
     String GROUPING_HANDLER ="grouping-handler";
-    String GROUP_PORT ="group-port";
     String IN_VM_ACCEPTOR ="in-vm-acceptor";
     String IN_VM_CONNECTOR ="in-vm-connector";
     String JMS_CONNECTION_FACTORIES ="jms-connection-factories";
@@ -368,8 +381,6 @@ public interface CommonAttributes {
     String LAST_VALUE_QUEUE = "last-value=queue";
     String LIVE_CONNECTOR_REF ="live-connector-ref";
     String LOCAL = "local";
-    String LOCAL_BIND_ADDRESS ="local-bind-address";
-    String LOCAL_BIND_PORT ="local-bind-port";
     String LOCAL_TX = "LocalTransaction";
     String LVQ ="last-value-queue";
     String MANAGE_NAME ="manage";
@@ -448,6 +459,10 @@ public interface CommonAttributes {
 
     AttributeDefinition[] DIVERT_ATTRIBUTES = {
         ROUTING_NAME, DIVERT_ADDRESS, FORWARDING_ADDRESS, FILTER, TRANSFORMER_CLASS_NAME, EXCLUSIVE
+    };
+
+    AttributeDefinition[] BROADCAST_GROUP_ATTRIBUTES = {
+        LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT, GROUP_ADDRESS, GROUP_PORT, ConnectorRefsAttribute.BROADCAST_GROUP
     };
 
     AttributeDefinition[] CORE_QUEUE_ATTRIBUTES = { QUEUE_ADDRESS, FILTER, DURABLE };

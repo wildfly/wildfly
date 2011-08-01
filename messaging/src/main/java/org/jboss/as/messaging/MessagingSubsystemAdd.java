@@ -121,6 +121,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -144,6 +145,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.messaging.MessagingServices.TransportConfigType;
 import org.jboss.as.messaging.jms.JMSService;
 import org.jboss.as.network.SocketBinding;
@@ -164,7 +166,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class MessagingSubsystemAdd extends AbstractAddStepHandler {
+class MessagingSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     private static final String DEFAULT_PATH = "messaging";
     private static final String DEFAULT_RELATIVE_TO = "jboss.server.data.dir";
@@ -175,10 +177,9 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
     static final String DEFAULT_LARGE_MESSSAGE_DIR = "largemessages";
     static final String DEFAULT_PAGING_DIR = "paging";
 
-    private final Configuration configuration;
+    public static final MessagingSubsystemAdd INSTANCE = new MessagingSubsystemAdd();
 
-    public MessagingSubsystemAdd(final Configuration configuration) {
-        this.configuration = configuration;
+    private MessagingSubsystemAdd() {
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -205,8 +206,6 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
                                   final ServiceVerificationHandler verificationHandler,
                                   final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        // Transform the configuration
-        final Configuration configuration = transformConfig(model);
 
         // Create path services
         // TODO move into child resource handlers
@@ -215,17 +214,21 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
         final ServiceName largeMessagePath = createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, operation.get(LARGE_MESSAGES_DIRECTORY), serviceTarget);
         final ServiceName pagingPath = createDirectoryService(DEFAULT_PAGING_DIR, operation.get(PAGING_DIRECTORY), serviceTarget);
 
-        // Process acceptors and connectors
-        // TODO move into child resource handlers
-        final Set<String> socketBindings = new HashSet<String>();
-        processAcceptors(configuration, operation, socketBindings);
-        processConnectors(configuration, operation, socketBindings);
-
         // Add a RUNTIME step to actually install the HQ Service. This will execute after the runtime step
         // added by any child resources whose ADD handler executes after this one in the model stage.
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+                // Transform the configuration
+                final Configuration configuration = transformConfig(model);
+
+                // Process acceptors and connectors
+                // TODO move into child resource handlers
+                final Set<String> socketBindings = new HashSet<String>();
+                processAcceptors(configuration, operation, socketBindings);
+                processConnectors(configuration, operation, socketBindings);
+
 
                 // Create the HornetQ Service
                 final HornetQService hqService = new HornetQService();
@@ -267,6 +270,8 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
      * @return the hornetQ configuration
      */
     Configuration transformConfig(final ModelNode model) throws OperationFailedException {
+
+        Configuration configuration = new ConfigurationImpl();
 
         // --
         configuration.setAllowAutoFailBack(ALLOW_FAILBACK.validateResolvedOperation(model).asBoolean());
@@ -346,6 +351,10 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
         processAddressSettings(configuration, model);
 //        processCoreQueues(configuration, model);
         processSecuritySettings(configuration, model);
+
+        DivertAdd.addDivertConfigs(configuration, model);
+        BroadcastGroupAdd.addBroadcastGroupConfigs(configuration, model);
+
         return configuration;
     }
 
@@ -504,6 +513,11 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
                 }
             }
         }
+    }
+
+    @Override
+    public ModelNode getModelDescription(final Locale locale) {
+        return MessagingDescriptions.getSubsystemAdd(locale);
     }
 
     /**

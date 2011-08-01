@@ -30,8 +30,8 @@ import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
@@ -99,6 +99,15 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
                 result.add(PooledConnectionFactoryAdd.getAddOperation(address, property.getValue()));
             }
         }
+
+        if (subModel.hasDefined(CommonAttributes.BROADCAST_GROUP)) {
+            for(final Property property : subModel.get(CommonAttributes.BROADCAST_GROUP).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(CommonAttributes.BROADCAST_GROUP, property.getName());
+                result.add(BroadcastGroupAdd.getAddOperation(address, property.getValue()));
+            }
+        }
+
         if(subModel.hasDefined(CommonAttributes.DIVERT)) {
             for(final Property property : subModel.get(CommonAttributes.DIVERT).asPropertyList()) {
                 final ModelNode address = rootAddress.toModelNode();
