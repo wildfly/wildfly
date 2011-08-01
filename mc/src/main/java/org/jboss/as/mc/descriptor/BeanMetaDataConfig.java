@@ -23,6 +23,7 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
+import org.jboss.msc.service.ServiceName;
 
 import java.io.Serializable;
 
@@ -33,6 +34,9 @@ import java.io.Serializable;
  */
 public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
     private static final long serialVersionUID = 1L;
+
+    /** Name prefix of all MC-style beans. */
+    public static final ServiceName JBOSS_MC_POJO = ServiceName.JBOSS.append("mc", "pojo");
 
     private String name;
     private String beanClass;

@@ -23,7 +23,6 @@
 package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.BeanState;
-import org.jboss.as.mc.ParsedKernelDeploymentProcessor;
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
 import org.jboss.as.mc.descriptor.ConfigVisitor;
 import org.jboss.as.mc.descriptor.DefaultConfigVisitor;
@@ -66,7 +65,7 @@ public abstract class AbstractPojoPhase implements Service {
             if (nextPhase != null) {
                 final BeanState state = getLifecycleState();
                 final BeanMetaDataConfig beanConfig = getBeanConfig().getValue();
-                final ServiceName name = ParsedKernelDeploymentProcessor.JBOSS_MC_POJO.append(beanConfig.getName()).append(state.next().name());
+                final ServiceName name = BeanMetaDataConfig.JBOSS_MC_POJO.append(beanConfig.getName()).append(state.next().name());
                 final ServiceTarget serviceTarget = context.getChildTarget();
                 final ServiceBuilder serviceBuilder = serviceTarget.addService(name, nextPhase);
                 final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, state, module.getValue().getClassLoader());
@@ -81,6 +80,11 @@ public abstract class AbstractPojoPhase implements Service {
         } catch (Throwable t) {
             throw new StartException(t);
         }
+    }
+
+    @Override
+    public Object getValue() throws IllegalStateException, IllegalArgumentException {
+        return getBean().getValue();
     }
 
     public void stop(StopContext context) {
@@ -131,19 +135,19 @@ public abstract class AbstractPojoPhase implements Service {
         considerUninstalls(uninstalls, Integer.MAX_VALUE);
     }
 
-    public InjectedValue<Module> getModule() {
+    protected InjectedValue<Module> getModule() {
         return module;
     }
 
-    public InjectedValue<BeanMetaDataConfig> getBeanConfig() {
+    protected InjectedValue<BeanMetaDataConfig> getBeanConfig() {
         return beanConfig;
     }
 
-    public InjectedValue<BeanInfo> getBeanInfo() {
+    protected InjectedValue<BeanInfo> getBeanInfo() {
         return beanInfo;
     }
 
-    public InjectedValue<Object> getBean() {
+    protected InjectedValue<Object> getBean() {
         return bean;
     }
 

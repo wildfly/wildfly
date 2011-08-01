@@ -22,6 +22,7 @@
 
 package org.jboss.as.mc.descriptor;
 
+import org.jboss.as.mc.BeanState;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -30,14 +31,24 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class InjectedValueConfig extends ValueConfig {
-    private ServiceName dependency;
+    private String dependency;
+    private BeanState state;
 
     @Override
     public void visit(ConfigVisitor visitor) {
-        visitor.addDependency(dependency, getValue());
+        BeanState required = state;
+        if (required == null)
+            required = BeanState.INSTALLED;
+
+        ServiceName name = BeanMetaDataConfig.JBOSS_MC_POJO.append(dependency).append(required.name());
+        visitor.addDependency(name, getValue());
     }
 
-    public void setDependency(ServiceName dependency) {
+    public void setDependency(String dependency) {
         this.dependency = dependency;
+    }
+
+    public void setState(BeanState state) {
+        this.state = state;
     }
 }

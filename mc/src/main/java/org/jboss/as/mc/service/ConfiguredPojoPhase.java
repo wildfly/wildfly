@@ -39,8 +39,4 @@ public class ConfiguredPojoPhase extends AbstractPojoPhase {
     protected AbstractPojoPhase createNextPhase() {
         return new CreateDestroyPojoPhase();
     }
-
-    public Object getValue() throws IllegalStateException, IllegalArgumentException {
-        return null;
-    }
 }

@@ -39,8 +39,4 @@ public class CreateDestroyPojoPhase extends LifecyclePojoPhase {
     protected AbstractPojoPhase createNextPhase() {
         return new StartStopPojoPhase();
     }
-
-    public Object getValue() throws IllegalStateException, IllegalArgumentException {
-        return null;
-    }
 }

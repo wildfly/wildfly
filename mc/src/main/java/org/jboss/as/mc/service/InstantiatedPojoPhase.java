@@ -25,6 +25,7 @@ package org.jboss.as.mc.service;
 import org.jboss.as.mc.BeanState;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -33,7 +34,6 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class InstantiatedPojoPhase extends AbstractPojoPhase {
-    private Object bean;
     private InjectedValue<Joinpoint> instantiationJoinpoint = new InjectedValue<Joinpoint>();
 
     @Override
@@ -48,15 +48,12 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
 
     public void start(StartContext context) throws StartException {
         try {
-            bean = instantiationJoinpoint.getValue().dispatch();
+            Object bean = instantiationJoinpoint.getValue().dispatch();
+            getBean().setValue(new ImmediateValue<Object>(bean));
         } catch (Throwable t) {
             throw new StartException(t);
         }
         super.start(context);
-    }
-
-    public Object getValue() throws IllegalStateException, IllegalArgumentException {
-        return bean;
     }
 
     public InjectedValue<Joinpoint> getInstantiationJoinpoint() {

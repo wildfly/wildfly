@@ -54,12 +54,6 @@ import org.jboss.msc.value.Value;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor {
-
-    /**
-     * Name prefix of all MC-style beans.
-     */
-    public static final ServiceName JBOSS_MC_POJO = ServiceName.JBOSS.append("mc", "pojo");
-
     /**
      * Process a deployment for KernelDeployment configuration.
      * Will install a {@code MC bean} for each configured bean.
@@ -91,7 +85,7 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
     }
 
     protected void describeBean(final Module module, final ServiceTarget serviceTarget, DeploymentReflectionIndex deploymentIndex, BeanMetaDataConfig beanConfig) {
-        final ServiceName beanServiceName = JBOSS_MC_POJO.append(beanConfig.getName());
+        final ServiceName beanServiceName = BeanMetaDataConfig.JBOSS_MC_POJO.append(beanConfig.getName());
         final ServiceName describedServiceName = beanServiceName.append(BeanState.DESCRIBED.name());
         final DescribedPojoPhase describedService = new DescribedPojoPhase(module, deploymentIndex, beanConfig);
         final ServiceBuilder describedServiceBuilder = serviceTarget.addService(describedServiceName, describedService);
@@ -103,7 +97,7 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
         final ClassReflectionIndex<T> index = deploymentIndex.getClassIndex(clazz);
         final Constructor<T> constructor = index.getConstructor(new Class[]{});
         final List<? extends Value<?>> args = Collections.emptyList();
-        final ServiceName beanServiceName = JBOSS_MC_POJO.append(beanConfig.getName());
+        final ServiceName beanServiceName = BeanMetaDataConfig.JBOSS_MC_POJO.append(beanConfig.getName());
         // TODO - decide if we really need NOT_INSTALLED and DESCRIBED stages
         // INSTANTIATED stage
         final ServiceName instantiatedServiceName = beanServiceName.append(BeanState.INSTANTIATED.name());
