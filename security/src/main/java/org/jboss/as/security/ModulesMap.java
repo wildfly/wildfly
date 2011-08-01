@@ -42,7 +42,14 @@ import org.jboss.security.auth.spi.RunAsLoginModule;
 import org.jboss.security.auth.spi.SimpleServerLoginModule;
 import org.jboss.security.auth.spi.SimpleUsersLoginModule;
 import org.jboss.security.auth.spi.UsersRolesLoginModule;
+import org.jboss.security.authorization.modules.AllDenyAuthorizationModule;
+import org.jboss.security.authorization.modules.AllPermitAuthorizationModule;
+import org.jboss.security.authorization.modules.DelegatingAuthorizationModule;
+import org.jboss.security.authorization.modules.JACCAuthorizationModule;
+import org.jboss.security.authorization.modules.XACMLAuthorizationModule;
+import org.jboss.security.authorization.modules.web.WebAuthorizationModule;
 import org.jboss.security.mapping.providers.DeploymentRolesMappingProvider;
+import org.jboss.security.mapping.providers.attribute.LdapAttributeMappingProvider;
 import org.jboss.security.mapping.providers.role.DatabaseRolesMappingProvider;
 import org.jboss.security.mapping.providers.role.LdapRolesMappingProvider;
 import org.jboss.security.mapping.providers.role.PropertiesRolesMappingProvider;
@@ -50,6 +57,8 @@ import org.jboss.security.mapping.providers.role.SimpleRolesMappingProvider;
 import org.jboss.security.negotiation.AdvancedADLoginModule;
 import org.jboss.security.negotiation.AdvancedLdapLoginModule;
 import org.jboss.security.negotiation.spnego.SPNEGOLoginModule;
+import org.picketbox.datasource.security.ConfiguredIdentityLoginModule;
+import org.picketbox.datasource.security.SecureIdentityLoginModule;
 
 /**
  * A map for modules and their aliases.
@@ -88,6 +97,9 @@ public interface ModulesMap {
             put("SPNEGOUsers", SPNEGOLoginModule.class.getName()); // duplicated here to maintain name pattern
             put("AdvancedLdap", AdvancedLdapLoginModule.class.getName());
             put("AdvancedAdLdap", AdvancedADLoginModule.class.getName());
+            // Datasource related modules
+            put("SecureIdentity", SecureIdentityLoginModule.class.getName());
+            put("ConfiguredIdentity", ConfiguredIdentityLoginModule.class.getName());
         }
     });
 
@@ -101,6 +113,22 @@ public interface ModulesMap {
             put("DeploymentRoles", DeploymentRolesMappingProvider.class.getName());
             put("DatabaseRoles", DatabaseRolesMappingProvider.class.getName());
             put("LdapRoles", LdapRolesMappingProvider.class.getName());
+            put("LdapAttributes", LdapAttributeMappingProvider.class.getName());
+        }
+
+    });
+
+    Map<String, String> AUTHORIZATION_MAP = Collections.unmodifiableMap(new HashMap<String, String>() {
+
+        private static final long serialVersionUID = 1210873488987888574L;
+
+        {
+            put("DenyAll", AllDenyAuthorizationModule.class.getName());
+            put("PermitAll", AllPermitAuthorizationModule.class.getName());
+            put("Delegating", DelegatingAuthorizationModule.class.getName());
+            put("JACC", JACCAuthorizationModule.class.getName());
+            put("Web", WebAuthorizationModule.class.getName());
+            put("XACML", XACMLAuthorizationModule.class.getName());
         }
 
     });
