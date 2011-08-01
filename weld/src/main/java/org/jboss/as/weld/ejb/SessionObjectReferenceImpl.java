@@ -32,7 +32,10 @@ import org.jboss.weld.ejb.api.SessionObjectReference;
 import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation for non-stateful beans, a new view instance is looked up each time
@@ -46,7 +49,6 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor, ServiceRegistry serviceRegistry) {
         final ServiceName createServiceName = descriptor.getCreateServiceName();
-        final ServiceController<?> controller = serviceRegistry.getRequiredService(createServiceName);
 
         final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
         final Map<String, Class<?>> views = new HashMap<String, Class<?>>();
@@ -57,15 +59,33 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
             views.put(view.getInterface().getName(), view.getInterface());
         }
 
+
         for (ViewDescription view : descriptor.getComponentDescription().getViews()) {
             final Class<?> viewClass = views.get(view.getViewClassName());
             if (viewClass != null) {
                 //see WELD-921
                 //this is horrible, but until it is fixed there is not much that can be done
-                Class<?> clazz = viewClass;
-                while (clazz != Object.class && clazz != null) {
+
+                final Set<Class<?>> seen = new HashSet<Class<?>>();
+                final Set<Class<?>> toProcess = new HashSet<Class<?>>();
+
+                toProcess.add(viewClass);
+
+                while (!toProcess.isEmpty()) {
+                    Iterator<Class<?>> it = toProcess.iterator();
+                    final Class<?> clazz = it.next();
+                    it.remove();
+                    seen.add(clazz);
                     viewServices.put(clazz.getName(), view.getServiceName());
-                    clazz = clazz.getSuperclass();
+                    final Class<?> superclass = clazz.getSuperclass();
+                    if(superclass != Object.class && superclass != null && !seen.contains(superclass)) {
+                        toProcess.add(superclass);
+                    }
+                    for(Class<?> iface : clazz.getInterfaces()) {
+                        if(!seen.contains(iface)) {
+                            toProcess.add(iface);
+                        }
+                    }
                 }
             }
         }

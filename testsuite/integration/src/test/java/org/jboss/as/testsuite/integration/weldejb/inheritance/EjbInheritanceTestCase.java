@@ -65,6 +65,7 @@ public class EjbInheritanceTestCase {
     public void testCdiInjectedEjb() {
         Assert.assertEquals("Hello", injectingCDIBean.sayHello());
         Assert.assertEquals("Goodbye", injectingCDIBean.sayGoodbye());
+        Assert.assertEquals("Interface", injectingCDIBean.callInterfaceMethod());
     }
 
 

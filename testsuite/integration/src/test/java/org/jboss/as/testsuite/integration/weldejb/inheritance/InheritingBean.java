@@ -21,16 +21,19 @@
  */
 package org.jboss.as.testsuite.integration.weldejb.inheritance;
 
+import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 /**
  * @author Stuart Douglas
  */
 @Stateless
-public class InheritingBean extends AbstractBaseClass {
+@LocalBean
+public class InheritingBean extends AbstractBaseClass  {
 
     @Override
     public String sayGoodbye() {
         return "Goodbye";
     }
+
 }
