@@ -35,14 +35,17 @@ import javax.ejb.NoSuchEJBException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation for SFSB's
  *
  * @author Stuart Douglas
  */
-public class StatefulSessionObjectReferenceImpl implements SessionObjectReference , Serializable {
+public class StatefulSessionObjectReferenceImpl implements SessionObjectReference, Serializable {
 
     private volatile boolean removed = false;
     private final Map<String, ServiceName> viewServices;
@@ -55,7 +58,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
         createServiceName = descriptor.getCreateServiceName();
 
         final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
-       final Map<String, Class<?>> views = new HashMap<String, Class<?>>();
+        final Map<String, Class<?>> views = new HashMap<String, Class<?>>();
         for (BusinessInterfaceDescriptor<?> view : descriptor.getRemoteBusinessInterfaces()) {
             views.put(view.getInterface().getName(), view.getInterface());
         }
@@ -68,10 +71,27 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
             if (viewClass != null) {
                 //see WELD-921
                 //this is horrible, but until it is fixed there is not much that can be done
-                Class<?> clazz = viewClass;
-                while (clazz != Object.class && clazz != null) {
+
+                final Set<Class<?>> seen = new HashSet<Class<?>>();
+                final Set<Class<?>> toProcess = new HashSet<Class<?>>();
+
+                toProcess.add(viewClass);
+
+                while (!toProcess.isEmpty()) {
+                    Iterator<Class<?>> it = toProcess.iterator();
+                    final Class<?> clazz = it.next();
+                    it.remove();
+                    seen.add(clazz);
                     viewServices.put(clazz.getName(), view.getServiceName());
-                    clazz = clazz.getSuperclass();
+                    final Class<?> superclass = clazz.getSuperclass();
+                    if (superclass != Object.class && superclass != null && !seen.contains(superclass)) {
+                        toProcess.add(superclass);
+                    }
+                    for (Class<?> iface : clazz.getInterfaces()) {
+                        if (!seen.contains(iface)) {
+                            toProcess.add(iface);
+                        }
+                    }
                 }
             }
         }
@@ -84,7 +104,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     @Override
     @SuppressWarnings({"unchecked"})
     public synchronized <S> S getBusinessObject(Class<S> businessInterfaceType) {
-        if(isRemoved()) {
+        if (isRemoved()) {
             throw new NoSuchEJBException("Bean has been removed");
         }
         if (viewServices.containsKey(businessInterfaceType.getName())) {
@@ -107,7 +127,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
 
     @Override
     public boolean isRemoved() {
-        if(!removed) {
+        if (!removed) {
             try {
                 getComponent().getCache().get(id);
                 return false;
@@ -119,7 +139,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     }
 
     private StatefulSessionComponent getComponent() {
-        if(ejbComponent == null) {
+        if (ejbComponent == null) {
             final ServiceController<?> controller = CurrentServiceRegistry.getServiceRegistry().getRequiredService(createServiceName);
             ejbComponent = (StatefulSessionComponent) controller.getValue();
         }
