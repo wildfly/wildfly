@@ -1,0 +1,16 @@
+<assembly>
+  <id>jboss-jsr88</id>
+  <formats>
+    <format>jar</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <fileSets>
+    <fileSet>
+      <directory>target/classes</directory>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>org/jboss/deployment/**</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+</assembly>
