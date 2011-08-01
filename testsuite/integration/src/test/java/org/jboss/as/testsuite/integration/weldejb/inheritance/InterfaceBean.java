@@ -21,29 +21,15 @@
  */
 package org.jboss.as.testsuite.integration.weldejb.inheritance;
 
-import javax.inject.Inject;
+import javax.ejb.Stateless;
 
 /**
  * @author Stuart Douglas
  */
-public class InjectingCDIBean {
-
-    @Inject
-    private AbstractBaseClass inheritingBean;
-
-    @Inject
-    private ParentInterface parentInterface;
-
-    public String sayHello() {
-        return inheritingBean.sayHello();
+@Stateless
+public class InterfaceBean implements ChildInterface{
+    @Override
+    public String interfaceMethod() {
+        return "Interface";
     }
-
-    public String sayGoodbye() {
-        return inheritingBean.sayGoodbye();
-    }
-
-    public String callInterfaceMethod() {
-        return parentInterface.interfaceMethod();
-    }
-
 }
