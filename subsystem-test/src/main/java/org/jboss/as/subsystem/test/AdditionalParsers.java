@@ -7,11 +7,13 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface AdditionalParsers {
+public class AdditionalParsers {
     /**
      * Allows you to add subsystems parsers
      *
      * @param context the extension parsing context to add your subsystem parser to
      */
-    void addParsers(ExtensionParsingContext context);
+    protected void addParsers(ExtensionParsingContext context) {
+
+    }
 }

@@ -2,6 +2,7 @@ package org.jboss.as.subsystem.test;
 
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.msc.service.ServiceTarget;
@@ -13,29 +14,33 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface AdditionalInitialization extends AdditionalParsers {
+public class AdditionalInitialization extends AdditionalParsers {
 
     /**
      * Return {@code OperationContext.Type#MANAGEMENT} to only affect the model from your tested operations, and thus avoid installing services into the service controller.
-     * Return {@code OperationContext.Type#SERVER} to install services
+     * Return {@code OperationContext.Type#SERVER} to install services, this is the default.
      *
-     * @return whether to only affect the model
+     * @return the type
      */
-    OperationContext.Type getType();
+    protected OperationContext.Type getType() {
+        return Type.SERVER;
+    }
 
     /**
      * Allows easy initialization of commonly used parts of the model and invocation of associated boottime operations
      *
      * @param controllerInitializer the controller initializer
      */
-    void setupController(ControllerInitializer controllerInitializer);
+    protected void setupController(ControllerInitializer controllerInitializer) {
+    }
 
     /**
      * Adds extra services to the service controller
      *
      * @param target the service controller target
      */
-    void addExtraServices(ServiceTarget target);
+    protected void addExtraServices(ServiceTarget target) {
+    }
 
     /**
      * Allows extra initialization of the model and addition of extra subsystems
@@ -44,6 +49,7 @@ public interface AdditionalInitialization extends AdditionalParsers {
      * @param rootResource the root model resource which allows you to for example add child elements to the model
      * @param rootRegistration the root resource registration which allows you to for example add additional operations to the model
      */
-    void initializeExtraSubystemsAndModel(ExtensionContext extensionContext, Resource rootResource, ManagementResourceRegistration rootRegistration);
+    protected void initializeExtraSubystemsAndModel(ExtensionContext extensionContext, Resource rootResource, ManagementResourceRegistration rootRegistration) {
+    }
 
 }

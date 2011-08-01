@@ -22,18 +22,13 @@
 
 package org.jboss.as.messaging.test;
 
-import java.io.File;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.MessagingSubsystemParser;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.EmptyAdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -79,10 +74,10 @@ public class SubsystemParsingUnitTestCase  extends AbstractSubsystemTest {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("subsystem.xml");
 
-        AdditionalInitialization additionalInit = new EmptyAdditionalInitialization(){
+        AdditionalInitialization additionalInit = new AdditionalInitialization(){
 
             @Override
-            public OperationContext.Type getType() {
+            protected OperationContext.Type getType() {
                 return OperationContext.Type.MANAGEMENT;
             }
 

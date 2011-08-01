@@ -42,7 +42,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
-import org.jboss.as.subsystem.test.EmptyAdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -166,10 +165,10 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "    <jmx-connector registry-binding=\"registry\" server-binding=\"server\" />" +
                 "</subsystem>";
         KernelServices services = super.installInController(
-                new EmptyAdditionalInitialization() {
+                new AdditionalInitialization() {
 
                     @Override
-                    public void setupController(ControllerInitializer controllerInitializer) {
+                    protected void setupController(ControllerInitializer controllerInitializer) {
                         controllerInitializer.addSocketBinding("registry", 12345);
                         controllerInitializer.addSocketBinding("server", 12346);
                     }
@@ -202,9 +201,9 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" />" +
                 "</subsystem>";
 
-        AdditionalInitialization additionalInit = new EmptyAdditionalInitialization(){
+        AdditionalInitialization additionalInit = new AdditionalInitialization(){
             @Override
-            public void setupController(ControllerInitializer controllerInitializer) {
+            protected void setupController(ControllerInitializer controllerInitializer) {
                 controllerInitializer.addSocketBinding("registry1", 12345);
                 controllerInitializer.addSocketBinding("server1", 12346);
             }
