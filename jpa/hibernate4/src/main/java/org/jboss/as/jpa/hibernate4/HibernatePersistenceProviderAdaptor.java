@@ -55,6 +55,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         properties.put(org.hibernate.ejb.AvailableSettings.SCANNER, "org.jboss.as.jpa.hibernate4.HibernateAnnotationScanner");
         properties.put(AvailableSettings.APP_CLASSLOADER, pu.getClassLoader());
         properties.put(AvailableSettings.JTA_PLATFORM, appServerJtaPlatform);
+        properties.remove(AvailableSettings.TRANSACTION_MANAGER_STRATEGY);  // remove legacy way of specifying TX manager (conflicts with JTA_PLATFORM)
     }
 
     @Override
