@@ -23,6 +23,14 @@
 package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.BeanState;
+import org.jboss.as.mc.descriptor.PropertyConfig;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+
+import java.lang.reflect.Method;
+import java.util.Set;
 
 /**
  * MC pojo configured phase.
@@ -38,5 +46,39 @@ public class ConfiguredPojoPhase extends AbstractPojoPhase {
     @Override
     protected AbstractPojoPhase createNextPhase() {
         return new CreateDestroyPojoPhase();
+    }
+
+    protected void configure(boolean nullify) throws Throwable {
+        Set<PropertyConfig> properties = getBeanConfig().getValue().getProperties();
+        if (properties != null) {
+            BeanInfo beanInfo = getBeanInfo().getValue();
+            for (PropertyConfig pc : properties) {
+                Method setter = beanInfo.getSetter(pc.getPropertyName()); // TODO -- multi-setters
+                MethodJoinpoint joinpoint = new MethodJoinpoint(setter);
+                InjectedValue<Object> param = (nullify == false) ? pc.getValue().getValue() : new InjectedValue<Object>();
+                joinpoint.setParameters(new InjectedValue[]{param});
+                joinpoint.setTarget(getBean());
+                joinpoint.dispatch();
+            }
+        }
+    }
+
+    @Override
+    public void start(StartContext context) throws StartException {
+        try {
+            configure(false);
+        } catch (Throwable t) {
+            throw new StartException(t);
+        }
+        super.start(context);
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        super.stop(context);
+        try {
+            configure(true);
+        } catch (Throwable ignored) {
+        }
     }
 }

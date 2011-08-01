@@ -23,6 +23,7 @@
 package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.BeanState;
+import org.jboss.as.mc.descriptor.LifecycleConfig;
 
 /**
  * MC pojo start/stop phase.
@@ -38,5 +39,24 @@ public class StartStopPojoPhase extends LifecyclePojoPhase {
     @Override
     protected AbstractPojoPhase createNextPhase() {
         return new InstalledPojoPhase();
+    }
+    @Override
+    protected LifecycleConfig getUpConfig() {
+        return getBeanConfig().getValue().getStart();
+    }
+
+    @Override
+    protected LifecycleConfig getDownConfig() {
+        return getBeanConfig().getValue().getStop();
+    }
+
+    @Override
+    protected String defaultUp() {
+        return "start";
+    }
+
+    @Override
+    protected String defaultDown() {
+        return "stop";
     }
 }

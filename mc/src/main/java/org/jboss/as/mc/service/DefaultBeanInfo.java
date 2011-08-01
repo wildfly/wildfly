@@ -107,6 +107,11 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
     }
 
     @Override
+    public Method findMethod(String name, String... parameterTypes) {
+        return Configurator.findMethodInfo(index, beanClass, name, parameterTypes, false, true, true);
+    }
+
+    @Override
     public Method getGetter(final String name) {
         return null;  // TODO
     }

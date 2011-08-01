@@ -68,7 +68,7 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
             Class beanClass = Class.forName(beanConfig.getBeanClass(), false, module.getClassLoader());
             beanInfo = new DefaultBeanInfo(index, beanClass);
 
-            final ServiceName name = ParsedKernelDeploymentProcessor.JBOSS_MC_POJO.append(beanConfig.getName()).append(BeanState.INSTANTIATED.name());
+            final ServiceName name = BeanMetaDataConfig.JBOSS_MC_POJO.append(beanConfig.getName()).append(BeanState.INSTANTIATED.name());
             final InstantiatedPojoPhase instantiatedPhase = new InstantiatedPojoPhase();
             final ServiceTarget serviceTarget = context.getChildTarget();
             final ServiceBuilder serviceBuilder = serviceTarget.addService(name, instantiatedPhase);
@@ -83,13 +83,8 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
                 if (factoryMethod == null)
                     throw new StartException("Missing factory method in ctor configuration: " + beanConfig);
 
-                InjectedValue<Object>[] ivs = null;
                 ValueConfig[] parameters = ctorConfig.getParameters();
-                if (parameters != null) {
-                    ivs = new InjectedValue[parameters.length];
-                    for (int i = 0; i < ivs.length; i++)
-                        ivs[i] = parameters[i].getValue();
-                }
+                InjectedValue<Object>[] ivs = Configurator.getValues(parameters);
                 String[] types = Configurator.getTypes(parameters);
 
                 String factoryClass = ctorConfig.getFactoryClass();

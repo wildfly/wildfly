@@ -26,6 +26,9 @@ import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
 import org.jboss.as.mc.descriptor.ConfigVisitor;
 import org.jboss.as.mc.descriptor.DefaultConfigVisitor;
+import org.jboss.as.mc.descriptor.InstallConfig;
+import org.jboss.as.mc.descriptor.LifecycleConfig;
+import org.jboss.as.mc.descriptor.ValueConfig;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
@@ -37,6 +40,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
+
+import java.lang.reflect.Method;
 
 /**
  * Abstract MC pojo phase; it handles install/uninstall
@@ -89,6 +94,24 @@ public abstract class AbstractPojoPhase implements Service {
 
     public void stop(StopContext context) {
         executeUninstalls();
+    }
+
+    protected Joinpoint createJoinpoint(InstallConfig config) {
+        String methodName = config.getMethodName();
+        if (methodName == null)
+            throw new IllegalArgumentException("Null method name");
+
+        ValueConfig[] parameters = config.getParameters();
+        String[] types = Configurator.getTypes(parameters);
+        String dependency = config.getDependency();
+        InjectedValue<Object> target = (dependency != null) ? config.getBean() : getBean();
+        BeanInfo beanInfo = (dependency != null) ? config.getBeanInfo().getValue() : getBeanInfo().getValue();
+        Method method = beanInfo.findMethod(methodName, types);
+        InjectedValue<Object>[] params = Configurator.getValues(parameters);
+        MethodJoinpoint joinpoint = new MethodJoinpoint(method);
+        joinpoint.setTarget(target);
+        joinpoint.setParameters(params);
+        return joinpoint;
     }
 
     protected void executeInstalls() throws StartException {

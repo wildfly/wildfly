@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.mc.service;
+package org.jboss.as.mc.descriptor;
 
-import org.jboss.as.mc.BeanState;
+import java.io.Serializable;
 
 /**
- * MC pojo installed phase.
+ * Lifecycle meta data.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class InstalledPojoPhase extends AbstractPojoPhase {
-    @Override
-    protected BeanState getLifecycleState() {
-        return BeanState.INSTALLED;
+public class LifecycleConfig implements Serializable, ConfigVisitorNode {
+    private static final long serialVersionUID = 1L;
+
+    private String methodName;
+    private ValueConfig[] parameters;
+
+    public void visit(ConfigVisitor visitor) {
+        if (parameters != null)
+            for (ValueConfig param : parameters)
+                param.visit(visitor);
     }
 
-    @Override
-    protected AbstractPojoPhase createNextPhase() {
-        return null;
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
+    }
+
+    public ValueConfig[] getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(ValueConfig[] parameters) {
+        this.parameters = parameters;
     }
 }

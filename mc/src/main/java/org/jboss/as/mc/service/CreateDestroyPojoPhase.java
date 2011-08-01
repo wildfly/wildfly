@@ -23,6 +23,7 @@
 package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.BeanState;
+import org.jboss.as.mc.descriptor.LifecycleConfig;
 
 /**
  * MC pojo create/destroy phase.
@@ -38,5 +39,25 @@ public class CreateDestroyPojoPhase extends LifecyclePojoPhase {
     @Override
     protected AbstractPojoPhase createNextPhase() {
         return new StartStopPojoPhase();
+    }
+
+    @Override
+    protected LifecycleConfig getUpConfig() {
+        return getBeanConfig().getValue().getCreate();
+    }
+
+    @Override
+    protected LifecycleConfig getDownConfig() {
+        return getBeanConfig().getValue().getDestroy();
+    }
+
+    @Override
+    protected String defaultUp() {
+        return "create";
+    }
+
+    @Override
+    protected String defaultDown() {
+        return "destroy";
     }
 }

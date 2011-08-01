@@ -26,6 +26,8 @@ import org.jboss.as.mc.BeanState;
 import org.jboss.msc.service.ServiceName;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The legacy bean meta data.
@@ -41,11 +43,43 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
     private String name;
     private String beanClass;
     private ConstructorConfig constructor;
+    private Set<PropertyConfig> properties;
+    private LifecycleConfig create;
+    private LifecycleConfig start;
+    private LifecycleConfig stop;
+    private LifecycleConfig destroy;
+    private List<InstallConfig> installs;
+    private List<InstallConfig> uninstalls;
 
     @Override
     public void visit(ConfigVisitor visitor) {
-        if (constructor != null && visitor.getState() == BeanState.DESCRIBED)
+        BeanState state = visitor.getState();
+        if (constructor != null && state == BeanState.DESCRIBED)
             constructor.visit(visitor);
+        if (properties != null && state == BeanState.INSTANTIATED) {
+            for (PropertyConfig pc : properties)
+                pc.visit(visitor);
+        }
+        if (create != null && state == BeanState.CONFIGURED) {
+            create.visit(visitor);
+        }
+        if (destroy != null && state == BeanState.CONFIGURED) {
+            destroy.visit(visitor);
+        }
+        if (start != null && state == BeanState.CREATE) {
+            start.visit(visitor);
+        }
+        if (stop != null && state == BeanState.CREATE) {
+            stop.visit(visitor);
+        }
+        if (installs != null) {
+            for (InstallConfig ic : installs)
+                ic.visit(visitor);
+        }
+        if (uninstalls != null) {
+            for (InstallConfig ic : uninstalls)
+                ic.visit(visitor);
+        }
     }
 
     public String getName() {
@@ -70,5 +104,61 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
 
     public void setConstructor(ConstructorConfig constructor) {
         this.constructor = constructor;
+    }
+
+    public Set<PropertyConfig> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Set<PropertyConfig> properties) {
+        this.properties = properties;
+    }
+
+    public LifecycleConfig getCreate() {
+        return create;
+    }
+
+    public void setCreate(LifecycleConfig create) {
+        this.create = create;
+    }
+
+    public LifecycleConfig getStart() {
+        return start;
+    }
+
+    public void setStart(LifecycleConfig start) {
+        this.start = start;
+    }
+
+    public LifecycleConfig getStop() {
+        return stop;
+    }
+
+    public void setStop(LifecycleConfig stop) {
+        this.stop = stop;
+    }
+
+    public LifecycleConfig getDestroy() {
+        return destroy;
+    }
+
+    public void setDestroy(LifecycleConfig destroy) {
+        this.destroy = destroy;
+    }
+
+    public List<InstallConfig> getInstalls() {
+        return installs;
+    }
+
+    public void setInstalls(List<InstallConfig> installs) {
+        this.installs = installs;
+    }
+
+    public List<InstallConfig> getUninstalls() {
+        return uninstalls;
+    }
+
+    public void setUninstalls(List<InstallConfig> uninstalls) {
+        this.uninstalls = uninstalls;
     }
 }

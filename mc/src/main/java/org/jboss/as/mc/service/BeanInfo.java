@@ -33,7 +33,7 @@ import java.lang.reflect.Method;
  * @param <T> the exacty bean type
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-interface BeanInfo<T> {
+public interface BeanInfo<T> {
     /**
      * Get ctor.
      *
@@ -58,6 +58,16 @@ interface BeanInfo<T> {
      * @return found method
      */
     Method getMethod(String name, String... parameterTypes);
+
+    /**
+     * Find method.
+     * Loose parameter type matching; not all types need to be known.
+     *
+     * @param name the method name
+     * @param parameterTypes the parameter types
+     * @return found method
+     */
+    Method findMethod(String name, String... parameterTypes);
 
     /**
      * Get getter.
