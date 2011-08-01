@@ -9,8 +9,7 @@ import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Allows you to additionally initialize the service container and the model controller
- *
- * beyond the subsystem being tested
+ * beyond the subsystem being tested. Override this class to add behaviour.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -24,6 +23,26 @@ public class AdditionalInitialization extends AdditionalParsers {
      */
     protected OperationContext.Type getType() {
         return Type.SERVER;
+    }
+
+    /**
+     * Return {@code true} to validate operations against their description provider when executing in the controller. The default is
+     * {@code false}
+     *
+     * @return Whether operations should be validated or not
+     */
+    protected boolean isValidateOperations() {
+        return false;
+    }
+
+    /**
+     * Creates the controller initializer.
+     * Override this method to do custom initialization.
+     *
+     * @return the created controller initializer
+     */
+    protected ControllerInitializer createControllerInitializer() {
+        return new ControllerInitializer();
     }
 
     /**

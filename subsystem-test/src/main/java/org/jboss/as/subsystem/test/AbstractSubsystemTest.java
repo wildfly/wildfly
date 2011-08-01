@@ -242,7 +242,7 @@ public abstract class AbstractSubsystemTest {
     }
 
     /**
-     * Initializes the controller and populates the subsystem model from the passed in xml
+     * Initializes the controller and populates the subsystem model from the passed in xml.
      *
      * @param subsystemXml the subsystem xml to be parsed
      * @return the kernel services allowing access to the controller and service container
@@ -252,7 +252,7 @@ public abstract class AbstractSubsystemTest {
     }
 
     /**
-     * Initializes the controller and populates the subsystem model from the passed in xml
+     * Initializes the controller and populates the subsystem model from the passed in xml.
      *
      * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
      * @param subsystemXml the subsystem xml to be parsed
@@ -268,7 +268,8 @@ public abstract class AbstractSubsystemTest {
     }
 
     /**
-     * Create a new controller with the passed in operations
+     * Create a new controller with the passed in operations.
+     *
      * @param bootOperations the operations
      */
     protected KernelServices installInController(List<ModelNode> bootOperations) throws Exception {
@@ -276,7 +277,8 @@ public abstract class AbstractSubsystemTest {
     }
 
     /**
-     * Create a new controller with the passed in operations
+     * Create a new controller with the passed in operations.
+     *
      * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
      * @param bootOperations the operations
      */
@@ -284,7 +286,7 @@ public abstract class AbstractSubsystemTest {
         if (additionalInit == null) {
             additionalInit = new AdditionalInitialization();
         }
-        ControllerInitializer controllerInitializer = createControllerInitializer();
+        ControllerInitializer controllerInitializer = additionalInit.createControllerInitializer();
         additionalInit.setupController(controllerInitializer);
 
         //Initialize the controller
@@ -298,7 +300,7 @@ public abstract class AbstractSubsystemTest {
         }
         allOps.addAll(bootOperations);
         StringConfigurationPersister persister = new StringConfigurationPersister(allOps, testParser);
-        ModelControllerService svc = new ModelControllerService(additionalInit.getType(), mainExtension, controllerInitializer, additionalInit, processState, persister);
+        ModelControllerService svc = new ModelControllerService(additionalInit.getType(), mainExtension, controllerInitializer, additionalInit, processState, persister, additionalInit.isValidateOperations());
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
 
@@ -311,8 +313,12 @@ public abstract class AbstractSubsystemTest {
         controller.execute(setup, null, null, null);
         processState.setRunning();
 
-        KernelServices kernelServices = new KernelServices(container, controller, persister);
+        KernelServices kernelServices = new KernelServices(container, controller, persister, new OperationValidator(svc.rootRegistration));
         this.kernelServices.add(kernelServices);
+        if (svc.error != null) {
+            throw svc.error;
+        }
+
         return kernelServices;
     }
 
@@ -420,16 +426,6 @@ public abstract class AbstractSubsystemTest {
         return result;
     }
 
-    /**
-     * Creates the controller initializer.
-     * Override this method to do custom initialization.
-     *
-     * @return the created controller initializer
-     */
-    protected ControllerInitializer createControllerInitializer() {
-        return new ControllerInitializer();
-    }
-
     private void addAdditionalParsers(AdditionalParsers additionalParsers) {
         if (additionalParsers != null && !addedExtraParsers) {
             additionalParsers.addParsers(parsingContext);
@@ -503,17 +499,22 @@ public abstract class AbstractSubsystemTest {
         final AdditionalInitialization additionalInit;
         final ControllerInitializer controllerInitializer;
         final Extension mainExtension;
+        final boolean validateOps;
+        volatile ManagementResourceRegistration rootRegistration;
+        volatile Exception error;
 
-        ModelControllerService(final OperationContext.Type type, final Extension mainExtension, final ControllerInitializer controllerInitializer, final AdditionalInitialization additionalPreStep, final ControlledProcessState processState, final StringConfigurationPersister persister) {
+        ModelControllerService(final OperationContext.Type type, final Extension mainExtension, final ControllerInitializer controllerInitializer, final AdditionalInitialization additionalPreStep, final ControlledProcessState processState, final StringConfigurationPersister persister, boolean validateOps) {
             super(type, persister, processState, DESC_PROVIDER, null);
             this.persister = persister;
             this.additionalInit = additionalPreStep;
             this.mainExtension = mainExtension;
             this.controllerInitializer = controllerInitializer;
+            this.validateOps = validateOps;
         }
 
         @Override
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+            this.rootRegistration = rootRegistration;
             rootResource.getModel().get(SUBSYSTEM);
             rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
@@ -534,8 +535,19 @@ public abstract class AbstractSubsystemTest {
 
         @Override
         protected void boot(List<ModelNode> bootOperations) throws ConfigurationPersistenceException {
-            super.boot(persister.bootOperations);
-            latch.countDown();
+            try {
+                if (validateOps) {
+                    new OperationValidator(rootRegistration).validateOperations(bootOperations);
+                }
+
+                super.boot(persister.bootOperations);
+            } catch (Exception e) {
+                error = e;
+            } catch (Throwable t) {
+                error = new Exception(t);
+            } finally {
+                latch.countDown();
+            }
         }
 
         @Override
