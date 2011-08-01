@@ -23,13 +23,6 @@ package org.jboss.as.osgi.parser;
 
 import java.util.List;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSParser;
-import org.w3c.dom.ls.LSSerializer;
-
 import junit.framework.Assert;
 
 import org.jboss.as.controller.OperationContext.Type;
@@ -37,7 +30,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.EmptyAdditionalInitialization;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -184,9 +177,9 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testReadWriteSubsystem() throws Exception {
-        KernelServices services = installInController(new EmptyAdditionalInitialization() {
+        KernelServices services = installInController(new AdditionalInitialization() {
             @Override
-            public Type getType() {
+            protected Type getType() {
                 return Type.MANAGEMENT;
             }
         }, SUBSYSTEM_XML_1);
@@ -198,9 +191,9 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testDescribeHandler() throws Exception {
-        KernelServices servicesA = installInController(new EmptyAdditionalInitialization() {
+        KernelServices servicesA = installInController(new AdditionalInitialization() {
             @Override
-            public Type getType() {
+            protected Type getType() {
                 return Type.MANAGEMENT;
             }
         }, SUBSYSTEM_XML_1);
@@ -212,7 +205,7 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemTest {
                 PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME)).toModelNode());
         List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
 
-        KernelServices servicesB = installInController(new EmptyAdditionalInitialization() {
+        KernelServices servicesB = installInController(new AdditionalInitialization() {
             @Override
             public Type getType() {
                 return Type.MANAGEMENT;
@@ -221,35 +214,6 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemTest {
         ModelNode modelB = servicesB.readWholeModel();
 
         compare(modelA, modelB);
-    }
-
-    /**
-     * Normalize and pretty-print XML so that it can be compared using string compare.
-     * The following code does the following:
-     * - Removes comments
-     * - Makes sure attributes are ordered consistently
-     * - Trims every element
-     * - Pretty print the document
-     * @param xml The XML to be normalized
-     * @return The equivalent XML, but now normalized
-     */
-    private String normalizeXML(String xml) throws Exception {
-        // Remove all white space adjoining tags ("trim all elements")
-        xml = xml.replaceAll("\\s*<", "<");
-        xml = xml.replaceAll(">\\s*", ">");
-
-        DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
-        DOMImplementationLS domLS = (DOMImplementationLS) registry.getDOMImplementation("LS");
-        LSParser lsParser = domLS.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
-
-        LSInput input = domLS.createLSInput();
-        input.setStringData(xml);
-        Document document = lsParser.parse(input);
-
-        LSSerializer lsSerializer = domLS.createLSSerializer();
-        lsSerializer.getDomConfig().setParameter("comments", Boolean.FALSE);
-        lsSerializer.getDomConfig().setParameter("format-pretty-print", Boolean.TRUE);
-        return lsSerializer.writeToString(document);
     }
 
     private void assertOSGiSubsystemAddress(ModelNode address) {

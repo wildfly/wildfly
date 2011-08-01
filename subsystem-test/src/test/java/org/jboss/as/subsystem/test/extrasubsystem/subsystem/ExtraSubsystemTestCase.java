@@ -39,7 +39,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.EmptyAdditionalInitialization;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.extrasubsystem.subsystem.dependency.Dependency;
 import org.jboss.as.subsystem.test.extrasubsystem.subsystem.dependency.DependencySubsystemExtension;
@@ -182,7 +182,7 @@ public class ExtraSubsystemTestCase extends AbstractSubsystemTest {
 
     }
 
-    private static class DependencyAdditionalInitialization extends EmptyAdditionalInitialization {
+    private static class DependencyAdditionalInitialization extends AdditionalInitialization {
         DependencySubsystemExtension dependency = new DependencySubsystemExtension();
 
         @Override

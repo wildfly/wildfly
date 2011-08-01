@@ -92,6 +92,12 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.After;
 import org.junit.Before;
+import org.w3c.dom.Document;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSParser;
+import org.w3c.dom.ls.LSSerializer;
 
 /**
  * The base class for parsing tests which does the work of setting up the environment for parsing
@@ -254,7 +260,7 @@ public abstract class AbstractSubsystemTest {
      */
     protected KernelServices installInController(AdditionalInitialization additionalInit, String subsystemXml) throws Exception {
         if (additionalInit == null) {
-            additionalInit = new EmptyAdditionalInitialization();
+            additionalInit = new AdditionalInitialization();
         }
         List<ModelNode> operations = parse(additionalInit, subsystemXml);
         KernelServices services = installInController(additionalInit, operations);
@@ -276,7 +282,7 @@ public abstract class AbstractSubsystemTest {
      */
     protected KernelServices installInController(AdditionalInitialization additionalInit, List<ModelNode> bootOperations) throws Exception {
         if (additionalInit == null) {
-            additionalInit = new EmptyAdditionalInitialization();
+            additionalInit = new AdditionalInitialization();
         }
         ControllerInitializer controllerInitializer = createControllerInitializer();
         additionalInit.setupController(controllerInitializer);
@@ -375,6 +381,35 @@ public abstract class AbstractSubsystemTest {
                 throw error;
             }
         }
+    }
+
+    /**
+     * Normalize and pretty-print XML so that it can be compared using string
+     * compare. The following code does the following: - Removes comments -
+     * Makes sure attributes are ordered consistently - Trims every element -
+     * Pretty print the document
+     *
+     * @param xml
+     *            The XML to be normalized
+     * @return The equivalent XML, but now normalized
+     */
+    protected String normalizeXML(String xml) throws Exception {
+        // Remove all white space adjoining tags ("trim all elements")
+        xml = xml.replaceAll("\\s*<", "<");
+        xml = xml.replaceAll(">\\s*", ">");
+
+        DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+        DOMImplementationLS domLS = (DOMImplementationLS) registry.getDOMImplementation("LS");
+        LSParser lsParser = domLS.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
+
+        LSInput input = domLS.createLSInput();
+        input.setStringData(xml);
+        Document document = lsParser.parse(input);
+
+        LSSerializer lsSerializer = domLS.createLSSerializer();
+        lsSerializer.getDomConfig().setParameter("comments", Boolean.FALSE);
+        lsSerializer.getDomConfig().setParameter("format-pretty-print", Boolean.TRUE);
+        return lsSerializer.writeToString(document);
     }
 
     private static String getCompareStackAsString() {

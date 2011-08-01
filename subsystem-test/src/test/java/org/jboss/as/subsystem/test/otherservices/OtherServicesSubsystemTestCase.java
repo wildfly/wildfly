@@ -42,8 +42,8 @@ import junit.framework.Assert;
 
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
-import org.jboss.as.subsystem.test.EmptyAdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.otherservices.subsystem.MyService;
 import org.jboss.as.subsystem.test.otherservices.subsystem.OtherService;
@@ -188,22 +188,23 @@ public class OtherServicesSubsystemTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(new File(".", "target").getAbsolutePath(), service.pathValue.getValue());
     }
 
-    private static class ExtraServicesInit extends EmptyAdditionalInitialization {
-        public void addExtraServices(ServiceTarget target) {
+    private static class ExtraServicesInit extends AdditionalInitialization {
+        @Override
+        protected void addExtraServices(ServiceTarget target) {
             target.addService(OtherService.NAME, new OtherService()).install();
         }
     }
 
-    private static class SystemPropertiesInit extends EmptyAdditionalInitialization {
+    private static class SystemPropertiesInit extends AdditionalInitialization {
         @Override
-        public void setupController(ControllerInitializer controllerInitializer) {
+        protected void setupController(ControllerInitializer controllerInitializer) {
             controllerInitializer.addSystemProperty("test123", "testing123");
         }
     }
 
-    private static class SocketBindingInit extends EmptyAdditionalInitialization {
+    private static class SocketBindingInit extends AdditionalInitialization {
         @Override
-        public void setupController(ControllerInitializer controllerInitializer) {
+        protected void setupController(ControllerInitializer controllerInitializer) {
             controllerInitializer.setBindAddress("127.0.0.1");
             controllerInitializer.addSocketBinding("test1", 123);
             controllerInitializer.addSocketBinding("test2", 234);
@@ -211,9 +212,9 @@ public class OtherServicesSubsystemTestCase extends AbstractSubsystemTest {
         }
     }
 
-    private static class PathInit extends EmptyAdditionalInitialization {
+    private static class PathInit extends AdditionalInitialization {
         @Override
-        public void setupController(ControllerInitializer controllerInitializer) {
+        protected void setupController(ControllerInitializer controllerInitializer) {
             File file = new File(".");
             controllerInitializer.addPath("p1", file.getAbsolutePath(), null);
             controllerInitializer.addPath("p2", "target", "p1");
