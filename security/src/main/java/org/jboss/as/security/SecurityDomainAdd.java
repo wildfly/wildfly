@@ -63,16 +63,17 @@ import static org.jboss.as.security.Constants.TRUST_MANAGER_FACTORY_ALGORITHM;
 import static org.jboss.as.security.Constants.TRUST_MANAGER_FACTORY_PROVIDER;
 import static org.jboss.as.security.Constants.TYPE;
 
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
-import javax.security.auth.login.Configuration;
-import javax.transaction.TransactionManager;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
+import javax.security.auth.login.Configuration;
+import javax.transaction.TransactionManager;
 
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
@@ -264,6 +265,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             modules = node.asList();
             for (ModelNode module : modules) {
                 String codeName = module.require(CODE).asString();
+                if (ModulesMap.AUTHORIZATION_MAP.containsKey(codeName))
+                    codeName = ModulesMap.AUTHORIZATION_MAP.get(codeName);
                 ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
                 Map<String, Object> options = new HashMap<String, Object>();
                 if (module.hasDefined(MODULE_OPTIONS)) {
