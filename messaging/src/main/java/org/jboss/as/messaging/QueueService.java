@@ -23,6 +23,7 @@
 package org.jboss.as.messaging;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -39,20 +40,14 @@ import org.jboss.msc.value.InjectedValue;
 class QueueService implements Service<Void> {
 
     private final InjectedValue<HornetQServer> hornetQService = new InjectedValue<HornetQServer>();
-    private final String address;
-    private final String queueName;
-    private final String filter;
-    private final boolean durable;
+    private final CoreQueueConfiguration queueConfiguration;
     private final boolean temporary;
 
-    public QueueService(String address, String queueName, String filter, boolean durable, boolean temporary) {
-        if(queueName == null) {
-            throw new IllegalArgumentException("null queue name");
+    public QueueService(final CoreQueueConfiguration queueConfiguration, final boolean temporary) {
+        if(queueConfiguration == null) {
+            throw new IllegalArgumentException("null queue configuration");
         }
-        this.address = address != null ? address : queueName;
-        this.queueName = queueName;
-        this.filter = filter;
-        this.durable = durable;
+        this.queueConfiguration = queueConfiguration;
         this.temporary = temporary;
     }
 
@@ -61,8 +56,9 @@ class QueueService implements Service<Void> {
     public synchronized void start(StartContext context) throws StartException {
         try {
             final HornetQServer hornetQService = this.hornetQService.getValue();
-            hornetQService.deployQueue(new SimpleString(address), new SimpleString(queueName),
-                    filter != null ? new SimpleString(filter) : null, durable, temporary);
+            hornetQService.deployQueue(new SimpleString(queueConfiguration.getAddress()), new SimpleString(queueConfiguration.getName()),
+                    SimpleString.toSimpleString(queueConfiguration.getFilterString()), queueConfiguration.isDurable(),
+                    temporary);
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -73,9 +69,9 @@ class QueueService implements Service<Void> {
     public synchronized void stop(StopContext context) {
         try {
             final HornetQServer hornetQService = this.hornetQService.getValue();
-            hornetQService.destroyQueue(new SimpleString(queueName), null);
+            hornetQService.destroyQueue(new SimpleString(queueConfiguration.getName()), null);
         } catch(Exception e) {
-            Logger.getLogger("org.jboss.messaging").warnf(e, "failed to destroy queue (%s)", queueName);
+            Logger.getLogger("org.jboss.messaging").warnf(e, "failed to destroy queue (%s)", queueConfiguration.getName());
         }
     }
 

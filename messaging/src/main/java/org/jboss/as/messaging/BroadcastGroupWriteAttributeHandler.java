@@ -32,17 +32,17 @@ import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Write attribute handler for attributes that update a divert resource.
+ * Write attribute handler for attributes that update a broadcast group resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DivertConfigurationWriteHandler extends ServerWriteAttributeOperationHandler {
+public class BroadcastGroupWriteAttributeHandler extends ServerWriteAttributeOperationHandler {
 
-    public static final DivertConfigurationWriteHandler INSTANCE = new DivertConfigurationWriteHandler();
+    public static final BroadcastGroupWriteAttributeHandler INSTANCE = new BroadcastGroupWriteAttributeHandler();
 
     private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
-    private DivertConfigurationWriteHandler() {
-        for (AttributeDefinition attr : CommonAttributes.DIVERT_ATTRIBUTES) {
+    private BroadcastGroupWriteAttributeHandler() {
+        for (AttributeDefinition attr : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
             attributes.put(attr.getName(), attr);
         }
     }

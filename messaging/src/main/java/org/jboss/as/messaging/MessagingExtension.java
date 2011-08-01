@@ -64,6 +64,7 @@ public class MessagingExtension implements Extension {
     private static final PathElement JMS_QUEUE_PATH = PathElement.pathElement(CommonAttributes.JMS_QUEUE);
     private static final PathElement TOPIC_PATH = PathElement.pathElement(CommonAttributes.JMS_TOPIC);
     private static final PathElement RA_PATH = PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
+    private static final PathElement BROADCAST_GROUP_PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
     private static final PathElement DIVERT_PATH = PathElement.pathElement(CommonAttributes.DIVERT);
 
     public void initialize(ExtensionContext context) {
@@ -72,9 +73,7 @@ public class MessagingExtension implements Extension {
 
         final ManagementResourceRegistration rootRegistration = subsystem.registerSubsystemModel(MessagingSubsystemProviders.SUBSYSTEM);
 
-        final Configuration configuration = new ConfigurationImpl();
-
-        rootRegistration.registerOperationHandler(ADD, new MessagingSubsystemAdd(configuration), MessagingSubsystemProviders.SUBSYSTEM_ADD, false);
+        rootRegistration.registerOperationHandler(ADD, MessagingSubsystemAdd.INSTANCE, MessagingSubsystemAdd.INSTANCE, false);
         // TODO REMOVE op
         rootRegistration.registerOperationHandler(DESCRIBE, MessagingSubsystemDescribeHandler.INSTANCE, MessagingSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         for (AttributeDefinition attributeDefinition : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
@@ -84,8 +83,7 @@ public class MessagingExtension implements Extension {
 
         // Core queues
         final ManagementResourceRegistration queue = rootRegistration.registerSubModel(PathElement.pathElement(QUEUE), MessagingSubsystemProviders.QUEUE_RESOURCE);
-        final QueueAdd queueAdd = new QueueAdd(configuration);
-        queue.registerOperationHandler(ADD, queueAdd, queueAdd, false);
+        queue.registerOperationHandler(ADD, QueueAdd.INSTANCE, QueueAdd.INSTANCE, false);
         queue.registerOperationHandler(REMOVE, QueueRemove.INSTANCE, QueueRemove.INSTANCE, false);
         for (AttributeDefinition attributeDefinition : CommonAttributes.CORE_QUEUE_ATTRIBUTES) {
             queue.registerReadWriteAttribute(attributeDefinition.getName(), null, QueueConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
@@ -118,12 +116,20 @@ public class MessagingExtension implements Extension {
         resourceAdapters.registerOperationHandler(ADD, PooledConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.RA_ADD, false);
         resourceAdapters.registerOperationHandler(REMOVE, PooledConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.RA_REMOVE);
 
+        // Broadcast groups
+        final ManagementResourceRegistration broadcastGroups = rootRegistration.registerSubModel(BROADCAST_GROUP_PATH, MessagingSubsystemProviders.BROADCAST_GROUP_RESOURCE);
+        broadcastGroups.registerOperationHandler(ADD, BroadcastGroupAdd.INSTANCE, BroadcastGroupAdd.INSTANCE);
+        broadcastGroups.registerOperationHandler(REMOVE, BroadcastGroupRemove.INSTANCE, BroadcastGroupRemove.INSTANCE);
+        for (AttributeDefinition attributeDefinition : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
+            broadcastGroups.registerReadWriteAttribute(attributeDefinition.getName(), null, BroadcastGroupWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        }
+        // TODO operations exposed by BroadcastGroupControl
+
         // Diverts
         final ManagementResourceRegistration diverts = rootRegistration.registerSubModel(DIVERT_PATH, MessagingSubsystemProviders.DIVERT_RESOURCE);
-        final DivertAdd divertAdd = new DivertAdd(configuration);
-        diverts.registerOperationHandler(ADD, divertAdd, divertAdd);
+        diverts.registerOperationHandler(ADD, DivertAdd.INSTANCE, DivertAdd.INSTANCE);
         diverts.registerOperationHandler(REMOVE, DivertRemove.INSTANCE, DivertRemove.INSTANCE);
-        for (AttributeDefinition attributeDefinition : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
+        for (AttributeDefinition attributeDefinition : CommonAttributes.DIVERT_ATTRIBUTES) {
             diverts.registerReadWriteAttribute(attributeDefinition.getName(), null, DivertConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
     }
