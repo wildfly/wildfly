@@ -23,8 +23,14 @@
 package org.jboss.as.domain.controller.operations;
 
 import java.util.Locale;
+import java.util.NoSuchElementException;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
@@ -32,21 +38,57 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class ServerGroupAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class ServerGroupAddHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final ServerGroupAddHandler INSTANCE = new ServerGroupAddHandler();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        model.get(PROFILE).set(operation.require(PROFILE));
+    private final ParametersValidator validator = new ParametersValidator();
+
+    private ServerGroupAddHandler() {
+        validator.registerValidator(PROFILE, new StringLengthValidator(1));
+        validator.registerValidator(SOCKET_BINDING_GROUP, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
+        validator.registerValidator(SOCKET_BINDING_PORT_OFFSET, new ModelTypeValidator(ModelType.INT, true, false));
+        validator.registerValidator(JVM, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
+    }
+
+    /** {@inheritDoc */
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+
+        validator.validate(operation);
+
+        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+        final ModelNode model = resource.getModel();
+
+        String profile = operation.require(PROFILE).asString();
+
+        try {
+            context.getRootResource().navigate(PathAddress.pathAddress(PathElement.pathElement(PROFILE, profile)));
+        } catch (NoSuchElementException e) {
+            throw new OperationFailedException(new ModelNode().set(String.format("Unknown %s %s", PROFILE, profile)));
+        }
+        model.get(PROFILE).set(profile);
 
         if (operation.hasDefined(SOCKET_BINDING_GROUP)) {
-            model.get(SOCKET_BINDING_GROUP).set(operation.get(SOCKET_BINDING_GROUP));
+            String socketBindingGroup =  operation.get(SOCKET_BINDING_GROUP).asString();
+
+            try {
+                context.getRootResource().navigate(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroup)));
+            } catch (NoSuchElementException e) {
+                throw new OperationFailedException(new ModelNode().set(String.format("Unknown %s %s", SOCKET_BINDING_GROUP, socketBindingGroup)));
+            }
+            model.get(SOCKET_BINDING_GROUP).set(socketBindingGroup);
         }
 
         if (operation.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
@@ -61,6 +103,8 @@ public class ServerGroupAddHandler extends AbstractAddStepHandler implements Des
 
         model.get(SYSTEM_PROPERTY);
         model.get(DEPLOYMENT);
+
+        context.completeStep();
     }
 
     protected boolean requiresRuntime(OperationContext context) {
