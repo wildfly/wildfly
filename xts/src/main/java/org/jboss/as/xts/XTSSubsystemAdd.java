@@ -190,7 +190,7 @@ class XTSSubsystemAdd implements OperationStepHandler {
 
                 ServiceBuilder<?> xtsServiceBuilder = target.addService(XTSServices.JBOSS_XTS_MAIN, xtsService);
                 xtsServiceBuilder
-                        .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
+                        .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
                 // the service also needs to depend on the endpoint services
                 for (ServiceController<Context> controller : controllers) {
                     xtsServiceBuilder.addDependency(controller.getName());
@@ -199,6 +199,23 @@ class XTSSubsystemAdd implements OperationStepHandler {
                 xtsServiceBuilder
                         .setInitialMode(Mode.ACTIVE)
                         .install();
+
+                // WS-AT / JTA Transaction bridge services:
+
+                final TxBridgeInboundRecoveryService txBridgeInboundRecoveryService = new TxBridgeInboundRecoveryService();
+                ServiceBuilder<?> txBridgeInboundRecoveryServiceBuilder =
+                        target.addService(XTSServices.JBOSS_XTS_TXBRIDGE_INBOUND_RECOVERY, txBridgeInboundRecoveryService);
+                txBridgeInboundRecoveryServiceBuilder.addDependency(XTSServices.JBOSS_XTS_MAIN);
+
+                txBridgeInboundRecoveryServiceBuilder.setInitialMode(Mode.ACTIVE).install();
+
+                final TxBridgeOutboundRecoveryService txBridgeOutboundRecoveryService = new TxBridgeOutboundRecoveryService();
+                ServiceBuilder<?> txBridgeOutboundRecoveryServiceBuilder =
+                        target.addService(XTSServices.JBOSS_XTS_TXBRIDGE_OUTBOUND_RECOVERY, txBridgeOutboundRecoveryService);
+                txBridgeOutboundRecoveryServiceBuilder.addDependency(XTSServices.JBOSS_XTS_MAIN);
+
+                txBridgeOutboundRecoveryServiceBuilder.setInitialMode(Mode.ACTIVE).install();
+
 
                 if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                     context.removeService(XTSServices.JBOSS_XTS_MAIN);

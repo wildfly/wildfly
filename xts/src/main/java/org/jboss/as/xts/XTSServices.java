@@ -35,6 +35,10 @@ public final class XTSServices {
 
     public static final ServiceName JBOSS_XTS_ENDPOINT = JBOSS_XTS.append("endpoint");
 
+    public static final ServiceName JBOSS_XTS_TXBRIDGE_INBOUND_RECOVERY = JBOSS_XTS.append("txbridgeInboundRecovery");
+
+    public static final ServiceName JBOSS_XTS_TXBRIDGE_OUTBOUND_RECOVERY = JBOSS_XTS.append("txbridgeOutboundRecovery");
+
     public static ServiceName endpointServiceName(String name) {
         return JBOSS_XTS_ENDPOINT.append(name);
     }
