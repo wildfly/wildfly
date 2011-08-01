@@ -362,8 +362,8 @@ public class InMemoryNamingStore implements NamingStore {
             final TreeNode node = contextNode.children.get(childName);
             if (node == null) {
                 if (createIfMissing) {
-                    final NamingContext subContext = new NamingContext(traversedName, InMemoryNamingStore.this, new Hashtable<String, Object>());
-                    return contextNode.addOrGetChild(childName, new ContextNode(contextNode, childName, traversedName, subContext)).accept(this);
+                    final NamingContext subContext = new NamingContext((Name)traversedName.clone(), InMemoryNamingStore.this, new Hashtable<String, Object>());
+                    return contextNode.addOrGetChild(childName, new ContextNode(contextNode, childName, (Name)traversedName.clone(), subContext)).accept(this);
                 } else {
                     throw nameNotFoundException(childName, contextNode.fullName);
                 }
