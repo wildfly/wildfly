@@ -81,6 +81,7 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
         CPF = new FilterMetaData();
         CPF.setFilterName("Weld Conversation Propagation Filter");
         CPF.setFilterClass(CONVERSATION_FILTER);
+        CPF.setAsyncSupported(true);
         CPFM = new FilterMappingMetaData();
         CPFM.setFilterName("Weld Conversation Propagation Filter");
         CPFM.setUrlPatterns(Arrays.asList("/*"));
