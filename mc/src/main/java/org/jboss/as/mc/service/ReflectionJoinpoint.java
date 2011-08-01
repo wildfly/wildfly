@@ -22,39 +22,30 @@
 
 package org.jboss.as.mc.service;
 
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+
+import java.lang.reflect.Method;
 
 /**
- * Abstract joinpoint; keep parameters.
+ * Reflection joinpoint.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractJoinpoint implements Joinpoint {
-    private InjectedValue<Object>[] parameters;
+public class ReflectionJoinpoint extends TargetJoinpoint {
+    private final DeploymentReflectionIndex index;
+    private final String methodName;
+    private final String[] types;
 
-    protected Object[] toObjects(Class[] types) {
-        if (parameters == null || parameters.length == 0)
-            return new Object[0];
-
-        if (types == null || types.length != parameters.length)
-            throw new IllegalArgumentException("Wrong types size, doesn't match parameters!");
-
-        try {
-            Object[] result = new Object[parameters.length];
-            for (int i = 0; i < parameters.length; i++)
-                result[i] = Configurator.convertValue(types[i], parameters[i].getValue(), true, true);
-
-            return result;
-        } catch (Throwable t) {
-            throw new IllegalArgumentException(t);
-        }
+    public ReflectionJoinpoint(DeploymentReflectionIndex index, String methodName, String[] types) {
+        this.index = index;
+        this.methodName = methodName;
+        this.types = types;
     }
 
-    public InjectedValue<Object>[] getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(InjectedValue<Object>[] parameters) {
-        this.parameters = parameters;
+    @Override
+    public Object dispatch() throws Throwable {
+        Object target = getTarget().getValue();
+        Method method = Configurator.findMethodInfo(index, target.getClass(), methodName, types, false, true, true);
+        return method.invoke(target, toObjects(method.getParameterTypes()));
     }
 }

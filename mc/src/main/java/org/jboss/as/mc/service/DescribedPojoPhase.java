@@ -22,20 +22,25 @@
 
 package org.jboss.as.mc.service;
 
+import org.jboss.as.mc.BeanState;
+import org.jboss.as.mc.ParsedKernelDeploymentProcessor;
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
 import org.jboss.as.mc.descriptor.ConfigVisitor;
 import org.jboss.as.mc.descriptor.ConstructorConfig;
 import org.jboss.as.mc.descriptor.DefaultConfigVisitor;
+import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.as.mc.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 import java.lang.reflect.Constructor;
@@ -63,9 +68,11 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
             Class beanClass = Class.forName(beanConfig.getBeanClass(), false, module.getClassLoader());
             beanInfo = new DefaultBeanInfo(index, beanClass);
 
+            final ServiceName name = ParsedKernelDeploymentProcessor.JBOSS_MC_POJO.append(beanConfig.getName()).append(BeanState.INSTANTIATED.name());
+            final InstantiatedPojoPhase instantiatedPhase = new InstantiatedPojoPhase();
             final ServiceTarget serviceTarget = context.getChildTarget();
-            final ServiceBuilder serviceBuilder = serviceTarget.addService(null, null);
-            final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder);
+            final ServiceBuilder serviceBuilder = serviceTarget.addService(name, instantiatedPhase);
+            final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, BeanState.DESCRIBED);
 
             beanConfig.visit(visitor);
 
@@ -76,35 +83,42 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
                 if (factoryMethod == null)
                     throw new StartException("Missing factory method in ctor configuration: " + beanConfig);
 
-                Method method;
-                InjectedValue<Object> target;
+                InjectedValue<Object>[] ivs = null;
+                ValueConfig[] parameters = ctorConfig.getParameters();
+                if (parameters != null) {
+                    ivs = new InjectedValue[parameters.length];
+                    for (int i = 0; i < ivs.length; i++)
+                        ivs[i] = parameters[i].getValue();
+                }
+                String[] types = Configurator.getTypes(parameters);
+
                 String factoryClass = ctorConfig.getFactoryClass();
                 if (factoryClass != null) {
                     Class<?> factoryClazz = Class.forName(factoryClass, false, module.getClassLoader());
-                    ClassReflectionIndex cri = index.getClassIndex(factoryClazz);
-                    method = null; // TODO
-                    target = new InjectedValue<Object>();
+                    Method method = Configurator.findMethodInfo(index, factoryClazz, factoryMethod, types, true, true, true);
+                    MethodJoinpoint mj = new MethodJoinpoint(method);
+                    mj.setTarget(new InjectedValue<Object>()); // null, since this is static call
+                    mj.setParameters(ivs);
+                    instantiateJoinpoint = mj;
                 } else {
                     ValueConfig factory = ctorConfig.getFactory();
                     if (factory == null)
                         throw new StartException("Missing factoy value: " + beanConfig);
-                    target = factory.getValue();
-                    method = null; // TODO
+
+                    ReflectionJoinpoint rj = new ReflectionJoinpoint(index, factoryMethod, types);
+                    rj.setTarget(factory.getValue());
+                    rj.setParameters(ivs);
+                    instantiateJoinpoint = rj;
                 }
-                MethodJoinpoint mj = new MethodJoinpoint(method);
-                mj.setTarget(target);
-                ValueConfig[] parameters = ctorConfig.getParameters();
-                if (parameters != null) {
-                    InjectedValue<Object>[] ivs = new InjectedValue[parameters.length];
-                    for (int i = 0; i < ivs.length; i++)
-                        ivs[i] = parameters[i].getValue();
-                    mj.setParameters(ivs);
-                }
-                instantiateJoinpoint = mj;
             } else {
                 Constructor ctor = beanInfo.getConstructor();
                 instantiateJoinpoint = new ConstructorJoinpoint(ctor);
             }
+            // set bean config, joinpoint & install
+            instantiatedPhase.getBeanConfig().setValue(new ImmediateValue<BeanMetaDataConfig>(beanConfig));
+            instantiatedPhase.getBeanInfo().setValue(new ImmediateValue<BeanInfo>(beanInfo));
+            instantiatedPhase.getInstantiationJoinpoint().setValue(new ImmediateValue<Joinpoint>(instantiateJoinpoint));
+            serviceBuilder.install();
         } catch (StartException e) {
             throw e;
         } catch (Exception e) {
@@ -113,7 +127,7 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
     }
 
     public void stop(StopContext context) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // TODO
     }
 
     public BeanInfo getValue() throws IllegalStateException, IllegalArgumentException {

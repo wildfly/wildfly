@@ -30,7 +30,7 @@ import java.lang.reflect.Field;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class FieldJoinpoint extends TargetJoinpoint {
-    private Field field;
+    private final Field field;
 
     public FieldJoinpoint(Field field) {
         this.field = field;

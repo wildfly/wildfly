@@ -20,41 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.mc.service;
+package org.jboss.as.mc.descriptor;
 
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Abstract joinpoint; keep parameters.
+ * Injected value.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractJoinpoint implements Joinpoint {
-    private InjectedValue<Object>[] parameters;
+public class InjectedValueConfig extends ValueConfig {
+    private ServiceName dependency;
 
-    protected Object[] toObjects(Class[] types) {
-        if (parameters == null || parameters.length == 0)
-            return new Object[0];
-
-        if (types == null || types.length != parameters.length)
-            throw new IllegalArgumentException("Wrong types size, doesn't match parameters!");
-
-        try {
-            Object[] result = new Object[parameters.length];
-            for (int i = 0; i < parameters.length; i++)
-                result[i] = Configurator.convertValue(types[i], parameters[i].getValue(), true, true);
-
-            return result;
-        } catch (Throwable t) {
-            throw new IllegalArgumentException(t);
-        }
+    @Override
+    public void visit(ConfigVisitor visitor) {
+        visitor.addDependency(dependency, getValue());
     }
 
-    public InjectedValue<Object>[] getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(InjectedValue<Object>[] parameters) {
-        this.parameters = parameters;
+    public void setDependency(ServiceName dependency) {
+        this.dependency = dependency;
     }
 }

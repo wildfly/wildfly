@@ -22,8 +22,20 @@
 
 package org.jboss.as.mc.service;
 
+import org.jboss.as.mc.BeanState;
+import org.jboss.as.mc.ParsedKernelDeploymentProcessor;
+import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
+import org.jboss.as.mc.descriptor.ConfigVisitor;
+import org.jboss.as.mc.descriptor.DefaultConfigVisitor;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -31,11 +43,46 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractPojoPhase {
-    protected Logger log = Logger.getLogger(getClass());
+public abstract class AbstractPojoPhase implements Service {
+    protected final Logger log = Logger.getLogger(getClass());
+
+    private final InjectedValue<BeanMetaDataConfig> beanConfig = new InjectedValue<BeanMetaDataConfig>();
+    private final InjectedValue<BeanInfo> beanInfo = new InjectedValue<BeanInfo>();
+    private final InjectedValue<Object> bean = new InjectedValue<Object>();
 
     private InjectedValue<Joinpoint>[] installs;
     private InjectedValue<Joinpoint>[] uninstalls;
+
+    protected abstract BeanState getLifecycleState();
+    protected abstract AbstractPojoPhase createNextPhase();
+
+    public void start(StartContext context) throws StartException {
+        try {
+            executeInstalls();
+
+            final AbstractPojoPhase nextPhase = createNextPhase(); // do we have a next phase
+            if (nextPhase != null) {
+                final BeanState state = getLifecycleState();
+                final BeanMetaDataConfig beanConfig = getBeanConfig().getValue();
+                final ServiceName name = ParsedKernelDeploymentProcessor.JBOSS_MC_POJO.append(beanConfig.getName()).append(state.next().name());
+                final ServiceTarget serviceTarget = context.getChildTarget();
+                final ServiceBuilder serviceBuilder = serviceTarget.addService(name, nextPhase);
+                final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, state);
+                beanConfig.visit(visitor);
+                nextPhase.getBeanConfig().setValue(new ImmediateValue<BeanMetaDataConfig>(beanConfig));
+                nextPhase.getBeanInfo().setValue(new ImmediateValue<BeanInfo>(getBeanInfo().getValue()));
+                nextPhase.getBean().setValue(new ImmediateValue<Object>(getBean().getValue()));
+                serviceBuilder.install();
+            }
+
+        } catch (Throwable t) {
+            throw new StartException(t);
+        }
+    }
+
+    public void stop(StopContext context) {
+        executeUninstalls();
+    }
 
     protected void executeInstalls() throws StartException {
         if (installs == null || installs.length == 0)
@@ -79,6 +126,18 @@ public abstract class AbstractPojoPhase {
 
     protected void executeUninstalls() {
         considerUninstalls(uninstalls, Integer.MAX_VALUE);
+    }
+
+    public InjectedValue<BeanMetaDataConfig> getBeanConfig() {
+        return beanConfig;
+    }
+
+    public InjectedValue<BeanInfo> getBeanInfo() {
+        return beanInfo;
+    }
+
+    public InjectedValue<Object> getBean() {
+        return bean;
     }
 
     public void setInstalls(InjectedValue<Joinpoint>[] installs) {

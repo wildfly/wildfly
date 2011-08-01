@@ -22,6 +22,7 @@
 
 package org.jboss.as.mc.descriptor;
 
+import org.jboss.as.mc.BeanState;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -31,9 +32,23 @@ import org.jboss.msc.service.ServiceName;
  */
 public class DefaultConfigVisitor implements ConfigVisitor {
     private final ServiceBuilder builder;
+    private final BeanState state;
+    private final ClassLoader classLoader;
 
-    public DefaultConfigVisitor(ServiceBuilder builder) {
+    public DefaultConfigVisitor(ServiceBuilder builder, BeanState state, ClassLoader classLoader) {
         this.builder = builder;
+        this.state = state;
+        this.classLoader = classLoader;
+    }
+
+    @Override
+    public BeanState getState() {
+        return state;
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return classLoader;
     }
 
     @Override

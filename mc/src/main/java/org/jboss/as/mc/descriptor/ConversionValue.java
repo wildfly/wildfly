@@ -20,41 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.mc.service;
+package org.jboss.as.mc.descriptor;
 
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.as.mc.service.Configurator;
+import org.jboss.msc.value.Value;
 
 /**
- * Abstract joinpoint; keep parameters.
+ * Try converting value.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractJoinpoint implements Joinpoint {
-    private InjectedValue<Object>[] parameters;
+public class ConversionValue implements Value<Object> {
+    private final Object value;
+    private Class<?> type;
+    private boolean replaceProperties = true;
+    private boolean trim = true;
 
-    protected Object[] toObjects(Class[] types) {
-        if (parameters == null || parameters.length == 0)
-            return new Object[0];
+    public ConversionValue(Object value) {
+        this.value = value;
+    }
 
-        if (types == null || types.length != parameters.length)
-            throw new IllegalArgumentException("Wrong types size, doesn't match parameters!");
+    public void setType(Class<?> type) {
+        this.type = type;
+    }
 
+    public void setReplaceProperties(boolean replaceProperties) {
+        this.replaceProperties = replaceProperties;
+    }
+
+    public void setTrim(boolean trim) {
+        this.trim = trim;
+    }
+
+    @Override
+    public Object getValue() throws IllegalStateException, IllegalArgumentException {
         try {
-            Object[] result = new Object[parameters.length];
-            for (int i = 0; i < parameters.length; i++)
-                result[i] = Configurator.convertValue(types[i], parameters[i].getValue(), true, true);
-
-            return result;
+            return Configurator.convertValue(type, value, replaceProperties, trim);
         } catch (Throwable t) {
             throw new IllegalArgumentException(t);
         }
-    }
-
-    public InjectedValue<Object>[] getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(InjectedValue<Object>[] parameters) {
-        this.parameters = parameters;
     }
 }

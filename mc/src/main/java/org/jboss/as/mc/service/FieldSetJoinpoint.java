@@ -37,7 +37,7 @@ public class FieldSetJoinpoint extends FieldJoinpoint {
 
     @Override
     public Object dispatch() throws Throwable {
-        Object[] params = toObjects();
+        Object[] params = toObjects(new Class[]{getField().getType()});
         if (params == null || params.length != 1)
             throw new IllegalArgumentException("Illegal parameters: " + Arrays.toString(params));
 

@@ -22,39 +22,10 @@
 
 package org.jboss.as.mc.service;
 
-import org.jboss.msc.value.InjectedValue;
-
 /**
- * Abstract joinpoint; keep parameters.
+ * MC pojo lifecycle phase.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractJoinpoint implements Joinpoint {
-    private InjectedValue<Object>[] parameters;
-
-    protected Object[] toObjects(Class[] types) {
-        if (parameters == null || parameters.length == 0)
-            return new Object[0];
-
-        if (types == null || types.length != parameters.length)
-            throw new IllegalArgumentException("Wrong types size, doesn't match parameters!");
-
-        try {
-            Object[] result = new Object[parameters.length];
-            for (int i = 0; i < parameters.length; i++)
-                result[i] = Configurator.convertValue(types[i], parameters[i].getValue(), true, true);
-
-            return result;
-        } catch (Throwable t) {
-            throw new IllegalArgumentException(t);
-        }
-    }
-
-    public InjectedValue<Object>[] getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(InjectedValue<Object>[] parameters) {
-        this.parameters = parameters;
-    }
+public abstract class LifecyclePojoPhase extends AbstractPojoPhase {
 }

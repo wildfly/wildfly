@@ -35,10 +35,19 @@ public class ValueConfig implements Serializable, ConfigVisitorNode {
     private static final long serialVersionUID = 1L;
 
     private String type;
+    protected ConversionValue rawValue;
     private InjectedValue<Object> value = new InjectedValue<Object>();
 
     @Override
     public void visit(ConfigVisitor visitor) {
+        if (type != null && rawValue != null) {
+            try {
+                Class<?> clazz = visitor.getClassLoader().loadClass(type);
+                rawValue.setType(clazz);
+            } catch (Throwable t) {
+                throw new IllegalArgumentException(t);
+            }
+        }
     }
 
     public String getType() {
@@ -51,5 +60,10 @@ public class ValueConfig implements Serializable, ConfigVisitorNode {
 
     public InjectedValue<Object> getValue() {
         return value;
+    }
+
+    public void setValue(Object value) {
+        rawValue = new ConversionValue(value);
+        this.value.setValue(rawValue);
     }
 }

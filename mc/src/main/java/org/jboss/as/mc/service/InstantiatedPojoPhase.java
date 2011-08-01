@@ -22,11 +22,9 @@
 
 package org.jboss.as.mc.service;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceTarget;
+import org.jboss.as.mc.BeanState;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -34,33 +32,34 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class InstantiatedPojoPhase extends AbstractPojoPhase implements Service<Object> {
+public class InstantiatedPojoPhase extends AbstractPojoPhase {
     private Object bean;
+    private InjectedValue<Joinpoint> instantiationJoinpoint = new InjectedValue<Joinpoint>();
 
-    private InjectedValue<Joinpoint> instantiationAction = new InjectedValue<Joinpoint>();
+    @Override
+    protected BeanState getLifecycleState() {
+        return BeanState.INSTANTIATED;
+    }
+
+    @Override
+    protected AbstractPojoPhase createNextPhase() {
+        return new ConfiguredPojoPhase();
+    }
 
     public void start(StartContext context) throws StartException {
         try {
-            bean = instantiationAction.getValue().dispatch();
-
-            executeInstalls();
-
-            final ServiceTarget serviceTarget = context.getChildTarget();
-            // TODO
+            bean = instantiationJoinpoint.getValue().dispatch();
         } catch (Throwable t) {
             throw new StartException(t);
         }
-    }
-
-    public void stop(StopContext context) {
-        executeUninstalls();
+        super.start(context);
     }
 
     public Object getValue() throws IllegalStateException, IllegalArgumentException {
         return bean;
     }
 
-    public InjectedValue<Joinpoint> getInstantiationAction() {
-        return instantiationAction;
+    public InjectedValue<Joinpoint> getInstantiationJoinpoint() {
+        return instantiationJoinpoint;
     }
 }

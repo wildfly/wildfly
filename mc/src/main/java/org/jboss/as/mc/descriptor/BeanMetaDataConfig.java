@@ -22,6 +22,8 @@
 
 package org.jboss.as.mc.descriptor;
 
+import org.jboss.as.mc.BeanState;
+
 import java.io.Serializable;
 
 /**
@@ -38,7 +40,7 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
 
     @Override
     public void visit(ConfigVisitor visitor) {
-        if (constructor != null)
+        if (constructor != null && visitor.getState() == BeanState.DESCRIBED)
             constructor.visit(visitor);
     }
 

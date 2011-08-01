@@ -30,7 +30,7 @@ import java.lang.reflect.Constructor;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ConstructorJoinpoint extends AbstractJoinpoint {
-    private Constructor ctor;
+    private final Constructor ctor;
 
     public ConstructorJoinpoint(Constructor ctor) {
         this.ctor = ctor;
@@ -38,6 +38,6 @@ public class ConstructorJoinpoint extends AbstractJoinpoint {
 
     @Override
     public Object dispatch() throws Throwable {
-        return ctor.newInstance(toObjects());
+        return ctor.newInstance(toObjects(ctor.getParameterTypes()));
     }
 }

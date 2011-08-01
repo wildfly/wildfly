@@ -30,7 +30,7 @@ import java.lang.reflect.Method;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class MethodJoinpoint extends TargetJoinpoint {
-    private Method method;
+    private final Method method;
 
     public MethodJoinpoint(Method method) {
         this.method = method;
@@ -38,6 +38,6 @@ public class MethodJoinpoint extends TargetJoinpoint {
 
     @Override
     public Object dispatch() throws Throwable {
-        return method.invoke(getTarget().getOptionalValue(), toObjects());
+        return method.invoke(getTarget().getOptionalValue(), toObjects(method.getParameterTypes()));
     }
 }

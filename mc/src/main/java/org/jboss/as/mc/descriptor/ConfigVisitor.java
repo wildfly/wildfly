@@ -22,6 +22,7 @@
 
 package org.jboss.as.mc.descriptor;
 
+import org.jboss.as.mc.BeanState;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
 
@@ -31,6 +32,20 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public interface ConfigVisitor {
+    /**
+     * Get current state.
+     *
+     * @return the state
+     */
+    BeanState getState();
+
+    /**
+     * Get classloader for this visitor.
+     *
+     * @return the classloader
+     */
+    ClassLoader getClassLoader();
+
     /**
      * Add dependency.
      *
