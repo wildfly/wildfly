@@ -28,6 +28,7 @@ import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
 import org.jboss.as.mc.descriptor.ConfigVisitor;
 import org.jboss.as.mc.descriptor.DefaultConfigVisitor;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -46,6 +47,7 @@ import org.jboss.msc.value.InjectedValue;
 public abstract class AbstractPojoPhase implements Service {
     protected final Logger log = Logger.getLogger(getClass());
 
+    private final InjectedValue<Module> module = new InjectedValue<Module>();
     private final InjectedValue<BeanMetaDataConfig> beanConfig = new InjectedValue<BeanMetaDataConfig>();
     private final InjectedValue<BeanInfo> beanInfo = new InjectedValue<BeanInfo>();
     private final InjectedValue<Object> bean = new InjectedValue<Object>();
@@ -67,8 +69,9 @@ public abstract class AbstractPojoPhase implements Service {
                 final ServiceName name = ParsedKernelDeploymentProcessor.JBOSS_MC_POJO.append(beanConfig.getName()).append(state.next().name());
                 final ServiceTarget serviceTarget = context.getChildTarget();
                 final ServiceBuilder serviceBuilder = serviceTarget.addService(name, nextPhase);
-                final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, state);
+                final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, state, module.getValue().getClassLoader());
                 beanConfig.visit(visitor);
+                nextPhase.getModule().setValue(new ImmediateValue<Module>(getModule().getValue()));
                 nextPhase.getBeanConfig().setValue(new ImmediateValue<BeanMetaDataConfig>(beanConfig));
                 nextPhase.getBeanInfo().setValue(new ImmediateValue<BeanInfo>(getBeanInfo().getValue()));
                 nextPhase.getBean().setValue(new ImmediateValue<Object>(getBean().getValue()));
@@ -126,6 +129,10 @@ public abstract class AbstractPojoPhase implements Service {
 
     protected void executeUninstalls() {
         considerUninstalls(uninstalls, Integer.MAX_VALUE);
+    }
+
+    public InjectedValue<Module> getModule() {
+        return module;
     }
 
     public InjectedValue<BeanMetaDataConfig> getBeanConfig() {

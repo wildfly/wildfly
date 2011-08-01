@@ -72,7 +72,7 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
             final InstantiatedPojoPhase instantiatedPhase = new InstantiatedPojoPhase();
             final ServiceTarget serviceTarget = context.getChildTarget();
             final ServiceBuilder serviceBuilder = serviceTarget.addService(name, instantiatedPhase);
-            final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, BeanState.DESCRIBED);
+            final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, BeanState.DESCRIBED, module.getClassLoader());
 
             beanConfig.visit(visitor);
 
@@ -115,6 +115,7 @@ public class DescribedPojoPhase implements Service<BeanInfo> {
                 instantiateJoinpoint = new ConstructorJoinpoint(ctor);
             }
             // set bean config, joinpoint & install
+            instantiatedPhase.getModule().setValue(new ImmediateValue<Module>(module));
             instantiatedPhase.getBeanConfig().setValue(new ImmediateValue<BeanMetaDataConfig>(beanConfig));
             instantiatedPhase.getBeanInfo().setValue(new ImmediateValue<BeanInfo>(beanInfo));
             instantiatedPhase.getInstantiationJoinpoint().setValue(new ImmediateValue<Joinpoint>(instantiateJoinpoint));
