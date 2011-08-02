@@ -58,7 +58,7 @@ final class RootLoggerService extends AbstractLoggerService {
         for (Handler handler : saved) {
             logger.addHandler(handler);
         }
-        log.info("Restored bootstrap log handlers");
+        log.debug("Restored bootstrap log handlers");
     }
 
     public synchronized Level getLevel() {
