@@ -38,10 +38,25 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
     private static final long serialVersionUID = 1L;
 
     /** Name prefix of all MC-style beans. */
-    public static final ServiceName JBOSS_MC_POJO = ServiceName.JBOSS.append("mc", "pojo");
+    private static final ServiceName JBOSS_MC_POJO = ServiceName.JBOSS.append("mc", "pojo");
+
+    /**
+     * Get MC bean name.
+     *
+     * @param name the original bean name
+     * @param state the state
+     * @return bean service name
+     */
+    public static ServiceName toBeanName(String name, BeanState state) {
+        if (state == null)
+            state = BeanState.INSTALLED;
+
+        return JBOSS_MC_POJO.append(name).append(state.name());
+    }
 
     private String name;
     private String beanClass;
+    private Set<String> aliases;
     private ConstructorConfig constructor;
     private Set<PropertyConfig> properties;
     private LifecycleConfig create;
@@ -96,6 +111,14 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
 
     public void setBeanClass(String beanClass) {
         this.beanClass = beanClass;
+    }
+
+    public Set<String> getAliases() {
+        return aliases;
+    }
+
+    public void setAliases(Set<String> aliases) {
+        this.aliases = aliases;
     }
 
     public ConstructorConfig getConstructor() {

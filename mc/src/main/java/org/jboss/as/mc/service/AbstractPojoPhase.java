@@ -44,13 +44,14 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Abstract MC pojo phase; it handles install/uninstall
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractPojoPhase implements Service {
+public abstract class AbstractPojoPhase implements Service<Object> {
     protected final Logger log = Logger.getLogger(getClass());
 
     private Module module;
@@ -68,10 +69,18 @@ public abstract class AbstractPojoPhase implements Service {
             final AbstractPojoPhase nextPhase = createNextPhase(); // do we have a next phase
             if (nextPhase != null) {
                 final BeanState state = getLifecycleState();
+                final BeanState next = state.next();
                 final BeanMetaDataConfig beanConfig = getBeanConfig();
-                final ServiceName name = BeanMetaDataConfig.JBOSS_MC_POJO.append(beanConfig.getName()).append(state.next().name());
+                final ServiceName name = BeanMetaDataConfig.toBeanName(beanConfig.getName(), next);
                 final ServiceTarget serviceTarget = context.getChildTarget();
                 final ServiceBuilder serviceBuilder = serviceTarget.addService(name, nextPhase);
+                final Set<String> aliases = beanConfig.getAliases();
+                if (aliases != null) {
+                    for (String alias : aliases) {
+                        ServiceName asn = BeanMetaDataConfig.toBeanName(alias, next);
+                        serviceBuilder.addAliases(asn);
+                    }
+                }
                 final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, state, module.getClassLoader());
                 beanConfig.visit(visitor);
                 nextPhase.setModule(getModule());

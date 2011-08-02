@@ -24,7 +24,6 @@ package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.service.BeanInfo;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -45,12 +44,8 @@ public class InstallConfig extends LifecycleConfig {
     public void visit(ConfigVisitor visitor) {
         if (visitor.getState().next() == whenRequired) {
             if (dependency != null) {
-                ServiceName beanName = BeanMetaDataConfig.JBOSS_MC_POJO.append(dependency);
-                visitor.addDependency(beanName.append(BeanState.DESCRIBED.name()), getBeanInfo());
-                BeanState state = dependencyState;
-                if (state == null)
-                    state = BeanState.INSTALLED;
-                visitor.addDependency(beanName.append(state.name()), getBean());
+                visitor.addDependency(BeanMetaDataConfig.toBeanName(dependency, BeanState.DESCRIBED), getBeanInfo());
+                visitor.addDependency(BeanMetaDataConfig.toBeanName(dependency, dependencyState), getBean());
             }
             super.visit(visitor);
         }

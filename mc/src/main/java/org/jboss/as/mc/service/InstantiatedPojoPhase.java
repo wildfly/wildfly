@@ -23,8 +23,15 @@
 package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.BeanState;
+import org.jboss.as.mc.descriptor.ConstructorConfig;
+import org.jboss.as.mc.descriptor.ValueConfig;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.value.ImmediateValue;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
 /**
  * MC pojo instantiated phase.
@@ -32,7 +39,11 @@ import org.jboss.msc.service.StartException;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class InstantiatedPojoPhase extends AbstractPojoPhase {
-    private Joinpoint instantiationJoinpoint;
+    private final DeploymentReflectionIndex index;
+
+    public InstantiatedPojoPhase(DeploymentReflectionIndex index) {
+        this.index = index;
+    }
 
     @Override
     protected BeanState getLifecycleState() {
@@ -46,14 +57,42 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
 
     public void start(StartContext context) throws StartException {
         try {
-            setBean(instantiationJoinpoint.dispatch());
+            Joinpoint instantiateJoinpoint;
+            ConstructorConfig ctorConfig = getBeanConfig().getConstructor();
+            if (ctorConfig != null) {
+                String factoryMethod = ctorConfig.getFactoryMethod();
+                if (factoryMethod == null)
+                    throw new StartException("Missing factory method in ctor configuration: " + getBeanConfig());
+
+                ValueConfig[] parameters = ctorConfig.getParameters();
+                String[] types = Configurator.getTypes(parameters);
+
+                String factoryClass = ctorConfig.getFactoryClass();
+                if (factoryClass != null) {
+                    Class<?> factoryClazz = Class.forName(factoryClass, false, getModule().getClassLoader());
+                    Method method = Configurator.findMethodInfo(index, factoryClazz, factoryMethod, types, true, true, true);
+                    MethodJoinpoint mj = new MethodJoinpoint(method);
+                    mj.setTarget(new ImmediateValue<Object>(null)); // null, since this is static call
+                    mj.setParameters(parameters);
+                    instantiateJoinpoint = mj;
+                } else {
+                    ValueConfig factory = ctorConfig.getFactory();
+                    if (factory == null)
+                        throw new StartException("Missing factoy value: " + getBeanConfig());
+
+                    ReflectionJoinpoint rj = new ReflectionJoinpoint(index, factoryMethod, types);
+                    rj.setTarget(factory);
+                    rj.setParameters(parameters);
+                    instantiateJoinpoint = rj;
+                }
+            } else {
+                Constructor ctor = getBeanInfo().getConstructor();
+                instantiateJoinpoint = new ConstructorJoinpoint(ctor);
+            }
+            setBean(instantiateJoinpoint.dispatch());
         } catch (Throwable t) {
             throw new StartException(t);
         }
         super.start(context);
-    }
-
-    public void setInstantiationJoinpoint(Joinpoint instantiationJoinpoint) {
-        this.instantiationJoinpoint = instantiationJoinpoint;
     }
 }

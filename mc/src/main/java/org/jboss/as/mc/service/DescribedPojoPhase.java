@@ -47,81 +47,36 @@ import java.lang.reflect.Method;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class DescribedPojoPhase implements Service<BeanInfo> {
-    private final Module module;
+public class DescribedPojoPhase extends AbstractPojoPhase {
     private final DeploymentReflectionIndex index;
-    private final BeanMetaDataConfig beanConfig;
-    private BeanInfo beanInfo;
 
     public DescribedPojoPhase(Module module, DeploymentReflectionIndex index, BeanMetaDataConfig beanConfig) {
-        this.module = module;
         this.index = index;
-        this.beanConfig = beanConfig;
+        setModule(module);
+        setBeanConfig(beanConfig);
+    }
+
+    @Override
+    protected BeanState getLifecycleState() {
+        return BeanState.DESCRIBED;
+    }
+
+    @Override
+    protected AbstractPojoPhase createNextPhase() {
+        return new InstantiatedPojoPhase(index);
     }
 
     public void start(StartContext context) throws StartException {
         try {
-            Class beanClass = Class.forName(beanConfig.getBeanClass(), false, module.getClassLoader());
-            beanInfo = new DefaultBeanInfo(index, beanClass);
-
-            final ServiceName name = BeanMetaDataConfig.JBOSS_MC_POJO.append(beanConfig.getName()).append(BeanState.INSTANTIATED.name());
-            final InstantiatedPojoPhase instantiatedPhase = new InstantiatedPojoPhase();
-            final ServiceTarget serviceTarget = context.getChildTarget();
-            final ServiceBuilder serviceBuilder = serviceTarget.addService(name, instantiatedPhase);
-            final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, BeanState.DESCRIBED, module.getClassLoader());
-
-            beanConfig.visit(visitor);
-
-            Joinpoint instantiateJoinpoint;
-            ConstructorConfig ctorConfig = beanConfig.getConstructor();
-            if (ctorConfig != null) {
-                String factoryMethod = ctorConfig.getFactoryMethod();
-                if (factoryMethod == null)
-                    throw new StartException("Missing factory method in ctor configuration: " + beanConfig);
-
-                ValueConfig[] parameters = ctorConfig.getParameters();
-                String[] types = Configurator.getTypes(parameters);
-
-                String factoryClass = ctorConfig.getFactoryClass();
-                if (factoryClass != null) {
-                    Class<?> factoryClazz = Class.forName(factoryClass, false, module.getClassLoader());
-                    Method method = Configurator.findMethodInfo(index, factoryClazz, factoryMethod, types, true, true, true);
-                    MethodJoinpoint mj = new MethodJoinpoint(method);
-                    mj.setTarget(new ImmediateValue<Object>(null)); // null, since this is static call
-                    mj.setParameters(parameters);
-                    instantiateJoinpoint = mj;
-                } else {
-                    ValueConfig factory = ctorConfig.getFactory();
-                    if (factory == null)
-                        throw new StartException("Missing factoy value: " + beanConfig);
-
-                    ReflectionJoinpoint rj = new ReflectionJoinpoint(index, factoryMethod, types);
-                    rj.setTarget(factory);
-                    rj.setParameters(parameters);
-                    instantiateJoinpoint = rj;
-                }
-            } else {
-                Constructor ctor = beanInfo.getConstructor();
-                instantiateJoinpoint = new ConstructorJoinpoint(ctor);
-            }
-            // set bean config, joinpoint & install
-            instantiatedPhase.setModule(module);
-            instantiatedPhase.setBeanConfig(beanConfig);
-            instantiatedPhase.setBeanInfo(beanInfo);
-            instantiatedPhase.setInstantiationJoinpoint(instantiateJoinpoint);
-            serviceBuilder.install();
-        } catch (StartException e) {
-            throw e;
+            Class beanClass = Class.forName(getBeanConfig().getBeanClass(), false, getModule().getClassLoader());
+            setBeanInfo(new DefaultBeanInfo(index, beanClass));
         } catch (Exception e) {
             throw new StartException(e);
         }
-    }
-
-    public void stop(StopContext context) {
-        // TODO
+        super.start(context);
     }
 
     public BeanInfo getValue() throws IllegalStateException, IllegalArgumentException {
-        return beanInfo;
+        return getBeanInfo();
     }
 }
