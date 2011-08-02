@@ -43,8 +43,10 @@ import org.jboss.modules.ResourceLoaderSpec;
 import org.jboss.modules.ResourceLoaders;
 
 import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -184,10 +186,13 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
             //use a trick to get to the root of the class loader
             final URL url = module.getClassLoader().getResource(HIBERNATE3_PROVIDER_ADAPTOR.replace('.','/') + ".class");
 
-            final String path = url.getPath();
-            final String baseJarUrl = path.substring(0, path.lastIndexOf("!"));
-            final URL jarUrl = new URL(baseJarUrl);
-            JarFile jarFile = new JarFile(jarUrl.getFile());
+            final URLConnection connection = url.openConnection();
+            if(!(connection  instanceof JarURLConnection)) {
+                throw new RuntimeException("Could not add hibernate 3 integration module to deployment, did not get expected JarUrlConnection, got " + connection);
+            }
+
+            final JarFile jarFile = ((JarURLConnection) connection).getJarFile();
+
             moduleSpecification.addResourceLoader(ResourceLoaderSpec.createResourceLoaderSpec(ResourceLoaders.createJarResourceLoader("hibernate3integration", jarFile)));
 
             // hack in the dependencies which are part of hibernate3integration
