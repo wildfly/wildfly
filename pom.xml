@@ -244,7 +244,7 @@
         <module>domain-http-api</module>
         <module>domain-management</module>
         <module>ee</module>
-        <module>eedeploy</module>
+        <module>ee-deployment</module>
         <module>ejb3</module>
         <module>embedded</module>
         <module>host-controller</module>
@@ -727,6 +727,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-ee</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-ee-deployment</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

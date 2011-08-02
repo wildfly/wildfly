@@ -53,7 +53,7 @@ public class ArchiveDeployer {
             builder = builder.add(archive.getName(), input).andDeploy();
             DeploymentPlan plan = builder.build();
             DeploymentAction deployAction = builder.getLastAction();
-            return executeDeploymentPlan(plan, deployAction, archive);
+            return executeDeploymentPlan(plan, deployAction);
         } catch (Exception e) {
             throw new DeploymentException("Could not deploy to container", e);
         }
@@ -70,7 +70,7 @@ public class ArchiveDeployer {
         }
     }
 
-    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction, Archive<?> archive) throws Exception {
+    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction) throws Exception {
         Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
         ServerDeploymentPlanResult planResult = future.get();
 
