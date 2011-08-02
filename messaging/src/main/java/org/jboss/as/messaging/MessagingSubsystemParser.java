@@ -46,6 +46,8 @@ import static org.jboss.as.messaging.CommonAttributes.CREATEDURABLEQUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_NON_DURABLE_QUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DELETEDURABLEQUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUPS;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DIVERT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
@@ -181,7 +183,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     unhandledElement(reader, element);
                     break;
                 case DISCOVERY_GROUPS:
-                    unhandledElement(reader, element);
+                    processDiscoveryGroups(reader, address, list);
                     break;
                 case DIVERTS:
                     parseDiverts(reader, address, list);
@@ -327,6 +329,53 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 case CONNECTOR_REF:
                     handleElementText(reader, element, "broadcast-group", broadcastGroupAdd);
+                    break;
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+
+        if(!required.isEmpty()) {
+            missingRequired(reader, required);
+        }
+
+        updates.add(broadcastGroupAdd);
+    }
+
+    static void processDiscoveryGroups(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+        requireNoAttributes(reader);
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case DISCOVERY_GROUP: {
+                    parseDiscoveryGroup(reader, address, updates);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseDiscoveryGroup(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+
+        requireSingleAttribute(reader, CommonAttributes.NAME);
+        String name = reader.getAttributeValue(0);
+
+        ModelNode broadcastGroupAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.DISCOVERY_GROUP, name));
+
+        EnumSet<Element> required = EnumSet.of(Element.GROUP_ADDRESS, Element.GROUP_PORT);
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            required.remove(element);
+            switch (element) {
+                case LOCAL_BIND_ADDRESS:
+                case GROUP_ADDRESS:
+                case GROUP_PORT:
+                case REFRESH_TIMEOUT:
+                case INITIAL_WAIT_TIMEOUT:
+                    handleElementText(reader, element, broadcastGroupAdd);
                     break;
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
@@ -930,6 +979,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         if (node.hasDefined(BROADCAST_GROUP)) {
             writeBroadcastGroups(writer, node.get(BROADCAST_GROUP));
         }
+        if (node.hasDefined(DISCOVERY_GROUP)) {
+            writeDiscoveryGroups(writer, node.get(DISCOVERY_GROUP));
+        }
         if (node.hasDefined(DIVERT)) {
             writeDiverts(writer, node.get(DIVERT));
         }
@@ -947,9 +999,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
         if (has(node, CommonAttributes.PAGING_DIRECTORY)) {
             writeDirectory(writer, Element.PAGING_DIRECTORY, node);
-        }
-        if (has(node, CommonAttributes.REFRESH_TIMEOUT)) {
-            //unhandled
         }
         if (has(node, CommonAttributes.SECURITY_SETTING)) {
             writeSecuritySettings(writer, node.get(CommonAttributes.SECURITY_SETTING));
@@ -1229,6 +1278,22 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 writer.writeStartElement(Element.BROADCAST_GROUP.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 for (AttributeDefinition attribute : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
+                    attribute.marshallAsElement(property.getValue(), writer);
+                }
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeDiscoveryGroups(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        List<Property> properties = node.asPropertyList();
+        if (!properties.isEmpty()) {
+            writer.writeStartElement(Element.DISCOVERY_GROUPS.getLocalName());
+            for(final Property property : node.asPropertyList()) {
+                writer.writeStartElement(Element.DISCOVERY_GROUP.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                for (AttributeDefinition attribute : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
                     attribute.marshallAsElement(property.getValue(), writer);
                 }
                 writer.writeEndElement();

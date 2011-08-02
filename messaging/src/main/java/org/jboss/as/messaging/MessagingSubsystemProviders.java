@@ -127,4 +127,11 @@ class MessagingSubsystemProviders {
             return MessagingDescriptions.getBroadcastGroupResource(locale);
         }
     };
+
+    public static final DescriptionProvider DISCOVERY_GROUP_RESOURCE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getDiscoveryGroupResource(locale);
+        }
+    };
 }

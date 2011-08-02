@@ -65,6 +65,7 @@ public class MessagingExtension implements Extension {
     private static final PathElement TOPIC_PATH = PathElement.pathElement(CommonAttributes.JMS_TOPIC);
     private static final PathElement RA_PATH = PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
     private static final PathElement BROADCAST_GROUP_PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
+    private static final PathElement DISCOVERY_GROUP_PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
     private static final PathElement DIVERT_PATH = PathElement.pathElement(CommonAttributes.DIVERT);
 
     public void initialize(ExtensionContext context) {
@@ -124,6 +125,14 @@ public class MessagingExtension implements Extension {
             broadcastGroups.registerReadWriteAttribute(attributeDefinition.getName(), null, BroadcastGroupWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
         // TODO operations exposed by BroadcastGroupControl
+
+        // Discovery groups
+        final ManagementResourceRegistration discoveryGroups = rootRegistration.registerSubModel(DISCOVERY_GROUP_PATH, MessagingSubsystemProviders.DISCOVERY_GROUP_RESOURCE);
+        discoveryGroups.registerOperationHandler(ADD, DiscoveryGroupAdd.INSTANCE, DiscoveryGroupAdd.INSTANCE);
+        discoveryGroups.registerOperationHandler(REMOVE, DiscoveryGroupRemove.INSTANCE, DiscoveryGroupRemove.INSTANCE);
+        for (AttributeDefinition attributeDefinition : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
+            discoveryGroups.registerReadWriteAttribute(attributeDefinition.getName(), null, DiscoveryGroupWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        }
 
         // Diverts
         final ManagementResourceRegistration diverts = rootRegistration.registerSubModel(DIVERT_PATH, MessagingSubsystemProviders.DIVERT_RESOURCE);
