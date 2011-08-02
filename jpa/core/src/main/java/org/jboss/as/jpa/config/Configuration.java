@@ -57,12 +57,12 @@ public class Configuration {
     /**
      * Hibernate 3 persistence provider, if this provider is chosen. ADAPTER_MODULE_HIBERNATE3 will be enabled
      */
-    public static final String PROVIDER_MODULE_HIBERNATE3 = "org.hibernate3";
+    public static final String PROVIDER_MODULE_HIBERNATE3 = "org.hibernate:3";
 
     /**
      * Hibernate 3 persistence provider adaptor
      */
-    public static final String ADAPTER_MODULE_HIBERNATE3 = "org.jboss.as.jpa.hibernate3";
+    public static final String ADAPTER_MODULE_HIBERNATE3 = "org.jboss.as.jpa.hibernate:3";
 
     /**
      * name of the AS module that contains the persistence provider adapter
@@ -72,7 +72,7 @@ public class Configuration {
     /**
      * default if no ADAPTER_MODULE is specified.
      */
-    public static final String ADAPTER_MODULE_DEFAULT = "org.jboss.as.jpa.hibernate4";
+    public static final String ADAPTER_MODULE_DEFAULT = "org.jboss.as.jpa.hibernate:4";
 
     /**
      * name of the persistence provider adapter class
