@@ -65,6 +65,7 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
     private LifecycleConfig destroy;
     private List<InstallConfig> installs;
     private List<InstallConfig> uninstalls;
+    private Set<DependsConfig> depends;
 
     @Override
     public void visit(ConfigVisitor visitor) {
@@ -94,6 +95,10 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
         if (uninstalls != null) {
             for (InstallConfig ic : uninstalls)
                 ic.visit(visitor);
+        }
+        if (depends != null) {
+            for (DependsConfig dc : depends)
+                dc.visit(visitor);
         }
     }
 
@@ -183,5 +188,13 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
 
     public void setUninstalls(List<InstallConfig> uninstalls) {
         this.uninstalls = uninstalls;
+    }
+
+    public Set<DependsConfig> getDepends() {
+        return depends;
+    }
+
+    public void setDepends(Set<DependsConfig> depends) {
+        this.depends = depends;
     }
 }
