@@ -158,6 +158,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition ID_CACHE_SIZE = new SimpleAttributeDefinition("id-cache-size",
             new ModelNode().set(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE), ModelType.INT,  true, MeasurementUnit.NONE);
 
+    SimpleAttributeDefinition INITIAL_WAIT_TIMEOUT = new SimpleAttributeDefinition("initial-wait-timeout",
+            new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+
     SimpleAttributeDefinition JMX_DOMAIN = new SimpleAttributeDefinition("jmx-domain",
             new ModelNode().set(ConfigurationImpl.DEFAULT_JMX_DOMAIN), ModelType.STRING, true);
 
@@ -262,6 +265,9 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition RECONNECT_ATTEMPTS = new SimpleAttributeDefinition("reconnect-attempts",
             new ModelNode().set(HornetQClient.DEFAULT_RECONNECT_ATTEMPTS), ModelType.INT, true, MeasurementUnit.NONE);
+
+    SimpleAttributeDefinition REFRESH_TIMEOUT = new SimpleAttributeDefinition("refresh-timeout",
+            new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     RemotingInterceptorsAttribute REMOTING_INTERCEPTORS = RemotingInterceptorsAttribute.INSTANCE;
 
@@ -407,7 +413,6 @@ public interface CommonAttributes {
     String QUEUE_NAME ="queue-name";
     String REDELIVERY_DELAY ="redelivery-delay";
     String REDISTRIBUTION_DELAY ="redistribution-delay";
-    String REFRESH_TIMEOUT ="refresh-timeout";
     String RELATIVE_TO ="relative-to";
     String REMOTING_INTERCEPTORS_STRING ="remoting-interceptors";
     String RESOURCE_ADAPTER = "resource-adapter";
@@ -463,6 +468,10 @@ public interface CommonAttributes {
 
     AttributeDefinition[] BROADCAST_GROUP_ATTRIBUTES = {
         LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT, GROUP_ADDRESS, GROUP_PORT, ConnectorRefsAttribute.BROADCAST_GROUP
+    };
+
+    AttributeDefinition[] DISCOVERY_GROUP_ATTRIBUTES = {
+        LOCAL_BIND_ADDRESS, GROUP_ADDRESS, GROUP_PORT, REFRESH_TIMEOUT, INITIAL_WAIT_TIMEOUT
     };
 
     AttributeDefinition[] CORE_QUEUE_ATTRIBUTES = { QUEUE_ADDRESS, FILTER, DURABLE };

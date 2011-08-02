@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
-import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
@@ -47,13 +46,10 @@ import static org.jboss.as.messaging.CommonAttributes.CREATE_NON_DURABLE_QUEUE_N
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DELETEDURABLEQUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
 import static org.jboss.as.messaging.CommonAttributes.FAILBACK_DELAY;
-import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SHUTDOWN;
-import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
@@ -87,7 +83,6 @@ import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HI
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_THREAD_PRIORITY;
-import static org.jboss.as.messaging.CommonAttributes.NAME;
 import static org.jboss.as.messaging.CommonAttributes.NAME_OPTIONAL;
 import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
@@ -117,7 +112,6 @@ import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_P
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
 
 import javax.management.MBeanServer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -128,7 +122,6 @@ import java.util.Set;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -352,8 +345,10 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
 //        processCoreQueues(configuration, model);
         processSecuritySettings(configuration, model);
 
-        DivertAdd.addDivertConfigs(configuration, model);
         BroadcastGroupAdd.addBroadcastGroupConfigs(configuration, model);
+        DiscoveryGroupAdd.addDiscoveryGroupConfigs(configuration, model);
+        DivertAdd.addDivertConfigs(configuration, model);
+
 
         return configuration;
     }

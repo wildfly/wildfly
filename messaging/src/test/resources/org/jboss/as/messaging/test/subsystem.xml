@@ -40,6 +40,20 @@
                 </broadcast-group>
             </broadcast-groups>
 
+            <discovery-groups>
+                <discovery-group name="groupC">
+                    <local-bind-address>localC</local-bind-address>
+                    <group-address>groupD</group-address>
+                    <group-port>45678</group-port>
+                    <refresh-timeout>3500</refresh-timeout>
+                    <initial-wait-timeout>7500</initial-wait-timeout>
+                </discovery-group>
+                <discovery-group name="groupD">
+                    <group-address>groupD</group-address>
+                    <group-port>56789</group-port>
+                </discovery-group>
+            </discovery-groups>
+
             <diverts>
                 <divert name="testDivert1">
                     <routing-name>routing</routing-name>

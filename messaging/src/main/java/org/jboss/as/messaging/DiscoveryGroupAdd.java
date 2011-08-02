@@ -25,9 +25,12 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -42,11 +45,11 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
- * Handler for adding a broadcast group.
+ * Handler for adding a discovery group.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BroadcastGroupAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class DiscoveryGroupAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     /**
      * Create an "add" operation using the existing model
@@ -58,9 +61,9 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler implements Descrip
         return operation;
     }
 
-    public static final BroadcastGroupAdd INSTANCE = new BroadcastGroupAdd();
+    public static final DiscoveryGroupAdd INSTANCE = new DiscoveryGroupAdd();
 
-    private BroadcastGroupAdd() {
+    private DiscoveryGroupAdd() {
     }
 
     @Override
@@ -68,7 +71,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler implements Descrip
 
         model.setEmptyObject();
 
-        for (final AttributeDefinition attributeDefinition : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
+        for (final AttributeDefinition attributeDefinition : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
         }
     }
@@ -86,34 +89,32 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler implements Descrip
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getBroadcastGroupAdd(locale);
+        return MessagingDescriptions.getDiscoveryGroupAdd(locale);
     }
 
-    static void addBroadcastGroupConfigs(final Configuration configuration, final ModelNode model)  throws OperationFailedException {
-        if (model.hasDefined(CommonAttributes.BROADCAST_GROUP)) {
-            final List<BroadcastGroupConfiguration> configs = configuration.getBroadcastGroupConfigurations();
-            for (Property prop : model.get(CommonAttributes.BROADCAST_GROUP).asPropertyList()) {
-                configs.add(createBroadcastGroupConfiguration(prop.getName(), prop.getValue()));
+    static void addDiscoveryGroupConfigs(final Configuration configuration, final ModelNode model)  throws OperationFailedException {
+        if (model.hasDefined(CommonAttributes.DISCOVERY_GROUP)) {
+            Map<String, DiscoveryGroupConfiguration> configs = configuration.getDiscoveryGroupConfigurations();
+            if (configs == null) {
+                configs = new HashMap<String, DiscoveryGroupConfiguration>();
+                configuration.setDiscoveryGroupConfigurations(configs);
+            }
+            for (Property prop : model.get(CommonAttributes.DISCOVERY_GROUP).asPropertyList()) {
+                configs.put(prop.getName(), createDiscoveryGroupConfiguration(prop.getName(), prop.getValue()));
 
             }
         }
     }
 
-    static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final String name, final ModelNode model) throws OperationFailedException {
+    static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final ModelNode model) throws OperationFailedException {
 
         final ModelNode localAddrNode = CommonAttributes.LOCAL_BIND_ADDRESS.validateResolvedOperation(model);
         final String localAddress = localAddrNode.isDefined() ? localAddrNode.asString() : null;
-        final int localPort = CommonAttributes.LOCAL_BIND_PORT.validateResolvedOperation(model).asInt();
         final String groupAddress = CommonAttributes.GROUP_ADDRESS.validateResolvedOperation(model).asString();
         final int groupPort = CommonAttributes.GROUP_ADDRESS.validateResolvedOperation(model).asInt();
-        final long broadcastPeriod = CommonAttributes.BROADCAST_PERIOD.validateResolvedOperation(model).asLong();
-        final List<String> connectorRefs = new ArrayList<String>();
-        if (model.hasDefined(CommonAttributes.CONNECTORS)) {
-            for (ModelNode ref : model.get(CommonAttributes.CONNECTORS).asList()) {
-                connectorRefs.add(ref.asString());
-            }
-        }
+        final long refreshTimeout = CommonAttributes.REFRESH_TIMEOUT.validateResolvedOperation(model).asLong();
+        final long initialWaitTimeout = CommonAttributes.INITIAL_WAIT_TIMEOUT.validateResolvedOperation(model).asLong();
 
-        return new BroadcastGroupConfiguration(name, localAddress, localPort, groupAddress, groupPort, broadcastPeriod, connectorRefs);
+        return new DiscoveryGroupConfiguration(name, localAddress, groupAddress, groupPort, refreshTimeout, initialWaitTimeout);
     }
 }
