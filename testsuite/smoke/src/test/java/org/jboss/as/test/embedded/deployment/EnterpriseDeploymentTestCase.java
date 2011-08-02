@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarOutputStream;
 
 import javax.enterprise.deploy.shared.ModuleType;
@@ -46,6 +48,8 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -79,6 +83,8 @@ public class EnterpriseDeploymentTestCase {
     private static final String WAR_JBOSS_FILE = "WEB-INF/jboss-web.xml";
     private static final String JAR_JBOSS_FILE = "META-INF/jboss.xml";
     private static final String EAR_JBOSS_FILE = "META-INF/jboss-app.xml";
+
+    private DeploymentManager deploymentManager;
 
     @Deployment
     public static Archive<?> createDeployment(){
@@ -183,12 +189,15 @@ public class EnterpriseDeploymentTestCase {
     }
 
     private DeploymentManager getDeploymentManager() throws Exception {
-        DeploymentFactoryImpl.register();
-        DeploymentFactoryManager dfManager = DeploymentFactoryManager.getInstance();
-        DeploymentFactory[] factories = dfManager.getDeploymentFactories();
-        assertTrue("DeploymentFactory available", factories.length > 0);
-        String mgrURI = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7";
-        return factories[0].getDeploymentManager(mgrURI, null, null);
+        if (deploymentManager == null) {
+            DeploymentFactoryImpl.register();
+            DeploymentFactoryManager dfManager = DeploymentFactoryManager.getInstance();
+            DeploymentFactory[] factories = dfManager.getDeploymentFactories();
+            assertTrue("DeploymentFactory available", factories.length > 0);
+            String mgrURI = DeploymentManagerImpl.DEPLOYER_URI + "?targetType=as7";
+            deploymentManager = factories[0].getDeploymentManager(mgrURI, null, null);
+        }
+        return deploymentManager;
     }
 
     private ProgressObject jsr88Deploy(Archive<?> archive) throws Exception {
@@ -200,17 +209,12 @@ public class EnterpriseDeploymentTestCase {
         InputStream deploymentPlan = createDeploymentPlan(archive.getName());
 
         // Deploy the test archive
-        ZipExporter exporter = archive.as(ZipExporter.class);
-        InputStream inputStream = exporter.exportAsInputStream();
+        InputStream inputStream = archive.as(ZipExporter.class).exportAsInputStream();
         ProgressObject progress = manager.distribute(targets, inputStream, deploymentPlan);
-        DeploymentStatus status = progress.getDeploymentStatus();
-        waitForCompletion(status);
-
-        assertEquals(status.getMessage(), StateType.COMPLETED, status.getState());
+        awaitCompletion(progress, 5000);
 
         progress = manager.start(progress.getResultTargetModuleIDs());
-        status = progress.getDeploymentStatus();
-        waitForCompletion(status);
+        awaitCompletion(progress, 5000);
 
         return progress;
     }
@@ -221,23 +225,26 @@ public class EnterpriseDeploymentTestCase {
         assertEquals(1, targets.length);
 
         ProgressObject progress = manager.stop(resultTargetModuleIDs);
-        DeploymentStatus status = progress.getDeploymentStatus();
-        waitForCompletion(status);
-
-        assertEquals(status.getMessage(), StateType.COMPLETED, status.getState());
+        awaitCompletion(progress, 5000);
 
         progress = manager.undeploy(resultTargetModuleIDs);
-        status = progress.getDeploymentStatus();
-        waitForCompletion(status);
-        assertEquals(status.getMessage(), StateType.COMPLETED, status.getState());
+        awaitCompletion(progress, 5000);
 
         return progress;
     }
 
-    private void waitForCompletion(DeploymentStatus status) throws InterruptedException {
-        // wait for the deployment to finish
-        while (StateType.RUNNING == status.getState())
-            Thread.sleep(100);
+    private void awaitCompletion(ProgressObject progress, long timeout) throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        progress.addProgressListener(new ProgressListener() {
+            public void handleProgressEvent(ProgressEvent event) {
+                DeploymentStatus status = event.getDeploymentStatus();
+                if (status.isCompleted()) {
+                    latch.countDown();
+                }
+            }
+        });
+        if (latch.await(timeout, TimeUnit.MILLISECONDS) == false)
+            throw new IllegalStateException("Deployment not completed: " + progress);
     }
 
     private void assertServletAccess(String context) throws IOException {
