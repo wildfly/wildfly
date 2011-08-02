@@ -66,12 +66,13 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier JBOSS_AS_JPA_SPI_ID = ModuleIdentifier.create("org.jboss.as.jpa.spi");
     private static final ModuleIdentifier JAVASSIST_ID = ModuleIdentifier.create("org.javassist");
 
-    private static final ModuleIdentifier HIBERNATE_3_PROVIDER = ModuleIdentifier.create("org.jboss.as.jpa.hibernate3");
+    private static final ModuleIdentifier HIBERNATE_3_PROVIDER = ModuleIdentifier.create("org.jboss.as.jpa.hibernate","3");
     private static final String HIBERNATE3_PROVIDER_ADAPTOR = "org.jboss.as.jpa.hibernate3.HibernatePersistenceProviderAdaptor";
 
     // module dependencies for hibernate3
     private static final ModuleIdentifier JBOSS_AS_NAMING_ID = ModuleIdentifier.create("org.jboss.as.naming");
     private static final ModuleIdentifier JBOSS_JANDEX_ID = ModuleIdentifier.create("org.jboss.jandex");
+
     /**
      * Add dependencies for modules required for JPA deployments
      */
@@ -104,12 +105,10 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
     }
 
-
     private void addPersistenceProviderModuleDependencies(DeploymentPhaseContext phaseContext, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) throws
             DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         int defaultProviderCount = 0;
         Set<String> moduleDependencies = new HashSet<String>();
@@ -126,7 +125,8 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
         // add persistence provider dependency
         for (String dependency : moduleDependencies) {
-            addDependency(moduleSpecification, moduleLoader, ModuleIdentifier.create(dependency));
+
+            addDependency(moduleSpecification, moduleLoader, ModuleIdentifier.fromString(dependency));
             log.info("added " + dependency + " dependency to application deployment");
         }
     }
