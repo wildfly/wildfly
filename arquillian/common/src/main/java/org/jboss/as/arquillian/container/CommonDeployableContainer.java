@@ -16,9 +16,6 @@
  */
 package org.jboss.as.arquillian.container;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.management.MBeanServerConnection;
 
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
@@ -49,8 +46,6 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @Inject
     @ContainerScoped
     private InstanceProducer<ArchiveDeployer> archiveDeployerInst;
-
-    private final Map<Object, String> registry = new HashMap<Object, String>();
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
@@ -101,18 +96,14 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
         ArchiveDeployer archiveDeployer = archiveDeployerInst.get();
         String runtimeName = archiveDeployer.deploy(archive);
-        registry.put(archive, runtimeName);
 
         return managementClient.getDeploymentMetaData(runtimeName);
     }
 
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
-        String runtimeName = registry.remove(archive);
-        if (runtimeName != null) {
-            ArchiveDeployer archiveDeployer = archiveDeployerInst.get();
-            archiveDeployer.undeploy(runtimeName);
-        }
+        ArchiveDeployer archiveDeployer = archiveDeployerInst.get();
+        archiveDeployer.undeploy(archive.getName());
     }
 
     @Override
