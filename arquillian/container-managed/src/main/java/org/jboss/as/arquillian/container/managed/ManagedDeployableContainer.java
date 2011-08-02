@@ -16,18 +16,13 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.security.AccessController;
@@ -47,10 +42,6 @@ import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
-import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.JBossSaslProvider;
 
 /**
@@ -71,17 +62,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     @ContainerScoped
     private InstanceProducer<MBeanServerConnection> mbeanServerInst;
 
-    private int destroyProcess() {
-        if (process == null)
-            return 0;
-        process.destroy();
-        try {
-            return process.waitFor();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public Class<ManagedContainerConfiguration> getConfigurationClass() {
         return ManagedContainerConfiguration.class;
@@ -89,15 +69,10 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
     @Override
     protected void startInternal() throws LifecycleException {
+        verifyNoRunningServer();
+
         Security.addProvider(saslProvider);
         try {
-            //if there is aleady an instance running we do not bother starting a new one
-            //as it will not be able to bind the ports it needs anyway
-            if(isServerStarted()) {
-                provider = getMBeanServerConnectionProvider();
-                mbeanServerInst.set(getMBeanServerConnection(5000));
-                return;
-            }
 
             ManagedContainerConfiguration config = getContainerConfiguration();
             final String jbossHomeDir = config.getJbossHome();
@@ -163,7 +138,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             long timeout = startupTimeout * 1000;
             boolean serverAvailable = false;
             while (timeout > 0 && serverAvailable == false) {
-                serverAvailable = isServerStarted();
+                serverAvailable = getManagementClient().isServerInRunningState();
                 if (!serverAvailable) {
                     Thread.sleep(100);
                     timeout -= 100;
@@ -204,20 +179,41 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         return provider.getConnection();
     }
 
-    private boolean isServerStarted() {
+    private void verifyNoRunningServer() throws LifecycleException {
+        Socket socket = null;
         try {
-            ModelNode op = Util.getEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.EMPTY_ADDRESS.toModelNode());
-            op.get(NAME).set("server-state");
+            socket = new Socket(
+                    getContainerConfiguration().getManagementAddress(),
+                    getContainerConfiguration().getManagementPort());
+        }
+        catch (Exception ignored) { // nothing is running on defined ports
+            return;
+        }
+        finally {
+            if(socket != null) {
+                try {
+                    socket.close();
+                } catch (Exception e) {
+                    throw new RuntimeException("Could not close isServerStarted socket", e);
+                }
+            }
+        }
+        throw new LifecycleException(
+                "The server is already running! " +
+                "Managed containers does not support connecting to running server instances due to the " +
+                "possible harmfull effect of connecting to the wrong server. Please stop server before running or " +
+                "change to another type of container.");
+    }
 
-            ModelNode rsp = getModelControllerClient().execute(op);
-            return SUCCESS.equals(rsp.get(OUTCOME).asString())
-                    && !ControlledProcessState.State.STARTING.toString().equals(rsp.get(RESULT).asString())
-                    && !ControlledProcessState.State.STOPPING.toString().equals(rsp.get(RESULT).asString());
+    private int destroyProcess() {
+        if (process == null)
+            return 0;
+        process.destroy();
+        try {
+            return process.waitFor();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        catch (Exception ignored) {
-            // ignore, as we will get exceptions until the management comm services start
-        }
-        return false;
     }
 
     private MBeanServerConnectionProvider getMBeanServerConnectionProvider() {
