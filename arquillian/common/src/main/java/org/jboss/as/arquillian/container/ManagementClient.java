@@ -21,6 +21,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -34,7 +35,10 @@ import java.util.Map;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -104,6 +108,21 @@ public class ManagementClient {
             throw new RuntimeException(e);
         }
         return metaData;
+    }
+
+    public boolean isServerInRunningState() {
+        try {
+            ModelNode op = Util.getEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.EMPTY_ADDRESS.toModelNode());
+            op.get(NAME).set("server-state");
+
+            ModelNode rsp = client.execute(op);
+            return SUCCESS.equals(rsp.get(OUTCOME).asString())
+                    && !ControlledProcessState.State.STARTING.toString().equals(rsp.get(RESULT).asString())
+                    && !ControlledProcessState.State.STOPPING.toString().equals(rsp.get(RESULT).asString());
+        }
+        catch (Exception ignored) {
+            return false;
+        }
     }
 
     //-------------------------------------------------------------------------------------||
