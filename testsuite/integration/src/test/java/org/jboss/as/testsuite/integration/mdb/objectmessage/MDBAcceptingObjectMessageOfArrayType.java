@@ -37,13 +37,13 @@ import javax.jms.ObjectMessage;
  * User: jpai
  */
 @MessageDriven(activationConfig = {
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = MDBAcceptingObjectMessage.QUEUE_JNDI_NAME)
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = MDBAcceptingObjectMessageOfArrayType.QUEUE_JNDI_NAME)
 })
-public class MDBAcceptingObjectMessage implements MessageListener {
+public class MDBAcceptingObjectMessageOfArrayType implements MessageListener {
 
-    private static final Logger logger = Logger.getLogger(MDBAcceptingObjectMessage.class);
+    private static final Logger logger = Logger.getLogger(MDBAcceptingObjectMessageOfArrayType.class);
 
-    public static final String QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/objectmessage-queue";
+    public static final String QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/objectmessage-array-queue";
 
     @EJB
     private JMSMessagingUtil jmsMessagingUtil;
@@ -56,7 +56,7 @@ public class MDBAcceptingObjectMessage implements MessageListener {
         }
         try {
             // get the underlying message
-            SimpleMessageInEarLibJar underlyingMessage = (SimpleMessageInEarLibJar) ((ObjectMessage) message).getObject();
+            SimpleMessageInEarLibJar[] underlyingMessage = (SimpleMessageInEarLibJar[]) ((ObjectMessage) message).getObject();
             if (message.getJMSReplyTo() != null) {
                 logger.info("Replying to " + message.getJMSReplyTo());
                 // create a ObjectMessage as a reply and send it to the reply queue

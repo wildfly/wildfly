@@ -27,6 +27,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.JMSAdminOperations;
 import org.jboss.as.testsuite.integration.mdb.JMSMessagingUtil;
 import org.jboss.as.testsuite.integration.mdb.objectmessage.MDBAcceptingObjectMessage;
+import org.jboss.as.testsuite.integration.mdb.objectmessage.MDBAcceptingObjectMessageOfArrayType;
 import org.jboss.as.testsuite.integration.mdb.objectmessage.SimpleMessageInEarLibJar;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -36,6 +37,8 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,7 +47,6 @@ import javax.ejb.EJB;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
-import javax.jms.TextMessage;
 import java.util.Arrays;
 
 /**
@@ -57,16 +59,24 @@ public class ObjectMessageTestCase {
 
     private static final Logger logger = Logger.getLogger(ObjectMessageTestCase.class);
 
-    private static final String REPLY_QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/objectmessage-reply-queue";
+    private static final String OBJECT_MESSAGE_ARRAY_TYPE_REPLY_QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/objectmessage-array-reply-queue";
+
+    private static final String OBJECT_MESSAGE_REPLY_QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/objectmessage-reply-queue";
 
     @EJB(mappedName = "java:module/JMSMessagingUtil")
     private JMSMessagingUtil jmsUtil;
 
-    @Resource(mappedName = MDBAcceptingObjectMessage.QUEUE_JNDI_NAME)
-    private Queue queue;
+    @Resource(mappedName = MDBAcceptingObjectMessageOfArrayType.QUEUE_JNDI_NAME)
+    private Queue objectMessageOfArrayTypeQueue;
 
-    @Resource(mappedName = ObjectMessageTestCase.REPLY_QUEUE_JNDI_NAME)
-    private Queue replyQueue;
+    @Resource(mappedName = ObjectMessageTestCase.OBJECT_MESSAGE_ARRAY_TYPE_REPLY_QUEUE_JNDI_NAME)
+    private Queue objectMessageOfArrayTypeReplyQueue;
+
+    @Resource(mappedName = MDBAcceptingObjectMessage.QUEUE_JNDI_NAME)
+    private Queue objectMessageQueue;
+
+    @Resource(mappedName = ObjectMessageTestCase.OBJECT_MESSAGE_REPLY_QUEUE_JNDI_NAME)
+    private Queue objectMessageReplyQueue;
 
     /**
      * .ear
@@ -84,11 +94,9 @@ public class ObjectMessageTestCase {
      */
     @Deployment
     public static Archive getDeployment() {
-        // setup the queues
-        createJmsDestinations();
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
-        ejbJar.addClasses(MDBAcceptingObjectMessage.class, JMSMessagingUtil.class, ObjectMessageTestCase.class);
+        ejbJar.addClasses(MDBAcceptingObjectMessageOfArrayType.class, JMSMessagingUtil.class, ObjectMessageTestCase.class, MDBAcceptingObjectMessage.class);
         logger.info(ejbJar.toString(true));
 
         final JavaArchive libJar = ShrinkWrap.create(JavaArchive.class, "util.jar");
@@ -104,10 +112,14 @@ public class ObjectMessageTestCase {
         return ear;
     }
 
-    private static void createJmsDestinations() {
+    @BeforeClass
+    public static void createJmsDestinations() {
         final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-queue", MDBAcceptingObjectMessage.QUEUE_JNDI_NAME);
-        jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-replyQueue", REPLY_QUEUE_JNDI_NAME);
+        jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-replyQueue", OBJECT_MESSAGE_REPLY_QUEUE_JNDI_NAME);
+        jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-array-queue", MDBAcceptingObjectMessageOfArrayType.QUEUE_JNDI_NAME);
+        jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-array-replyQueue", OBJECT_MESSAGE_ARRAY_TYPE_REPLY_QUEUE_JNDI_NAME);
+
     }
 
     @AfterClass
@@ -115,15 +127,19 @@ public class ObjectMessageTestCase {
         final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-queue");
         jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-replyQueue");
+        jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-array-queue");
+        jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-array-replyQueue");
     }
 
     /**
-     * Test that the MDB can process a {@link ObjectMessage} without any classloading issues
+     * Test that the MDB can process a {@link ObjectMessage} which consists of an array of objects,
+     * without any classloading issues
      *
      * @throws Exception
      */
     @Test
-    public void testObjectMessage() throws Exception {
+    @Ignore ("HORNETQ-747 https://issues.jboss.org/browse/HORNETQ-747")
+    public void testObjectMessageWithObjectArray() throws Exception {
         final String goodMorning = "Good morning";
         final String goodEvening = "Good evening";
         // create the message
@@ -134,13 +150,36 @@ public class ObjectMessageTestCase {
         multipleGreetings[1] = messageTwo;
 
         // send as ObjectMessage
-        this.jmsUtil.sendObjectMessage(multipleGreetings, this.queue, this.replyQueue);
+        this.jmsUtil.sendObjectMessage(multipleGreetings, this.objectMessageOfArrayTypeQueue, this.objectMessageOfArrayTypeReplyQueue);
         // wait for an reply
-        final Message reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
+        final Message reply = this.jmsUtil.receiveMessage(objectMessageOfArrayTypeReplyQueue, 5000);
         // test the reply
-        Assert.assertNotNull("Reply message was null on reply queue: " + this.replyQueue, reply);
+        Assert.assertNotNull("Reply message was null on reply queue: " + this.objectMessageOfArrayTypeReplyQueue, reply);
         final SimpleMessageInEarLibJar[] replyMessage = (SimpleMessageInEarLibJar[]) ((ObjectMessage) reply).getObject();
-        Assert.assertTrue("Unexpected reply message on reply queue: " + this.replyQueue, Arrays.equals(replyMessage, multipleGreetings));
+        Assert.assertTrue("Unexpected reply message on reply queue: " + this.objectMessageOfArrayTypeReplyQueue, Arrays.equals(replyMessage, multipleGreetings));
 
     }
+
+    /**
+     * Test that the MDB can process a {@link ObjectMessage} without any classloading issues
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testObjectMessage() throws Exception {
+        final String goodAfternoon = "Good afternoon!";
+        // create the message
+        final SimpleMessageInEarLibJar message = new SimpleMessageInEarLibJar(goodAfternoon);
+
+        // send as ObjectMessage
+        this.jmsUtil.sendObjectMessage(message, this.objectMessageQueue, this.objectMessageReplyQueue);
+        // wait for an reply
+        final Message reply = this.jmsUtil.receiveMessage(objectMessageReplyQueue, 5000);
+        // test the reply
+        Assert.assertNotNull("Reply message was null on reply queue: " + this.objectMessageReplyQueue, reply);
+        final SimpleMessageInEarLibJar replyMessage = (SimpleMessageInEarLibJar) ((ObjectMessage) reply).getObject();
+        Assert.assertEquals("Unexpected reply message on reply queue: " + this.objectMessageReplyQueue, message, replyMessage);
+
+    }
+
 }
