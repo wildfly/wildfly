@@ -523,11 +523,11 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-jpa"/>
         </module-def>
 
-        <module-def name="org.jboss.as.jpa.hibernate3">
+        <module-def name="org.jboss.as.jpa.hibernate" slot="3">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-hibernate3"/>
         </module-def>
 
-        <module-def name="org.jboss.as.jpa.hibernate4">
+        <module-def name="org.jboss.as.jpa.hibernate" slot="4">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jpa-hibernate4"/>
         </module-def>
 
