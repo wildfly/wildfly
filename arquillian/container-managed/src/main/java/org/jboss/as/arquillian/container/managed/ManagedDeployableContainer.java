@@ -101,15 +101,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
             ManagedContainerConfiguration config = getContainerConfiguration();
             final String jbossHomeDir = config.getJbossHome();
-
-            final String modulePath;
-            if(config.getModulePath() != null && !config.getModulePath().isEmpty()) {
-                modulePath = config.getModulePath();
-            } else {
-                modulePath = jbossHomeDir + "/modules";
-            }
-
-            final String additionalJavaOpts = System.getProperty("jboss.options");
+            final String modulePath = config.getModulePath();
+            final String additionalJavaOpts = config.getJavaVmArguments();
 
             File modulesJar = new File(jbossHomeDir + "/jboss-modules.jar");
             if (modulesJar.exists() == false)
