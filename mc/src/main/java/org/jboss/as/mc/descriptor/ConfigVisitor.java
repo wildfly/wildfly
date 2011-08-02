@@ -23,6 +23,8 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
 
@@ -40,11 +42,19 @@ public interface ConfigVisitor {
     BeanState getState();
 
     /**
-     * Get classloader for this visitor.
+     * Get module for this visitor.
      *
      * @return the classloader
      */
-    ClassLoader getClassLoader();
+    Module getModule();
+
+    /**
+     * Load module.
+     *
+     * @param identifier the module identifier
+     * @return loaded module
+     */
+    Module loadModule(ModuleIdentifier identifier);
 
     /**
      * Add dependency.

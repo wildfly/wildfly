@@ -24,23 +24,9 @@ package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
-import org.jboss.as.mc.descriptor.ConfigVisitor;
-import org.jboss.as.mc.descriptor.ConstructorConfig;
-import org.jboss.as.mc.descriptor.DefaultConfigVisitor;
-import org.jboss.as.mc.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.modules.Module;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 
 /**
  * MC pojo described phase.
@@ -50,9 +36,8 @@ import java.lang.reflect.Method;
 public class DescribedPojoPhase extends AbstractPojoPhase {
     private final DeploymentReflectionIndex index;
 
-    public DescribedPojoPhase(Module module, DeploymentReflectionIndex index, BeanMetaDataConfig beanConfig) {
+    public DescribedPojoPhase(DeploymentReflectionIndex index, BeanMetaDataConfig beanConfig) {
         this.index = index;
-        setModule(module);
         setBeanConfig(beanConfig);
     }
 
@@ -68,6 +53,7 @@ public class DescribedPojoPhase extends AbstractPojoPhase {
 
     public void start(StartContext context) throws StartException {
         try {
+            setModule(getBeanConfig().getModule().getInjectedModule().getValue());
             Class beanClass = Class.forName(getBeanConfig().getBeanClass(), false, getModule().getClassLoader());
             setBeanInfo(new DefaultBeanInfo(index, beanClass));
         } catch (Exception e) {

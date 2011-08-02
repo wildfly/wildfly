@@ -29,6 +29,7 @@ package org.jboss.as.mc;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public enum BeanState {
+    NOT_INSTALLED,
     DESCRIBED,
     INSTANTIATED,
     CONFIGURED,

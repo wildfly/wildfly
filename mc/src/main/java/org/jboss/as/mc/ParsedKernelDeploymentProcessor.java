@@ -23,6 +23,8 @@
 package org.jboss.as.mc;
 
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
+import org.jboss.as.mc.descriptor.ConfigVisitor;
+import org.jboss.as.mc.descriptor.DefaultConfigVisitor;
 import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.as.mc.service.DescribedPojoPhase;
 import org.jboss.as.server.deployment.Attachments;
@@ -76,9 +78,12 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
     }
 
     protected void describeBean(final Module module, final ServiceTarget serviceTarget, DeploymentReflectionIndex deploymentIndex, BeanMetaDataConfig beanConfig) {
-        final ServiceName describedServiceName = BeanMetaDataConfig.toBeanName(beanConfig.getName(), BeanState.DESCRIBED);
-        final DescribedPojoPhase describedService = new DescribedPojoPhase(module, deploymentIndex, beanConfig);
+        final BeanState state = BeanState.NOT_INSTALLED;
+        final ServiceName describedServiceName = BeanMetaDataConfig.toBeanName(beanConfig.getName(), state.next());
+        final DescribedPojoPhase describedService = new DescribedPojoPhase(deploymentIndex, beanConfig);
         final ServiceBuilder describedServiceBuilder = serviceTarget.addService(describedServiceName, describedService);
+        final ConfigVisitor visitor = new DefaultConfigVisitor(describedServiceBuilder, state, module);
+        beanConfig.visit(visitor);
         describedServiceBuilder.install();
     }
 }

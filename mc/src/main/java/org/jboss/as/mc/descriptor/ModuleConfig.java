@@ -22,54 +22,51 @@
 
 package org.jboss.as.mc.descriptor;
 
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
 import java.io.Serializable;
 
 /**
- * Value meta data.
+ * The module meta data.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class ValueConfig implements Serializable, ConfigVisitorNode, Value<Object> {
+public class ModuleConfig implements Serializable, ConfigVisitorNode {
     private static final long serialVersionUID = 1L;
 
-    private String type;
-    protected ConversionValue rawValue;
-    private InjectedValue<Object> value = new InjectedValue<Object>();
-
-    @Override
-    public Object getValue() throws IllegalStateException, IllegalArgumentException {
-        return value.getValue();
-    }
+    private String moduleName;
+    private final InjectedValue<Module> injectedModule = new InjectedValue<Module>();
 
     @Override
     public void visit(ConfigVisitor visitor) {
-        if (type != null && rawValue != null) {
-            try {
-                Class<?> clazz = visitor.getModule().getClassLoader().loadClass(type);
-                rawValue.setType(clazz);
-            } catch (Throwable t) {
-                throw new IllegalArgumentException(t);
+        if (moduleName != null) {
+            ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleName);
+            if (moduleName.startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
+                ServiceName serviceName = ServiceModuleLoader.moduleServiceName(identifier);
+                visitor.addDependency(serviceName, getInjectedModule());
+            } else {
+                Module dm = visitor.loadModule(identifier);
+                getInjectedModule().setValue(new ImmediateValue<Module>(dm));
             }
+        } else {
+            getInjectedModule().setValue(new ImmediateValue<Module>(visitor.getModule()));
         }
     }
 
-    public String getType() {
-        return type;
+    public String getModuleName() {
+        return moduleName;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setModuleName(String moduleName) {
+        this.moduleName = moduleName;
     }
 
-    public InjectedValue<Object> getInjectedValue() {
-        return value;
-    }
-
-    public void setValue(Object value) {
-        rawValue = new ConversionValue(value);
-        this.value.setValue(rawValue);
+    public InjectedValue<Module> getInjectedModule() {
+        return injectedModule;
     }
 }

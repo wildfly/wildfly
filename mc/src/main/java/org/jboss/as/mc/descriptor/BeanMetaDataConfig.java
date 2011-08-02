@@ -57,6 +57,7 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
     private String name;
     private String beanClass;
     private Set<String> aliases;
+    private ModuleConfig module;
     private ConstructorConfig constructor;
     private Set<PropertyConfig> properties;
     private LifecycleConfig create;
@@ -70,6 +71,10 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
     @Override
     public void visit(ConfigVisitor visitor) {
         BeanState state = visitor.getState();
+        if (module == null)
+            module = new ModuleConfig();
+        if (state == BeanState.NOT_INSTALLED)
+            module.visit(visitor);
         if (constructor != null && state == BeanState.DESCRIBED)
             constructor.visit(visitor);
         if (properties != null && state == BeanState.INSTANTIATED) {
@@ -124,6 +129,14 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
 
     public void setAliases(Set<String> aliases) {
         this.aliases = aliases;
+    }
+
+    public ModuleConfig getModule() {
+        return module;
+    }
+
+    public void setModule(ModuleConfig module) {
+        this.module = module;
     }
 
     public ConstructorConfig getConstructor() {

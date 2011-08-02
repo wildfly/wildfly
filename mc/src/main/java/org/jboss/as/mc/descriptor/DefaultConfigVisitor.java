@@ -23,22 +23,26 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
+ * Default config visitor.
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class DefaultConfigVisitor implements ConfigVisitor {
     private final ServiceBuilder builder;
     private final BeanState state;
-    private final ClassLoader classLoader;
+    private final Module module;
 
-    public DefaultConfigVisitor(ServiceBuilder builder, BeanState state, ClassLoader classLoader) {
+    public DefaultConfigVisitor(ServiceBuilder builder, BeanState state, Module module) {
         this.builder = builder;
         this.state = state;
-        this.classLoader = classLoader;
+        this.module = module;
     }
 
     @Override
@@ -47,8 +51,17 @@ public class DefaultConfigVisitor implements ConfigVisitor {
     }
 
     @Override
-    public ClassLoader getClassLoader() {
-        return classLoader;
+    public Module getModule() {
+        return module;
+    }
+
+    @Override
+    public Module loadModule(ModuleIdentifier identifier) {
+        try {
+            return module.getModule(identifier);
+        } catch (Throwable t) {
+            throw new IllegalArgumentException(t);
+        }
     }
 
     @Override
