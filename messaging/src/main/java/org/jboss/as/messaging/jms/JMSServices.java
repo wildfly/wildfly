@@ -55,6 +55,7 @@ import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.as.messaging.CommonAttributes.SETUP_ATTEMPTS;
 import static org.jboss.as.messaging.CommonAttributes.SETUP_INTERVAL;
+import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_ATTRIBUTE;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_BATCH_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.USE_GLOBAL_POOLS;
 import static org.jboss.as.messaging.CommonAttributes.USE_JNDI;
@@ -194,7 +195,8 @@ public class JMSServices {
         JNDI_PARAMS,
         USE_LOCAL_TX,
         SETUP_ATTEMPTS,
-        SETUP_INTERVAL
+        SETUP_INTERVAL,
+        TRANSACTION_ATTRIBUTE
     };
 
     static PooledCFAttribute[] POOLED_CONNECTION_FACTORY_METHOD_ATTRS = new PooledCFAttribute[] {

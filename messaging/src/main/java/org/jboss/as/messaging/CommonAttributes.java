@@ -36,8 +36,6 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public interface CommonAttributes {
-
-
     SimpleAttributeDefinition ADDRESS = new SimpleAttributeDefinition("address", ModelType.STRING, false);
 
     SimpleAttributeDefinition ALLOW_FAILBACK =  new SimpleAttributeDefinition("allow-failback",
@@ -287,6 +285,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("thread-pool-max-size",
             new ModelNode().set(ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE), ModelType.INT,  true);
 
+    SimpleAttributeDefinition TRANSACTION_ATTRIBUTE = new SimpleAttributeDefinition("transaction",
+            new ModelNode().set("transaction"), ModelType.STRING,  true);
+
     SimpleAttributeDefinition TRANSACTION_BATCH_SIZE = new SimpleAttributeDefinition("transaction-batch-size",
             new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE), ModelType.INT,  true);
 
@@ -417,9 +418,8 @@ public interface CommonAttributes {
     String USE_DUPLICATE_DETECTION = "use-duplicate-detection";
     String USER = "user";
     String VALUE ="value";
+    String XA = "xa";
     String XA_TX = "XATransaction";
-
-
 
     AttributeDefinition[] SIMPLE_ROOT_RESOURCE_ATTRIBUTES = {
         NAME_OPTIONAL, CLUSTERED, PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,

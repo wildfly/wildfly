@@ -545,10 +545,5 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         protected Type getType() {
             return Type.MANAGEMENT;
         }
-
-        @Override
-        protected boolean isValidateOperations() {
-            return true;
-        }
     }
 }

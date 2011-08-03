@@ -61,12 +61,10 @@ import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
 import static org.jboss.as.messaging.CommonAttributes.MANAGE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.NO_TX;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.PATH;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
@@ -76,15 +74,15 @@ import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.messaging.CommonAttributes.SUBSYSTEM;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
-import static org.jboss.as.messaging.CommonAttributes.XA_TX;
 
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -272,8 +270,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     unhandledElement(reader, element);
                     break;
                 case CORE_QUEUES: {
-                    final ModelNode queues = parseQueues(reader, address, list);
-                    operation.get(QUEUE).set(queues);
+                    parseQueues(reader, address, list);
                     break;
                 }
                 case CONNECTION_FACTORIES: {
@@ -401,9 +398,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         return acceptors;
     }
 
-    static ModelNode parseQueues(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
-        final ModelNode queues = new ModelNode();
-        queues.setEmptyObject();
+    static void parseQueues(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;
             int count = reader.getAttributeCount();
@@ -438,7 +433,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 }
             }
         }
-        return queues;
     }
 
     static void parseQueue(final XMLExtendedStreamReader reader, final ModelNode queue) throws XMLStreamException {
@@ -1309,9 +1303,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writer.writeEndElement();
         }
         JndiEntriesAttribute.CONNECTION_FACTORY.marshallAsElement(factory, writer);
-        if(has(node, TRANSACTION)) {
+        if(has(factory, TRANSACTION)) {
             writer.writeStartElement(Element.TRANSACTION.getLocalName());
-            writeTransactionTypeAttribute(writer, Element.MODE, node.get(TRANSACTION));
+            writeTransactionTypeAttribute(writer, Element.MODE, factory.get(TRANSACTION));
             writer.writeEndElement();
         }
         if(has(factory, INBOUND_CONFIG)) {
@@ -1397,11 +1391,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         String xaType = value.asString();
         final String txSupport;
         if(LOCAL_TX.equals(xaType)) {
-            txSupport = LOCAL_TX;
+            txSupport = CommonAttributes.LOCAL;
         } else if (CommonAttributes.NONE.equals(xaType)) {
-             txSupport = NO_TX;
+             txSupport = CommonAttributes.NONE;
         } else {
-            txSupport = XA_TX;
+            txSupport = CommonAttributes.XA;
         }
         writer.writeAttribute(attr.getLocalName(), txSupport);
     }
