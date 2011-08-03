@@ -271,8 +271,8 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
         configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.validateResolvedOperation(model).asBoolean());
 
         configuration.setBackup(BACKUP.validateResolvedOperation(model).asBoolean());
-        if(model.hasDefined(LIVE_CONNECTOR_REF)) {
-            configuration.setLiveConnectorName(model.get(LIVE_CONNECTOR_REF).asString());
+        if(model.hasDefined(LIVE_CONNECTOR_REF.getName())) {
+            configuration.setLiveConnectorName(LIVE_CONNECTOR_REF.validateResolvedOperation(model).asString());
         }
         configuration.setClustered(CLUSTERED.validateResolvedOperation(model).asBoolean());
         configuration.setClusterPassword(CLUSTER_PASSWORD.validateResolvedOperation(model).asString());

@@ -61,6 +61,7 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
 import static org.jboss.as.messaging.CommonAttributes.MANAGE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
@@ -69,6 +70,7 @@ import static org.jboss.as.messaging.CommonAttributes.PATH;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.RELATIVE_TO;
+import static org.jboss.as.messaging.CommonAttributes.REMOTING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 import static org.jboss.as.messaging.CommonAttributes.SEND_NAME;
@@ -157,11 +159,13 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 } case ADDRESS_SETTINGS: {
                     // add address settings
                     final ModelNode addressSettings = processAddressSettings(reader);
+                    // TODO these should be resources
                     operation.get(ADDRESS_SETTING).set(addressSettings);
                     break;
                 }
                 case BINDINGS_DIRECTORY: {
                     final ModelNode directory = parseDirectory(reader);
+                    // TODO this should be a resource
                     operation.get(BINDINGS_DIRECTORY).set(directory);
                     break;
                 }
@@ -176,6 +180,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 case CONNECTORS: {
                     final ModelNode connectors = processConnectors(reader);
+                    // TODO these should be resources
                     operation.get(CONNECTOR).set(connectors);
                     break;
                 }
@@ -189,13 +194,15 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     parseDiverts(reader, address, list);
                     break;
                 case FILE_DEPLOYMENT_ENABLED:
-                    unhandledElement(reader, element); // no filesystem support in AS
+                    // This isn't an element in the xsd as there is no filesystem support in AS
+                    unhandledElement(reader, element);
                     break;
                 case GROUPING_HANDLER:
                     unhandledElement(reader, element);
                     break;
                 case JOURNAL_DIRECTORY: {
                     final ModelNode directory = parseDirectory(reader);
+                    // TODO this should be a resource
                     operation.get(JOURNAL_DIRECTORY).set(directory);
                     break;
                 }
@@ -204,11 +211,15 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     operation.get(LARGE_MESSAGES_DIRECTORY).set(dir);
                     break;
                 }
-                case LIVE_CONNECTOR_REF:
-                    unhandledElement(reader, element);
+                case LIVE_CONNECTOR_REF: {
+                    Location location = reader.getLocation();
+                    String string = readStringAttributeElement(reader, CommonAttributes.CONNECTOR_NAME);
+                    LIVE_CONNECTOR_REF.parseAndSetParameter(string, operation, location);
                     break;
+                }
                 case PAGING_DIRECTORY: {
                     final ModelNode directory = parseDirectory(reader);
+                    // TODO this should be a resource
                     operation.get(PAGING_DIRECTORY).set(directory);
                     break;
                 }
@@ -216,11 +227,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     unhandledElement(reader, element);
                     break;
                 case REMOTING_INTERCEPTORS:
-                    unhandledElement(reader, element);
+                    processRemotingInterceptors(reader, operation);
                     break;
                 case SECURITY_SETTINGS: {
                     // process security settings
                     final ModelNode securitySettings = processSecuritySettings(reader);
+                    // TODO these should be resources
                     operation.get(SECURITY_SETTING).set(securitySettings);
                     break;
                 }
@@ -291,6 +303,23 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     }
             }
         } while (reader.hasNext() && localName.equals(ModelDescriptionConstants.SUBSYSTEM) == false);
+    }
+
+    private void processRemotingInterceptors(XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
+        requireNoAttributes(reader);
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case CLASS_NAME: {
+                    final Location location = reader.getLocation();
+                    final String value = reader.getElementText();
+                    REMOTING_INTERCEPTORS.parseAndAddParameterElement(value, operation, location);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
     }
 
     static void processBroadcastGroups(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
