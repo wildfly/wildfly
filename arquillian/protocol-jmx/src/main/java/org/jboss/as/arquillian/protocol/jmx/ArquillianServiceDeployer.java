@@ -17,36 +17,15 @@
  */
 package org.jboss.as.arquillian.protocol.jmx;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
-import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.container.spi.event.container.BeforeDeploy;
 import org.jboss.arquillian.container.spi.event.container.BeforeStop;
-import org.jboss.arquillian.core.api.Instance;
-import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
-import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 
@@ -62,103 +41,40 @@ public class ArquillianServiceDeployer {
 
     private static final Logger log = Logger.getLogger(ArquillianServiceDeployer.class);
 
-    @Inject
-    @SuiteScoped
-    private Instance<ServiceArchiveHolder> archiveHolderInst;
+    private Set<String> serviceArchiveDeployed = new HashSet<String>();
 
-    @Inject
-    @ContainerScoped
-    private Instance<Container> containerInst;
+    public synchronized void doServiceDeploy(@Observes BeforeDeploy event, Container container, ServiceArchiveHolder archiveHolder) {
+        // already deployed?
+        if(serviceArchiveDeployed.contains(container.getName())) {
+            return;
+        }
 
-    private AtomicBoolean serviceArchiveDeployed = new AtomicBoolean();
-
-    public synchronized void doServiceDeploy(@Observes BeforeDeploy event) {
-        ServiceArchiveHolder archiveHolder = archiveHolderInst.get();
-        if (archiveHolder != null && serviceArchiveDeployed.get() == false) {
-            Archive<?> archive = archiveHolder.getArchive();
-
-            // [AS7-972] arquillian-service not getting undeployed
-            if (isArquillianServiceDeployed(archive))
-                undeployArquillianService(archive);
-
+        // only deploy the service if the deployment has been enriched by the jmx-as7 protocol
+        if(archiveHolder.deploymentExistsAndRemove(event.getDeployment().getTestableArchive())) {
+            Archive<?> serviceArchive = archiveHolder.getArchive();
             try {
-                log.infof("Deploy arquillian service: %s", archive);
-                DeployableContainer<?> deployableContainer = containerInst.get().getDeployableContainer();
-                deployableContainer.deploy(archive);
-                serviceArchiveDeployed.set(true);
+                log.infof("Deploy arquillian service: %s", serviceArchive);
+                DeployableContainer<?> deployableContainer = container.getDeployableContainer();
+                deployableContainer.deploy(serviceArchive);
+                serviceArchiveDeployed.add(container.getName());
             } catch (Throwable th) {
                 log.error("Cannot deploy arquillian service", th);
             }
         }
     }
 
-    public synchronized void undeploy(@Observes BeforeStop event) {
-        ServiceArchiveHolder archiveHolder = archiveHolderInst.get();
-        if (archiveHolder != null && serviceArchiveDeployed.get() == true) {
+    public synchronized void undeploy(@Observes BeforeStop event, Container container, ServiceArchiveHolder archiveHolder) {
+        // clean up if we deployed to this container?
+        if(serviceArchiveDeployed.contains(container.getName())) {
             try {
-                Archive<?> archive = archiveHolder.getArchive();
-                log.infof("Undeploy arquillian service: %s", archive);
-                DeployableContainer<?> deployableContainer = containerInst.get().getDeployableContainer();
-                deployableContainer.undeploy(archive);
-                serviceArchiveDeployed.set(false);
+                Archive<?> serviceArchive = archiveHolder.getArchive();
+                log.infof("Undeploy arquillian service: %s", serviceArchive);
+                DeployableContainer<?> deployableContainer = container.getDeployableContainer();
+                deployableContainer.undeploy(serviceArchive);
+                serviceArchiveDeployed.remove(container.getName());
             } catch (Throwable th) {
                 log.error("Cannot undeploy arquillian service", th);
             }
         }
-    }
-
-    private boolean isArquillianServiceDeployed(final Archive<?> archive) {
-        try {
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
-            operation.get(CHILD_TYPE).set(DEPLOYMENT);
-            ModelNode result = getModelControllerClient().execute(operation);
-            if (FAILED.equals(result.get(OUTCOME).asString()))
-                throw new IllegalStateException("Management request failed: " + result);
-
-            boolean serviceFound = false;
-            List<ModelNode> nodeList = result.get(RESULT).asList();
-            for (ModelNode node : nodeList) {
-                if (node.asString().equals(archive.getName())) {
-                    log.infof("Found already deployed arquillian service: %s", node);
-                    serviceFound = true;
-                    break;
-                }
-            }
-            return serviceFound;
-        } catch (Exception ex) {
-            log.errorf(ex, "Cannot determine whether arquillian service is deployed");
-            return false;
-        }
-    }
-
-    private void undeployArquillianService(final Archive<?> archive) {
-        try {
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set(COMPOSITE);
-            operation.get(ADDRESS).setEmptyList();
-            ModelNode steps = operation.get(STEPS);
-            ModelNode undeployNode = new ModelNode();
-            undeployNode.get(OP).set(UNDEPLOY);
-            undeployNode.get(ADDRESS).set(DEPLOYMENT, archive.getName());
-            steps.add(undeployNode);
-            ModelNode removeNode = new ModelNode();
-            removeNode.get(OP).set(REMOVE);
-            removeNode.get(ADDRESS).set(DEPLOYMENT, archive.getName());
-            steps.add(removeNode);
-
-            log.infof("Undeploying arquillian service  with: %s", operation);
-            ModelNode result = getModelControllerClient().execute(operation);
-            if (FAILED.equals(result.get(OUTCOME).asString()))
-                log.errorf("Management request failed: %s", result);
-
-        } catch (Exception ex) {
-            log.errorf(ex, "Cannot undeploy arquillian service");
-        }
-    }
-
-    private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        // TODO: make configurable via protocol config
-        return ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999);
     }
 }

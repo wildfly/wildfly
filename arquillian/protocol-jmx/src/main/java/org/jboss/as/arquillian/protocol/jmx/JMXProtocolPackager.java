@@ -81,6 +81,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
             JavaArchive archive = generateArquillianServiceArchive(auxArchives);
             archiveHolder.setArchive(archive);
         }
+        archiveHolder.addPreparedDeployment(appArchive);
         return appArchive;
     }
 

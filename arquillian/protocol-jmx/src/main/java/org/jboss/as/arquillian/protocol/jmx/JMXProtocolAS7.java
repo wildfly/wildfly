@@ -17,6 +17,9 @@
  */
 package org.jboss.as.arquillian.protocol.jmx;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
@@ -48,7 +51,16 @@ public class JMXProtocolAS7 extends AbstractJMXProtocol {
     }
 
     class ServiceArchiveHolder {
+        /*
+         * We store the Arquillian Service so we only create it once. It is later deployed on first Deployment that needs it.
+         */
         private Archive<?> serviceArchive;
+
+        /*
+         * Hold the Archives that have been enriched with the jmx-as7 protocol so we can deploy the serviceArchive.
+         * This is removed in ArquillianServiceDeployer.
+         */
+        private Set<Archive<?>> preparedDeployments = new HashSet<Archive<?>>();
 
         Archive<?> getArchive() {
             return serviceArchive;
@@ -56,6 +68,19 @@ public class JMXProtocolAS7 extends AbstractJMXProtocol {
 
         void setArchive(Archive<?> serviceArchive) {
             this.serviceArchive = serviceArchive;
+        }
+
+        void addPreparedDeployment(Archive<?> deployment) {
+            if(deployment != null) {
+                preparedDeployments.add(deployment);
+            }
+        }
+
+        public boolean deploymentExistsAndRemove(Archive<?> deployment) {
+            if(deployment != null) {
+                return preparedDeployments.remove(deployment);
+            }
+            return false;
         }
     }
 }

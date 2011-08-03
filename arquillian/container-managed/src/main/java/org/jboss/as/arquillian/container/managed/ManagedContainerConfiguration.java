@@ -33,9 +33,9 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     private String javaHome = System.getenv("JAVA_HOME");
 
-    private String modulePath = System.getProperty("module.path");
+    private String modulePath = System.getProperty("module.path", jbossHome + "/modules");
 
-    private String javaVmArguments = "-Xmx512m -XX:MaxPermSize=128m";
+    private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=128m");
 
     private int startupTimeoutInSeconds = 30;
 
@@ -147,9 +147,5 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     public void setModulePath(final String modulePath) {
         this.modulePath = modulePath;
-    }
-
-    private static boolean isEmpty(String string) {
-        return string == null || string.isEmpty();
     }
 }
