@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -37,7 +38,6 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public interface CommonAttributes {
-    SimpleAttributeDefinition ADDRESS = new SimpleAttributeDefinition("address", ModelType.STRING, false);
 
     SimpleAttributeDefinition ALLOW_FAILBACK =  new SimpleAttributeDefinition("allow-failback",
             new ModelNode().set(ConfigurationImpl.DEFAULT_ALLOW_AUTO_FAILBACK), ModelType.BOOLEAN,  true);
@@ -146,6 +146,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition FILTER = new SimpleAttributeDefinition("filter", ModelType.STRING, true);
 
     SimpleAttributeDefinition FORWARDING_ADDRESS = new SimpleAttributeDefinition("forwarding-address", ModelType.STRING, false);
+
+    SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = new SimpleAttributeDefinition("grouping-handler-address", "address",
+            null, ModelType.STRING, false, false, MeasurementUnit.NONE);
 
     SimpleAttributeDefinition GROUP_ADDRESS = new SimpleAttributeDefinition("group-address", ModelType.STRING, false);
 
@@ -308,6 +311,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("thread-pool-max-size",
             new ModelNode().set(ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE), ModelType.INT,  true, MeasurementUnit.NONE);
 
+    SimpleAttributeDefinition TIMEOUT =  new SimpleAttributeDefinition("timeout",
+            new ModelNode().set(GroupingHandlerConfiguration.DEFAULT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+
     SimpleAttributeDefinition TRANSACTION_ATTRIBUTE = new SimpleAttributeDefinition("transaction",
             new ModelNode().set("transaction"), ModelType.STRING,  true);
 
@@ -321,6 +327,9 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition TRANSFORMER_CLASS_NAME = new SimpleAttributeDefinition("transformer-class-name", ModelType.STRING, true);
+
+    SimpleAttributeDefinition TYPE = new SimpleAttributeDefinition("type", "type",
+            null, ModelType.STRING,  true, false, MeasurementUnit.NONE, GroupingHandlerTypeValidator.INSTANCE);
 
     SimpleAttributeDefinition USE_GLOBAL_POOLS = new SimpleAttributeDefinition("use-global-pools",
             new ModelNode().set(HornetQClient.DEFAULT_USE_GLOBAL_POOLS), ModelType.BOOLEAN,  true);
@@ -429,7 +438,6 @@ public interface CommonAttributes {
     String STATIC_CONNECTORS = "static-connectors";
     String STRING ="string";
     String SUBSYSTEM ="subsystem";
-    String TIMEOUT = "timeout";
     String TRANSACTION = "transaction";
     String TYPE_ATTR_NAME ="type";
     String USE_DUPLICATE_DETECTION = "use-duplicate-detection";
@@ -458,7 +466,7 @@ public interface CommonAttributes {
     String[] COMPLEX_ROOT_RESOURCE_ATTRIBUTES =  {
         /* TODO remove */ CONNECTOR, /* TODO remove */ ACCEPTOR,
         /* TODO remove */ BRIDGE, /* TODO remove */ CLUSTER_CONNECTION,
-        /* TODO remove */ GROUPING_HANDLER, /* TODO remove */ PAGING_DIRECTORY, /* TODO remove */ BINDINGS_DIRECTORY,
+        /* TODO remove */ PAGING_DIRECTORY, /* TODO remove */ BINDINGS_DIRECTORY,
         /* TODO remove */ JOURNAL_DIRECTORY, /* TODO remove */ LARGE_MESSAGES_DIRECTORY,
         /* TODO remove */ SECURITY_SETTING, /* TODO remove */ ADDRESS_SETTING, /* TODO remove */ CONNECTOR_SERVICE
     };
@@ -474,6 +482,8 @@ public interface CommonAttributes {
     AttributeDefinition[] DISCOVERY_GROUP_ATTRIBUTES = {
         LOCAL_BIND_ADDRESS, GROUP_ADDRESS, GROUP_PORT, REFRESH_TIMEOUT, INITIAL_WAIT_TIMEOUT
     };
+
+    AttributeDefinition[] GROUPING_HANDLER_ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT};
 
     AttributeDefinition[] CORE_QUEUE_ATTRIBUTES = { QUEUE_ADDRESS, FILTER, DURABLE };
 

@@ -6,6 +6,11 @@
             <journal-type>NIO</journal-type>
             <!-- disable messaging persistence -->
             <persistence-enabled>false</persistence-enabled>
+            <grouping-handler name="grouping-handler">
+                <type>LOCAL</type>
+                <address>handler-address</address>
+                <timeout>5000</timeout>
+            </grouping-handler>
             <remoting-interceptors>
                 <class-name>foo.bar</class-name>
                 <class-name>bar.foo</class-name>

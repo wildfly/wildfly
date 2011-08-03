@@ -6,7 +6,6 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
@@ -24,8 +23,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
@@ -94,7 +91,7 @@ public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvi
     }
 
     private static CoreQueueConfiguration createCoreQueueConfiguration(String name, ModelNode model) throws OperationFailedException {
-        final String queueAddress = ADDRESS.validateResolvedOperation(model).asString();
+        final String queueAddress = QUEUE_ADDRESS.validateResolvedOperation(model).asString();
         final ModelNode filterNode =  FILTER.validateResolvedOperation(model);
         final String filter = filterNode.isDefined() ? filterNode.asString() : null;
         final boolean durable = DURABLE.validateResolvedOperation(model).asBoolean();
