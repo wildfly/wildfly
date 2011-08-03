@@ -73,7 +73,7 @@ final class WebMetaDataCreator {
     void create(final Deployment dep) {
         final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
         WarMetaData warMD = ASHelper.getOptionalAttachment(unit, WarMetaData.ATTACHMENT_KEY);
-        JBossWebMetaData jbossWebMD = warMD != null ? warMD.getJbossWebMetaData() : null;
+        JBossWebMetaData jbossWebMD = warMD != null ? warMD.getMergedJBossWebMetaData() : null;
 
         if (warMD == null) {
             warMD = new WarMetaData();
