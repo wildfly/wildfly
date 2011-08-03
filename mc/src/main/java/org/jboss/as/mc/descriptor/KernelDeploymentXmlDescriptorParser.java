@@ -375,7 +375,50 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
     }
 
     private InstallConfig parseInstall(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        return null; // TODO
+        final InstallConfig installConfig = new InstallConfig();
+        final Set<Attribute> required = EnumSet.of(Attribute.METHOD);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            required.remove(attribute);
+            final String attributeValue = reader.getAttributeValue(i);
+
+            switch (attribute) {
+                case STATE:
+                    installConfig.setWhenRequired(BeanState.valueOf(attributeValue.toUpperCase()));
+                    break;
+                case TARGET_STATE:
+                    installConfig.setDependencyState(BeanState.valueOf(attributeValue.toUpperCase()));
+                    break;
+                case BEAN:
+                    installConfig.setDependency(attributeValue);
+                    break;
+                case METHOD:
+                    installConfig.setMethodName(attributeValue);
+                    break;
+                default:
+                    throw unexpectedContent(reader);
+            }
+        }
+        if (required.isEmpty() == false) {
+            throw missingAttributes(reader.getLocation(), required);
+        }
+
+        List<ValueConfig> parameters = new ArrayList<ValueConfig>();
+        while (reader.hasNext()) {
+            switch (reader.next()) {
+                case END_ELEMENT:
+                    installConfig.setParameters(parameters.toArray(new ValueConfig[parameters.size()]));
+                    return installConfig;
+                case START_ELEMENT:
+                    switch (Element.of(reader.getName())) {
+                        case PARAMETER:
+                            parameters.add(parseParameter(reader));
+                            break;
+                    }
+            }
+        }
+        throw unexpectedContent(reader);
     }
 
     private DependsConfig parseDepends(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -406,7 +449,41 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
     }
 
     private LifecycleConfig parseLifecycle(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        return null; // TODO
+        final LifecycleConfig lifecycleConfig = new LifecycleConfig();
+        final Set<Attribute> required = EnumSet.of(Attribute.METHOD);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            required.remove(attribute);
+            final String attributeValue = reader.getAttributeValue(i);
+
+            switch (attribute) {
+                case METHOD:
+                    lifecycleConfig.setMethodName(attributeValue);
+                    break;
+                default:
+                    throw unexpectedContent(reader);
+            }
+        }
+        if (required.isEmpty() == false) {
+            throw missingAttributes(reader.getLocation(), required);
+        }
+
+        List<ValueConfig> parameters = new ArrayList<ValueConfig>();
+        while (reader.hasNext()) {
+            switch (reader.next()) {
+                case END_ELEMENT:
+                    lifecycleConfig.setParameters(parameters.toArray(new ValueConfig[parameters.size()]));
+                    return lifecycleConfig;
+                case START_ELEMENT:
+                    switch (Element.of(reader.getName())) {
+                        case PARAMETER:
+                            parameters.add(parseParameter(reader));
+                            break;
+                    }
+            }
+        }
+        throw unexpectedContent(reader);
     }
 
     private ValueConfig parseParameter(final XMLExtendedStreamReader reader) throws XMLStreamException {
