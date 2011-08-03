@@ -23,6 +23,9 @@ package org.jboss.as.remoting;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.Provider;
 import java.security.Security;
 
 import org.jboss.as.domain.management.SecurityRealm;
@@ -46,8 +49,16 @@ class RealmAuthenticationProviderService implements Service<RealmAuthenticationP
     private RealmAuthenticationProvider realmAuthenticationProvider = null;
 
     public void start(StartContext startContext) throws StartException {
-        // TODO - Find a better home for this.
-        Security.addProvider(new JBossSaslProvider());
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            public Object run() {
+                Provider saslProvider = new JBossSaslProvider();
+                if (Security.getProvider(saslProvider.getName()) == null) {
+                    Security.insertProviderAt(saslProvider, 1);
+                }
+                return null;
+            }
+        });
+
         realmAuthenticationProvider = new RealmAuthenticationProvider(securityRealmInjectedValue.getOptionalValue(), serverCallbackValue.getOptionalValue());
     }
 
