@@ -22,10 +22,10 @@
 
 package org.jboss.as.controller;
 
+import java.util.ResourceBundle;
+
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
-
-import java.util.ResourceBundle;
 
 import org.jboss.as.controller.operations.validation.ListValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;

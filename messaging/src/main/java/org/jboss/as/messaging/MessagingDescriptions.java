@@ -118,9 +118,13 @@ public class MessagingDescriptions {
         node.get(REQUEST_PROPERTIES, CommonAttributes.ADDRESS_SETTING, DESCRIPTION).set(bundle.getString("address-setting"));
 
         node.get(REQUEST_PROPERTIES, CommonAttributes.BINDINGS_DIRECTORY).set(getPathDescription("bindings.directory", bundle));
+        node.get(REQUEST_PROPERTIES, CommonAttributes.BINDINGS_DIRECTORY, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, CommonAttributes.JOURNAL_DIRECTORY).set(getPathDescription("journal.directory", bundle));
+        node.get(REQUEST_PROPERTIES, CommonAttributes.JOURNAL_DIRECTORY, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, CommonAttributes.LARGE_MESSAGES_DIRECTORY).set(getPathDescription("large.messages.directory", bundle));
+        node.get(REQUEST_PROPERTIES, CommonAttributes.LARGE_MESSAGES_DIRECTORY, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, CommonAttributes.PAGING_DIRECTORY).set(getPathDescription("paging.directory", bundle));
+        node.get(REQUEST_PROPERTIES, CommonAttributes.PAGING_DIRECTORY, REQUIRED).set(false);
 
         node.get(REQUEST_PROPERTIES, CommonAttributes.CONNECTOR, TYPE).set(ModelType.OBJECT);
         node.get(REQUEST_PROPERTIES, CommonAttributes.CONNECTOR, DESCRIPTION).set(bundle.getString("connector"));
