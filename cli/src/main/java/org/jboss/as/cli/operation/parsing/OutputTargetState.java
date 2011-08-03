@@ -26,13 +26,13 @@ package org.jboss.as.cli.operation.parsing;
  *
  * @author Alexey Loubyansky
  */
-public class OutputRedirectionState extends DefaultParsingState {
+public class OutputTargetState extends DefaultParsingState {
 
     public static final String ID = "OUT_REDIRECT";
-    public static final OutputRedirectionState INSTANCE = new OutputRedirectionState();
+    public static final OutputTargetState INSTANCE = new OutputTargetState();
     public static final char OUTPUT_REDIRECT_CHAR = '>';
 
-    public OutputRedirectionState() {
+    public OutputTargetState() {
         super(ID);
         setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
     }

@@ -64,6 +64,8 @@ public interface OperationRequestParser {
 
         // TODO this is not good
         void nodeTypeOrName(String typeOrName) throws OperationFormatException;
+
+        void outputTarget(String outputTarget);
     }
 
     void parse(String operationRequest, CallbackHandler handler) throws OperationFormatException;

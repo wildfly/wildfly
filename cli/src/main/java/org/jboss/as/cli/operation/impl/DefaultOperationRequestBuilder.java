@@ -37,6 +37,7 @@ public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackH
 
     private ModelNode request = new ModelNode();
     private OperationRequestAddress prefix;
+    private String outputTarget;
 
     public DefaultOperationRequestBuilder() {
         this.prefix = new DefaultOperationRequestAddress();
@@ -238,6 +239,15 @@ public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackH
 
     public ModelNode getModelNode() {
         return request;
+    }
+
+    @Override
+    public void outputTarget(String outputTarget) {
+        this.outputTarget = outputTarget;
+    }
+
+    public String getOutputTarget() {
+        return this.outputTarget;
     }
 
     public static void main(String[] args) throws Exception {

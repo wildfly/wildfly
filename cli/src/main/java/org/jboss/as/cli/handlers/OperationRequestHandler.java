@@ -26,7 +26,6 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.CancellationException;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.OperationCommand;
@@ -62,14 +61,17 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
             return;
         }
 
-        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(ctx.getPrefix());
+        ModelNode request = (ModelNode) ctx.get("OP_REQ");
+        if(request == null) {
+            ctx.printLine("Parsed request isn't available.");
+            return;
+        }
+        //DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(ctx.getPrefix());
         try {
-            ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), builder);
-            ModelNode request = builder.buildRequest();
+            //ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), builder);
+            //ModelNode request = builder.buildRequest();
             ModelNode result = client.execute(request);
             ctx.printLine(result.toString());
-        } catch(CommandFormatException e) {
-            ctx.printLine(e.getLocalizedMessage());
         } catch(NoSuchElementException e) {
             ctx.printLine("ModelNode request is incomplete: " + e.getMessage());
         } catch (CancellationException e) {
