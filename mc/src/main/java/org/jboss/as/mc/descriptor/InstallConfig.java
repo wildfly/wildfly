@@ -24,6 +24,7 @@ package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.service.BeanInfo;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -44,8 +45,9 @@ public class InstallConfig extends LifecycleConfig {
     public void visit(ConfigVisitor visitor) {
         if (visitor.getState().next() == whenRequired) {
             if (dependency != null) {
-                visitor.addDependency(BeanMetaDataConfig.toBeanName(dependency, BeanState.DESCRIBED), getBeanInfo());
-                visitor.addDependency(BeanMetaDataConfig.toBeanName(dependency, dependencyState), getBean());
+                visitor.addDependency(dependency, BeanState.DESCRIBED, getBeanInfo());
+                ServiceName name = BeanMetaDataConfig.toBeanName(dependency, dependencyState);
+                visitor.addDependency(name, getBean()); // direct name, since we have describe already
             }
             super.visit(visitor);
         }

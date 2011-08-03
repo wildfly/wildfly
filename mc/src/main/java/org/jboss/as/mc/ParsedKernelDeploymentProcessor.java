@@ -84,6 +84,7 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
         final ServiceBuilder describedServiceBuilder = serviceTarget.addService(describedServiceName, describedService);
         final ConfigVisitor visitor = new DefaultConfigVisitor(describedServiceBuilder, state, module);
         beanConfig.visit(visitor);
+        describedServiceBuilder.setInitialMode(beanConfig.getMode().getMode());
         describedServiceBuilder.install();
     }
 }

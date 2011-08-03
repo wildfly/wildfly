@@ -61,29 +61,28 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
         try {
             BeanInfo beanInfo = getBeanInfo();
             Joinpoint instantiateJoinpoint = null;
-            String[] types = new String[0];
+            String[] types = Configurator.NO_PARAMS_TYPES;
             ConstructorConfig ctorConfig = getBeanConfig().getConstructor();
             if (ctorConfig != null) {
-                String factoryMethod = ctorConfig.getFactoryMethod();
-                if (factoryMethod == null)
-                    throw new StartException("Missing factory method in ctor configuration: " + getBeanConfig());
-
                 ValueConfig[] parameters = ctorConfig.getParameters();
                 types = Configurator.getTypes(parameters);
 
                 String factoryClass = ctorConfig.getFactoryClass();
-                if (factoryClass != null) {
-                    // static factory
-                    Class<?> factoryClazz = Class.forName(factoryClass, false, getModule().getClassLoader());
-                    Method method = Configurator.findMethodInfo(index, factoryClazz, factoryMethod, types, true, true, true);
-                    MethodJoinpoint mj = new MethodJoinpoint(method);
-                    mj.setTarget(new ImmediateValue<Object>(null)); // null, since this is static call
-                    mj.setParameters(parameters);
-                    instantiateJoinpoint = mj;
-                } else {
-                    // other bean factory
-                    ValueConfig factory = ctorConfig.getFactory();
-                    if (factory != null) {
+                ValueConfig factory = ctorConfig.getFactory();
+                if (factoryClass != null || factory != null) {
+                    String factoryMethod = ctorConfig.getFactoryMethod();
+                    if (factoryMethod == null)
+                        throw new StartException("Missing factory method in ctor configuration: " + getBeanConfig());
+
+                    if (factoryClass != null) {
+                        // static factory
+                        Class<?> factoryClazz = Class.forName(factoryClass, false, getModule().getClassLoader());
+                        Method method = Configurator.findMethod(index, factoryClazz, factoryMethod, types, true, true, true);
+                        MethodJoinpoint mj = new MethodJoinpoint(method);
+                        mj.setTarget(new ImmediateValue<Object>(null)); // null, since this is static call
+                        mj.setParameters(parameters);
+                        instantiateJoinpoint = mj;
+                    } else if (factory != null) {
                         ReflectionJoinpoint rj = new ReflectionJoinpoint(index, factoryMethod, types);
                         rj.setTarget(factory);
                         rj.setParameters(parameters);
@@ -95,7 +94,8 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
             if (instantiateJoinpoint == null) {
                 if (beanInfo == null)
                     throw new StartException("Missing bean info, set bean's class attribute: " + getBeanConfig());
-                Constructor ctor = beanInfo.getConstructor(types); // TODO -- leaner ctor search
+
+                Constructor ctor = (types.length == 0) ? beanInfo.getConstructor() : beanInfo.findConstructor(types);
                 instantiateJoinpoint = new ConstructorJoinpoint(ctor);
             }
 

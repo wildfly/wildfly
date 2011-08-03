@@ -35,7 +35,7 @@ import java.lang.reflect.Method;
  */
 public interface BeanInfo<T> {
     /**
-     * Get ctor.
+     * Get ctor; exact match wrt parameter types.
      *
      * @param parameterTypes the parameter types
      * @return the found ctor
@@ -43,15 +43,16 @@ public interface BeanInfo<T> {
     Constructor<T> getConstructor(String... parameterTypes);
 
     /**
-     * Get bean's field.
+     * Find ctor.
+     * Loose parameter type matching; not all types need to be known.
      *
-     * @param name the field name
-     * @return the found field
+     * @param parameterTypes the parameter types
+     * @return the found ctor
      */
-    Field getField(String name);
+    Constructor<T> findConstructor(String... parameterTypes);
 
     /**
-     * Get method.
+     * Get method; exact match wrt parameter types.
      *
      * @param name the method name
      * @param parameterTypes the parameter types
@@ -72,16 +73,26 @@ public interface BeanInfo<T> {
     /**
      * Get getter.
      *
-     * @param name the getter name
+     * @param propertyName the getter propertyName
+     * @param type the type propertyName
      * @return the found getter
      */
-    Method getGetter(String name);
+    Method getGetter(String propertyName, Class<?> type);
 
     /**
      * Get setter.
      *
-     * @param name the setter name
+     * @param propertyName the setter propertyName
+     * @param type the type propertyName
      * @return the found setter
      */
-    Method getSetter(String name);
+    Method getSetter(String propertyName, Class<?> type);
+
+    /**
+     * Get bean's field.
+     *
+     * @param name the field name
+     * @return the found field
+     */
+    Field getField(String name);
 }

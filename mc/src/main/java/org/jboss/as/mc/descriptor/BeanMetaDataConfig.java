@@ -133,6 +133,8 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
     }
 
     public ModeConfig getMode() {
+        if (mode == null)
+            mode = ModeConfig.PASSIVE;
         return mode;
     }
 

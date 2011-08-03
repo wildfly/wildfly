@@ -73,4 +73,18 @@ public class DefaultConfigVisitor implements ConfigVisitor {
     public void addDependency(ServiceName name, Injector injector) {
         builder.addDependency(name, injector);
     }
+
+    @Override
+    public void addDependency(String bean, BeanState state) {
+        if (state != BeanState.DESCRIBED)
+            builder.addDependency(BeanMetaDataConfig.toBeanName(bean, BeanState.DESCRIBED));
+        builder.addDependency(BeanMetaDataConfig.toBeanName(bean, state));
+    }
+
+    @Override
+    public void addDependency(String bean, BeanState state, Injector injector) {
+        if (state != BeanState.DESCRIBED)
+            builder.addDependency(BeanMetaDataConfig.toBeanName(bean, BeanState.DESCRIBED));
+        builder.addDependency(BeanMetaDataConfig.toBeanName(bean, state), injector);
+    }
 }

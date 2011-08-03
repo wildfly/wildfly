@@ -29,8 +29,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -84,6 +84,21 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
     }
 
     @Override
+    public Constructor<T> findConstructor(final String... parameterTypes) {
+        return lookup(new Lookup<Constructor<T>>() {
+            @Override
+            public Constructor<T> lookup(ClassReflectionIndex index) {
+                Collection<Constructor> ctors = index.getConstructors();
+                for (Constructor c : ctors) {
+                    if (Configurator.equals(parameterTypes, c.getParameterTypes()))
+                        return c;
+                }
+                throw new IllegalArgumentException("No such constructor: " + Arrays.toString(parameterTypes) + " on class " + beanClass.getName());
+            }
+        }, 0, 1);
+    }
+
+    @Override
     public Field getField(final String name) {
         return lookup(new Lookup<Field>() {
             @Override
@@ -108,17 +123,48 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
 
     @Override
     public Method findMethod(String name, String... parameterTypes) {
-        return Configurator.findMethodInfo(index, beanClass, name, parameterTypes, false, true, true);
+        return Configurator.findMethod(index, beanClass, name, parameterTypes, false, true, true);
     }
 
     @Override
-    public Method getGetter(final String name) {
-        return null;  // TODO
+    public Method getGetter(final String propertyName, final Class<?> type) {
+        final boolean isBoolean = Boolean.TYPE.equals(type);
+        final String name = ((isBoolean) ? "is" : "get") + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+        final Method result = lookup(new Lookup<Method>() {
+            @Override
+            public Method lookup(ClassReflectionIndex index) {
+                Collection<Method> methods = index.getAllMethods(name, 0);
+                for (Method m : methods) {
+                    Class<?> pt = m.getReturnType();
+                    if (pt.isAssignableFrom(type))
+                        return m;
+                }
+                return null;
+            }
+        }, 0, Integer.MAX_VALUE);
+        if (result == null)
+            throw new IllegalArgumentException("No such getter: " + type + " on class " + beanClass.getName());
+        return result;
     }
 
     @Override
-    public Method getSetter(final String name) {
-        return null;  // TODO
+    public Method getSetter(final String propertyName, final Class<?> type) {
+        final String name = "set" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+        final Method result = lookup(new Lookup<Method>() {
+            @Override
+            public Method lookup(ClassReflectionIndex index) {
+                Collection<Method> methods = index.getAllMethods(name, 1);
+                for (Method m : methods) {
+                    Class<?> pt = m.getParameterTypes()[0];
+                    if (pt.isAssignableFrom(type))
+                        return m;
+                }
+                return null;
+            }
+        }, 0, Integer.MAX_VALUE);
+        if (result == null)
+            throw new IllegalArgumentException("No such setter: " + type + " on class " + beanClass.getName());
+        return result;
     }
 
     private interface Lookup<U> {

@@ -45,7 +45,7 @@ public class ReflectionJoinpoint extends TargetJoinpoint {
     @Override
     public Object dispatch() throws Throwable {
         Object target = getTarget().getValue();
-        Method method = Configurator.findMethodInfo(index, target.getClass(), methodName, types, false, true, true);
+        Method method = Configurator.findMethod(index, target.getClass(), methodName, types, false, true, true);
         return method.invoke(target, toObjects(method.getParameterTypes()));
     }
 }

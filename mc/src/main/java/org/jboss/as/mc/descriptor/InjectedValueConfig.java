@@ -23,7 +23,6 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * Injected value.
@@ -36,8 +35,7 @@ public class InjectedValueConfig extends ValueConfig {
 
     @Override
     public void visit(ConfigVisitor visitor) {
-        ServiceName name = BeanMetaDataConfig.toBeanName(dependency, state);
-        visitor.addDependency(name, getInjectedValue());
+        visitor.addDependency(dependency, state, getInjectedValue());
     }
 
     public void setDependency(String dependency) {

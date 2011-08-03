@@ -70,4 +70,21 @@ public interface ConfigVisitor {
      * @param injector the injector
      */
     void addDependency(ServiceName name, Injector injector);
+
+    /**
+     * Add bean dependency.
+     *
+     * @param bean the dependency name
+     * @param state the required bean state
+     */
+    void addDependency(String bean, BeanState state);
+
+    /**
+     * Add bean dependency.
+     *
+     * @param bean the dependency name
+     * @param state the required bean state
+     * @param injector the injector
+     */
+    void addDependency(String bean, BeanState state, Injector injector);
 }

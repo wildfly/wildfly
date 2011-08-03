@@ -23,12 +23,8 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
-import org.jboss.as.mc.service.BeanInfo;
-import org.jboss.msc.service.ServiceName;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Set;
 
 /**
  * The legacy depends meta data.
@@ -45,7 +41,7 @@ public class DependsConfig implements Serializable, ConfigVisitorNode {
     @Override
     public void visit(ConfigVisitor visitor) {
         if (visitor.getState().equals(whenRequired)) {
-            visitor.addDependency(BeanMetaDataConfig.toBeanName(dependency, dependencyState));
+            visitor.addDependency(dependency, dependencyState);
         }
     }
 

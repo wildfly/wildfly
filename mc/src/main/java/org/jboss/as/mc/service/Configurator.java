@@ -50,7 +50,7 @@ public class Configurator {
     /**
      * No parameter types
      */
-    private static final String[] NO_PARAMS_TYPES = new String[0];
+    public static final String[] NO_PARAMS_TYPES = new String[0];
 
     /**
      * Convert a value
@@ -149,7 +149,7 @@ public class Configurator {
      * @return the method info
      * @throws IllegalArgumentException when no such method
      */
-    public static Method findMethodInfo(DeploymentReflectionIndex index, Class classInfo, String name, String[] paramTypes, boolean isStatic, boolean isPublic, boolean strict) throws IllegalArgumentException {
+    public static Method findMethod(DeploymentReflectionIndex index, Class classInfo, String name, String[] paramTypes, boolean isStatic, boolean isPublic, boolean strict) throws IllegalArgumentException {
         if (name == null)
             throw new IllegalArgumentException("Null name");
 
@@ -162,7 +162,7 @@ public class Configurator {
         Class current = classInfo;
         while (current != null) {
             ClassReflectionIndex cri = index.getClassIndex(classInfo);
-            Method result = locateMethodInfo(cri, name, paramTypes, isStatic, isPublic, strict);
+            Method result = locateMethod(cri, name, paramTypes, isStatic, isPublic, strict);
             if (result != null)
                 return result;
             current = current.getSuperclass();
@@ -181,7 +181,7 @@ public class Configurator {
      * @param strict     is strict about method modifiers
      * @return the method info or null if not found
      */
-    private static Method locateMethodInfo(ClassReflectionIndex classInfo, String name, String[] paramTypes, boolean isStatic, boolean isPublic, boolean strict) {
+    private static Method locateMethod(ClassReflectionIndex classInfo, String name, String[] paramTypes, boolean isStatic, boolean isPublic, boolean strict) {
         Collection<Method> methods = classInfo.getMethods();
         if (methods != null) {
             for (Method method : methods) {
