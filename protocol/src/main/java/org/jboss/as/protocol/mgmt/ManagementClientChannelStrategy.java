@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.Provider;
 import java.security.Security;
 import java.util.concurrent.ExecutorService;
@@ -97,9 +99,15 @@ public abstract class ManagementClientChannelStrategy {
 
         @Override
         public ManagementChannel getChannel() throws IOException {
-            if (Security.getProvider(saslProvider.getName()) == null) {
-                Security.insertProviderAt(saslProvider, 1);
-            }
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    if (Security.getProvider(saslProvider.getName()) == null) {
+                        Security.insertProviderAt(saslProvider, 1);
+                    }
+                    return null;
+                }
+            });
+
 
             final ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
             try {

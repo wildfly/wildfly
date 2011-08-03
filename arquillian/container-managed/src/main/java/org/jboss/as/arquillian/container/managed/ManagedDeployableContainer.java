@@ -53,10 +53,10 @@ import org.jboss.sasl.JBossSaslProvider;
 public final class ManagedDeployableContainer extends CommonDeployableContainer<ManagedContainerConfiguration> {
 
     private final Logger log = Logger.getLogger(ManagedDeployableContainer.class.getName());
+    private final Provider saslProvider = new JBossSaslProvider();
     private MBeanServerConnectionProvider provider;
     private Thread shutdownThread;
     private Process process;
-    private Provider saslProvider = new JBossSaslProvider();
 
     @Inject
     @ContainerScoped
@@ -71,8 +71,16 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     protected void startInternal() throws LifecycleException {
         verifyNoRunningServer();
 
-        Security.addProvider(saslProvider);
         try {
+
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    if (Security.getProperty(saslProvider.getName()) == null) {
+                        Security.insertProviderAt(saslProvider, 1);
+                    }
+                    return null;
+                }
+            });
 
             ManagedContainerConfiguration config = getContainerConfiguration();
             final String jbossHomeDir = config.getJbossHome();
@@ -164,7 +172,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         } catch (Exception e) {
             throw new LifecycleException("Could not stop container", e);
         }
-        Security.removeProvider(saslProvider.getName());
     }
 
     @Override

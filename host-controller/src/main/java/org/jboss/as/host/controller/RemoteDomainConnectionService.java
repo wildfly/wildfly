@@ -33,7 +33,8 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.security.Provider;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.Security;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -97,7 +98,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private final int port;
     private final String name;
     private final RemoteFileRepository remoteFileRepository;
-    private final Provider saslProvider = new JBossSaslProvider();
 
     private volatile ProtocolChannelClient<ManagementChannel> channelClient;
     /** Used to invoke ModelController ops on the master */
@@ -178,6 +178,11 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     }
 
     private synchronized void connect() {
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            public Object run() {
+                return Security.insertProviderAt(new JBossSaslProvider(), 1);
+            }
+        });
 
         if (this.channelClient != null) {
             try {
@@ -189,7 +194,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             this.channelClient = null;
         }
 
-        Security.addProvider(saslProvider);
         txOperationHandler = new TransactionalModelControllerOperationHandler(executor, controller);
         ProtocolChannelClient<ManagementChannel> client;
         ProtocolChannelClient.Configuration<ManagementChannel> configuration = new ProtocolChannelClient.Configuration<ManagementChannel>();
