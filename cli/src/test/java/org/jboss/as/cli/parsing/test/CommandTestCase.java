@@ -22,58 +22,51 @@
 package org.jboss.as.cli.parsing.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.ParsedArguments;
-import org.jboss.as.cli.impl.DefaultParsedArguments;
+import org.jboss.as.cli.impl.DefaultParsedCommand;
 import org.junit.Test;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class CommandLineArgumentsTestCase {
+public class CommandTestCase {
 
     @Test
-    public void testDefault() throws Exception {
+    public void testCommandOnly() throws Exception {
 
-        ParsedArguments args = parse("../../../../testsuite/smoke/target/deployments/test-deployment.sar --name=my.sar --disabled --runtime-name=myrt.sar --force");
-        assertTrue(args.hasArguments());
-        assertTrue(args.hasArgument("--name"));
-        assertTrue(args.hasArgument("--runtime-name"));
-        assertTrue(args.hasArgument("--disabled"));
-        assertTrue(args.hasArgument("--force"));
-
-        List<String> otherArgs = args.getOtherArguments();
-        assertEquals(1, otherArgs.size());
-        assertEquals("../../../../testsuite/smoke/target/deployments/test-deployment.sar", otherArgs.get(0));
-
-        assertNull(args.getOutputTarget());
+        DefaultParsedCommand cmd = parse("some-command");
+        assertEquals("some-command", cmd.getCommandName());
+        assertFalse(cmd.hasArguments());
+        assertNull(cmd.getOutputTarget());
     }
 
     @Test
-    public void testOutputTarget() throws Exception {
+    public void testCommandWithArgsAndOutputTarget() throws Exception {
 
-        ParsedArguments args = parse("--name=value value1 --name1 > output.target");
-        assertTrue(args.hasArguments());
-        assertTrue(args.hasArgument("--name"));
-        assertEquals("value", args.getArgument("--name"));
-        assertTrue(args.hasArgument("--name1"));
-        assertNull(args.getArgument("--name1"));
+        DefaultParsedCommand cmd = parse(" some-command --name=value --name1 value1 > command.log");
+        assertEquals("some-command", cmd.getCommandName());
+        assertTrue(cmd.hasArguments());
+        assertTrue(cmd.hasArgument("--name"));
+        assertEquals("value", cmd.getArgument("--name"));
+        assertTrue(cmd.hasArgument("--name1"));
+        assertNull(cmd.getArgument("--name1"));
 
-        List<String> otherArgs = args.getOtherArguments();
+        List<String> otherArgs = cmd.getOtherArguments();
         assertEquals(1, otherArgs.size());
         assertEquals("value1", otherArgs.get(0));
 
-        assertEquals("output.target", args.getOutputTarget());
+        assertEquals("command.log", cmd.getOutputTarget());
     }
 
-    protected ParsedArguments parse(String line) {
-        DefaultParsedArguments args = new DefaultParsedArguments();
+    protected DefaultParsedCommand parse(String line) {
+        DefaultParsedCommand args = new DefaultParsedCommand();
         try {
             args.parse(line);
         } catch (CommandFormatException e) {

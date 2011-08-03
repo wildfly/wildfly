@@ -31,20 +31,20 @@ import org.jboss.as.cli.operation.parsing.OutputTargetState;
  *
  * @author Alexey Loubyansky
  */
-public class ArgumentListState extends DefaultParsingState {
+public class CommandState extends DefaultParsingState {
 
-    public static final ArgumentListState INSTANCE = new ArgumentListState();
-    public static final String ID = "ARG_LIST";
+    public static final CommandState INSTANCE = new CommandState();
+    public static final String ID = "CMD";
 
-    ArgumentListState() {
-        this(ArgumentState.INSTANCE, ArgumentValueState.INSTANCE, OutputTargetState.INSTANCE);
+    CommandState() {
+        this(CommandNameState.INSTANCE, ArgumentState.INSTANCE, ArgumentValueState.INSTANCE, OutputTargetState.INSTANCE);
     }
 
-    ArgumentListState(ArgumentState argState, ArgumentValueState valueState, OutputTargetState outputTarget) {
+    CommandState(CommandNameState cmdName, ArgumentState arg, ArgumentValueState argValue, OutputTargetState outputRedirect) {
         super(ID);
-        this.enterState('-', argState);
-        setDefaultHandler(new EnterStateCharacterHandler(valueState));
-        enterState(OutputTargetState.OUTPUT_REDIRECT_CHAR, outputTarget);
-        setIgnoreWhitespaces(true);
+        setEnterHandler(new EnterStateCharacterHandler(cmdName));
+        enterState(OutputTargetState.OUTPUT_REDIRECT_CHAR, outputRedirect);
+        enterState('-', arg);
+        setDefaultHandler(new EnterStateCharacterHandler(argValue));
     }
 }

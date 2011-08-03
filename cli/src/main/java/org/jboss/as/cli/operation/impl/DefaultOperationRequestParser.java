@@ -27,6 +27,7 @@ import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.parsing.NodeState;
 import org.jboss.as.cli.operation.parsing.OperationNameState;
 import org.jboss.as.cli.operation.parsing.OperationRequestState;
+import org.jboss.as.cli.operation.parsing.OutputTargetState;
 import org.jboss.as.cli.operation.parsing.ParsingContext;
 import org.jboss.as.cli.operation.parsing.ParsingStateCallbackHandler;
 import org.jboss.as.cli.operation.parsing.PropertyListState;
@@ -177,6 +178,8 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                         }
                     }
                     propValueContent = false;
+                } else if(stateId.equals(OutputTargetState.ID)) {
+                    handler.outputTarget(buffer.toString().trim());
                 }
             }
 
