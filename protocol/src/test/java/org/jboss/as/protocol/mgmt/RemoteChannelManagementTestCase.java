@@ -22,6 +22,8 @@
 package org.jboss.as.protocol.mgmt;
 
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.Provider;
 import java.security.Security;
 import java.util.concurrent.ExecutionException;
@@ -53,9 +55,15 @@ public class RemoteChannelManagementTestCase {
 
     @Before
     public void start() throws Exception {
-        if (Security.getProvider(saslProvider.getName()) == null) {
-            Security.insertProviderAt(saslProvider, 1);
-        }
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            public Object run() {
+                if (Security.getProvider(saslProvider.getName()) == null) {
+                    Security.insertProviderAt(saslProvider, 1);
+                }
+                return null;
+            }
+        });
+
         channels = new RemoteChannelPairSetup();
         channels.setupRemoting();
         channels.startChannels();

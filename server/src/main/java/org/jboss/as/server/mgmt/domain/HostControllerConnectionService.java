@@ -34,6 +34,9 @@ import javax.security.sasl.RealmChoiceCallback;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.Provider;
 import java.security.Security;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
@@ -60,6 +63,7 @@ public class HostControllerConnectionService implements Service<ManagementChanne
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "channel");
     private final InjectedValue<InetSocketAddress> hcAddressInjector = new InjectedValue<InetSocketAddress>();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
+    private final Provider saslProvider = new JBossSaslProvider();
 
     private volatile ManagementChannel channel;
     private volatile ProtocolChannelClient<ManagementChannel> client;
@@ -83,7 +87,11 @@ public class HostControllerConnectionService implements Service<ManagementChanne
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
-        Security.addProvider(new JBossSaslProvider());
+        AccessController.doPrivileged(new PrivilegedAction<Integer>() {
+            public Integer run() {
+                return Security.insertProviderAt(saslProvider, 1);
+            }
+        });
 
         ProtocolChannelClient<ManagementChannel> client;
         try {
