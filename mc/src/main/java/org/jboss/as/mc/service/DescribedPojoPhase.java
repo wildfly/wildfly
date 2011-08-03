@@ -48,14 +48,17 @@ public class DescribedPojoPhase extends AbstractPojoPhase {
 
     @Override
     protected AbstractPojoPhase createNextPhase() {
-        return new InstantiatedPojoPhase(index);
+        return new InstantiatedPojoPhase(index, this);
     }
 
     public void start(StartContext context) throws StartException {
         try {
             setModule(getBeanConfig().getModule().getInjectedModule().getValue());
-            Class beanClass = Class.forName(getBeanConfig().getBeanClass(), false, getModule().getClassLoader());
-            setBeanInfo(new DefaultBeanInfo(index, beanClass));
+            String beanClass = getBeanConfig().getBeanClass();
+            if (beanClass != null) {
+                Class clazz = Class.forName(beanClass, false, getModule().getClassLoader());
+                setBeanInfo(new DefaultBeanInfo(index, clazz));
+            }
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -63,6 +66,9 @@ public class DescribedPojoPhase extends AbstractPojoPhase {
     }
 
     public BeanInfo getValue() throws IllegalStateException, IllegalArgumentException {
-        return getBeanInfo();
+        BeanInfo beanInfo = getBeanInfo();
+        if (beanInfo == null)
+            throw new IllegalStateException("Cannot determine bean info at this state, try setting bean's class attribute.");
+        return beanInfo;
     }
 }

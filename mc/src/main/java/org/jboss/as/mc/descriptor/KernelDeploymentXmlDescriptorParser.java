@@ -126,7 +126,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             final String attributeValue = reader.getAttributeValue(i);
             switch(attribute) {
                 case MODE:
-                    kernelDeploymentXmlDescriptor.setControllerMode(KernelDeploymentXmlDescriptor.ControllerMode.of(attributeValue));
+                    kernelDeploymentXmlDescriptor.setMode(ModeConfig.of(attributeValue));
                     break;
             }
         }
@@ -154,7 +154,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         BeanMetaDataConfig beanConfig = new BeanMetaDataConfig();
 
         final int count = reader.getAttributeCount();
-        final Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.CLASS);
+        final Set<Attribute> required = EnumSet.of(Attribute.NAME);
         for(int i = 0; i < count; i++) {
             final Attribute attribute = Attribute.of(reader.getAttributeName(i));
             required.remove(attribute);
@@ -166,6 +166,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     break;
                 case CLASS:
                     beanConfig.setBeanClass(attributeValue);
+                    break;
+                case MODE:
+                    beanConfig.setMode(ModeConfig.of(attributeValue));
                     break;
                 default:
                     throw unexpectedContent(reader);

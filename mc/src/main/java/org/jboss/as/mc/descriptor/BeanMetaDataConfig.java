@@ -57,6 +57,7 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
     private String name;
     private String beanClass;
     private Set<String> aliases;
+    private ModeConfig mode;
     private ModuleConfig module;
     private ConstructorConfig constructor;
     private Set<PropertyConfig> properties;
@@ -129,6 +130,14 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
 
     public void setAliases(Set<String> aliases) {
         this.aliases = aliases;
+    }
+
+    public ModeConfig getMode() {
+        return mode;
+    }
+
+    public void setMode(ModeConfig mode) {
+        this.mode = mode;
     }
 
     public ModuleConfig getModule() {

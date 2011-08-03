@@ -40,9 +40,11 @@ import java.lang.reflect.Method;
  */
 public class InstantiatedPojoPhase extends AbstractPojoPhase {
     private final DeploymentReflectionIndex index;
+    private final DescribedPojoPhase describedPojoPhase;
 
-    public InstantiatedPojoPhase(DeploymentReflectionIndex index) {
+    public InstantiatedPojoPhase(DeploymentReflectionIndex index, DescribedPojoPhase describedPojoPhase) {
         this.index = index;
+        this.describedPojoPhase = describedPojoPhase;
     }
 
     @Override
@@ -57,7 +59,9 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
 
     public void start(StartContext context) throws StartException {
         try {
-            Joinpoint instantiateJoinpoint;
+            BeanInfo beanInfo = getBeanInfo();
+            Joinpoint instantiateJoinpoint = null;
+            String[] types = new String[0];
             ConstructorConfig ctorConfig = getBeanConfig().getConstructor();
             if (ctorConfig != null) {
                 String factoryMethod = ctorConfig.getFactoryMethod();
@@ -65,10 +69,11 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
                     throw new StartException("Missing factory method in ctor configuration: " + getBeanConfig());
 
                 ValueConfig[] parameters = ctorConfig.getParameters();
-                String[] types = Configurator.getTypes(parameters);
+                types = Configurator.getTypes(parameters);
 
                 String factoryClass = ctorConfig.getFactoryClass();
                 if (factoryClass != null) {
+                    // static factory
                     Class<?> factoryClazz = Class.forName(factoryClass, false, getModule().getClassLoader());
                     Method method = Configurator.findMethodInfo(index, factoryClazz, factoryMethod, types, true, true, true);
                     MethodJoinpoint mj = new MethodJoinpoint(method);
@@ -76,20 +81,33 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
                     mj.setParameters(parameters);
                     instantiateJoinpoint = mj;
                 } else {
+                    // other bean factory
                     ValueConfig factory = ctorConfig.getFactory();
-                    if (factory == null)
-                        throw new StartException("Missing factoy value: " + getBeanConfig());
-
-                    ReflectionJoinpoint rj = new ReflectionJoinpoint(index, factoryMethod, types);
-                    rj.setTarget(factory);
-                    rj.setParameters(parameters);
-                    instantiateJoinpoint = rj;
+                    if (factory != null) {
+                        ReflectionJoinpoint rj = new ReflectionJoinpoint(index, factoryMethod, types);
+                        rj.setTarget(factory);
+                        rj.setParameters(parameters);
+                        instantiateJoinpoint = rj;
+                    }
                 }
-            } else {
-                Constructor ctor = getBeanInfo().getConstructor();
+            }
+            // plain bean's ctor
+            if (instantiateJoinpoint == null) {
+                if (beanInfo == null)
+                    throw new StartException("Missing bean info, set bean's class attribute: " + getBeanConfig());
+                Constructor ctor = beanInfo.getConstructor(types); // TODO -- leaner ctor search
                 instantiateJoinpoint = new ConstructorJoinpoint(ctor);
             }
+
             setBean(instantiateJoinpoint.dispatch());
+            if (beanInfo == null) {
+                beanInfo = new DefaultBeanInfo(index, getBean().getClass());
+                setBeanInfo(beanInfo);
+                // set so describe service has its value
+                describedPojoPhase.setBeanInfo(beanInfo);
+            }
+        } catch (StartException t) {
+            throw t;
         } catch (Throwable t) {
             throw new StartException(t);
         }
