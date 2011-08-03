@@ -80,7 +80,7 @@ public class AS7BindingRegistry implements BindingRegistry {
             throw new IllegalArgumentException("Binding to " + name + " isn't allowed, since it belongs to a unknown/unsupported jndi name context");
         }
         // create the binding service
-        final BinderService binderService = new BinderService(name);
+        final BinderService binderService = new BinderService(jndiBinding.relativeJndiName);
         container.addService(jndiBinding.jndiContextServiceName.append(jndiBinding.relativeJndiName), binderService)
                 .addDependency(jndiBinding.jndiContextServiceName, NamingStore.class, binderService.getNamingStoreInjector())
                 .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(obj)))
