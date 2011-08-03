@@ -32,6 +32,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.UnknownHostException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.Security;
 import java.util.Collection;
 import java.util.HashMap;
@@ -160,7 +162,11 @@ public class CommandLineMain {
 
     public static void main(String[] args) throws Exception {
         try {
-            Security.addProvider(new JBossSaslProvider());
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    return Security.insertProviderAt(new JBossSaslProvider(), 1);
+                }
+            });
 
             String argError = null;
             String[] commands = null;

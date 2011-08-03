@@ -58,10 +58,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 public final class ManagedDeployableContainer extends CommonDeployableContainer<ManagedContainerConfiguration> {
 
     private final Logger log = Logger.getLogger(ManagedDeployableContainer.class.getName());
+    private final Provider saslProvider = new JBossSaslProvider();
     private MBeanServerConnectionProvider provider;
     private Thread shutdownThread;
     private Process process;
-    private Provider saslProvider = new JBossSaslProvider();
 
     @Inject
     @ContainerScoped
@@ -91,7 +91,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
     @Override
     protected void startInternal() throws LifecycleException {
-        Security.addProvider(saslProvider);
         try {
             //if there is aleady an instance running we do not bother starting a new one
             //as it will not be able to bind the ports it needs anyway
@@ -99,6 +98,15 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 mbeanServerInst.set(getMBeanServerConnection(5000));
                 return;
             }
+
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    if (Security.getProperty(saslProvider.getName()) == null) {
+                        Security.insertProviderAt(saslProvider, 1);
+                    }
+                    return null;
+                }
+            });
 
             ManagedContainerConfiguration config = getContainerConfiguration();
             final String jbossHomeDir = config.getJbossHome();
@@ -196,7 +204,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         } catch (Exception e) {
             throw new LifecycleException("Could not stop container", e);
         }
-        Security.removeProvider(saslProvider.getName());
     }
 
     @Override
