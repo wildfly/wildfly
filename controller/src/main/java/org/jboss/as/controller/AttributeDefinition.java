@@ -22,16 +22,14 @@
 
 package org.jboss.as.controller;
 
-import javax.xml.stream.Location;
+import java.util.ResourceBundle;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-
-import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -235,7 +233,7 @@ public abstract class AttributeDefinition {
      */
     public ModelNode addOperationParameterDescription(final ResourceBundle bundle, final String prefix, final ModelNode operationDescription) {
         final ModelNode param = new ModelNode();
-        param.get(ModelDescriptionConstants.TYPE).set(param.getType());
+        param.get(ModelDescriptionConstants.TYPE).set(type);
         param.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
         // TODO enable when this metadata is finalized
 //        param.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());

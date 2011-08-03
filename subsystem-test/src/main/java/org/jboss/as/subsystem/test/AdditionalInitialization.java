@@ -32,7 +32,7 @@ public class AdditionalInitialization extends AdditionalParsers {
      * @return Whether operations should be validated or not
      */
     protected boolean isValidateOperations() {
-        return false;
+        return true;
     }
 
     /**
