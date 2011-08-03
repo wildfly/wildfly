@@ -345,6 +345,7 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
 //        processCoreQueues(configuration, model);
         processSecuritySettings(configuration, model);
 
+        GroupingHandlerAdd.addGroupingHandlerConfig(configuration, model);
         BroadcastGroupAdd.addBroadcastGroupConfigs(configuration, model);
         DiscoveryGroupAdd.addDiscoveryGroupConfigs(configuration, model);
         DivertAdd.addDivertConfigs(configuration, model);

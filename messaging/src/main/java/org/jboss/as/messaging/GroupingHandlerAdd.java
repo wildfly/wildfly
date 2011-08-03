@@ -30,8 +30,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -109,31 +111,18 @@ public class GroupingHandlerAdd implements OperationStepHandler, DescriptionProv
         return MessagingDescriptions.getGroupingHandlerAdd(locale);
     }
 
-    static void addBroadcastGroupConfigs(final Configuration configuration, final ModelNode model)  throws OperationFailedException {
-        if (model.hasDefined(CommonAttributes.BROADCAST_GROUP)) {
-            final List<BroadcastGroupConfiguration> configs = configuration.getBroadcastGroupConfigurations();
-            for (Property prop : model.get(CommonAttributes.BROADCAST_GROUP).asPropertyList()) {
-                configs.add(createBroadcastGroupConfiguration(prop.getName(), prop.getValue()));
-
-            }
+    static void addGroupingHandlerConfig(final Configuration configuration, final ModelNode model)  throws OperationFailedException {
+        if (model.hasDefined(CommonAttributes.GROUPING_HANDLER)) {
+            Property prop = model.get(CommonAttributes.BROADCAST_GROUP).asProperty();
+            configuration.setGroupingHandlerConfiguration(createGroupingHandlerConfiguration(prop.getName(), prop.getValue()));
         }
     }
 
-    static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final String name, final ModelNode model) throws OperationFailedException {
+    static GroupingHandlerConfiguration createGroupingHandlerConfiguration(final String name, final ModelNode model) throws OperationFailedException {
 
-        final ModelNode localAddrNode = CommonAttributes.LOCAL_BIND_ADDRESS.validateResolvedOperation(model);
-        final String localAddress = localAddrNode.isDefined() ? localAddrNode.asString() : null;
-        final int localPort = CommonAttributes.LOCAL_BIND_PORT.validateResolvedOperation(model).asInt();
-        final String groupAddress = CommonAttributes.GROUP_ADDRESS.validateResolvedOperation(model).asString();
-        final int groupPort = CommonAttributes.GROUP_ADDRESS.validateResolvedOperation(model).asInt();
-        final long broadcastPeriod = CommonAttributes.BROADCAST_PERIOD.validateResolvedOperation(model).asLong();
-        final List<String> connectorRefs = new ArrayList<String>();
-        if (model.hasDefined(CommonAttributes.CONNECTORS)) {
-            for (ModelNode ref : model.get(CommonAttributes.CONNECTORS).asList()) {
-                connectorRefs.add(ref.asString());
-            }
-        }
-
-        return new BroadcastGroupConfiguration(name, localAddress, localPort, groupAddress, groupPort, broadcastPeriod, connectorRefs);
+        final GroupingHandlerConfiguration.TYPE type = GroupingHandlerConfiguration.TYPE.valueOf(CommonAttributes.TYPE.validateResolvedOperation(model).asString());
+        final String address = CommonAttributes.GROUPING_HANDLER_ADDRESS.validateResolvedOperation(model).asString();
+        final int timeout = CommonAttributes.TIMEOUT.validateResolvedOperation(model).asInt();
+        return new GroupingHandlerConfiguration(SimpleString.toSimpleString(name), type, SimpleString.toSimpleString(address), timeout);
     }
 }
