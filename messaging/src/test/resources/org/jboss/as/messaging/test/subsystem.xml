@@ -6,6 +6,11 @@
             <journal-type>NIO</journal-type>
             <!-- disable messaging persistence -->
             <persistence-enabled>false</persistence-enabled>
+            <remoting-interceptors>
+                <class-name>foo.bar</class-name>
+                <class-name>bar.foo</class-name>
+            </remoting-interceptors>
+            <live-connector-ref connector-name="in-vm"/>
 
             <connectors>
                <in-vm-connector name="in-vm" server-id="0" />
