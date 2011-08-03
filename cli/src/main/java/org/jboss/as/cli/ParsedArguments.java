@@ -78,4 +78,10 @@ public interface ParsedArguments {
      * @throws CommandLineException
      */
     List<String> getOtherArguments() throws CommandFormatException;
+
+    /**
+     * Returns the output target specified with '>' followed by a file name at the end of the argument list.
+     * @return  the output target or null if the output target wasn't specified.
+     */
+    String getOutputTarget();
 }

@@ -19,32 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing;
+package org.jboss.as.cli.impl;
 
-
-import org.jboss.as.cli.operation.parsing.DefaultParsingState;
-import org.jboss.as.cli.operation.parsing.EnterStateCharacterHandler;
-import org.jboss.as.cli.operation.parsing.OutputTargetState;
-
+import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.CommandHandler;
+import org.jboss.as.cli.parsing.CommandLineParser;
+import org.jboss.as.cli.parsing.CommandLineParser.CommandCallbackHandler;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class ArgumentListState extends DefaultParsingState {
+public class DefaultParsedCommand extends DefaultParsedArguments implements CommandCallbackHandler {
 
-    public static final ArgumentListState INSTANCE = new ArgumentListState();
-    public static final String ID = "ARG_LIST";
+    private String cmd;
 
-    ArgumentListState() {
-        this(ArgumentState.INSTANCE, ArgumentValueState.INSTANCE, OutputTargetState.INSTANCE);
+    public void reset(String args, CommandHandler handler) {
+        super.reset(args, handler);
+        this.cmd = null;
     }
 
-    ArgumentListState(ArgumentState argState, ArgumentValueState valueState, OutputTargetState outputTarget) {
-        super(ID);
-        this.enterState('-', argState);
-        setDefaultHandler(new EnterStateCharacterHandler(valueState));
-        enterState(OutputTargetState.OUTPUT_REDIRECT_CHAR, outputTarget);
-        setIgnoreWhitespaces(true);
+    @Override
+    public void commandName(String name, int end) throws CommandFormatException {
+        this.cmd = name;
+    }
+
+    public String getCommandName() {
+        return cmd;
+    }
+
+    protected void callParser(String argsStr) throws CommandFormatException {
+        CommandLineParser.parse(argsStr, this);
     }
 }

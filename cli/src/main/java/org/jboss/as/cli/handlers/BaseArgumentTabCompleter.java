@@ -70,6 +70,10 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
                     results.valueStart = valueStart;
                     results.endIndex = end;
                 }
+
+                @Override
+                public void outputTarget(String outputTarget) throws CommandFormatException {
+                }
             });
         } catch (CommandLineException e) {
             return -1;

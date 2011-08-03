@@ -21,8 +21,11 @@
  */
 package org.jboss.as.cli.parsing;
 
+
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.impl.DefaultParsedCommand;
 import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.operation.parsing.OutputTargetState;
 import org.jboss.as.cli.operation.parsing.ParsingContext;
 import org.jboss.as.cli.operation.parsing.ParsingStateCallbackHandler;
 import org.jboss.as.cli.operation.parsing.StateParser;
@@ -35,6 +38,13 @@ public class CommandLineParser {
 
     public interface CallbackHandler {
         void argument(String name, int nameStart, String value, int valueStart, int end) throws CommandFormatException;
+
+        void outputTarget(String outputTarget) throws CommandFormatException;
+    }
+
+    public interface CommandCallbackHandler extends CallbackHandler {
+
+        void commandName(String name, int end) throws CommandFormatException;
     }
 
     public static void parse(String commandLine, final CallbackHandler argHandler) throws CommandFormatException {
@@ -87,6 +97,9 @@ public class CommandLineParser {
                     argHandler.argument(name, nameStart, buffer.toString(), valueStart, endIndex);
                     buffer.setLength(0);
                     valueStart = -1;
+                } else if(OutputTargetState.ID.equals(id)) {
+                    argHandler.outputTarget(buffer.toString().trim());
+                    buffer.setLength(0);
                 }
             }
 
@@ -99,13 +112,85 @@ public class CommandLineParser {
         StateParser.parse(commandLine, callbackHandler, ArgumentListState.INSTANCE);
     }
 
+    public static void parse(String commandLine, final CommandCallbackHandler argHandler) throws CommandFormatException {
+
+        if(commandLine == null || commandLine.isEmpty()) {
+            return;
+        }
+
+        final ParsingStateCallbackHandler callbackHandler = new ParsingStateCallbackHandler() {
+
+            private String name;
+            private int nameStart = -1;
+            final StringBuilder buffer = new StringBuilder();
+            private int valueStart = -1;
+
+            @Override
+            public void enteredState(ParsingContext ctx) throws OperationFormatException {
+                final String id = ctx.getState().getId();
+                //System.out.println("entered " + id);
+
+                if(ArgumentState.ID.equals(id)) {
+                    nameStart = ctx.getLocation();
+                }
+                else if(ArgumentValueState.ID.equals(id)) {
+                    if(buffer.length() > 0) {
+                        name = buffer.toString();
+                        buffer.setLength(0);
+                        valueStart = ctx.getLocation() + 1;
+                    } else {
+                        valueStart = ctx.getLocation();
+                    }
+                }
+            }
+
+            @Override
+            public void leavingState(ParsingContext ctx) throws CommandFormatException {
+
+                final String id = ctx.getState().getId();
+                //System.out.println("leaving " + id);
+
+                if(ArgumentState.ID.equals(id)) {
+                    if(buffer.length() > 0) {
+                        final int endIndex = ctx.getLocation();
+                        argHandler.argument(buffer.toString(), nameStart, null, -1, endIndex);
+                    }
+                    buffer.setLength(0);
+                    name = null;
+                    nameStart = -1;
+                } else if(ArgumentValueState.ID.equals(id)) {
+                    final int endIndex = ctx.getLocation();
+                    argHandler.argument(name, nameStart, buffer.toString(), valueStart, endIndex);
+                    buffer.setLength(0);
+                    valueStart = -1;
+                } else if(CommandNameState.ID.equals(id)) {
+                    argHandler.commandName(buffer.toString(), ctx.getLocation());
+                    buffer.setLength(0);
+                } else if(OutputTargetState.ID.equals(id)) {
+                    argHandler.outputTarget(buffer.toString().trim());
+                    buffer.setLength(0);
+                }
+            }
+
+            @Override
+            public void character(ParsingContext ctx) throws OperationFormatException {
+                //System.out.println(ctx.getState().getId() + " '" + ctx.getCharacter() + "'");
+                buffer.append(ctx.getCharacter());
+            }};
+
+        StateParser.parse(commandLine, callbackHandler, CommandState.INSTANCE);
+    }
+
     public static void main(String[] args) throws Exception {
 
-        //final String line = "   ../../\" my dir \"/test-deployment.sar  --name=my.sar --force --server-groups=group1,group2 value   ";
-        final String line = "../../../../my\\ dir/";
+        //final String line = "   ../../\" my dir \"/test-deployment.sar  --name=my.sar --force --server-groups=group1,group2 value   > cli.log";
+        final String line = "cmd ../../../../my\\ dir/ > ../../../../my\\ dir/cli.log";
         //final String line = "--arg=";
         System.out.println(line);
-        CommandLineParser.parse(line,
+        DefaultParsedCommand parsedCmd = new DefaultParsedCommand();
+        parsedCmd.parse(line);
+        System.out.println(parsedCmd.getCommandName() + " > " + parsedCmd.getOutputTarget());
+/*        CommandLineParser.parse(line,
                 new CallbackHandler(){
                     @Override
                     public void argument(String name, int nameStart, String value, int valueStart, int end) {
@@ -116,9 +201,19 @@ public class CommandLineParser {
                         } else if(value == null) {
                             buf.append('\'').append(line.substring(nameStart, end)).append('\'');
                         } else {
-                            buf.append('\'').append(line.substring(nameStart, valueStart))/*.append("'='")*/.append(line.substring(valueStart, end)).append('\'');
+                            buf.append('\'').append(line.substring(nameStart, valueStart)).append("'='").append(line.substring(valueStart, end)).append('\'');
                         }
                         System.out.println(buf.toString());
+                    }
+
+                    @Override
+                    public void commandName(String name, int end) throws CommandFormatException {
+                        System.out.println("command: '" + name + "'");
+                    }
+
+                    @Override
+                    public void outputTarget(String outputTarget) throws CommandFormatException {
+                        System.out.println("output: '" + outputTarget + "'");
                     }});
-    }
+*/    }
 }

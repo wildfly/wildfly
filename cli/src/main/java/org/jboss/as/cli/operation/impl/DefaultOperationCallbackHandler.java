@@ -51,6 +51,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     private String operationName;
     private OperationRequestAddress address;
     private Map<String, String> props;
+    private String outputTarget;
 
     public DefaultOperationCallbackHandler() {
     }
@@ -284,5 +285,14 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     @Override
     public int getLastSeparatorIndex() {
         return lastSeparatorIndex;
+    }
+
+    @Override
+    public void outputTarget(String outputTarget) {
+        this.outputTarget = outputTarget;
+    }
+
+    public String getOutputTarget() {
+        return outputTarget;
     }
 }

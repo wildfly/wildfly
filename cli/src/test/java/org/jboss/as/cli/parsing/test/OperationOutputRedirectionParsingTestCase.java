@@ -25,7 +25,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Set;
 
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
@@ -59,6 +58,28 @@ public class OperationOutputRedirectionParsingTestCase extends BaseStateParserTe
         assertFalse(handler.isRequestComplete());
 
         assertEquals("read-resource", handler.getOperationName());
+        assertEquals("cli.log", handler.getOutputTarget());
+    }
+
+    @Test
+    public void testOperationWithProps() throws Exception {
+        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+
+        parseOperation(":  read-resource (recursive=true) > cli.log", handler);
+
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertTrue(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertTrue(handler.isRequestComplete());
+
+        assertEquals("read-resource", handler.getOperationName());
+        assertEquals("cli.log", handler.getOutputTarget());
     }
 
     protected void parseOperation(String operation, DefaultOperationCallbackHandler handler)

@@ -44,6 +44,8 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
     private Map<String, String> namedArgs = new HashMap<String, String>();
     /** other command arguments */
     private List<String> otherArgs = new ArrayList<String>();
+    /** output target */
+    private String outputTarget;
 
     private CommandHandler handler;
 
@@ -53,6 +55,7 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
         argsStr = args;
         namedArgs.clear();
         otherArgs.clear();
+        outputTarget = null;
         this.handler = handler;
         parsed = false;
     }
@@ -125,11 +128,15 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
         return otherArgs;
     }
 
-    private void parseArgs() throws CommandFormatException {
+    protected void parseArgs() throws CommandFormatException {
         if (argsStr != null && !argsStr.isEmpty()) {
-            CommandLineParser.parse(argsStr, this);
+            callParser(argsStr);
         }
         parsed = true;
+    }
+
+    protected void callParser(String argsStr) throws CommandFormatException {
+        CommandLineParser.parse(argsStr, this);
     }
 
     @Override
@@ -149,5 +156,15 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
             }
             otherArgs.add(value);
         }
+    }
+
+    @Override
+    public void outputTarget(String outputTarget) throws CommandFormatException {
+        this.outputTarget = outputTarget;
+    }
+
+    @Override
+    public String getOutputTarget() {
+        return outputTarget;
     }
 }
