@@ -40,20 +40,19 @@ import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.CONSUME_NAME;
 import static org.jboss.as.messaging.CommonAttributes.CREATEDURABLEQUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_NON_DURABLE_QUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DELETEDURABLEQUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
-import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUPS;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DIVERT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
+import static org.jboss.as.messaging.CommonAttributes.GROUPING_HANDLER;
 import static org.jboss.as.messaging.CommonAttributes.INBOUND_CONFIG;
 import static org.jboss.as.messaging.CommonAttributes.JMS_CONNECTION_FACTORIES;
 import static org.jboss.as.messaging.CommonAttributes.JMS_DESTINATIONS;
@@ -142,6 +141,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         operation.get(OP_ADDR).add(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME);
         list.add(operation);
 
+        EnumSet<Element> seen = EnumSet.noneOf(Element.class);
         // Handle elements
         int tag = reader.getEventType();
         String localName = null;
@@ -149,6 +149,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             tag = reader.nextTag();
             localName = reader.getLocalName();
             final Element element = Element.forName(reader.getLocalName());
+            if (!seen.add(element)) {
+                throw ParseUtils.duplicateNamedElement(reader, element.getLocalName());
+            }
+
             switch (element) {
                 case ACCEPTORS: {
                     // add acceptors
@@ -198,7 +202,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     unhandledElement(reader, element);
                     break;
                 case GROUPING_HANDLER:
-                    unhandledElement(reader, element);
+                    processGroupingHandler(reader, address, list);
                     break;
                 case JOURNAL_DIRECTORY: {
                     final ModelNode directory = parseDirectory(reader);
@@ -303,6 +307,40 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     }
             }
         } while (reader.hasNext() && localName.equals(ModelDescriptionConstants.SUBSYSTEM) == false);
+    }
+
+    private void processGroupingHandler(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+
+        requireSingleAttribute(reader, CommonAttributes.NAME);
+        String name = reader.getAttributeValue(0);
+
+        ModelNode groupingHandlerAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.GROUPING_HANDLER, name));
+
+        EnumSet<Element> required = EnumSet.of(Element.ADDRESS, Element.TYPE);
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            required.remove(element);
+            switch (element) {
+                case TYPE:
+                case TIMEOUT: {
+                    handleElementText(reader, element, groupingHandlerAdd);
+                    break;
+                }
+                case ADDRESS: {
+                    handleElementText(reader, element, CommonAttributes.GROUPING_HANDLER_ADDRESS.getName(), groupingHandlerAdd);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+
+        if(!required.isEmpty()) {
+            missingRequired(reader, required);
+        }
+
+        updates.add(groupingHandlerAdd);
     }
 
     private void processRemotingInterceptors(XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
@@ -1014,8 +1052,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         if (node.hasDefined(DIVERT)) {
             writeDiverts(writer, node.get(DIVERT));
         }
-        if (has(node, CommonAttributes.GROUPING_HANDLER)) {
-            //unhandled
+        if (node.hasDefined(CommonAttributes.GROUPING_HANDLER)) {
+            writeGroupingHandler(writer, node.get(GROUPING_HANDLER));
         }
         if (has(node, CommonAttributes.JOURNAL_DIRECTORY)) {
             writeDirectory(writer, Element.JOURNAL_DIRECTORY, node);
@@ -1092,6 +1130,24 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
         writer.writeEndElement();
     }
+
+    private void writeGroupingHandler(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+
+        boolean wroteHandler = false;
+        for (Property handler : node.asPropertyList()) {
+            if (wroteHandler) {
+                throw new IllegalStateException(String.format("Multiple %s children found; only one is allowed", GROUPING_HANDLER));
+            }
+            writer.writeStartElement(Element.GROUPING_HANDLER.getLocalName());
+            writer.writeAttribute(Attribute.NAME.getLocalName(), handler.getName());
+            final ModelNode resourceModel = handler.getValue();
+            for (AttributeDefinition attr : CommonAttributes.GROUPING_HANDLER_ATTRIBUTES) {
+                attr.marshallAsElement(resourceModel, writer);
+            }
+            writer.writeEndElement();
+        }
+    }
+
 
     private void writeAcceptors(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
         writer.writeStartElement(Element.ACCEPTORS.getLocalName());

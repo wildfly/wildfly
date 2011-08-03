@@ -506,6 +506,45 @@ public class MessagingDescriptions {
         return op;
     }
 
+    static ModelNode getGroupingHandlerResource(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("grouping-handler"));
+        for (AttributeDefinition attr : CommonAttributes.GROUPING_HANDLER_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(bundle, "grouping-handler", root);
+        }
+
+        root.get(OPERATIONS); // placeholder
+
+        root.get(CHILDREN).setEmptyObject();
+        return root;
+    }
+
+    public static ModelNode getGroupingHandlerAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("grouping-handler.add"));
+        for (AttributeDefinition attr : CommonAttributes.GROUPING_HANDLER_ATTRIBUTES) {
+            attr.addOperationParameterDescription(bundle, "grouping-handler", op);
+        }
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getGroupingHandlerRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("grouping-handler.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
     private static ModelNode getPathDescription(final String description, final ResourceBundle bundle) {
         final ModelNode node = new ModelNode();
 
