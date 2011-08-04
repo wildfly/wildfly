@@ -231,9 +231,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     operation.get(PAGING_DIRECTORY).set(directory);
                     break;
                 }
-                case REFRESH_TIMEOUT:
-                    unhandledElement(reader, element);
-                    break;
                 case REMOTING_INTERCEPTORS:
                     processRemotingInterceptors(reader, operation);
                     break;
@@ -244,39 +241,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     operation.get(SECURITY_SETTING).set(securitySettings);
                     break;
                 }
-                case DEAD_LETTER_ADDRESS_NODE_NAME:
-                    unhandledElement(reader, element);
-                    break;
-                case EXPIRY_ADDRESS_NODE_NAME:
-                    unhandledElement(reader, element);
-                    break;
-                case REDELIVERY_DELAY_NODE_NAME:
-                    unhandledElement(reader, element);
-                    break;
-                case MAX_DELIVERY_ATTEMPTS:
-                    unhandledElement(reader, element);
-                    break;
-                case MAX_SIZE_BYTES_NODE_NAME:
-                    unhandledElement(reader, element);
-                    break;
-                case ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME:
-                    unhandledElement(reader, element);
-                    break;
-                case PAGE_SIZE_BYTES_NODE_NAME:
-                    unhandledElement(reader, element);
-                    break;
-                case MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME:
-                    unhandledElement(reader, element);
-                    break;
-                case LVQ_NODE_NAME:
-                    unhandledElement(reader, element);
-                    break;
-                case REDISTRIBUTION_DELAY_NODE_NAME:
-                    unhandledElement(reader, element);
-                    break;
-                case SEND_TO_DLA_ON_NO_ROUTE:
-                    unhandledElement(reader, element);
-                    break;
                 case CORE_QUEUES: {
                     parseQueues(reader, address, list);
                     break;
