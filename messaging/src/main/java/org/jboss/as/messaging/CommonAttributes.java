@@ -179,7 +179,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition GROUP_PORT = new SimpleAttributeDefinition("group-port", ModelType.INT, false);
 
-    SimpleAttributeDefinition HA = new SimpleAttributeDefinition("ha", new ModelNode().set(HornetQClient.DEFAULT_HA),  ModelType.BOOLEAN, false);
+    SimpleAttributeDefinition HA = new SimpleAttributeDefinition("ha", new ModelNode().set(HornetQClient.DEFAULT_HA),  ModelType.BOOLEAN, true);
 
     SimpleAttributeDefinition ID_CACHE_SIZE = new SimpleAttributeDefinition("id-cache-size",
             new ModelNode().set(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE), ModelType.INT,  true, MeasurementUnit.NONE);
@@ -499,7 +499,7 @@ public interface CommonAttributes {
     };
 
     AttributeDefinition[] BROADCAST_GROUP_ATTRIBUTES = {
-        LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT, GROUP_ADDRESS, GROUP_PORT, ConnectorRefsAttribute.BROADCAST_GROUP
+        LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT, GROUP_ADDRESS, GROUP_PORT, BROADCAST_PERIOD, ConnectorRefsAttribute.BROADCAST_GROUP
     };
 
     AttributeDefinition[] DISCOVERY_GROUP_ATTRIBUTES = {
