@@ -44,20 +44,22 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.ThreadsDescriptionUtil.addBoundedQueueThreadPool;
 import static org.jboss.as.threads.ThreadsSubsystemProviders.BOUNDED_QUEUE_THREAD_POOL_DESC;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -337,6 +339,12 @@ public class JcaExtension implements Extension {
                         throw unexpectedElement(reader);
                 }
 
+            }
+            //AS7-1352 The "blocking" attribute for the JCA thread pools should be ignored as it should always be true.
+            for (ModelNode op : list) {
+                if (op.hasDefined(BLOCKING)) {
+                    op.get(BLOCKING).set(Boolean.TRUE);
+                }
             }
             // Handle elements
             requireNoContent(reader);
