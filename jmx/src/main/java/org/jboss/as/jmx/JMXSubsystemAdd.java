@@ -23,6 +23,7 @@
 package org.jboss.as.jmx;
 
 import java.util.List;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -45,10 +46,14 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.get(CommonAttributes.SERVER_BINDING);
         model.get(CommonAttributes.REGISTRY_BINDING);
+        if (operation.hasDefined(CommonAttributes.SHOW_MODEL)) {
+            model.get(CommonAttributes.SHOW_MODEL).set(operation.get(CommonAttributes.SHOW_MODEL));
+        }
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         // Add the MBean service
-        newControllers.add(MBeanServerService.addService(context.getServiceTarget(), verificationHandler));
+        boolean showModel = model.hasDefined(CommonAttributes.SHOW_MODEL) ? model.get(CommonAttributes.SHOW_MODEL).asBoolean() : false;
+        newControllers.add(MBeanServerService.addService(context.getServiceTarget(), showModel, verificationHandler));
     }
 }

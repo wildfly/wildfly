@@ -158,6 +158,20 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
+    public void testParseSubsystem1_1WithBadShowModel() throws Exception {
+        //Parse the subsystem xml into operations
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.JMX_1_0.getUriString() + "\" show-model=\"true\">" +
+                "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" />" +
+                "</subsystem>";
+        try {
+            super.parse(subsystemXml);
+            Assert.fail("Should not have parsed bad attribute");
+        } catch (XMLStreamException expected) {
+        }
+    }
+
+    @Test
     public void testInstallIntoController() throws Exception {
         //Parse the subsystem xml and install into the controller
         String subsystemXml =
@@ -194,10 +208,10 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
 
     @Test
-    public void testParseAndMarshalModel() throws Exception {
+    public void testParseAndMarshalModel1_0() throws Exception {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml =
-                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "<subsystem xmlns=\"" + Namespace.JMX_1_0.getUriString() + "\">" +
                 "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" />" +
                 "</subsystem>";
 
@@ -215,7 +229,71 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         String marshalled = servicesA.getPersistedSubsystemXml();
         servicesA.shutdown();
 
-        System.out.println(marshalled);
+        Assert.assertEquals(normalizeXML(subsystemXml), normalizeXML(marshalled));
+
+        //Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        ModelNode modelB = servicesB.readWholeModel();
+
+        //Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
+    }
+
+    @Test
+    public void testParseAndMarshalModel1_1() throws Exception {
+        //Parse the subsystem xml and install into the first controller
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.JMX_1_1.getUriString() + "\">" +
+                "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" />" +
+                "</subsystem>";
+
+        AdditionalInitialization additionalInit = new AdditionalInitialization(){
+            @Override
+            protected void setupController(ControllerInitializer controllerInitializer) {
+                controllerInitializer.addSocketBinding("registry1", 12345);
+                controllerInitializer.addSocketBinding("server1", 12346);
+            }
+        };
+
+        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        //Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        String marshalled = servicesA.getPersistedSubsystemXml();
+        servicesA.shutdown();
+
+        Assert.assertEquals(normalizeXML(subsystemXml), normalizeXML(marshalled));
+
+        //Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        ModelNode modelB = servicesB.readWholeModel();
+
+        //Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
+    }
+
+    @Test
+    public void testParseAndMarshalModel1_1WithShowModel() throws Exception {
+        //Parse the subsystem xml and install into the first controller
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\" show-model=\"true\">" +
+                "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" />" +
+                "</subsystem>";
+
+        AdditionalInitialization additionalInit = new AdditionalInitialization(){
+            @Override
+            protected void setupController(ControllerInitializer controllerInitializer) {
+                controllerInitializer.addSocketBinding("registry1", 12345);
+                controllerInitializer.addSocketBinding("server1", 12346);
+            }
+        };
+
+        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        //Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        String marshalled = servicesA.getPersistedSubsystemXml();
+        servicesA.shutdown();
+
+        Assert.assertEquals(normalizeXML(subsystemXml), normalizeXML(marshalled));
 
         //Install the persisted xml from the first controller into a second controller
         KernelServices servicesB = super.installInController(additionalInit, marshalled);

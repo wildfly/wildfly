@@ -26,8 +26,12 @@ import java.lang.management.ManagementFactory;
 
 import javax.management.MBeanServer;
 
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.jmx.model.ModelControllerMBeanServer;
 import org.jboss.as.jmx.tcl.TcclMBeanServer;
+import org.jboss.as.server.Services;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
@@ -35,27 +39,41 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
- * Basic service managing an MBeanServer instance. Note: Just using the platform mbean server for now.
+ * Basic service managing and wrapping an MBeanServer instance. Note: Just using the platform mbean server for now.
  *
  * @author John Bailey
+ * @author Kabir Khan
  */
 public class MBeanServerService implements Service<MBeanServer> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
 
+    private final boolean showModel;
+    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
+
     private MBeanServer mBeanServer;
 
-    public static ServiceController<?> addService(final ServiceTarget batchBuilder, final ServiceListener<Object>... listeners) {
-        return batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService())
+    private MBeanServerService(final boolean showModel) {
+        this.showModel = showModel;
+    }
+
+    public static ServiceController<?> addService(final ServiceTarget batchBuilder, final boolean showModel, final ServiceListener<Object>... listeners) {
+        MBeanServerService service = new MBeanServerService(showModel);
+        return batchBuilder.addService(MBeanServerService.SERVICE_NAME, service)
             .addListener(listeners)
             .setInitialMode(ServiceController.Mode.ACTIVE)
+            .addDependency(DependencyType.OPTIONAL, Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.modelControllerValue)
             .install();
     }
 
     /** {@inheritDoc} */
     public synchronized void start(final StartContext context) throws StartException {
         mBeanServer = new TcclMBeanServer(ManagementFactory.getPlatformMBeanServer());
+        if (showModel) {
+            mBeanServer = new ModelControllerMBeanServer(mBeanServer, modelControllerValue.getValue());
+        }
     }
 
     /** {@inheritDoc} */

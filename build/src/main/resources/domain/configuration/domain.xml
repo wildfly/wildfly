@@ -156,7 +156,7 @@
                     </long-running-threads>
                 </default-workmanager>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jmx:1.0">
+            <subsystem xmlns="urn:jboss:domain:jmx:1.1" show-model="true">
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jpa:1.0">
@@ -429,7 +429,7 @@
                     <protocol type="pbcast.FLUSH"/>
                 </stack>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jmx:1.0">
+            <subsystem xmlns="urn:jboss:domain:jmx:1.1" show-model="true">
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jpa:1.0">

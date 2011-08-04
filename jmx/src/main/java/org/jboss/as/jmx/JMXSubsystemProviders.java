@@ -24,6 +24,7 @@ package org.jboss.as.jmx;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
@@ -35,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.jmx.CommonAttributes.REGISTRY_BINDING;
 import static org.jboss.as.jmx.CommonAttributes.SERVER_BINDING;
+import static org.jboss.as.jmx.CommonAttributes.SHOW_MODEL;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -61,6 +63,12 @@ public class JMXSubsystemProviders {
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
             subsystem.get(NAMESPACE).set(Namespace.JMX_1_0.getUriString());
 
+            subsystem.get(ATTRIBUTES, SHOW_MODEL, DESCRIPTION).set(bundle.getString("show.model"));
+            subsystem.get(ATTRIBUTES, SHOW_MODEL, TYPE).set(ModelType.BOOLEAN);
+            subsystem.get(ATTRIBUTES, SHOW_MODEL, REQUIRED).set(false);
+            subsystem.get(ATTRIBUTES, SHOW_MODEL, DEFAULT).set(false);
+
+
             subsystem.get(ATTRIBUTES, REGISTRY_BINDING, DESCRIPTION).set(bundle.getString("registry.binding"));
             subsystem.get(ATTRIBUTES, REGISTRY_BINDING, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, REGISTRY_BINDING, REQUIRED).set(true);
@@ -81,6 +89,11 @@ public class JMXSubsystemProviders {
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OPERATION_NAME).set(ADD);
             subsystem.get(DESCRIPTION).set(bundle.getString("jmx.add"));
+
+            subsystem.get(REQUEST_PROPERTIES, SHOW_MODEL, DESCRIPTION).set(bundle.getString("show.model"));
+            subsystem.get(REQUEST_PROPERTIES, SHOW_MODEL, TYPE).set(ModelType.BOOLEAN);
+            subsystem.get(REQUEST_PROPERTIES, SHOW_MODEL, REQUIRED).set(false);
+            subsystem.get(REQUEST_PROPERTIES, SHOW_MODEL, DEFAULT).set(false);
 
             return subsystem;
         }

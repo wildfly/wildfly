@@ -48,7 +48,11 @@ import javax.management.loading.ClassLoaderRepository;
 
 /**
  * An MBeanServer wrapper that sets the thread context classloader before
- * calling the delegate MBeanServer method
+ * calling the delegate MBeanServer method.
+ * <p/>
+ * <b>Note:</b> This only gets invoked when connecting via JConsole
+ * if you connect via a remote process URL. If you connect to a 'Local Process' the platform MBean
+ * Server is used directly.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $

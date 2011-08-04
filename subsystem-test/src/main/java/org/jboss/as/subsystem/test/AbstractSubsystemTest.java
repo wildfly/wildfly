@@ -82,14 +82,10 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
-import org.jboss.as.server.deployment.DeploymentAddHandler;
-import org.jboss.as.server.deployment.DeploymentDeployHandler;
-import org.jboss.as.server.deployment.DeploymentRedeployHandler;
-import org.jboss.as.server.deployment.DeploymentRemoveHandler;
-import org.jboss.as.server.deployment.DeploymentStatusHandler;
-import org.jboss.as.server.deployment.DeploymentUndeployHandler;
 import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
+import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationFailure;
 import org.jboss.dmr.ModelNode;
@@ -97,7 +93,6 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -141,7 +136,6 @@ public abstract class AbstractSubsystemTest {
     protected AbstractSubsystemTest(final String mainSubsystemName, final Extension mainExtension) {
         this.mainSubsystemName = mainSubsystemName;
         this.mainExtension = mainExtension;
-
     }
 
     public String getMainSubsystemName() {
@@ -321,7 +315,7 @@ public abstract class AbstractSubsystemTest {
         allOps.addAll(bootOperations);
         StringConfigurationPersister persister = new StringConfigurationPersister(allOps, testParser);
         ModelControllerService svc = new ModelControllerService(additionalInit.getType(), mainExtension, controllerInitializer, additionalInit, processState, persister, additionalInit.isValidateOperations());
-        ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
+        ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.install();
 
         additionalInit.addExtraServices(target);
@@ -581,13 +575,9 @@ public abstract class AbstractSubsystemTest {
             rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
             ManagementResourceRegistration deployments = rootRegistration.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
-            DeploymentAddHandler dah = new DeploymentAddHandler(TestContentRepository.createTestContentRepository());
-            deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
-            deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DeploymentRemoveHandler.INSTANCE, false);
-            deployments.registerOperationHandler(DeploymentDeployHandler.OPERATION_NAME, DeploymentDeployHandler.INSTANCE, DeploymentDeployHandler.INSTANCE, false);
-            deployments.registerOperationHandler(DeploymentUndeployHandler.OPERATION_NAME, DeploymentUndeployHandler.INSTANCE, DeploymentUndeployHandler.INSTANCE, false);
-            deployments.registerOperationHandler(DeploymentRedeployHandler.OPERATION_NAME, DeploymentRedeployHandler.INSTANCE, DeploymentRedeployHandler.INSTANCE, false);
-            deployments.registerMetric(DeploymentStatusHandler.ATTRIBUTE_NAME, DeploymentStatusHandler.INSTANCE);
+
+            //Hack to be able to access the registry for the jmx facade
+            rootRegistration.registerOperationHandler(RootResourceHack.NAME, RootResourceHack.INSTANCE, RootResourceHack.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
 
             controllerInitializer.initializeModel(rootResource, rootRegistration);
