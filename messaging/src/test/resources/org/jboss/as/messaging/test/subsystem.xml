@@ -170,8 +170,19 @@
                </address-setting>
             </address-settings>
 
+            <connector-services>
+                <connector-service name="a">
+                    <factory-class>foo.bar</factory-class>
+                </connector-service>
+                <connector-service name="b">
+                    <factory-class>bar.foo</factory-class>
+                    <param key="foo" value="bar"/>
+                    <param key="bar" value="2"/>
+                </connector-service>
+            </connector-services>
+
             <!--JMS Stuff-->
-           <jms-connection-factories>
+            <jms-connection-factories>
               <connection-factory name="InVmConnectionFactory">
                  <connectors>
                     <connector-ref connector-name="in-vm"/>

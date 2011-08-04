@@ -59,6 +59,7 @@ public enum Element {
    CLUSTER_PASSWORD(CommonAttributes.CLUSTER_PASSWORD),
    CLUSTER_USER(CommonAttributes.CLUSTER_USER),
    CONNECTION_TTL_OVERRIDE(CommonAttributes.CONNECTION_TTL_OVERRIDE),
+   CONNECTOR_SERVICE(CommonAttributes.CONNECTOR_SERVICE),
    CONNECTOR_SERVICES(CommonAttributes.CONNECTOR_SERVICES),
    CONNECTOR_REF(getConnectorRefDefinitions()),
    CORE_QUEUES(CommonAttributes.CORE_QUEUES),

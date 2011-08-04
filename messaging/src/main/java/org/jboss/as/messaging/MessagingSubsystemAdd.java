@@ -352,6 +352,7 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
         QueueAdd.addQueueConfigs(configuration, model);
         BridgeAdd.addBridgeConfigs(configuration, model);
         ClusterConnectionAdd.addClusterConnectionConfigs(configuration, model);
+        ConnectorServiceAdd.addConnectorServiceConfigs(configuration, model);
 
         return configuration;
     }
@@ -391,7 +392,7 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                         break;
                     }
                     case Generic: {
-                        clazz = config.get(FACTORY_CLASS).asString();
+                        clazz = config.get(FACTORY_CLASS.getName()).asString();
                         break;
                     }
                     default: {
@@ -440,7 +441,7 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                         break;
                     }
                     case Generic: {
-                        clazz = config.get(FACTORY_CLASS).asString();
+                        clazz = config.get(FACTORY_CLASS.getName()).asString();
                         break;
                     }
                     default: {

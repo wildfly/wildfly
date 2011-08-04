@@ -673,6 +673,84 @@ public class MessagingDescriptions {
         return op;
     }
 
+    static ModelNode getConnectorServiceResource(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("connector-service"));
+        for (AttributeDefinition attr : CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(bundle, "connector-service", root);
+        }
+
+        root.get(OPERATIONS); // placeholder
+
+        root.get(CHILDREN, CommonAttributes.PARAM, DESCRIPTION).set(bundle.getString("connector-service.param"));
+        root.get(CHILDREN, CommonAttributes.PARAM, MIN_OCCURS).set(0);
+        root.get(CHILDREN, CommonAttributes.PARAM, MODEL_DESCRIPTION);
+
+        return root;
+    }
+
+    public static ModelNode getConnectorServiceAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("connector-service.add"));
+        for (AttributeDefinition attr : CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(bundle, "connector-service", op);
+        }
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getConnectorServiceRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("connector-service.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getConnectorServiceParamResource(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("connector-service.param"));
+        CommonAttributes.VALUE.addResourceAttributeDescription(bundle, "connector-service.param", root);
+
+        root.get(OPERATIONS); // placeholder
+
+        root.get(CHILDREN).setEmptyObject();
+
+        return root;
+    }
+
+    public static ModelNode getConnectorServiceParamAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("connector-service.param.add"));
+        CommonAttributes.VALUE.addOperationParameterDescription(bundle, "connector-service.param", op);
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getConnectorServiceParamRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("connector-service.param.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
     private static ModelNode getPathDescription(final String description, final ResourceBundle bundle) {
         final ModelNode node = new ModelNode();
 
