@@ -594,54 +594,22 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
     private static XMLStreamException unexpectedContent(final XMLStreamReader reader) {
         final String kind;
         switch (reader.getEventType()) {
-            case XMLStreamConstants.ATTRIBUTE:
-                kind = "attribute";
-                break;
-            case XMLStreamConstants.CDATA:
-                kind = "cdata";
-                break;
-            case XMLStreamConstants.CHARACTERS:
-                kind = "characters";
-                break;
-            case XMLStreamConstants.COMMENT:
-                kind = "comment";
-                break;
-            case XMLStreamConstants.DTD:
-                kind = "dtd";
-                break;
-            case XMLStreamConstants.END_DOCUMENT:
-                kind = "document end";
-                break;
-            case XMLStreamConstants.END_ELEMENT:
-                kind = "element end";
-                break;
-            case XMLStreamConstants.ENTITY_DECLARATION:
-                kind = "entity decl";
-                break;
-            case XMLStreamConstants.ENTITY_REFERENCE:
-                kind = "entity ref";
-                break;
-            case XMLStreamConstants.NAMESPACE:
-                kind = "namespace";
-                break;
-            case XMLStreamConstants.NOTATION_DECLARATION:
-                kind = "notation decl";
-                break;
-            case XMLStreamConstants.PROCESSING_INSTRUCTION:
-                kind = "processing instruction";
-                break;
-            case XMLStreamConstants.SPACE:
-                kind = "whitespace";
-                break;
-            case XMLStreamConstants.START_DOCUMENT:
-                kind = "document start";
-                break;
-            case XMLStreamConstants.START_ELEMENT:
-                kind = "element start";
-                break;
-            default:
-                kind = "unknown";
-                break;
+            case XMLStreamConstants.ATTRIBUTE: kind = "attribute"; break;
+            case XMLStreamConstants.CDATA: kind = "cdata"; break;
+            case XMLStreamConstants.CHARACTERS: kind = "characters"; break;
+            case XMLStreamConstants.COMMENT: kind = "comment"; break;
+            case XMLStreamConstants.DTD: kind = "dtd"; break;
+            case XMLStreamConstants.END_DOCUMENT: kind = "document end"; break;
+            case XMLStreamConstants.END_ELEMENT: kind = "element end"; break;
+            case XMLStreamConstants.ENTITY_DECLARATION: kind = "entity decl"; break;
+            case XMLStreamConstants.ENTITY_REFERENCE: kind = "entity ref"; break;
+            case XMLStreamConstants.NAMESPACE: kind = "namespace"; break;
+            case XMLStreamConstants.NOTATION_DECLARATION: kind = "notation decl"; break;
+            case XMLStreamConstants.PROCESSING_INSTRUCTION: kind = "processing instruction"; break;
+            case XMLStreamConstants.SPACE: kind = "whitespace"; break;
+            case XMLStreamConstants.START_DOCUMENT: kind = "document start"; break;
+            case XMLStreamConstants.START_ELEMENT: kind = "element start"; break;
+            default: kind = "unknown"; break;
         }
         final StringBuilder b = new StringBuilder("Unexpected content of type '").append(kind).append('\'');
         if (reader.hasName()) {
