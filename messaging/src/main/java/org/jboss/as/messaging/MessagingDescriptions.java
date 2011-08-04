@@ -634,6 +634,45 @@ public class MessagingDescriptions {
         return op;
     }
 
+    static ModelNode getClusterConnectionResource(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("cluster-connection"));
+        for (AttributeDefinition attr : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(bundle, "cluster-connection", root);
+        }
+
+        root.get(OPERATIONS); // placeholder
+
+        root.get(CHILDREN).setEmptyObject();
+        return root;
+    }
+
+    public static ModelNode getClusterConnectionAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("cluster-connection.add"));
+        for (AttributeDefinition attr : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
+            attr.addOperationParameterDescription(bundle, "cluster-connection", op);
+        }
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getClusterConnectionRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("cluster-connection.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
     private static ModelNode getPathDescription(final String description, final ResourceBundle bundle) {
         final ModelNode node = new ModelNode();
 

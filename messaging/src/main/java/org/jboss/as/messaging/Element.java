@@ -40,7 +40,8 @@ public enum Element {
    UNKNOWN((String) null),
    // Messaging 1.0 elements in alpha order
    ACCEPTORS(CommonAttributes.ACCEPTORS),
-   ADDRESS(getAttributeDefinitions(CommonAttributes.QUEUE_ADDRESS, CommonAttributes.DIVERT_ADDRESS, CommonAttributes.GROUPING_HANDLER_ADDRESS)),
+   ADDRESS(getAttributeDefinitions(CommonAttributes.QUEUE_ADDRESS, CommonAttributes.DIVERT_ADDRESS,
+           CommonAttributes.GROUPING_HANDLER_ADDRESS, CommonAttributes.CLUSTER_CONNECTION_ADDRESS)),
    ADDRESS_SETTINGS(CommonAttributes.ADDRESS_SETTINGS),
    ALLOW_FAILBACK(CommonAttributes.ALLOW_FAILBACK),
    ASYNC_CONNECTION_EXECUTION_ENABLED(CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED),
@@ -53,6 +54,7 @@ public enum Element {
    BROADCAST_PERIOD(CommonAttributes.BROADCAST_PERIOD),
    CLASS_NAME(CommonAttributes.CLASS_NAME),
    CLUSTERED(CommonAttributes.CLUSTERED),
+   CLUSTER_CONNECTION(CommonAttributes.CLUSTER_CONNECTION),
    CLUSTER_CONNECTIONS(CommonAttributes.CLUSTER_CONNECTIONS),
    CLUSTER_PASSWORD(CommonAttributes.CLUSTER_PASSWORD),
    CLUSTER_USER(CommonAttributes.CLUSTER_USER),
@@ -72,6 +74,7 @@ public enum Element {
    FAILOVER_ON_SHUTDOWN(CommonAttributes.FAILOVER_ON_SHUTDOWN),
    FILE_DEPLOYMENT_ENABLED(CommonAttributes.FILE_DEPLOYMENT_ENABLED),
    FORWARDING_ADDRESS(getForwardingAddressDefinitions()),
+   FORWARD_WHEN_NO_CONSUMERS(CommonAttributes.FORWARD_WHEN_NO_CONSUMERS),
    GROUP_ADDRESS(CommonAttributes.GROUP_ADDRESS),
    GROUP_PORT(CommonAttributes.GROUP_PORT),
    GROUPING_HANDLER(CommonAttributes.GROUPING_HANDLER),
@@ -99,6 +102,7 @@ public enum Element {
    LOG_JOURNAL_WRITE_RATE(CommonAttributes.LOG_JOURNAL_WRITE_RATE),
    MANAGEMENT_ADDRESS(CommonAttributes.MANAGEMENT_ADDRESS),
    MANAGEMENT_NOTIFICATION_ADDRESS(CommonAttributes.MANAGEMENT_NOTIFICATION_ADDRESS),
+   MAX_HOPS(CommonAttributes.MAX_HOPS),
    MEMORY_MEASURE_INTERVAL(CommonAttributes.MEMORY_MEASURE_INTERVAL),
    MEMORY_WARNING_THRESHOLD(CommonAttributes.MEMORY_WARNING_THRESHOLD),
    MESSAGE_COUNTER_ENABLED(CommonAttributes.MESSAGE_COUNTER_ENABLED),
@@ -189,14 +193,14 @@ public enum Element {
    PRODUCER_MAX_RATE(CommonAttributes.PRODUCER_MAX_RATE),
    QUEUE_NAME(CommonAttributes.QUEUE_NAME),
    RECONNECT_ATTEMPTS(getReconnectAttemptsDefinitions()),
-   RETRY_INTERVAL(CommonAttributes.RETRY_INTERVAL),
+   RETRY_INTERVAL(getRetryIntervalDefinitions()),
    RETRY_INTERVAL_MULTIPLIER(CommonAttributes.RETRY_INTERVAL_MULTIPLIER),
    SELECTOR(CommonAttributes.SELECTOR),
    SCHEDULED_THREAD_POOL_MAX_SIZE(getScheduledThreadPoolDefinitions()),
    THREAD_POOL_MAX_SIZE(getThreadPoolDefinitions()),
    TRANSACTION_BATH_SIZE(CommonAttributes.TRANSACTION_BATCH_SIZE),
    USER(CommonAttributes.USER),
-   USE_DUPLICATE_DETECTION(CommonAttributes.USE_DUPLICATE_DETECTION),
+   USE_DUPLICATE_DETECTION(getDuplicateDetectionDefinitions()),
    USE_GLOBAL_POOLS(CommonAttributes.USE_GLOBAL_POOLS),
    POOLED_CONNECTION_FACTORY(CommonAttributes.POOLED_CONNECTION_FACTORY),
    TRANSACTION(CommonAttributes.TRANSACTION),
@@ -313,7 +317,8 @@ public enum Element {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("simple", CommonAttributes.CONNECTOR_REF);
         result.put("broadcast-group", ConnectorRefsAttribute.BROADCAST_GROUP);
-        result.put("static-connectors", ConnectorRefsAttribute.STATIC_CONNECTORS);
+        result.put("bridge", ConnectorRefsAttribute.BRIDGE_CONNECTORS);
+        result.put("cluster-connection", ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS);
         return result;
 
     }
@@ -330,6 +335,22 @@ public enum Element {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("divert", CommonAttributes.DIVERT_FORWARDING_ADDRESS);
         result.put("bridge", CommonAttributes.BRIDGE_FORWARDING_ADDRESS);
+        return result;
+
+    }
+
+    private static Map<String, AttributeDefinition> getDuplicateDetectionDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION);
+        result.put("bridge", CommonAttributes.BRIDGE_USE_DUPLICATE_DETECTION);
+        return result;
+
+    }
+
+    private static Map<String, AttributeDefinition> getRetryIntervalDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("cluster", CommonAttributes.CLUSTER_CONNECTION_RETRY_INTERVAL);
+        result.put("default", CommonAttributes.RETRY_INTERVAL);
         return result;
 
     }

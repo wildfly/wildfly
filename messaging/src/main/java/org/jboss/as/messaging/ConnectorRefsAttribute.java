@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import javax.activation.CommandInfo;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.util.List;
@@ -40,15 +39,16 @@ import org.jboss.dmr.ModelType;
  */
 public class ConnectorRefsAttribute extends ListAttributeDefinition {
 
-    public static final ConnectorRefsAttribute STATIC_CONNECTORS = new ConnectorRefsAttribute(true);
+    public static final ConnectorRefsAttribute CLUSTER_CONNECTION_CONNECTORS = new ConnectorRefsAttribute(CommonAttributes.STATIC_CONNECTORS, false, true);
 
-    public static final ConnectorRefsAttribute BROADCAST_GROUP = new ConnectorRefsAttribute(false);
+    public static final ConnectorRefsAttribute BRIDGE_CONNECTORS = new ConnectorRefsAttribute(CommonAttributes.STATIC_CONNECTORS, true, false);
+
+    public static final ConnectorRefsAttribute BROADCAST_GROUP = new ConnectorRefsAttribute(CommonAttributes.CONNECTORS, false, true);
 
     private final boolean wrap;
 
-    private ConnectorRefsAttribute(boolean wrap) {
-        super(wrap ? CommonAttributes.STATIC_CONNECTORS : CommonAttributes.CONNECTORS,
-                CommonAttributes.CONNECTOR_REF_STRING, !wrap, 1, Integer.MAX_VALUE, new StringLengthValidator(1));
+    private ConnectorRefsAttribute(final String name, boolean wrap, boolean allowNull) {
+        super(name, CommonAttributes.CONNECTOR_REF_STRING, allowNull, 1, Integer.MAX_VALUE, new StringLengthValidator(1));
         this.wrap = wrap;
     }
 

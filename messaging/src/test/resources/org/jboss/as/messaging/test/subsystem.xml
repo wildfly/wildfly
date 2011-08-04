@@ -90,6 +90,39 @@
                 </bridge>
             </bridges>
 
+            <cluster-connections>
+                <cluster-connection name="cc1">
+                    <address>cc1-address</address>
+                    <connector-ref>netty</connector-ref>
+                    <retry-interval>987</retry-interval>
+                    <use-duplicate-detection>true</use-duplicate-detection>
+                    <forward-when-no-consumers>true</forward-when-no-consumers>
+                    <max-hops>7</max-hops>
+                    <confirmation-window-size>459</confirmation-window-size>
+                    <static-connectors>
+                        <connector-ref>in-vm</connector-ref>
+                        <connector-ref>netty</connector-ref>
+                    </static-connectors>
+                </cluster-connection>
+                <cluster-connection name="cc2">
+                    <address>cc2-address</address>
+                    <connector-ref>netty</connector-ref>
+                    <static-connectors allow-direct-connections-only="true">
+                        <connector-ref>in-vm</connector-ref>
+                        <connector-ref>netty</connector-ref>
+                    </static-connectors>
+                </cluster-connection>
+                <cluster-connection name="cc3">
+                    <address>cc3-address</address>
+                    <connector-ref>netty</connector-ref>
+                    <discovery-group-ref discovery-group-name="groupC"/>
+                </cluster-connection>
+                <cluster-connection name="cc4">
+                    <address>cc4-address</address>
+                    <connector-ref>netty-throughput</connector-ref>
+                </cluster-connection>
+            </cluster-connections>
+
             <diverts>
                 <divert name="testDivert1">
                     <routing-name>routing</routing-name>

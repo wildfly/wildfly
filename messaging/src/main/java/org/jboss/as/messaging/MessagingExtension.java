@@ -127,6 +127,15 @@ public class MessagingExtension implements Extension {
             bridge.registerReadWriteAttribute(attributeDefinition.getName(), null, BridgeWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
 
+        // Cluster connections
+        final ManagementResourceRegistration cluster = rootRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.CLUSTER_CONNECTION),
+                MessagingSubsystemProviders.CLUSTER_CONNECTION_RESOURCE);
+        cluster.registerOperationHandler(ADD, ClusterConnectionAdd.INSTANCE, ClusterConnectionAdd.INSTANCE, false);
+        cluster.registerOperationHandler(REMOVE, ClusterConnectionRemove.INSTANCE, ClusterConnectionRemove.INSTANCE, false);
+        for (AttributeDefinition attributeDefinition : CommonAttributes.BRIDGE_ATTRIBUTES) {
+            cluster.registerReadWriteAttribute(attributeDefinition.getName(), null, ClusterConnectionWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        }
+
         // Grouping Handler
         final ManagementResourceRegistration groupingHandler = rootRegistration.registerSubModel(GROUPING_HANDLER_PATH, MessagingSubsystemProviders.GROUPING_HANDLER_RESOURCE);
         groupingHandler.registerOperationHandler(ADD, GroupingHandlerAdd.INSTANCE, GroupingHandlerAdd.INSTANCE);

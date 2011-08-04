@@ -342,14 +342,16 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
         configuration.setWildcardRoutingEnabled(WILD_CARD_ROUTING_ENABLED.validateResolvedOperation(model).asBoolean());
         // --
         processAddressSettings(configuration, model);
-//        processCoreQueues(configuration, model);
         processSecuritySettings(configuration, model);
 
+        // Add in items from child resources
         GroupingHandlerAdd.addGroupingHandlerConfig(configuration, model);
         BroadcastGroupAdd.addBroadcastGroupConfigs(configuration, model);
         DiscoveryGroupAdd.addDiscoveryGroupConfigs(configuration, model);
         DivertAdd.addDivertConfigs(configuration, model);
-
+        QueueAdd.addQueueConfigs(configuration, model);
+        BridgeAdd.addBridgeConfigs(configuration, model);
+        ClusterConnectionAdd.addClusterConnectionConfigs(configuration, model);
 
         return configuration;
     }

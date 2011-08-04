@@ -72,18 +72,18 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
 
         model.setEmptyObject();
 
-        boolean hasStatic = operation.hasDefined(ConnectorRefsAttribute.STATIC_CONNECTORS.getName());
+        boolean hasStatic = operation.hasDefined(ConnectorRefsAttribute.BRIDGE_CONNECTORS.getName());
         boolean hasDiscGroup = operation.hasDefined(CommonAttributes.DISCOVERY_GROUP_NAME.getName());
         if (!hasStatic && !hasDiscGroup) {
             throw new OperationFailedException(new ModelNode().set(String.format("Operation must include parameter %s or parameter %s",
-                    ConnectorRefsAttribute.STATIC_CONNECTORS.getName(), CommonAttributes.DISCOVERY_GROUP_NAME.getName())));
+                    ConnectorRefsAttribute.BRIDGE_CONNECTORS.getName(), CommonAttributes.DISCOVERY_GROUP_NAME.getName())));
         } else if (hasStatic && hasDiscGroup) {
             throw new OperationFailedException(new ModelNode().set(String.format("Operation cannot include both parameter %s and parameter %s",
-                    ConnectorRefsAttribute.STATIC_CONNECTORS.getName(), CommonAttributes.DISCOVERY_GROUP_NAME.getName())));
+                    ConnectorRefsAttribute.BRIDGE_CONNECTORS.getName(), CommonAttributes.DISCOVERY_GROUP_NAME.getName())));
         }
 
         for (final AttributeDefinition attributeDefinition : CommonAttributes.BRIDGE_ATTRIBUTES) {
-            if (hasDiscGroup && attributeDefinition == ConnectorRefsAttribute.STATIC_CONNECTORS) {
+            if (hasDiscGroup && attributeDefinition == ConnectorRefsAttribute.BRIDGE_CONNECTORS) {
                 continue;
             } else if (hasStatic && attributeDefinition == CommonAttributes.DISCOVERY_GROUP_NAME) {
                 continue;
@@ -144,7 +144,7 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
         final long retryInterval = CommonAttributes.RETRY_INTERVAL.validateResolvedOperation(model).asLong();
         final double retryIntervalMultiplier = CommonAttributes.RETRY_INTERVAL_MULTIPLIER.validateResolvedOperation(model).asDouble();
         final int reconnectAttempts = CommonAttributes.BRIDGE_RECONNECT_ATTEMPTS.validateResolvedOperation(model).asInt();
-        final boolean useDuplicateDetection = CommonAttributes.USE_DUPLICATE_DETECTION.validateResolvedOperation(model).asBoolean();
+        final boolean useDuplicateDetection = CommonAttributes.BRIDGE_USE_DUPLICATE_DETECTION.validateResolvedOperation(model).asBoolean();
         final int confirmationWindowSize = CommonAttributes.CONFIRMATION_WINDOW_SIZE.validateResolvedOperation(model).asInt();
         final long clientFailureCheckPeriod = HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
         final ModelNode discoveryNode = CommonAttributes.DISCOVERY_GROUP_NAME.validateResolvedOperation(model);

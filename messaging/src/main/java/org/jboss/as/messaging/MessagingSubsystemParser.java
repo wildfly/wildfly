@@ -184,7 +184,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     processBroadcastGroups(reader, address, list);
                     break;
                 case CLUSTER_CONNECTIONS:
-                    unhandledElement(reader, element);
+                    processClusterConnections(reader, address, list);
                     break;
                 case CONNECTORS: {
                     final ModelNode connectors = processConnectors(reader);
@@ -268,13 +268,94 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         if (attributeDefinition instanceof SimpleAttributeDefinition) {
                             handleElementText(reader, element, operation);
                         } else {
-                            throw new UnsupportedOperationException("implement ListAttributeDefinition support");
+                            // These should be handled in specific case blocks above, e.g. case REMOTING_INTERCEPTORS:
+                            throw new UnsupportedOperationException(String.format("Implement support for element %s", element.getLocalName()));
                         }
                     } else {
                         throw ParseUtils.unexpectedElement(reader);
                     }
             }
         } while (reader.hasNext() && localName.equals(ModelDescriptionConstants.SUBSYSTEM) == false);
+    }
+
+    private static void processClusterConnections(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+        requireNoAttributes(reader);
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case CLUSTER_CONNECTION: {
+                    processClusterConnection(reader, address, updates);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void processClusterConnection(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+
+        requireSingleAttribute(reader, CommonAttributes.NAME);
+        String name = reader.getAttributeValue(0);
+
+        ModelNode bridgeAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.CLUSTER_CONNECTION, name));
+
+        EnumSet<Element> required = EnumSet.of(Element.ADDRESS, Element.CONNECTOR_REF);
+        Set<Element> seen = EnumSet.noneOf(Element.class);
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (!seen.add(element)) {
+                throw ParseUtils.duplicateNamedElement(reader, element.getLocalName());
+            }
+            required.remove(element);
+            switch (element) {
+                case FORWARD_WHEN_NO_CONSUMERS:
+                case MAX_HOPS:
+                case CONFIRMATION_WINDOW_SIZE:
+                    handleElementText(reader, element, bridgeAdd);
+                    break;
+                case ADDRESS:  {
+                    handleElementText(reader, element, CommonAttributes.CLUSTER_CONNECTION_ADDRESS.getName(), bridgeAdd);
+                    break;
+                }
+                case CONNECTOR_REF:  {
+                    // Use the "simple" variant
+                    handleElementText(reader, element, "simple", bridgeAdd);
+                    break;
+                }
+                case USE_DUPLICATE_DETECTION:
+                case RETRY_INTERVAL:
+                    // Use the "cluster" variant
+                    handleElementText(reader, element, "cluster", bridgeAdd);
+                    break;
+                case STATIC_CONNECTORS:
+                    if (seen.contains(Element.DISCOVERY_GROUP_REF)) {
+                        throw new XMLStreamException(String.format("Illegal element %s: cannot be used when %s is used",
+                                STATIC_CONNECTORS, DISCOVERY_GROUP_REF), reader.getLocation());
+                    }
+                    processStaticConnectors(reader, bridgeAdd, true);
+                    break;
+                case DISCOVERY_GROUP_REF: {
+                    if (seen.contains(Element.STATIC_CONNECTORS)) {
+                        throw new XMLStreamException(String.format("Illegal element %s: cannot be used when %s is used",
+                                DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
+                    }
+                    final Location location = reader.getLocation();
+                    final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
+                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, location);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+
+        if(!required.isEmpty()) {
+            missingRequired(reader, required);
+        }
+
+        updates.add(bridgeAdd);
     }
 
     private static void processBridges(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
@@ -311,7 +392,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case QUEUE_NAME:
                 case HA:
                 case TRANSFORMER_CLASS_NAME:
-                case RETRY_INTERVAL:
                 case RETRY_INTERVAL_MULTIPLIER:
                 case FAILOVER_ON_SERVER_SHUTDOWN:
                 case USE_DUPLICATE_DETECTION:
@@ -326,6 +406,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     FILTER.parseAndSetParameter(string, bridgeAdd, location);
                     break;
                 }
+                case RETRY_INTERVAL:
+                    // Use the "default" variant
+                    handleElementText(reader, element, "default", bridgeAdd);
+                    break;
                 case FORWARDING_ADDRESS:
                 case RECONNECT_ATTEMPTS:
                     handleElementText(reader, element, "bridge", bridgeAdd);
@@ -335,7 +419,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         throw new XMLStreamException(String.format("Illegal element %s: cannot be used when %s is used",
                                 STATIC_CONNECTORS, DISCOVERY_GROUP_REF), reader.getLocation());
                     }
-                    processStaticConnectors(reader, bridgeAdd);
+                    processStaticConnectors(reader, bridgeAdd, false);
                     break;
                 case DISCOVERY_GROUP_REF: {
                     if (seen.contains(Element.STATIC_CONNECTORS)) {
@@ -353,6 +437,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
         }
 
+        if (!seen.contains(Element.STATIC_CONNECTORS) && !seen.contains(Element.DISCOVERY_GROUP_REF)) {
+            throw new XMLStreamException(String.format("Either %s or %s is required", Element.STATIC_CONNECTORS.getLocalName(),
+                    Element.DISCOVERY_GROUP_REF.getLocalName()), reader.getLocation());
+        }
+
         if(!required.isEmpty()) {
             missingRequired(reader, required);
         }
@@ -360,8 +449,29 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         updates.add(bridgeAdd);
     }
 
-    private static void processStaticConnectors(XMLExtendedStreamReader reader, ModelNode bridgeAdd) throws XMLStreamException {
-        requireNoAttributes(reader);
+    private static void processStaticConnectors(XMLExtendedStreamReader reader, ModelNode addOperation, boolean cluster) throws XMLStreamException {
+
+        if (cluster) {
+
+            int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case ALLOW_DIRECT_CONNECTIONS_ONLY: {
+                        final Location location = reader.getLocation();
+                        final String attrValue = reader.getAttributeValue(i);
+                        CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.parseAndSetParameter(attrValue, addOperation, location);
+                        break;
+                    }
+                    default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+
+        } else {
+            requireNoAttributes(reader);
+        }
 
         EnumSet<Element> required = EnumSet.of(Element.CONNECTOR_REF);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -369,7 +479,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             required.remove(element);
             switch (element) {
                 case CONNECTOR_REF: {
-                    handleElementText(reader, element, "static-connectors", bridgeAdd);
+                    handleElementText(reader, element, cluster ? "cluster-connection" : "bridge", addOperation);
                     break;
                 }
                 default: {
@@ -1128,11 +1238,14 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         if (node.hasDefined(DISCOVERY_GROUP)) {
             writeDiscoveryGroups(writer, node.get(DISCOVERY_GROUP));
         }
+        if (node.hasDefined(DIVERT)) {
+            writeDiverts(writer, node.get(DIVERT));
+        }
         if (node.hasDefined(CommonAttributes.BRIDGE)) {
             writeBridges(writer, node.get(CommonAttributes.BRIDGE));
         }
-        if (node.hasDefined(DIVERT)) {
-            writeDiverts(writer, node.get(DIVERT));
+        if (node.hasDefined(CommonAttributes.CLUSTER_CONNECTION)) {
+            writeClusterConnections(writer, node.get(CommonAttributes.CLUSTER_CONNECTION));
         }
         if (node.hasDefined(CommonAttributes.GROUPING_HANDLER)) {
             writeGroupingHandler(writer, node.get(GROUPING_HANDLER));
@@ -1228,6 +1341,46 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(bridge, false)) {
                             writer.writeStartElement(Element.DISCOVERY_GROUP_REF.getLocalName());
                             CommonAttributes.DISCOVERY_GROUP_NAME.marshallAsAttribute(bridge, writer);
+                            writer.writeEndElement();
+                        }
+                    } else {
+                        attribute.marshallAsElement(property.getValue(), writer);
+                    }
+                }
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeClusterConnections(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+        List<Property> properties = node.asPropertyList();
+        if (!properties.isEmpty()) {
+            writer.writeStartElement(Element.CLUSTER_CONNECTIONS.getLocalName());
+            for(final Property property : node.asPropertyList()) {
+                writer.writeStartElement(Element.CLUSTER_CONNECTION.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                final ModelNode cluster = property.getValue();
+                for (AttributeDefinition attribute : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
+                    if (attribute == CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY) {
+                        // we nest it in static-connectors
+                        continue;
+                    }
+                    if (attribute == ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS) {
+                        if (ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.isMarshallable(cluster, false)) {
+                            writer.writeStartElement(Element.STATIC_CONNECTORS.getLocalName());
+                            CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.marshallAsAttribute(cluster, writer);
+                            ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.marshallAsElement(cluster, writer);
+                            writer.writeEndElement();
+                        } else if (CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.isMarshallable(cluster, false)) {
+                            writer.writeEmptyElement(Element.STATIC_CONNECTORS.getLocalName());
+                            CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.marshallAsAttribute(cluster, writer);
+                        }
+                    }
+                    else if (attribute == CommonAttributes.DISCOVERY_GROUP_NAME) {
+                        if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(cluster, false)) {
+                            writer.writeStartElement(Element.DISCOVERY_GROUP_REF.getLocalName());
+                            CommonAttributes.DISCOVERY_GROUP_NAME.marshallAsAttribute(cluster, writer);
                             writer.writeEndElement();
                         }
                     } else {
@@ -1884,7 +2037,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case BLOCK_ON_DURABLE_SEND:
                 case AUTO_GROUP:
                 case PRE_ACK:
-                case RETRY_INTERVAL:
                 case RETRY_INTERVAL_MULTIPLIER:
                 case MAX_RETRY_INTERVAL:
                 case FAILOVER_ON_INITIAL_CONNECTION:
@@ -1893,6 +2045,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case USE_GLOBAL_POOLS:
                 case GROUP_ID:
                     handleElementText(reader, element, connectionFactory);
+                    break;
+                case RETRY_INTERVAL:
+                    // Use the "default" variant
+                    handleElementText(reader, element, "default", connectionFactory);
                     break;
                 case RECONNECT_ATTEMPTS:
                 case SCHEDULED_THREAD_POOL_MAX_SIZE:
