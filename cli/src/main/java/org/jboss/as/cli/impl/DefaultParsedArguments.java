@@ -30,13 +30,15 @@ import java.util.Set;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.ParsedArguments;
+import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.parsing.CommandLineParser;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class DefaultParsedArguments implements ParsedArguments, CommandLineParser.CallbackHandler {
+public class DefaultParsedArguments implements ParsedArguments, CommandLineParser.CallbackHandler, OperationRequestParser.CallbackHandler {
 
     /** current command's arguments */
     private String argsStr;
@@ -166,5 +168,109 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
     @Override
     public String getOutputTarget() {
         return outputTarget;
+    }
+
+    @Override
+    public void start(String operationString) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void rootNode() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void parentNode() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void nodeType() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void nodeType(String nodeType) throws OperationFormatException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void nodeTypeNameSeparator(int index) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void nodeName(String nodeName) throws OperationFormatException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void nodeSeparator(int index) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void addressOperationSeparator(int index) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void operationName(String operationName)
+            throws CommandFormatException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void propertyListStart(int index) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void propertyName(String propertyName)
+            throws CommandFormatException {
+        this.argument(propertyName, 0, null, -1, -1);
+    }
+
+    @Override
+    public void propertyNameValueSeparator(int index) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void property(String name, String value, int nameValueSeparatorIndex)
+            throws CommandFormatException {
+        this.argument(name, 0, value, -1, -1);
+    }
+
+    @Override
+    public void propertySeparator(int index) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void propertyListEnd(int index) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void nodeTypeOrName(String typeOrName)
+            throws OperationFormatException {
+        // TODO Auto-generated method stub
+
     }
 }
