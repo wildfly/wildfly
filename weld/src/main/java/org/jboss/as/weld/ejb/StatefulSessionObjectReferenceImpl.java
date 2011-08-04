@@ -23,7 +23,6 @@ package org.jboss.as.weld.ejb;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ComponentViewInstance;
-import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.server.CurrentServiceRegistry;
 import org.jboss.msc.service.ServiceController;
@@ -66,8 +65,8 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
             views.put(view.getInterface().getName(), view.getInterface());
         }
 
-        for (ViewDescription view : descriptor.getComponentDescription().getViews()) {
-            final Class<?> viewClass = views.get(view.getViewClassName());
+        for (Map.Entry<Class<?>, ServiceName> entry : descriptor.getViewServices().entrySet()) {
+            final Class<?> viewClass = entry.getKey();
             if (viewClass != null) {
                 //see WELD-921
                 //this is horrible, but until it is fixed there is not much that can be done
@@ -82,7 +81,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
                     final Class<?> clazz = it.next();
                     it.remove();
                     seen.add(clazz);
-                    viewServices.put(clazz.getName(), view.getServiceName());
+                    viewServices.put(clazz.getName(), entry.getValue());
                     final Class<?> superclass = clazz.getSuperclass();
                     if (superclass != Object.class && superclass != null && !seen.contains(superclass)) {
                         toProcess.add(superclass);
