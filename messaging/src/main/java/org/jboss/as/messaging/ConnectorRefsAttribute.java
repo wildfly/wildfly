@@ -41,7 +41,7 @@ public class ConnectorRefsAttribute extends ListAttributeDefinition {
 
     public static final ConnectorRefsAttribute CLUSTER_CONNECTION_CONNECTORS = new ConnectorRefsAttribute(CommonAttributes.STATIC_CONNECTORS, false, true);
 
-    public static final ConnectorRefsAttribute BRIDGE_CONNECTORS = new ConnectorRefsAttribute(CommonAttributes.STATIC_CONNECTORS, true, false);
+    public static final ConnectorRefsAttribute BRIDGE_CONNECTORS = new ConnectorRefsAttribute(CommonAttributes.STATIC_CONNECTORS, true, true);
 
     public static final ConnectorRefsAttribute BROADCAST_GROUP = new ConnectorRefsAttribute(CommonAttributes.CONNECTORS, false, true);
 
