@@ -25,6 +25,7 @@ package org.jboss.as.mc.service;
 import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 
@@ -39,6 +40,11 @@ public class DescribedPojoPhase extends AbstractPojoPhase {
     public DescribedPojoPhase(DeploymentReflectionIndex index, BeanMetaDataConfig beanConfig) {
         this.index = index;
         setBeanConfig(beanConfig);
+    }
+
+    @Override
+    public void registerAliases(ServiceBuilder serviceBuilder, BeanState next) {
+        super.registerAliases(serviceBuilder, next); // expose this
     }
 
     @Override

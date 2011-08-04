@@ -74,13 +74,7 @@ public abstract class AbstractPojoPhase implements Service<Object> {
                 final ServiceName name = BeanMetaDataConfig.toBeanName(beanConfig.getName(), next);
                 final ServiceTarget serviceTarget = context.getChildTarget();
                 final ServiceBuilder serviceBuilder = serviceTarget.addService(name, nextPhase);
-                final Set<String> aliases = beanConfig.getAliases();
-                if (aliases != null) {
-                    for (String alias : aliases) {
-                        ServiceName asn = BeanMetaDataConfig.toBeanName(alias, next);
-                        serviceBuilder.addAliases(asn);
-                    }
-                }
+                registerAliases(serviceBuilder, next);
                 final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, state, module);
                 beanConfig.visit(visitor);
                 nextPhase.setModule(getModule());
@@ -92,6 +86,16 @@ public abstract class AbstractPojoPhase implements Service<Object> {
 
         } catch (Throwable t) {
             throw new StartException(t);
+        }
+    }
+
+    protected void registerAliases(ServiceBuilder serviceBuilder, BeanState next) {
+        final Set<String> aliases = beanConfig.getAliases();
+        if (aliases != null) {
+            for (String alias : aliases) {
+                ServiceName asn = BeanMetaDataConfig.toBeanName(alias, next);
+                serviceBuilder.addAliases(asn);
+            }
         }
     }
 
