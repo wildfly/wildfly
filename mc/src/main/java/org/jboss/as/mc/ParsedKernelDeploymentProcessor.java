@@ -85,7 +85,7 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
         final ServiceName describedServiceName = BeanMetaDataConfig.toBeanName(beanConfig.getName(), state.next());
         final DescribedPojoPhase describedService = new DescribedPojoPhase(deploymentIndex, beanConfig);
         final ServiceBuilder describedServiceBuilder = serviceTarget.addService(describedServiceName, describedService);
-        describedService.registerAliases(describedServiceBuilder, state.next());
+        describedService.registerAliases(describedServiceBuilder);
         final ConfigVisitor visitor = new DefaultConfigVisitor(describedServiceBuilder, state, module);
         beanConfig.visit(visitor);
         describedServiceBuilder.setInitialMode(beanConfig.getMode().getMode());

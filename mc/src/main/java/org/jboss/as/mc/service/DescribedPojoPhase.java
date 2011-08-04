@@ -42,9 +42,13 @@ public class DescribedPojoPhase extends AbstractPojoPhase {
         setBeanConfig(beanConfig);
     }
 
-    @Override
-    public void registerAliases(ServiceBuilder serviceBuilder, BeanState next) {
-        super.registerAliases(serviceBuilder, next); // expose this
+    /**
+     * Expose alias registration against service builder.
+     *
+     * @param serviceBuilder the service builder
+     */
+    public void registerAliases(ServiceBuilder serviceBuilder) {
+        registerAliases(serviceBuilder, getLifecycleState());
     }
 
     @Override
