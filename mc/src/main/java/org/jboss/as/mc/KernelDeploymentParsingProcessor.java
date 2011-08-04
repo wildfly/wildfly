@@ -22,7 +22,10 @@
 
 package org.jboss.as.mc;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.namespace.QName;
@@ -40,6 +43,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.util.SuffixMatchFilter;
 
 /**
  * DeploymentUnitProcessor responsible for parsing a jboss-beans.xml
@@ -67,10 +71,10 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final VirtualFile deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        parseDescriptor(unit, deploymentRoot);
+        parseDescriptors(unit, deploymentRoot);
         final List<ResourceRoot> resourceRoots = unit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot root : resourceRoots)
-            parseDescriptor(unit, root.getRoot());
+            parseDescriptors(unit, root.getRoot());
     }
 
     /**
@@ -80,17 +84,35 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
      * @param root the root
      * @throws DeploymentUnitProcessingException for any error
      */
-    protected void parseDescriptor(DeploymentUnit unit, VirtualFile root) throws DeploymentUnitProcessingException {
+    protected void parseDescriptors(DeploymentUnit unit, VirtualFile root) throws DeploymentUnitProcessingException {
         if (root == null || root.exists() == false)
             return;
 
+        Collection<VirtualFile> beans = Collections.emptySet();
         final String name = root.getName();
-        VirtualFile beansXmlFile;
         if(name.endsWith("jboss-beans.xml")) {
-            beansXmlFile = root;
+            beans = Collections.singleton(root);
         } else {
-            beansXmlFile = root.getChild("META-INF/jboss-beans.xml");
+            VirtualFile metainf = root.getChild("META-INF");
+            if (metainf.exists())
+                try {
+                    beans = metainf.getChildren(new SuffixMatchFilter("jboss-beans.xml"));
+                } catch (IOException e) {
+                    throw new DeploymentUnitProcessingException(e);
+                }
         }
+        for (VirtualFile beansXmlFile : beans)
+            parseDescriptor(unit, beansXmlFile);
+    }
+
+    /**
+     * Parse -jboss-beans.xml file.
+     *
+     * @param unit the deployment unit
+     * @param beansXmlFile the beans xml file
+     * @throws DeploymentUnitProcessingException for any error
+     */
+    protected void parseDescriptor(DeploymentUnit unit, VirtualFile beansXmlFile) throws DeploymentUnitProcessingException {
         if(beansXmlFile == null || beansXmlFile.exists() == false)
             return;
 

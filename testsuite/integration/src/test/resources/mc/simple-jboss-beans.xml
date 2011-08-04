@@ -28,7 +28,7 @@
         <constructor factory-class="org.jboss.as.testsuite.integration.mc.support.TFactory" factory-method="createBean">
             <parameter><value>test</value></parameter>
         </constructor>
-        <property><inject bean="Injectee"/></property>
+        <property name="injectee"><inject bean="Injectee"/></property>
         <start>
             <parameter><value>start</value></parameter>
         </start>
