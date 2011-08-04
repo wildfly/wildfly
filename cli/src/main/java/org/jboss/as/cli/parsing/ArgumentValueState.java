@@ -38,7 +38,7 @@ import org.jboss.as.cli.operation.parsing.QuotesState;
 public class ArgumentValueState extends DefaultParsingState {
 
     public static final ArgumentValueState INSTANCE = new ArgumentValueState();
-    public static final String ID = "ARG_VALUE";
+    public static final String ID = "PROP_VALUE";
 
     ArgumentValueState() {
         super(ID);

@@ -34,7 +34,7 @@ import org.jboss.as.cli.operation.parsing.GlobalCharacterHandlers;
 public class ArgumentState extends DefaultParsingState {
 
     public static final ArgumentState INSTANCE = new ArgumentState();
-    public static final String ID = "ARG";
+    public static final String ID = "PROP";
 
     ArgumentState() {
         this(ArgumentValueState.INSTANCE);

@@ -19,29 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.operation.parsing;
+package org.jboss.as.cli.parsing;
+
+
+import org.jboss.as.cli.operation.parsing.DefaultParsingState;
+import org.jboss.as.cli.operation.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.operation.parsing.OperationRequestState;
 
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class PropertyState extends DefaultParsingState {
+public class InitialState extends DefaultParsingState {
 
-    public static final PropertyState INSTANCE = new PropertyState();
-    public static final String ID = "PROP";
+    public static final InitialState INSTANCE;
+    static {
+        OperationRequestState opState = new OperationRequestState();
+        opState.setHandleEntrance(true);
+        INSTANCE = new InitialState(opState, CommandState.INSTANCE);
+    }
+    public static final String ID = "INITIAL";
 
-    PropertyState() {
-        this(PropertyValueState.INSTANCE);
+    InitialState() {
+        this(OperationRequestState.INSTANCE, CommandState.INSTANCE);
     }
 
-    PropertyState(PropertyValueState valueState) {
+    InitialState(OperationRequestState opState, CommandState cmdState) {
         super(ID);
-        setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        putHandler(',', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler(')', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler('=', new EnterStateCharacterHandler(valueState));
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        enterState('.', opState);
+        enterState(':', opState);
+        enterState('/', opState);
+        setDefaultHandler(new EnterStateCharacterHandler(cmdState));
     }
 }

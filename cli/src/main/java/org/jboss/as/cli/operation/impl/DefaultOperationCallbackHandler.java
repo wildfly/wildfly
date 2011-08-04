@@ -146,10 +146,15 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     public void validatedNodeName(String nodeName) throws OperationFormatException {
 
         if(address == null) {
+            System.out.println("address is null");
             address = new DefaultOperationRequestAddress();
         }
 
         if(!address.endsOnType()) {
+            System.out.println(this + " " + address);
+            for(OperationRequestAddress.Node node : address) {
+                System.out.println(node);
+            }
             throw new OperationFormatException("The prefix should end with the node type before going to a specific node name.");
         }
 
