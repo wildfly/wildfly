@@ -22,7 +22,6 @@
 package org.jboss.as.weld.deployment.processors;
 
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
@@ -32,6 +31,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanArchiveMetadata;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
@@ -71,15 +71,12 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final WeldDeploymentMetadata cdiDeploymentMetadata = deploymentUnit
                 .getAttachment(WeldDeploymentMetadata.ATTACHMENT_KEY);
-        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
 
         if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             return;
         }
 
-        //create a CDI injection factory
-        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        final EEApplicationDescription eeApplicationDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION);
         final String beanArchiveIdPrefix;
         if (deploymentUnit.getParent() == null) {
             beanArchiveIdPrefix = deploymentUnit.getName();
@@ -116,7 +113,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             deploymentUnit.putAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE, bda);
             rootBda = bda;
         }
-        processEEComponents(deploymentUnit, bdaMap, rootBda, indexes);
+        processEEComponents(deploymentUnit, bdaMap, rootBda, indexes, reflectionIndex);
 
         final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit, deploymentUnit.getServiceRegistry());
 
@@ -125,7 +122,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE, bdm);
     }
 
-    private void processEEComponents(DeploymentUnit deploymentUnit, Map<ResourceRoot, BeanDeploymentArchiveImpl> bdaMap, BeanDeploymentArchiveImpl rootBda, Map<ResourceRoot, Index> indexes) {
+    private void processEEComponents(DeploymentUnit deploymentUnit, Map<ResourceRoot, BeanDeploymentArchiveImpl> bdaMap, BeanDeploymentArchiveImpl rootBda, Map<ResourceRoot, Index> indexes, DeploymentReflectionIndex reflectionIndex) {
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             BeanDeploymentArchiveImpl bda = resolveComponentBda(component.getComponentClassName(), bdaMap, rootBda, indexes);
@@ -133,7 +130,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             if (component instanceof SessionBeanComponentDescription) {
                 SessionBeanComponentDescription componentDescription = (SessionBeanComponentDescription) component;
                 //first we need to resolve the correct BDA for the bean
-                bda.addEjbDescriptor(new EjbDescriptorImpl<Object>(componentDescription, bda, deploymentUnit));
+                bda.addEjbDescriptor(new EjbDescriptorImpl<Object>(componentDescription, bda, reflectionIndex));
             }
         }
     }

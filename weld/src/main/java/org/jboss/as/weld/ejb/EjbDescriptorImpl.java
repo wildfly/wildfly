@@ -26,7 +26,9 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
@@ -36,7 +38,9 @@ import org.jboss.weld.resources.spi.ResourceLoader;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -46,26 +50,72 @@ import java.util.Set;
  */
 public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
 
-    private final EJBComponentDescription componentDescription;
-    private final BeanDeploymentArchiveImpl beanDeploymentArchive;
-    private final Set<BusinessInterfaceDescriptor<?>> localInterfaces;
     private final ServiceName baseName;
+    private final Set<BusinessInterfaceDescriptor<?>> localInterfaces;
+    private final Set<BusinessInterfaceDescriptor<?>> remoteInterfaces;
+    private final Map<Class<?>, ServiceName> viewServices;
+    private final Set<Method> removeMethods;
+    private final Class<T> ejbClass;
+    private final String ejbName;
 
-    public EjbDescriptorImpl(EJBComponentDescription componentDescription, BeanDeploymentArchiveImpl beanDeploymentArchive, DeploymentUnit deploymentUnit) {
-        this.componentDescription = componentDescription;
-        this.beanDeploymentArchive = beanDeploymentArchive;
+
+    private final boolean stateless;
+    private final boolean stateful;
+    private final boolean singleton;
+    private final boolean messageDriven;
+
+    public EjbDescriptorImpl(EJBComponentDescription componentDescription, BeanDeploymentArchiveImpl beanDeploymentArchive, final DeploymentReflectionIndex reflectionIndex) {
         final SessionBeanComponentDescription description = componentDescription instanceof SessionBeanComponentDescription ? (SessionBeanComponentDescription) componentDescription : null;
         final Set<BusinessInterfaceDescriptor<?>> localInterfaces = new HashSet<BusinessInterfaceDescriptor<?>>();
+        final Set<BusinessInterfaceDescriptor<?>> remoteInterfaces = new HashSet<BusinessInterfaceDescriptor<?>>();
+        final ResourceLoader loader = beanDeploymentArchive.getServices().get(ResourceLoader.class);
+
+        ejbClass = (Class<T>) loader.classForName(componentDescription.getEJBClassName());
+
         if (componentDescription.getViews() != null) {
             for (ViewDescription view : componentDescription.getViews()) {
+
                 if (description == null || getMethodIntf(view) == MethodIntf.LOCAL) {
                     final String viewClassName = view.getViewClassName();
                     localInterfaces.add(new BusinessInterfaceDescriptorImpl<Object>(beanDeploymentArchive, viewClassName));
+                } else if (getMethodIntf(view) == MethodIntf.REMOTE) {
+                    remoteInterfaces.add(new BusinessInterfaceDescriptorImpl<Object>(beanDeploymentArchive, view.getViewClassName()));
                 }
             }
         }
+        if(componentDescription instanceof StatefulComponentDescription) {
+            Set<Method> removeMethods = new HashSet<Method>();
+            final Set<StatefulComponentDescription.StatefulRemoveMethod> methods = ((StatefulComponentDescription) componentDescription).getRemoveMethods();
+            for(final StatefulComponentDescription.StatefulRemoveMethod method : methods) {
+                Class<?> c = ejbClass;
+                while (c != null && c != Object.class) {
+                    ClassReflectionIndex<?> index = reflectionIndex.getClassIndex(c);
+                    Method m = index.getMethod(method.getMethodIdentifier());
+                    if(m != null) {
+                        removeMethods.add(m);
+                        break;
+                    }
+                }
+            }
+            this.removeMethods = Collections.unmodifiableSet(removeMethods);
+        } else {
+            removeMethods = Collections.emptySet();
+        }
+
+
+        this.ejbName = componentDescription.getEJBName();
+        Map<Class<?>, ServiceName> viewServices = new HashMap<Class<?>, ServiceName>();
+        for (ViewDescription view : componentDescription.getViews()) {
+            viewServices.put(loader.classForName(view.getViewClassName()), view.getServiceName());
+        }
+        this.viewServices = Collections.unmodifiableMap(viewServices);
         this.localInterfaces = localInterfaces;
-        this.baseName = deploymentUnit.getServiceName().append("component").append(componentDescription.getComponentName());
+        this.remoteInterfaces = remoteInterfaces;
+        this.baseName = componentDescription.getServiceName();
+        this.stateless = componentDescription.isStateless();
+        this.messageDriven = componentDescription.isMessageDriven();
+        this.stateful = componentDescription.isStateful();
+        this.singleton = componentDescription.isSingleton();
     }
 
     private MethodIntf getMethodIntf(final ViewDescription view) {
@@ -79,7 +129,7 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
 
     @Override
     public Class<T> getBeanClass() {
-        return (Class<T>) beanDeploymentArchive.getServices().get(ResourceLoader.class).classForName(componentDescription.getEJBClassName());
+        return ejbClass;
     }
 
     @Override
@@ -89,42 +139,37 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
 
     @Override
     public Collection<BusinessInterfaceDescriptor<?>> getRemoteBusinessInterfaces() {
-        return Collections.emptySet();
+        return remoteInterfaces;
     }
 
     @Override
     public String getEjbName() {
-        return componentDescription.getEJBName();
+        return ejbName;
     }
 
     @Override
     public Collection<Method> getRemoveMethods() {
-        //TODO: fix this
-        return Collections.emptySet();
+        return removeMethods;
     }
 
     @Override
     public boolean isStateless() {
-        return componentDescription.isStateless();
+        return stateless;
     }
 
     @Override
     public boolean isSingleton() {
-        return componentDescription.isSingleton();
+        return singleton;
     }
 
     @Override
     public boolean isStateful() {
-        return componentDescription.isStateful();
+        return stateful;
     }
 
     @Override
     public boolean isMessageDriven() {
-        return componentDescription.isMessageDriven();
-    }
-
-    public EJBComponentDescription getComponentDescription() {
-        return componentDescription;
+        return messageDriven;
     }
 
     public ServiceName getBaseName() {
@@ -139,4 +184,7 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
         return baseName.append("START");
     }
 
+    public Map<Class<?>, ServiceName> getViewServices() {
+        return viewServices;
+    }
 }
