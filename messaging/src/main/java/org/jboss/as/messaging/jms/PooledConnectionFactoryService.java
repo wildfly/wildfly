@@ -24,8 +24,6 @@ package org.jboss.as.messaging.jms;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.ra.HornetQResourceAdapter;
-import org.infinispan.transaction.lookup.TransactionManagerLookup;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.services.ResourceAdapterActivatorService;
@@ -66,6 +64,7 @@ import org.jboss.jca.common.metadata.common.CommonValidationImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.ironjacamar.IronJacamarImpl;
 import org.jboss.jca.common.metadata.ra.common.AuthenticationMechanismImpl;
+import org.jboss.jca.common.metadata.ra.common.ConfigPropertyImpl;
 import org.jboss.jca.common.metadata.ra.common.ConnectionDefinitionImpl;
 import org.jboss.jca.common.metadata.ra.common.InboundResourceAdapterImpl;
 import org.jboss.jca.common.metadata.ra.common.MessageAdapterImpl;
@@ -95,8 +94,10 @@ import org.jboss.security.SubjectFactory;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -130,6 +131,17 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private static final String JMS_MESSAGE_LISTENER = "javax.jms.MessageListener";
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.hornet");
 
+    private static final Collection<String> JMS_ACTIVATION_CONFIG_PROPERTIES = new HashSet<String>();
+
+    {
+        // All the activation-config-properties that are mandated to be supported by the RA, as per EJB3.1 spec,
+        // section 5.4.15 through 5.4.17
+
+        JMS_ACTIVATION_CONFIG_PROPERTIES.add("acknowledgeMode");
+        JMS_ACTIVATION_CONFIG_PROPERTIES.add("destinationType");
+        JMS_ACTIVATION_CONFIG_PROPERTIES.add("messageSelector");
+        JMS_ACTIVATION_CONFIG_PROPERTIES.add("subscriptionDurability");
+    }
 
     private Injector<Object> transactionManager = new InjectedValue<Object>();
     private List<String> connectors;
@@ -158,8 +170,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         ServiceTarget serviceTarget = context.getChildTarget();
         try {
             createService(serviceTarget, context.getController().getServiceContainer());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new StartException("failed to create resource adapter", e);
         }
 
@@ -174,10 +185,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
             StringBuilder connectorParams = new StringBuilder();
             for (String connector : connectors) {
                 TransportConfiguration tc = hornetQService.getValue().getConfiguration().getConnectorConfigurations().get(connector);
-                if(tc == null) {
+                if (tc == null) {
                     throw new IllegalStateException("connector " + connector + " not defined");
                 }
-                if(connectorClassname.length() > 0) {
+                if (connectorClassname.length() > 0) {
                     connectorClassname.append(",");
                     connectorParams.append(",");
                 }
@@ -185,7 +196,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 Map<String, Object> params = tc.getParams();
                 boolean multiple = false;
                 for (Map.Entry<String, Object> entry : params.entrySet()) {
-                    if(multiple) {
+                    if (multiple) {
                         connectorParams.append(";");
                     }
                     connectorParams.append(entry.getKey()).append("=").append(entry.getValue());
@@ -193,10 +204,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 }
             }
 
-            if(connectorClassname.length() > 0) {
-                properties.add(simpleProperty(CONNECTOR_CLASSNAME, STRING_TYPE,  connectorClassname.toString()));
+            if (connectorClassname.length() > 0) {
+                properties.add(simpleProperty(CONNECTOR_CLASSNAME, STRING_TYPE, connectorClassname.toString()));
             }
-            if(connectorParams.length() > 0) {
+            if (connectorParams.length() > 0) {
                 properties.add(simpleProperty(CONNECTION_PARAMETERS, STRING_TYPE, connectorParams.toString()));
             }
             for (PooledConnectionFactoryConfigProperties adapterParam : adapterParams) {
@@ -241,8 +252,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
             // Mock the deployment service to allow it to start
             serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(name), Service.NULL).install();
-        }
-        finally {
+        } finally {
             if (is != null)
                 is.close();
             if (isIj != null)
@@ -283,7 +293,13 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private InboundResourceAdapter createInbound() {
         InboundResourceAdapter inbound;
         List<RequiredConfigProperty> destination = Collections.singletonList(new RequiredConfigProperty(EMPTY_LOCL, str("destination"), null));
-        Activationspec16Impl activation = new Activationspec16Impl(str(HQ_ACTIVIATION), destination, Collections.<ConfigProperty>emptyList(), null);
+        // setup the JMS activation config properties
+        final List<ConfigProperty> jmsActivationConfigProps = new ArrayList<ConfigProperty>(JMS_ACTIVATION_CONFIG_PROPERTIES.size());
+        for (final String activationConfigProp : JMS_ACTIVATION_CONFIG_PROPERTIES) {
+            final ConfigProperty configProp = new ConfigPropertyImpl(EMPTY_LOCL, str(activationConfigProp), str(STRING_TYPE), null, null);
+            jmsActivationConfigProps.add(configProp);
+        }
+        Activationspec16Impl activation = new Activationspec16Impl(str(HQ_ACTIVIATION), destination, jmsActivationConfigProps, null);
         List<MessageListener> messageListeners = Collections.<MessageListener>singletonList(new MessageListenerImpl(str(JMS_MESSAGE_LISTENER), activation, null));
         Messageadapter message = new MessageAdapterImpl(messageListeners, null);
 

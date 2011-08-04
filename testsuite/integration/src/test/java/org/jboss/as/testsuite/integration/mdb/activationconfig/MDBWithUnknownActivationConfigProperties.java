@@ -31,12 +31,14 @@ import javax.ejb.MessageDriven;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import java.util.Queue;
 
 /**
  * User: jpai
  */
 @MessageDriven (activationConfig = {
         @ActivationConfigProperty(propertyName = "destination", propertyValue = MDBWithUnknownActivationConfigProperties.QUEUE_JNDI_NAME),
+        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
         @ActivationConfigProperty(propertyName = "foo", propertyValue = "bar") // activation config properties which aren't supported by the resource adapter
 })
 public class MDBWithUnknownActivationConfigProperties implements MessageListener {
