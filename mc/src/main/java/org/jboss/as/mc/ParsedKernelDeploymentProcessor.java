@@ -55,15 +55,18 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final List<KernelDeploymentXmlDescriptor> kdXmlDescriptors = phaseContext.getDeploymentUnit().getAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY);
+        final DeploymentUnit unit = phaseContext.getDeploymentUnit();
+        final List<KernelDeploymentXmlDescriptor> kdXmlDescriptors = unit.getAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY);
         if(kdXmlDescriptors == null || kdXmlDescriptors.isEmpty())
             return;
 
-        final Module module = phaseContext.getDeploymentUnit().getAttachment(Attachments.MODULE);
+        final Module module = unit.getAttachment(Attachments.MODULE);
         if(module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + unit);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        final DeploymentReflectionIndex index = phaseContext.getAttachment(Attachments.REFLECTION_INDEX);
+        final DeploymentReflectionIndex index = unit.getAttachment(Attachments.REFLECTION_INDEX);
+        if (index == null)
+            throw new DeploymentUnitProcessingException("Missing deployment reflection index for " + unit);
 
         for (KernelDeploymentXmlDescriptor kdXmlDescriptor : kdXmlDescriptors) {
             final List<BeanMetaDataConfig> beanConfigs = kdXmlDescriptor.getBeans();
