@@ -53,7 +53,7 @@
 
     <bean name="Blocker" class="org.jboss.as.testsuite.integration.mc.support.TInjectee"/>
 
-    <bean name="TFactory" class="org.jboss.as.testsuite.integration.mc.support.TFactory">
+    <bean name="TFactory" class="org.jboss.as.testsuite.integration.mc.support.TFactory" mode="on demand">
         <constructor>
             <parameter><value>Zivjo, </value></parameter>
         </constructor>

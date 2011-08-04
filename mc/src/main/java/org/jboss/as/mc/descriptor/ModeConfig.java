@@ -59,7 +59,10 @@ public enum ModeConfig {
     }
 
     static ModeConfig of(String value) {
-        final ModeConfig controllerMode = MAP.get(value);
+        if (value == null)
+            throw new IllegalArgumentException("Null mode value");
+
+        final ModeConfig controllerMode = MAP.get(value.toLowerCase());
         return controllerMode == null ? PASSIVE : controllerMode;
     }
 }
