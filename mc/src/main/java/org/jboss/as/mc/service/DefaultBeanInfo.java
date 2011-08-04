@@ -41,12 +41,14 @@ import java.util.List;
 @SuppressWarnings({"unchecked"})
 public class DefaultBeanInfo<T> implements BeanInfo<T> {
     private final List<ClassReflectionIndex> indexes = new ArrayList<ClassReflectionIndex>();
+    private final Class beanClass;
     private DeploymentReflectionIndex index;
-    private Class beanClass;
+    private Class currentClass;
 
     public DefaultBeanInfo(DeploymentReflectionIndex index, Class<T> beanClass) {
         this.index = index;
         this.beanClass = beanClass;
+        this.currentClass = beanClass;
     }
 
     /**
@@ -63,13 +65,13 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
             }
         }
 
-        if (beanClass == Object.class)
+        if (currentClass == null)
             return null;
 
         synchronized (indexes) {
-            ClassReflectionIndex cri = index.getClassIndex(beanClass);
+            ClassReflectionIndex cri = index.getClassIndex(currentClass);
             indexes.add(cri);
-            beanClass = beanClass.getSuperclass();
+            currentClass = currentClass.getSuperclass();
         }
         return lookup(lookup, size, depth);
     }

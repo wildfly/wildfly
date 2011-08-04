@@ -24,6 +24,7 @@ package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.descriptor.PropertyConfig;
+import org.jboss.as.mc.descriptor.ValueConfig;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -75,9 +76,10 @@ public class ConfiguredPojoPhase extends AbstractPojoPhase {
     }
 
     protected void configure(PropertyConfig pc, boolean nullify) throws Throwable {
-        Method setter = getBeanInfo().getSetter(pc.getPropertyName(), getBean().getClass());
+        ValueConfig value = pc.getValue();
+        Method setter = getBeanInfo().getSetter(pc.getPropertyName(), value.getValue().getClass());
         MethodJoinpoint joinpoint = new MethodJoinpoint(setter);
-        Value<Object> param = (nullify == false) ? pc.getValue() : new ImmediateValue<Object>(null);
+        Value<Object> param = (nullify == false) ? value : new ImmediateValue<Object>(null);
         joinpoint.setParameters(new Value[]{param});
         joinpoint.setTarget(new ImmediateValue<Object>(getBean()));
         joinpoint.dispatch();
