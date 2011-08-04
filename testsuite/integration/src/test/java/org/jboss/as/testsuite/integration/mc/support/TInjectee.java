@@ -26,7 +26,17 @@ package org.jboss.as.testsuite.integration.mc.support;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class TInjectee {
+    private final String prefix;
+
+    public TInjectee() {
+        this("Hello, ");
+    }
+
+    public TInjectee(String prefix) {
+        this.prefix = prefix;
+    }
+
     public void sayHello(String msg) {
-        System.out.println("Hello, " + msg);
+        System.out.println(prefix + msg);
     }
 }

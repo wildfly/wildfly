@@ -44,6 +44,9 @@
     </bean>
 
     <bean name="Injectee" class="org.jboss.as.testsuite.integration.mc.support.TInjectee">
+        <constructor>
+            <parameter><value>Hola</value></parameter>
+        </constructor>
         <alias>Alias-Injectee</alias>
         <depends>Blocker</depends>
     </bean>

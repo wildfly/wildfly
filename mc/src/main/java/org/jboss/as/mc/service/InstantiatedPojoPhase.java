@@ -61,10 +61,11 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
         try {
             BeanInfo beanInfo = getBeanInfo();
             Joinpoint instantiateJoinpoint = null;
+            ValueConfig[] parameters = new ValueConfig[0];
             String[] types = Configurator.NO_PARAMS_TYPES;
             ConstructorConfig ctorConfig = getBeanConfig().getConstructor();
             if (ctorConfig != null) {
-                ValueConfig[] parameters = ctorConfig.getParameters();
+                parameters = ctorConfig.getParameters();
                 types = Configurator.getTypes(parameters);
 
                 String factoryClass = ctorConfig.getFactoryClass();
@@ -96,7 +97,9 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
                     throw new StartException("Missing bean info, set bean's class attribute: " + getBeanConfig());
 
                 Constructor ctor = (types.length == 0) ? beanInfo.getConstructor() : beanInfo.findConstructor(types);
-                instantiateJoinpoint = new ConstructorJoinpoint(ctor);
+                ConstructorJoinpoint constructorJoinpoint = new ConstructorJoinpoint(ctor);
+                constructorJoinpoint.setParameters(parameters);
+                instantiateJoinpoint = constructorJoinpoint;
             }
 
             setBean(instantiateJoinpoint.dispatch());
