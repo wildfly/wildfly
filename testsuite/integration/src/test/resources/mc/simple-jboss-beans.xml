@@ -66,6 +66,9 @@
         <install method="sayHello">
             <parameter><value>JBossAS7!</value></parameter>
         </install>
+        <uninstall method="sayHello">
+            <parameter><value>or should I say bye bye JBossAS7!</value></parameter>
+        </uninstall>
     </bean>
 
 </deployment>
