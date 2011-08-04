@@ -43,6 +43,8 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     private String serverConfig = System.getProperty("jboss.server.config.file.name",  "standalone.xml");
 
+    private boolean allowConnectingToRunningServer = false;
+
     @Override
     public void validate() throws ConfigurationException {
         super.validate();
@@ -147,5 +149,13 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     public void setModulePath(final String modulePath) {
         this.modulePath = modulePath;
+    }
+
+    public boolean isAllowConnectingToRunningServer() {
+        return allowConnectingToRunningServer;
+    }
+
+    public void setAllowConnectingToRunningServer(final boolean allowConnectingToRunningServer) {
+        this.allowConnectingToRunningServer = allowConnectingToRunningServer;
     }
 }

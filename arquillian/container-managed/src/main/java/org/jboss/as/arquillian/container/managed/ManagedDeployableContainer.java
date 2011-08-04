@@ -16,6 +16,15 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
+import org.jboss.arquillian.core.api.InstanceProducer;
+import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+import org.jboss.sasl.JBossSaslProvider;
+
+import javax.management.MBeanServerConnection;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -33,16 +42,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
-
-import javax.management.MBeanServerConnection;
-
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
-import org.jboss.arquillian.core.api.InstanceProducer;
-import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
-import org.jboss.sasl.JBossSaslProvider;
 
 /**
  * JBossAsManagedContainer
@@ -69,7 +68,11 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
     @Override
     protected void startInternal() throws LifecycleException {
-        verifyNoRunningServer();
+        ManagedContainerConfiguration config = getContainerConfiguration();
+
+        if (!config.isAllowConnectingToRunningServer()) {
+            verifyNoRunningServer();
+        }
 
         try {
 
@@ -82,7 +85,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 }
             });
 
-            ManagedContainerConfiguration config = getContainerConfiguration();
             final String jbossHomeDir = config.getJbossHome();
             final String modulePath = config.getModulePath();
             final String additionalJavaOpts = config.getJavaVmArguments();
@@ -159,7 +161,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
     @Override
     protected void stopInternal() throws LifecycleException {
-        if(shutdownThread != null) {
+        if (shutdownThread != null) {
             Runtime.getRuntime().removeShutdownHook(shutdownThread);
             shutdownThread = null;
         }
@@ -185,12 +187,10 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             socket = new Socket(
                     getContainerConfiguration().getManagementAddress(),
                     getContainerConfiguration().getManagementPort());
-        }
-        catch (Exception ignored) { // nothing is running on defined ports
+        } catch (Exception ignored) { // nothing is running on defined ports
             return;
-        }
-        finally {
-            if(socket != null) {
+        } finally {
+            if (socket != null) {
                 try {
                     socket.close();
                 } catch (Exception e) {
@@ -200,9 +200,12 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         }
         throw new LifecycleException(
                 "The server is already running! " +
-                "Managed containers does not support connecting to running server instances due to the " +
-                "possible harmfull effect of connecting to the wrong server. Please stop server before running or " +
-                "change to another type of container.");
+                        "Managed containers does not support connecting to running server instances due to the " +
+                        "possible harmful effect of connecting to the wrong server. Please stop server before running or " +
+                        "change to another type of container.\n" +
+                        "To disable this check and allow Arquillian to connect to a running server, " +
+                        "set allowConnectingToRunningServer to true in the container configuration"
+        );
     }
 
     private int destroyProcess() {
@@ -229,6 +232,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
     /**
      * Runnable that consumes the output of the process. If nothing consumes the output the AS will hang on some platforms
+     *
      * @author Stuart Douglas
      */
     private class ConsoleConsumer implements Runnable {
@@ -248,7 +252,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             });
             String line = null;
             try {
-               while((line = reader.readLine())!=null){
+                while ((line = reader.readLine()) != null) {
                     if (writeOutput) {
                         System.out.println(line);
                     }
