@@ -85,49 +85,6 @@ public class MessagingExtension implements Extension {
         }
         // TODO runtime operations exposed by HornetQServerControl
 
-        // Grouping Handler
-        final ManagementResourceRegistration groupingHandler = rootRegistration.registerSubModel(GROUPING_HANDLER_PATH, MessagingSubsystemProviders.GROUPING_HANDLER_RESOURCE);
-        groupingHandler.registerOperationHandler(ADD, GroupingHandlerAdd.INSTANCE, GroupingHandlerAdd.INSTANCE);
-        groupingHandler.registerOperationHandler(REMOVE, GroupingHandlerRemove.INSTANCE, GroupingHandlerRemove.INSTANCE);
-        for (AttributeDefinition attributeDefinition : CommonAttributes.GROUPING_HANDLER_ATTRIBUTES) {
-            groupingHandler.registerReadWriteAttribute(attributeDefinition.getName(), null, GroupingHandlerWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        }
-
-        // Core queues
-        final ManagementResourceRegistration queue = rootRegistration.registerSubModel(PathElement.pathElement(QUEUE), MessagingSubsystemProviders.QUEUE_RESOURCE);
-        queue.registerOperationHandler(ADD, QueueAdd.INSTANCE, QueueAdd.INSTANCE, false);
-        queue.registerOperationHandler(REMOVE, QueueRemove.INSTANCE, QueueRemove.INSTANCE, false);
-        for (AttributeDefinition attributeDefinition : CommonAttributes.CORE_QUEUE_ATTRIBUTES) {
-            queue.registerReadWriteAttribute(attributeDefinition.getName(), null, QueueConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        }
-        // TODO runtime operations exposed by QueueControl
-
-        // Connection factories
-        final ManagementResourceRegistration cfs = rootRegistration.registerSubModel(CFS_PATH, MessagingSubsystemProviders.CF);
-        cfs.registerOperationHandler(ADD, ConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.CF_ADD, false);
-        cfs.registerOperationHandler(REMOVE, ConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.CF_REMOVE, false);
-
-        // JMS Queues
-        final ManagementResourceRegistration queues = rootRegistration.registerSubModel(JMS_QUEUE_PATH, MessagingSubsystemProviders.JMS_QUEUE_RESOURCE);
-        queues.registerOperationHandler(ADD, JMSQueueAdd.INSTANCE, JMSQueueAdd.INSTANCE, false);
-        queues.registerOperationHandler(REMOVE, JMSQueueRemove.INSTANCE, JMSQueueRemove.INSTANCE, false);
-        for (AttributeDefinition attributeDefinition : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
-            queues.registerReadWriteAttribute(attributeDefinition.getName(), null, JmsQueueConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        }
-        // TODO runtime operations exposed by JmsQueueControl
-
-        // JMS Topics
-        final ManagementResourceRegistration topics = rootRegistration.registerSubModel(TOPIC_PATH, MessagingSubsystemProviders.JMS_TOPIC_RESOURCE);
-        topics.registerOperationHandler(ADD, JMSTopicAdd.INSTANCE, JMSTopicAdd.INSTANCE, false);
-        topics.registerOperationHandler(REMOVE, JMSTopicRemove.INSTANCE, JMSTopicRemove.INSTANCE, false);
-        topics.registerReadWriteAttribute(CommonAttributes.ENTRIES.getName(), null, TopicConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        // TODO runtime operations exposed by TopicControl
-
-        // Resource Adapter Pooled connection factories
-        final ManagementResourceRegistration resourceAdapters = rootRegistration.registerSubModel(RA_PATH, MessagingSubsystemProviders.RA);
-        resourceAdapters.registerOperationHandler(ADD, PooledConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.RA_ADD, false);
-        resourceAdapters.registerOperationHandler(REMOVE, PooledConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.RA_REMOVE);
-
         // Broadcast groups
         final ManagementResourceRegistration broadcastGroups = rootRegistration.registerSubModel(BROADCAST_GROUP_PATH, MessagingSubsystemProviders.BROADCAST_GROUP_RESOURCE);
         broadcastGroups.registerOperationHandler(ADD, BroadcastGroupAdd.INSTANCE, BroadcastGroupAdd.INSTANCE);
@@ -152,6 +109,57 @@ public class MessagingExtension implements Extension {
         for (AttributeDefinition attributeDefinition : CommonAttributes.DIVERT_ATTRIBUTES) {
             diverts.registerReadWriteAttribute(attributeDefinition.getName(), null, DivertConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
+
+        // Core queues
+        final ManagementResourceRegistration queue = rootRegistration.registerSubModel(PathElement.pathElement(QUEUE), MessagingSubsystemProviders.QUEUE_RESOURCE);
+        queue.registerOperationHandler(ADD, QueueAdd.INSTANCE, QueueAdd.INSTANCE, false);
+        queue.registerOperationHandler(REMOVE, QueueRemove.INSTANCE, QueueRemove.INSTANCE, false);
+        for (AttributeDefinition attributeDefinition : CommonAttributes.CORE_QUEUE_ATTRIBUTES) {
+            queue.registerReadWriteAttribute(attributeDefinition.getName(), null, QueueConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        }
+        // TODO runtime operations exposed by QueueControl
+
+        // Bridges
+        final ManagementResourceRegistration bridge = rootRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.BRIDGE), MessagingSubsystemProviders.BRIDGE_RESOURCE);
+        bridge.registerOperationHandler(ADD, BridgeAdd.INSTANCE, BridgeAdd.INSTANCE, false);
+        bridge.registerOperationHandler(REMOVE, BridgeRemove.INSTANCE, BridgeRemove.INSTANCE, false);
+        for (AttributeDefinition attributeDefinition : CommonAttributes.BRIDGE_ATTRIBUTES) {
+            bridge.registerReadWriteAttribute(attributeDefinition.getName(), null, BridgeWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        }
+
+        // Grouping Handler
+        final ManagementResourceRegistration groupingHandler = rootRegistration.registerSubModel(GROUPING_HANDLER_PATH, MessagingSubsystemProviders.GROUPING_HANDLER_RESOURCE);
+        groupingHandler.registerOperationHandler(ADD, GroupingHandlerAdd.INSTANCE, GroupingHandlerAdd.INSTANCE);
+        groupingHandler.registerOperationHandler(REMOVE, GroupingHandlerRemove.INSTANCE, GroupingHandlerRemove.INSTANCE);
+        for (AttributeDefinition attributeDefinition : CommonAttributes.GROUPING_HANDLER_ATTRIBUTES) {
+            groupingHandler.registerReadWriteAttribute(attributeDefinition.getName(), null, GroupingHandlerWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        }
+
+        // Connection factories
+        final ManagementResourceRegistration cfs = rootRegistration.registerSubModel(CFS_PATH, MessagingSubsystemProviders.CF);
+        cfs.registerOperationHandler(ADD, ConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.CF_ADD, false);
+        cfs.registerOperationHandler(REMOVE, ConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.CF_REMOVE, false);
+
+        // Resource Adapter Pooled connection factories
+        final ManagementResourceRegistration resourceAdapters = rootRegistration.registerSubModel(RA_PATH, MessagingSubsystemProviders.RA);
+        resourceAdapters.registerOperationHandler(ADD, PooledConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.RA_ADD, false);
+        resourceAdapters.registerOperationHandler(REMOVE, PooledConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.RA_REMOVE);
+
+        // JMS Queues
+        final ManagementResourceRegistration queues = rootRegistration.registerSubModel(JMS_QUEUE_PATH, MessagingSubsystemProviders.JMS_QUEUE_RESOURCE);
+        queues.registerOperationHandler(ADD, JMSQueueAdd.INSTANCE, JMSQueueAdd.INSTANCE, false);
+        queues.registerOperationHandler(REMOVE, JMSQueueRemove.INSTANCE, JMSQueueRemove.INSTANCE, false);
+        for (AttributeDefinition attributeDefinition : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
+            queues.registerReadWriteAttribute(attributeDefinition.getName(), null, JmsQueueConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        }
+        // TODO runtime operations exposed by JmsQueueControl
+
+        // JMS Topics
+        final ManagementResourceRegistration topics = rootRegistration.registerSubModel(TOPIC_PATH, MessagingSubsystemProviders.JMS_TOPIC_RESOURCE);
+        topics.registerOperationHandler(ADD, JMSTopicAdd.INSTANCE, JMSTopicAdd.INSTANCE, false);
+        topics.registerOperationHandler(REMOVE, JMSTopicRemove.INSTANCE, JMSTopicRemove.INSTANCE, false);
+        topics.registerReadWriteAttribute(CommonAttributes.ENTRIES.getName(), null, TopicConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        // TODO runtime operations exposed by TopicControl
     }
 
     public void initializeParsers(ExtensionParsingContext context) {

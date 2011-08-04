@@ -1,12 +1,32 @@
-/**
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
@@ -71,15 +91,45 @@ public class MessagingDescriptions {
         node.get(ATTRIBUTES, CommonAttributes.SECURITY_SETTING, TYPE).set(ModelType.OBJECT);
         node.get(ATTRIBUTES, CommonAttributes.SECURITY_SETTING, DESCRIPTION).set(bundle.getString("security-setting"));
 
-        node.get(OPERATIONS);
+        node.get(OPERATIONS);   // placeholder
+
+        node.get(CHILDREN, CommonAttributes.BROADCAST_GROUP, DESCRIPTION).set(bundle.getString("broadcast-group"));
+        node.get(CHILDREN, CommonAttributes.BROADCAST_GROUP, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.BROADCAST_GROUP, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.DISCOVERY_GROUP, DESCRIPTION).set(bundle.getString("discovery-group"));
+        node.get(CHILDREN, CommonAttributes.DISCOVERY_GROUP, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.DISCOVERY_GROUP, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.DIVERT, DESCRIPTION).set(bundle.getString("divert"));
+        node.get(CHILDREN, CommonAttributes.DIVERT, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.DIVERT, MODEL_DESCRIPTION);
 
         node.get(CHILDREN, CommonAttributes.QUEUE, DESCRIPTION).set(bundle.getString("queue"));
         node.get(CHILDREN, CommonAttributes.QUEUE, MIN_OCCURS).set(0);
         node.get(CHILDREN, CommonAttributes.QUEUE, MODEL_DESCRIPTION);
 
-        node.get(CHILDREN, CommonAttributes.DIVERT, DESCRIPTION).set(bundle.getString("divert"));
-        node.get(CHILDREN, CommonAttributes.DIVERT, MIN_OCCURS).set(0);
-        node.get(CHILDREN, CommonAttributes.DIVERT, MODEL_DESCRIPTION);
+        node.get(CHILDREN, CommonAttributes.GROUPING_HANDLER, DESCRIPTION).set(bundle.getString("grouping-handler"));
+        node.get(CHILDREN, CommonAttributes.GROUPING_HANDLER, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.GROUPING_HANDLER, MAX_OCCURS).set(1);
+        node.get(CHILDREN, CommonAttributes.GROUPING_HANDLER, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.BRIDGE, DESCRIPTION).set(bundle.getString("bridge"));
+        node.get(CHILDREN, CommonAttributes.BRIDGE, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.BRIDGE, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.CLUSTER_CONNECTION, DESCRIPTION).set(bundle.getString("cluster-connection"));
+        node.get(CHILDREN, CommonAttributes.CLUSTER_CONNECTION, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.CLUSTER_CONNECTION, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.QUEUE, DESCRIPTION).set(bundle.getString("queue"));
+        node.get(CHILDREN, CommonAttributes.QUEUE, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.QUEUE, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.CONNECTOR_SERVICE, DESCRIPTION).set(bundle.getString("connector-service"));
+        node.get(CHILDREN, CommonAttributes.CONNECTOR_SERVICE, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.CONNECTOR_SERVICE, MODEL_DESCRIPTION);
+
         //jms stuff
         node.get(CHILDREN, CommonAttributes.CONNECTION_FACTORY, DESCRIPTION).set(bundle.getString("connection-factory"));
         node.get(CHILDREN, CommonAttributes.CONNECTION_FACTORY, MIN_OCCURS).set(0);
@@ -540,6 +590,45 @@ public class MessagingDescriptions {
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(REMOVE);
         op.get(DESCRIPTION).set(bundle.getString("grouping-handler.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getBridgeResource(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("bridge"));
+        for (AttributeDefinition attr : CommonAttributes.BRIDGE_ATTRIBUTES) {
+            attr.addResourceAttributeDescription(bundle, "bridge", root);
+        }
+
+        root.get(OPERATIONS); // placeholder
+
+        root.get(CHILDREN).setEmptyObject();
+        return root;
+    }
+
+    public static ModelNode getBridgeAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("bridge.add"));
+        for (AttributeDefinition attr : CommonAttributes.BRIDGE_ATTRIBUTES) {
+            attr.addOperationParameterDescription(bundle, "bridge", op);
+        }
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getBridgeRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("bridge.remove"));
         op.get(REQUEST_PROPERTIES).setEmptyObject();
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;

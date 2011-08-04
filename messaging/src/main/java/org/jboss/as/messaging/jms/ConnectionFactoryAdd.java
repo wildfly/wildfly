@@ -52,7 +52,7 @@ import static org.jboss.as.messaging.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.PRE_ACK;
 import static org.jboss.as.messaging.CommonAttributes.PRODUCER_MAX_RATE;
 import static org.jboss.as.messaging.CommonAttributes.PRODUCER_WINDOW_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.RECONNECT_ATTEMPTS;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS;
 import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_BATCH_SIZE;
@@ -160,7 +160,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         config.setPreAcknowledge(PRE_ACK.validateResolvedOperation(operation).asBoolean());
         config.setProducerMaxRate(PRODUCER_MAX_RATE.validateResolvedOperation(operation).asInt());
         config.setProducerWindowSize(PRODUCER_WINDOW_SIZE.validateResolvedOperation(operation).asInt());
-        config.setReconnectAttempts(RECONNECT_ATTEMPTS.validateResolvedOperation(operation).asInt());
+        config.setReconnectAttempts(CONNECTION_FACTORY_RECONNECT_ATTEMPTS.validateResolvedOperation(operation).asInt());
         config.setRetryInterval(RETRY_INTERVAL.validateResolvedOperation(operation).asLong());
         config.setRetryIntervalMultiplier(RETRY_INTERVAL_MULTIPLIER.validateResolvedOperation(operation).asDouble());
         config.setScheduledThreadPoolMaxSize(CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE.validateResolvedOperation(operation).asInt());
