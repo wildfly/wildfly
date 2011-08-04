@@ -64,7 +64,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     private Set<StatefulRemoveMethod> removeMethods = new HashSet<StatefulRemoveMethod>();
     private StatefulTimeoutInfo statefulTimeout;
 
-    private class StatefulRemoveMethod {
+    public class StatefulRemoveMethod {
         private final MethodIdentifier methodIdentifier;
         private final boolean retainIfException;
 
@@ -74,6 +74,14 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             }
             this.methodIdentifier = method;
             this.retainIfException = retainIfException;
+        }
+
+        public MethodIdentifier getMethodIdentifier() {
+            return methodIdentifier;
+        }
+
+        public boolean isRetainIfException() {
+            return retainIfException;
         }
 
         @Override
