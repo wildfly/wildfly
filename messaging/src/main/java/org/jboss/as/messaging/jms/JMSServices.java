@@ -50,7 +50,7 @@ import static org.jboss.as.messaging.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.PRE_ACK;
 import static org.jboss.as.messaging.CommonAttributes.PRODUCER_MAX_RATE;
 import static org.jboss.as.messaging.CommonAttributes.PRODUCER_WINDOW_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.RECONNECT_ATTEMPTS;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS;
 import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.as.messaging.CommonAttributes.SETUP_ATTEMPTS;
@@ -146,7 +146,7 @@ public class JMSServices {
         PRE_ACK,
         PRODUCER_MAX_RATE,
         PRODUCER_WINDOW_SIZE,
-        RECONNECT_ATTEMPTS,
+            CONNECTION_FACTORY_RECONNECT_ATTEMPTS,
         RETRY_INTERVAL,
         RETRY_INTERVAL_MULTIPLIER,
         CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE,
@@ -184,7 +184,7 @@ public class JMSServices {
         PRE_ACK,
         PRODUCER_MAX_RATE,
         PRODUCER_WINDOW_SIZE,     // TODO HornetQResourceAdapter does not have this method
-        RECONNECT_ATTEMPTS,
+            CONNECTION_FACTORY_RECONNECT_ATTEMPTS,
         RETRY_INTERVAL,
         RETRY_INTERVAL_MULTIPLIER,
         CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE,
@@ -230,7 +230,7 @@ public class JMSServices {
         new PooledCFAttribute(PRODUCER_MAX_RATE, PRODUCER_MAX_RATE_METHOD),
         // TODO HornetQResourceAdapter does not have this method
         //new PooledCFAttribute(PRODUCER_WINDOW_SIZE, PRODUCER_WINDOW_SIZE_METHOD),
-        new PooledCFAttribute(RECONNECT_ATTEMPTS, RECONNECT_ATTEMPTS_METHOD),
+        new PooledCFAttribute(CONNECTION_FACTORY_RECONNECT_ATTEMPTS, RECONNECT_ATTEMPTS_METHOD),
         new PooledCFAttribute(RETRY_INTERVAL, RETRY_INTERVAL_METHOD),
         new PooledCFAttribute(RETRY_INTERVAL_MULTIPLIER, RETRY_INTERVAL_MULTIPLIER_METHOD),
         new PooledCFAttribute(CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE, SCHEDULED_THREAD_POOL_MAX_SIZE_METHOD),

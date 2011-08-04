@@ -22,13 +22,10 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
-
+import javax.activation.CommandInfo;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -43,15 +40,16 @@ import org.jboss.dmr.ModelType;
  */
 public class ConnectorRefsAttribute extends ListAttributeDefinition {
 
-    public static final ConnectorRefsAttribute STATIC_CONNECTORS = new ConnectorRefsAttribute(Element.STATIC_CONNECTORS);
+    public static final ConnectorRefsAttribute STATIC_CONNECTORS = new ConnectorRefsAttribute(true);
 
-    public static final ConnectorRefsAttribute BROADCAST_GROUP = new ConnectorRefsAttribute(null);
+    public static final ConnectorRefsAttribute BROADCAST_GROUP = new ConnectorRefsAttribute(false);
 
-    private final Element wrapper;
+    private final boolean wrap;
 
-    private ConnectorRefsAttribute(final Element wrapper) {
-        super(CommonAttributes.CONNECTORS, CommonAttributes.CONNECTOR_REF_STRING, wrapper == null, 1, Integer.MAX_VALUE, new StringLengthValidator(1));
-        this.wrapper = wrapper;
+    private ConnectorRefsAttribute(boolean wrap) {
+        super(wrap ? CommonAttributes.STATIC_CONNECTORS : CommonAttributes.CONNECTORS,
+                CommonAttributes.CONNECTOR_REF_STRING, !wrap, 1, Integer.MAX_VALUE, new StringLengthValidator(1));
+        this.wrap = wrap;
     }
 
     @Override
@@ -60,8 +58,8 @@ public class ConnectorRefsAttribute extends ListAttributeDefinition {
             List<ModelNode> list = resourceModel.get(getName()).asList();
             if (list.size() > 0) {
 
-                if (wrapper != null) {
-                    writer.writeStartElement(wrapper.getLocalName());
+                if (wrap) {
+                    writer.writeStartElement(Element.STATIC_CONNECTORS.getLocalName());
                 }
 
                 for (ModelNode child : list) {
@@ -70,7 +68,7 @@ public class ConnectorRefsAttribute extends ListAttributeDefinition {
                     writer.writeEndElement();
                 }
 
-                if (wrapper != null) {
+                if (wrap) {
                     writer.writeEndElement();
                 }
             }

@@ -64,6 +64,32 @@
                 </discovery-group>
             </discovery-groups>
 
+            <bridges>
+                <bridge name="bridge1">
+                    <queue-name>coreQueueA</queue-name>
+                    <forwarding-address>forwardingaddress1</forwarding-address>
+                    <ha>true</ha>
+                    <filter string="afilter"/>
+                    <transformer-class-name>foo.bar</transformer-class-name>
+                    <retry-interval>750</retry-interval>
+                    <retry-interval-multiplier>2</retry-interval-multiplier>
+                    <reconnect-attempts>3</reconnect-attempts>
+                    <failover-on-server-shutdown>true</failover-on-server-shutdown>
+                    <use-duplicate-detection>true</use-duplicate-detection>
+                    <confirmation-window-size>350</confirmation-window-size>
+                    <user>Brian</user>
+                    <password>secret</password>
+                    <static-connectors>
+                        <connector-ref>in-vm</connector-ref>
+                        <connector-ref>netty</connector-ref>
+                    </static-connectors>
+                </bridge>
+                <bridge name="bridge2">
+                    <queue-name>coreQueueB</queue-name>
+                    <discovery-group-ref discovery-group-name="groupC"/>
+                </bridge>
+            </bridges>
+
             <diverts>
                 <divert name="testDivert1">
                     <routing-name>routing</routing-name>

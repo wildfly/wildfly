@@ -141,4 +141,11 @@ class MessagingSubsystemProviders {
             return MessagingDescriptions.getGroupingHandlerResource(locale);
         }
     };
+
+    public static final DescriptionProvider BRIDGE_RESOURCE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getBridgeResource(locale);
+        }
+    };
 }

@@ -46,6 +46,7 @@ public enum Element {
    ASYNC_CONNECTION_EXECUTION_ENABLED(CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED),
    BACKUP(CommonAttributes.BACKUP),
    BINDINGS_DIRECTORY(CommonAttributes.BINDINGS_DIRECTORY),
+   BRIDGE(CommonAttributes.BRIDGE),
    BRIDGES(CommonAttributes.BRIDGES),
    BROADCAST_GROUP(CommonAttributes.BROADCAST_GROUP),
    BROADCAST_GROUPS(CommonAttributes.BROADCAST_GROUPS),
@@ -70,7 +71,7 @@ public enum Element {
    FAILBACK_DELAY(CommonAttributes.FAILBACK_DELAY),
    FAILOVER_ON_SHUTDOWN(CommonAttributes.FAILOVER_ON_SHUTDOWN),
    FILE_DEPLOYMENT_ENABLED(CommonAttributes.FILE_DEPLOYMENT_ENABLED),
-   FORWARDING_ADDRESS(CommonAttributes.FORWARDING_ADDRESS),
+   FORWARDING_ADDRESS(getForwardingAddressDefinitions()),
    GROUP_ADDRESS(CommonAttributes.GROUP_ADDRESS),
    GROUP_PORT(CommonAttributes.GROUP_PORT),
    GROUPING_HANDLER(CommonAttributes.GROUPING_HANDLER),
@@ -175,22 +176,27 @@ public enum Element {
    FAILOVER_ON_INITIAL_CONNECTION(CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION),
    FAILOVER_ON_SERVER_SHUTDOWN(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN),
    GROUP_ID(CommonAttributes.GROUP_ID),
+   HA(CommonAttributes.HA),
    JMS_DESTINATIONS(CommonAttributes.JMS_DESTINATIONS),
    JMS_TOPIC(CommonAttributes.JMS_TOPIC),
    JMS_QUEUE(CommonAttributes.JMS_QUEUE),
    LOAD_BALANCING_CLASS_NAME(CommonAttributes.LOAD_BALANCING_CLASS_NAME),
    MAX_RETRY_INTERVAL(CommonAttributes.MAX_RETRY_INTERVAL),
    MIN_LARGE_MESSAGE_SIZE(CommonAttributes.MIN_LARGE_MESSAGE_SIZE),
+   PASSWORD(CommonAttributes.PASSWORD),
    PRE_ACK(CommonAttributes.PRE_ACK),
    PRODUCER_WINDOW_SIZE(CommonAttributes.PRODUCER_WINDOW_SIZE),
    PRODUCER_MAX_RATE(CommonAttributes.PRODUCER_MAX_RATE),
-   RECONNECT_ATTEMPTS(CommonAttributes.RECONNECT_ATTEMPTS),
+   QUEUE_NAME(CommonAttributes.QUEUE_NAME),
+   RECONNECT_ATTEMPTS(getReconnectAttemptsDefinitions()),
    RETRY_INTERVAL(CommonAttributes.RETRY_INTERVAL),
    RETRY_INTERVAL_MULTIPLIER(CommonAttributes.RETRY_INTERVAL_MULTIPLIER),
    SELECTOR(CommonAttributes.SELECTOR),
    SCHEDULED_THREAD_POOL_MAX_SIZE(getScheduledThreadPoolDefinitions()),
    THREAD_POOL_MAX_SIZE(getThreadPoolDefinitions()),
    TRANSACTION_BATH_SIZE(CommonAttributes.TRANSACTION_BATCH_SIZE),
+   USER(CommonAttributes.USER),
+   USE_DUPLICATE_DETECTION(CommonAttributes.USE_DUPLICATE_DETECTION),
    USE_GLOBAL_POOLS(CommonAttributes.USE_GLOBAL_POOLS),
    POOLED_CONNECTION_FACTORY(CommonAttributes.POOLED_CONNECTION_FACTORY),
    TRANSACTION(CommonAttributes.TRANSACTION),
@@ -308,6 +314,22 @@ public enum Element {
         result.put("simple", CommonAttributes.CONNECTOR_REF);
         result.put("broadcast-group", ConnectorRefsAttribute.BROADCAST_GROUP);
         result.put("static-connectors", ConnectorRefsAttribute.STATIC_CONNECTORS);
+        return result;
+
+    }
+
+    private static Map<String, AttributeDefinition> getReconnectAttemptsDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("connection", CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS);
+        result.put("bridge", CommonAttributes.BRIDGE_RECONNECT_ATTEMPTS);
+        return result;
+
+    }
+
+    private static Map<String, AttributeDefinition> getForwardingAddressDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("divert", CommonAttributes.DIVERT_FORWARDING_ADDRESS);
+        result.put("bridge", CommonAttributes.BRIDGE_FORWARDING_ADDRESS);
         return result;
 
     }

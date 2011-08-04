@@ -93,16 +93,7 @@ public class DivertAdd extends AbstractAddStepHandler implements DescriptionProv
             DivertConfiguration divertConfiguration = createDivertConfiguration(name, model);
 
             HornetQServerControl serverControl = HornetQServer.class.cast(hqService.getValue()).getHornetQServerControl();
-            try {
-                serverControl.createDivert(name, divertConfiguration.getRoutingName(), divertConfiguration.getAddress(),
-                        divertConfiguration.getForwardingAddress(), divertConfiguration.isExclusive(),
-                        divertConfiguration.getFilterString(), divertConfiguration.getTransformerClassName());
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                // TODO should this be an OFE instead?
-                throw new RuntimeException(e);
-            }
+            createDivert(name, divertConfiguration, serverControl);
 
         }
         // else the initial subsystem install is not complete; MessagingSubsystemAdd will add a
@@ -124,16 +115,29 @@ public class DivertAdd extends AbstractAddStepHandler implements DescriptionProv
         }
     }
 
-    private static DivertConfiguration createDivertConfiguration(String name, ModelNode model) throws OperationFailedException {
+    static DivertConfiguration createDivertConfiguration(String name, ModelNode model) throws OperationFailedException {
         final ModelNode routingNode = CommonAttributes.ROUTING_NAME.validateResolvedOperation(model);
         final String routingName = routingNode.isDefined() ? routingNode.asString() : null;
         final String address = CommonAttributes.DIVERT_ADDRESS.validateResolvedOperation(model).asString();
-        final String forwardingAddress = CommonAttributes.FORWARDING_ADDRESS.validateResolvedOperation(model).asString();
+        final String forwardingAddress = CommonAttributes.DIVERT_FORWARDING_ADDRESS.validateResolvedOperation(model).asString();
         final boolean exclusive = CommonAttributes.EXCLUSIVE.validateResolvedOperation(model).asBoolean();
         final ModelNode filterNode = CommonAttributes.FILTER.validateResolvedOperation(model);
         final String filter = filterNode.isDefined() ? filterNode.asString() : null;
         final ModelNode transformerNode =  CommonAttributes.TRANSFORMER_CLASS_NAME.validateResolvedOperation(model);
         final String transformerClassName = transformerNode.isDefined() ? transformerNode.asString() : null;
         return new DivertConfiguration(name, routingName, address, forwardingAddress, exclusive, filter, transformerClassName);
+    }
+
+    static void createDivert(String name, DivertConfiguration divertConfiguration, HornetQServerControl serverControl) {
+        try {
+            serverControl.createDivert(name, divertConfiguration.getRoutingName(), divertConfiguration.getAddress(),
+                    divertConfiguration.getForwardingAddress(), divertConfiguration.isExclusive(),
+                    divertConfiguration.getFilterString(), divertConfiguration.getTransformerClassName());
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            // TODO should this be an OFE instead?
+            throw new RuntimeException(e);
+        }
     }
 }

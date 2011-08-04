@@ -41,6 +41,16 @@ public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvi
 
     public static final QueueAdd INSTANCE = new QueueAdd();
 
+    /**
+     * Create an "add" operation using the existing model
+     */
+    public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
+
+        final ModelNode operation = org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, subModel);
+
+        return operation;
+    }
+
     private QueueAdd() {}
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {

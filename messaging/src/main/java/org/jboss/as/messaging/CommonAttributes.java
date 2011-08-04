@@ -60,6 +60,11 @@ public interface CommonAttributes {
     SimpleAttributeDefinition BLOCK_ON_NON_DURABLE_SEND = new SimpleAttributeDefinition("block-on-non-durable-send",
             new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND), ModelType.BOOLEAN, true);
 
+    SimpleAttributeDefinition BRIDGE_FORWARDING_ADDRESS = new SimpleAttributeDefinition("forwarding-address", ModelType.STRING, true);
+
+    SimpleAttributeDefinition BRIDGE_RECONNECT_ATTEMPTS = new SimpleAttributeDefinition("reconnect-attempts",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS), ModelType.INT, true, MeasurementUnit.NONE);
+
     SimpleAttributeDefinition BROADCAST_PERIOD = new SimpleAttributeDefinition("broadcast-period",
             new ModelNode().set(ConfigurationImpl.DEFAULT_BROADCAST_PERIOD), ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
 
@@ -88,6 +93,9 @@ public interface CommonAttributes {
 
     JndiEntriesAttribute CONNECTION_ENTRIES = JndiEntriesAttribute.CONNECTION_FACTORY;
 
+    SimpleAttributeDefinition CONNECTION_FACTORY_RECONNECT_ATTEMPTS = new SimpleAttributeDefinition("reconnect-attempts",
+            new ModelNode().set(HornetQClient.DEFAULT_RECONNECT_ATTEMPTS), ModelType.INT, true, MeasurementUnit.NONE);
+
     SimpleAttributeDefinition CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("scheduled-thread-pool-max-size",
             new ModelNode().set(HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE), ModelType.INT,  true, MeasurementUnit.NONE);
 
@@ -100,10 +108,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CONNECTION_TTL_OVERRIDE = new SimpleAttributeDefinition("connection-ttl-override",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CONNECTION_TTL_OVERRIDE), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
-
     SimpleAttributeDefinition CONNECTOR_REF = new SimpleAttributeDefinition("connector-ref", ModelType.STRING, true);
-
-    ConnectorRefsAttribute CONNECTOR_REFS_OPTIONAL = ConnectorRefsAttribute.BROADCAST_GROUP;
 
     SimpleAttributeDefinition CONSUMER_MAX_RATE = new SimpleAttributeDefinition("consumer-max-rate",
             new ModelNode().set(HornetQClient.DEFAULT_CONSUMER_MAX_RATE), ModelType.INT,  true, MeasurementUnit.PER_SECOND);
@@ -122,6 +127,8 @@ public interface CommonAttributes {
     SimpleAttributeDefinition DISCOVERY_INITIAL_WAIT_TIMEOUT = new SimpleAttributeDefinition("discovery-initial-wait-timeout", ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition DIVERT_ADDRESS = new SimpleAttributeDefinition("divert-address", "address", null, ModelType.STRING, false, false, MeasurementUnit.NONE);
+
+    SimpleAttributeDefinition DIVERT_FORWARDING_ADDRESS = new SimpleAttributeDefinition("forwarding-address", ModelType.STRING, false);
 
     SimpleAttributeDefinition DUPS_OK_BATCH_SIZE = new SimpleAttributeDefinition("dups-ok-batch-size",
             new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE), ModelType.INT, true, MeasurementUnit.NONE);
@@ -145,8 +152,6 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition FILTER = new SimpleAttributeDefinition("filter", ModelType.STRING, true);
 
-    SimpleAttributeDefinition FORWARDING_ADDRESS = new SimpleAttributeDefinition("forwarding-address", ModelType.STRING, false);
-
     SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = new SimpleAttributeDefinition("grouping-handler-address", "address",
             null, ModelType.STRING, false, false, MeasurementUnit.NONE);
 
@@ -156,7 +161,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition GROUP_PORT = new SimpleAttributeDefinition("group-port", ModelType.INT, false);
 
-    SimpleAttributeDefinition HA = new SimpleAttributeDefinition("forwarding-address", new ModelNode().set(HornetQClient.DEFAULT_HA),  ModelType.BOOLEAN, false);
+    SimpleAttributeDefinition HA = new SimpleAttributeDefinition("ha", new ModelNode().set(HornetQClient.DEFAULT_HA),  ModelType.BOOLEAN, false);
 
     SimpleAttributeDefinition ID_CACHE_SIZE = new SimpleAttributeDefinition("id-cache-size",
             new ModelNode().set(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE), ModelType.INT,  true, MeasurementUnit.NONE);
@@ -245,6 +250,9 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition NAME_OPTIONAL = new SimpleAttributeDefinition("name", ModelType.STRING, true);
 
+    SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinition("password",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD),  ModelType.STRING, true);
+
     SimpleAttributeDefinition PERF_BLAST_PAGES = new SimpleAttributeDefinition("perf-blast-pages",
             new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_PERF_BLAST_PAGES), ModelType.INT,  true, MeasurementUnit.NONE);
 
@@ -268,8 +276,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition QUEUE_ADDRESS = new SimpleAttributeDefinition("queue-address", "address", null, ModelType.STRING, false, false, MeasurementUnit.NONE);
 
-    SimpleAttributeDefinition RECONNECT_ATTEMPTS = new SimpleAttributeDefinition("reconnect-attempts",
-            new ModelNode().set(HornetQClient.DEFAULT_RECONNECT_ATTEMPTS), ModelType.INT, true, MeasurementUnit.NONE);
+    SimpleAttributeDefinition QUEUE_NAME = new SimpleAttributeDefinition("queue-name", ModelType.STRING, false);
 
     SimpleAttributeDefinition REFRESH_TIMEOUT = new SimpleAttributeDefinition("refresh-timeout",
             new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
@@ -330,6 +337,12 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition TYPE = new SimpleAttributeDefinition("type", "type",
             null, ModelType.STRING,  true, false, MeasurementUnit.NONE, GroupingHandlerTypeValidator.INSTANCE);
+
+    SimpleAttributeDefinition USER = new SimpleAttributeDefinition("user",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true);
+
+    SimpleAttributeDefinition USE_DUPLICATE_DETECTION = new SimpleAttributeDefinition("use-duplicate-detection",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_BRIDGE_DUPLICATE_DETECTION), ModelType.BOOLEAN,  true);
 
     SimpleAttributeDefinition USE_GLOBAL_POOLS = new SimpleAttributeDefinition("use-global-pools",
             new ModelNode().set(HornetQClient.DEFAULT_USE_GLOBAL_POOLS), ModelType.BOOLEAN,  true);
@@ -416,12 +429,10 @@ public interface CommonAttributes {
     String PAGE_SIZE_BYTES_NODE_NAME ="page-size-bytes";
     String PAGING_DIRECTORY ="paging-directory";
     String PARAM ="param";
-    String PASSWORD ="password";
     String PATH ="path";
     String PERMISSION_ELEMENT_NAME ="permission";
     String POOLED_CONNECTION_FACTORY = "pooled-connection-factory";
     String QUEUE ="queue";
-    String QUEUE_NAME ="queue-name";
     String REDELIVERY_DELAY ="redelivery-delay";
     String REDISTRIBUTION_DELAY ="redistribution-delay";
     String RELATIVE_TO ="relative-to";
@@ -440,8 +451,6 @@ public interface CommonAttributes {
     String SUBSYSTEM ="subsystem";
     String TRANSACTION = "transaction";
     String TYPE_ATTR_NAME ="type";
-    String USE_DUPLICATE_DETECTION = "use-duplicate-detection";
-    String USER = "user";
     String VALUE ="value";
     String XA = "xa";
     String XA_TX = "XATransaction";
@@ -465,14 +474,14 @@ public interface CommonAttributes {
 
     String[] COMPLEX_ROOT_RESOURCE_ATTRIBUTES =  {
         /* TODO remove */ CONNECTOR, /* TODO remove */ ACCEPTOR,
-        /* TODO remove */ BRIDGE, /* TODO remove */ CLUSTER_CONNECTION,
+        /* TODO remove */ CLUSTER_CONNECTION,
         /* TODO remove */ PAGING_DIRECTORY, /* TODO remove */ BINDINGS_DIRECTORY,
         /* TODO remove */ JOURNAL_DIRECTORY, /* TODO remove */ LARGE_MESSAGES_DIRECTORY,
         /* TODO remove */ SECURITY_SETTING, /* TODO remove */ ADDRESS_SETTING, /* TODO remove */ CONNECTOR_SERVICE
     };
 
     AttributeDefinition[] DIVERT_ATTRIBUTES = {
-        ROUTING_NAME, DIVERT_ADDRESS, FORWARDING_ADDRESS, FILTER, TRANSFORMER_CLASS_NAME, EXCLUSIVE
+        ROUTING_NAME, DIVERT_ADDRESS, DIVERT_FORWARDING_ADDRESS, FILTER, TRANSFORMER_CLASS_NAME, EXCLUSIVE
     };
 
     AttributeDefinition[] BROADCAST_GROUP_ATTRIBUTES = {
@@ -486,6 +495,13 @@ public interface CommonAttributes {
     AttributeDefinition[] GROUPING_HANDLER_ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT};
 
     AttributeDefinition[] CORE_QUEUE_ATTRIBUTES = { QUEUE_ADDRESS, FILTER, DURABLE };
+
+    AttributeDefinition[] BRIDGE_ATTRIBUTES = {
+            QUEUE_NAME, BRIDGE_FORWARDING_ADDRESS, HA, FILTER, TRANSFORMER_CLASS_NAME,
+            RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, BRIDGE_RECONNECT_ATTEMPTS, FAILOVER_ON_SERVER_SHUTDOWN,
+            USE_DUPLICATE_DETECTION, CONFIRMATION_WINDOW_SIZE, USER, PASSWORD, ConnectorRefsAttribute.STATIC_CONNECTORS,
+            DISCOVERY_GROUP_NAME
+    };
 
     AttributeDefinition[] JMS_QUEUE_ATTRIBUTES = { ENTRIES, SELECTOR, DURABLE };
 }

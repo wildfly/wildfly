@@ -24,7 +24,7 @@ package org.jboss.as.messaging;
 
 import java.util.Locale;
 
-import org.hornetq.core.config.DivertConfiguration;
+import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -37,15 +37,15 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
- * Removes a divert.
+ * Removes a bridge.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DivertRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class BridgeRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
-    public static final DivertRemove INSTANCE = new DivertRemove();
+    public static final BridgeRemove INSTANCE = new BridgeRemove();
 
-    private DivertRemove() {
+    private BridgeRemove() {
         super();
     }
 
@@ -59,7 +59,7 @@ public class DivertRemove extends AbstractRemoveStepHandler implements Descripti
 
             HornetQServer server = HornetQServer.class.cast(hqService.getValue());
             try {
-                server.getHornetQServerControl().destroyDivert(name);
+                server.getHornetQServerControl().destroyBridge(name);
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {
@@ -77,15 +77,14 @@ public class DivertRemove extends AbstractRemoveStepHandler implements Descripti
         if (hqService != null && hqService.getState() == ServiceController.State.UP) {
 
             final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-            final DivertConfiguration divertConfiguration = DivertAdd.createDivertConfiguration(name, model);
-
+            final BridgeConfiguration bridgeConfiguration = BridgeAdd.createBridgeConfiguration(name, model);
             HornetQServer server = HornetQServer.class.cast(hqService.getValue());
-            DivertAdd.createDivert(name, divertConfiguration, server.getHornetQServerControl());
+            BridgeAdd.createBridge(name, bridgeConfiguration, server.getHornetQServerControl());
         }
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getDivertRemove(locale);
+        return MessagingDescriptions.getBridgeRemove(locale);
     }
 }
