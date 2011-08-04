@@ -97,6 +97,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         TRIM(new QName("trim")),
         REPLACE(new QName("replace")),
         BEAN(new QName("bean")),
+        SERVICE(new QName("service")),
         PROPERTY(new QName("property")),
         CLASS(new QName("class")),
         METHOD(new QName("method")),
@@ -435,6 +436,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case TARGET_STATE:
                     dependsConfig.setDependencyState(BeanState.valueOf(attributeValue.toUpperCase()));
                     break;
+                case SERVICE:
+                    dependsConfig.setService(Boolean.parseBoolean(attributeValue));
+                    break;
                 default:
                     throw unexpectedContent(reader);
             }
@@ -523,16 +527,20 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
 
     private InjectedValueConfig parseInject(final XMLExtendedStreamReader reader) throws XMLStreamException {
         final InjectedValueConfig injectedValueConfig = new InjectedValueConfig();
-        final Set<Attribute> required = EnumSet.of(Attribute.BEAN);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final Attribute attribute = Attribute.of(reader.getAttributeName(i));
-            required.remove(attribute);
             final String attributeValue = reader.getAttributeValue(i);
 
             switch (attribute) {
                 case BEAN:
-                    injectedValueConfig.setDependency(attributeValue);
+                    injectedValueConfig.setBean(attributeValue);
+                    break;
+                case STATE:
+                    injectedValueConfig.setState(BeanState.valueOf(attributeValue.toUpperCase()));
+                    break;
+                case SERVICE:
+                    injectedValueConfig.setService(attributeValue);
                     break;
                 case PROPERTY:
                     // TODO
@@ -541,10 +549,6 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     throw unexpectedContent(reader);
             }
         }
-        if (required.isEmpty() == false) {
-            throw missingAttributes(reader.getLocation(), required);
-        }
-
         while (reader.hasNext()) {
             switch (reader.next()) {
                 case END_ELEMENT:

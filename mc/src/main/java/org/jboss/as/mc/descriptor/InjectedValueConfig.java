@@ -23,6 +23,7 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Injected value.
@@ -30,19 +31,34 @@ import org.jboss.as.mc.BeanState;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class InjectedValueConfig extends ValueConfig {
-    private String dependency;
+    private String bean;
     private BeanState state;
+    private String service;
+    private String property; // TODO
 
     @Override
     public void visit(ConfigVisitor visitor) {
-        visitor.addDependency(dependency, state, getInjectedValue());
+        if (bean != null)
+            visitor.addDependency(bean, state, getInjectedValue());
+        else if (service != null)
+            visitor.addDependency(ServiceName.parse(service), getInjectedValue());
+        else
+            throw new IllegalArgumentException("Missing bean or service attribute: " + toString());
     }
 
-    public void setDependency(String dependency) {
-        this.dependency = dependency;
+    public void setBean(String dependency) {
+        this.bean = dependency;
     }
 
     public void setState(BeanState state) {
         this.state = state;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    public void setProperty(String property) {
+        this.property = property;
     }
 }

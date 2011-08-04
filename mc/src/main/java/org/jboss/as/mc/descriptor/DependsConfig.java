@@ -23,6 +23,7 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
+import org.jboss.msc.service.ServiceName;
 
 import java.io.Serializable;
 
@@ -37,35 +38,31 @@ public class DependsConfig implements Serializable, ConfigVisitorNode {
     private String dependency;
     private BeanState whenRequired = BeanState.INSTALLED;
     private BeanState dependencyState;
+    private boolean service;
 
     @Override
     public void visit(ConfigVisitor visitor) {
         if (visitor.getState().equals(whenRequired)) {
-            visitor.addDependency(dependency, dependencyState);
+            if (service)
+                visitor.addDependency(ServiceName.parse(dependency));
+            else
+                visitor.addDependency(dependency, dependencyState);
         }
-    }
-
-    public String getDependency() {
-        return dependency;
     }
 
     public void setDependency(String dependency) {
         this.dependency = dependency;
     }
 
-    public BeanState getWhenRequired() {
-        return whenRequired;
-    }
-
     public void setWhenRequired(BeanState whenRequired) {
         this.whenRequired = whenRequired;
     }
 
-    public BeanState getDependencyState() {
-        return dependencyState;
-    }
-
     public void setDependencyState(BeanState dependencyState) {
         this.dependencyState = dependencyState;
+    }
+
+    public void setService(boolean service) {
+        this.service = service;
     }
 }
