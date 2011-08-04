@@ -45,12 +45,27 @@
 
     <bean name="Injectee" class="org.jboss.as.testsuite.integration.mc.support.TInjectee">
         <constructor>
-            <parameter><value>Hola</value></parameter>
+            <parameter><value>Hola, </value></parameter>
         </constructor>
         <alias>Alias-Injectee</alias>
         <depends>Blocker</depends>
     </bean>
 
     <bean name="Blocker" class="org.jboss.as.testsuite.integration.mc.support.TInjectee"/>
+
+    <bean name="TFactory" class="org.jboss.as.testsuite.integration.mc.support.TFactory">
+        <constructor>
+            <parameter><value>Zivjo, </value></parameter>
+        </constructor>
+    </bean>
+
+    <bean name="SloInjectee">
+        <constructor factory-method="defaultInjectee">
+            <factory bean="TFactory"/>
+        </constructor>
+        <install method="sayHello">
+            <parameter><value>JBossAS7!</value></parameter>
+        </install>
+    </bean>
 
 </deployment>

@@ -34,7 +34,7 @@ public class ConversionValue implements Value<Object> {
     private final Object value;
     private Class<?> type;
     private boolean replaceProperties = true;
-    private boolean trim = true;
+    private boolean trim;
 
     public ConversionValue(Object value) {
         this.value = value;
