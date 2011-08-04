@@ -360,6 +360,7 @@ class DataSourcesSubsystemProviders {
             operation.get(ATTRIBUTES, DEPLOYMENT_NAME, TYPE).set(ModelType.STRING);
             operation.get(ATTRIBUTES, DRIVER_MODULE_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.module-name"));
             operation.get(ATTRIBUTES, DRIVER_MODULE_NAME, TYPE).set(ModelType.STRING);
+            operation.get(ATTRIBUTES, DRIVER_MODULE_NAME, REQUIRED).set(true);
             operation.get(ATTRIBUTES, MODULE_SLOT, DESCRIPTION).set(bundle.getString("installed-drivers.module-slot"));
             operation.get(ATTRIBUTES, MODULE_SLOT, TYPE).set(ModelType.STRING);
             operation.get(ATTRIBUTES, DRIVER_CLASS_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.driver-class"));
