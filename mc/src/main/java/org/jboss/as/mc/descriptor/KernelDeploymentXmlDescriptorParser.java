@@ -247,16 +247,16 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                             depends.add(parseDepends(reader));
                             break;
                         case CREATE:
-                            beanConfig.setCreate(parseLifecycle(reader));
+                            beanConfig.setCreate(parseLifecycle(reader, "create"));
                             break;
                         case START:
-                            beanConfig.setStart(parseLifecycle(reader));
+                            beanConfig.setStart(parseLifecycle(reader, "start"));
                             break;
                         case STOP:
-                            beanConfig.setStop(parseLifecycle(reader));
+                            beanConfig.setStop(parseLifecycle(reader, "stop"));
                             break;
                         case DESTROY:
-                            beanConfig.setDestroy(parseLifecycle(reader));
+                            beanConfig.setDestroy(parseLifecycle(reader, "destroy"));
                             break;
                         case UNKNOWN:
                             throw unexpectedContent(reader);
@@ -448,13 +448,12 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         return dependsConfig;
     }
 
-    private LifecycleConfig parseLifecycle(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    private LifecycleConfig parseLifecycle(final XMLExtendedStreamReader reader, String defaultMethodName) throws XMLStreamException {
         final LifecycleConfig lifecycleConfig = new LifecycleConfig();
-        final Set<Attribute> required = EnumSet.of(Attribute.METHOD);
+        lifecycleConfig.setMethodName(defaultMethodName); // set default
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final Attribute attribute = Attribute.of(reader.getAttributeName(i));
-            required.remove(attribute);
             final String attributeValue = reader.getAttributeValue(i);
 
             switch (attribute) {
@@ -464,9 +463,6 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 default:
                     throw unexpectedContent(reader);
             }
-        }
-        if (required.isEmpty() == false) {
-            throw missingAttributes(reader.getLocation(), required);
         }
 
         List<ValueConfig> parameters = new ArrayList<ValueConfig>();

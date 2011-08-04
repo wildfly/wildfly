@@ -35,7 +35,7 @@
         <stop>
             <parameter><value>stop</value></parameter>
         </stop>
-        <install method="install" when-required="CREATE">
+        <install method="install" state="CREATE">
             <parameter><value>install</value></parameter>
         </install>
         <install bean="Alias-Injectee" method="sayHello">
