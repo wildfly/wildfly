@@ -37,11 +37,11 @@ import org.jboss.as.cli.operation.parsing.ParsingContext;
 public class CommandNameState extends DefaultParsingState {
 
     public static final CommandNameState INSTANCE = new CommandNameState();
-    public static final String ID = "CMD_NAME";
+    public static final String ID = "OP_NAME";
 
     CommandNameState() {
         super(ID);
-        //setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
         setDefaultHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {

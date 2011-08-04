@@ -63,6 +63,9 @@ public class StateParser {
         ParsingContextImpl ctx = new ParsingContextImpl();
         ctx.initialState = initialState;
         ctx.callbackHandler = callbackHandler;
+
+        ctx.ch = str.charAt(i);
+        ctx.location = i;
         initialState.getEnterHandler().handle(ctx);
 
         while (i < str.length()) {

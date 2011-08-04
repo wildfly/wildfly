@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli.operation;
 
+import org.jboss.as.cli.CommandFormatException;
+
 
 /**
  *
@@ -48,15 +50,15 @@ public interface OperationRequestParser {
 
         void addressOperationSeparator(int index);
 
-        void operationName(String operationName) throws OperationFormatException;
+        void operationName(String operationName) throws CommandFormatException;
 
         void propertyListStart(int index);
 
-        void propertyName(String propertyName) throws OperationFormatException;
+        void propertyName(String propertyName) throws CommandFormatException;
 
         void propertyNameValueSeparator(int index);
 
-        void property(String name, String value, int nameValueSeparatorIndex) throws OperationFormatException;
+        void property(String name, String value, int nameValueSeparatorIndex) throws CommandFormatException;
 
         void propertySeparator(int index);
 
@@ -65,7 +67,7 @@ public interface OperationRequestParser {
         // TODO this is not good
         void nodeTypeOrName(String typeOrName) throws OperationFormatException;
 
-        void outputTarget(String outputTarget);
+        void outputTarget(String outputTarget) throws CommandFormatException;
     }
 
     void parse(String operationRequest, CallbackHandler handler) throws OperationFormatException;

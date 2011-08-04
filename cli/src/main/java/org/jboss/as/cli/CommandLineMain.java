@@ -622,7 +622,15 @@ public class CommandLineMain {
 
         @Override
         public String getArgumentsString() {
-            return parsedCmd.getArgumentsString();
+            String argsStr = parsedCmd.getArgumentsString();
+            if(argsStr != null && cmd != null) {
+                if(argsStr.length() == cmd.length()) {
+                    argsStr = null;
+                } else {
+                    argsStr = argsStr.substring(cmd.length() + 1);
+                }
+            }
+            return argsStr;
         }
 
         @Override
@@ -719,6 +727,7 @@ public class CommandLineMain {
         }
 
         private void connectController(String host, int port, boolean loggingEnabled) {
+
             if(host == null) {
                 host = defaultControllerHost;
             }
