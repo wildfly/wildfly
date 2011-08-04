@@ -132,7 +132,7 @@ public class MessagingExtension implements Extension {
                 MessagingSubsystemProviders.CLUSTER_CONNECTION_RESOURCE);
         cluster.registerOperationHandler(ADD, ClusterConnectionAdd.INSTANCE, ClusterConnectionAdd.INSTANCE, false);
         cluster.registerOperationHandler(REMOVE, ClusterConnectionRemove.INSTANCE, ClusterConnectionRemove.INSTANCE, false);
-        for (AttributeDefinition attributeDefinition : CommonAttributes.BRIDGE_ATTRIBUTES) {
+        for (AttributeDefinition attributeDefinition : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
             cluster.registerReadWriteAttribute(attributeDefinition.getName(), null, ClusterConnectionWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
 
@@ -143,6 +143,20 @@ public class MessagingExtension implements Extension {
         for (AttributeDefinition attributeDefinition : CommonAttributes.GROUPING_HANDLER_ATTRIBUTES) {
             groupingHandler.registerReadWriteAttribute(attributeDefinition.getName(), null, GroupingHandlerWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
+
+        // Connector services
+        final ManagementResourceRegistration connectorService = rootRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.CONNECTOR_SERVICE),
+                MessagingSubsystemProviders.CONNECTOR_SERVICE_RESOURCE);
+        connectorService.registerOperationHandler(ADD, ConnectorServiceAdd.INSTANCE, ConnectorServiceAdd.INSTANCE, false);
+        connectorService.registerOperationHandler(REMOVE, ConnectorServiceRemove.INSTANCE, ConnectorServiceRemove.INSTANCE, false);
+        for (AttributeDefinition attributeDefinition : CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES) {
+            connectorService.registerReadWriteAttribute(attributeDefinition.getName(), null, ConnectorServiceWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        }
+        final ManagementResourceRegistration connectorServiceParam = connectorService.registerSubModel(PathElement.pathElement(CommonAttributes.PARAM),
+                MessagingSubsystemProviders.CONNECTOR_SERVICE_PARAM_RESOURCE);
+        connectorServiceParam.registerOperationHandler(ADD, ConnectorServiceParamAdd.INSTANCE, ConnectorServiceParamAdd.INSTANCE, false);
+        connectorServiceParam.registerOperationHandler(REMOVE, ConnectorServiceParamRemove.INSTANCE, ConnectorServiceParamRemove.INSTANCE, false);
+        connectorServiceParam.registerReadWriteAttribute(CommonAttributes.VALUE.getName(), null, ConnectorServiceParamWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
 
         // Connection factories
         final ManagementResourceRegistration cfs = rootRegistration.registerSubModel(CFS_PATH, MessagingSubsystemProviders.CF);

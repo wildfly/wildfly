@@ -154,6 +154,8 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition EXCLUSIVE = new SimpleAttributeDefinition("exclusive", ModelType.BOOLEAN,  true);
 
+    SimpleAttributeDefinition FACTORY_CLASS = new SimpleAttributeDefinition("factory-class", ModelType.STRING, false);
+
     SimpleAttributeDefinition FAILBACK_DELAY = new SimpleAttributeDefinition("failback-delay",
             new ModelNode().set(ConfigurationImpl.DEFAULT_FAILBACK_DELAY), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
@@ -369,6 +371,8 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition USE_LOCAL_TX = new SimpleAttributeDefinition("use-local-tx", ModelType.BOOLEAN,  true);
 
+    SimpleAttributeDefinition VALUE = new SimpleAttributeDefinition("value", ModelType.STRING, false);
+
     SimpleAttributeDefinition WILD_CARD_ROUTING_ENABLED = new SimpleAttributeDefinition("wild-card-routing-enabled",
             new ModelNode().set(ConfigurationImpl.DEFAULT_WILDCARD_ROUTING_ENABLED), ModelType.BOOLEAN,  true);
 
@@ -411,7 +415,6 @@ public interface CommonAttributes {
     String ENTRIES_STRING = "entries";
     String ENTRY ="entry";
     String EXPIRY_ADDRESS ="expiry-address";
-    String FACTORY_CLASS ="factory-class";
     String FILE_DEPLOYMENT_ENABLED ="file-deployment-enabled";
     String GROUPING_HANDLER ="grouping-handler";
     String IN_VM_ACCEPTOR ="in-vm-acceptor";
@@ -466,7 +469,6 @@ public interface CommonAttributes {
     String SUBSYSTEM ="subsystem";
     String TRANSACTION = "transaction";
     String TYPE_ATTR_NAME ="type";
-    String VALUE ="value";
     String XA = "xa";
     String XA_TX = "XATransaction";
 
@@ -524,4 +526,6 @@ public interface CommonAttributes {
     };
 
     AttributeDefinition[] JMS_QUEUE_ATTRIBUTES = { ENTRIES, SELECTOR, DURABLE };
+
+    AttributeDefinition[] CONNECTOR_SERVICE_ATTRIBUTES = { FACTORY_CLASS };
 }
