@@ -95,6 +95,14 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
             }
         }
 
+        if(subModel.hasDefined(CommonAttributes.QUEUE)) {
+            for(final Property property : subModel.get(CommonAttributes.QUEUE).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(CommonAttributes.QUEUE, property.getName());
+                result.add(QueueAdd.getAddOperation(address, property.getValue()));
+            }
+        }
+
         if(subModel.hasDefined(CommonAttributes.BRIDGE)) {
             for(final Property property : subModel.get(CommonAttributes.BRIDGE).asPropertyList()) {
                 final ModelNode address = rootAddress.toModelNode();
@@ -103,11 +111,11 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
             }
         }
 
-        if(subModel.hasDefined(CommonAttributes.QUEUE)) {
-            for(final Property property : subModel.get(CommonAttributes.QUEUE).asPropertyList()) {
+        if(subModel.hasDefined(CommonAttributes.CLUSTER_CONNECTION)) {
+            for(final Property property : subModel.get(CommonAttributes.CLUSTER_CONNECTION).asPropertyList()) {
                 final ModelNode address = rootAddress.toModelNode();
-                address.add(CommonAttributes.QUEUE, property.getName());
-                result.add(QueueAdd.getAddOperation(address, property.getValue()));
+                address.add(CommonAttributes.CLUSTER_CONNECTION, property.getName());
+                result.add(ClusterConnectionAdd.getAddOperation(address, property.getValue()));
             }
         }
 

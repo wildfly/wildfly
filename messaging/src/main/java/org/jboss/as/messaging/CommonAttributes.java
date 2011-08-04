@@ -39,7 +39,10 @@ import org.jboss.dmr.ModelType;
  */
 public interface CommonAttributes {
 
-    SimpleAttributeDefinition ALLOW_FAILBACK =  new SimpleAttributeDefinition("allow-failback",
+    SimpleAttributeDefinition ALLOW_DIRECT_CONNECTIONS_ONLY = new SimpleAttributeDefinition("allow-direct-connections-only",
+            new ModelNode().set(false), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition ALLOW_FAILBACK = new SimpleAttributeDefinition("allow-failback",
             new ModelNode().set(ConfigurationImpl.DEFAULT_ALLOW_AUTO_FAILBACK), ModelType.BOOLEAN,  true);
 
     SimpleAttributeDefinition ASYNC_CONNECTION_EXECUTION_ENABLED = new SimpleAttributeDefinition("async-connection-execution-enabled",
@@ -65,6 +68,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition BRIDGE_RECONNECT_ATTEMPTS = new SimpleAttributeDefinition("reconnect-attempts",
             new ModelNode().set(ConfigurationImpl.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS), ModelType.INT, true, MeasurementUnit.NONE);
 
+    SimpleAttributeDefinition BRIDGE_USE_DUPLICATE_DETECTION = new SimpleAttributeDefinition("use-duplicate-detection",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_BRIDGE_DUPLICATE_DETECTION), ModelType.BOOLEAN,  true);
+
     SimpleAttributeDefinition BROADCAST_PERIOD = new SimpleAttributeDefinition("broadcast-period",
             new ModelNode().set(ConfigurationImpl.DEFAULT_BROADCAST_PERIOD), ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
 
@@ -81,6 +87,15 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition CLUSTERED = new SimpleAttributeDefinition("clustered",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTERED), ModelType.BOOLEAN,  true);
+
+    SimpleAttributeDefinition CLUSTER_CONNECTION_ADDRESS = new SimpleAttributeDefinition("cluster-connection-address", "address",
+            null, ModelType.STRING, false, false, MeasurementUnit.NONE);
+
+    SimpleAttributeDefinition CLUSTER_CONNECTION_RETRY_INTERVAL = new SimpleAttributeDefinition("retry-interval",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL), ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
+
+    SimpleAttributeDefinition CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION = new SimpleAttributeDefinition("use-duplicate-detection",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_DUPLICATE_DETECTION), ModelType.BOOLEAN,  true);
 
     SimpleAttributeDefinition CLUSTER_PASSWORD = new SimpleAttributeDefinition("cluster-password",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD),  ModelType.STRING, true);
@@ -108,7 +123,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CONNECTION_TTL_OVERRIDE = new SimpleAttributeDefinition("connection-ttl-override",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CONNECTION_TTL_OVERRIDE), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
-    SimpleAttributeDefinition CONNECTOR_REF = new SimpleAttributeDefinition("connector-ref", ModelType.STRING, true);
+    SimpleAttributeDefinition CONNECTOR_REF = new SimpleAttributeDefinition("connector-ref", ModelType.STRING, false);
 
     SimpleAttributeDefinition CONSUMER_MAX_RATE = new SimpleAttributeDefinition("consumer-max-rate",
             new ModelNode().set(HornetQClient.DEFAULT_CONSUMER_MAX_RATE), ModelType.INT,  true, MeasurementUnit.PER_SECOND);
@@ -151,6 +166,9 @@ public interface CommonAttributes {
             new ModelNode().set(false /*TODO should be ConfigurationImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN but field is private*/), ModelType.BOOLEAN,  true);
 
     SimpleAttributeDefinition FILTER = new SimpleAttributeDefinition("filter", ModelType.STRING, true);
+
+    SimpleAttributeDefinition FORWARD_WHEN_NO_CONSUMERS = new SimpleAttributeDefinition("forward-when-no-consumers",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS), ModelType.BOOLEAN, true);
 
     SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = new SimpleAttributeDefinition("grouping-handler-address", "address",
             null, ModelType.STRING, false, false, MeasurementUnit.NONE);
@@ -220,6 +238,9 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleAttributeDefinition("management-notification-address",
             new ModelNode().set(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS.toString()), ModelType.STRING, true);
+
+    SimpleAttributeDefinition MAX_HOPS = new SimpleAttributeDefinition("max-hops",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_MAX_HOPS), ModelType.INT,  true);
 
     SimpleAttributeDefinition MAX_RETRY_INTERVAL = new SimpleAttributeDefinition("max-retry-interval",
             new ModelNode().set(HornetQClient.DEFAULT_MAX_RETRY_INTERVAL), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
@@ -341,9 +362,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition USER = new SimpleAttributeDefinition("user",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true);
 
-    SimpleAttributeDefinition USE_DUPLICATE_DETECTION = new SimpleAttributeDefinition("use-duplicate-detection",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_BRIDGE_DUPLICATE_DETECTION), ModelType.BOOLEAN,  true);
-
     SimpleAttributeDefinition USE_GLOBAL_POOLS = new SimpleAttributeDefinition("use-global-pools",
             new ModelNode().set(HornetQClient.DEFAULT_USE_GLOBAL_POOLS), ModelType.BOOLEAN,  true);
 
@@ -359,7 +377,6 @@ public interface CommonAttributes {
     String ADDRESS_FULL_MESSAGE_POLICY ="address-full-policy";
     String ADDRESS_SETTING ="address-setting";
     String ADDRESS_SETTINGS ="address-settings";
-    String ALLOW_DIRECT_CONNECTIONS_ONLY = "allow-direct-connections-only";
     String BINDINGS_DIRECTORY ="bindings-directory";
     String BRIDGE = "bridge";
     String BRIDGES = "bridges";
@@ -396,7 +413,6 @@ public interface CommonAttributes {
     String EXPIRY_ADDRESS ="expiry-address";
     String FACTORY_CLASS ="factory-class";
     String FILE_DEPLOYMENT_ENABLED ="file-deployment-enabled";
-    String FORWARD_WHEN_NO_CONSUMERS = "forward-when-no-consumers";
     String GROUPING_HANDLER ="grouping-handler";
     String IN_VM_ACCEPTOR ="in-vm-acceptor";
     String IN_VM_CONNECTOR ="in-vm-connector";
@@ -416,7 +432,6 @@ public interface CommonAttributes {
     String MANAGE_NAME ="manage";
     String MATCH ="match";
     String MAX_DELIVERY_ATTEMPTS ="max-delivery-attempts";
-    String MAX_HOPS ="max-hops";
     String MAX_SIZE_BYTES_NODE_NAME ="max-size-bytes";
     String MESSAGE_COUNTER_HISTORY_DAY_LIMIT = "message-counter-history-day-limit";
     String MODE = "mode";
@@ -474,7 +489,6 @@ public interface CommonAttributes {
 
     String[] COMPLEX_ROOT_RESOURCE_ATTRIBUTES =  {
         /* TODO remove */ CONNECTOR, /* TODO remove */ ACCEPTOR,
-        /* TODO remove */ CLUSTER_CONNECTION,
         /* TODO remove */ PAGING_DIRECTORY, /* TODO remove */ BINDINGS_DIRECTORY,
         /* TODO remove */ JOURNAL_DIRECTORY, /* TODO remove */ LARGE_MESSAGES_DIRECTORY,
         /* TODO remove */ SECURITY_SETTING, /* TODO remove */ ADDRESS_SETTING, /* TODO remove */ CONNECTOR_SERVICE
@@ -499,8 +513,14 @@ public interface CommonAttributes {
     AttributeDefinition[] BRIDGE_ATTRIBUTES = {
             QUEUE_NAME, BRIDGE_FORWARDING_ADDRESS, HA, FILTER, TRANSFORMER_CLASS_NAME,
             RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, BRIDGE_RECONNECT_ATTEMPTS, FAILOVER_ON_SERVER_SHUTDOWN,
-            USE_DUPLICATE_DETECTION, CONFIRMATION_WINDOW_SIZE, USER, PASSWORD, ConnectorRefsAttribute.STATIC_CONNECTORS,
+            BRIDGE_USE_DUPLICATE_DETECTION, CONFIRMATION_WINDOW_SIZE, USER, PASSWORD, ConnectorRefsAttribute.BRIDGE_CONNECTORS,
             DISCOVERY_GROUP_NAME
+    };
+
+    AttributeDefinition[] CLUSTER_CONNECTION_ATTRIBUTES = {
+        CLUSTER_CONNECTION_ADDRESS,  CONNECTOR_REF, RETRY_INTERVAL, CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION,
+        FORWARD_WHEN_NO_CONSUMERS,  MAX_HOPS, CONFIRMATION_WINDOW_SIZE, ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS,
+        DISCOVERY_GROUP_NAME, ALLOW_DIRECT_CONNECTIONS_ONLY
     };
 
     AttributeDefinition[] JMS_QUEUE_ATTRIBUTES = { ENTRIES, SELECTOR, DURABLE };

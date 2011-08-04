@@ -11,6 +11,7 @@ import org.jboss.as.controller.AttributeDefinition;
 public enum Attribute {
    UNKNOWN((String) null),
    /* Messaging 1.0 attributes, in alpha order */
+   ALLOW_DIRECT_CONNECTIONS_ONLY(CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY),
    CONNECTOR_NAME(CommonAttributes.CONNECTOR_NAME),
    CONSUME_NAME(CommonAttributes.CONSUME_NAME),
    CREATEDURABLEQUEUE_NAME(CommonAttributes.CREATEDURABLEQUEUE_NAME),
