@@ -65,13 +65,12 @@ import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
 
+import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
-import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
-import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
 import org.jboss.as.controller.operations.common.ExtensionRemoveHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
@@ -80,6 +79,7 @@ import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
 import org.jboss.as.controller.operations.common.SnapshotListHandler;
 import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
+import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyValueWriteAttributeHandler;
@@ -90,6 +90,7 @@ import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.domain.management.operations.ConnectionAddHandler;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
@@ -115,6 +116,7 @@ import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.operations.NativeManagementAddHandler;
 import org.jboss.as.server.operations.NativeManagementAttributeHandlers;
 import org.jboss.as.server.operations.ProcessTypeHandler;
+import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.as.server.operations.ServerReloadHandler;
 import org.jboss.as.server.operations.ServerShutdownHandler;
 import org.jboss.as.server.operations.ServerStateAttributeHandler;
@@ -213,6 +215,10 @@ public class
 
         root.registerReadOnlyAttribute(ServerDescriptionConstants.SERVER_STATE, new ServerStateAttributeHandler(processState), Storage.RUNTIME);
         root.registerReadOnlyAttribute(ServerDescriptionConstants.PROCESS_TYPE, ProcessTypeHandler.INSTANCE, Storage.RUNTIME);
+
+        //Hack to be able to access the registry for the jmx facade
+        root.registerOperationHandler(RootResourceHack.NAME, RootResourceHack.INSTANCE, RootResourceHack.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+
 
         // Runtime operations
         if (serverEnvironment != null) {

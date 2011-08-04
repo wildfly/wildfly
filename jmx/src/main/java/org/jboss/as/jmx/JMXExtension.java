@@ -59,6 +59,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * Domain extension used to initialize the JMX subsystem.
  *
  * @author Emanuel Muckenhuber
+ * @author Kabir Khan
  */
 public class JMXExtension implements Extension {
 
@@ -83,13 +84,17 @@ public class JMXExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parsers);
+        context.setSubsystemXmlMapping(Namespace.JMX_1_0.getUriString(), parsers);
+        context.setSubsystemXmlMapping(Namespace.JMX_1_1.getUriString(), parsers);
     }
 
-    private static ModelNode createAddOperation() {
+    private static ModelNode createAddOperation(Boolean showModel) {
         final ModelNode subsystem = new ModelNode();
         subsystem.get(OP).set(ADD);
         subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+        if (showModel != null) {
+            subsystem.get(CommonAttributes.SHOW_MODEL).set(showModel.booleanValue());
+        }
         return subsystem;
     }
 
@@ -102,14 +107,37 @@ public class JMXExtension implements Extension {
         return connector;
     }
 
-    static class JMXSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+    private static class JMXSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
+        private volatile Namespace schemaVer;
         /** {@inheritDoc} */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+            schemaVer = Namespace.forUri(reader.getNamespaceURI());
+            Boolean showModel = null;
 
-            list.add(createAddOperation());
-            ParseUtils.requireNoAttributes(reader);
+            if (schemaVer == Namespace.JMX_1_0) {
+                ParseUtils.requireNoAttributes(reader);
+            } else {
+                int count = reader.getAttributeCount();
+                for (int i = 0; i < count; i++) {
+                    final String value = reader.getAttributeValue(i);
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case SHOW_MODEL: {
+                            if (schemaVer == Namespace.JMX_1_0) {
+                                throw ParseUtils.unexpectedAttribute(reader, i);
+                            }
+                            showModel = Boolean.valueOf(value);
+                            break;
+                        } default: {
+                            throw ParseUtils.unexpectedAttribute(reader, i);
+                        }
+                    }
+                }
+            }
+            list.add(createAddOperation(showModel));
+
             boolean gotConnector = false;
 
             while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -162,10 +190,13 @@ public class JMXExtension implements Extension {
         /** {@inheritDoc} */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-
+            Namespace schemaVer = this.schemaVer == null ? Namespace.CURRENT : this.schemaVer;
             ModelNode node = context.getModelNode();
             if(node.has(CommonAttributes.SERVER_BINDING)) {
-                context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+                context.startSubsystemElement(schemaVer.getUriString(), false);
+                if (schemaVer != Namespace.JMX_1_0 && node.hasDefined(CommonAttributes.SHOW_MODEL)) {
+                    writer.writeAttribute(Attribute.SHOW_MODEL.getLocalName(), node.get(CommonAttributes.SHOW_MODEL).asString());
+                }
                 writer.writeStartElement(Element.JMX_CONNECTOR.getLocalName());
                 writer.writeAttribute(Attribute.SERVER_BINDING.getLocalName(), node.get(CommonAttributes.SERVER_BINDING).asString());
                 writer.writeAttribute(Attribute.REGISTRY_BINDING.getLocalName(), node.get(CommonAttributes.REGISTRY_BINDING).asString());
@@ -175,7 +206,7 @@ public class JMXExtension implements Extension {
             else {
                 //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
                 //context.startSubsystemElement(NewNamingExtension.NAMESPACE, true);
-                context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+                context.startSubsystemElement(schemaVer.getUriString(), false);
                 writer.writeEndElement();
             }
         }
@@ -186,7 +217,7 @@ public class JMXExtension implements Extension {
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
-            context.getResult().add(createAddOperation());
+            context.getResult().add(createAddOperation(model.hasDefined(CommonAttributes.SHOW_MODEL) ? model.get(CommonAttributes.SHOW_MODEL).asBoolean() : null));
             context.getResult().add(createAddConnectorOperation(model.require(CommonAttributes.SERVER_BINDING).asString(), model.require(CommonAttributes.REGISTRY_BINDING).asString()));
             context.completeStep();
         }

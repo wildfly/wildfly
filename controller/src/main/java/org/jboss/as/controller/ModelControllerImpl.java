@@ -147,7 +147,7 @@ class ModelControllerImpl implements ModelController {
         bootingFlag.set(false);
     }
 
-    Resource getRootResource() {
+    public Resource getRootResource() {
         return model;
     }
 

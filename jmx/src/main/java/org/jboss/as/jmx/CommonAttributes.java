@@ -27,6 +27,7 @@ package org.jboss.as.jmx;
  */
 interface CommonAttributes {
 
+    String SHOW_MODEL = "show-model";
     String SERVER_BINDING = "server-binding";
     String REGISTRY_BINDING = "registry-binding";
     String JMX_CONNECTOR = "jmx-connector";

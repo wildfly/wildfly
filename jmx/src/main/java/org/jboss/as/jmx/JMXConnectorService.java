@@ -72,6 +72,7 @@ public class JMXConnectorService implements Service<Void> {
     private RMIConnectorServer adapter;
     private RMIJRMPServerImpl rmiServer;
     private Registry registry;
+    private JMXServiceURL url;
 
     public static ServiceController<?> addService(final ServiceTarget target, final String serverBinding, final String registryBinding, final ServiceListener<Object>... listeners) {
         JMXConnectorService jmxConnectorService = new JMXConnectorService();
@@ -85,7 +86,7 @@ public class JMXConnectorService implements Service<Void> {
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public synchronized void start(StartContext context) throws StartException {
         log.info("Starting remote JMX connector");
         setRmiServerProperty(serverPortBinding.getValue().getAddress().getHostAddress());
         try {
@@ -98,7 +99,7 @@ public class JMXConnectorService implements Service<Void> {
             HashMap<String, Object> env = new HashMap<String, Object>();
 
             rmiServer = new RMIJRMPServerImpl(getRmiServerPort(), null, serverSocketFactory, env);
-            JMXServiceURL url = buildJMXServiceURL();
+            url = buildJMXServiceURL();
             adapter = new RMIConnectorServer(url, env, rmiServer, injectedMBeanServer.getValue());
             adapter.start();
             registry.rebind(RMI_BIND_NAME, rmiServer.toStub());
@@ -107,7 +108,7 @@ public class JMXConnectorService implements Service<Void> {
         }
     }
 
-    public void stop(StopContext context) {
+    public synchronized void stop(StopContext context) {
         try {
             registry.unbind(RMI_BIND_NAME);
         } catch (Exception e) {

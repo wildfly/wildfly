@@ -32,6 +32,7 @@ enum Attribute {
 
     UNKNOWN(null),
 
+    SHOW_MODEL(CommonAttributes.SHOW_MODEL),
     SERVER_BINDING(CommonAttributes.SERVER_BINDING),
     REGISTRY_BINDING(CommonAttributes.REGISTRY_BINDING),
     ;
