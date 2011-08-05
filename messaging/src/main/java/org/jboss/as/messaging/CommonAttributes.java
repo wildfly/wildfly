@@ -103,6 +103,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CLUSTER_USER = new SimpleAttributeDefinition("cluster-user",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true);
 
+    SimpleAttributeDefinition COMPRESS_LARGE_MESSAGES = new SimpleAttributeDefinition("compress-large-messages",
+            new ModelNode().set(HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES), ModelType.BOOLEAN,  true);
+
     SimpleAttributeDefinition CONFIRMATION_WINDOW_SIZE = new SimpleAttributeDefinition("confirmation-window-size",
             new ModelNode().set(HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
 
@@ -226,7 +229,8 @@ public interface CommonAttributes {
 
     LiveConnectorRefAttribute LIVE_CONNECTOR_REF = LiveConnectorRefAttribute.INSTANCE;
 
-    SimpleAttributeDefinition LOAD_BALANCING_CLASS_NAME = new SimpleAttributeDefinition("connection-load-balancing-policy-class-name", ModelType.STRING, true);
+    SimpleAttributeDefinition LOAD_BALANCING_CLASS_NAME = new SimpleAttributeDefinition("connection-load-balancing-policy-class-name",
+            new ModelNode().set(HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME), ModelType.STRING, true);
 
     SimpleAttributeDefinition LOCAL_BIND_ADDRESS = new SimpleAttributeDefinition("local-bind-address", ModelType.STRING, true);
 

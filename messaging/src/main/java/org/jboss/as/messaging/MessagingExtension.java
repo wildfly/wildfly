@@ -41,13 +41,16 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.ConnectionFactoryRemove;
+import org.jboss.as.messaging.jms.ConnectionFactoryWriteAttributeHandler;
 import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSQueueRemove;
+import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
 import org.jboss.as.messaging.jms.JMSTopicRemove;
 import org.jboss.as.messaging.jms.JmsQueueConfigurationWriteHandler;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryRemove;
+import org.jboss.as.messaging.jms.PooledConnectionFactoryWriteAttributeHandler;
 import org.jboss.as.messaging.jms.TopicConfigurationWriteHandler;
 
 /**
@@ -162,11 +165,17 @@ public class MessagingExtension implements Extension {
         final ManagementResourceRegistration cfs = rootRegistration.registerSubModel(CFS_PATH, MessagingSubsystemProviders.CF);
         cfs.registerOperationHandler(ADD, ConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.CF_ADD, false);
         cfs.registerOperationHandler(REMOVE, ConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.CF_REMOVE, false);
+        for (AttributeDefinition attributeDefinition : JMSServices.CONNECTION_FACTORY_ATTRS) {
+            cfs.registerReadWriteAttribute(attributeDefinition.getName(), null, ConnectionFactoryWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        }
 
         // Resource Adapter Pooled connection factories
         final ManagementResourceRegistration resourceAdapters = rootRegistration.registerSubModel(RA_PATH, MessagingSubsystemProviders.RA);
         resourceAdapters.registerOperationHandler(ADD, PooledConnectionFactoryAdd.INSTANCE, MessagingSubsystemProviders.RA_ADD, false);
         resourceAdapters.registerOperationHandler(REMOVE, PooledConnectionFactoryRemove.INSTANCE, MessagingSubsystemProviders.RA_REMOVE);
+        for (AttributeDefinition attributeDefinition : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
+            resourceAdapters.registerReadWriteAttribute(attributeDefinition.getName(), null, PooledConnectionFactoryWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        }
 
         // JMS Queues
         final ManagementResourceRegistration queues = rootRegistration.registerSubModel(JMS_QUEUE_PATH, MessagingSubsystemProviders.JMS_QUEUE_RESOURCE);

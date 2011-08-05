@@ -34,6 +34,7 @@ import static org.jboss.as.messaging.CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT
 import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
+import static org.jboss.as.messaging.CommonAttributes.COMPRESS_LARGE_MESSAGES;
 import static org.jboss.as.messaging.CommonAttributes.CONFIRMATION_WINDOW_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE;
@@ -122,6 +123,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         if (clientId.isDefined()) {
             config.setClientID(clientId.asString());
         }
+        config.setCompressLargeMessages(COMPRESS_LARGE_MESSAGES.validateResolvedOperation(operation).asBoolean());
         config.setConfirmationWindowSize(CONFIRMATION_WINDOW_SIZE.validateResolvedOperation(operation).asInt());
         config.setConnectionTTL(CONNECTION_TTL.validateResolvedOperation(operation).asLong());
         if (operation.hasDefined(CONNECTOR)) {
@@ -167,6 +169,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         config.setThreadPoolMaxSize(CONNECTION_THREAD_POOL_MAX_SIZE.validateResolvedOperation(operation).asInt());
         config.setTransactionBatchSize(TRANSACTION_BATCH_SIZE.validateResolvedOperation(operation).asInt());
         config.setUseGlobalPools(USE_GLOBAL_POOLS.validateResolvedOperation(operation).asBoolean());
+        config.setLoadBalancingPolicyClassName(LOAD_BALANCING_CLASS_NAME.validateResolvedOperation(operation).asString());
 
         return config;
     }

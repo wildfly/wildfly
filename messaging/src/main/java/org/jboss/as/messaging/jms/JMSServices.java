@@ -30,6 +30,7 @@ import static org.jboss.as.messaging.CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT
 import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
+import static org.jboss.as.messaging.CommonAttributes.COMPRESS_LARGE_MESSAGES;
 import static org.jboss.as.messaging.CommonAttributes.CONFIRMATION_WINDOW_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE;
@@ -130,6 +131,7 @@ public class JMSServices {
         CALL_TIMEOUT,
         CLIENT_FAILURE_CHECK_PERIOD,
         CLIENT_ID,
+        COMPRESS_LARGE_MESSAGES,
         CONFIRMATION_WINDOW_SIZE,
         CONNECTION_TTL,
         CONSUMER_MAX_RATE,
@@ -146,13 +148,46 @@ public class JMSServices {
         PRE_ACK,
         PRODUCER_MAX_RATE,
         PRODUCER_WINDOW_SIZE,
-            CONNECTION_FACTORY_RECONNECT_ATTEMPTS,
+        CONNECTION_FACTORY_RECONNECT_ATTEMPTS,
         RETRY_INTERVAL,
         RETRY_INTERVAL_MULTIPLIER,
         CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE,
         CONNECTION_THREAD_POOL_MAX_SIZE,
         TRANSACTION_BATCH_SIZE,
         USE_GLOBAL_POOLS
+    };
+
+    /** Connection factory config attributes that can be written at runtime */
+    public static AttributeDefinition[] CONNECTION_FACTORY_WRITE_ATTRS = new AttributeDefinition[] {
+        CLIENT_ID,
+        COMPRESS_LARGE_MESSAGES,
+        CLIENT_FAILURE_CHECK_PERIOD,
+        CALL_TIMEOUT,
+        DUPS_OK_BATCH_SIZE,
+        CONSUMER_MAX_RATE,
+        CONSUMER_WINDOW_SIZE,
+        PRODUCER_MAX_RATE,
+        CONFIRMATION_WINDOW_SIZE,
+        BLOCK_ON_ACK,
+        BLOCK_ON_DURABLE_SEND,
+        BLOCK_ON_NON_DURABLE_SEND,
+        PRE_ACK,
+        CONNECTION_TTL,
+        TRANSACTION_BATCH_SIZE,
+        MIN_LARGE_MESSAGE_SIZE,
+        AUTO_GROUP,
+        RETRY_INTERVAL,
+        RETRY_INTERVAL_MULTIPLIER,
+        CONNECTION_FACTORY_RECONNECT_ATTEMPTS,
+        FAILOVER_ON_INITIAL_CONNECTION,
+        PRODUCER_WINDOW_SIZE,
+        CACHE_LARGE_MESSAGE_CLIENT,
+        MAX_RETRY_INTERVAL,
+        CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE,
+        CONNECTION_THREAD_POOL_MAX_SIZE,
+        GROUP_ID,
+        USE_GLOBAL_POOLS,
+        LOAD_BALANCING_CLASS_NAME
     };
 
     public static AttributeDefinition[] POOLED_CONNECTION_FACTORY_ATTRS = new AttributeDefinition[] {
@@ -184,7 +219,7 @@ public class JMSServices {
         PRE_ACK,
         PRODUCER_MAX_RATE,
         PRODUCER_WINDOW_SIZE,     // TODO HornetQResourceAdapter does not have this method
-            CONNECTION_FACTORY_RECONNECT_ATTEMPTS,
+        CONNECTION_FACTORY_RECONNECT_ATTEMPTS,
         RETRY_INTERVAL,
         RETRY_INTERVAL_MULTIPLIER,
         CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE,
