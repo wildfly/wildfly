@@ -28,10 +28,8 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.namespace.QName;
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -39,6 +37,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 /**
  * Parse Microcontainer jboss-beans.xml.
@@ -158,7 +160,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                             beansConfigs.add(parseBean(reader));
                             break;
                         case UNKNOWN:
-                            throw unexpectedContent(reader);
+                            throw unexpectedElement(reader);
                     }
                     break;
             }
@@ -186,11 +188,11 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     beanConfig.setMode(ModeConfig.of(attributeValue));
                     break;
                 default:
-                    throw unexpectedContent(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (required.isEmpty() == false) {
-            throw missingAttributes(reader.getLocation(), required);
+            throw missingRequired(reader, required);
         }
 
         while (reader.hasNext()) {
@@ -260,12 +262,12 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                             beanConfig.setDestroy(parseLifecycle(reader, "destroy"));
                             break;
                         case UNKNOWN:
-                            throw unexpectedContent(reader);
+                            throw unexpectedElement(reader);
                     }
                     break;
             }
         }
-        throw unexpectedContent(reader);
+        throw unexpectedElement(reader);
     }
 
     private String parseAlias(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -290,7 +292,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     ctorConfig.setFactoryMethod(attributeValue);
                     break;
                 default:
-                    throw unexpectedContent(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         List<ValueConfig> parameters = new ArrayList<ValueConfig>();
@@ -307,10 +309,12 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case PARAMETER:
                             parameters.add(parseParameter(reader));
                             break;
+                        default:
+                            throw unexpectedElement(reader);
                     }
             }
         }
-        throw unexpectedContent(reader);
+        throw unexpectedElement(reader);
     }
 
     private ModuleConfig parseModuleConfig(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -327,11 +331,11 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     moduleConfig.setModuleName(attributeValue);
                     break;
                 default:
-                    throw unexpectedContent(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (required.isEmpty() == false) {
-            throw missingAttributes(reader.getLocation(), required);
+            throw missingRequired(reader, required);
         }
         return moduleConfig;
     }
@@ -353,11 +357,11 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     property.setType(attributeValue);
                     break;
                 default:
-                    throw unexpectedContent(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (required.isEmpty() == false) {
-            throw missingAttributes(reader.getLocation(), required);
+            throw missingRequired(reader, required);
         }
 
         while (reader.hasNext()) {
@@ -375,10 +379,12 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case VALUE_FACTORY:
                             property.setValue(parseValueFactory(reader));
                             break;
+                        default:
+                            throw unexpectedElement(reader);
                     }
             }
         }
-        throw unexpectedContent(reader);
+        throw unexpectedElement(reader);
     }
 
     private InstallConfig parseInstall(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -404,11 +410,11 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     installConfig.setMethodName(attributeValue);
                     break;
                 default:
-                    throw unexpectedContent(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (required.isEmpty() == false) {
-            throw missingAttributes(reader.getLocation(), required);
+            throw missingRequired(reader, required);
         }
 
         List<ValueConfig> parameters = new ArrayList<ValueConfig>();
@@ -422,10 +428,12 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case PARAMETER:
                             parameters.add(parseParameter(reader));
                             break;
+                        default:
+                            throw unexpectedElement(reader);
                     }
             }
         }
-        throw unexpectedContent(reader);
+        throw unexpectedElement(reader);
     }
 
     private DependsConfig parseDepends(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -446,7 +454,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     dependsConfig.setService(Boolean.parseBoolean(attributeValue));
                     break;
                 default:
-                    throw unexpectedContent(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
 
@@ -471,7 +479,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     lifecycleConfig.setMethodName(attributeValue);
                     break;
                 default:
-                    throw unexpectedContent(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
 
@@ -486,10 +494,12 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case PARAMETER:
                             parameters.add(parseParameter(reader));
                             break;
+                        default:
+                            throw unexpectedElement(reader);
                     }
             }
         }
-        throw unexpectedContent(reader);
+        throw unexpectedElement(reader);
     }
 
     private ValueConfig parseParameter(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -505,7 +515,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     type = attributeValue;
                     break;
                 default:
-                    throw unexpectedContent(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
 
@@ -528,10 +538,12 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case VALUE_FACTORY:
                             valueConfig = parseValueFactory(reader);
                             break;
+                        default:
+                            throw unexpectedElement(reader);
                     }
             }
         }
-        throw unexpectedContent(reader);
+        throw unexpectedElement(reader);
     }
 
     private InjectedValueConfig parseInject(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -555,7 +567,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     injectedValueConfig.setProperty(attributeValue);
                     break;
                 default:
-                    throw unexpectedContent(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         while (reader.hasNext()) {
@@ -564,7 +576,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     return injectedValueConfig;
             }
         }
-        throw unexpectedContent(reader);
+        throw unexpectedElement(reader);
     }
 
     private ValueFactoryConfig parseValueFactory(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -587,11 +599,11 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     valueFactoryConfig.setState(BeanState.valueOf(attributeValue.toUpperCase()));
                     break;
                 default:
-                    throw unexpectedContent(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (required.isEmpty() == false) {
-            throw missingAttributes(reader.getLocation(), required);
+            throw missingRequired(reader, required);
         }
 
         List<ValueConfig> parameters = new ArrayList<ValueConfig>();
@@ -605,10 +617,12 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case PARAMETER:
                             parameters.add(parseParameter(reader));
                             break;
+                        default:
+                            throw unexpectedElement(reader);
                     }
             }
         }
-        throw unexpectedContent(reader);
+        throw unexpectedElement(reader);
     }
 
     private ValueConfig parseValue(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -629,7 +643,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     valueConfig.setTrim(Boolean.parseBoolean(attributeValue));
                     break;
                 default:
-                    throw unexpectedContent(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         valueConfig.setValue(parseTextElement(reader));
@@ -645,46 +659,10 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case CHARACTERS:
                     value = reader.getText();
                     break;
+                default:
+                    throw unexpectedElement(reader);
             }
         }
-        throw unexpectedContent(reader);
-    }
-
-    private static XMLStreamException unexpectedContent(final XMLStreamReader reader) {
-        final String kind;
-        switch (reader.getEventType()) {
-            case XMLStreamConstants.ATTRIBUTE: kind = "attribute"; break;
-            case XMLStreamConstants.CDATA: kind = "cdata"; break;
-            case XMLStreamConstants.CHARACTERS: kind = "characters"; break;
-            case XMLStreamConstants.COMMENT: kind = "comment"; break;
-            case XMLStreamConstants.DTD: kind = "dtd"; break;
-            case XMLStreamConstants.END_DOCUMENT: kind = "document end"; break;
-            case XMLStreamConstants.END_ELEMENT: kind = "element end"; break;
-            case XMLStreamConstants.ENTITY_DECLARATION: kind = "entity decl"; break;
-            case XMLStreamConstants.ENTITY_REFERENCE: kind = "entity ref"; break;
-            case XMLStreamConstants.NAMESPACE: kind = "namespace"; break;
-            case XMLStreamConstants.NOTATION_DECLARATION: kind = "notation decl"; break;
-            case XMLStreamConstants.PROCESSING_INSTRUCTION: kind = "processing instruction"; break;
-            case XMLStreamConstants.SPACE: kind = "whitespace"; break;
-            case XMLStreamConstants.START_DOCUMENT: kind = "document start"; break;
-            case XMLStreamConstants.START_ELEMENT: kind = "element start"; break;
-            default: kind = "unknown"; break;
-        }
-        final StringBuilder b = new StringBuilder("Unexpected content of type '").append(kind).append('\'');
-        if (reader.hasName()) {
-            b.append(" named '").append(reader.getName()).append('\'');
-        }
-        if (reader.hasText()) {
-            b.append(", text is: '").append(reader.getText()).append('\'');
-        }
-        return new XMLStreamException(b.toString(), reader.getLocation());
-    }
-
-    private static XMLStreamException missingAttributes(final Location location, final Set<Attribute> required) {
-        final StringBuilder b = new StringBuilder("Missing one or more required attributes:");
-        for (Attribute attribute : required) {
-            b.append(' ').append(attribute);
-        }
-        return new XMLStreamException(b.toString(), location);
+        throw unexpectedElement(reader);
     }
 }
