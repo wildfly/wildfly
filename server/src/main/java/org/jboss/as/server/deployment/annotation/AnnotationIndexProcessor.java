@@ -28,7 +28,9 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.moduleservice.ModuleIndexBuilder;
 import org.jboss.jandex.Index;
+import org.jboss.jandex.IndexReader;
 import org.jboss.jandex.Indexer;
 import org.jboss.logging.Logger;
 import org.jboss.vfs.VFSUtils;
@@ -37,6 +39,7 @@ import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -72,6 +75,19 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
             if (resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX) != null) {
                 continue;
             }
+
+            VirtualFile indexFile = resourceRoot.getRoot().getChild(ModuleIndexBuilder.INDEX_LOCATION);
+            if (indexFile.exists()) {
+                try {
+                    IndexReader reader = new IndexReader(indexFile.openStream());
+                    resourceRoot.putAttachment(Attachments.ANNOTATION_INDEX, reader.read());
+                    logger.tracef("Found and read index at: %s", indexFile);
+                    continue;
+                } catch (Exception e) {
+                    logger.debugf("Could not read provided index: %s", indexFile, e);
+                }
+            }
+
             // if this flag is present and set to false then do not index the resource
             Boolean shouldIndexResource = resourceRoot.getAttachment(Attachments.INDEX_RESOURCE_ROOT);
             if (shouldIndexResource != null && !shouldIndexResource) {
@@ -111,6 +127,7 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
                 }
                 final Index index = indexer.complete();
                 resourceRoot.putAttachment(Attachments.ANNOTATION_INDEX, index);
+                logger.tracef("Generated index for archive %s", virtualFile);
             } catch (Throwable t) {
                 throw new DeploymentUnitProcessingException("Failed to index deployment root for annotations", t);
             }
