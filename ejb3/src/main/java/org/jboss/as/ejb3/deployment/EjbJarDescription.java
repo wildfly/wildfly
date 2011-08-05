@@ -49,7 +49,7 @@ public class EjbJarDescription {
 
     private final EEModuleDescription eeModuleDescription;
 
-    private final Map<String, ApplicationException> applicationExceptions = new ConcurrentHashMap();
+    private final Map<String, ApplicationException> applicationExceptions = new ConcurrentHashMap<String, ApplicationException>();
 
     private final Set<String> applicationLevelSecurityRoles = new HashSet<String>();
 

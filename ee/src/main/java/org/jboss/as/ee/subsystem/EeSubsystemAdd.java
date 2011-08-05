@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.subsystem;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -32,6 +30,7 @@ import org.jboss.as.ee.component.AroundInvokeAnnotationParsingProcessor;
 import org.jboss.as.ee.component.ComponentInstallProcessor;
 import org.jboss.as.ee.component.DefaultEarSubDeploymentsIsolationProcessor;
 import org.jboss.as.ee.component.EEClassConfigurationProcessor;
+import org.jboss.as.ee.component.EECleanUpProcessor;
 import org.jboss.as.ee.component.EEModuleConfigurationProcessor;
 import org.jboss.as.ee.component.EEModuleInitialProcessor;
 import org.jboss.as.ee.component.EEModuleNameProcessor;
@@ -64,6 +63,8 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
+
+import java.util.List;
 
 /**
  * Handler for adding the ee subsystem.
@@ -139,6 +140,8 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_CLASS_CONFIG, new EEClassConfigurationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_MODULE_CONFIG, new EEModuleConfigurationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT, new ComponentInstallProcessor());
+
+                processorTarget.addDeploymentProcessor(Phase.CLEANUP, Phase.CLEANUP_EE, new EECleanUpProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
     }
