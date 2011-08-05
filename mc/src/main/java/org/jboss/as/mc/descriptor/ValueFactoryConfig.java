@@ -23,12 +23,9 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
-import org.jboss.as.mc.service.Configurator;
-import org.jboss.as.mc.service.MethodJoinpoint;
+import org.jboss.as.mc.service.ReflectionJoinpoint;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.value.InjectedValue;
-
-import java.lang.reflect.Method;
 
 /**
  * Value factory value.
@@ -47,10 +44,7 @@ public class ValueFactoryConfig extends ValueConfig {
 
     public Object getValue(Class<?> type) {
         try {
-            Object factory = value.getValue();
-            String[] types = Configurator.getTypes(parameters);
-            Method m = Configurator.findMethod(DeploymentReflectionIndex.create(), factory.getClass(), method, types, false, true, true);
-            MethodJoinpoint joinpoint = new MethodJoinpoint(m);
+            ReflectionJoinpoint joinpoint = new ReflectionJoinpoint(DeploymentReflectionIndex.create(), method);
             joinpoint.setTarget(value);
             joinpoint.setParameters(parameters);
             return joinpoint.dispatch();

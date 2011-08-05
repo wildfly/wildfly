@@ -36,6 +36,10 @@ public class ReflectionJoinpoint extends TargetJoinpoint {
     private final String methodName;
     private final String[] types;
 
+    public ReflectionJoinpoint(DeploymentReflectionIndex index, String methodName) {
+        this(index, methodName, null);
+    }
+
     public ReflectionJoinpoint(DeploymentReflectionIndex index, String methodName, String[] types) {
         this.index = index;
         this.methodName = methodName;
@@ -44,8 +48,12 @@ public class ReflectionJoinpoint extends TargetJoinpoint {
 
     @Override
     public Object dispatch() throws Throwable {
+        String[] pts = types;
+        if (pts == null)
+            pts = Configurator.getTypes(getParameters());
+
         Object target = getTarget().getValue();
-        Method method = Configurator.findMethod(index, target.getClass(), methodName, types, false, true, true);
+        Method method = Configurator.findMethod(index, target.getClass(), methodName, pts, false, true, true);
         return method.invoke(target, toObjects(method.getParameterTypes()));
     }
 }

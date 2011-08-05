@@ -23,8 +23,6 @@
 package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.descriptor.ValueConfig;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
 /**
  * Abstract joinpoint; keep parameters.
@@ -52,6 +50,10 @@ public abstract class AbstractJoinpoint implements Joinpoint {
         } catch (Throwable t) {
             throw new IllegalArgumentException(t);
         }
+    }
+
+    protected ValueConfig[] getParameters() {
+        return parameters;
     }
 
     public void setParameters(ValueConfig[] parameters) {
