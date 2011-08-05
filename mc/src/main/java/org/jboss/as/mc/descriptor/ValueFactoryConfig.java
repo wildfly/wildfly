@@ -23,56 +23,50 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
-import org.jboss.as.mc.service.BeanInfo;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.mc.service.Configurator;
+import org.jboss.as.mc.service.MethodJoinpoint;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.value.InjectedValue;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * Injected value.
+ * Value factory value.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class InjectedValueConfig extends ValueConfig {
+public class ValueFactoryConfig extends ValueConfig {
     private static final long serialVersionUID = 1L;
 
     private String bean;
     private BeanState state;
-    private String service;
-    private String property;
+    private String method;
+    private ValueConfig[] parameters;
 
-    private final transient InjectedValue<BeanInfo> beanInfo = new InjectedValue<BeanInfo>();
     private final transient InjectedValue<Object> value = new InjectedValue<Object>();
 
     public Object getValue(Class<?> type) {
-        if (property != null) {
-            Method getter = beanInfo.getValue().getGetter(property, type);
-            try {
-                return getter.invoke(value.getValue());
-            } catch (IllegalAccessException e) {
-                throw new IllegalArgumentException(e);
-            } catch (InvocationTargetException e) {
-                throw new IllegalArgumentException(e);
-            }
-        } else {
-            return value.getValue();
+        try {
+            Object factory = value.getValue();
+            String[] types = Configurator.getTypes(parameters);
+            Method m = Configurator.findMethod(DeploymentReflectionIndex.create(), factory.getClass(), method, types, false, true, true);
+            MethodJoinpoint joinpoint = new MethodJoinpoint(m);
+            joinpoint.setTarget(value);
+            joinpoint.setParameters(parameters);
+            return joinpoint.dispatch();
+        } catch (Throwable t) {
+            throw new IllegalArgumentException(t);
         }
     }
 
     @Override
     public void visit(ConfigVisitor visitor) {
         if (bean != null) {
-            visitor.addDependency(bean, BeanState.DESCRIBED, beanInfo);
-            ServiceName name = BeanMetaDataConfig.toBeanName(bean, state);
-            visitor.addDependency(name, value); // direct name, since we have describe already
+            visitor.addDependency(bean, state, value);
         }
-        else if (service != null) {
-            visitor.addDependency(ServiceName.parse(service), value);
-        }
-        else {
-            throw new IllegalArgumentException("Missing bean or service attribute: " + toString());
+        if (parameters != null) {
+            for (ValueConfig p : parameters)
+                p.visit(visitor);
         }
     }
 
@@ -84,11 +78,11 @@ public class InjectedValueConfig extends ValueConfig {
         this.state = state;
     }
 
-    public void setService(String service) {
-        this.service = service;
+    public void setMethod(String method) {
+        this.method = method;
     }
 
-    public void setProperty(String property) {
-        this.property = property;
+    public void setParameters(ValueConfig[] parameters) {
+        this.parameters = parameters;
     }
 }

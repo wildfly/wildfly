@@ -39,4 +39,8 @@ public class TFactory {
     public TInjectee defaultInjectee() {
         return new TInjectee(msg);
     }
+
+    public TInjectee defaultInjectee(int x) {
+        return new TInjectee(String.valueOf(x));
+    }
 }

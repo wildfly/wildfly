@@ -136,6 +136,12 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
             @Override
             public Method lookup(ClassReflectionIndex index) {
                 Collection<Method> methods = index.getAllMethods(name, 0);
+                if (type == null) {
+                    if (methods.size() == 1)
+                        return methods.iterator().next();
+                    else
+                        return null;
+                }
                 for (Method m : methods) {
                     Class<?> pt = m.getReturnType();
                     if (pt.isAssignableFrom(type))
@@ -156,6 +162,12 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
             @Override
             public Method lookup(ClassReflectionIndex index) {
                 Collection<Method> methods = index.getAllMethods(name, 1);
+                if (type == null) {
+                    if (methods.size() == 1)
+                        return methods.iterator().next();
+                    else
+                        return null;
+                }
                 for (Method m : methods) {
                     Class<?> pt = m.getParameterTypes()[0];
                     if (pt.isAssignableFrom(type))

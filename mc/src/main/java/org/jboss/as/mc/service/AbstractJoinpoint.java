@@ -22,6 +22,7 @@
 
 package org.jboss.as.mc.service;
 
+import org.jboss.as.mc.descriptor.ValueConfig;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 
@@ -31,7 +32,7 @@ import org.jboss.msc.value.Value;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractJoinpoint implements Joinpoint {
-    private Value<Object>[] parameters;
+    private ValueConfig[] parameters;
 
     protected Object[] toObjects(Class[] types) {
         if (parameters == null || parameters.length == 0)
@@ -42,8 +43,10 @@ public abstract class AbstractJoinpoint implements Joinpoint {
 
         try {
             Object[] result = new Object[parameters.length];
-            for (int i = 0; i < parameters.length; i++)
-                result[i] = Configurator.convertValue(types[i], parameters[i].getValue(), true, true);
+            for (int i = 0; i < parameters.length; i++) {
+                if (parameters[i] != null)
+                    result[i] = Configurator.convertValue(types[i], parameters[i].getValue(types[i]), true, true);
+            }
 
             return result;
         } catch (Throwable t) {
@@ -51,11 +54,7 @@ public abstract class AbstractJoinpoint implements Joinpoint {
         }
     }
 
-    public Value<Object>[] getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(Value<Object>[] parameters) {
+    public void setParameters(ValueConfig[] parameters) {
         this.parameters = parameters;
     }
 }

@@ -53,6 +53,18 @@
 
     <bean name="Blocker" class="org.jboss.as.testsuite.integration.mc.support.TInjectee"/>
 
+    <bean name="B2" class="org.jboss.as.testsuite.integration.mc.support.TBean">
+        <property name="injectee">
+            <value-factory bean="TFactory" method="defaultInjectee">
+                <parameter><value>42</value></parameter>
+            </value-factory>
+        </property>
+    </bean>
+
+    <bean name="B3" class="org.jboss.as.testsuite.integration.mc.support.TBean">
+        <property name="injectee"><inject bean="Bean" property="injectee"/></property>
+    </bean>
+
     <bean name="TFactory" class="org.jboss.as.testsuite.integration.mc.support.TFactory" mode="on demand">
         <constructor>
             <parameter><value>Zivjo, </value></parameter>

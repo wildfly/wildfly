@@ -22,9 +22,6 @@
 
 package org.jboss.as.mc.descriptor;
 
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
-
 import java.io.Serializable;
 
 /**
@@ -32,29 +29,18 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class ValueConfig implements Serializable, ConfigVisitorNode, Value<Object> {
+public abstract class ValueConfig implements Serializable, ConfigVisitorNode {
     private static final long serialVersionUID = 1L;
 
     private String type;
-    protected ConversionValue rawValue;
-    private InjectedValue<Object> value = new InjectedValue<Object>();
 
-    @Override
-    public Object getValue() throws IllegalStateException, IllegalArgumentException {
-        return value.getValue();
-    }
-
-    @Override
-    public void visit(ConfigVisitor visitor) {
-        if (type != null && rawValue != null) {
-            try {
-                Class<?> clazz = visitor.getModule().getClassLoader().loadClass(type);
-                rawValue.setType(clazz);
-            } catch (Throwable t) {
-                throw new IllegalArgumentException(t);
-            }
-        }
-    }
+    /**
+     * Get value, use type to narrow down exact value.
+     *
+     * @param type the injection point type
+     * @return value
+     */
+    public abstract Object getValue(Class<?> type);
 
     public String getType() {
         return type;
@@ -62,14 +48,5 @@ public class ValueConfig implements Serializable, ConfigVisitorNode, Value<Objec
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public InjectedValue<Object> getInjectedValue() {
-        return value;
-    }
-
-    public void setValue(Object value) {
-        rawValue = new ConversionValue(value);
-        this.value.setValue(rawValue);
     }
 }

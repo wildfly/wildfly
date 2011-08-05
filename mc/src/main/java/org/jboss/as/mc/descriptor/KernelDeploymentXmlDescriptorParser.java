@@ -349,6 +349,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case NAME:
                     property.setPropertyName(attributeValue);
                     break;
+                case CLASS:
+                    property.setType(attributeValue);
+                    break;
                 default:
                     throw unexpectedContent(reader);
             }
@@ -368,6 +371,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                             break;
                         case INJECT:
                             property.setValue(parseInject(reader));
+                            break;
+                        case VALUE_FACTORY:
+                            property.setValue(parseValueFactory(reader));
                             break;
                     }
             }
@@ -519,6 +525,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case INJECT:
                             valueConfig = parseInject(reader);
                             break;
+                        case VALUE_FACTORY:
+                            valueConfig = parseValueFactory(reader);
+                            break;
                     }
             }
         }
@@ -543,7 +552,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     injectedValueConfig.setService(attributeValue);
                     break;
                 case PROPERTY:
-                    // TODO
+                    injectedValueConfig.setProperty(attributeValue);
                     break;
                 default:
                     throw unexpectedContent(reader);
@@ -558,8 +567,52 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         throw unexpectedContent(reader);
     }
 
+    private ValueFactoryConfig parseValueFactory(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final ValueFactoryConfig valueFactoryConfig = new ValueFactoryConfig();
+        final Set<Attribute> required = EnumSet.of(Attribute.BEAN, Attribute.METHOD);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            required.remove(attribute);
+            final String attributeValue = reader.getAttributeValue(i);
+
+            switch (attribute) {
+                case BEAN:
+                    valueFactoryConfig.setBean(attributeValue);
+                    break;
+                case METHOD:
+                    valueFactoryConfig.setMethod(attributeValue);
+                    break;
+                case STATE:
+                    valueFactoryConfig.setState(BeanState.valueOf(attributeValue.toUpperCase()));
+                    break;
+                default:
+                    throw unexpectedContent(reader);
+            }
+        }
+        if (required.isEmpty() == false) {
+            throw missingAttributes(reader.getLocation(), required);
+        }
+
+        List<ValueConfig> parameters = new ArrayList<ValueConfig>();
+        while (reader.hasNext()) {
+            switch (reader.next()) {
+                case END_ELEMENT:
+                    valueFactoryConfig.setParameters(parameters.toArray(new ValueConfig[parameters.size()]));
+                    return valueFactoryConfig;
+                case START_ELEMENT:
+                    switch (Element.of(reader.getName())) {
+                        case PARAMETER:
+                            parameters.add(parseParameter(reader));
+                            break;
+                    }
+            }
+        }
+        throw unexpectedContent(reader);
+    }
+
     private ValueConfig parseValue(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ValueConfig valueConfig = new ValueConfig();
+        final StringValueConfig valueConfig = new StringValueConfig();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final Attribute attribute = Attribute.of(reader.getAttributeName(i));
@@ -568,6 +621,12 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             switch (attribute) {
                 case CLASS:
                     valueConfig.setType(attributeValue);
+                    break;
+                case REPLACE:
+                    valueConfig.setReplaceProperties(Boolean.parseBoolean(attributeValue));
+                    break;
+                case TRIM:
+                    valueConfig.setTrim(Boolean.parseBoolean(attributeValue));
                     break;
                 default:
                     throw unexpectedContent(reader);

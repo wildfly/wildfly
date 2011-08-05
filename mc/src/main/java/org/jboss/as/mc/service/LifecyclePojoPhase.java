@@ -28,7 +28,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Method;
 
@@ -45,7 +44,7 @@ public abstract class LifecyclePojoPhase extends AbstractPojoPhase {
 
     protected Joinpoint createJoinpoint(LifecycleConfig config, String defaultMethod) {
         Method method;
-        Value<Object>[] params = null;
+        ValueConfig[] params = null;
         if (config == null) {
             try {
                 method = getBeanInfo().getMethod(defaultMethod);

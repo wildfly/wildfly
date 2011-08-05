@@ -29,6 +29,10 @@ public class TBean {
     private String msg;
     private TInjectee injectee;
 
+    public TBean() {
+        this("Hello, ");
+    }
+
     public TBean(String msg) {
         this.msg = msg;
     }

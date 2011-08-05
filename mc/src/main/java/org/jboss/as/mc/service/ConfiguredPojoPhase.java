@@ -77,10 +77,17 @@ public class ConfiguredPojoPhase extends AbstractPojoPhase {
 
     protected void configure(PropertyConfig pc, boolean nullify) throws Throwable {
         ValueConfig value = pc.getValue();
-        Method setter = getBeanInfo().getSetter(pc.getPropertyName(), value.getValue().getClass());
+        Class<?> clazz = null;
+        String type = pc.getType(); // check property
+        if (type == null)
+            type = value.getType(); // check value
+        if (type != null)
+            clazz = getModule().getClassLoader().loadClass(type);
+
+        Method setter = getBeanInfo().getSetter(pc.getPropertyName(), clazz);
         MethodJoinpoint joinpoint = new MethodJoinpoint(setter);
-        Value<Object> param = (nullify == false) ? value : new ImmediateValue<Object>(null);
-        joinpoint.setParameters(new Value[]{param});
+        ValueConfig param = (nullify == false) ? value : null;
+        joinpoint.setParameters(new ValueConfig[]{param});
         joinpoint.setTarget(new ImmediateValue<Object>(getBean()));
         joinpoint.dispatch();
     }

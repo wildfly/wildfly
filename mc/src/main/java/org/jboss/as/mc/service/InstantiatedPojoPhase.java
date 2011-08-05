@@ -24,6 +24,7 @@ package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.descriptor.ConstructorConfig;
+import org.jboss.as.mc.descriptor.InjectedValueConfig;
 import org.jboss.as.mc.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.service.StartContext;
@@ -85,7 +86,8 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
                         instantiateJoinpoint = mj;
                     } else if (factory != null) {
                         ReflectionJoinpoint rj = new ReflectionJoinpoint(index, factoryMethod, types);
-                        rj.setTarget(factory);
+                        // null type is ok, as this should be plain injection
+                        rj.setTarget(new ImmediateValue<Object>(factory.getValue(null)));
                         rj.setParameters(parameters);
                         instantiateJoinpoint = rj;
                     }

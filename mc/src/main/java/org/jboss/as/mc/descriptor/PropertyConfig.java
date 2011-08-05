@@ -33,6 +33,7 @@ public class PropertyConfig implements Serializable, ConfigVisitorNode {
     private static final long serialVersionUID = 1L;
 
     private String propertyName;
+    private String type;
     private ValueConfig value;
 
     public void visit(ConfigVisitor visitor) {
@@ -47,6 +48,14 @@ public class PropertyConfig implements Serializable, ConfigVisitorNode {
 
     public void setPropertyName(String propertyName) {
         this.propertyName = propertyName;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public ValueConfig getValue() {
