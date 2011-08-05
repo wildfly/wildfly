@@ -35,6 +35,7 @@ import org.jboss.as.ejb3.deployment.processors.ConcurrencyManagementAnnotationPr
 import org.jboss.as.ejb3.deployment.processors.DeclareRolesProcessor;
 import org.jboss.as.ejb3.deployment.processors.DenyAllProcessor;
 import org.jboss.as.ejb3.deployment.processors.EJBComponentDescriptionFactory;
+import org.jboss.as.ejb3.deployment.processors.EjbCleanUpProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbContextJndiBindingProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbDependencyDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbDependsOnAnnotationProcessor;
@@ -152,6 +153,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                     processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RESOLVE_EJB_INJECTIONS, new EjbInjectionResolutionProcessor());
                     processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnAnnotationProcessor());
+
+                    processorTarget.addDeploymentProcessor(Phase.CLEANUP, Phase.CLEANUP_EJB, new EjbCleanUpProcessor());
 
 
                     // add the real deployment processor
