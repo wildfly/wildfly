@@ -26,9 +26,10 @@ import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -39,15 +40,13 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Jaikiran Pai
  */
 public class EJBComponentCreateService extends BasicComponentCreateService {
 
-    private final ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs;
+    private final Map<MethodTransactionAttributeKey, TransactionAttributeType> txAttrs;
 
     private final TransactionManagementType transactionManagementType;
 
@@ -72,8 +71,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
         // CMTTx
         if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
-            // slurp some memory
-            this.txAttrs = new ConcurrentHashMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>>();
+            this.txAttrs = new HashMap<MethodTransactionAttributeKey, TransactionAttributeType>();
         } else {
             this.txAttrs = null;
         }
@@ -124,7 +122,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return serviceController.getValue();
     }
 
-    ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> getTxAttrs() {
+    Map<MethodTransactionAttributeKey, TransactionAttributeType> getTxAttrs() {
         return txAttrs;
     }
 
@@ -142,21 +140,11 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             return;
         }
 
+
         String className = method.getDeclaringClass().getName();
         String methodName = method.getName();
         TransactionAttributeType txAttr = ejbComponentDescription.getTransactionAttribute(methodIntf, className, methodName, toString(method.getParameterTypes()));
-
-        ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>> perMethodIntf = this.txAttrs.get(methodIntf);
-        if (perMethodIntf == null) {
-            perMethodIntf = new ConcurrentHashMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>();
-            this.txAttrs.put(methodIntf, perMethodIntf);
-        }
-        ConcurrentMap<ArrayKey, TransactionAttributeType> perMethod = perMethodIntf.get(methodName);
-        if (perMethod == null) {
-            perMethod = new ConcurrentHashMap<ArrayKey, TransactionAttributeType>();
-            perMethodIntf.put(methodName, perMethod);
-        }
-        perMethod.put(new ArrayKey((Object[]) method.getParameterTypes()), txAttr);
+        txAttrs.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txAttr);
     }
 
     private static String[] toString(Class<?>[] a) {
