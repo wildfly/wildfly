@@ -33,6 +33,7 @@ import org.jboss.threads.JBossExecutors;
 import org.jboss.threads.QueueExecutor;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -41,12 +42,12 @@ import java.util.concurrent.TimeUnit;
  *
  * @author John E. Bailey
  */
-public class BoundedQueueThreadPoolService implements Service<Executor> {
+public class BoundedQueueThreadPoolService implements Service<ExecutorService> {
     private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
     private final InjectedValue<Executor> handoffExecutorValue = new InjectedValue<Executor>();
 
     private QueueExecutor executor;
-    private Executor value;
+    private ExecutorService value;
 
     private int coreThreads;
     private int maxThreads;
@@ -69,7 +70,7 @@ public class BoundedQueueThreadPoolService implements Service<Executor> {
         long keepAliveTime = keepAliveSpec == null ? Long.MAX_VALUE : keepAliveSpec.getUnit().toNanos(keepAliveSpec.getDuration());
         executor = new QueueExecutor(coreThreads, maxThreads, keepAliveTime, TimeUnit.NANOSECONDS, queueLength, threadFactoryValue.getValue(), blocking, handoffExecutorValue.getOptionalValue());
         executor.setAllowCoreThreadTimeout(allowCoreTimeout);
-        value = JBossExecutors.protectedBlockingExecutor(executor);
+        value = JBossExecutors.protectedBlockingExecutorService(executor);
     }
 
     public synchronized void stop(final StopContext context) {
@@ -88,8 +89,8 @@ public class BoundedQueueThreadPoolService implements Service<Executor> {
         value = null;
     }
 
-    public synchronized Executor getValue() throws IllegalStateException {
-        final Executor value = this.value;
+    public synchronized ExecutorService getValue() throws IllegalStateException {
+        final ExecutorService value = this.value;
         if (value == null) {
             throw new IllegalStateException();
         }
