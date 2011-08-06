@@ -107,8 +107,12 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
         this.utilities = ejbComponentCreateService.getEJBUtilities();
 
-
-        txAttrs = ejbComponentCreateService.getTxAttrs();
+        final Map<MethodTransactionAttributeKey, TransactionAttributeType> txAttrs = ejbComponentCreateService.getTxAttrs();
+        if(txAttrs == null || txAttrs.isEmpty()) {
+            this.txAttrs = Collections.emptyMap();
+        } else {
+            this.txAttrs = txAttrs;
+        }
         isBeanManagedTransaction = TransactionManagementType.BEAN.equals(ejbComponentCreateService.getTransactionManagementType());
 
         // security metadata
@@ -256,7 +260,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
     public TransactionAttributeType getTransactionAttributeType(MethodIntf methodIntf, Method method) {
        TransactionAttributeType txAttr = txAttrs.get(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)));
         if (txAttr == null)
-            throw new IllegalStateException("Can't find tx attr for method " + method + " on view type " + methodIntf + " on bean named " + this.getComponentName());
+            return TransactionAttributeType.REQUIRED;
         return txAttr;
     }
 
