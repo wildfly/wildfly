@@ -37,6 +37,7 @@ import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
+import org.junit.After;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -47,6 +48,11 @@ public class DefaultEmbeddedCacheManagerTest {
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
     private final EmbeddedCacheManager subject = new DefaultEmbeddedCacheManager(this.manager, "default");
     
+    @After
+    public void cleanup() {
+        reset(manager);
+    }
+    
     @Test
     public void getDefaultCache() {
         @SuppressWarnings("unchecked")
@@ -54,7 +60,7 @@ public class DefaultEmbeddedCacheManagerTest {
 
         when(this.manager.<Object, Object>getCache("default", true)).thenReturn(cache);
         when(cache.getAdvancedCache()).thenReturn(cache);
-
+        
         Cache<Object, Object> result = this.subject.getCache();
 
         assertNotSame(cache, result);
@@ -68,14 +74,14 @@ public class DefaultEmbeddedCacheManagerTest {
         AdvancedCache<Object, Object> defaultCache = mock(AdvancedCache.class);
         @SuppressWarnings("unchecked")
         AdvancedCache<Object, Object> otherCache = mock(AdvancedCache.class);
-
+        
         when(this.manager.<Object, Object>getCache("default", true)).thenReturn(defaultCache);
         when(this.manager.<Object, Object>getCache("other", true)).thenReturn(otherCache);
         when(defaultCache.getAdvancedCache()).thenReturn(defaultCache);
         when(otherCache.getAdvancedCache()).thenReturn(otherCache);
-
+        
         Cache<Object, Object> result = this.subject.getCache("default");
-
+        
         assertNotSame(defaultCache, result);
         assertEquals(result, defaultCache);
         assertSame(this.subject, result.getCacheManager());
