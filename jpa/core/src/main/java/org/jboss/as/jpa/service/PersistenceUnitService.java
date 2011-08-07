@@ -34,11 +34,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceException;
 import javax.persistence.spi.PersistenceProvider;
-import javax.persistence.spi.PersistenceProviderResolverHolder;
 import javax.sql.DataSource;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -133,28 +130,6 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
     public static ServiceName getPUServiceName(String scopedPersistenceUnitName) {
         return PersistenceUnitService.SERVICE_NAME.append(scopedPersistenceUnitName);
     }
-
-    /**
-     * Look up the persistence provider
-     *
-     * @param providerName
-     * @return
-     */
-    private PersistenceProvider lookupProvider(String providerName) {
-        List<PersistenceProvider> providers =
-            PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders();
-        for (PersistenceProvider provider : providers) {
-            if (provider.getClass().getName().equals(providerName)) {
-                return provider;
-            }
-        }
-        StringBuilder sb = new StringBuilder();
-        for (PersistenceProvider provider : providers) {
-            sb.append(provider.getClass().getName()).append(", ");
-        }
-        throw new PersistenceException("PersistenceProvider '" + providerName + "' not found in {" + sb.toString() + "}");
-    }
-
 
     /**
      * Create EE container entity manager factory
