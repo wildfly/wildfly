@@ -46,6 +46,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -69,6 +70,8 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
             return LocalDescriptions.getCacheContainerDescription(locale);
         }
     };
+
+    private static final Logger log = Logger.getLogger(InfinispanExtension.class);
 
     /**
      * {@inheritDoc}
@@ -611,7 +614,7 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                     break;
                 }
                 case INTERVAL: {
-                    eviction.get(ModelKeys.INTERVAL).set(Long.parseLong(value));
+                    log.warnf("The %s attribute of the %s element is deprecated.  See ISPN-1268");
                     break;
                 }
                 default: {
@@ -622,17 +625,21 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
         ParseUtils.requireNoContent(reader);
     }
 
-    private void parseExpiration(XMLExtendedStreamReader reader, ModelNode eviction) throws XMLStreamException {
+    private void parseExpiration(XMLExtendedStreamReader reader, ModelNode expiration) throws XMLStreamException {
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case MAX_IDLE: {
-                    eviction.get(ModelKeys.MAX_IDLE).set(Long.parseLong(value));
+                    expiration.get(ModelKeys.MAX_IDLE).set(Long.parseLong(value));
                     break;
                 }
                 case LIFESPAN: {
-                    eviction.get(ModelKeys.LIFESPAN).set(Long.parseLong(value));
+                    expiration.get(ModelKeys.LIFESPAN).set(Long.parseLong(value));
+                    break;
+                }
+                case INTERVAL: {
+                    expiration.get(ModelKeys.INTERVAL).set(Long.parseLong(value));
                     break;
                 }
                 default: {
@@ -841,7 +848,6 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                         ModelNode eviction = cache.get(ModelKeys.EVICTION);
                         this.writeOptional(writer, Attribute.STRATEGY, eviction, ModelKeys.STRATEGY);
                         this.writeOptional(writer, Attribute.MAX_ENTRIES, eviction, ModelKeys.MAX_ENTRIES);
-                        this.writeOptional(writer, Attribute.INTERVAL, eviction, ModelKeys.INTERVAL);
                         writer.writeEndElement();
                     }
 
@@ -850,6 +856,7 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                         ModelNode expiration = cache.get(ModelKeys.EXPIRATION);
                         this.writeOptional(writer, Attribute.MAX_IDLE, expiration, ModelKeys.MAX_IDLE);
                         this.writeOptional(writer, Attribute.LIFESPAN, expiration, ModelKeys.LIFESPAN);
+                        this.writeOptional(writer, Attribute.INTERVAL, expiration, ModelKeys.INTERVAL);
                         writer.writeEndElement();
                     }
 

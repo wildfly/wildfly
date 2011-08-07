@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.config.Configuration;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 
 import javax.management.MBeanServer;
 import javax.transaction.TransactionManager;
@@ -43,6 +44,7 @@ public interface EmbeddedCacheManagerConfiguration {
     EmbeddedCacheManagerDefaults getDefaults();
     TransactionManager getTransactionManager();
     TransactionSynchronizationRegistry getTransactionSynchronizationRegistry();
+    XAResourceRecoveryRegistry getXAResourceRecoveryRegistry();
     MBeanServer getMBeanServer();
     Executor getListenerExecutor();
     ScheduledExecutorService getEvictionExecutor();

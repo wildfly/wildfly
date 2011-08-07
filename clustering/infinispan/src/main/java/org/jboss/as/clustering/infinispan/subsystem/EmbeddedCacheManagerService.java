@@ -25,8 +25,6 @@ import org.infinispan.config.Configuration;
 import org.infinispan.config.FluentConfiguration;
 import org.infinispan.config.FluentGlobalConfiguration;
 import org.infinispan.config.GlobalConfiguration;
-import org.infinispan.jmx.CacheJmxRegistration;
-import org.infinispan.jmx.ComponentsJmxRegistration;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -47,13 +45,14 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.tm.XAResourceRecovery;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 
-import javax.management.JMException;
 import javax.management.MBeanServer;
-import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
-import java.util.Locale;
+import javax.transaction.xa.XAResource;
+
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -93,7 +92,6 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
      */
     @Override
     public void start(StartContext context) throws StartException {
-
         EmbeddedCacheManagerDefaults defaults = this.configuration.getDefaults();
         GlobalConfiguration global = defaults.getGlobalConfiguration().clone();
         TransportConfiguration transport = this.configuration.getTransportConfiguration();
@@ -192,18 +190,29 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
 
     @CacheStarted
     public void cacheStarted(CacheStartedEvent event) {
-       log.infof("Started %s cache from %s container", event.getCacheName(), event.getCacheManager().getGlobalConfiguration().getCacheManagerName());
+        String cacheName = event.getCacheName();
+        EmbeddedCacheManager container = event.getCacheManager();
+
+        log.infof("Started %s cache from %s container", cacheName, container.getGlobalConfiguration().getCacheManagerName());
+
+        XAResourceRecoveryRegistry recoveryRegistry = this.configuration.getXAResourceRecoveryRegistry();
+        if ((recoveryRegistry != null) && container.defineConfiguration(cacheName, new Configuration()).isTransactionRecoveryEnabled()) {
+            recoveryRegistry.addXAResourceRecovery(new InfinispanXAResourceRecovery(cacheName, container));
+        }
     }
 
     @CacheStopped
     public void cacheStopped(CacheStoppedEvent event) {
        String cacheName = event.getCacheName();
        EmbeddedCacheManager container = event.getCacheManager();
-       GlobalConfiguration global = container.getGlobalConfiguration();
-       String containerName = global.getCacheManagerName();
 
-       log.infof("Stopped %s cache from %s container", cacheName, containerName);
+       log.infof("Stopped %s cache from %s container", cacheName, container.getGlobalConfiguration().getCacheManagerName());
 
+       XAResourceRecoveryRegistry recoveryRegistry = this.configuration.getXAResourceRecoveryRegistry();
+       if (recoveryRegistry != null) {
+           recoveryRegistry.removeXAResourceRecovery(new InfinispanXAResourceRecovery(cacheName, container));
+       }
+/*
        // Infinispan does not unregister cache mbean when cache stops (only when cache manager is stopped), so do it now to avoid classloader leaks
        MBeanServer server = this.configuration.getMBeanServer();
        if (server != null) {
@@ -223,5 +232,38 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
                }
            }
        }
+*/
+    }
+
+    static class InfinispanXAResourceRecovery implements XAResourceRecovery {
+        private final String cacheName;
+        private final EmbeddedCacheManager container;
+
+        InfinispanXAResourceRecovery(String cacheName, EmbeddedCacheManager container) {
+            this.cacheName = cacheName;
+            this.container = container;
+        }
+
+        @Override
+        public XAResource[] getXAResources() {
+            return new XAResource[] { this.container.getCache(this.cacheName).getAdvancedCache().getXAResource() };
+        }
+
+        @Override
+        public int hashCode() {
+            return this.container.getGlobalConfiguration().getCacheManagerName().hashCode() ^ this.cacheName.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if ((object == null) || !(object instanceof InfinispanXAResourceRecovery)) return false;
+            InfinispanXAResourceRecovery recovery = (InfinispanXAResourceRecovery) object;
+            return this.container.getGlobalConfiguration().getCacheManagerName().equals(recovery.container.getGlobalConfiguration().getCacheManagerName()) && this.cacheName.equals(recovery.cacheName);
+        }
+
+        @Override
+        public String toString() {
+            return container.getGlobalConfiguration().getCacheManagerName() + "." + this.cacheName;
+        }
     }
 }
