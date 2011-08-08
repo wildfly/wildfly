@@ -921,6 +921,10 @@
             <maven-resource group="org.jgroups" artifact="jgroups"/>
         </module-def>
 
+        <module-def name="org.joda.time">
+            <maven-resource group="joda-time" artifact="joda-time"/>
+        </module-def>
+
         <module-def name="org.junit">
             <maven-resource group="junit" artifact="junit"/>
         </module-def>
