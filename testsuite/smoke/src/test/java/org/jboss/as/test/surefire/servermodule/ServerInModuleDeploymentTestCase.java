@@ -150,6 +150,18 @@ public class ServerInModuleDeploymentTestCase  {
     }
 
     @Test
+    public void testFilesystemScannerRegistration() throws Exception {
+        final File deployDir = createDeploymentDir("dummy");
+
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final String scannerName = "dummy";
+        addDeploymentScanner(deployDir, client, scannerName);
+        removeDeploymentScanner(client, scannerName);
+        addDeploymentScanner(deployDir, client, scannerName);
+        removeDeploymentScanner(client, scannerName);
+    }
+
+    @Test
     public void testFilesystemDeployment() throws Exception {
         final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
