@@ -88,7 +88,7 @@ class SizeRotatingFileHandlerAdd extends AbstractAddStepHandler {
             final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
             if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
             if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-            if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+            service.setFormatterSpec(createFormatterSpec(operation));
             if (operation.hasDefined(MAX_BACKUP_INDEX))
                 service.setMaxBackupIndex(operation.get(MAX_BACKUP_INDEX).asInt());
 

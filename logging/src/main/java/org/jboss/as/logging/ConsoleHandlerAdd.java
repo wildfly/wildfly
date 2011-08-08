@@ -78,7 +78,7 @@ class ConsoleHandlerAdd extends AbstractAddStepHandler {
         } catch (Throwable t) {
             throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
         }
-        if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+        service.setFormatterSpec(createFormatterSpec(operation));
         serviceBuilder.addListener(verificationHandler);
         serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
         newControllers.add(serviceBuilder.install());

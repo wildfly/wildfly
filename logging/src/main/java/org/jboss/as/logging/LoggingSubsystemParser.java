@@ -390,12 +390,15 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         String encoding = null;
         String formatterSpec = null;
         String target = null;
+
+        final EnumSet<Element> requiredElem = EnumSet.of(Element.FORMATTER);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
+            requiredElem.remove(element);
             switch (element) {
                 case LEVEL: {
                     levelName = readStringAttributeElement(reader, "name");
@@ -421,12 +424,15 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
             }
         }
+        if (!requiredElem.isEmpty()) {
+            throw missingRequired(reader, requiredElem);
+        }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(CONSOLE_HANDLER, name);
         node.get(AUTOFLUSH).set(autoflush);
         if (levelName != null) node.get(LEVEL).set(levelName);
-        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        node.get(FORMATTER).set(formatterSpec);
         if(encoding != null) node.get(ENCODING).set(encoding);
         list.add(node);
     }
@@ -468,7 +474,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         boolean append = true;
         String formatterSpec = null;
 
-        final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE);
+        final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE, Element.FORMATTER);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -503,7 +509,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             }
         }
         if (!requiredElem.isEmpty()) {
-            throw missingRequired(reader, required);
+            throw missingRequired(reader, requiredElem);
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
@@ -511,7 +517,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         node.get(AUTOFLUSH).set(autoflush);
         if (levelName != null) node.get(LEVEL).set(levelName);
         if(encoding != null) node.get(ENCODING).set(encoding);
-        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        node.get(FORMATTER).set(formatterSpec);
         node.get(FILE).set(fileSpec);
         node.get(APPEND).set(append);
         list.add(node);
@@ -555,7 +561,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         boolean append = true;
         String formatterSpec = null;
 
-        final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE, Element.SUFFIX);
+        final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE, Element.FORMATTER, Element.SUFFIX);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -594,7 +600,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             }
         }
         if (!requiredElem.isEmpty()) {
-            throw missingRequired(reader, required);
+            throw missingRequired(reader, requiredElem);
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
@@ -602,7 +608,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         node.get(AUTOFLUSH).set(autoflush);
         if (levelName != null) node.get(LEVEL).set(levelName);
         if(encoding != null) node.get(ENCODING).set(encoding);
-        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        node.get(FORMATTER).set(formatterSpec);
         node.get(FILE).set(fileSpec);
         node.get(APPEND).set(append);
         if(suffix != null) node.get(SUFFIX).set(suffix);
@@ -648,7 +654,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         int maxBackupIndex = 1;
         String formatterSpec = null;
 
-        final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE);
+        final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE, Element.FORMATTER);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -695,7 +701,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             }
         }
         if (!requiredElem.isEmpty()) {
-            throw missingRequired(reader, required);
+            throw missingRequired(reader, requiredElem);
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
@@ -703,7 +709,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         node.get(AUTOFLUSH).set(autoflush);
         if (levelName != null) node.get(LEVEL).set(levelName);
         if(encoding != null) node.get(ENCODING).set(encoding);
-        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        node.get(FORMATTER).set(formatterSpec);
         node.get(FILE).set(fileSpec);
         node.get(APPEND).set(append);
         if (rotateSize != null) {
