@@ -21,11 +21,6 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -34,6 +29,12 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
 import org.jboss.weld.injection.spi.helpers.AbstractResourceServices;
+
+import javax.annotation.Resource;
+import javax.enterprise.inject.spi.InjectionPoint;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 public class WeldResourceInjectionServices extends AbstractResourceServices implements Service<WeldResourceInjectionServices>,
         ResourceInjectionServices {
@@ -100,7 +101,17 @@ public class WeldResourceInjectionServices extends AbstractResourceServices impl
 
     @Override
     protected String getResourceName(InjectionPoint injectionPoint) {
-        return getEJBResourceName(injectionPoint, super.getResourceName(injectionPoint));
+        Resource resource = injectionPoint.getAnnotated().getAnnotation(Resource.class);
+        String mappedName = resource.mappedName();
+        String lookup = resource.lookup();
+        if (!lookup.isEmpty()) {
+            return lookup;
+        }
+        if (!mappedName.isEmpty()) {
+            return mappedName;
+        }
+        String proposedName = super.getResourceName(injectionPoint);
+        return getEJBResourceName(injectionPoint, proposedName);
     }
 
     @Override
