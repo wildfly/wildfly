@@ -20,33 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.mc.test;
-
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.testsuite.integration.mc.support.TFactory;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+package org.jboss.as.testsuite.integration.mc.support;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@RunWith(Arquillian.class)
-public class MCBeansTestCase {
-    @Deployment(name = "simple-beans")
-    public static JavaArchive getSimpleBeansJar() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "simple-beans.jar");
-        archive.addPackage(TFactory.class.getPackage());
-        archive.addAsManifestResource("mc/simple-jboss-beans.xml", "simple-jboss-beans.xml");
-        return archive;
+public class A {
+    private B b;
+
+    public A(B b) {
+        this.b = b;
+        System.out.println("b = " + b);
     }
 
-    @Test
-    @OperateOnDeployment("simple-beans")
-    public void testSimpleBeans() throws Exception {
-        // TODO -- try to get beans?
+    public B getB() {
+        return b;
     }
 }
