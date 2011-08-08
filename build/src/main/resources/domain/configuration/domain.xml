@@ -96,9 +96,6 @@
                             <user-name>sa</user-name>
                             <password>sa</password>
                         </security>
-                        <validation></validation>
-                        <timeout></timeout>
-                        <statement></statement>
                     </datasource>
                     <drivers>
                         <driver name="h2" module="com.h2database.h2">
@@ -289,9 +286,6 @@
                             <user-name>sa</user-name>
                             <password>sa</password>
                         </security>
-                        <validation></validation>
-                        <timeout></timeout>
-                        <statement></statement>
                     </datasource>
                     <drivers>
                         <driver name="h2" module="com.h2database.h2">

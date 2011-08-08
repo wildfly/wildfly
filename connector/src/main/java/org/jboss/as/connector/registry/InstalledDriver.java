@@ -36,6 +36,7 @@ public final class InstalledDriver {
     private final ModuleIdentifier moduleName;
     private final String deploymentUnitName;
     private final String driverClassName;
+    private final String dataSourceClassName;
     private final String xaDataSourceClassName;
     private final int majorVersion;
     private final int minorVersion;
@@ -48,6 +49,8 @@ public final class InstalledDriver {
      * @param moduleName the name of the module from which the driver was loaded
      * @param driverClassName the name of the {@link java.sql.Driver}
      *        implementation class
+     * @param dataSourceClassName the name of the {@link javax.sql.DataSource}
+     *        implementation class
      * @param xaDataSourceClassName the name of the {@link XADataSource}
      *        implementation class
      * @param majorVersion the driver major version
@@ -55,11 +58,13 @@ public final class InstalledDriver {
      * @param jdbcCompliant whether the driver is JDBC compliant
      */
     public InstalledDriver(final String driverName, final ModuleIdentifier moduleName, final String driverClassName,
-            final String xaDataSourceClassName, final int majorVersion, final int minorVersion, final boolean jdbcCompliant) {
+                           final String dataSourceClassName, final String xaDataSourceClassName,
+                           final int majorVersion, final int minorVersion, final boolean jdbcCompliant) {
         this.deploymentUnitName = null;
         this.moduleName = moduleName;
         this.driverName = driverName;
         this.driverClassName = driverClassName;
+        this.dataSourceClassName = dataSourceClassName;
         this.xaDataSourceClassName = xaDataSourceClassName;
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
@@ -73,18 +78,22 @@ public final class InstalledDriver {
      *        driver was installed
      * @param driverClassName the name of the {@link java.sql.Driver}
      *        implementation class
+     * @param dataSourceClassName the name of the {@link javax.sql.DataSource}
+     *        implementation class
      * @param xaDataSourceClassName the name of the {@link XADataSource}
      *        implementation class
      * @param majorVersion the driver major version
      * @param minorVersion the driver minor version
      * @param jdbcCompliant whether the driver is JDBC compliant
      */
-    public InstalledDriver(final String deploymentUnitName, final String driverClassName, final String xaDataSourceClassName,
-            final int majorVersion, final int minorVersion, final boolean jdbcCompliant) {
+    public InstalledDriver(final String deploymentUnitName, final String driverClassName,
+                           final String dataSourceClassName, final String xaDataSourceClassName,
+                           final int majorVersion, final int minorVersion, final boolean jdbcCompliant) {
         this.deploymentUnitName = deploymentUnitName;
         this.moduleName = null;
         this.driverName = deploymentUnitName;
         this.driverClassName = driverClassName;
+        this.dataSourceClassName = dataSourceClassName;
         this.xaDataSourceClassName = xaDataSourceClassName;
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
@@ -196,6 +205,10 @@ public final class InstalledDriver {
 
     public String getDriverName() {
         return driverName;
+    }
+
+    public String getDataSourceClassName() {
+        return dataSourceClassName;
     }
 
     public String getXaDataSourceClassName() {

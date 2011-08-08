@@ -31,6 +31,7 @@ import org.jboss.as.connector.registry.DriverRegistry;
 import org.jboss.as.connector.registry.DriverService;
 import org.jboss.as.connector.registry.InstalledDriver;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
@@ -65,6 +66,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         final Integer majorVersion = operation.hasDefined(DRIVER_MAJOR_VERSION) ? operation.get(DRIVER_MAJOR_VERSION).asInt() : null;
         final Integer minorVersion = operation.hasDefined(DRIVER_MINOR_VERSION) ? operation.get(DRIVER_MINOR_VERSION).asInt() : null;
         final String driverClassName = operation.hasDefined(DRIVER_CLASS_NAME) ? operation.get(DRIVER_CLASS_NAME).asString() : null;
+        final String dataSourceClassName = operation.hasDefined(DRIVER_DATASOURCE_CLASS_NAME) ? operation.get(DRIVER_DATASOURCE_CLASS_NAME).asString() : null;
         final String xaDataSourceClassName = operation.hasDefined(DRIVER_XA_DATASOURCE_CLASS_NAME) ? operation.get(DRIVER_XA_DATASOURCE_CLASS_NAME).asString() : null;
 
         //Apply to the model
@@ -76,6 +78,8 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             model.get(DRIVER_MINOR_VERSION).set(minorVersion);
         if (driverClassName != null)
             model.get(DRIVER_CLASS_NAME).set(driverClassName);
+        if (dataSourceClassName != null)
+            model.get(DRIVER_DATASOURCE_CLASS_NAME).set(dataSourceClassName);
         if (xaDataSourceClassName != null)
             model.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(xaDataSourceClassName);
     }
@@ -86,6 +90,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         final Integer majorVersion = operation.hasDefined(DRIVER_MAJOR_VERSION) ? operation.get(DRIVER_MAJOR_VERSION).asInt() : null;
         final Integer minorVersion = operation.hasDefined(DRIVER_MINOR_VERSION) ? operation.get(DRIVER_MINOR_VERSION).asInt() : null;
         final String driverClassName = operation.hasDefined(DRIVER_CLASS_NAME) ? operation.get(DRIVER_CLASS_NAME).asString() : null;
+        final String dataSourceClassName = operation.hasDefined(DRIVER_DATASOURCE_CLASS_NAME) ? operation.get(DRIVER_DATASOURCE_CLASS_NAME).asString() : null;
         final String xaDataSourceClassName = operation.hasDefined(DRIVER_XA_DATASOURCE_CLASS_NAME) ? operation.get(
                 DRIVER_XA_DATASOURCE_CLASS_NAME).asString() : null;
 
@@ -105,7 +110,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);
             if (serviceLoader != null)
                 for (Driver driver : serviceLoader) {
-                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, xaDataSourceClassName);
+                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
                 }
         } else {
             try {
@@ -113,14 +118,14 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
                         .asSubclass(Driver.class);
                 final Constructor<? extends Driver> constructor = driverClass.getConstructor();
                 final Driver driver = constructor.newInstance();
-                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, xaDataSourceClassName);
+                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
             } catch (Exception e) {
                 log.warnf("Unable to instantiate driver class \"%s\": %s", driverClassName, e);
             }
         }
     }
 
-    private void startDriverServices(final ServiceTarget target, final ModuleIdentifier moduleId, Driver driver, final String driverName, final Integer majorVersion, final Integer minorVersion, final String xaDataSourceClassName)
+    private void startDriverServices(final ServiceTarget target, final ModuleIdentifier moduleId, Driver driver, final String driverName, final Integer majorVersion, final Integer minorVersion, final String dataSourceClassName, final String xaDataSourceClassName)
             throws IllegalStateException {
         final int majorVer = driver.getMajorVersion();
         final int minorVer = driver.getMinorVersion();
@@ -138,7 +143,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
                     Integer.valueOf(majorVer), Integer.valueOf(minorVer));
         }
         InstalledDriver driverMetadata = new InstalledDriver(driverName, moduleId, driver.getClass().getName(),
-                xaDataSourceClassName, majorVer, minorVer, compliant);
+            dataSourceClassName, xaDataSourceClassName, majorVer, minorVer, compliant);
         DriverService driverService = new DriverService(driverMetadata, driver);
         target.addService(ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_")), driverService)
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,

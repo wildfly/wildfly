@@ -22,7 +22,7 @@
 package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
@@ -327,11 +327,11 @@ public class ResourceAdaptersExtension implements Extension {
                 streamWriter.writeEndElement();
             }
 
-            if (conDef.has(BACKGROUNDVALIDATION) || conDef.has(BACKGROUNDVALIDATIONMINUTES) || conDef.has(USE_FAST_FAIL)) {
+            if (conDef.has(BACKGROUNDVALIDATION) || conDef.has(BACKGROUNDVALIDATIONMILLIS) || conDef.has(USE_FAST_FAIL)) {
                 streamWriter.writeStartElement(CommonConnDef.Tag.VALIDATION.getLocalName());
                 writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.BACKGROUNDVALIDATION, BACKGROUNDVALIDATION);
-                writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.BACKGROUNDVALIDATIONMINUTES,
-                        BACKGROUNDVALIDATIONMINUTES);
+                writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.BACKGROUNDVALIDATIONMILLIS,
+                        BACKGROUNDVALIDATIONMILLIS);
                 writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.USEFASTFAIL, USE_FAST_FAIL);
                 streamWriter.writeEndElement();
             }
@@ -586,8 +586,8 @@ public class ResourceAdaptersExtension implements Extension {
             }
 
             if (conDef.getValidation() != null) {
-                setLongIfNotNull(condefModel, BACKGROUNDVALIDATIONMINUTES, conDef.getValidation()
-                        .getBackgroundValidationMinutes());
+                setLongIfNotNull(condefModel, BACKGROUNDVALIDATIONMILLIS, conDef.getValidation()
+                        .getBackgroundValidationMillis());
                 setBooleanIfNotNull(condefModel, BACKGROUNDVALIDATION, conDef.getValidation().isBackgroundValidation());
                 setBooleanIfNotNull(condefModel, USE_FAST_FAIL, conDef.getValidation().isUseFastFail());
             }

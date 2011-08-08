@@ -6,7 +6,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOC
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUPS;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAPCONTEXT;
@@ -144,10 +144,10 @@ public abstract class AbstractRaOperation {
                 boolean application = getBooleanIfSetOrGetDefault(conDefNode, APPLICATION, true);
                 CommonSecurity security = new CommonSecurityImpl(securityDomain, securityDomainAndApplication, application);
 
-                Long backgroundValidationMinutes = getLongIfSetOrGetDefault(conDefNode, BACKGROUNDVALIDATIONMINUTES, null);
+                Long backgroundValidationMillis = getLongIfSetOrGetDefault(conDefNode, BACKGROUNDVALIDATIONMILLIS, null);
                 boolean backgroundValidation = getBooleanIfSetOrGetDefault(conDefNode, BACKGROUNDVALIDATION, false);
                 boolean useFastFail = getBooleanIfSetOrGetDefault(conDefNode, USE_FAST_FAIL, false);
-                CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMinutes,
+                CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMillis,
                         useFastFail);
                 final String recoveryUsername = getStringIfSetOrGetDefault(conDefNode, RECOVERY_USERNAME, null);
                 final String recoveryPassword = getStringIfSetOrGetDefault(conDefNode, RECOVERY_PASSWORD, null);
