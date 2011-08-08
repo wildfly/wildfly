@@ -987,7 +987,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             if (deployed.containsKey(deploymentName)) {
                 deployed.remove(deploymentName);
             }
-            deployed.put(deploymentName, new DeploymentMarker(deployedMarker.lastModified(), archive));
+            deployed.put(deploymentName, new DeploymentMarker(doDeployTimestamp, archive));
         }
     }
 
