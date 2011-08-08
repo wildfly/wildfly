@@ -23,7 +23,7 @@ package org.jboss.as.weld.ejb;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ComponentViewInstance;
-import org.jboss.as.server.CurrentServiceRegistry;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -102,7 +102,7 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
         }
         //TODO: this should be cached
         if (viewServices.containsKey(businessInterfaceType.getName())) {
-            final ServiceController<?> serviceController = CurrentServiceRegistry.getServiceRegistry().getRequiredService(viewServices.get(businessInterfaceType.getName()));
+            final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(viewServices.get(businessInterfaceType.getName()));
             final ComponentView view = (ComponentView) serviceController.getValue();
             final ComponentViewInstance instance = view.createInstance();
             return (S) instance.createProxy();
