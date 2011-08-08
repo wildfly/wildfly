@@ -77,11 +77,9 @@ public class InjectedValueConfig extends ValueConfig {
             visitor.addDependency(bean, BeanState.DESCRIBED, beanInfo);
             ServiceName name = BeanMetaDataConfig.toBeanName(bean, state);
             visitor.addDependency(name, value); // direct name, since we have describe already
-        }
-        else if (service != null) {
+        } else if (service != null) {
             visitor.addDependency(ServiceName.parse(service), value);
-        }
-        else {
+        } else {
             Class<?> type = getType(visitor, getType());
             if (type == null)
                 type = getType(visitor, this);

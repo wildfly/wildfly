@@ -74,7 +74,7 @@ public class ConstructorConfig extends AbstractConfigVisitorNode implements Seri
             BeanInfo beanInfo = visitor.getBeanInfo();
             if (beanInfo == null)
                 throw new IllegalArgumentException("No bean info!");
-            Constructor ctor = beanInfo.getConstructor(Configurator.getTypes(parameters));
+            Constructor ctor = beanInfo.findConstructor(Configurator.getTypes(parameters));
             return ctor.getParameterTypes()[vc.getIndex()];
         }
     }

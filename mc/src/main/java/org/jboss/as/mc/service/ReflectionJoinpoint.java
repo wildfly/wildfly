@@ -22,8 +22,6 @@
 
 package org.jboss.as.mc.service;
 
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-
 import java.lang.reflect.Method;
 
 /**
@@ -32,16 +30,16 @@ import java.lang.reflect.Method;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ReflectionJoinpoint extends TargetJoinpoint {
-    private final DeploymentReflectionIndex index;
+    private final BeanInfo beanInfo;
     private final String methodName;
     private final String[] types;
 
-    public ReflectionJoinpoint(DeploymentReflectionIndex index, String methodName) {
-        this(index, methodName, null);
+    public ReflectionJoinpoint(BeanInfo beanInfo, String methodName) {
+        this(beanInfo, methodName, null);
     }
 
-    public ReflectionJoinpoint(DeploymentReflectionIndex index, String methodName, String[] types) {
-        this.index = index;
+    public ReflectionJoinpoint(BeanInfo beanInfo, String methodName, String[] types) {
+        this.beanInfo = beanInfo;
         this.methodName = methodName;
         this.types = types;
     }
@@ -53,7 +51,7 @@ public class ReflectionJoinpoint extends TargetJoinpoint {
             pts = Configurator.getTypes(getParameters());
 
         Object target = getTarget().getValue();
-        Method method = Configurator.findMethod(index, target.getClass(), methodName, pts, false, true, true);
+        Method method = beanInfo.findMethod(methodName, pts);
         return method.invoke(target, toObjects(method.getParameterTypes()));
     }
 }

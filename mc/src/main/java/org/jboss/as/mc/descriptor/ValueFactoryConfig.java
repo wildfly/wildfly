@@ -24,7 +24,6 @@ package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.service.ReflectionJoinpoint;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.value.InjectedValue;
 
 import java.util.Arrays;
@@ -47,7 +46,8 @@ public class ValueFactoryConfig extends ValueConfig {
 
     public Object getValue(Class<?> type) {
         try {
-            ReflectionJoinpoint joinpoint = new ReflectionJoinpoint(DeploymentReflectionIndex.create(), method);
+            Object target = value.getValue();
+            ReflectionJoinpoint joinpoint = new ReflectionJoinpoint(getTempBeanInfo(target.getClass()), method);
             joinpoint.setTarget(value);
             joinpoint.setParameters(parameters);
             return joinpoint.dispatch();
