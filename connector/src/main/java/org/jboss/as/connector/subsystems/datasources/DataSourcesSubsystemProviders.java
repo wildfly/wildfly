@@ -29,6 +29,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJ
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INSTALLED_DRIVERS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
@@ -73,7 +74,8 @@ import org.jboss.jca.core.connectionmanager.pool.mcp.ManagedConnectionPoolStatis
 class DataSourcesSubsystemProviders {
 
     static final AttributeDefinition[] DATASOURCE_ATTRIBUTE = new AttributeDefinition[] { AttributeDefinition.CONNECTION_URL,
-            AttributeDefinition.DRIVER_CLASS, AttributeDefinition.JNDINAME, AttributeDefinition.DRIVER,
+            AttributeDefinition.DRIVER_CLASS, AttributeDefinition.DATASOURCE_CLASS, AttributeDefinition.JNDINAME,
+            AttributeDefinition.DRIVER,
             AttributeDefinition.NEW_CONNECTION_SQL, AttributeDefinition.POOLNAME, AttributeDefinition.URL_DELIMITER,
             AttributeDefinition.URL_SELECTOR_STRATEGY_CLASS_NAME, AttributeDefinition.USE_JAVA_CONTEXT,
             AttributeDefinition.ENABLED, AttributeDefinition.JTA, AttributeDefinition.MAX_POOL_SIZE,
@@ -89,7 +91,7 @@ class DataSourcesSubsystemProviders {
             AttributeDefinition.EXCEPTIONSORTERCLASSNAME, AttributeDefinition.EXCEPTIONSORTER_PROPERTIES,
             AttributeDefinition.STALECONNECTIONCHECKERCLASSNAME, AttributeDefinition.STALECONNECTIONCHECKER_PROPERTIES,
             AttributeDefinition.VALIDCONNECTIONCHECKERCLASSNAME, AttributeDefinition.VALIDCONNECTIONCHECKER_PROPERTIES,
-            AttributeDefinition.BACKGROUNDVALIDATIONMINUTES, AttributeDefinition.BACKGROUNDVALIDATION,
+            AttributeDefinition.BACKGROUNDVALIDATIONMILLIS, AttributeDefinition.BACKGROUNDVALIDATION,
             AttributeDefinition.USE_FAST_FAIL, AttributeDefinition.VALIDATEONMATCH, AttributeDefinition.SPY,
             AttributeDefinition.USE_CCM };
 
@@ -112,7 +114,7 @@ class DataSourcesSubsystemProviders {
             AttributeDefinition.EXCEPTIONSORTERCLASSNAME, AttributeDefinition.EXCEPTIONSORTER_PROPERTIES,
             AttributeDefinition.STALECONNECTIONCHECKERCLASSNAME, AttributeDefinition.STALECONNECTIONCHECKER_PROPERTIES,
             AttributeDefinition.VALIDCONNECTIONCHECKERCLASSNAME, AttributeDefinition.VALIDCONNECTIONCHECKER_PROPERTIES,
-            AttributeDefinition.BACKGROUNDVALIDATIONMINUTES, AttributeDefinition.BACKGROUNDVALIDATION,
+            AttributeDefinition.BACKGROUNDVALIDATIONMILLIS, AttributeDefinition.BACKGROUNDVALIDATION,
             AttributeDefinition.USE_FAST_FAIL, AttributeDefinition.VALIDATEONMATCH, AttributeDefinition.XA_RESOURCE_TIMEOUT,
             AttributeDefinition.SPY, AttributeDefinition.USE_CCM, AttributeDefinition.REAUTHPLUGIN_PROPERTIES,
             AttributeDefinition.RECOVERY_USERNAME, AttributeDefinition.RECOVERY_PASSWORD,
@@ -166,6 +168,13 @@ class DataSourcesSubsystemProviders {
                     bundle.getString("installed-drivers.driver-class"));
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_CLASS_NAME, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_CLASS_NAME, REQUIRED).set(true);
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_DATASOURCE_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("installed-drivers.driver-datasource-class-name"));
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_DATASOURCE_CLASS_NAME, TYPE).set(
+                    ModelType.STRING);
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_DATASOURCE_CLASS_NAME, REQUIRED).set(true);
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_DATASOURCE_CLASS_NAME, NILLABLE).set(true);
+
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_XA_DATASOURCE_CLASS_NAME, DESCRIPTION).set(
                     bundle.getString("installed-drivers.driver-xa-datasource-class-name"));
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_XA_DATASOURCE_CLASS_NAME, TYPE).set(

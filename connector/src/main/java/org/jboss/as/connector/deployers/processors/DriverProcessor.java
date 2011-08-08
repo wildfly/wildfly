@@ -75,7 +75,7 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                                 Integer.valueOf(majorVersion), Integer.valueOf(minorVersion));
                     }
                     String driverName = deploymentUnit.getName();
-                    InstalledDriver driverMetadata = new InstalledDriver(driverName, driverClass.getName(), null, majorVersion,
+                    InstalledDriver driverMetadata = new InstalledDriver(driverName, driverClass.getName(), null, null, majorVersion,
                             minorVersion, compliant);
                     DriverService driverService = new DriverService(driverMetadata, driver);
                     phaseContext

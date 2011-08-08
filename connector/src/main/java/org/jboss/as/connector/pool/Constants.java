@@ -36,7 +36,7 @@ public class Constants {
 
     public static final String POOL_USE_STRICT_MIN = "pool-use-strict-min";
 
-    public static final String BACKGROUNDVALIDATIONMINUTES = "background-validation-minutes";
+    public static final String BACKGROUNDVALIDATIONMILLIS = "background-validation-millis";
 
     public static final String BACKGROUNDVALIDATION = "background-validation";
 
