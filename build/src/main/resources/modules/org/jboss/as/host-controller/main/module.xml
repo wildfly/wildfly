@@ -39,6 +39,7 @@
         <module name="org.jboss.as.domain-controller"/>
         <module name="org.jboss.as.domain-management"/>
         <module name="org.jboss.as.network"/>
+        <module name="org.jboss.as.platform-mbean"/>
         <module name="org.jboss.as.process-controller"/>
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.as.remoting"/>

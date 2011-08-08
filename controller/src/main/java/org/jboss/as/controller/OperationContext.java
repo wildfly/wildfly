@@ -254,6 +254,8 @@ public interface OperationContext {
      *
      * @param address the (possibly empty) address to read
      * @return the model data
+     *
+     * @deprecated Use {@link #readResource(PathAddress)}
      */
     @Deprecated
     ModelNode readModel(PathAddress address);
@@ -265,13 +267,15 @@ public interface OperationContext {
      *
      * @param address the (possibly empty) address to read
      * @return the model data
+     *
+     * @deprecated Use {@link #readResourceForUpdate(PathAddress)}
      */
     @Deprecated
     ModelNode readModelForUpdate(PathAddress address);
 
     /**
      * Acquire the controlling {@link ModelController}'s exclusive lock. Holding this lock prevent other operations
-     * from mutating the model, the {@link org.jboss.as.controller.registry.ManagementResourceRegistration management resource registry} or the runtime
+     * from mutating the model, the {@link ManagementResourceRegistration management resource registry} or the runtime
      * service registry until the lock is released. The lock is automatically released when the
      * {@link OperationStepHandler#execute(OperationContext, org.jboss.dmr.ModelNode) execute method} of the handler
      * that invoked this method returns.
@@ -336,7 +340,7 @@ public interface OperationContext {
     boolean isModelAffected();
 
     /**
-     * Determine whether the {@link org.jboss.as.controller.registry.ManagementResourceRegistration management resource registry} has thus far been affected by this operation.
+     * Determine whether the {@link ManagementResourceRegistration management resource registry} has thus far been affected by this operation.
      *
      * @return {@code true} if the management resource registry was affected, {@code false} otherwise
      */
