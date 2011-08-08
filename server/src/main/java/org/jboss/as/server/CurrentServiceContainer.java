@@ -21,7 +21,7 @@
  */
 package org.jboss.as.server;
 
-import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceContainer;
 
 /**
  * Class that provides static access to the current servers ServiceRegistry.
@@ -31,15 +31,15 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Stuart Douglas
  */
-public class CurrentServiceRegistry {
+public class CurrentServiceContainer {
 
-    private static volatile ServiceRegistry serviceRegistry;
+    private static volatile ServiceContainer serviceContainer;
 
-    public static ServiceRegistry getServiceRegistry() {
-        return serviceRegistry;
+    public static ServiceContainer getServiceContainer() {
+        return serviceContainer;
     }
 
-    static void setServiceRegistry(final ServiceRegistry serviceRegistry) {
-        CurrentServiceRegistry.serviceRegistry = serviceRegistry;
+    static void setServiceContainer(final ServiceContainer serviceContainer) {
+        CurrentServiceContainer.serviceContainer = serviceContainer;
     }
 }

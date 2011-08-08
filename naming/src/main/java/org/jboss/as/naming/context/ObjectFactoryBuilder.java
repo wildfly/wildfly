@@ -23,9 +23,8 @@
 package org.jboss.as.naming.context;
 
 import org.jboss.as.naming.ServiceAwareObjectFactory;
-import org.jboss.as.server.CurrentServiceRegistry;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceRegistry;
 
 import javax.naming.Context;
 import javax.naming.Name;
@@ -120,7 +119,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
             final Class<?> factoryClass = classLoader.loadClass(reference.getFactoryClassName());
             ObjectFactory factory = ObjectFactory.class.cast(factoryClass.newInstance());
             if (factory instanceof ServiceAwareObjectFactory) {
-                ((ServiceAwareObjectFactory) factory).injectServiceRegistry(CurrentServiceRegistry.getServiceRegistry());
+                ((ServiceAwareObjectFactory) factory).injectServiceRegistry(CurrentServiceContainer.getServiceContainer());
             }
             return factory;
         } catch (Throwable t) {

@@ -80,16 +80,10 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     }
 
     public synchronized void acquire() {
-        if (controller == null)
-            throw new IllegalStateException("Service is not started, can't be aquired");
-
         refcnt++;
     }
 
     public synchronized void release() {
-        if (controller == null)
-            throw new IllegalStateException("Service was never started, can't be released");
-
         if (--refcnt <= 0)
             controller.setMode(ServiceController.Mode.REMOVE);
     }

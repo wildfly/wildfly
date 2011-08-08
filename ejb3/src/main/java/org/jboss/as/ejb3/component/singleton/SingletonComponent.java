@@ -28,7 +28,7 @@ import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.server.CurrentServiceRegistry;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb3.concurrency.spi.LockableComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.logging.Logger;
@@ -93,7 +93,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         }
         if (dependsOn != null) {
             for(ServiceName serviceName : dependsOn) {
-                final ServiceController<Component> service = (ServiceController<Component>) CurrentServiceRegistry.getServiceRegistry().getRequiredService(serviceName);
+                final ServiceController<Component> service = (ServiceController<Component>) CurrentServiceContainer.getServiceContainer().getRequiredService(serviceName);
                 final Component component = service.getValue();
                 if(component instanceof SingletonComponent) {
                     ((SingletonComponent) component).getComponentInstance();
