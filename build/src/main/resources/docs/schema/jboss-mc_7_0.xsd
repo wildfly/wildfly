@@ -2,7 +2,7 @@
 
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -29,6 +29,104 @@
             attributeFormDefault="unqualified"
             version="1.0">
 
-    <!-- TODO -->
+    <xs:complexType name="deployment">
+        <xs:sequence>
+            <xs:element name="bean" type="bean" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
 
+    <xs:complexType name="bean">
+        <xs:sequence>
+            <xs:element name="alias" type="alias" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="classloader" type="classloader" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="constructor" type="constructor" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="property" type="property" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="create" type="lifecycle" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="start" type="lifecycle" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="stop" type="lifecycle" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="destroy" type="lifecycle" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="install" type="install" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="uninstall" type="install" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="depends" type="depends" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="class" type="xs:string" use="optional"/>
+        <xs:attribute name="mode" type="mode" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="alias" mixed="true" />
+
+    <xs:complexType name="classloader">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="constructor">
+        <xs:sequence>
+            <xs:element name="factory" type="parameter" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="parameter" type="parameter" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="mode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="active"/>
+            <xs:enumeration value="passive"/>
+            <xs:enumeration value="on demand"/>
+            <xs:enumeration value="never"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="property">
+        <xs:choice minOccurs="0" maxOccurs="1">
+            <xs:element name="inject" type="inject"/>
+            <xs:element name="value-factory" type="value-factory"/>
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="depends">
+        <xs:attribute name="state" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="inject">
+        <xs:attribute name="bean" type="xs:string" use="optional"/>
+        <xs:attribute name="service" type="xs:string" use="optional"/>
+        <xs:attribute name="property" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="value-factory">
+        <xs:sequence>
+            <xs:element name="parameter" type="parameter" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="bean" type="xs:string" use="required"/>
+        <xs:attribute name="method" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="lifecycle">
+        <xs:sequence>
+            <xs:element name="parameter" type="parameter" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="method" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="install">
+        <xs:sequence>
+            <xs:element name="parameter" type="parameter" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="bean" type="xs:string" use="optional"/>
+        <xs:attribute name="method" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="value" mixed="true">
+        <xs:attribute name="replace" type="xs:boolean" use="optional"/>
+        <xs:attribute name="trim" type="xs:boolean" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="parameter">
+        <xs:attribute name="class" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <!-- Root elements -->
+
+    <xs:element name="deployment" type="deployment"/>
 </xs:schema>
