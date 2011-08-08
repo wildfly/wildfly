@@ -353,9 +353,15 @@ public class GlobalOperationHandlers {
      */
     public static class ReadAttributeHandler extends AbstractMultiTargetHandler implements OperationStepHandler {
 
+        private ParametersValidator nameValidator = new ParametersValidator();
+
+        public ReadAttributeHandler() {
+            nameValidator.registerValidator(NAME, new StringLengthValidator(1));
+        }
+
         @Override
         public void doExecute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
+            nameValidator.validate(operation);
             final String attributeName = operation.require(NAME).asString();
             final ModelNode subModel = safeReadModel(context);
             final AttributeAccess attributeAccess = context.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
@@ -384,7 +390,15 @@ public class GlobalOperationHandlers {
      * {@link org.jboss.as.controller.OperationStepHandler} writing a single attribute. The required request parameter "name" represents the attribute name.
      */
     public static class WriteAttributeHandler implements OperationStepHandler {
+
+        private ParametersValidator nameValidator = new ParametersValidator();
+
+        public WriteAttributeHandler() {
+            nameValidator.registerValidator(NAME, new StringLengthValidator(1));
+        }
+
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            nameValidator.validate(operation);
             final String attributeName = operation.require(NAME).asString();
             final AttributeAccess attributeAccess = context.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
             if (attributeAccess == null) {
@@ -504,7 +518,7 @@ public class GlobalOperationHandlers {
     /**
      * Assembles the response to a read-resource request from the components gathered by earlier steps.
      */
-    private static class ReadChildrenResourcesAssemblyHandler implements OperationStepHandler {
+    public static class ReadChildrenResourcesAssemblyHandler implements OperationStepHandler {
 
         private final Map<PathElement, ModelNode> resources;
 
@@ -516,7 +530,7 @@ public class GlobalOperationHandlers {
 *                       relative to the address of the operation this handler is handling and the
 *                       value is the full read-resource response. Will not be {@code null}
          */
-        private ReadChildrenResourcesAssemblyHandler(final Map<PathElement, ModelNode> resources) {
+        public ReadChildrenResourcesAssemblyHandler(final Map<PathElement, ModelNode> resources) {
             this.resources = resources;
         }
 
