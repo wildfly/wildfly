@@ -39,6 +39,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
+import org.jboss.sasl.util.AbstractSaslServer;
 
 /**
  * @author Emanuel Muckenhuber
@@ -49,6 +50,7 @@ public class LoggingExtension implements Extension {
     private static final PathElement loggersPath = PathElement.pathElement(CommonAttributes.LOGGER);
     private static final PathElement asyncHandlersPath = PathElement.pathElement(CommonAttributes.ASYNC_HANDLER);
     private static final PathElement consoleHandlersPath = PathElement.pathElement(CommonAttributes.CONSOLE_HANDLER);
+    private static final PathElement customHandlerPath = PathElement.pathElement(CommonAttributes.CUSTOM_HANDLER);
     private static final PathElement fileHandlersPath = PathElement.pathElement(CommonAttributes.FILE_HANDLER);
     private static final PathElement periodicHandlersPath = PathElement.pathElement(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER);
     private static final PathElement sizePeriodicHandlersPath = PathElement.pathElement(CommonAttributes.SIZE_ROTATING_FILE_HANDLER);
@@ -124,6 +126,14 @@ public class LoggingExtension implements Extension {
         sizePeriodicHandler.registerOperationHandler(HandlerLevelChange.OPERATION_NAME, HandlerLevelChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_LEVEL, false);
         sizePeriodicHandler.registerOperationHandler(HandlerFileChange.OPERATION_NAME, HandlerFileChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_FILE, false);
         sizePeriodicHandler.registerOperationHandler(SizeRotatingHandlerUpdateProperties.OPERATION_NAME, SizeRotatingHandlerUpdateProperties.INSTANCE, LoggingSubsystemProviders.SIZE_PERIODIC_HANDLER_UPDATE, false);
+
+        // Custom logging handler
+        final ManagementResourceRegistration customHandler = registration.registerSubModel(customHandlerPath, LoggingSubsystemProviders.CUSTOM_HANDLER);
+        customHandler.registerOperationHandler(ADD, CustomHandlerAdd.INSTANCE, LoggingSubsystemProviders.CUSTOM_HANDLER_ADD, false);
+        customHandler.registerOperationHandler(REMOVE, LoggerHandlerRemove.INSTANCE, LoggingSubsystemProviders.HANDLER_REMOVE, false);
+        customHandler.registerOperationHandler(ENABLE, HandlerEnable.INSTANCE, LoggingSubsystemProviders.HANDLER_ENABLE, false);
+        customHandler.registerOperationHandler(DISABLE, HandlerDisable.INSTANCE, LoggingSubsystemProviders.HANDLER_DISABLE, false);
+        customHandler.registerOperationHandler(HandlerLevelChange.OPERATION_NAME, HandlerLevelChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_LEVEL, false);
     }
 
     /**

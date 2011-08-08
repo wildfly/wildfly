@@ -37,7 +37,9 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.ASYNC_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.CONSOLE_HANDLER;
+import static org.jboss.as.logging.CommonAttributes.CUSTOM_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILE_HANDLER;
@@ -46,6 +48,7 @@ import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.LOGGER;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
+import static org.jboss.as.logging.CommonAttributes.MODULE;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.PATH;
 import static org.jboss.as.logging.CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER;
@@ -58,6 +61,7 @@ import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -135,6 +139,10 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                         }
                         case FILE_HANDLER: {
                             parseFileHandlerElement(reader, address, list, handlerNames);
+                            break;
+                        }
+                        case CUSTOM_HANDLER: {
+                            parseCustomHandlerElement(reader, address, list, handlerNames);
                             break;
                         }
                         case PERIODIC_ROTATING_FILE_HANDLER: {
@@ -514,6 +522,88 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
         node.get(FILE).set(fileSpec);
         node.get(APPEND).set(append);
+        list.add(node);
+    }
+
+    static void parseCustomHandlerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final Set<String> names) throws XMLStreamException {
+        // Attributes
+        String name = null;
+        String className = null;
+        String moduleName = null;
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.CLASS, Attribute.MODULE);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
+                }
+                case CLASS: {
+                    className = value;
+                    break;
+                }
+                case MODULE: {
+                    moduleName = value;
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        if (! names.add(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
+        // Elements
+        String levelName = null;
+        String encoding = null;
+        String formatterSpec = null;
+
+
+        final EnumSet<Element> requiredElem = EnumSet.of(Element.FORMATTER);
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (!encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            requiredElem.remove(element);
+            switch (element) {
+                case LEVEL: {
+                    levelName = readStringAttributeElement(reader, "name");
+                    break;
+                }
+                case ENCODING: {
+                    encoding = readStringAttributeElement(reader, "value");
+                    break;
+                }
+                case FORMATTER: {
+                    formatterSpec = parseFormatterElement(reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        if (!requiredElem.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(CUSTOM_HANDLER, name);
+        if (levelName != null) node.get(LEVEL).set(levelName);
+        if(encoding != null) node.get(ENCODING).set(encoding);
+        if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
+        node.get(CLASS).set(className);
+        node.get(MODULE).set(moduleName);
         list.add(node);
     }
 
@@ -913,6 +1003,18 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 writeFileHandler(writer, handler, name);
             }
         }
+        if (node.hasDefined(CUSTOM_HANDLER)) {
+            final ModelNode handlers = node.get(CUSTOM_HANDLER);
+
+            for (Property handlerProp : handlers.asPropertyList()) {
+                final String name = handlerProp.getName();
+                final ModelNode handler = handlerProp.getValue();
+                if (!handler.isDefined()) {
+                    continue;
+                }
+                writeCustomHandler(writer, handler, name);
+            }
+        }
         if (node.hasDefined(PERIODIC_ROTATING_FILE_HANDLER)) {
             final ModelNode handlers = node.get(PERIODIC_ROTATING_FILE_HANDLER);
 
@@ -982,6 +1084,21 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         writeProperties(writer, node);
         writeFile(writer, node);
         writeAppend(writer, node);
+
+        writer.writeEndElement();
+    }
+
+    private void writeCustomHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name)
+            throws XMLStreamException {
+        writer.writeStartElement(Element.CUSTOM_HANDLER.getLocalName());
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+        writeAttribute(writer, Attribute.CLASS, node.get(CLASS));
+        writeAttribute(writer, Attribute.MODULE, node.get(MODULE));
+        writeLevel(writer, node);
+        writeEncoding(writer, node);
+        writeFilter(writer, node);
+        writeFormatter(writer, node);
+        writeProperties(writer, node);
 
         writer.writeEndElement();
     }
