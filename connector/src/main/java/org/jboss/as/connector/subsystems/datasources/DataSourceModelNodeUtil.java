@@ -23,7 +23,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
@@ -36,6 +36,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
@@ -127,6 +128,7 @@ class DataSourceModelNodeUtil {
         }
         setStringIfNotNull(dataSourceModel, CONNECTION_URL, dataSource.getConnectionUrl());
         setStringIfNotNull(dataSourceModel, DATASOURCE_DRIVER_CLASS, dataSource.getDriverClass());
+        setStringIfNotNull(dataSourceModel, DATASOURCE_CLASS, dataSource.getDataSourceClass());
         setStringIfNotNull(dataSourceModel, JNDINAME, dataSource.getJndiName());
         setStringIfNotNull(dataSourceModel, DATASOURCE_DRIVER, dataSource.getDriver());
         setStringIfNotNull(dataSourceModel, NEW_CONNECTION_SQL, dataSource.getNewConnectionSql());
@@ -193,7 +195,7 @@ class DataSourceModelNodeUtil {
                     validation.getStaleConnectionChecker());
             setExtensionIfNotNull(dataSourceModel, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES,
                     validation.getValidConnectionChecker());
-            setLongIfNotNull(dataSourceModel, BACKGROUNDVALIDATIONMINUTES, validation.getBackgroundValidationMinutes());
+            setLongIfNotNull(dataSourceModel, BACKGROUNDVALIDATIONMILLIS, validation.getBackgroundValidationMillis());
             setBooleanIfNotNull(dataSourceModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
             setBooleanIfNotNull(dataSourceModel, USE_FAST_FAIL, validation.isUseFastFail());
             setBooleanIfNotNull(dataSourceModel, VALIDATEONMATCH, validation.isValidateOnMatch());
@@ -276,7 +278,7 @@ class DataSourceModelNodeUtil {
                     validation.getStaleConnectionChecker());
             setExtensionIfNotNull(xaDataSourceModel, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES,
                     validation.getValidConnectionChecker());
-            setLongIfNotNull(xaDataSourceModel, BACKGROUNDVALIDATIONMINUTES, validation.getBackgroundValidationMinutes());
+            setLongIfNotNull(xaDataSourceModel, BACKGROUNDVALIDATIONMILLIS, validation.getBackgroundValidationMillis());
             setBooleanIfNotNull(xaDataSourceModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
             setBooleanIfNotNull(xaDataSourceModel, USE_FAST_FAIL, validation.isUseFastFail());
             setBooleanIfNotNull(xaDataSourceModel, VALIDATEONMATCH, validation.isValidateOnMatch());
@@ -308,6 +310,7 @@ class DataSourceModelNodeUtil {
         }
         final String connectionUrl = getStringIfSetOrGetDefault(dataSourceNode, CONNECTION_URL, null);
         final String driverClass = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER_CLASS, null);
+        final String dataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_CLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
         final String driver = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER, null);
         final String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
@@ -361,17 +364,17 @@ class DataSourceModelNodeUtil {
         final Extension validConnectionChecker = extractExtension(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
                 VALIDCONNECTIONCHECKER_PROPERTIES);
 
-        final Long backgroundValidationMinutes = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMINUTES, null);
+        final Long backgroundValidationMillis = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
         final boolean backgroundValidation = getBooleanIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATION, false);
         final boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, false);
         final boolean validateOnMatch = getBooleanIfSetOrGetDefault(dataSourceNode, VALIDATEONMATCH, false);
         final boolean spy = getBooleanIfSetOrGetDefault(dataSourceNode, SPY, false);
         final boolean useCcm = getBooleanIfSetOrGetDefault(dataSourceNode, USE_CCM, true);
 
-        final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMinutes, useFastFail,
+        final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMillis, useFastFail,
                 validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
 
-        return new DataSourceImpl(connectionUrl, driverClass, driver, transactionIsolation, connectionProperties, timeOut,
+        return new DataSourceImpl(connectionUrl, driverClass, dataSourceClass, driver, transactionIsolation, connectionProperties, timeOut,
                 security, statement, validation, urlDelimiter, urlSelectorStrategyClassName, newConnectionSql, useJavaContext,
                 poolName, enabled, jndiName, spy, useCcm, jta, pool);
     }
@@ -442,13 +445,13 @@ class DataSourceModelNodeUtil {
         final Extension validConnectionChecker = extractExtension(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
                 VALIDCONNECTIONCHECKER_PROPERTIES);
 
-        final Long backgroundValidationMinutes = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMINUTES, null);
+        final Long backgroundValidationMillis = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
         final boolean backgroundValidation = getBooleanIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATION, false);
         final boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, false);
         final boolean validateOnMatch = getBooleanIfSetOrGetDefault(dataSourceNode, VALIDATEONMATCH, false);
         final boolean spy = getBooleanIfSetOrGetDefault(dataSourceNode, SPY, false);
         final boolean useCcm = getBooleanIfSetOrGetDefault(dataSourceNode, USE_CCM, true);
-        final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMinutes, useFastFail,
+        final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMillis, useFastFail,
                 validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
 
         final String recoveryUsername = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_USERNAME, null);

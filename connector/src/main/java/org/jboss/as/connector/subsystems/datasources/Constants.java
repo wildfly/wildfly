@@ -43,6 +43,8 @@ class Constants {
 
     static final String DATASOURCE_DRIVER_CLASS = "driver-class";
 
+    static final String DATASOURCE_CLASS = "datasource-class";
+
     static final String DATASOURCE_DRIVER = "driver-name";
 
     static final String DRIVER_NAME = "driver-name";
@@ -54,6 +56,8 @@ class Constants {
     static final String DRIVER_MINOR_VERSION = "driver-minor-version";
 
     static final String DRIVER_CLASS_NAME = "driver-class-name";
+
+    static final String DRIVER_DATASOURCE_CLASS_NAME = "driver-datasource-class-name";
 
     static final String DRIVER_XA_DATASOURCE_CLASS_NAME = "driver-xa-datasource-class-name";
 

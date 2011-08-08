@@ -12,6 +12,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJ
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
@@ -48,6 +49,7 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                             driverNode.get(DEPLOYMENT_NAME).set(driver.getDriverName());
                             driverNode.get(DRIVER_MODULE_NAME);
                             driverNode.get(MODULE_SLOT);
+                            driverNode.get(DRIVER_DATASOURCE_CLASS_NAME);
                             driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME);
 
                         } else {
@@ -55,6 +57,8 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                             driverNode.get(DRIVER_MODULE_NAME).set(driver.getModuleName().getName());
                             driverNode.get(MODULE_SLOT).set(
                                     driver.getModuleName() != null ? driver.getModuleName().getSlot() : "");
+                            driverNode.get(DRIVER_DATASOURCE_CLASS_NAME).set(
+                                    driver.getDataSourceClassName() != null ? driver.getDataSourceClassName() : "");
                             driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(
                                     driver.getXaDataSourceClassName() != null ? driver.getXaDataSourceClassName() : "");
 

@@ -30,6 +30,7 @@ import org.jboss.dmr.ModelType;
  */
 public enum AttributeDefinition {
     CONNECTION_URL(Constants.CONNECTION_URL, ModelType.STRING, true), DRIVER_CLASS(Constants.DATASOURCE_DRIVER_CLASS,
+            ModelType.STRING, true), DATASOURCE_CLASS(Constants.DATASOURCE_CLASS,
             ModelType.STRING, true), JNDINAME(Constants.JNDINAME, ModelType.STRING, true), DRIVER(Constants.DATASOURCE_DRIVER,
             ModelType.STRING, true), NEW_CONNECTION_SQL(Constants.NEW_CONNECTION_SQL, ModelType.STRING, false), POOLNAME(
             Constants.POOLNAME, ModelType.STRING, true), URL_DELIMITER(Constants.URL_DELIMITER, ModelType.STRING, false), URL_SELECTOR_STRATEGY_CLASS_NAME(
@@ -55,8 +56,8 @@ public enum AttributeDefinition {
             Constants.STALECONNECTIONCHECKERCLASSNAME, ModelType.STRING, false), STALECONNECTIONCHECKER_PROPERTIES(
             Constants.STALECONNECTIONCHECKER_PROPERTIES, ModelType.OBJECT, false), VALIDCONNECTIONCHECKERCLASSNAME(
             Constants.VALIDCONNECTIONCHECKERCLASSNAME, ModelType.STRING, false), VALIDCONNECTIONCHECKER_PROPERTIES(
-            Constants.VALIDCONNECTIONCHECKER_PROPERTIES, ModelType.OBJECT, false), BACKGROUNDVALIDATIONMINUTES(
-            org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES, ModelType.LONG, false), BACKGROUNDVALIDATION(
+            Constants.VALIDCONNECTIONCHECKER_PROPERTIES, ModelType.OBJECT, false), BACKGROUNDVALIDATIONMILLIS(
+            org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS, ModelType.LONG, false), BACKGROUNDVALIDATION(
             org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION, ModelType.BOOLEAN, false), USE_FAST_FAIL(
             org.jboss.as.connector.pool.Constants.USE_FAST_FAIL, ModelType.BOOLEAN, false), VALIDATEONMATCH(
             Constants.VALIDATEONMATCH, ModelType.BOOLEAN, false), SPY(Constants.SPY, ModelType.BOOLEAN, false), USE_CCM(

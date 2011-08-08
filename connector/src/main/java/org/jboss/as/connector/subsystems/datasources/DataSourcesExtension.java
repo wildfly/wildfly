@@ -22,7 +22,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
@@ -37,6 +37,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALID
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
@@ -45,6 +46,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJ
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
@@ -309,6 +311,7 @@ public class DataSourcesExtension implements Extension {
                     if (!isXADataSource) {
                         writeElementIfHas(writer, dataSourceNode, DataSource.Tag.CONNECTIONURL, CONNECTION_URL);
                         writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DRIVERCLASS, DATASOURCE_DRIVER_CLASS);
+                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DATASOURCECLASS, DATASOURCE_CLASS);
                         if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES)) {
                             for (Property connectionProperty : dataSourceNode.get(CONNECTION_PROPERTIES).asPropertyList()) {
                                 writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
@@ -432,7 +435,7 @@ public class DataSourcesExtension implements Extension {
 
                     boolean validationRequired = hasAnyOf(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
                             VALIDCONNECTIONCHECKER_PROPERTIES, CHECKVALIDCONNECTIONSQL, VALIDATEONMATCH, BACKGROUNDVALIDATION,
-                            BACKGROUNDVALIDATIONMINUTES, USE_FAST_FAIL, STALECONNECTIONCHECKERCLASSNAME,
+                            BACKGROUNDVALIDATIONMILLIS, USE_FAST_FAIL, STALECONNECTIONCHECKERCLASSNAME,
                             STALECONNECTIONCHECKER_PROPERTIES, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
                     if (validationRequired) {
                         writer.writeStartElement(DataSource.Tag.VALIDATION.getLocalName());
@@ -457,8 +460,8 @@ public class DataSourcesExtension implements Extension {
                                 CHECKVALIDCONNECTIONSQL);
                         writeElementIfHas(writer, dataSourceNode, Validation.Tag.VALIDATEONMATCH, VALIDATEONMATCH);
                         writeElementIfHas(writer, dataSourceNode, Validation.Tag.BACKGROUNDVALIDATION, BACKGROUNDVALIDATION);
-                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.BACKGROUNDVALIDATIONMINUTES,
-                                BACKGROUNDVALIDATIONMINUTES);
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.BACKGROUNDVALIDATIONMILLIS,
+                                BACKGROUNDVALIDATIONMILLIS);
                         writeElementIfHas(writer, dataSourceNode, Validation.Tag.USEFASTFAIL, USE_FAST_FAIL);
                         if (dataSourceNode.hasDefined(STALECONNECTIONCHECKERCLASSNAME)) {
                             writer.writeStartElement(Validation.Tag.STALECONNECTIONCHECKER.getLocalName());
@@ -743,6 +746,8 @@ public class DataSourcesExtension implements Extension {
                         op.get(DRIVER_MINOR_VERSION).set(driver.getMinorVersion());
                     if (driver.getDriverClass() != null)
                         op.get(DRIVER_CLASS_NAME).set(driver.getDriverClass());
+                    if (driver.getDataSourceClass() != null)
+                        op.get(DRIVER_DATASOURCE_CLASS_NAME).set(driver.getDataSourceClass());
                     if (driver.getXaDataSourceClass() != null)
                         op.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(driver.getXaDataSourceClass());
 
@@ -778,6 +783,8 @@ public class DataSourcesExtension implements Extension {
                     addOperation.get(DRIVER_MAJOR_VERSION).set(jdbcDriver.getValue().get(DRIVER_MAJOR_VERSION));
                     addOperation.get(DRIVER_MINOR_VERSION).set(jdbcDriver.getValue().get(DRIVER_MINOR_VERSION));
                     addOperation.get(DRIVER_CLASS_NAME).set(jdbcDriver.getValue().get(DRIVER_CLASS_NAME));
+                    addOperation.get(DRIVER_DATASOURCE_CLASS_NAME).set(
+                            jdbcDriver.getValue().get(DRIVER_DATASOURCE_CLASS_NAME));
                     addOperation.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(
                             jdbcDriver.getValue().get(DRIVER_XA_DATASOURCE_CLASS_NAME));
                     result.add(addOperation);
