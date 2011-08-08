@@ -47,18 +47,28 @@ public class InjectedValueConfig extends ValueConfig {
     private final transient InjectedValue<Object> value = new InjectedValue<Object>();
 
     public Object getValue(Class<?> type) {
+        Object result = value.getValue();
         if (property != null) {
-            Method getter = beanInfo.getValue().getGetter(property, type);
+            Method getter = getBeanInfo(result).getGetter(property, type);
             try {
-                return getter.invoke(value.getValue());
+                return getter.invoke(result);
             } catch (IllegalAccessException e) {
                 throw new IllegalArgumentException(e);
             } catch (InvocationTargetException e) {
                 throw new IllegalArgumentException(e);
             }
         } else {
-            return value.getValue();
+            return result;
         }
+    }
+
+    @SuppressWarnings({"unchecked"})
+    protected BeanInfo getBeanInfo(Object bean) {
+        BeanInfo bi = beanInfo.getOptionalValue();
+        if (bi == null) {
+            bi = getTempBeanInfo(bean.getClass());
+        }
+        return bi;
     }
 
     @Override
@@ -72,7 +82,12 @@ public class InjectedValueConfig extends ValueConfig {
             visitor.addDependency(ServiceName.parse(service), value);
         }
         else {
-            throw new IllegalArgumentException("Missing bean or service attribute: " + toString());
+            Class<?> type = getType(visitor, getType());
+            if (type == null)
+                type = getType(visitor, this);
+            if (type == null)
+                throw new IllegalArgumentException("Cannot determine injected type: " + toString());
+            System.out.println("TYPE == " + type);
         }
     }
 

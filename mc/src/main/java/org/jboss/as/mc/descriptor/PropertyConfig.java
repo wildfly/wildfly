@@ -22,7 +22,10 @@
 
 package org.jboss.as.mc.descriptor;
 
+import org.jboss.as.mc.service.BeanInfo;
+
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -36,16 +39,28 @@ public class PropertyConfig extends AbstractConfigVisitorNode implements Seriali
     private String propertyName;
     private String type;
     private ValueConfig value;
+    private transient BeanInfo beanInfo;
 
     public void visit(ConfigVisitor visitor) {
         if (value == null)
             throw new IllegalArgumentException("Null value");
+        this.beanInfo = visitor.getBeanInfo();
         super.visit(visitor);
     }
 
     @Override
     protected void addChildren(ConfigVisitor visitor, List<ConfigVisitorNode> nodes) {
         nodes.add(value);
+    }
+
+    @Override
+    public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
+        Class<?> clazz = getType(visitor, type);
+        if (clazz == null) {
+            Method m = beanInfo.getGetter(propertyName, null);
+            return m.getReturnType();
+        }
+        return clazz;
     }
 
     public String getPropertyName() {

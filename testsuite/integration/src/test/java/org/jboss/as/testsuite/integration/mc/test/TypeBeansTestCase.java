@@ -20,30 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.mc.support;
+package org.jboss.as.testsuite.integration.mc.test;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.testsuite.integration.mc.support.TFactory;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class B {
-    private A a;
-    private C c;
-
-    public A getA() {
-        return a;
+@RunWith(Arquillian.class)
+public class TypeBeansTestCase {
+    @Deployment(name = "type-beans")
+    public static JavaArchive getCycleBeansJar() {
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "type-beans.jar");
+        archive.addPackage(TFactory.class.getPackage());
+        archive.addAsManifestResource("mc/type-jboss-beans.xml", "type-jboss-beans.xml");
+        return archive;
     }
 
-    public void setA(A a) {
-        this.a = a;
-        System.out.println("a = " + a);
-    }
-
-    public C getC() {
-        return c;
-    }
-
-    public void setC(C c) {
-        this.c = c;
-        System.out.println("c = " + c);
+    @Test
+    @OperateOnDeployment("type-beans")
+    public void testTypeBeans() throws Exception {
+        // TODO -- try to get beans?
     }
 }

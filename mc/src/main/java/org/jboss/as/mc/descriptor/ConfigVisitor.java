@@ -23,9 +23,11 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
+import org.jboss.as.mc.service.BeanInfo;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.Deque;
@@ -71,6 +73,13 @@ public interface ConfigVisitor {
      * @return loaded module
      */
     Module loadModule(ModuleIdentifier identifier);
+
+    /**
+     * Get bean info.
+     *
+     * @return the bean info
+     */
+    BeanInfo getBeanInfo();
 
     /**
      * Add dependency.

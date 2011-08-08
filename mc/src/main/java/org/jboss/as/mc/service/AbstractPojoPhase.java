@@ -75,7 +75,7 @@ public abstract class AbstractPojoPhase implements Service<Object> {
                 final ServiceTarget serviceTarget = context.getChildTarget();
                 final ServiceBuilder serviceBuilder = serviceTarget.addService(name, nextPhase);
                 registerAliases(serviceBuilder, next);
-                final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, state, module);
+                final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, state, module, beanInfo);
                 beanConfig.visit(visitor);
                 nextPhase.setModule(getModule());
                 nextPhase.setBeanConfig(getBeanConfig());

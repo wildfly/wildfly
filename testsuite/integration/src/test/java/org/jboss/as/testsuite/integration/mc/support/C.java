@@ -25,25 +25,5 @@ package org.jboss.as.testsuite.integration.mc.support;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class B {
-    private A a;
-    private C c;
-
-    public A getA() {
-        return a;
-    }
-
-    public void setA(A a) {
-        this.a = a;
-        System.out.println("a = " + a);
-    }
-
-    public C getC() {
-        return c;
-    }
-
-    public void setC(C c) {
-        this.c = c;
-        System.out.println("c = " + c);
-    }
+public class C {
 }

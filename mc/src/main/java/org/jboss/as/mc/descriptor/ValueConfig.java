@@ -33,6 +33,7 @@ public abstract class ValueConfig extends AbstractConfigVisitorNode implements S
     private static final long serialVersionUID = 1L;
 
     private String type;
+    private int index = -1;
 
     /**
      * Get value, use type to narrow down exact value.
@@ -48,5 +49,13 @@ public abstract class ValueConfig extends AbstractConfigVisitorNode implements S
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 }

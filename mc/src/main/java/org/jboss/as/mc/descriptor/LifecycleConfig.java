@@ -22,7 +22,12 @@
 
 package org.jboss.as.mc.descriptor;
 
+import org.jboss.as.mc.service.BeanInfo;
+import org.jboss.as.mc.service.Configurator;
+
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,6 +46,17 @@ public class LifecycleConfig extends AbstractConfigVisitorNode implements Serial
     protected void addChildren(ConfigVisitor visitor, List<ConfigVisitorNode> nodes) {
         if (parameters != null)
             nodes.addAll(Arrays.asList(parameters));
+    }
+
+    @Override
+    public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
+        if (previous instanceof ValueConfig == false)
+            throw new IllegalArgumentException("Previous node is not a value config!");
+
+        ValueConfig vc = (ValueConfig) previous;
+        BeanInfo beanInfo = visitor.getBeanInfo();
+        Method m = beanInfo.findMethod(methodName, Configurator.getTypes(parameters));
+        return m.getParameterTypes()[vc.getIndex()];
     }
 
     public String getMethodName() {

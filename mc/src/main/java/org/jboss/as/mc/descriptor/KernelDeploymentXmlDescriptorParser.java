@@ -307,7 +307,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                             ctorConfig.setFactory(parseInject(reader));
                             break;
                         case PARAMETER:
-                            parameters.add(parseParameter(reader));
+                            ValueConfig p = parseParameter(reader);
+                            p.setIndex(parameters.size());
+                            parameters.add(p);
                             break;
                         default:
                             throw unexpectedElement(reader);
@@ -426,7 +428,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case START_ELEMENT:
                     switch (Element.of(reader.getName())) {
                         case PARAMETER:
-                            parameters.add(parseParameter(reader));
+                            ValueConfig p = parseParameter(reader);
+                            p.setIndex(parameters.size());
+                            parameters.add(p);
                             break;
                         default:
                             throw unexpectedElement(reader);
@@ -492,7 +496,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case START_ELEMENT:
                     switch (Element.of(reader.getName())) {
                         case PARAMETER:
-                            parameters.add(parseParameter(reader));
+                            ValueConfig p = parseParameter(reader);
+                            p.setIndex(parameters.size());
+                            parameters.add(p);
                             break;
                         default:
                             throw unexpectedElement(reader);
@@ -615,7 +621,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case START_ELEMENT:
                     switch (Element.of(reader.getName())) {
                         case PARAMETER:
-                            parameters.add(parseParameter(reader));
+                            ValueConfig p = parseParameter(reader);
+                            p.setIndex(parameters.size());
+                            parameters.add(p);
                             break;
                         default:
                             throw unexpectedElement(reader);

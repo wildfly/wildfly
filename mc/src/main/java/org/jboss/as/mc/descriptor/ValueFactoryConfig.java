@@ -64,6 +64,10 @@ public class ValueFactoryConfig extends ValueConfig {
         super.visit(visitor);
     }
 
+    public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
+        throw new IllegalArgumentException("Too dynamic, cannot determine type on value-factory bean!");
+    }
+
     @Override
     protected void addChildren(ConfigVisitor visitor, List<ConfigVisitorNode> nodes) {
         if (parameters != null) {

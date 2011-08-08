@@ -22,7 +22,14 @@
 
 package org.jboss.as.mc.descriptor;
 
+import org.jboss.as.mc.service.BeanInfo;
+import org.jboss.as.mc.service.Configurator;
+import org.jboss.as.mc.service.DefaultBeanInfo;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,6 +52,31 @@ public class ConstructorConfig extends AbstractConfigVisitorNode implements Seri
             nodes.add(factory);
         if (parameters != null)
             nodes.addAll(Arrays.asList(parameters));
+    }
+
+    @Override
+    public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
+        if (factory != null)
+            throw new IllegalArgumentException("Too dynamic to determine injected type from factory!");
+        if (previous instanceof ValueConfig == false)
+            throw new IllegalArgumentException("Previous node is not a value config!");
+
+        ValueConfig vc = (ValueConfig) previous;
+        if (factoryClass != null) {
+            if (factoryMethod == null)
+                throw new IllegalArgumentException("Null factory method!");
+
+            BeanInfo beanInfo = getTempBeanInfo(visitor, factoryClass);
+            Method m = beanInfo.findMethod(factoryMethod, Configurator.getTypes(parameters));
+            return m.getParameterTypes()[vc.getIndex()];
+        }
+        else {
+            BeanInfo beanInfo = visitor.getBeanInfo();
+            if (beanInfo == null)
+                throw new IllegalArgumentException("No bean info!");
+            Constructor ctor = beanInfo.getConstructor(Configurator.getTypes(parameters));
+            return ctor.getParameterTypes()[vc.getIndex()];
+        }
     }
 
     public String getFactoryClass() {

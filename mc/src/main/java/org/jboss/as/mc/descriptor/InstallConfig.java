@@ -54,6 +54,14 @@ public class InstallConfig extends LifecycleConfig {
         }
     }
 
+    @Override
+    public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
+        if (dependency != null)
+            throw new IllegalArgumentException("Too dynamic, cannot determine type on dependency bean!");
+
+        return super.getType(visitor, previous);
+    }
+
     public String getDependency() {
         return dependency;
     }
