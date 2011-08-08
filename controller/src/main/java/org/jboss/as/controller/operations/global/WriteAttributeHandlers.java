@@ -33,6 +33,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ListValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -47,6 +48,7 @@ public class WriteAttributeHandlers {
     public static class WriteAttributeOperationHandler implements OperationStepHandler {
         public static WriteAttributeOperationHandler INSTANCE = new WriteAttributeOperationHandler();
 
+        final ParametersValidator nameValidator = new ParametersValidator();
         final ParameterValidator valueValidator;
 
         /**
@@ -61,11 +63,13 @@ public class WriteAttributeHandlers {
          * to validate values before applying them to the model.
          */
         protected WriteAttributeOperationHandler(ParameterValidator valueValidator) {
+            this.nameValidator.registerValidator(NAME, new StringLengthValidator(1));
             this.valueValidator = valueValidator;
         }
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            nameValidator.validate(operation);
             final String name = operation.require(NAME).asString();
             // Don't require VALUE. Let validateValue decide if it's bothered
             // by an undefined value

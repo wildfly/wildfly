@@ -25,10 +25,12 @@ package org.jboss.as.test.integration.domain;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLATFORM_MBEAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -36,6 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
@@ -45,6 +48,7 @@ import java.io.IOException;
 import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -65,11 +69,14 @@ public class CoreResourceManagementTestCase {
     private static final ModelNode ROOT_PROP_ADDRESS = new ModelNode();
     private static final ModelNode SERVER_GROUP_PROP_ADDRESS = new ModelNode();
     private static final ModelNode HOST_PROP_ADDRESS = new ModelNode();
+    private static final ModelNode HOST_CLASSLOADING_ADDRESS = new ModelNode();
     private static final ModelNode SERVER_PROP_ADDRESS = new ModelNode();
     private static final ModelNode MAIN_RUNNING_SERVER_ADDRESS = new ModelNode();
     private static final ModelNode MAIN_RUNNING_SERVER_PROP_ADDRESS = new ModelNode();
+    private static final ModelNode MAIN_RUNNING_SERVER_CLASSLOADING_ADDRESS = new ModelNode();
     private static final ModelNode OTHER_RUNNING_SERVER_ADDRESS = new ModelNode();
     private static final ModelNode OTHER_RUNNING_SERVER_PROP_ADDRESS = new ModelNode();
+    private static final ModelNode OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS = new ModelNode();
 
     static {
         ROOT_PROP_ADDRESS.add(SYSTEM_PROPERTY, TEST);
@@ -80,6 +87,10 @@ public class CoreResourceManagementTestCase {
         HOST_PROP_ADDRESS.add(HOST, "slave");
         HOST_PROP_ADDRESS.add(SYSTEM_PROPERTY, TEST);
         HOST_PROP_ADDRESS.protect();
+        HOST_CLASSLOADING_ADDRESS.add(HOST, "slave");
+        HOST_CLASSLOADING_ADDRESS.add(CORE_SERVICE, PLATFORM_MBEAN);
+        HOST_CLASSLOADING_ADDRESS.add(TYPE, "class-loading");
+        HOST_CLASSLOADING_ADDRESS.protect();
         SERVER_PROP_ADDRESS.add(HOST, "slave");
         SERVER_PROP_ADDRESS.add(SERVER_CONFIG, "other-two");
         SERVER_PROP_ADDRESS.add(SYSTEM_PROPERTY, TEST);
@@ -91,6 +102,11 @@ public class CoreResourceManagementTestCase {
         MAIN_RUNNING_SERVER_PROP_ADDRESS.add(SERVER, "main-one");
         MAIN_RUNNING_SERVER_PROP_ADDRESS.add(SYSTEM_PROPERTY, TEST);
         MAIN_RUNNING_SERVER_PROP_ADDRESS.protect();
+        MAIN_RUNNING_SERVER_CLASSLOADING_ADDRESS.add(HOST, "master");
+        MAIN_RUNNING_SERVER_CLASSLOADING_ADDRESS.add(SERVER, "main-one");
+        MAIN_RUNNING_SERVER_CLASSLOADING_ADDRESS.add(CORE_SERVICE, PLATFORM_MBEAN);
+        MAIN_RUNNING_SERVER_CLASSLOADING_ADDRESS.add(TYPE, "class-loading");
+        MAIN_RUNNING_SERVER_CLASSLOADING_ADDRESS.protect();
         OTHER_RUNNING_SERVER_ADDRESS.add(HOST, "slave");
         OTHER_RUNNING_SERVER_ADDRESS.add(SERVER, "other-two");
         OTHER_RUNNING_SERVER_ADDRESS.protect();
@@ -98,6 +114,11 @@ public class CoreResourceManagementTestCase {
         OTHER_RUNNING_SERVER_PROP_ADDRESS.add(SERVER, "other-two");
         OTHER_RUNNING_SERVER_PROP_ADDRESS.add(SYSTEM_PROPERTY, TEST);
         OTHER_RUNNING_SERVER_PROP_ADDRESS.protect();
+        OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS.add(HOST, "slave");
+        OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS.add(SERVER, "other-two");
+        OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS.add(CORE_SERVICE, PLATFORM_MBEAN);
+        OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS.add(TYPE, "class-loading");
+        OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS.protect();
 
     }
 
@@ -293,6 +314,26 @@ public class CoreResourceManagementTestCase {
         response = slaveClient.execute(getReadChildrenNamesOperation(OTHER_RUNNING_SERVER_ADDRESS, SYSTEM_PROPERTY));
         returnVal = validateResponse(response);
         Assert.assertEquals(1, returnVal.asList().size());
+    }
+
+    @Test
+    public void testPlatformMBeanManagement() throws Exception {
+
+        // Just validate that the resources exist at the expected location
+        DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        ModelNode response = masterClient.execute(getReadAttributeOperation(HOST_CLASSLOADING_ADDRESS, "loaded-class-count"));
+        ModelNode returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.INT, returnVal.getType());
+
+        response = masterClient.execute(getReadAttributeOperation(MAIN_RUNNING_SERVER_CLASSLOADING_ADDRESS, "loaded-class-count"));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.INT, returnVal.getType());
+
+        response = masterClient.execute(getReadAttributeOperation(OTHER_RUNNING_SERVER_CLASSLOADING_ADDRESS, "loaded-class-count"));
+        returnVal = validateResponse(response);
+        Assert.assertEquals(ModelType.INT, returnVal.getType());
+
     }
 
     private static ModelNode getSystemPropertyAddOperation(ModelNode address, String value, Boolean boottime) {

@@ -35,7 +35,11 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALMS;
+
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostModelUtil;
+import org.jboss.as.platform.mbean.PlatformMBeanConstants;
+import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -71,11 +75,16 @@ public class LocalHostAddHandler implements OperationStepHandler, DescriptionPro
             throw new IllegalStateException(String.format("Invocations of %s after HostController boot are not allowed", OPERATION_NAME));
         }
 
-        final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+        final Resource rootResource = context.createResource(PathAddress.EMPTY_ADDRESS);
+        final ModelNode model = rootResource.getModel();
         HostModelUtil.initCoreModel(model);
 
         // Create the empty management security resources
         context.createResource(PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, MANAGEMENT)));
+
+        // Wire in the platform mbean resources. We're bypassing the context.createResource API here because
+        // we want to use our own resource type. But it's ok as the createResource calls above have taken the lock
+        rootResource.registerChild(PlatformMBeanConstants.ROOT_PATH, new RootPlatformMBeanResource());
 
         final String localHostName = operation.require(NAME).asString();
         model.get(NAME).set(localHostName);
