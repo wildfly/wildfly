@@ -29,7 +29,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class ValueConfig implements Serializable, ConfigVisitorNode {
+public abstract class ValueConfig extends AbstractConfigVisitorNode implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String type;

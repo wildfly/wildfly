@@ -32,7 +32,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class DependsConfig implements Serializable, ConfigVisitorNode {
+public class DependsConfig extends AbstractConfigVisitorNode implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String dependency;

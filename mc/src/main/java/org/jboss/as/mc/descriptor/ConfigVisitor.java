@@ -28,12 +28,28 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
 
+import java.util.Deque;
+
 /**
  * Config visitor.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public interface ConfigVisitor {
+    /**
+     * Visit node's children.
+     *
+     * @param node the config node
+     */
+    void visit(ConfigVisitorNode node);
+
+    /**
+     * Get current nodes.
+     *
+     * @return the current nodes
+     */
+    Deque<ConfigVisitorNode> getCurrentNodes();
+
     /**
      * Get current state.
      *

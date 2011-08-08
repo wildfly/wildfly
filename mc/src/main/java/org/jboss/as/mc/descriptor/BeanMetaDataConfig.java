@@ -34,7 +34,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
+public class BeanMetaDataConfig extends AbstractConfigVisitorNode implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /** Name prefix of all MC-style beans. */
@@ -71,41 +71,33 @@ public class BeanMetaDataConfig implements Serializable, ConfigVisitorNode {
 
     @Override
     public void visit(ConfigVisitor visitor) {
-        BeanState state = visitor.getState();
         if (module == null)
             module = new ModuleConfig();
+        super.visit(visitor);
+    }
+
+    protected void addChildren(ConfigVisitor visitor, List<ConfigVisitorNode> nodes) {
+        BeanState state = visitor.getState();
         if (state == BeanState.NOT_INSTALLED)
-            module.visit(visitor);
+            nodes.add(module);
         if (constructor != null && state == BeanState.DESCRIBED)
-            constructor.visit(visitor);
-        if (properties != null && state == BeanState.INSTANTIATED) {
-            for (PropertyConfig pc : properties)
-                pc.visit(visitor);
-        }
-        if (create != null && state == BeanState.CONFIGURED) {
-            create.visit(visitor);
-        }
-        if (destroy != null && state == BeanState.CONFIGURED) {
-            destroy.visit(visitor);
-        }
-        if (start != null && state == BeanState.CREATE) {
-            start.visit(visitor);
-        }
-        if (stop != null && state == BeanState.CREATE) {
-            stop.visit(visitor);
-        }
-        if (installs != null) {
-            for (InstallConfig ic : installs)
-                ic.visit(visitor);
-        }
-        if (uninstalls != null) {
-            for (InstallConfig ic : uninstalls)
-                ic.visit(visitor);
-        }
-        if (depends != null) {
-            for (DependsConfig dc : depends)
-                dc.visit(visitor);
-        }
+            nodes.add(constructor);
+        if (properties != null && state == BeanState.INSTANTIATED)
+            nodes.addAll(properties);
+        if (create != null && state == BeanState.CONFIGURED)
+            nodes.add(create);
+        if (destroy != null && state == BeanState.CONFIGURED)
+            nodes.add(destroy);
+        if (start != null && state == BeanState.CREATE)
+            nodes.add(start);
+        if (stop != null && state == BeanState.CREATE)
+            nodes.add(stop);
+        if (installs != null)
+            nodes.addAll(installs);
+        if (uninstalls != null)
+            nodes.addAll(uninstalls);
+        if (depends != null)
+            nodes.addAll(depends);
     }
 
     public String getName() {

@@ -23,13 +23,14 @@
 package org.jboss.as.mc.descriptor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Property meta data.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class PropertyConfig implements Serializable, ConfigVisitorNode {
+public class PropertyConfig extends AbstractConfigVisitorNode implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String propertyName;
@@ -39,7 +40,12 @@ public class PropertyConfig implements Serializable, ConfigVisitorNode {
     public void visit(ConfigVisitor visitor) {
         if (value == null)
             throw new IllegalArgumentException("Null value");
-        value.visit(visitor);
+        super.visit(visitor);
+    }
+
+    @Override
+    protected void addChildren(ConfigVisitor visitor, List<ConfigVisitorNode> nodes) {
+        nodes.add(value);
     }
 
     public String getPropertyName() {

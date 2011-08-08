@@ -23,13 +23,15 @@
 package org.jboss.as.mc.descriptor;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Ctor meta data.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class ConstructorConfig implements Serializable, ConfigVisitorNode {
+public class ConstructorConfig extends AbstractConfigVisitorNode implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String factoryClass;
@@ -38,12 +40,11 @@ public class ConstructorConfig implements Serializable, ConfigVisitorNode {
     private ValueConfig[] parameters;
 
     @Override
-    public void visit(ConfigVisitor visitor) {
+    protected void addChildren(ConfigVisitor visitor, List<ConfigVisitorNode> nodes) {
         if (factory != null)
-            factory.visit(visitor);
+            nodes.add(factory);
         if (parameters != null)
-            for (ValueConfig param : parameters)
-                param.visit(visitor);
+            nodes.addAll(Arrays.asList(parameters));
     }
 
     public String getFactoryClass() {

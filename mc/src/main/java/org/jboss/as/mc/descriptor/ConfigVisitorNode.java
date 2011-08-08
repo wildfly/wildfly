@@ -35,4 +35,12 @@ public interface ConfigVisitorNode {
      * @param visitor the config visitor
      */
     void visit(ConfigVisitor visitor);
+
+    /**
+     * Get children.
+     *
+     * @param visitor the current visitor
+     * @return the config node children
+     */
+    Iterable<ConfigVisitorNode> getChildren(ConfigVisitor visitor);
 }

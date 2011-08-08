@@ -36,7 +36,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class ModuleConfig implements Serializable, ConfigVisitorNode {
+public class ModuleConfig extends AbstractConfigVisitorNode implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String moduleName;
@@ -56,6 +56,7 @@ public class ModuleConfig implements Serializable, ConfigVisitorNode {
         } else {
             getInjectedModule().setValue(new ImmediateValue<Module>(visitor.getModule()));
         }
+        // no children, no need to visit
     }
 
     public String getModuleName() {

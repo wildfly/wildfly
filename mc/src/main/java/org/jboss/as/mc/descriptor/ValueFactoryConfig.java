@@ -27,6 +27,9 @@ import org.jboss.as.mc.service.ReflectionJoinpoint;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.value.InjectedValue;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Value factory value.
  *
@@ -58,9 +61,13 @@ public class ValueFactoryConfig extends ValueConfig {
         if (bean != null) {
             visitor.addDependency(bean, state, value);
         }
+        super.visit(visitor);
+    }
+
+    @Override
+    protected void addChildren(ConfigVisitor visitor, List<ConfigVisitorNode> nodes) {
         if (parameters != null) {
-            for (ValueConfig p : parameters)
-                p.visit(visitor);
+            nodes.addAll(Arrays.asList(parameters));
         }
     }
 

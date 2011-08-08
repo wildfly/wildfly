@@ -34,7 +34,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class DefaultConfigVisitor implements ConfigVisitor {
+public class DefaultConfigVisitor extends AbstractConfigVisitor {
     private final ServiceBuilder builder;
     private final BeanState state;
     private final Module module;
