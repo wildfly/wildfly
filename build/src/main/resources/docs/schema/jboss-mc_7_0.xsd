@@ -65,6 +65,8 @@
             <xs:element name="factory" type="parameter" minOccurs="0" maxOccurs="1"/>
             <xs:element name="parameter" type="parameter" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
+        <xs:attribute name="factory-class" type="xs:string" use="optional"/>
+        <xs:attribute name="factory-method" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <xs:simpleType name="mode">
