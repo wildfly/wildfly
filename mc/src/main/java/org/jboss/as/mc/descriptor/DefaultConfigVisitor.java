@@ -24,6 +24,7 @@ package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.service.BeanInfo;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
@@ -39,16 +40,18 @@ public class DefaultConfigVisitor extends AbstractConfigVisitor {
     private final ServiceBuilder builder;
     private final BeanState state;
     private final Module module;
+    private final DeploymentReflectionIndex index;
     private final BeanInfo beanInfo;
 
-    public DefaultConfigVisitor(ServiceBuilder builder, BeanState state, Module module) {
-        this(builder, state, module, null);
+    public DefaultConfigVisitor(ServiceBuilder builder, BeanState state, Module module, DeploymentReflectionIndex index) {
+        this(builder, state, module, index, null);
     }
 
-    public DefaultConfigVisitor(ServiceBuilder builder, BeanState state, Module module, BeanInfo beanInfo) {
+    public DefaultConfigVisitor(ServiceBuilder builder, BeanState state, Module module, DeploymentReflectionIndex index, BeanInfo beanInfo) {
         this.builder = builder;
         this.state = state;
         this.module = module;
+        this.index = index;
         this.beanInfo = beanInfo;
     }
 
@@ -69,6 +72,11 @@ public class DefaultConfigVisitor extends AbstractConfigVisitor {
         } catch (Throwable t) {
             throw new IllegalArgumentException(t);
         }
+    }
+
+    @Override
+    public DeploymentReflectionIndex getReflectionIndex() {
+        return index;
     }
 
     @Override

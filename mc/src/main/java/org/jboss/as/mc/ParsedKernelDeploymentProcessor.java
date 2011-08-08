@@ -53,15 +53,16 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
+     *
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final List<KernelDeploymentXmlDescriptor> kdXmlDescriptors = unit.getAttachment(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY);
-        if(kdXmlDescriptors == null || kdXmlDescriptors.isEmpty())
+        if (kdXmlDescriptors == null || kdXmlDescriptors.isEmpty())
             return;
 
         final Module module = unit.getAttachment(Attachments.MODULE);
-        if(module == null)
+        if (module == null)
             throw new DeploymentUnitProcessingException("Failed to get module attachment for " + unit);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         final DeploymentReflectionIndex index = unit.getAttachment(Attachments.REFLECTION_INDEX);
@@ -70,7 +71,7 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
 
         for (KernelDeploymentXmlDescriptor kdXmlDescriptor : kdXmlDescriptors) {
             final List<BeanMetaDataConfig> beanConfigs = kdXmlDescriptor.getBeans();
-            for(final BeanMetaDataConfig beanConfig : beanConfigs) {
+            for (final BeanMetaDataConfig beanConfig : beanConfigs) {
                 describeBean(module, serviceTarget, index, beanConfig);
             }
             // TODO -- KD::classloader, KD::aliases
@@ -86,7 +87,7 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
         final DescribedPojoPhase describedService = new DescribedPojoPhase(deploymentIndex, beanConfig);
         final ServiceBuilder describedServiceBuilder = serviceTarget.addService(describedServiceName, describedService);
         describedService.registerAliases(describedServiceBuilder);
-        final ConfigVisitor visitor = new DefaultConfigVisitor(describedServiceBuilder, state, module);
+        final ConfigVisitor visitor = new DefaultConfigVisitor(describedServiceBuilder, state, module, deploymentIndex);
         beanConfig.visit(visitor);
         describedServiceBuilder.setInitialMode(beanConfig.getMode().getMode());
         describedServiceBuilder.install();

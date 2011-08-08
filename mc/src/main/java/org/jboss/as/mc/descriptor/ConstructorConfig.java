@@ -24,8 +24,6 @@ package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.service.BeanInfo;
 import org.jboss.as.mc.service.Configurator;
-import org.jboss.as.mc.service.DefaultBeanInfo;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -43,7 +41,7 @@ public class ConstructorConfig extends AbstractConfigVisitorNode implements Seri
 
     private String factoryClass;
     private String factoryMethod;
-    private ValueConfig factory;
+    private FactoryConfig factory;
     private ValueConfig[] parameters;
 
     @Override
@@ -69,8 +67,7 @@ public class ConstructorConfig extends AbstractConfigVisitorNode implements Seri
             BeanInfo beanInfo = getTempBeanInfo(visitor, factoryClass);
             Method m = beanInfo.findMethod(factoryMethod, Configurator.getTypes(parameters));
             return m.getParameterTypes()[vc.getIndex()];
-        }
-        else {
+        } else {
             BeanInfo beanInfo = visitor.getBeanInfo();
             if (beanInfo == null)
                 throw new IllegalArgumentException("No bean info!");
@@ -95,11 +92,11 @@ public class ConstructorConfig extends AbstractConfigVisitorNode implements Seri
         this.factoryMethod = factoryMethod;
     }
 
-    public ValueConfig getFactory() {
+    public FactoryConfig getFactory() {
         return factory;
     }
 
-    public void setFactory(ValueConfig factory) {
+    public void setFactory(FactoryConfig factory) {
         this.factory = factory;
     }
 

@@ -24,10 +24,10 @@ package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.service.BeanInfo;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.Deque;
@@ -75,6 +75,13 @@ public interface ConfigVisitor {
     Module loadModule(ModuleIdentifier identifier);
 
     /**
+     * Get reflection index.
+     *
+     * @return the reflection index
+     */
+    DeploymentReflectionIndex getReflectionIndex();
+
+    /**
      * Get bean info.
      *
      * @return the bean info
@@ -91,7 +98,7 @@ public interface ConfigVisitor {
     /**
      * Add dependency.
      *
-     * @param name the dependency name
+     * @param name     the dependency name
      * @param injector the injector
      */
     void addDependency(ServiceName name, Injector injector);
@@ -99,7 +106,7 @@ public interface ConfigVisitor {
     /**
      * Add bean dependency.
      *
-     * @param bean the dependency name
+     * @param bean  the dependency name
      * @param state the required bean state
      */
     void addDependency(String bean, BeanState state);
@@ -107,8 +114,8 @@ public interface ConfigVisitor {
     /**
      * Add bean dependency.
      *
-     * @param bean the dependency name
-     * @param state the required bean state
+     * @param bean     the dependency name
+     * @param state    the required bean state
      * @param injector the injector
      */
     void addDependency(String bean, BeanState state, Injector injector);

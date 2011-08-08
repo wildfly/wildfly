@@ -304,7 +304,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                 case START_ELEMENT:
                     switch (Element.of(reader.getName())) {
                         case FACTORY:
-                            ctorConfig.setFactory(parseInject(reader));
+                            ctorConfig.setFactory(parseFactory(reader));
                             break;
                         case PARAMETER:
                             ValueConfig p = parseParameter(reader);
@@ -580,6 +580,38 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             switch (reader.next()) {
                 case END_ELEMENT:
                     return injectedValueConfig;
+            }
+        }
+        throw unexpectedElement(reader);
+    }
+
+    private FactoryConfig parseFactory(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final FactoryConfig factoryConfig = new FactoryConfig();
+        final Set<Attribute> required = EnumSet.of(Attribute.BEAN);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            required.remove(attribute);
+            final String attributeValue = reader.getAttributeValue(i);
+
+            switch (attribute) {
+                case BEAN:
+                    factoryConfig.setBean(attributeValue);
+                    break;
+                case STATE:
+                    factoryConfig.setState(BeanState.valueOf(attributeValue.toUpperCase()));
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (required.isEmpty() == false) {
+            throw missingRequired(reader, required);
+        }
+        while (reader.hasNext()) {
+            switch (reader.next()) {
+                case END_ELEMENT:
+                    return factoryConfig;
             }
         }
         throw unexpectedElement(reader);

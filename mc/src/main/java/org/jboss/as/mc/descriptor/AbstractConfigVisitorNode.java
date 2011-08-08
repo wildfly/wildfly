@@ -44,7 +44,7 @@ public abstract class AbstractConfigVisitorNode implements ConfigVisitorNode, Ty
      * Add children as needed.
      *
      * @param visitor the current visitor
-     * @param nodes the nodes list to add to
+     * @param nodes   the nodes list to add to
      */
     protected void addChildren(ConfigVisitor visitor, List<ConfigVisitorNode> nodes) {
     }
@@ -58,12 +58,24 @@ public abstract class AbstractConfigVisitorNode implements ConfigVisitorNode, Ty
     /**
      * Get temp bean info.
      *
-     * @param visitor the visitor
+     * @param visitor   the visitor
      * @param className the class name
      * @return bean info
      */
     protected static BeanInfo getTempBeanInfo(ConfigVisitor visitor, String className) {
-        return getTempBeanInfo(getType(visitor, className));
+        return getTempBeanInfo(visitor, getType(visitor, className));
+    }
+
+    /**
+     * Get temp bean info.
+     *
+     * @param visitor the visitor
+     * @param clazz   the class
+     * @return bean info
+     */
+    @SuppressWarnings({"unchecked"})
+    protected static BeanInfo getTempBeanInfo(ConfigVisitor visitor, Class<?> clazz) {
+        return new DefaultBeanInfo(visitor.getReflectionIndex(), clazz);
     }
 
     /**
@@ -80,7 +92,7 @@ public abstract class AbstractConfigVisitorNode implements ConfigVisitorNode, Ty
     /**
      * Load class.
      *
-     * @param visitor the visitor
+     * @param visitor   the visitor
      * @param className the class name
      * @return class or null if null class name
      */

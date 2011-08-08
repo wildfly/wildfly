@@ -35,10 +35,8 @@ import org.jboss.msc.service.StartException;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class DescribedPojoPhase extends AbstractPojoPhase {
-    private final DeploymentReflectionIndex index;
-
     public DescribedPojoPhase(DeploymentReflectionIndex index, BeanMetaDataConfig beanConfig) {
-        this.index = index;
+        setIndex(index);
         setBeanConfig(beanConfig);
     }
 
@@ -58,7 +56,7 @@ public class DescribedPojoPhase extends AbstractPojoPhase {
 
     @Override
     protected AbstractPojoPhase createNextPhase() {
-        return new InstantiatedPojoPhase(index, this);
+        return new InstantiatedPojoPhase(this);
     }
 
     public void start(StartContext context) throws StartException {
@@ -67,7 +65,7 @@ public class DescribedPojoPhase extends AbstractPojoPhase {
             String beanClass = getBeanConfig().getBeanClass();
             if (beanClass != null) {
                 Class clazz = Class.forName(beanClass, false, getModule().getClassLoader());
-                setBeanInfo(new DefaultBeanInfo(index, clazz));
+                setBeanInfo(new DefaultBeanInfo(getIndex(), clazz));
             }
         } catch (Exception e) {
             throw new StartException(e);

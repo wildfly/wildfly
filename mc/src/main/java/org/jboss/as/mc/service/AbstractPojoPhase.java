@@ -28,6 +28,7 @@ import org.jboss.as.mc.descriptor.ConfigVisitor;
 import org.jboss.as.mc.descriptor.DefaultConfigVisitor;
 import org.jboss.as.mc.descriptor.InstallConfig;
 import org.jboss.as.mc.descriptor.ValueConfig;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
@@ -56,10 +57,12 @@ public abstract class AbstractPojoPhase implements Service<Object> {
 
     private Module module;
     private BeanMetaDataConfig beanConfig;
+    private DeploymentReflectionIndex index;
     private BeanInfo beanInfo;
     private Object bean;
 
     protected abstract BeanState getLifecycleState();
+
     protected abstract AbstractPojoPhase createNextPhase();
 
     public void start(StartContext context) throws StartException {
@@ -75,15 +78,15 @@ public abstract class AbstractPojoPhase implements Service<Object> {
                 final ServiceTarget serviceTarget = context.getChildTarget();
                 final ServiceBuilder serviceBuilder = serviceTarget.addService(name, nextPhase);
                 registerAliases(serviceBuilder, next);
-                final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, state, module, beanInfo);
+                final ConfigVisitor visitor = new DefaultConfigVisitor(serviceBuilder, state, getModule(), getIndex(), getBeanInfo());
                 beanConfig.visit(visitor);
                 nextPhase.setModule(getModule());
                 nextPhase.setBeanConfig(getBeanConfig());
+                nextPhase.setIndex(getIndex());
                 nextPhase.setBeanInfo(getBeanInfo());
                 nextPhase.setBean(getBean());
                 serviceBuilder.install();
             }
-
         } catch (Throwable t) {
             throw new StartException(t);
         }
@@ -161,16 +164,16 @@ public abstract class AbstractPojoPhase implements Service<Object> {
 
     /**
      * Consider the uninstalls.
-     *
+     * <p/>
      * This method is here to be able to override
      * the behavior after installs failed.
      * e.g. perhaps only running uninstalls from the index.
-     *
+     * <p/>
      * By default we run all uninstalls in the case
      * at least one install failed.
      *
      * @param uninstalls the uninstalls
-     * @param index current installs index
+     * @param index      current installs index
      */
     protected void considerUninstalls(List<Joinpoint> uninstalls, int index) {
         if (uninstalls == null)
@@ -201,8 +204,16 @@ public abstract class AbstractPojoPhase implements Service<Object> {
         return beanConfig;
     }
 
+    protected DeploymentReflectionIndex getIndex() {
+        return index;
+    }
+
     protected void setBeanConfig(BeanMetaDataConfig beanConfig) {
         this.beanConfig = beanConfig;
+    }
+
+    protected void setIndex(DeploymentReflectionIndex index) {
+        this.index = index;
     }
 
     protected BeanInfo getBeanInfo() {

@@ -22,45 +22,52 @@
 
 package org.jboss.as.mc.descriptor;
 
-import org.jboss.as.mc.service.ReflectionJoinpoint;
-
-import java.util.Arrays;
-import java.util.List;
+import org.jboss.as.mc.BeanState;
+import org.jboss.as.mc.service.BeanInfo;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
 
 /**
- * Value factory value.
+ * Factory value.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class ValueFactoryConfig extends FactoryConfig {
+public class FactoryConfig extends ValueConfig {
     private static final long serialVersionUID = 1L;
 
-    private String method;
-    private ValueConfig[] parameters;
+    private String bean;
+    private BeanState state;
+
+    protected final transient InjectedValue<BeanInfo> beanInfo = new InjectedValue<BeanInfo>();
+    protected final transient InjectedValue<Object> value = new InjectedValue<Object>();
 
     public Object getValue(Class<?> type) {
-        try {
-            ReflectionJoinpoint joinpoint = new ReflectionJoinpoint(beanInfo.getValue(), method);
-            joinpoint.setTarget(value);
-            joinpoint.setParameters(parameters);
-            return joinpoint.dispatch();
-        } catch (Throwable t) {
-            throw new IllegalArgumentException(t);
-        }
+        return value.getValue();
     }
 
     @Override
-    protected void addChildren(ConfigVisitor visitor, List<ConfigVisitorNode> nodes) {
-        if (parameters != null) {
-            nodes.addAll(Arrays.asList(parameters));
+    public void visit(ConfigVisitor visitor) {
+        if (bean != null) {
+            visitor.addDependency(bean, BeanState.DESCRIBED, beanInfo);
+            ServiceName name = BeanMetaDataConfig.toBeanName(bean, state);
+            visitor.addDependency(name, value); // direct name, since we have describe already
         }
+        super.visit(visitor);
     }
 
-    public void setMethod(String method) {
-        this.method = method;
+    public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
+        throw new IllegalArgumentException("Too dynamic, cannot determine type on factory bean!");
     }
 
-    public void setParameters(ValueConfig[] parameters) {
-        this.parameters = parameters;
+    public void setBean(String dependency) {
+        this.bean = dependency;
+    }
+
+    public void setState(BeanState state) {
+        this.state = state;
+    }
+
+    public BeanInfo getBeanInfo() {
+        return beanInfo.getValue();
     }
 }

@@ -24,9 +24,8 @@ package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.descriptor.ConstructorConfig;
-import org.jboss.as.mc.descriptor.InjectedValueConfig;
+import org.jboss.as.mc.descriptor.FactoryConfig;
 import org.jboss.as.mc.descriptor.ValueConfig;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.ImmediateValue;
@@ -40,11 +39,9 @@ import java.lang.reflect.Method;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class InstantiatedPojoPhase extends AbstractPojoPhase {
-    private final DeploymentReflectionIndex index;
     private final DescribedPojoPhase describedPojoPhase;
 
-    public InstantiatedPojoPhase(DeploymentReflectionIndex index, DescribedPojoPhase describedPojoPhase) {
-        this.index = index;
+    public InstantiatedPojoPhase(DescribedPojoPhase describedPojoPhase) {
         this.describedPojoPhase = describedPojoPhase;
     }
 
@@ -70,7 +67,7 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
                 types = Configurator.getTypes(parameters);
 
                 String factoryClass = ctorConfig.getFactoryClass();
-                ValueConfig factory = ctorConfig.getFactory();
+                FactoryConfig factory = ctorConfig.getFactory();
                 if (factoryClass != null || factory != null) {
                     String factoryMethod = ctorConfig.getFactoryMethod();
                     if (factoryMethod == null)
@@ -79,13 +76,13 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
                     if (factoryClass != null) {
                         // static factory
                         Class<?> factoryClazz = Class.forName(factoryClass, false, getModule().getClassLoader());
-                        Method method = Configurator.findMethod(index, factoryClazz, factoryMethod, types, true, true, true);
+                        Method method = Configurator.findMethod(getIndex(), factoryClazz, factoryMethod, types, true, true, true);
                         MethodJoinpoint mj = new MethodJoinpoint(method);
                         mj.setTarget(new ImmediateValue<Object>(null)); // null, since this is static call
                         mj.setParameters(parameters);
                         instantiateJoinpoint = mj;
                     } else if (factory != null) {
-                        ReflectionJoinpoint rj = new ReflectionJoinpoint(index, factoryMethod, types);
+                        ReflectionJoinpoint rj = new ReflectionJoinpoint(factory.getBeanInfo(), factoryMethod, types);
                         // null type is ok, as this should be plain injection
                         rj.setTarget(new ImmediateValue<Object>(factory.getValue(null)));
                         rj.setParameters(parameters);
@@ -106,7 +103,7 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
 
             setBean(instantiateJoinpoint.dispatch());
             if (beanInfo == null) {
-                beanInfo = new DefaultBeanInfo(index, getBean().getClass());
+                beanInfo = new DefaultBeanInfo(getIndex(), getBean().getClass());
                 setBeanInfo(beanInfo);
                 // set so describe service has its value
                 describedPojoPhase.setBeanInfo(beanInfo);
