@@ -31,6 +31,7 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.invocation.proxy.ProxyConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
@@ -137,7 +138,13 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                     try {
                         TransactionSynchronizationRegistry transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) syncController.getValue();
                         TransactionManager transactionManager = (TransactionManager) managerController.getValue();
-                        ProxyFactory<?> proxyFactory = new ProxyFactory(clazz.getName() + "$$DataSourceProxy" + proxyNameCount.incrementAndGet(), clazz, module.getClassLoader());
+                        final ProxyConfiguration proxyConfiguration = new ProxyConfiguration()
+                                .setClassLoader(module.getClassLoader())
+                                .setSuperClass(clazz)
+                                .setProxyName(clazz.getName() + "$$DataSourceProxy" + proxyNameCount.incrementAndGet())
+                                .setProtectionDomain(clazz.getProtectionDomain());
+
+                        ProxyFactory<?> proxyFactory = new ProxyFactory(proxyConfiguration);
                         object = proxyFactory.newInstance(new DataSourceTransactionProxyHandler(object, transactionManager, transactionSynchronizationRegistry));
                     } catch (Exception e) {
                         logger.warn("Transactional datasource " + className + " could not be proxied and will not be enlisted in transactions automatically", e);

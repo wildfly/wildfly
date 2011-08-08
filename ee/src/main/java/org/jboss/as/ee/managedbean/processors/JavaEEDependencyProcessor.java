@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilters;
 
 /**
  * Deployment processor which adds the java EE APIs to EE deployments
@@ -48,6 +49,9 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
 
     private static ModuleIdentifier HIBERNATE_VALIDATOR_ID = ModuleIdentifier.create("org.hibernate.validator");
 
+    private static ModuleIdentifier JBOSS_INVOCATION_ID = ModuleIdentifier.create("org.jboss.invocation");
+
+
     /**
      * Add the EE APIs as a dependency to all deployments
      *
@@ -63,6 +67,11 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, true));
         // TODO: Post 7.0, we have to rethink this whole hibernate dependencies that we add to user deployments
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, false, false, true));
+
+        //add jboss-invocation classes needed by the proxies
+        ModuleDependency invocation = new ModuleDependency(moduleLoader, JBOSS_INVOCATION_ID, false, false, false);
+        invocation.addImportFilter(PathFilters.is("org.jboss.invocation.proxy.classloading"), true);
+        moduleSpecification.addSystemDependency(invocation);
     }
 
     public void undeploy(final DeploymentUnit context) {
