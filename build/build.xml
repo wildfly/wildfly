@@ -555,8 +555,12 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-network"/>
         </module-def>
 
-     	  <module-def name="org.jboss.as.osgi">
+     	<module-def name="org.jboss.as.osgi">
             <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-service"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.platform-mbean">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-platform-mbean"/>
         </module-def>
 
         <module-def name="org.jboss.as.process-controller">

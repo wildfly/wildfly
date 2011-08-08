@@ -262,6 +262,7 @@
         <module>naming</module>
         <module>network</module>
         <module>osgi</module>
+        <module>platform-mbean</module>
         <module>process-controller</module>
         <module>protocol</module>
         <module>remoting</module>
@@ -820,6 +821,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-osgi-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-platform-mbean</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
