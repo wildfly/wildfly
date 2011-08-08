@@ -85,6 +85,7 @@
         <version.javax.validation.validation-api>1.0.0.GA</version.javax.validation.validation-api>
         <version.jaxbintros>1.0.2.GA</version.jaxbintros>
         <version.jline>0.9.94</version.jline>
+        <version.joda-time>1.6.2</version.joda-time>
         <version.junit>4.8.2</version.junit>
         <version.log4j.log4j>1.2.16</version.log4j.log4j>
         <version.net.sourceforge.cssparser.cssparser>0.9.5</version.net.sourceforge.cssparser.cssparser>
@@ -1129,6 +1130,12 @@
                 <groupId>jline</groupId>
                 <artifactId>jline</artifactId>
                 <version>${version.jline}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>${version.joda-time}</version>
             </dependency>
 
             <dependency>
