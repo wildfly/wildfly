@@ -330,7 +330,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 } catch (NoSuchMethodException nsme) {
                     throw new DeploymentUnitProcessingException(nsme);
                 }
-                Method[] methods = configuration.getProxyFactory().getCachedMethods();
+                List<Method> methods = configuration.getProxyFactory().getCachedMethods();
                 for (Method method : methods) {
                     if (TO_STRING_METHOD.equals(method)) {
                         configuration.addClientInterceptor(method, new ImmediateInterceptorFactory(new ToStringMethodInterceptor(EJBComponentDescription.this.getComponentName())), InterceptorOrder.Client.TO_STRING);

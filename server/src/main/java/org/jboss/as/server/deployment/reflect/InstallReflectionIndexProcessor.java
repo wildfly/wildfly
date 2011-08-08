@@ -39,9 +39,12 @@ public final class InstallReflectionIndexProcessor implements DeploymentUnitProc
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if(deploymentUnit.getParent() == null) {
-            deploymentUnit.putAttachment(Attachments.REFLECTION_INDEX, DeploymentReflectionIndex.create());
+            final DeploymentReflectionIndex index = DeploymentReflectionIndex.create();
+            deploymentUnit.putAttachment(Attachments.REFLECTION_INDEX, index);
+            deploymentUnit.putAttachment(Attachments.PROXY_REFLECTION_INDEX, new ProxyMetadataSource(index));
         } else {
             deploymentUnit.putAttachment(Attachments.REFLECTION_INDEX, deploymentUnit.getParent().getAttachment(Attachments.REFLECTION_INDEX));
+            deploymentUnit.putAttachment(Attachments.PROXY_REFLECTION_INDEX, deploymentUnit.getParent().getAttachment(Attachments.PROXY_REFLECTION_INDEX));
         }
     }
 

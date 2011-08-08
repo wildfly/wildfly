@@ -31,12 +31,14 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.server.deployment.reflect.ProxyMetadataSource;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.invocation.proxy.ProxyConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
@@ -491,6 +493,7 @@ public class ComponentDescription {
             final Object instanceKey = BasicComponentInstance.INSTANCE_KEY;
             final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
             final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
+            final ProxyMetadataSource proxyReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.PROXY_REFLECTION_INDEX);
 
             // Module stuff
             final EEModuleClassConfiguration componentClassConfiguration = configuration.getModuleClassConfiguration();
@@ -770,11 +773,20 @@ public class ComponentDescription {
                 }
                 final ViewConfiguration viewConfiguration;
 
+                final ProxyConfiguration proxyConfiguration = new ProxyConfiguration();
+                proxyConfiguration.setProxyName(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet());
+                proxyConfiguration.setClassLoader(module.getClassLoader());
+                proxyConfiguration.setProtectionDomain(viewClass.getProtectionDomain());
+                proxyConfiguration.setMetadataSource(proxyReflectionIndex);
+
                 //we define it in the modules class loader to prevent permgen leaks
                 if (viewClass.isInterface()) {
-                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), Object.class, module.getClassLoader(), viewClass.getProtectionDomain(), viewClass));
+                    proxyConfiguration.setSuperClass(Object.class);
+                    proxyConfiguration.addAdditionalInterface(viewClass);
+                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(proxyConfiguration));
                 } else {
-                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), viewClass, module.getClassLoader(), viewClass.getProtectionDomain()));
+                    proxyConfiguration.setSuperClass(viewClass);
+                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(proxyConfiguration));
                 }
                 for (final ViewConfigurator configurator : view.getConfigurators()) {
                     configurator.configure(context, configuration, view, viewConfiguration);

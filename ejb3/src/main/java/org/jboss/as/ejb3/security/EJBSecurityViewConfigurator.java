@@ -36,6 +36,7 @@ import org.jboss.logging.Logger;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 /**
  * {@link ViewConfigurator} responsible for setting up necessary security interceptors on a EJB view.
@@ -63,7 +64,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         viewConfiguration.addViewInterceptor(new SecurityContextInterceptorFactory(), InterceptorOrder.View.SECURITY_CONTEXT);
 
         // now setup the rest of the method specific security interceptor(s)
-        final Method[] viewMethods = viewConfiguration.getProxyFactory().getCachedMethods();
+        final List<Method> viewMethods = viewConfiguration.getProxyFactory().getCachedMethods();
         for (final Method viewMethod : viewMethods) {
             // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
             if (!Modifier.isPublic(viewMethod.getModifiers())) {

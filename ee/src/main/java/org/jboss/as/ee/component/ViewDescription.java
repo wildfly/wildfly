@@ -153,7 +153,7 @@ public class ViewDescription {
             // Create method indexes
             DeploymentReflectionIndex reflectionIndex = context.getDeploymentUnit().getAttachment(REFLECTION_INDEX);
             ClassReflectionIndex<?> index = reflectionIndex.getClassIndex(componentConfiguration.getComponentClass());
-            Method[] methods = configuration.getProxyFactory().getCachedMethods();
+            List<Method> methods = configuration.getProxyFactory().getCachedMethods();
             for (Method method : methods) {
                 final Method componentMethod = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, index, method);
                 configuration.addViewInterceptor(method,new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
