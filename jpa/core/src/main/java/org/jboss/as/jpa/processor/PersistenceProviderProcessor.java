@@ -25,7 +25,6 @@ package org.jboss.as.jpa.processor;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.transaction.JtaManagerImpl;
-import org.jboss.as.server.deployment.Attachable;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -99,14 +98,6 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                 deploymentUnit.putAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER, new PersistenceProviderDeploymentHolder(provider, adaptor));
             }
         }
-    }
-
-    // save in consistent location (top) for all deployments.
-    private Attachable top(DeploymentUnit deploymentUnit) {
-        while (deploymentUnit.getParent() != null) {
-            deploymentUnit = deploymentUnit.getParent();
-        }
-        return deploymentUnit;
     }
 
     /**

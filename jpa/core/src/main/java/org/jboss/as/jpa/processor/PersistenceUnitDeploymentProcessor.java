@@ -76,6 +76,8 @@ import javax.persistence.spi.PersistenceProvider;
 import javax.persistence.spi.PersistenceProviderResolverHolder;
 import javax.sql.DataSource;
 import javax.validation.ValidatorFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -233,8 +235,6 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         }
                         final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder);
 
-                        // ensure that the persistence provider module is loaded
-                        loadPersistenceProviderModule(pu, persistenceProviderDeploymentHolder);
 
                         final PersistenceProvider provider;
                         if (persistenceProviderDeploymentHolder != null &&
@@ -242,7 +242,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                                 persistenceProviderDeploymentHolder.getProvider().getClass().getName().equals(pu.getPersistenceProviderClassName())) {
                             provider = persistenceProviderDeploymentHolder.getProvider();
                         } else {
-                            provider = lookupProvider(pu.getPersistenceProviderClassName());
+                            provider = lookupProvider(pu);
                         }
 
                         final PersistenceUnitService service = new PersistenceUnitService(pu, adaptor, provider);
@@ -422,84 +422,111 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     }
 
     /**
-     * Handles loading the persistence provider module into PersistenceProviderResolverImpl for later access
+     * Look up the persistence provider
      *
-     * @param pu is the persistence unit
-     * @param persistenceProviderDeploymentHolder
-     *           holds the persistence provider if one is packaged with the app deployment
-     * @throws DeploymentUnitProcessingException
-     *
+     * @param pu
+     * @return
      */
-    private void loadPersistenceProviderModule(final PersistenceUnitMetadata pu, final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) throws
-            DeploymentUnitProcessingException {
+    private PersistenceProvider lookupProvider(PersistenceUnitMetadata pu) throws DeploymentUnitProcessingException {
 
-        // only load the persistence provider module if we don't have a persistence provider packaged with the app deployment
-        if (persistenceProviderDeploymentHolder == null || persistenceProviderDeploymentHolder.getProvider() == null) {
-            String persistenceProviderModule = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
-            String persistenceProviderClassName = pu.getPersistenceProviderClassName();
+        // ensure that the persistence provider module is loaded
+        String persistenceProviderModule = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
+        String persistenceProviderClassName = pu.getPersistenceProviderClassName();
 
-            if (persistenceProviderClassName == null) {
-                persistenceProviderClassName = Configuration.PROVIDER_CLASS_DEFAULT;
+        if (persistenceProviderClassName == null) {
+            persistenceProviderClassName = Configuration.PROVIDER_CLASS_DEFAULT;
+        }
+
+        // try to determine the provider module name (ignore if we can't, it might already be loaded)
+        if (persistenceProviderModule == null) {
+            if (persistenceProviderClassName.equals(Configuration.PROVIDER_CLASS_DEFAULT)) {
+                persistenceProviderModule = Configuration.PROVIDER_MODULE_DEFAULT;
             }
+        }
 
-            // try to determine the provider module name (ignore if we can't, it might already be loaded)
-            if (persistenceProviderModule == null) {
-                if (persistenceProviderClassName.equals(Configuration.PROVIDER_CLASS_DEFAULT)) {
-                    persistenceProviderModule = Configuration.PROVIDER_MODULE_DEFAULT;
+        PersistenceProvider provider = getProviderByName(pu, persistenceProviderModule);
+
+        // if we haven't loaded the provider yet, load it
+        if (provider == null) {
+            if (persistenceProviderModule != null) {
+                final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+                Module module = null;
+                try {
+                    module = moduleLoader.loadModule(ModuleIdentifier.fromString(persistenceProviderModule));
+                } catch (ModuleLoadException e) {
+                    throw new DeploymentUnitProcessingException("persistence provider module load error "
+                            + persistenceProviderModule + " (class " + persistenceProviderClassName + ")", e);
                 }
-            }
-
-            // if we haven't loaded the provider yet, load it
-            if (!PersistenceProviderResolverImpl.getInstance().getPersistenceProviders().
-                    contains(persistenceProviderClassName)) {
-                if (persistenceProviderModule != null) {
-                    final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                    Module module = null;
-                    try {
-                        module = moduleLoader.loadModule(ModuleIdentifier.fromString(persistenceProviderModule));
-                    } catch (ModuleLoadException e) {
-                        throw new DeploymentUnitProcessingException("persistence provider module load error "
-                                + persistenceProviderModule + " (class " + persistenceProviderClassName + ")", e);
-                    }
-                    final ServiceLoader<PersistenceProvider> serviceLoader =
-                            module.loadService(PersistenceProvider.class);
-                    if (serviceLoader != null) {
-                        PersistenceProvider persistenceProvider = null;
-                        for (PersistenceProvider provider : serviceLoader) {
-                            if (persistenceProvider != null) {
-                                throw new DeploymentUnitProcessingException(
-                                        "persistence provider module has more than one provider "
-                                                + persistenceProviderModule + "(class " + persistenceProviderClassName + ")");
-                            }
-                            persistenceProvider = provider;
+                final ServiceLoader<PersistenceProvider> serviceLoader =
+                        module.loadService(PersistenceProvider.class);
+                if (serviceLoader != null) {
+                    PersistenceProvider persistenceProvider = null;
+                    for (PersistenceProvider provider1 : serviceLoader) {
+                        if (persistenceProvider != null) {
+                            throw new DeploymentUnitProcessingException(
+                                    "persistence provider module has more than one provider "
+                                            + persistenceProviderModule + "(class " + persistenceProviderClassName + ")");
                         }
-
-                        PersistenceProviderResolverImpl.getInstance().addPersistenceProvider(persistenceProvider);
+                        persistenceProvider = provider1;
                     }
+
+                    PersistenceProviderResolverImpl.getInstance().addPersistenceProvider(persistenceProvider);
                 }
             }
         }
+
+        if (provider == null)
+            provider = getProviderByName(pu, persistenceProviderModule);
+        if (provider == null)
+            throw new PersistenceException("PersistenceProvider '" + persistenceProviderClassName + "' not found");
+        return provider;
     }
 
-    /**
-     * Look up the persistence provider
-     *
-     * @param providerName
-     * @return
-     */
-    private PersistenceProvider lookupProvider(String providerName) {
+    private PersistenceProvider getProviderByName(PersistenceUnitMetadata pu, String persistenceProviderModule) {
+        String providerName = pu.getPersistenceProviderClassName();
         List<PersistenceProvider> providers =
                 PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders();
         for (PersistenceProvider provider : providers) {
             if (provider.getClass().getName().equals(providerName)) {
-                return provider;
+                if (providerName.equals(Configuration.PROVIDER_CLASS_DEFAULT)) {
+                // could be Hibernate 3 or Hibernate 4 (OGM will not match PROVIDER_CLASS_DEFAULT)
+                    if (persistenceProviderModule.equals(Configuration.PROVIDER_MODULE_HIBERNATE3)) {
+                        if (isHibernate3(provider)) {
+                            return provider;            // return Hibernate3 provider
+                        }
+                    }
+                    else if (!isHibernate3(provider)) { // looking for Hibernate4
+                        return provider;                // return Hibernate 4 provider
+                    }
+                }
+                else {
+                    return provider;                    // return the provider that matched classname
+                }
             }
         }
-        StringBuilder sb = new StringBuilder();
-        for (PersistenceProvider provider : providers) {
-            sb.append(provider.getClass().getName()).append(", ");
+        return null;
+    }
+
+
+    private boolean isHibernate3(PersistenceProvider provider) {
+        boolean result = false;
+        // invoke org.hibernate.Version.getVersionString()
+        try {
+            Class targetCls = provider.getClass().getClassLoader().loadClass("org.hibernate.Version");
+            Method m = targetCls.getMethod("getVersionString");
+            Object version = m.invoke(null, null);
+            log.tracef("lookup provider checking provider version (%s)", version );
+            if (version instanceof String &&
+                ((String) version).startsWith("3.")) {
+                result = true;
+            }
         }
-        throw new PersistenceException("PersistenceProvider '" + providerName + "' not found in {" + sb.toString() + "}");
+        catch (ClassNotFoundException ignore) {}
+        catch (NoSuchMethodException ignore) {}
+        catch (InvocationTargetException ignore) {}
+        catch (IllegalAccessException ignore) {}
+
+        return result;
     }
 
 
