@@ -31,6 +31,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Operation removing a {@link DeploymentScannerService}.
@@ -50,7 +51,11 @@ class DeploymentScannerRemove extends AbstractRemoveStepHandler implements Descr
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        context.removeService(DeploymentScannerService.getServiceName(name));
+        final ServiceName serviceName = DeploymentScannerService.getServiceName(name);
+        final ServiceName pathServiceName = serviceName.append("path");
+
+        context.removeService(serviceName);
+        context.removeService(pathServiceName);
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
