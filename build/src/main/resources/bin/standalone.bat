@@ -3,41 +3,36 @@ rem -------------------------------------------------------------------------
 rem JBoss Bootstrap Script for Windows
 rem -------------------------------------------------------------------------
 
-rem $Id$
-
-@if not "%ECHO%" == ""  echo %ECHO%
-@if "%OS%" == "Windows_NT" setlocal
+if not "x%ECHO%" == "x"  echo %ECHO%
 
 if "%OS%" == "Windows_NT" (
-  set "DIRNAME=%~dp0%"
+  setlocal
+  set DIRNAME=%~dp0%
+  set PROGNAME=%~nx0%
 ) else (
   set DIRNAME=.\
+  set PROGNAME=standalone.bat
 )
 
 rem Read an optional configuration file.
 if "x%STANDALONE_CONF%" == "x" (   
-   set "STANDALONE_CONF=%DIRNAME%standalone.conf.bat"
+   set STANDALONE_CONF=%DIRNAME%standalone.conf.bat
 )
 if exist "%STANDALONE_CONF%" (
-   echo Calling %STANDALONE_CONF%
+   echo Calling "%STANDALONE_CONF%".
    call "%STANDALONE_CONF%" %*
 ) else (
-   echo Config file not found %STANDALONE_CONF%
+   echo Config file not found "%STANDALONE_CONF%".
 )
 
-pushd %DIRNAME%..
+rem If no JBOSS_HOME is specified use script's parent dir
 if "x%JBOSS_HOME%" == "x" (
-  set "JBOSS_HOME=%CD%"
+  pushd %DIRNAME%..
+  set JBOSS_HOME=%CD%
+  popd
 )
-popd
 
 set DIRNAME=
-
-if "%OS%" == "Windows_NT" (
-  set "PROGNAME=%~nx0%"
-) else (
-  set "PROGNAME=standalone.bat"
-)
 
 rem Setup JBoss specific properties
 set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
@@ -47,20 +42,19 @@ if "x%JAVA_HOME%" == "x" (
   echo JAVA_HOME is not set. Unexpected results may occur.
   echo Set JAVA_HOME to the directory of your local JDK to avoid this message.
 ) else (
-  set "JAVA=%JAVA_HOME%\bin\java"
+  set JAVA=%JAVA_HOME%\bin\java
 )
 
 rem Add -server to the JVM options, if supported
 "%JAVA%" -server -version 2>&1 | findstr /I hotspot > nul
 if not errorlevel == 1 (
-  set "JAVA_OPTS=%JAVA_OPTS% -server"
+  set JAVA_OPTS=%JAVA_OPTS% -server
 )
 
-rem Find run.jar, or we can't continue
-if exist "%JBOSS_HOME%\jboss-modules.jar" (
-    set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
-) else (
-  echo Could not locate "%JBOSS_HOME%\jboss-modules.jar".
+rem Find jboss-modules.jar, or we can't continue
+set RUNJAR=%JBOSS_HOME%\jboss-modules.jar
+if not exist "%RUNJAR%" (
+  echo Could not locate "%RUNJAR%".
   echo Please check that you are in the bin directory when running this script.
   goto END
 )
@@ -85,12 +79,12 @@ echo.
 
 :RESTART
 "%JAVA%" %JAVA_OPTS% ^
- "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\standalone\log\boot.log" ^
- "-Dlogging.configuration=file:%JBOSS_HOME%/standalone/configuration/logging.properties" ^
-    -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+ -Dorg.jboss.boot.log.file="%JBOSS_HOME%\standalone\log\boot.log" ^
+ -Dlogging.configuration="file:%JBOSS_HOME%/standalone/configuration/logging.properties" ^
+    -jar "%RUNJAR%" ^
     -mp "%JBOSS_HOME%\modules" ^
-    -logmodule "org.jboss.logmanager" ^
-    -jaxpmodule "javax.xml.jaxp-provider" ^
+    -logmodule org.jboss.logmanager ^
+    -jaxpmodule javax.xml.jaxp-provider ^
      org.jboss.as.standalone ^
     -Djboss.home.dir="%JBOSS_HOME%" ^
      %*
