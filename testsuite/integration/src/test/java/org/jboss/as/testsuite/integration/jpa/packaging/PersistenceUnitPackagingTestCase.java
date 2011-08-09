@@ -22,21 +22,21 @@
 
 package org.jboss.as.testsuite.integration.jpa.packaging;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.persistence.EntityManagerFactory;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.persistence.EntityManagerFactory;
 
 /**
  * Tests that we are following the JPA 8.2.2 persistence unit scoping rules
@@ -45,14 +45,6 @@ import javax.persistence.EntityManagerFactory;
  */
 @RunWith(Arquillian.class)
 public class PersistenceUnitPackagingTestCase {
-
-
-    private static InitialContext iniCtx;
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        iniCtx = new InitialContext();
-    }
 
     @Deployment
     public static Archive<?> deploy() {
@@ -75,6 +67,9 @@ public class PersistenceUnitPackagingTestCase {
 
         return ear;
     }
+    
+    @ArquillianResource
+    private static InitialContext iniCtx;
 
     /**
      * As override.jar has it's own PU with the same name as the ear level PU then the local PU should be used
