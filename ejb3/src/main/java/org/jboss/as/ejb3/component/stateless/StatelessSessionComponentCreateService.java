@@ -25,13 +25,17 @@ package org.jboss.as.ejb3.component.stateless;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
+import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Stuart Douglas
  */
 public class StatelessSessionComponentCreateService extends SessionBeanComponentCreateService {
+
+    private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
 
     /**
      * Construct a new instance.
@@ -45,6 +49,14 @@ public class StatelessSessionComponentCreateService extends SessionBeanComponent
     @Override
     protected BasicComponent createComponent() {
         return new StatelessSessionComponent(this);
+    }
+
+    public PoolConfig getPoolConfig() {
+        return this.poolConfig.getOptionalValue();
+    }
+
+    public InjectedValue<PoolConfig> getPoolConfigInjector() {
+        return this.poolConfig;
     }
 
 }

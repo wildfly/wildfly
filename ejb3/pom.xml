@@ -72,7 +72,12 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>jboss-as-ee</artifactId>
         </dependency>
-        
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jboss-as-messaging</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jboss-as-security</artifactId>

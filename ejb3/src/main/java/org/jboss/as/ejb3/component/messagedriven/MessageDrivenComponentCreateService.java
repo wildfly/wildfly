@@ -25,11 +25,13 @@ package org.jboss.as.ejb3.component.messagedriven;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
+import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.value.InjectedValue;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
@@ -45,6 +47,8 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     private final Class<?> messageListenerInterface;
     private final String resourceAdapterName;
     private final Properties activationProps;
+    private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
+
 
     /**
      * Construct a new instance.
@@ -79,6 +83,15 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
         }
         return component;
     }
+
+    PoolConfig getPoolConfig() {
+        return this.poolConfig.getOptionalValue();
+    }
+
+    public InjectedValue<PoolConfig> getPoolConfigInjector() {
+        return this.poolConfig;
+    }
+
 
     private ClassLoader getDeploymentClassLoader() {
         return getComponentClass().getClassLoader();
