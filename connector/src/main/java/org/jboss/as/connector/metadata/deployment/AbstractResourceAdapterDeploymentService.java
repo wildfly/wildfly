@@ -221,7 +221,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
             mdr.getValue().registerJndiMapping(url.toExternalForm(), cf.getClass().getName(), jndi);
 
-            log.infof("Registered connection factory %s on mdr", jndi);
+            log.infof("Registered connection factory %s", jndi);
 
             final ConnectionFactoryService connectionFactoryService = new ConnectionFactoryService(cf);
 
@@ -272,7 +272,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
             mdr.getValue().registerJndiMapping(url.toExternalForm(), ao.getClass().getName(), jndi);
 
-            log.infof("Registerred admin object at %s on mdr", jndi);
+            log.infof("Registerred admin object at %s", jndi);
 
             final AdminObjectService adminObjectService = new AdminObjectService(ao);
 
