@@ -29,6 +29,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
+import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
@@ -65,12 +66,12 @@ public class NoTxEPCStatefulBean extends AbstractStatefulInterface {
         cmtBean.createEntity(id, name);  // entity is created in XPC (will not be persisted to DB)
 
         // first test is that created entity propagated to stateful_2ndSFSBInvocation that inherits XPC from calling SFSB
-        StatefulInterface stateful_2ndSFSBInvocation = EPCPropagationTestCase.lookup("NoTxEPCStatefulBean", StatefulInterface.class);
+        StatefulInterface stateful_2ndSFSBInvocation = lookup("NoTxEPCStatefulBean", StatefulInterface.class);
         stateful_2ndSFSBInvocation.execute(8, "EntityName");
         // NPE Exception will occur if entity isn't found.  success is making it the next line
 
         // repeat same test once more
-        StatefulInterface stateful_3rdSFSBInvocation = EPCPropagationTestCase.lookup("NoTxEPCStatefulBean", StatefulInterface.class);
+        StatefulInterface stateful_3rdSFSBInvocation = lookup("NoTxEPCStatefulBean", StatefulInterface.class);
         stateful_3rdSFSBInvocation.execute(8, "EntityName");
         // NPE Exception will occur if entity isn't found.  success is making it the next line
 
@@ -88,13 +89,16 @@ public class NoTxEPCStatefulBean extends AbstractStatefulInterface {
     }
 
     public StatefulInterface createSFSBOnInvocation() throws Exception {
-        return EPCPropagationTestCase.lookup("NoTxEPCStatefulBean", StatefulInterface.class);
+        return lookup("NoTxEPCStatefulBean", StatefulInterface.class);
     }
 
     public StatelessInterface createSLSBOnInvocation() throws Exception {
-        return EPCPropagationTestCase.lookup("StatelessBean", StatelessInterface.class);
+        return lookup("StatelessBean", StatelessInterface.class);
     }
 
+    protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
+        return interfaceType.cast(sessionContext.lookup("java:module/" + beanName + "!" + interfaceType.getName()));
+    }
 
     @Remove
     public void finishUp() {

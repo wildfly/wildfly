@@ -28,11 +28,11 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,13 +47,6 @@ public class SystemExceptionTestCase {
 
     private static final String ARCHIVE_NAME = "SystemExceptionTestCase";
 
-    private static InitialContext iniCtx;
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        iniCtx = new InitialContext();
-    }
-
     @Deployment
     public static Archive<?> deploy() {
 
@@ -62,7 +55,10 @@ public class SystemExceptionTestCase {
         return jar;
     }
 
-    protected static <T> T lookup(Class<T> beanType) throws NamingException {
+    @ArquillianResource
+    private InitialContext iniCtx;
+
+    protected <T> T lookup(Class<T> beanType) throws NamingException {
         return beanType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanType.getSimpleName() + "!" + beanType.getName()));
     }
 

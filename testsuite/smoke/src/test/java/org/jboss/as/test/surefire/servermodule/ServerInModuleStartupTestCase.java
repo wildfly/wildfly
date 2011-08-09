@@ -25,23 +25,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.net.InetAddress;
-import java.util.Properties;
 
 import junit.framework.Assert;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
-import org.jboss.as.server.EmbeddedStandAloneServerFactory;
-import org.jboss.as.server.Main;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.shrinkwrap.api.Archive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,33 +42,8 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunAsClient
 @RunWith(Arquillian.class)
 public class ServerInModuleStartupTestCase  {
-
-    protected static String serverDetails = "";
-    static ServiceContainer container;
-
-    @BeforeClass
-    public static void startServer() throws Exception {
-
-        EmbeddedStandAloneServerFactory.setupCleanDirectories(System.getProperties());
-
-        ServerEnvironment serverEnvironment = Main.determineEnvironment(new String[0], new Properties(System.getProperties()), System.getenv(), ServerEnvironment.LaunchType.EMBEDDED);
-
-        serverDetails += "AS server details: ";
-        serverDetails += "server homedir = " + serverEnvironment.getHomeDir();
-        serverDetails += ", javaextdirs = " +serverEnvironment.getJavaExtDirs();
-        serverDetails += ", modules_dir = " +serverEnvironment.getModulesDir();
-        serverDetails += ", server_base = " +serverEnvironment.getServerBaseDir();
-        serverDetails += ", server_config_dir = " +serverEnvironment.getServerConfigurationDir();
-        serverDetails += ", server_config_file = " +serverEnvironment.getServerConfigurationFile();
-    }
-
-    @Deployment(testable = false)
-    public static Archive<?> getDeployment(){
-        return ShrinkWrapUtils.createEmptyJavaArchive("please-the-arquillian-gods.jar");
-    }
 
     /**
      * Validates that the model can be read in xml form.
@@ -94,7 +59,7 @@ public class ServerInModuleStartupTestCase  {
             request.get("address").setEmptyList();
             ModelNode r = client.execute(request);
 
-            Assert.assertEquals(serverDetails, SUCCESS, r.require(OUTCOME).asString());
+            Assert.assertEquals(SUCCESS, r.require(OUTCOME).asString());
         } finally {
             StreamUtils.safeClose(client);
         }
@@ -115,7 +80,7 @@ public class ServerInModuleStartupTestCase  {
             request.get("recursive").set(true);
             ModelNode r = client.execute(request);
 
-            Assert.assertEquals("response with failure details:"+r.toString() + ":" + serverDetails, SUCCESS, r.require(OUTCOME).asString());
+            Assert.assertEquals("response with failure details:"+r.toString(), SUCCESS, r.require(OUTCOME).asString());
 
             request = new ModelNode();
             request.get("operation").set("read-resource-description");
@@ -124,7 +89,7 @@ public class ServerInModuleStartupTestCase  {
             request.get("operations").set(true);
             r = client.execute(request);
 
-            Assert.assertEquals("response with failure details:"+r.toString() + ":" + serverDetails, SUCCESS, r.require(OUTCOME).asString());
+            Assert.assertEquals("response with failure details:"+r.toString(), SUCCESS, r.require(OUTCOME).asString());
         } finally {
             StreamUtils.safeClose(client);
         }

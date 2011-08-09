@@ -30,11 +30,11 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,17 +64,10 @@ public class EPCPropagationTestCase {
             "  </persistence-unit>" +
             "</persistence>";
 
-    private static InitialContext iniCtx;
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        iniCtx = new InitialContext();
-    }
-
     @Deployment
     public static Archive<?> deploy() {
 
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
         jar.addClasses(
             CMTEPCStatefulBean.class, CMTStatefulBean.class, EPCStatefulBean.class,
             InitEPCStatefulBean.class, IntermediateStatefulBean.class, IntermediateStatefulInterface.class,
@@ -87,8 +80,11 @@ public class EPCPropagationTestCase {
         return jar;
     }
 
-    protected static <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
-        return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
+    @ArquillianResource
+    private InitialContext iniCtx;
+    
+    protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
+        return interfaceType.cast(iniCtx.lookup("java:module/" + beanName + "!" + interfaceType.getName()));
     }
 
     @Test
