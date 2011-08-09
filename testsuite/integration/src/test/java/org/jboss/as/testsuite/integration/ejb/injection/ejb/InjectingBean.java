@@ -23,11 +23,14 @@ package org.jboss.as.testsuite.integration.ejb.injection.ejb;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * @author Stuart Douglas
  */
 @Stateless
+@EJB(name = "jndiEjb",beanName = "../b1.jar#bean", beanInterface = BeanInterface.class)
 public class InjectingBean {
 
     @EJB(beanName = "../b1.jar#bean")
@@ -42,6 +45,10 @@ public class InjectingBean {
 
     public String getBean2Name() {
         return bean2.name();
+    }
+
+    public String getJndiEjbName() throws NamingException {
+        return ((BeanInterface)new InitialContext().lookup("java:comp/env/jndiEjb")).name();
     }
 
 }
