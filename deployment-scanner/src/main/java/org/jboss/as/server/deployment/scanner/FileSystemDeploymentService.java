@@ -269,6 +269,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     public synchronized void stopScanner() {
         this.scanEnabled = false;
         cancelScan();
+        safeClose(controllerClient);
     }
 
     /** Hook solely for unit test to control how long deployments with no progress can exist without failing */
