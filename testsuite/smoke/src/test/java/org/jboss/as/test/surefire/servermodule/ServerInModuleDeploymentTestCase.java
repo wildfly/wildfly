@@ -22,8 +22,6 @@
 package org.jboss.as.test.surefire.servermodule;
 
 import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -33,7 +31,6 @@ import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -72,14 +69,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
  * filesystem scanner.
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-@RunAsClient
 @RunWith(Arquillian.class)
 public class ServerInModuleDeploymentTestCase  {
-
-    @Deployment(testable = false)
-    public static Archive<?> getDeployment(){
-        return ShrinkWrapUtils.createEmptyJavaArchive("please-the-arquillian-gods.jar");
-    }
 
     @Test
     public void testDeploymentStreamApi() throws Exception {
