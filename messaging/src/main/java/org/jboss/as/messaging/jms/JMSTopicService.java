@@ -63,7 +63,7 @@ public class JMSTopicService implements Service<Void> {
         try {
             jmsManager.createTopic(false, name, jndi);
         } catch (Exception e) {
-            throw new StartException("failed to create queue", e);
+            throw new StartException("failed to create topic", e);
         }
     }
 
@@ -74,13 +74,6 @@ public class JMSTopicService implements Service<Void> {
             jmsManager.destroyTopic(name);
         } catch (Exception e) {
             Logger.getLogger("org.jboss.messaging").warnf(e ,"failed to destroy jms topic: %s", name);
-        }
-        // FIXME This shouldn't be here
-        for(final String jndiBinding : jndi) {
-            ServiceController<?> service = context.getController().getServiceContainer().getService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiBinding));
-            if (service != null) {
-                service.setMode(ServiceController.Mode.REMOVE);
-            }
         }
     }
 
