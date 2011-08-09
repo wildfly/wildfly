@@ -38,24 +38,40 @@ import javax.transaction.TransactionManager;
  * @author Stuart Douglas
  */
 public class TimerCMTTxInterceptor extends org.jboss.ejb3.tx2.impl.CMTTxInterceptor implements Interceptor {
+
+    /**
+     * This is a hack to make sure that the transaction interceptor does not swallow the underlying exception
+     */
+    private static final ThreadLocal<Throwable> EXCEPTION = new ThreadLocal<Throwable>();
+
     @Override
     public Object processInvocation(InterceptorContext invocation) throws Exception {
         return super.invoke((TransactionalInvocationContext) invocation.getPrivateData(InvocationContext.class));
     }
 
     @Override
+    public void handleExceptionInOurTx(final TransactionalInvocationContext invocation, final Throwable t, final Transaction tx) throws Exception {
+        EXCEPTION.set(t);
+        super.handleExceptionInOurTx(invocation, t, tx);
+    }
+
+    @Override
     protected void endTransaction(final TransactionManager tm, final Transaction tx) {
-        boolean rolledBack = false;
         try {
-            if (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
-                rolledBack = true;
+            boolean rolledBack = false;
+            try {
+                if (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
+                    rolledBack = true;
+                }
+            } catch (SystemException e) {
+                throw new RuntimeException(e);
             }
-        } catch (SystemException e) {
-            throw new RuntimeException(e);
-        }
-        super.endTransaction(tm, tx);
-        if (rolledBack) {
-            throw new TimerTransactionRolledBackException("Timer invocation failed, transaction rolled back");
+            super.endTransaction(tm, tx);
+            if (rolledBack && EXCEPTION.get() == null) {
+                throw new TimerTransactionRolledBackException("Timer invocation failed, transaction rolled back");
+            }
+        } finally {
+            EXCEPTION.remove();
         }
     }
 
