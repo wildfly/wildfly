@@ -138,7 +138,6 @@ public class ObjectMessageTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore ("HORNETQ-747 https://issues.jboss.org/browse/HORNETQ-747")
     public void testObjectMessageWithObjectArray() throws Exception {
         final String goodMorning = "Good morning";
         final String goodEvening = "Good evening";
