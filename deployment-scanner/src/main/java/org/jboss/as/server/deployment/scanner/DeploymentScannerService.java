@@ -170,6 +170,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         final DeploymentScanner scanner = this.scanner;
         this.scanner = null;
         scanner.stopScanner();
+        scheduledExecutorValue.getValue().shutdown();
     }
 
     /**
