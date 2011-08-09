@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,32 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.ejb3.component.pool;
 
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
-import org.jboss.invocation.InterceptorContext;
+import org.jboss.ejb3.pool.Pool;
+import org.jboss.ejb3.pool.StatelessObjectFactory;
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * User: jpai
  */
-public class PooledInstanceInterceptor extends AbstractEJBInterceptor {
-    public static final PooledInstanceInterceptor INSTANCE = new PooledInstanceInterceptor();
+public abstract class PoolConfig {
 
-    private PooledInstanceInterceptor() {
+    protected final String poolName;
 
-    }
-
-    @Override
-    public Object processInvocation(InterceptorContext context) throws Exception {
-        PooledComponent<ComponentInstance> component = getComponent(context, PooledComponent.class);
-        ComponentInstance instance = component.getPool().get();
-        context.putPrivateData(ComponentInstance.class, instance);
-        try {
-            return context.proceed();
-        } finally {
-            context.putPrivateData(ComponentInstance.class, null);
-            component.getPool().release(instance);
+    public PoolConfig(final String poolName) {
+        if (poolName == null || poolName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Pool name cannot be null or empty");
         }
+        this.poolName = poolName;
     }
+
+    public String getPoolName() {
+        return this.poolName;
+    }
+
+    public abstract Pool createPool(final StatelessObjectFactory statelessObjectFactory);
 }

@@ -27,37 +27,23 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
 import java.util.Locale;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * @author Emanuel Muckenhuber
@@ -65,9 +51,11 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 public class EJB3Extension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "ejb3";
-    public static final String NAMESPACE = "urn:jboss:domain:ejb3:1.0";
+    public static final String NAMESPACE_1_0 = "urn:jboss:domain:ejb3:1.0";
+    public static final String NAMESPACE_1_1 = "urn:jboss:domain:ejb3:1.1";
 
-    private static final EJB3SubsystemParser parser = new EJB3SubsystemParser();
+    private static final EJB3Subsystem10Parser ejb3Subsystem10Parser = new EJB3Subsystem10Parser();
+    private static final EJB3Subsystem11Parser ejb3Subsystem11Parser = new EJB3Subsystem11Parser();
 
     /**
      * {@inheritDoc}
@@ -75,10 +63,25 @@ public class EJB3Extension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(EJB3SubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, EJB3SubsystemAdd.INSTANCE, EJB3SubsystemProviders.SUBSYSTEM_ADD, false);
-        registration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        subsystem.registerXMLElementWriter(parser);
+        final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(EJB3SubsystemProviders.SUBSYSTEM);
+        subsystem.registerXMLElementWriter(ejb3Subsystem11Parser);
+
+        // register the operations
+        // EJB3 subsystem ADD operation
+        subsystemRegistration.registerOperationHandler(ADD, EJB3SubsystemAdd.INSTANCE, EJB3SubsystemProviders.SUBSYSTEM_ADD, false);
+        // describe operation for the subsystem
+        subsystemRegistration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        // set default slsb pool operation
+        subsystemRegistration.registerOperationHandler(OPERATION_SET_DEFAULT_SLSB_INSTANCE_POOL, SetDefaultSLSBPool.INSTANCE, SetDefaultSLSBPool.INSTANCE, false);
+        // set default MDB pool operation
+        subsystemRegistration.registerOperationHandler(OPERATION_SET_DEFAULT_MDB_INSTANCE_POOL, SetDefaultMDBPool.INSTANCE, SetDefaultMDBPool.INSTANCE, false);
+
+        // subsystem=ejb3/strict-max-bean-instance-pool=*
+        final ManagementResourceRegistration strictMaxPoolRegistration = subsystemRegistration.registerSubModel(
+                PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL), EJB3SubsystemDescriptions.STRICT_MAX_BEAN_INSTANCE_POOL);
+        // register ADD and REMOVE operations for strict-max-pool
+        strictMaxPoolRegistration.registerOperationHandler(ADD, StrictMaxPoolAdd.INSTANCE, StrictMaxPoolAdd.STRICT_MAX_POOL_ADD_DESCRIPTION, false);
+        strictMaxPoolRegistration.registerOperationHandler(REMOVE, StrictMaxPoolRemove.INSTANCE, StrictMaxPoolRemove.STRICT_MAX_POOL_REMOVE_DESCRIPTION, false);
     }
 
     /**
@@ -86,168 +89,8 @@ public class EJB3Extension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(NAMESPACE, parser);
-    }
-
-    static class EJB3SubsystemParser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(NAMESPACE, false);
-            ModelNode ejbSubSystem = context.getModelNode();
-            // write the ear subdeployment isolation attribute
-            if (ejbSubSystem.hasDefined(CommonAttributes.TIMER_SERVICE)) {
-                writer.writeStartElement(Element.TIMER_SERVICE.getLocalName());
-                final ModelNode timerService = ejbSubSystem.get(CommonAttributes.TIMER_SERVICE);
-
-                final ModelNode threadPool = timerService.get(CommonAttributes.THREAD_POOL);
-                if (threadPool.isDefined()) {
-                    writer.writeStartElement(Element.THREAD_POOL.getLocalName());
-
-                    final ModelNode coreThreads = threadPool.get(CommonAttributes.CORE_THREADS);
-                    if (coreThreads.isDefined()) {
-                        writer.writeAttribute(Attribute.CORE_THREADS.getLocalName(), "" + coreThreads.asInt());
-                    }
-                    writer.writeEndElement();
-                }
-                final ModelNode timerDataStore = timerService.get(CommonAttributes.TIMER_DATA_STORE_LOCATION);
-                if (timerDataStore.isDefined()) {
-                    writer.writeStartElement(Element.DATA_STORE.getLocalName());
-                    final ModelNode path = timerDataStore.get(CommonAttributes.PATH);
-                    if (path.isDefined()) {
-                        writer.writeAttribute(Attribute.PATH.getLocalName(), path.asString());
-                    }
-                    final ModelNode relativeTo = timerDataStore.get(CommonAttributes.RELATIVE_TO);
-                    if (relativeTo.isDefined()) {
-                        writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), relativeTo.asString());
-                    }
-                    writer.writeEndElement();
-                }
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
-
-            // EE subsystem doesn't have any attributes, so make sure that the xml doesn't have any
-            requireNoAttributes(reader);
-
-            final ModelNode update = new ModelNode();
-            update.get(OP).set(ADD);
-            update.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-            list.add(update);
-
-            // elements
-            final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
-            while (reader.hasNext() && reader.nextTag() != XMLStreamReader.END_ELEMENT) {
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
-                    case EJB3_1_0: {
-                        final Element element = Element.forName(reader.getLocalName());
-                        if (!encountered.add(element)) {
-                            throw unexpectedElement(reader);
-                        }
-                        switch (element) {
-                            case TIMER_SERVICE: {
-                                final ModelNode model = parseTimerService(reader);
-                                update.get(CommonAttributes.TIMER_SERVICE).set(model);
-                                break;
-                            }
-                            default: {
-                                throw unexpectedElement(reader);
-                            }
-                        }
-                        break;
-                    }
-                    default: {
-                        throw unexpectedElement(reader);
-                    }
-                }
-            }
-
-        }
-
-        private ModelNode parseTimerService(final XMLExtendedStreamReader reader) throws XMLStreamException {
-            ModelNode timerService = new ModelNode();
-
-            requireNoAttributes(reader);
-
-            while (reader.hasNext() && reader.nextTag() != XMLStreamReader.END_ELEMENT) {
-                switch (Element.forName(reader.getLocalName())) {
-                    case THREAD_POOL: {
-                        final int count = reader.getAttributeCount();
-                        Integer coreThreads = null;
-                        for (int i = 0; i < count; i++) {
-                            requireNoNamespaceAttribute(reader, i);
-                            final String value = reader.getAttributeValue(i);
-                            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                            switch (attribute) {
-                                case CORE_THREADS:
-                                    if (coreThreads != null) {
-                                        throw unexpectedAttribute(reader, i);
-                                    }
-                                    coreThreads = Integer.valueOf(value);
-                                    break;
-                                default:
-                                    unexpectedAttribute(reader, i);
-                            }
-                        }
-                        if (coreThreads == null) {
-                            missingRequired(reader, Collections.singleton(Attribute.CORE_THREADS));
-                        }
-                        timerService.get(CommonAttributes.THREAD_POOL).get(CommonAttributes.CORE_THREADS).set(coreThreads.intValue());
-                        requireNoContent(reader);
-                        break;
-                    }
-                    case DATA_STORE: {
-                        final int count = reader.getAttributeCount();
-                        String path = null;
-                        String relativeTo = null;
-                        for (int i = 0; i < count; i++) {
-                            requireNoNamespaceAttribute(reader, i);
-                            final String value = reader.getAttributeValue(i);
-                            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                            switch (attribute) {
-                                case PATH:
-                                    if (path != null) {
-                                        throw unexpectedAttribute(reader, i);
-                                    }
-                                    path = value;
-                                    break;
-                                case RELATIVE_TO:
-                                    if (relativeTo != null) {
-                                        throw unexpectedAttribute(reader, i);
-                                    }
-                                    relativeTo = value;
-                                    break;
-                                default:
-                                    unexpectedAttribute(reader, i);
-                            }
-                        }
-                        if (path == null) {
-                            missingRequired(reader, Collections.singleton(Attribute.PATH));
-                        }
-                        timerService.get(CommonAttributes.TIMER_DATA_STORE_LOCATION).get(CommonAttributes.PATH).set(path);
-                        if(relativeTo != null) {
-                            timerService.get(CommonAttributes.TIMER_DATA_STORE_LOCATION).get(CommonAttributes.RELATIVE_TO).set(relativeTo);
-                        }
-                        requireNoContent(reader);
-                        break;
-                    }
-                    default: {
-                        unexpectedElement(reader);
-                    }
-                }
-            }
-            return timerService;
-        }
+        context.setSubsystemXmlMapping(NAMESPACE_1_0, ejb3Subsystem10Parser);
+        context.setSubsystemXmlMapping(NAMESPACE_1_1, ejb3Subsystem11Parser);
     }
 
     private static ModelNode createAddSubSystemOperation() {

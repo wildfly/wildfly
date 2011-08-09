@@ -50,7 +50,7 @@ class EJB3SubsystemProviders {
             subsystem.get(DESCRIPTION).set(bundle.getString("ejb3"));
             subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
-            subsystem.get(NAMESPACE).set(EJB3Extension.NAMESPACE);
+            subsystem.get(NAMESPACE).set(EJB3Extension.NAMESPACE_1_0);
 
             return subsystem;
         }

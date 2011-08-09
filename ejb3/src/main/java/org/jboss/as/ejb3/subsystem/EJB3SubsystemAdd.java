@@ -35,7 +35,6 @@ import org.jboss.as.ejb3.deployment.processors.BusinessViewAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.ConcurrencyManagementAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.DeclareRolesProcessor;
 import org.jboss.as.ejb3.deployment.processors.DenyAllProcessor;
-import org.jboss.as.ejb3.deployment.processors.EJBComponentDescriptionFactory;
 import org.jboss.as.ejb3.deployment.processors.EjbCleanUpProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbContextJndiBindingProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbDependencyDeploymentUnitProcessor;
@@ -48,6 +47,7 @@ import org.jboss.as.ejb3.deployment.processors.EjbRefProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbResourceInjectionAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.ImplicitLocalViewProcessor;
 import org.jboss.as.ejb3.deployment.processors.LockAnnotationProcessor;
+import org.jboss.as.ejb3.deployment.processors.MessageDrivenComponentDescriptionFactory;
 import org.jboss.as.ejb3.deployment.processors.MethodPermissionDDProcessor;
 import org.jboss.as.ejb3.deployment.processors.PermitAllProcessor;
 import org.jboss.as.ejb3.deployment.processors.RemoveAnnotationProcessor;
@@ -55,6 +55,7 @@ import org.jboss.as.ejb3.deployment.processors.ResourceAdapterAnnotationProcesso
 import org.jboss.as.ejb3.deployment.processors.RolesAllowedProcessor;
 import org.jboss.as.ejb3.deployment.processors.RunAsProcessor;
 import org.jboss.as.ejb3.deployment.processors.SecurityDomainProcessor;
+import org.jboss.as.ejb3.deployment.processors.SessionBeanComponentDescriptionFactory;
 import org.jboss.as.ejb3.deployment.processors.SessionSynchronizationProcessor;
 import org.jboss.as.ejb3.deployment.processors.StartupAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.StatefulTimeoutAnnotationProcessor;
@@ -94,6 +95,14 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 import java.util.List;
 
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_DATA_STORE_LOCATION;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -101,15 +110,21 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final EJB3SubsystemAdd INSTANCE = new EJB3SubsystemAdd();
 
+    private String defaultMDBResourceAdapterName;
 
     private EJB3SubsystemAdd() {
         //
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
-        final ModelNode timerService = operation.get(CommonAttributes.TIMER_SERVICE);
+        final ModelNode timerService = operation.get(EJB3SubsystemModel.TIMER_SERVICE);
         if (timerService.isDefined()) {
-            model.get(CommonAttributes.TIMER_SERVICE).set(timerService.clone());
+            model.get(TIMER_SERVICE).set(timerService.clone());
+        }
+
+        if (operation.hasDefined(STRICT_MAX_BEAN_INSTANCE_POOL)) {
+            final ModelNode strictMaxPoolModel = operation.get(STRICT_MAX_BEAN_INSTANCE_POOL);
+            model.get(STRICT_MAX_BEAN_INSTANCE_POOL).set(strictMaxPoolModel);
         }
     }
 
@@ -118,7 +133,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
-                final ModelNode timerServiceModel = model.get(CommonAttributes.TIMER_SERVICE);
+                final ModelNode timerServiceModel = model.get(TIMER_SERVICE);
 
                 boolean timerServiceEnabled = false;
 
@@ -126,10 +141,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                     timerServiceEnabled = true;
 
-                    final ModelNode timerDataSource = timerServiceModel.get(CommonAttributes.TIMER_DATA_STORE_LOCATION);
-                    final ModelNode pathNode = timerDataSource.get(CommonAttributes.PATH);
+                    final ModelNode timerDataSource = timerServiceModel.get(TIMER_DATA_STORE_LOCATION);
+                    final ModelNode pathNode = timerDataSource.get(PATH);
                     final String path = pathNode.isDefined() ? pathNode.asString() : null;
-                    final ModelNode relativeToNode = timerDataSource.get(CommonAttributes.RELATIVE_TO);
+                    final ModelNode relativeToNode = timerDataSource.get(RELATIVE_TO);
                     final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
 
                     //install the ejb timer service data store path service
@@ -141,7 +156,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                         }
                     }
 
-                    final ModelNode coreThreads = timerServiceModel.get(CommonAttributes.THREAD_POOL, CommonAttributes.CORE_THREADS);
+                    final ModelNode coreThreads = timerServiceModel.get(THREAD_POOL, CORE_THREADS);
                     int threadCount = coreThreads.isDefined() ? coreThreads.asInt() : Runtime.getRuntime().availableProcessors();
 
                     //we only add the timer service DUP's when the timer service in enabled in XML
@@ -155,7 +170,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 // add the metadata parser deployment processor
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CREATE_COMPONENT_DESCRIPTIONS, new EJBComponentDescriptionFactory());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SESSION_BEAN_CREATE_COMPONENT_DESCRIPTIONS, new SessionBeanComponentDescriptionFactory());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS, new MessageDrivenComponentDescriptionFactory(defaultMDBResourceAdapterName));
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SESSION_BEAN_DD, new SessionBeanXmlDescriptorProcessor());
                 //processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ANNOTATION, new EjbAnnotationProcessor());
                 //processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MESSAGE_DRIVEN_ANNOTATION, new MessageDrivenAnnotationProcessor());
