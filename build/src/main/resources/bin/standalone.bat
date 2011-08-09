@@ -14,6 +14,14 @@ if "%OS%" == "Windows_NT" (
   set PROGNAME=standalone.bat
 )
 
+rem If JBOSS_HOME is not specified, use parent of script
+rem Will be needed in standalone.conf.bat
+if "x%JBOSS_HOME%" == "x" (
+  pushd "%DIRNAME%.."
+  set JBOSS_HOME="%CD%"
+  popd
+)
+
 rem Read an optional configuration file.
 if "x%STANDALONE_CONF%" == "x" (   
    set STANDALONE_CONF=%DIRNAME%standalone.conf.bat
@@ -25,14 +33,8 @@ if exist "%STANDALONE_CONF%" (
    echo Config file not found "%STANDALONE_CONF%".
 )
 
-rem If no JBOSS_HOME is specified use script's parent dir
-if "x%JBOSS_HOME%" == "x" (
-  pushd %DIRNAME%..
-  set JBOSS_HOME=%CD%
-  popd
-)
-
 set DIRNAME=
+
 
 rem Setup JBoss specific properties
 set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
