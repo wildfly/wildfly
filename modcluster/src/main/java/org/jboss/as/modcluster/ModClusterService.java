@@ -180,6 +180,33 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         if (modelconf.hasDefined(CommonAttributes.SOCKET_TIMEOUT))
             config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt());
 
+        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION))
+            config.setStickySession(modelconf.get(CommonAttributes.STICKY_SESSION).asBoolean());
+        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION_REMOVE))
+            config.setStickySessionRemove(modelconf.get(CommonAttributes.STICKY_SESSION_REMOVE).asBoolean());
+        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION_FORCE))
+            config.setStickySessionForce(modelconf.get(CommonAttributes.STICKY_SESSION_FORCE).asBoolean());
+        if (modelconf.hasDefined(CommonAttributes.WORKER_TIMEOUT))
+            config.setWorkerTimeout(modelconf.get(CommonAttributes.WORKER_TIMEOUT).asInt());
+        if (modelconf.hasDefined(CommonAttributes.MAX_ATTEMPTS))
+            config.setMaxAttempts(modelconf.get(CommonAttributes.MAX_ATTEMPTS).asInt());
+        if (modelconf.hasDefined(CommonAttributes.FLUSH_PACKETS))
+            config.setFlushPackets(modelconf.get(CommonAttributes.FLUSH_PACKETS).asBoolean());
+        if (modelconf.hasDefined(CommonAttributes.FLUSH_WAIT))
+            config.setFlushWait(modelconf.get(CommonAttributes.FLUSH_WAIT).asInt());
+        if (modelconf.hasDefined(CommonAttributes.PING))
+            config.setPing(modelconf.get(CommonAttributes.PING).asInt());
+        if (modelconf.hasDefined(CommonAttributes.SMAX))
+            config.setSmax(modelconf.get(CommonAttributes.SMAX).asInt());
+        if (modelconf.hasDefined(CommonAttributes.TTL))
+            config.setTtl(modelconf.get(CommonAttributes.TTL).asInt());
+        if (modelconf.hasDefined(CommonAttributes.NODE_TIMEOUT))
+            config.setNodeTimeout(modelconf.get(CommonAttributes.NODE_TIMEOUT).asInt());
+        if (modelconf.hasDefined(CommonAttributes.BALANCER))
+            config.setBalancer(modelconf.get(CommonAttributes.BALANCER).asString());
+        if (modelconf.hasDefined(CommonAttributes.DOMAIN))
+            config.setLoadBalancingGroup(modelconf.get(CommonAttributes.DOMAIN).asString());
+
         // Read the metrics configuration.
         final ModelNode loadmetric = modelconf.get(CommonAttributes.LOAD_METRIC);
 
