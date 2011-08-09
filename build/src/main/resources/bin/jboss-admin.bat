@@ -10,27 +10,24 @@ if not "x%ECHO%" == "x"  echo %ECHO%
 if "%OS%" == "Windows_NT" (
   setlocal
   set DIRNAME=%~dp0%
+  set PROGNAME="%~nx0%"
 ) else (
   set DIRNAME=.\
+  set PROGNAME=jboss-admin.bat
 )
 
-rem Change into bin\ directory and set JBOSS_HOME as parent
-pushd %DIRNAME%..
+rem If unset, set JBOSS_HOME to parent of script file
 if "x%JBOSS_HOME%" == "x" (
-  set "JBOSS_HOME=%CD%"
+  pushd "%DIRNAME%.."
+  set JBOSS_HOME="%CD%"
+  popd
 )
-popd
 
 set DIRNAME=
 
-if "%OS%" == "Windows_NT" (
-  set "PROGNAME=%~nx0%"
-) else (
-  set "PROGNAME=jboss-admin.bat"
-)
 
 rem Setup JBoss specific properties
-set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
+set JAVA_OPTS=-Dprogram.name="%PROGNAME%" %JAVA_OPTS%
 
 if "x%JAVA_HOME%" == "x" (
   set  JAVA=java
