@@ -7,7 +7,50 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.modcluster.CommonAttributes.*;
+import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE;
+import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE_SECURITY_KEY;
+import static org.jboss.as.modcluster.CommonAttributes.ADVERTISE_SOCKET;
+import static org.jboss.as.modcluster.CommonAttributes.AUTO_ENABLE_CONTEXTS;
+import static org.jboss.as.modcluster.CommonAttributes.BALANCER;
+import static org.jboss.as.modcluster.CommonAttributes.CAPACITY;
+import static org.jboss.as.modcluster.CommonAttributes.CA_CERTIFICATE_FILE;
+import static org.jboss.as.modcluster.CommonAttributes.CA_REVOCATION_URL;
+import static org.jboss.as.modcluster.CommonAttributes.CERTIFICATE_KEY_FILE;
+import static org.jboss.as.modcluster.CommonAttributes.CIPHER_SUITE;
+import static org.jboss.as.modcluster.CommonAttributes.CLASS;
+import static org.jboss.as.modcluster.CommonAttributes.CUSTOM_LOAD_METRIC;
+import static org.jboss.as.modcluster.CommonAttributes.DECAY;
+import static org.jboss.as.modcluster.CommonAttributes.DOMAIN;
+import static org.jboss.as.modcluster.CommonAttributes.DYNAMIC_LOAD_PROVIDER;
+import static org.jboss.as.modcluster.CommonAttributes.EXCLUDED_CONTEXTS;
+import static org.jboss.as.modcluster.CommonAttributes.FACTOR;
+import static org.jboss.as.modcluster.CommonAttributes.FLUSH_PACKETS;
+import static org.jboss.as.modcluster.CommonAttributes.FLUSH_WAIT;
+import static org.jboss.as.modcluster.CommonAttributes.HISTORY;
+import static org.jboss.as.modcluster.CommonAttributes.KEY_ALIAS;
+import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC;
+import static org.jboss.as.modcluster.CommonAttributes.MAX_ATTEMPTS;
+import static org.jboss.as.modcluster.CommonAttributes.MOD_CLUSTER_CONFIG;
+import static org.jboss.as.modcluster.CommonAttributes.NAME;
+import static org.jboss.as.modcluster.CommonAttributes.NODE_TIMEOUT;
+import static org.jboss.as.modcluster.CommonAttributes.PASSWORD;
+import static org.jboss.as.modcluster.CommonAttributes.PING;
+import static org.jboss.as.modcluster.CommonAttributes.PROTOCOL;
+import static org.jboss.as.modcluster.CommonAttributes.PROXY_LIST;
+import static org.jboss.as.modcluster.CommonAttributes.PROXY_URL;
+import static org.jboss.as.modcluster.CommonAttributes.SIMPLE_LOAD_PROVIDER;
+import static org.jboss.as.modcluster.CommonAttributes.SMAX;
+import static org.jboss.as.modcluster.CommonAttributes.SOCKET_TIMEOUT;
+import static org.jboss.as.modcluster.CommonAttributes.SSL;
+import static org.jboss.as.modcluster.CommonAttributes.STICKY_SESSION;
+import static org.jboss.as.modcluster.CommonAttributes.STICKY_SESSION_FORCE;
+import static org.jboss.as.modcluster.CommonAttributes.STICKY_SESSION_REMOVE;
+import static org.jboss.as.modcluster.CommonAttributes.STOP_CONTEXT_TIMEOUT;
+import static org.jboss.as.modcluster.CommonAttributes.TTL;
+import static org.jboss.as.modcluster.CommonAttributes.TYPE;
+import static org.jboss.as.modcluster.CommonAttributes.VALUE;
+import static org.jboss.as.modcluster.CommonAttributes.WEIGHT;
+import static org.jboss.as.modcluster.CommonAttributes.WORKER_TIMEOUT;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -19,17 +62,17 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import org.jboss.dmr.Property;
-
 public class ModClusterSubsystemElementParser implements XMLElementReader<List<ModelNode>>,
         XMLElementWriter<SubsystemMarshallingContext>, XMLStreamConstants {
 
     /** {@inheritDoc} */
+    @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
         ParseUtils.requireNoAttributes(reader);
 
@@ -132,6 +175,20 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
         writeAttribute(writer, AUTO_ENABLE_CONTEXTS, config);
         writeAttribute(writer, STOP_CONTEXT_TIMEOUT, config);
         writeAttribute(writer, SOCKET_TIMEOUT, config);
+
+        writeAttribute(writer, STICKY_SESSION, config);
+        writeAttribute(writer, STICKY_SESSION_REMOVE, config);
+        writeAttribute(writer, STICKY_SESSION_FORCE, config);
+        writeAttribute(writer, WORKER_TIMEOUT, config);
+        writeAttribute(writer, MAX_ATTEMPTS, config);
+        writeAttribute(writer, FLUSH_PACKETS, config);
+        writeAttribute(writer, FLUSH_WAIT, config);
+        writeAttribute(writer, PING, config);
+        writeAttribute(writer, SMAX, config);
+        writeAttribute(writer, TTL, config);
+        writeAttribute(writer, NODE_TIMEOUT, config);
+        writeAttribute(writer, BALANCER, config);
+        writeAttribute(writer, DOMAIN, config);
     }
 
     static void parsePropConf(XMLExtendedStreamReader reader, ModelNode conf) throws XMLStreamException {
@@ -168,6 +225,45 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
                     break;
                 case SOCKET_TIMEOUT:
                     conf.get(SOCKET_TIMEOUT).set(value);
+                    break;
+                case STICKY_SESSION:
+                    conf.get(STICKY_SESSION).set(value);
+                    break;
+                case STICKY_SESSION_REMOVE:
+                    conf.get(STICKY_SESSION_REMOVE).set(value);
+                    break;
+                case STICKY_SESSION_FORCE:
+                    conf.get(STICKY_SESSION_FORCE).set(value);
+                    break;
+                case WORKER_TIMEOUT:
+                    conf.get(WORKER_TIMEOUT).set(value);
+                    break;
+                 case MAX_ATTEMPTS:
+                     conf.get(MAX_ATTEMPTS).set(value);
+                     break;
+                case FLUSH_PACKETS:
+                    conf.get(FLUSH_PACKETS).set(value);
+                    break;
+                case FLUSH_WAIT:
+                    conf.get(FLUSH_WAIT).set(value);
+                    break;
+                case PING:
+                    conf.get(PING).set(value);
+                    break;
+                case SMAX:
+                    conf.get(SMAX).set(value);
+                    break;
+                case TTL:
+                    conf.get(TTL).set(value);
+                    break;
+                case NODE_TIMEOUT:
+                    conf.get(NODE_TIMEOUT).set(value);
+                    break;
+                case BALANCER:
+                    conf.get(NODE_TIMEOUT).set(value);
+                    break;
+                case DOMAIN:
+                    conf.get(DOMAIN).set(value);
                     break;
                 default:
                     unexpectedAttribute(reader, i);
@@ -310,7 +406,7 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
         final List<ModelNode> array = config.asList();
         Iterator<ModelNode> it = array.iterator();
         while (it.hasNext()) {
-            final ModelNode node = (ModelNode) it.next();
+            final ModelNode node = it.next();
             writer.writeStartElement(Element.LOAD_METRIC.getLocalName());
             writeAttribute(writer, TYPE, node);
             writeAttribute(writer, WEIGHT, node);
@@ -365,7 +461,7 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
         final List<ModelNode> array = config.asList();
         Iterator<ModelNode> it = array.iterator();
         while (it.hasNext()) {
-            final ModelNode node = (ModelNode) it.next();
+            final ModelNode node = it.next();
             writer.writeStartElement(Element.CUSTOM_LOAD_METRIC.getLocalName());
             writeAttribute(writer, CAPACITY, node);
             writeAttribute(writer, WEIGHT, node);

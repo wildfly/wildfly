@@ -41,6 +41,21 @@ interface CommonAttributes {
     String AUTO_ENABLE_CONTEXTS = "auto-enable-contexts";
     String STOP_CONTEXT_TIMEOUT = "stop-context-timeout";
     String SOCKET_TIMEOUT = "socket-timeout";
+
+    String STICKY_SESSION = "sticky-session";
+    String STICKY_SESSION_REMOVE = "sticky-session-remove";
+    String STICKY_SESSION_FORCE = "sticky-session-force";
+    String WORKER_TIMEOUT = "worker-timeout";
+    String MAX_ATTEMPTS = "max-attemps";
+    String FLUSH_PACKETS = "flush-packets";
+    String FLUSH_WAIT = "flush-wait";
+    String PING = "ping";
+    String SMAX = "smax";
+    String TTL = "ttl";
+    String NODE_TIMEOUT = "node-timeout";
+    String BALANCER = "balancer";
+    String DOMAIN = "domain";
+
     String LOAD_METRIC = "load-metric";
     String FACTOR = "factor";
     String HISTORY = "history";
