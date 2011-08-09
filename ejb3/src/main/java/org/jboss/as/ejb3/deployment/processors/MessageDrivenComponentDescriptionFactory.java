@@ -62,17 +62,6 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
 
     private static final DotName MESSAGE_DRIVEN_ANNOTATION_NAME = DotName.createSimple(MessageDriven.class.getName());
 
-    private final String defaultResourceAdapterName;
-
-    public MessageDrivenComponentDescriptionFactory(final String defaultResourceAdapterName) {
-        if (defaultResourceAdapterName == null || defaultResourceAdapterName.trim().isEmpty()) {
-            // default to hornetq-ra
-            this.defaultResourceAdapterName = "hornetq-ra";
-        } else {
-            this.defaultResourceAdapterName = defaultResourceAdapterName;
-        }
-    }
-
     @Override
     protected void processAnnotations(DeploymentUnit deploymentUnit, CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
         if (this.isMessagingAvailable(deploymentUnit)) {
@@ -133,8 +122,6 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             }
 
             final MessageDrivenComponentDescription beanDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, messageListenerInterfaceName, activationConfigProperties);
-            // set the default resource adapter name
-            beanDescription.setResourceAdapterName(this.defaultResourceAdapterName);
 
             // Add this component description to module description
             ejbJarDescription.getEEModuleDescription().addComponent(beanDescription);
@@ -227,8 +214,6 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         }
         final Properties activationConfigProps = getActivationConfigProperties(mdb.getActivationConfig());
         final MessageDrivenComponentDescription mdbComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), messageListenerInterface, activationConfigProps);
-        // set the default resource adapter name
-        mdbComponentDescription.setResourceAdapterName(this.defaultResourceAdapterName);
         // add it to the ejb jar description
         ejbJarDescription.getEEModuleDescription().addComponent(mdbComponentDescription);
     }
