@@ -21,10 +21,6 @@
  */
 package org.jboss.as.testsuite.integration.injection.resource.ejblocalref;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
@@ -33,6 +29,11 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.naming.InitialContext;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * A test for injection via env-entry in web.xml
@@ -66,6 +67,13 @@ public class EjbLocalRefInjectionTestCase {
         assertEquals("Named Hello", result);
     }
 
+    @Test
+    public void testNoInjectionPoint() throws Exception {
+        Hello bean = (Hello)new InitialContext().lookup("java:comp/env/noInjection");
+        assertEquals("Simple Hello", bean.sayHello());
+    }
+
+
     private static StringAsset getWebXml() {
         return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "\n" +
@@ -82,6 +90,11 @@ public class EjbLocalRefInjectionTestCase {
                 "           <injection-target-class>"+EjbLocalRefInjectionServlet.class.getName()+"</injection-target-class>"+
                 "           <injection-target-name>simple</injection-target-name>" +
                 "        </injection-target>\n" +
+                "    </ejb-local-ref>\n" +
+                "    <ejb-local-ref>\n" +
+                "        <ejb-ref-name>noInjection</ejb-ref-name>\n" +
+                "        <lookup-name>java:module/SimpleSLSB</lookup-name>\n" +
+                "        <local>" + SimpleSLSB.class.getName() + "</local>" +
                 "    </ejb-local-ref>\n" +
                 "    <ejb-local-ref>\n" +
                 "        <ejb-ref-name>named</ejb-ref-name>\n" +
