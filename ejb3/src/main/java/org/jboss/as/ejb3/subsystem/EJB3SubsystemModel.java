@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,17 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.ejb3.subsystem;
 
 /**
- * @author Stuart Douglas
+ * User: jpai
  */
-public interface CommonAttributes {
+public interface EJB3SubsystemModel {
+
+    String NAME = "name";
+
+    String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";
+    String DEFAULT_RESOURCE_ADAPTER_NAME = "default-resource-adapter-name";
+    String DEFAULT_SLSB_INSTANCE_POOL = "default-slsb-instance-pool";
+    String INSTANCE_ACQUISITION_TIMEOUT = "timeout";
+    String INSTANCE_ACQUISITION_TIMEOUT_UNIT = "timeout-unit";
+
+    String MAX_POOL_SIZE = "max-pool-size";
+    String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
+
+
+    String OPERATION_SET_DEFAULT_MDB_INSTANCE_POOL = "set-default-mdb-instance-pool";
+    String OPERATION_SET_DEFAULT_RA_NAME = "set-default-resource-adapter-name";
+    String OPERATION_SET_DEFAULT_SLSB_INSTANCE_POOL = "set-default-slsb-instance-pool";
+
     String CORE_THREADS = "core-threads";
     String TIMER_DATA_STORE_LOCATION = "timer-data-store-location";
     String RELATIVE_TO = "relative-to";
     String PATH = "path";
     String TIMER_SERVICE = "timer-service";
     String THREAD_POOL = "thread-pool";
+
 
 }
