@@ -75,6 +75,8 @@ public class EJB3Extension implements Extension {
         subsystemRegistration.registerOperationHandler(OPERATION_SET_DEFAULT_SLSB_INSTANCE_POOL, SetDefaultSLSBPool.INSTANCE, SetDefaultSLSBPool.INSTANCE, false);
         // set default MDB pool operation
         subsystemRegistration.registerOperationHandler(OPERATION_SET_DEFAULT_MDB_INSTANCE_POOL, SetDefaultMDBPool.INSTANCE, SetDefaultMDBPool.INSTANCE, false);
+        // default resource adapter name operation
+        subsystemRegistration.registerOperationHandler(OPERATION_SET_DEFAULT_RA_NAME, SetDefaultResourceAdapterName.INSTANCE, SetDefaultResourceAdapterName.INSTANCE, false);
 
         // subsystem=ejb3/strict-max-bean-instance-pool=*
         final ManagementResourceRegistration strictMaxPoolRegistration = subsystemRegistration.registerSubModel(
