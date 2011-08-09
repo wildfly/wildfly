@@ -110,8 +110,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final EJB3SubsystemAdd INSTANCE = new EJB3SubsystemAdd();
 
-    private String defaultMDBResourceAdapterName;
-
     private EJB3SubsystemAdd() {
         //
     }
@@ -122,10 +120,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             model.get(TIMER_SERVICE).set(timerService.clone());
         }
 
-        if (operation.hasDefined(STRICT_MAX_BEAN_INSTANCE_POOL)) {
-            final ModelNode strictMaxPoolModel = operation.get(STRICT_MAX_BEAN_INSTANCE_POOL);
-            model.get(STRICT_MAX_BEAN_INSTANCE_POOL).set(strictMaxPoolModel);
-        }
     }
 
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
@@ -171,7 +165,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 // add the metadata parser deployment processor
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SESSION_BEAN_CREATE_COMPONENT_DESCRIPTIONS, new SessionBeanComponentDescriptionFactory());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS, new MessageDrivenComponentDescriptionFactory(defaultMDBResourceAdapterName));
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS, new MessageDrivenComponentDescriptionFactory());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SESSION_BEAN_DD, new SessionBeanXmlDescriptorProcessor());
                 //processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ANNOTATION, new EjbAnnotationProcessor());
                 //processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MESSAGE_DRIVEN_ANNOTATION, new MessageDrivenAnnotationProcessor());

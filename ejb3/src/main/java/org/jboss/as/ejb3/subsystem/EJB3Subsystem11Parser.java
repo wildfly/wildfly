@@ -127,10 +127,10 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
         ParseUtils.requireNoAttributes(reader);
-        final ModelNode ejb3SubsystemAddress = new ModelNode();
-        ejb3SubsystemAddress.get(OP).set(ADD);
-        ejb3SubsystemAddress.get(OP_ADDR).add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
-        operations.add(ejb3SubsystemAddress);
+        final ModelNode ejb3SubsystemAddOperation = new ModelNode();
+        ejb3SubsystemAddOperation.get(OP).set(ADD);
+        ejb3SubsystemAddOperation.get(OP_ADDR).add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
+        operations.add(ejb3SubsystemAddOperation);
         // elements
         final EnumSet<EJB3SubsystemXMLElement> encountered = EnumSet.noneOf(EJB3SubsystemXMLElement.class);
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
@@ -157,7 +157,8 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                             break;
                         }
                         case TIMER_SERVICE: {
-                            parseTimerService(reader, operations);
+                            final ModelNode timerService = parseTimerService(reader, operations);
+                            ejb3SubsystemAddOperation.get(TIMER_SERVICE).set(timerService);
                             break;
                         }
                         default: {
@@ -462,8 +463,8 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
         operations.add(this.createAddStrictMaxBeanInstancePoolOperation(poolName, maxPoolSize, timeout, unit));
     }
 
-    private void parseTimerService(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
-
+    private ModelNode parseTimerService(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        final ModelNode timerService = new ModelNode();
         requireNoAttributes(reader);
         Integer coreThreads = null;
         String dataStorePath = null;
@@ -490,6 +491,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                     if (coreThreads == null) {
                         missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.CORE_THREADS));
                     }
+                    timerService.get(THREAD_POOL).get(CORE_THREADS).set(coreThreads.intValue());
                     requireNoContent(reader);
                     break;
                 }
@@ -519,6 +521,10 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                     if (dataStorePath == null) {
                         missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.PATH));
                     }
+                    timerService.get(TIMER_DATA_STORE_LOCATION).get(PATH).set(dataStorePath);
+                    if(dataStorePathRelativeTo != null) {
+                        timerService.get(TIMER_DATA_STORE_LOCATION).get(RELATIVE_TO).set(dataStorePathRelativeTo);
+                    }
                     requireNoContent(reader);
                     break;
                 }
@@ -527,9 +533,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                 }
             }
         }
-        // add it to the operations
-        final ModelNode timerServiceOperation = this.createTimerServiceOperation(coreThreads, dataStorePath, dataStorePathRelativeTo);
-        operations.add(timerServiceOperation);
+        return timerService;
     }
 
 
@@ -658,22 +662,24 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
         return addStrictMaxPoolOperation;
     }
 
-    private ModelNode createTimerServiceOperation(int coreThreads, final String dataStorePath, final String dataStorePathRelativeTo) {
-        final ModelNode timerServiceOperation = new ModelNode();
-        timerServiceOperation.get(OP).set(ADD);
-        // set the address for this operation
-        final PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(TIMER_SERVICE));
-        timerServiceOperation.get(OP_ADDR).set(address.toModelNode());
-
-        // set the operation params
-        timerServiceOperation.get(THREAD_POOL).get(CORE_THREADS).set(coreThreads);
-        timerServiceOperation.get(TIMER_DATA_STORE_LOCATION).get(PATH).set(dataStorePath);
-        if(dataStorePathRelativeTo != null) {
-            timerServiceOperation.get(TIMER_DATA_STORE_LOCATION).get(RELATIVE_TO).set(dataStorePathRelativeTo);
-        }
-
-        return timerServiceOperation;
-    }
+//    private ModelNode createTimerServiceOperation(int coreThreads, final String dataStorePath, final String dataStorePathRelativeTo) {
+//        final ModelNode timerServiceOperation = new ModelNode();
+//        timerServiceOperation.get(OP).set(ADD);
+//        // set the address for this operation
+//        final PathAddress address = this.getEJB3SubsystemAddress();
+//        timerServiceOperation.get(OP_ADDR).set(address.toModelNode());
+//
+//        // set the operation params
+//        final ModelNode timerServiceModel = new ModelNode();
+//        timerServiceOperation.get(TIMER_SERVICE).set(timerServiceModel);
+//        timerServiceModel.get(THREAD_POOL).get(CORE_THREADS).set(coreThreads);
+//        timerServiceModel.get(TIMER_DATA_STORE_LOCATION).get(PATH).set(dataStorePath);
+//        if(dataStorePathRelativeTo != null) {
+//            timerServiceModel.get(TIMER_DATA_STORE_LOCATION).get(RELATIVE_TO).set(dataStorePathRelativeTo);
+//        }
+//
+//        return timerServiceOperation;
+//    }
 
     private PathAddress getEJB3SubsystemAddress() {
         PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));

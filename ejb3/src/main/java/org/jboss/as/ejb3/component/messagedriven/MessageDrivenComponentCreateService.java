@@ -43,12 +43,11 @@ import java.util.Properties;
  */
 public class MessageDrivenComponentCreateService extends EJBComponentCreateService {
 
-    private final ServiceName raServiceName;
     private final Class<?> messageListenerInterface;
-    private final String resourceAdapterName;
+    private String resourceAdapterName;
     private final Properties activationProps;
     private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
-
+    private final InjectedValue<DefaultResourceAdapterService> defaultRANameService = new InjectedValue<DefaultResourceAdapterService>();
 
     /**
      * Construct a new instance.
@@ -60,7 +59,6 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
         final MessageDrivenComponentDescription componentDescription = (MessageDrivenComponentDescription) componentConfiguration.getComponentDescription();
         this.resourceAdapterName = componentDescription.getResourceAdapterName();
-        this.raServiceName = componentDescription.getResourceAdapterServiceName();
 
         // see MessageDrivenComponentDescription.<init>
         this.messageListenerInterface = componentConfiguration.getViews().get(0).getViewClass();
@@ -70,6 +68,11 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
     @Override
     protected BasicComponent createComponent() {
+        if (this.resourceAdapterName == null) {
+            this.resourceAdapterName = this.getDefaultResourceAdapterName();
+        }
+        final ServiceName raServiceName = this.getResourceAdapterServiceName();
+
         final ActivationSpec activationSpec = getEndpointDeployer().createActivationSpecs(resourceAdapterName, messageListenerInterface, activationProps, getDeploymentClassLoader());
         //final ActivationSpec activationSpec = null;
         final MessageDrivenComponent component = new MessageDrivenComponent(this, messageListenerInterface, activationSpec);
@@ -92,6 +95,17 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
         return this.poolConfig;
     }
 
+    public InjectedValue<DefaultResourceAdapterService> getDefaultRANameServiceInjector() {
+        return this.defaultRANameService;
+    }
+
+    String getDefaultResourceAdapterName() {
+        final DefaultResourceAdapterService defaultResourceAdapterService = this.defaultRANameService.getOptionalValue();
+        if (defaultResourceAdapterService != null) {
+            return defaultResourceAdapterService.getDefaultResourceAdapterName();
+        }
+        return "hornetq-ra";
+    }
 
     private ClassLoader getDeploymentClassLoader() {
         return getComponentClass().getClassLoader();
@@ -108,4 +122,16 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     private ServiceRegistry getServiceRegistry() {
         return getDeploymentUnitInjector().getValue().getServiceRegistry();
     }
+
+    ServiceName getResourceAdapterServiceName() {
+        String raDeploymentName = resourceAdapterName;
+        // See RaDeploymentParsingProcessor
+        if (this.resourceAdapterName.endsWith(".rar")) {
+            raDeploymentName = this.resourceAdapterName.substring(0, resourceAdapterName.indexOf(".rar"));
+        }
+        // See ResourceAdapterDeploymentService
+        return ServiceName.of(raDeploymentName);
+    }
+
+
 }

@@ -50,8 +50,7 @@ import java.util.Properties;
  */
 public class MessageDrivenComponentDescription extends EJBComponentDescription {
     private final Properties activationProps;
-    // by default we want to connect with HornetQ
-    private String resourceAdapterName = "hornetq-ra";
+    private String resourceAdapterName;
 
     private String mdbPoolConfigName;
 
@@ -72,12 +71,6 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
 
         registerView(messageListenerInterfaceName, MethodIntf.MESSAGE_ENDPOINT);
 
-        getConfigurators().add(new ComponentConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                description.addDependency(getResourceAdapterServiceName(), ServiceBuilder.DependencyType.REQUIRED);
-            }
-        });
     }
 
     @Override
@@ -90,6 +83,8 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         final MessageDrivenComponentDescription mdbComponentDescription = (MessageDrivenComponentDescription) mdbComponentConfiguration.getComponentDescription();
         mdbComponentConfiguration.getCreateDependencies().add(new PoolInjectingConfigurator(mdbComponentDescription));
 
+        // setup the configurator to inject default ra name
+        mdbComponentConfiguration.getCreateDependencies().add(new DefaultRANameInjectingConfigurator(mdbComponentDescription));
         return mdbComponentConfiguration;
     }
 
@@ -146,17 +141,6 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         });
     }
 
-    // can't be part of Configuration
-    ServiceName getResourceAdapterServiceName() {
-        String raDeploymentName = resourceAdapterName;
-        // See RaDeploymentParsingProcessor
-        if (this.resourceAdapterName.endsWith(".rar")) {
-            raDeploymentName = this.resourceAdapterName.substring(0, resourceAdapterName.indexOf(".rar"));
-        }
-        // See ResourceAdapterDeploymentService
-        return ServiceName.of(raDeploymentName);
-    }
-
     @Override
     public boolean isMessageDriven() {
         return true;
@@ -193,4 +177,21 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
             }
         }
     }
+
+    private class DefaultRANameInjectingConfigurator implements DependencyConfigurator<Service<Component>> {
+
+        private final MessageDrivenComponentDescription mdbComponentDescription;
+
+        DefaultRANameInjectingConfigurator(final MessageDrivenComponentDescription mdbComponentDescription) {
+            this.mdbComponentDescription = mdbComponentDescription;
+        }
+
+        @Override
+        public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
+            final MessageDrivenComponentCreateService mdbComponentCreateService = (MessageDrivenComponentCreateService) service;
+            serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, DefaultResourceAdapterService.DEFAULT_RA_NAME_SERVICE_NAME,
+                    DefaultResourceAdapterService.class, mdbComponentCreateService.getDefaultRANameServiceInjector());
+        }
+    }
+
 }
