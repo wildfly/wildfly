@@ -19,8 +19,8 @@ if "%OS%" == "Windows_NT" (
 rem If JBOSS_HOME is not specified, use parent of script
 rem Will be needed in domain.conf.bat
 if "x%JBOSS_HOME%" == "x" (
-  pushd %DIRNAME%..
-  set "JBOSS_HOME=%CD%"
+  pushd "%DIRNAME%.."
+  set JBOSS_HOME="%CD%"
   popd
 )
 
