@@ -78,6 +78,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore
 public class EnterpriseDeploymentTestCase {
 
     private static final String WAR_JBOSS_FILE = "WEB-INF/jboss-web.xml";
