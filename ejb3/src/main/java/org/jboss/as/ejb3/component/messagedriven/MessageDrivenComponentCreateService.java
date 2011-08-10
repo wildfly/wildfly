@@ -58,7 +58,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
         super(componentConfiguration, ejbJarConfiguration);
 
         final MessageDrivenComponentDescription componentDescription = (MessageDrivenComponentDescription) componentConfiguration.getComponentDescription();
-        this.resourceAdapterName = componentDescription.getResourceAdapterName();
+        this.resourceAdapterName = this.stripDotRarSuffix(componentDescription.getResourceAdapterName());
 
         // see MessageDrivenComponentDescription.<init>
         this.messageListenerInterface = componentConfiguration.getViews().get(0).getViewClass();
@@ -102,7 +102,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     String getDefaultResourceAdapterName() {
         final DefaultResourceAdapterService defaultResourceAdapterService = this.defaultRANameService.getOptionalValue();
         if (defaultResourceAdapterService != null) {
-            return defaultResourceAdapterService.getDefaultResourceAdapterName();
+            return this.stripDotRarSuffix(defaultResourceAdapterService.getDefaultResourceAdapterName());
         }
         return "hornetq-ra";
     }
@@ -124,14 +124,18 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     }
 
     ServiceName getResourceAdapterServiceName() {
-        String raDeploymentName = resourceAdapterName;
-        // See RaDeploymentParsingProcessor
-        if (this.resourceAdapterName.endsWith(".rar")) {
-            raDeploymentName = this.resourceAdapterName.substring(0, resourceAdapterName.indexOf(".rar"));
-        }
         // See ResourceAdapterDeploymentService
-        return ServiceName.of(raDeploymentName);
+        return ServiceName.of(this.resourceAdapterName);
     }
 
-
+    private String stripDotRarSuffix(final String raName) {
+        if (raName == null) {
+            return null;
+        }
+        // See RaDeploymentParsingProcessor
+        if (raName.endsWith(".rar")) {
+            return raName.substring(0, raName.indexOf(".rar"));
+        }
+        return raName;
+    }
 }
