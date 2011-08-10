@@ -27,6 +27,7 @@ import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -58,7 +59,7 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
         final ServiceName applicationContextServiceName = ContextNames.contextServiceNameOfApplication(moduleDescription.getApplicationName());
-        final RootContextService contextService = new RootContextService();
+        final NamingStoreService contextService = new NamingStoreService();
         serviceTarget.addService(applicationContextServiceName, contextService).install();
 
         final BinderService applicationNameBinder = new BinderService("AppName");

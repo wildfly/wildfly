@@ -38,6 +38,8 @@ import javax.naming.NamingException;
  */
 public final class InjectedEENamespaceContextSelector extends NamespaceContextSelector {
     private static final CompositeName EMPTY_NAME = new CompositeName();
+    private final InjectedValue<NamingStore> jbossContext = new InjectedValue<NamingStore>();
+    private final InjectedValue<NamingStore> globalContext = new InjectedValue<NamingStore>();
     private final InjectedValue<NamingStore> appContext = new InjectedValue<NamingStore>();
     private final InjectedValue<NamingStore> moduleContext = new InjectedValue<NamingStore>();
     private final InjectedValue<NamingStore> compContext = new InjectedValue<NamingStore>();
@@ -57,8 +59,20 @@ public final class InjectedEENamespaceContextSelector extends NamespaceContextSe
         return compContext;
     }
 
+    public Injector<NamingStore> getJbossContextInjector() {
+        return jbossContext;
+    }
+
+    public Injector<NamingStore> getGlobalContextInjector() {
+        return globalContext;
+    }
+
     private NamingStore getNamingStore(final String identifier) {
-        if (identifier.equals("app")) {
+        if (identifier.equals("jboss")) {
+            return jbossContext.getOptionalValue();
+        } else if (identifier.equals("global")) {
+            return globalContext.getOptionalValue();
+        } else if (identifier.equals("app")) {
             return appContext.getOptionalValue();
         } else if (identifier.equals("module")) {
             return moduleContext.getOptionalValue();

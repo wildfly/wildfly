@@ -71,9 +71,10 @@ class ConnectionFactoryService implements Service<Void> {
                 final ServiceTarget target = context.getChildTarget();
                 final Map<String, Object> bindings = MockContext.popTrappedBindings();
                 for(Map.Entry<String, Object> binding : bindings.entrySet()) {
-                    final BinderService binderService = new BinderService(binding.getKey());
-                    target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(binding.getKey()), binderService)
-                        .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
+                    final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(binding.getKey());
+                    final BinderService binderService = new BinderService(bindInfo.getBindName());
+                    target.addService(bindInfo.getBinderServiceName(), binderService)
+                        .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class, binderService.getNamingStoreInjector())
                         .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(binding.getValue())))
                         .setInitialMode(ServiceController.Mode.ACTIVE)
                         .install();

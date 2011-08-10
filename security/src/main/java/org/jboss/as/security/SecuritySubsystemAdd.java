@@ -253,9 +253,9 @@ class SecuritySubsystemAdd implements OperationStepHandler {
                         // add service to bind SecurityDomainJndiInjectable to JNDI
                         final SecurityDomainJndiInjectable securityDomainJndiInjectable = new SecurityDomainJndiInjectable();
                         final BinderService binderService = new BinderService("jaas");
-                        target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jboss", "jaas"), binderService)
+                        target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("jaas"), binderService)
                                 .addInjection(binderService.getManagedObjectInjector(), securityDomainJndiInjectable)
-                                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jboss"), NamingStore.class,
+                                .addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class,
                                         binderService.getNamingStoreInjector())
                                 .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
                                         securityDomainJndiInjectable.getSecurityManagementInjector())

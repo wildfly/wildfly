@@ -29,8 +29,6 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.registry.DriverRegistry;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
-import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -101,12 +99,12 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 referenceFactoryService).addDependency(dataSourceServiceName, DataSource.class,
                 referenceFactoryService.getDataSourceInjector());
 
-        final ServiceName binderServiceName = Util.getBinderServiceName(jndiName);
-        final BinderService binderService = new BinderService(binderServiceName.getSimpleName());
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+        final BinderService binderService = new BinderService(bindInfo.getBindName());
         final ServiceBuilder<?> binderBuilder = serviceTarget
-                .addService(binderServiceName, binderService)
+                .addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class, binderService.getManagedObjectInjector())
-                .addDependency(binderServiceName.getParent(), NamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+                .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
                     public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
