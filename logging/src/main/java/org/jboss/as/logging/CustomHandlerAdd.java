@@ -78,13 +78,9 @@ class CustomHandlerAdd extends AbstractAddStepHandler {
         } catch (Throwable t) {
             throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
         }
-        service.setFormatterSpec(createFormatterSpec(operation));
+        service.setFormatterSpec(AbstractFormatterSpec.Factory.create(operation));
         serviceBuilder.addListener(verificationHandler);
         serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
         newControllers.add(serviceBuilder.install());
-    }
-
-    static AbstractFormatterSpec createFormatterSpec(final ModelNode operation) {
-        return new PatternFormatterSpec(operation.get(FORMATTER).asString());
     }
 }
