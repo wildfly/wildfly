@@ -18,9 +18,11 @@ public class MailSessionConfig {
     private String jndiName;
     private String username;
     private String password;
-    private String smtpServerAddress;
-    private String smtpServerPort;
-    //private Properties properties = new Properties();
+    private boolean debug = false;
+
+    private MailSessionServer smtpServer;
+    private MailSessionServer pop3Server;
+    private MailSessionServer imapServer;
 
 
 
@@ -36,6 +38,14 @@ public class MailSessionConfig {
         this.jndiName = jndiName;
     }
 
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -43,15 +53,6 @@ public class MailSessionConfig {
     public void setPassword(String password) {
         this.password = password;
     }
-
-    /*public Properties getProperties() {
-        return properties;
-    }
-
-    public void setProperties(Properties properties) {
-        this.properties = properties;
-    }*/
-
     public String getUsername() {
         return username;
     }
@@ -60,36 +61,39 @@ public class MailSessionConfig {
         this.username = username;
     }
 
-    public String getSmtpServerAddress() {
-        return smtpServerAddress;
+    public MailSessionServer getImapServer() {
+        return imapServer;
     }
 
-    public void setSmtpServerAddress(String smtpServerAddress) {
-        this.smtpServerAddress = smtpServerAddress;
+    public void setImapServer(MailSessionServer imapServer) {
+        this.imapServer = imapServer;
     }
 
-    public String getSmtpServerPort() {
-        return smtpServerPort;
+    public MailSessionServer getPop3Server() {
+        return pop3Server;
     }
 
-    public void setSmtpServerPort(String smtpServerPort) {
-        this.smtpServerPort = smtpServerPort;
+    public void setPop3Server(MailSessionServer pop3Server) {
+        this.pop3Server = pop3Server;
     }
-    /*public void setSMTPServerAddress(String address){
-        properties.put()
-    }
-    public void setSMTPServerPort(String port){
 
-    }*/
+    public MailSessionServer getSmtpServer() {
+        return smtpServer;
+    }
+
+    public void setSmtpServer(MailSessionServer smtpServer) {
+        this.smtpServer = smtpServer;
+    }
 
     @Override
     public String toString() {
         return "MailSessionConfig{" +
-                "jndiName='" + jndiName + '\'' +
+                "imapServer=" + imapServer +
+                ", jndiName='" + jndiName + '\'' +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
-                ", smtpServerAddress='" + smtpServerAddress + '\'' +
-                ", smtpServerPort='" + smtpServerPort + '\'' +
+                ", smtpServer=" + smtpServer +
+                ", pop3Server=" + pop3Server +
                 '}';
     }
 }

@@ -40,9 +40,20 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         log.info("Populating the model");
         //model.setEmptyObject();
         //for (Property property : existingModel.asPropertyList()) {
-        copyModel(existingModel, newModel, ModelKeys.JNDI_NAME, ModelKeys.PASSWORD, ModelKeys.USERNAME, ModelKeys.SMTP_SERVER_ADDRESS, ModelKeys.SMTP_SERVER_PORT);
+        //copyModel(existingModel, newModel, ModelKeys.JNDI_NAME, ModelKeys.PASSWORD, ModelKeys.USERNAME, ModelKeys.SERVER_ADDRESS, ModelKeys.SERVER_PORT);
+        copyModel(existingModel, newModel, ModelKeys.JNDI_NAME, ModelKeys.PASSWORD, ModelKeys.USERNAME,ModelKeys.DEBUG);
         //  }
+        if (existingModel.hasDefined(ModelKeys.SMTP_SERVER)) {
+            newModel.get(ModelKeys.SMTP_SERVER).set(existingModel.get(ModelKeys.SMTP_SERVER));
+        }
+        if (existingModel.hasDefined(ModelKeys.POP3_SERVER)) {
+            newModel.get(ModelKeys.POP3_SERVER).set(existingModel.get(ModelKeys.POP3_SERVER));
+        }
+        if (existingModel.hasDefined(ModelKeys.IMAP_SERVER)) {
+            newModel.get(ModelKeys.IMAP_SERVER).set(existingModel.get(ModelKeys.IMAP_SERVER));
+        }
         /* model.get(ModelKeys.SMTP_SERVER).set(operation.get())
+
      populateAddModel(operation, model, CONNECTION_PROPERTIES, DATASOURCE_ATTRIBUTE);*/
 
     }
@@ -87,7 +98,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
 
-        MailSessionService service = createDataSourceService(operation);
+        MailSessionService service = createMailSessionService(operation);
         final ServiceName serviceName = SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> mailSessionBuilder = serviceTarget
                 .addService(serviceName, service);
@@ -139,7 +150,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
 
     }
 
-    protected MailSessionService createDataSourceService(final ModelNode operation) throws OperationFailedException {
+    protected MailSessionService createMailSessionService(final ModelNode operation) throws OperationFailedException {
 
         final MailSessionConfig config = Util.from(operation);
         MailSessionService service = new MailSessionService(config);

@@ -11,8 +11,10 @@ public enum Element {
     UNKNOWN(null),
 
     LOGIN(ModelKeys.LOGIN),
-    SMTP_SERVER(ModelKeys.SMTP_SERVER),
     MAIL_SESSION(ModelKeys.MAIL_SESSION),
+    SMTP_SERVER(ModelKeys.SMTP_SERVER),
+    POP3_SERVER(ModelKeys.POP3_SERVER),
+    IMAP_SERVER(ModelKeys.IMAP_SERVER),
     ;
 
     private final String name;
