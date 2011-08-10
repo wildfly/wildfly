@@ -41,7 +41,9 @@ public class JMXProtocolAS7 extends AbstractJMXProtocol {
 
     @Override
     public DeploymentPackager getPackager() {
-        archiveHolderInst.set(new ServiceArchiveHolder());
+        if(archiveHolderInst.get() == null) {
+            archiveHolderInst.set(new ServiceArchiveHolder());
+        }
         return new JMXProtocolPackager(archiveHolderInst.get());
     }
 
