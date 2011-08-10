@@ -30,7 +30,7 @@ public class CommonContainerExtension implements LoadableExtension {
 
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(ApplicationArchiveProcessor.class, DelegatingApplicationArchiveProcessor.class);
+        builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
         builder.service(DeploymentExceptionTransformer.class, ExceptionTransformer.class);
     }
 }

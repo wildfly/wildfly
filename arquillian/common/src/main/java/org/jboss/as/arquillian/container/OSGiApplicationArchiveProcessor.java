@@ -25,6 +25,9 @@ import java.util.jar.Manifest;
 
 import org.jboss.arquillian.container.osgi.AbstractOSGiApplicationArchiveProcessor;
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
+import org.jboss.arquillian.test.spi.TestClass;
+import org.jboss.osgi.spi.util.BundleInfo;
+import org.jboss.shrinkwrap.api.Archive;
 
 
 /**
@@ -36,7 +39,24 @@ import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArch
 public class OSGiApplicationArchiveProcessor extends AbstractOSGiApplicationArchiveProcessor
 {
     @Override
+    public void process(Archive<?> appArchive, TestClass testClass) {
+        if(isValidOSGiBundle(appArchive)) {
+            super.process(appArchive, testClass);
+        }
+    }
+
+    @Override
     protected Manifest createBundleManifest(String symbolicName) {
         return null;
+    }
+
+    private boolean isValidOSGiBundle(Archive<?> appArchive) {
+        Manifest manifest = ManifestUtils.getManifest(appArchive);
+        if(manifest != null) {
+            if(BundleInfo.isValidBundleManifest(manifest)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
