@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.arquillian.container;
+package org.jboss.as.arquillian.protocol.jmx;
 
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -34,16 +34,21 @@ import org.jboss.shrinkwrap.api.Node;
  */
 class ManifestUtils {
 
-    public static Manifest getManifest(Archive<?> archive) {
+    public static Manifest getManifest(Archive<?> archive, boolean create) {
+        Manifest manifest = null;
         try {
             Node node = archive.get(JarFile.MANIFEST_NAME);
-            if (node != null && node.getAsset() != null) {
-                return new Manifest(node.getAsset().openStream());
+            if (node == null) {
+                manifest = new Manifest();
+                Attributes attributes = manifest.getMainAttributes();
+                attributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");
+            } else if (create) {
+                manifest = new Manifest(node.getAsset().openStream());
             }
+            return manifest;
         } catch (Exception ex) {
             throw new IllegalStateException("Cannot obtain manifest", ex);
         }
-        return null;
     }
 
     public static Manifest getOrCreateManifest(Archive<?> archive) {
