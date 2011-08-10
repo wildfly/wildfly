@@ -1,5 +1,6 @@
 package org.jboss.as.mail.extension;
 
+import com.sun.xml.internal.messaging.saaj.util.ParseUtil;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -46,17 +47,39 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         for (Property mailSession : sessions) {
             String jndi = mailSession.getName();
             log.info("jndi: " + jndi);
+            ModelNode sessionData = mailSession.getValue();
             writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
 
-            writer.writeAttribute("jndi-name", jndi);
+            writer.writeAttribute(Attribute.JNDI_NAME.getLocalName(), jndi);
+            if (sessionData.hasDefined(ModelKeys.DEBUG)){
+                writer.writeAttribute(Attribute.DEBUG.getLocalName(), sessionData.get(ModelKeys.DEBUG).asString());
+            }
             writer.writeEmptyElement(Element.LOGIN.getLocalName());
-            writer.writeAttribute("name", mailSession.getValue().get(ModelKeys.USERNAME).asString());
-            writer.writeAttribute("password", mailSession.getValue().get(ModelKeys.PASSWORD).asString());
+            writer.writeAttribute(Attribute.USERNAME.getLocalName(), sessionData.get(ModelKeys.USERNAME).asString());
+            writer.writeAttribute(Attribute.PASSWORD.getLocalName(), sessionData.get(ModelKeys.PASSWORD).asString());
             //writer.writeEndElement();
 
-            writer.writeEmptyElement(Element.SMTP_SERVER.getLocalName());
-            writer.writeAttribute("address", mailSession.getValue().get(ModelKeys.SMTP_SERVER_ADDRESS).asString());
-            writer.writeAttribute("port", mailSession.getValue().get(ModelKeys.SMTP_SERVER_PORT).asString());
+            if (sessionData.hasDefined(ModelKeys.SMTP_SERVER)) {
+                ModelNode server = sessionData.get(ModelKeys.SMTP_SERVER);
+                writer.writeEmptyElement(Element.SMTP_SERVER.getLocalName());
+                writer.writeAttribute(Attribute.SERVER_ADDRESS.getLocalName(), server.get(ModelKeys.SERVER_ADDRESS).asString());
+                writer.writeAttribute(Attribute.SERVER_PORT.getLocalName(), server.get(ModelKeys.SERVER_PORT).asString());
+            }
+            if (sessionData.hasDefined(ModelKeys.POP3_SERVER)) {
+                ModelNode server = sessionData.get(ModelKeys.POP3_SERVER);
+                writer.writeEmptyElement(Element.POP3_SERVER.getLocalName());
+                writer.writeAttribute(Attribute.SERVER_ADDRESS.getLocalName(), server.get(ModelKeys.SERVER_ADDRESS).asString());
+                writer.writeAttribute(Attribute.SERVER_PORT.getLocalName(), server.get(ModelKeys.SERVER_PORT).asString());
+            }
+
+            if (sessionData.hasDefined(ModelKeys.IMAP_SERVER)) {
+                ModelNode server = sessionData.get(ModelKeys.IMAP_SERVER);
+                writer.writeEmptyElement(Element.IMAP_SERVER.getLocalName());
+                writer.writeAttribute(Attribute.SERVER_ADDRESS.getLocalName(), server.get(ModelKeys.SERVER_ADDRESS).asString());
+                writer.writeAttribute(Attribute.SERVER_PORT.getLocalName(), server.get(ModelKeys.SERVER_PORT).asString());
+            }
+
+
             //writer.writeEndElement();
 
             writer.writeEndElement();
@@ -138,23 +161,33 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         log.info("parsing mail session");
         MailSessionConfig cfg = new MailSessionConfig();
 
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            Attribute attr = Attribute.forName(reader.getAttributeLocalName(i));
+            String value = reader.getAttributeValue(i);
+            if (attr == Attribute.JNDI_NAME) {
+                String jndiName = value;
+                log.trace("jndi name: " + jndiName);
+                cfg.setJndiName(jndiName);
+            }
+            if (attr == Attribute.DEBUG) {
+                boolean debug = Boolean.parseBoolean(value.trim());
+                cfg.setDebug(debug);
+            }
 
-        String jndiName = ParseUtils.requireAttributes(reader, "jndi-name")[0]; //todo add optional parameters
-        log.trace("jndi name: " + jndiName);
-        cfg.setJndiName(jndiName);
-
-
+        }
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case MAIL_1_0: {
+
+
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case LOGIN: {
                             for (int i = 0; i < reader.getAttributeCount(); i++) {
                                 String att = reader.getAttributeLocalName(i);
-                                if (att.equals("name")) {
+                                if (att.equals(Attribute.USERNAME.getLocalName())) {
                                     cfg.setUsername(reader.getAttributeValue(i));
-                                } else if (att.equals("password")) {
+                                } else if (att.equals(Attribute.PASSWORD.getLocalName())) {
                                     cfg.setPassword(reader.getAttributeValue(i));
                                 }
                             }
@@ -162,9 +195,20 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                             break;
                         }
                         case SMTP_SERVER: {
-                            String[] attributes = ParseUtils.requireAttributes(reader, "address", "port");
-                            cfg.setSmtpServerAddress(attributes[0]);
-                            cfg.setSmtpServerPort(attributes[1]);
+                            String[] attributes = ParseUtils.requireAttributes(reader, Attribute.SERVER_ADDRESS.getLocalName(), Attribute.SERVER_PORT.getLocalName());
+                            cfg.setSmtpServer(new MailSessionServer(attributes[0], attributes[1]));
+                            ParseUtils.requireNoContent(reader);
+                            break;
+                        }
+                        case POP3_SERVER: {
+                            String[] attributes = ParseUtils.requireAttributes(reader, Attribute.SERVER_ADDRESS.getLocalName(), Attribute.SERVER_PORT.getLocalName());
+                            cfg.setPop3Server(new MailSessionServer(attributes[0], attributes[1]));
+                            ParseUtils.requireNoContent(reader);
+                            break;
+                        }
+                        case IMAP_SERVER: {
+                            String[] attributes = ParseUtils.requireAttributes(reader, Attribute.SERVER_ADDRESS.getLocalName(), Attribute.SERVER_PORT.getLocalName());
+                            cfg.setImapServer(new MailSessionServer(attributes[0], attributes[1]));
                             ParseUtils.requireNoContent(reader);
                             break;
                         }
