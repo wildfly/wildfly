@@ -26,17 +26,12 @@
         </xs:choice>
     </xs:complexType>
     <xs:complexType name="mail-sessionType">
-        <xs:all>
-            <xs:element name="login">
-                <xs:complexType mixed="true">
-                    <xs:attribute name="name"/>
-                    <xs:attribute name="password"/>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="smtp-server" type="server-type" />
-            <xs:element name="pop3-server" type="server-type" />
-            <xs:element name="imap-server" type="server-type" />
-        </xs:all>
+        <xs:sequence>
+            <xs:element name="login" type="login-type" maxOccurs="1" minOccurs="1"/>
+            <xs:element name="smtp-server" type="server-type" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="pop3-server" type="server-type" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="imap-server" type="server-type" maxOccurs="1" minOccurs="0"/>
+        </xs:sequence>
         <xs:attribute name="jndi-name" use="required"/>
         <xs:attribute name="debug" use="optional"/>
     </xs:complexType>
@@ -47,6 +42,10 @@
                     <xs:attribute name="port" use="required"/>
                 </xs:complexType>
             </xs:element>-->
+    <xs:complexType name="login-type" mixed="true">
+        <xs:attribute name="name"/>
+        <xs:attribute name="password"/>
+    </xs:complexType>
 
     <xs:complexType name="server-type" mixed="true">
         <xs:attribute name="address" use="required"/>
