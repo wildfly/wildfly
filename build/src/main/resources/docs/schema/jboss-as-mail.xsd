@@ -33,25 +33,24 @@
                     <xs:attribute name="password"/>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="smtp-server">
-                <xs:complexType mixed="true">
-                    <xs:attribute name="address" use="required"/>
-                    <xs:attribute name="port" use="required"/>
-                </xs:complexType>
-            </xs:element>
+            <xs:element name="smtp-server" type="server-type" />
+            <xs:element name="pop3-server" type="server-type" />
+            <xs:element name="imap-server" type="server-type" />
         </xs:all>
         <xs:attribute name="jndi-name" use="required"/>
         <xs:attribute name="debug" use="optional"/>
     </xs:complexType>
 
-    <!--  <xs:complexType name="properties-type">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="property">
+    <!--<xs:element name="smtp-server" type="server-type">
                 <xs:complexType mixed="true">
-                    <xs:attribute name="name" type="xs:string" use="required"/>
+                    <xs:attribute name="address" use="required"/>
+                    <xs:attribute name="port" use="required"/>
                 </xs:complexType>
-            </xs:element>
-        </xs:choice>
-    </xs:complexType>-->
+            </xs:element>-->
+
+    <xs:complexType name="server-type" mixed="true">
+        <xs:attribute name="address" use="required"/>
+        <xs:attribute name="port" use="required"/>
+    </xs:complexType>
 
 </xs:schema>
