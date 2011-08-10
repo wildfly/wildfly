@@ -177,7 +177,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="time-out" type="time-outType" minOccurs="0">
+      <xs:element name="timeout" type="timeoutType" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
@@ -316,7 +316,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="time-out" type="time-outType" minOccurs="0">
+      <xs:element name="timeout" type="timeoutType" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
@@ -520,7 +520,7 @@
       </xs:element>
     </xs:sequence>
   </xs:complexType>
-  <xs:complexType name="time-outType">
+  <xs:complexType name="timeoutType">
     <xs:sequence>
       <xs:element name="blocking-timeout-millis" type="xs:nonNegativeInteger" minOccurs="0">
         <xs:annotation>
