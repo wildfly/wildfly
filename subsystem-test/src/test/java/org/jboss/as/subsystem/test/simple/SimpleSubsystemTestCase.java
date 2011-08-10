@@ -36,7 +36,7 @@ import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.EmptyAdditionalInitialization;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.simple.subsystem.SimpleService;
 import org.jboss.as.subsystem.test.simple.subsystem.SimpleSubsystemExtension;
@@ -107,8 +107,8 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
                 "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
         KernelServices services = super.installInController(
-                new EmptyAdditionalInitialization() {
-                    public OperationContext.Type getType() {
+                new AdditionalInitialization() {
+                    protected OperationContext.Type getType() {
                         return Type.MANAGEMENT;
                     }
                 },
@@ -188,17 +188,18 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
         String triggered = outputModel(testModel);
 
         KernelServices services = super.installInController(
-                new EmptyAdditionalInitialization() {
-                    public boolean isModelOnly() {
-                        return true;
+                new AdditionalInitialization() {
+                    @Override
+                    protected Type getType() {
+                        return Type.MANAGEMENT;
                     }
                 },
                 subsystemXml);
-        //Get the model and the persisted xml from the first controller
-        ModelNode model = services.readWholeModel();
+        //Get the model and the persisted xml from the controller
+        services.readWholeModel();
         String marshalled = services.getPersistedSubsystemXml();
 
-
         Assert.assertEquals(marshalled, triggered);
+        Assert.assertEquals(normalizeXML(marshalled), normalizeXML(triggered));
     }
 }

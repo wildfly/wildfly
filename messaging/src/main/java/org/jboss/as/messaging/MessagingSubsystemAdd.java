@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
-import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
@@ -47,13 +46,10 @@ import static org.jboss.as.messaging.CommonAttributes.CREATE_NON_DURABLE_QUEUE_N
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DELETEDURABLEQUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
 import static org.jboss.as.messaging.CommonAttributes.FAILBACK_DELAY;
-import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SHUTDOWN;
-import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
@@ -87,7 +83,6 @@ import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HI
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_THREAD_PRIORITY;
-import static org.jboss.as.messaging.CommonAttributes.NAME;
 import static org.jboss.as.messaging.CommonAttributes.NAME_OPTIONAL;
 import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
@@ -117,17 +112,16 @@ import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_P
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
 
 import javax.management.MBeanServer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -144,6 +138,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.messaging.MessagingServices.TransportConfigType;
 import org.jboss.as.messaging.jms.JMSService;
 import org.jboss.as.network.SocketBinding;
@@ -164,7 +159,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class MessagingSubsystemAdd extends AbstractAddStepHandler {
+class MessagingSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     private static final String DEFAULT_PATH = "messaging";
     private static final String DEFAULT_RELATIVE_TO = "jboss.server.data.dir";
@@ -175,10 +170,9 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
     static final String DEFAULT_LARGE_MESSSAGE_DIR = "largemessages";
     static final String DEFAULT_PAGING_DIR = "paging";
 
-    private final Configuration configuration;
+    public static final MessagingSubsystemAdd INSTANCE = new MessagingSubsystemAdd();
 
-    public MessagingSubsystemAdd(final Configuration configuration) {
-        this.configuration = configuration;
+    private MessagingSubsystemAdd() {
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -205,8 +199,6 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
                                   final ServiceVerificationHandler verificationHandler,
                                   final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        // Transform the configuration
-        final Configuration configuration = transformConfig(model);
 
         // Create path services
         // TODO move into child resource handlers
@@ -215,17 +207,21 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
         final ServiceName largeMessagePath = createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, operation.get(LARGE_MESSAGES_DIRECTORY), serviceTarget);
         final ServiceName pagingPath = createDirectoryService(DEFAULT_PAGING_DIR, operation.get(PAGING_DIRECTORY), serviceTarget);
 
-        // Process acceptors and connectors
-        // TODO move into child resource handlers
-        final Set<String> socketBindings = new HashSet<String>();
-        processAcceptors(configuration, operation, socketBindings);
-        processConnectors(configuration, operation, socketBindings);
-
         // Add a RUNTIME step to actually install the HQ Service. This will execute after the runtime step
         // added by any child resources whose ADD handler executes after this one in the model stage.
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+                // Transform the configuration
+                final Configuration configuration = transformConfig(model);
+
+                // Process acceptors and connectors
+                // TODO move into child resource handlers
+                final Set<String> socketBindings = new HashSet<String>();
+                processAcceptors(configuration, operation, socketBindings);
+                processConnectors(configuration, operation, socketBindings);
+
 
                 // Create the HornetQ Service
                 final HornetQService hqService = new HornetQService();
@@ -268,13 +264,15 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
      */
     Configuration transformConfig(final ModelNode model) throws OperationFailedException {
 
+        Configuration configuration = new ConfigurationImpl();
+
         // --
         configuration.setAllowAutoFailBack(ALLOW_FAILBACK.validateResolvedOperation(model).asBoolean());
         configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.validateResolvedOperation(model).asBoolean());
 
         configuration.setBackup(BACKUP.validateResolvedOperation(model).asBoolean());
-        if(model.hasDefined(LIVE_CONNECTOR_REF)) {
-            configuration.setLiveConnectorName(model.get(LIVE_CONNECTOR_REF).asString());
+        if(model.hasDefined(LIVE_CONNECTOR_REF.getName())) {
+            configuration.setLiveConnectorName(LIVE_CONNECTOR_REF.validateResolvedOperation(model).asString());
         }
         configuration.setClustered(CLUSTERED.validateResolvedOperation(model).asBoolean());
         configuration.setClusterPassword(CLUSTER_PASSWORD.validateResolvedOperation(model).asString());
@@ -344,8 +342,18 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
         configuration.setWildcardRoutingEnabled(WILD_CARD_ROUTING_ENABLED.validateResolvedOperation(model).asBoolean());
         // --
         processAddressSettings(configuration, model);
-//        processCoreQueues(configuration, model);
         processSecuritySettings(configuration, model);
+
+        // Add in items from child resources
+        GroupingHandlerAdd.addGroupingHandlerConfig(configuration, model);
+        BroadcastGroupAdd.addBroadcastGroupConfigs(configuration, model);
+        DiscoveryGroupAdd.addDiscoveryGroupConfigs(configuration, model);
+        DivertAdd.addDivertConfigs(configuration, model);
+        QueueAdd.addQueueConfigs(configuration, model);
+        BridgeAdd.addBridgeConfigs(configuration, model);
+        ClusterConnectionAdd.addClusterConnectionConfigs(configuration, model);
+        ConnectorServiceAdd.addConnectorServiceConfigs(configuration, model);
+
         return configuration;
     }
 
@@ -384,7 +392,7 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
                         break;
                     }
                     case Generic: {
-                        clazz = config.get(FACTORY_CLASS).asString();
+                        clazz = config.get(FACTORY_CLASS.getName()).asString();
                         break;
                     }
                     default: {
@@ -433,7 +441,7 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
                         break;
                     }
                     case Generic: {
-                        clazz = config.get(FACTORY_CLASS).asString();
+                        clazz = config.get(FACTORY_CLASS.getName()).asString();
                         break;
                     }
                     default: {
@@ -504,6 +512,11 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler {
                 }
             }
         }
+    }
+
+    @Override
+    public ModelNode getModelDescription(final Locale locale) {
+        return MessagingDescriptions.getSubsystemAdd(locale);
     }
 
     /**

@@ -203,6 +203,11 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
                             subsystem.get(MODIFY_WSDL_ADDRESS).set(b);
                             break;
                         }
+                        case WSDL_PORT: {
+                            int port = Integer.valueOf(parseElementNoAttributes(reader));
+                            subsystem.get(WSDL_PORT).set(port);
+                            break;
+                        }
                         case WSDL_SECURE_PORT: {
                             int port = Integer.valueOf(parseElementNoAttributes(reader));
                             subsystem.get(WSDL_SECURE_PORT).set(port);

@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 import java.util.Locale;
 
+import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -70,30 +71,16 @@ public class DivertRemove extends AbstractRemoveStepHandler implements Descripti
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-        final ModelNode routingNode = CommonAttributes.ROUTING_NAME.validateResolvedOperation(model);
-        final String routingName = routingNode.isDefined() ? routingNode.asString() : null;
-        final String address = CommonAttributes.DIVERT_ADDRESS.validateResolvedOperation(model).asString();
-        final String forwardingAddress = CommonAttributes.FORWARDING_ADDRESS.validateResolvedOperation(model).asString();
-        final boolean exclusive = CommonAttributes.EXCLUSIVE.validateResolvedOperation(model).asBoolean();
-        final ModelNode filterNode = CommonAttributes.FILTER.validateResolvedOperation(model);
-        final String filter = filterNode.isDefined() ? filterNode.asString() : null;
-        final ModelNode transformerNode =  CommonAttributes.TRANSFORMER_CLASS_NAME.validateResolvedOperation(model);
-        final String transformerClassName = transformerNode.isDefined() ? transformerNode.asString() : null;
 
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
         if (hqService != null && hqService.getState() == ServiceController.State.UP) {
 
+            final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+            final DivertConfiguration divertConfiguration = DivertAdd.createDivertConfiguration(name, model);
+
             HornetQServer server = HornetQServer.class.cast(hqService.getValue());
-            try {
-                server.getHornetQServerControl().createDivert(name, routingName, address, forwardingAddress, exclusive, filter, transformerClassName);
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                // TODO should this be an OFE instead?
-                throw new RuntimeException(e);
-            }
+            DivertAdd.createDivert(name, divertConfiguration, server.getHornetQServerControl());
         }
     }
 

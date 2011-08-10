@@ -33,15 +33,17 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     private String javaHome = System.getenv("JAVA_HOME");
 
-    private String modulePath = System.getProperty("module.path");
+    private String modulePath = System.getProperty("module.path", jbossHome + "/modules");
 
-    private String javaVmArguments = "-Xmx512m -XX:MaxPermSize=128m";
+    private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=128m");
 
     private int startupTimeoutInSeconds = 30;
 
     private boolean outputToConsole = true;
 
     private String serverConfig = System.getProperty("jboss.server.config.file.name",  "standalone.xml");
+
+    private boolean allowConnectingToRunningServer = false;
 
     @Override
     public void validate() throws ConfigurationException {
@@ -149,7 +151,11 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
         this.modulePath = modulePath;
     }
 
-    private static boolean isEmpty(String string) {
-        return string == null || string.isEmpty();
+    public boolean isAllowConnectingToRunningServer() {
+        return allowConnectingToRunningServer;
+    }
+
+    public void setAllowConnectingToRunningServer(final boolean allowConnectingToRunningServer) {
+        this.allowConnectingToRunningServer = allowConnectingToRunningServer;
     }
 }

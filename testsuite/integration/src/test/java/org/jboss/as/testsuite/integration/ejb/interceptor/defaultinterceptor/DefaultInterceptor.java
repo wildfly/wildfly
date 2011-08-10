@@ -30,6 +30,8 @@ import javax.interceptor.InvocationContext;
  */
 public class DefaultInterceptor {
 
+    public static final String MESSAGE = "DefaultInterceptor ";
+
     @PostConstruct
     public void postConstruct(final InvocationContext context) throws Exception {
         ((SessionBean) context.getTarget()).setPostConstructCalled();
@@ -38,7 +40,7 @@ public class DefaultInterceptor {
     @AroundInvoke
     public Object aroundInvoke(final InvocationContext context) throws Exception {
         if (context.getMethod().getReturnType().equals(String.class)) {
-            return "DefaultInterceptor " + context.proceed().toString();
+            return  MESSAGE + context.proceed().toString();
         }
         return context.proceed();
     }

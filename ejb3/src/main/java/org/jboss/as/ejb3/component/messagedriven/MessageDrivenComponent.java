@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.component.messagedriven;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
 import org.jboss.as.ejb3.inflow.MessageEndpointService;
@@ -32,8 +33,11 @@ import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.pool.StatelessObjectFactory;
 import org.jboss.ejb3.pool.strictmax.StrictMaxPool;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.StopContext;
 
+import javax.ejb.MessageDriven;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.ResourceAdapter;
@@ -52,6 +56,8 @@ import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class MessageDrivenComponent extends EJBComponent implements MessageDrivenBeanComponent, PooledComponent<MessageDrivenComponentInstance> {
+    private static final Logger logger = Logger.getLogger(MessageDrivenComponent.class);
+
     private final Pool<MessageDrivenComponentInstance> pool;
 
     private final ActivationSpec activationSpec;
@@ -79,7 +85,14 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
                 //destroyInstance(obj);
             }
         };
-        this.pool = new StrictMaxPool<MessageDrivenComponentInstance>(factory, 20, 5, TimeUnit.MINUTES);
+        final PoolConfig poolConfig = ejbComponentCreateService.getPoolConfig();
+        if (poolConfig == null) {
+            logger.debug("Pooling is disabled for MDB " + ejbComponentCreateService.getComponentName());
+            this.pool = null;
+        } else {
+            logger.debug("Using pool config " + poolConfig + " to create pool for MDB " + ejbComponentCreateService.getComponentName());
+            this.pool = poolConfig.createPool(factory);
+        }
 
         this.activationSpec = activationSpec;
         this.messageListenerInterface = messageListenerInterface;
@@ -116,7 +129,7 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
     }
 
     @Override
-    protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors) {
+    protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
         return new MessageDrivenComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 

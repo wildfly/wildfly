@@ -21,9 +21,6 @@
  */
 package org.jboss.as.testsuite.integration.ejb.injection.ejb;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -34,6 +31,9 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * Tests that @Ejb injection works when two beans have the same name in different modules.
@@ -73,5 +73,11 @@ public class EjbInjectionSameEjbNameTestCase {
     }
 
 
+    @Test
+    public void testEjbAnnotationOnClass() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        InjectingBean bean = (InjectingBean)ctx.lookup("java:module/" + InjectingBean.class.getSimpleName());
+        Assert.assertEquals("Bean1", bean.getJndiEjbName());
+    }
 
 }

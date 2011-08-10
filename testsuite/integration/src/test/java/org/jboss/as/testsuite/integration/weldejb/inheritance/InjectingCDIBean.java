@@ -29,7 +29,10 @@ import javax.inject.Inject;
 public class InjectingCDIBean {
 
     @Inject
-    private InheritingBean inheritingBean;
+    private AbstractBaseClass inheritingBean;
+
+    @Inject
+    private ParentInterface parentInterface;
 
     public String sayHello() {
         return inheritingBean.sayHello();
@@ -37,6 +40,10 @@ public class InjectingCDIBean {
 
     public String sayGoodbye() {
         return inheritingBean.sayGoodbye();
+    }
+
+    public String callInterfaceMethod() {
+        return parentInterface.interfaceMethod();
     }
 
 }

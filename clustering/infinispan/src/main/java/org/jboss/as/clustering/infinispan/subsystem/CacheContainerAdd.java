@@ -63,6 +63,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.threads.ThreadsServices;
+import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.inject.Injector;
@@ -72,6 +73,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 
 /**
  * @author Paul Ferraro
@@ -138,23 +140,21 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
         ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(name);
         ServiceBuilder<CacheContainer> builder = target.addService(serviceName, new EmbeddedCacheManagerService(config))
                 .addDependency(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, EmbeddedCacheManagerDefaults.class, config.getDefaultsInjector())
-                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, config.getTransactionManagerInjector())
-                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionSynchronizationRegistry"), TransactionSynchronizationRegistry.class, config.getTransactionSynchronizationRegistryInjector())
+                .addDependency(DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, config.getTransactionManagerInjector())
+                .addDependency(DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, config.getTransactionSynchronizationRegistryInjector())
+                .addDependency(DependencyType.OPTIONAL, TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, config.getXAResourceRecoveryRegistryInjector())
                 .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, config.getMBeanServerInjector())
                 .addAliases(aliases)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
 
         String jndiName = (operation.hasDefined(ModelKeys.JNDI_NAME) ? toJndiName(operation.get(ModelKeys.JNDI_NAME).asString()) : JndiName.of("java:jboss").append(InfinispanExtension.SUBSYSTEM_NAME).append(name)).getAbsoluteName();
-        int index = jndiName.indexOf("/");
-        String namespace = (index > 5) ? jndiName.substring(5, index) : null;
-        String binding = (index > 5) ? jndiName.substring(index + 1) : jndiName.substring(5);
-        ServiceName naming = (namespace != null) ? ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(namespace) : ContextNames.JAVA_CONTEXT_SERVICE_NAME;
-        ServiceName bindingName = naming.append(binding);
-        BinderService binder = new BinderService(binding);
-        newControllers.add(target.addService(bindingName, binder)
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+
+        BinderService binder = new BinderService(bindInfo.getBindName());
+        newControllers.add(target.addService(bindInfo.getBinderServiceName(), binder)
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
                 .addDependency(serviceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
-                .addDependency(naming, NamingStore.class, binder.getNamingStoreInjector())
+                .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class, binder.getNamingStoreInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
         boolean requiresTransport = false;
@@ -216,25 +216,26 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
                     fluentLocking.concurrencyLevel(locking.get(ModelKeys.CONCURRENCY_LEVEL).asInt());
                 }
             }
+            FluentConfiguration.TransactionConfig fluentTx = fluent.transaction();
+            TransactionMode txMode = TransactionMode.NON_XA;
             if (cache.hasDefined(ModelKeys.TRANSACTION)) {
                 ModelNode transaction = cache.get(ModelKeys.TRANSACTION);
-                FluentConfiguration.TransactionConfig fluentTx = fluent.transaction();
                 if (transaction.hasDefined(ModelKeys.STOP_TIMEOUT)) {
                     fluentTx.cacheStopTimeout(transaction.get(ModelKeys.STOP_TIMEOUT).asInt());
                 }
                 if (transaction.hasDefined(ModelKeys.MODE)) {
-                    TransactionMode txMode = TransactionMode.valueOf(transaction.get(ModelKeys.MODE).asString());
-                    FluentConfiguration.RecoveryConfig recovery = fluentTx.useSynchronization(!txMode.isXAEnabled()).recovery();
-                    if (txMode.isRecoveryEnabled()) {
-                        recovery.syncCommitPhase(true).syncRollbackPhase(true);
-                    } else {
-                        recovery.disable();
-                    }
+                    txMode = TransactionMode.valueOf(transaction.get(ModelKeys.MODE).asString());
                 }
                 if (transaction.hasDefined(ModelKeys.EAGER_LOCKING)) {
                     EagerLocking eager = EagerLocking.valueOf(transaction.get(ModelKeys.EAGER_LOCKING).asString());
                     fluentTx.useEagerLocking(eager.isEnabled()).eagerLockSingleNode(eager.isSingleOwner());
                 }
+            }
+            FluentConfiguration.RecoveryConfig recovery = fluentTx.useSynchronization(!txMode.isXAEnabled()).recovery();
+            if (txMode.isRecoveryEnabled()) {
+                recovery.syncCommitPhase(true).syncRollbackPhase(true);
+            } else {
+                recovery.disable();
             }
             if (cache.hasDefined(ModelKeys.EVICTION)) {
                 ModelNode eviction = cache.get(ModelKeys.EVICTION);
@@ -245,9 +246,6 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
                 if (eviction.hasDefined(ModelKeys.MAX_ENTRIES)) {
                     fluentEviction.maxEntries(eviction.get(ModelKeys.MAX_ENTRIES).asInt());
                 }
-                if (eviction.hasDefined(ModelKeys.INTERVAL)) {
-                    fluentEviction.wakeUpInterval(eviction.get(ModelKeys.INTERVAL).asLong());
-                }
             }
             if (cache.hasDefined(ModelKeys.EXPIRATION)) {
                 ModelNode expiration = cache.get(ModelKeys.EXPIRATION);
@@ -257,6 +255,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
                 }
                 if (expiration.hasDefined(ModelKeys.LIFESPAN)) {
                     fluentExpiration.lifespan(expiration.get(ModelKeys.LIFESPAN).asLong());
+                }
+                if (expiration.hasDefined(ModelKeys.INTERVAL)) {
+                    fluentExpiration.wakeUpInterval(expiration.get(ModelKeys.INTERVAL).asLong());
                 }
             }
             if (cache.hasDefined(ModelKeys.STATE_TRANSFER)) {
@@ -304,7 +305,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
             configurations.put(cacheName, configuration);
 
             StartMode startMode = cache.hasDefined(ModelKeys.START) ? StartMode.valueOf(cache.get(ModelKeys.START).asString()) : StartMode.LAZY;
-            ServiceBuilder<Cache<Object, Object>> cacheBuilder = new CacheService<Object, Object>(cacheName).build(target, serviceName).addDependency(bindingName).setInitialMode(startMode.getMode());
+            ServiceBuilder<Cache<Object, Object>> cacheBuilder = new CacheService<Object, Object>(cacheName).build(target, serviceName).addDependency(bindInfo.getBinderServiceName()).setInitialMode(startMode.getMode());
             if (cacheName.equals(defaultCache)) {
                 cacheBuilder.addAliases(CacheService.getServiceName(name, null));
             }
@@ -398,8 +399,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
     static class EmbeddedCacheManager implements EmbeddedCacheManagerConfiguration {
         private final InjectedValue<EmbeddedCacheManagerDefaults> defaults = new InjectedValue<EmbeddedCacheManagerDefaults>();
         private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
-        private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry =
-            new InjectedValue<TransactionSynchronizationRegistry>();
+        private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
+        private final InjectedValue<XAResourceRecoveryRegistry> recoveryRegistry = new InjectedValue<XAResourceRecoveryRegistry>();
         private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
         private final InjectedValue<Executor> listenerExecutor = new InjectedValue<Executor>();
         private final InjectedValue<ScheduledExecutorService> evictionExecutor = new InjectedValue<ScheduledExecutorService>();
@@ -427,6 +428,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
             return this.transactionSynchronizationRegistry;
         }
 
+        Injector<XAResourceRecoveryRegistry> getXAResourceRecoveryRegistryInjector() {
+            return this.recoveryRegistry;
+        }
 
         Injector<MBeanServer> getMBeanServerInjector() {
             return this.mbeanServer;
@@ -481,6 +485,11 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
         @Override
         public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
             return this.transactionSynchronizationRegistry.getOptionalValue();
+        }
+
+        @Override
+        public XAResourceRecoveryRegistry getXAResourceRecoveryRegistry() {
+            return this.recoveryRegistry.getOptionalValue();
         }
 
         @Override

@@ -96,9 +96,6 @@
                             <user-name>sa</user-name>
                             <password>sa</password>
                         </security>
-                        <validation></validation>
-                        <timeout></timeout>
-                        <statement></statement>
                     </datasource>
                     <drivers>
                         <driver name="h2" module="com.h2database.h2">
@@ -108,7 +105,23 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:ejb3:1.0" />
+            <subsystem xmlns="urn:jboss:domain:ejb3:1.1">
+                <!-- EJB3 pools -->
+                <pools>
+                    <bean-instance-pools>
+                        <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5"
+                                         instance-acquisition-timeout-unit="MINUTES"/>
+                    </bean-instance-pools>
+                </pools>
+
+                <!-- Session bean configurations -->
+                <session-bean>
+                    <stateless>
+                        <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
+                    </stateless>
+                </session-bean>
+
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="hibernate">
                 <cache-container name="hibernate" default-cache="local-query">
                     <local-cache name="entity">
@@ -289,9 +302,6 @@
                             <user-name>sa</user-name>
                             <password>sa</password>
                         </security>
-                        <validation></validation>
-                        <timeout></timeout>
-                        <statement></statement>
                     </datasource>
                     <drivers>
                         <driver name="h2" module="com.h2database.h2">
@@ -301,7 +311,23 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:ejb3:1.0" />
+            <subsystem xmlns="urn:jboss:domain:ejb3:1.1">
+                <!-- EJB3 pools -->
+                <pools>
+                    <bean-instance-pools>
+                        <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5"
+                                         instance-acquisition-timeout-unit="MINUTES"/>
+                    </bean-instance-pools>
+                </pools>
+
+                <!-- Session bean configurations -->
+                <session-bean>
+                    <stateless>
+                        <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
+                    </stateless>
+                </session-bean>
+
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="cluster">
                 <cache-container name="cluster" default-cache="default">
                     <alias>ha-partition</alias>

@@ -35,7 +35,9 @@ interface CommonAttributes {
     String AUTOFLUSH ="autoflush";
     String CATEGORY ="category";
     String CHANGE_LEVEL ="change-level";
+    String CLASS = "class";
     String CONSOLE_HANDLER ="console-handler";
+    String CUSTOM_HANDLER = "custom-handler";
     String DENY ="deny";
     String ENCODING ="encoding";
     String FILE ="file";
@@ -54,6 +56,7 @@ interface CommonAttributes {
     String MAX_LEVEL ="max-level";
     String MIN_INCLUSIVE ="min-inclusive";
     String MIN_LEVEL ="min-level";
+    String MODULE = "module";
     String NAME ="name";
     String NEW_LEVEL ="new-level";
     String NOT ="not";

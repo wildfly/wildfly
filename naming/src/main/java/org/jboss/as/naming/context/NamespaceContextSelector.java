@@ -37,6 +37,8 @@ public abstract class NamespaceContextSelector {
     /* Thread local maintaining the current context selector */
     private static ThreadLocalStack<NamespaceContextSelector> currentSelector = new ThreadLocalStack<NamespaceContextSelector>();
 
+    private static NamespaceContextSelector defaultSelector;
+
     /**
      * Set the current context selector for the current thread.
      *
@@ -61,7 +63,11 @@ public abstract class NamespaceContextSelector {
      * @return The current context selector.
      */
     public static NamespaceContextSelector getCurrentSelector() {
-        return currentSelector.peek();
+        NamespaceContextSelector selector = currentSelector.peek();
+        if(selector != null) {
+            return selector;
+        }
+        return defaultSelector;
     }
 
     /**
@@ -72,4 +78,8 @@ public abstract class NamespaceContextSelector {
      * @return The context for this identifier
      */
     public abstract Context getContext(final String identifier);
+
+    public static void setDefault(NamespaceContextSelector selector) {
+        defaultSelector = selector;
+    }
 }

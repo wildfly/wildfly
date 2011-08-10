@@ -77,7 +77,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
     static final ServiceName NAME = ServiceName.JBOSS.append("mod-cluster");
 
-    private ModelNode modelconf;
+    private final ModelNode modelconf;
 
     private CatalinaEventHandlerAdapter adapter;
     private LoadBalanceFactorProvider load;
@@ -94,6 +94,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void start(StartContext context) throws StartException {
         log.debugf("Starting Mod_cluster Extension");
 
@@ -179,6 +180,33 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         if (modelconf.hasDefined(CommonAttributes.SOCKET_TIMEOUT))
             config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt());
 
+        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION))
+            config.setStickySession(modelconf.get(CommonAttributes.STICKY_SESSION).asBoolean());
+        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION_REMOVE))
+            config.setStickySessionRemove(modelconf.get(CommonAttributes.STICKY_SESSION_REMOVE).asBoolean());
+        if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION_FORCE))
+            config.setStickySessionForce(modelconf.get(CommonAttributes.STICKY_SESSION_FORCE).asBoolean());
+        if (modelconf.hasDefined(CommonAttributes.WORKER_TIMEOUT))
+            config.setWorkerTimeout(modelconf.get(CommonAttributes.WORKER_TIMEOUT).asInt());
+        if (modelconf.hasDefined(CommonAttributes.MAX_ATTEMPTS))
+            config.setMaxAttempts(modelconf.get(CommonAttributes.MAX_ATTEMPTS).asInt());
+        if (modelconf.hasDefined(CommonAttributes.FLUSH_PACKETS))
+            config.setFlushPackets(modelconf.get(CommonAttributes.FLUSH_PACKETS).asBoolean());
+        if (modelconf.hasDefined(CommonAttributes.FLUSH_WAIT))
+            config.setFlushWait(modelconf.get(CommonAttributes.FLUSH_WAIT).asInt());
+        if (modelconf.hasDefined(CommonAttributes.PING))
+            config.setPing(modelconf.get(CommonAttributes.PING).asInt());
+        if (modelconf.hasDefined(CommonAttributes.SMAX))
+            config.setSmax(modelconf.get(CommonAttributes.SMAX).asInt());
+        if (modelconf.hasDefined(CommonAttributes.TTL))
+            config.setTtl(modelconf.get(CommonAttributes.TTL).asInt());
+        if (modelconf.hasDefined(CommonAttributes.NODE_TIMEOUT))
+            config.setNodeTimeout(modelconf.get(CommonAttributes.NODE_TIMEOUT).asInt());
+        if (modelconf.hasDefined(CommonAttributes.BALANCER))
+            config.setBalancer(modelconf.get(CommonAttributes.BALANCER).asString());
+        if (modelconf.hasDefined(CommonAttributes.DOMAIN))
+            config.setLoadBalancingGroup(modelconf.get(CommonAttributes.DOMAIN).asString());
+
         // Read the metrics configuration.
         final ModelNode loadmetric = modelconf.get(CommonAttributes.LOAD_METRIC);
 
@@ -235,6 +263,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void stop(StopContext context) {
         // TODO need something...
         if (adapter != null)
@@ -260,7 +289,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         Iterator<ModelNode> it= array.iterator();
 
         while(it.hasNext()) {
-            final ModelNode node= (ModelNode)it.next();
+            final ModelNode node= it.next();
             int capacity = node.get(CommonAttributes.CAPACITY).asInt(512);
             int weight = node.get(CommonAttributes.WEIGHT).asInt(9);
             String type = node.get(CommonAttributes.TYPE).asString();
@@ -314,7 +343,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     private void addCustomLoadMetrics(Set<LoadMetric<LoadContext>> metrics, List<ModelNode> array) {
         Iterator<ModelNode> it= array.iterator();
         while(it.hasNext()) {
-            final ModelNode node= (ModelNode)it.next();
+            final ModelNode node= it.next();
             int capacity = node.get(CommonAttributes.CAPACITY).asInt(512);
             int weight = node.get(CommonAttributes.WEIGHT).asInt(9);
             String name = node.get(CommonAttributes.CLASS).asString();
@@ -373,5 +402,47 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     @Override
     public Map<InetSocketAddress, String> getProxyInfo() {
         return service.getProxyInfo();
+    }
+    @Override
+    public void refresh() {
+        service.refresh();
+    }
+    @Override
+    public void reset() {
+        service.reset();
+    }
+    @Override
+    public void enable() {
+        service.enable();
+    }
+    @Override
+    public void disable() {
+        service.disable();
+    }
+    @Override
+    public void stop(int waittime) {
+        service.stop(waittime, TimeUnit.SECONDS);
+    }
+    @Override
+    public boolean enableContext(String host, String context) {
+        return service.enableContext(host, context);
+    }
+
+    @Override
+    public boolean disableContext(String host, String context) {
+        return service.disableContext(host, context);
+    }
+
+    @Override
+    public boolean stopContext(String host, String context, int waittime) {
+        return service.stopContext(host, context, waittime, TimeUnit.SECONDS);
+    }
+    @Override
+    public void addProxy(String host, int port) {
+        service.addProxy(host, port);
+    }
+    @Override
+    public void removeProxy(String host, int port) {
+        service.removeProxy(host, port);
     }
 }

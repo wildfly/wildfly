@@ -20,4 +20,4 @@
 # 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 #
 
-org.jboss.as.ejb3.EJB3Extension
+org.jboss.as.ejb3.subsystem.EJB3Extension

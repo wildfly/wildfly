@@ -218,7 +218,8 @@ public enum Phase {
     public static final int PARSE_EAR_CONTEXT_ROOT                      = 0x1000;
     // create and attach EJB metadata for EJB deployments
     public static final int PARSE_EJB_DEPLOYMENT                        = 0x1100;
-    public static final int PARSE_EJB_CREATE_COMPONENT_DESCRIPTIONS     = 0x1150;
+    public static final int PARSE_SESSION_BEAN_CREATE_COMPONENT_DESCRIPTIONS     = 0x1150;
+    public static final int PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS     = 0x1151;
     public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1200;
     public static final int PARSE_EJB_MDB_DD                            = 0x1300;
     // create and attach the component description out of EJB annotations
@@ -267,7 +268,8 @@ public enum Phase {
     public static final int PARSE_INTERCEPTORS_ANNOTATION               = 0x3100;
     public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x3200;
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x3300;
-    public static final int PARSE_RESOURCE_INJECTION_WEBSERVICE_CONTEXT_ANNOTATION  = 0x3401;
+    public static final int PARSE_AROUNDTIMEOUT_ANNOTATION              = 0x3400;
+    public static final int PARSE_TIMEOUT_ANNOTATION                    = 0x3401;
     public static final int PARSE_EJB_DD_INTERCEPTORS                   = 0x3500;
     public static final int PARSE_EJB_SECURITY_ROLE_REF_DD              = 0x3501;
     public static final int PARSE_EJB_SECURITY_IDENTITY_DD              = 0x3502;
@@ -318,6 +320,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_PERMIT_ALL_ANNOTATION       = 0x0503;
     public static final int POST_MODULE_EJB_EXCLUDE_LIST_DD             = 0x0504;
     public static final int POST_MODULE_EJB_METHOD_PERMISSION_DD        = 0x0505;
+    public static final int POST_MODULE_EJB_DD_TIMEOUT_METHOD           = 0x0506;
     public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0600;
     public static final int POST_MODULE_EJB_DD_CONCURRENCY              = 0x0601;
     public static final int POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION = 0x0700;
@@ -340,6 +343,7 @@ public enum Phase {
     public static final int POST_MODULE_JAXRS_SCANNING                  = 0x1A00;
     public static final int POST_MODULE_JAXRS_COMPONENT                 = 0x1B00;
     public static final int POST_MODULE_JAXRS_CDI_INTEGRATION           = 0x1C00;
+    public static final int POST_MODULE_EJB_TIMER_SERVICE               = 0x1D00;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
@@ -382,4 +386,6 @@ public enum Phase {
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x0100;
+    public static final int CLEANUP_EE                                  = 0x0200;
+    public static final int CLEANUP_EJB                                 = 0x0300;
 }

@@ -32,7 +32,7 @@ import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Write attribute handler for attributes that update HornetQServerControl.
+ * Write attribute handler for attributes that update a divert resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

@@ -86,14 +86,14 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         // Add modules for JSF
 
         if(jsfVersion.equals(JsfVersionMarker.JSF_1_2)) {
-            ModuleDependency jsf = new ModuleDependency(moduleLoader, JSF_1_2_IMPL, false, false, false);
+            ModuleDependency jsf = new ModuleDependency(moduleLoader, JSF_1_2_IMPL, false, false, true);
             jsf.addImportFilter(PathFilters.getMetaInfFilter(), true);
             moduleSpecification.addSystemDependency(jsf);
         } else {
             if(!jsfVersion.equals(JsfVersionMarker.JSF_2_0)) {
                 logger.warn("Ukown JSF version " + jsfVersion + " " + JsfVersionMarker.JSF_2_0 + " will be used instead");
             }
-            ModuleDependency jsf = new ModuleDependency(moduleLoader, JSF_IMPL, false, false, false);
+            ModuleDependency jsf = new ModuleDependency(moduleLoader, JSF_IMPL, false, false, true);
             jsf.addImportFilter(PathFilters.getMetaInfFilter(), true);
             moduleSpecification.addSystemDependency(jsf);
         }

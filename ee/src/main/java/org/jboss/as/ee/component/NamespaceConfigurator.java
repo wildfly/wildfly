@@ -55,6 +55,9 @@ public final class NamespaceConfigurator implements ComponentConfigurator {
         final Injector<NamingStore> appInjector = selector.getAppContextInjector();
         final Injector<NamingStore> moduleInjector = selector.getModuleContextInjector();
         final Injector<NamingStore> compInjector = selector.getCompContextInjector();
+        final Injector<NamingStore> jbossInjector = selector.getJbossContextInjector();
+        final Injector<NamingStore> globalInjector = selector.getGlobalContextInjector();
+
         configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
             public void configureDependency(final ServiceBuilder<?> serviceBuilder, ComponentStartService service) {
                 serviceBuilder.addDependency(appContextServiceName, NamingStore.class, appInjector);
@@ -64,12 +67,17 @@ public final class NamespaceConfigurator implements ComponentConfigurator {
                 } else if(namingMode == ComponentNamingMode.USE_MODULE) {
                     serviceBuilder.addDependency(moduleContextServiceName, NamingStore.class, compInjector);
                 }
+                serviceBuilder.addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, NamingStore.class, globalInjector);
+                serviceBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, jbossInjector);
             }
         });
         final InterceptorFactory interceptorFactory = new ImmediateInterceptorFactory(new NamespaceContextInterceptor(selector));
         configuration.addPostConstructInterceptor(interceptorFactory, InterceptorOrder.ComponentPostConstruct.JNDI_NAMESPACE_INTERCEPTOR);
         configuration.addPreDestroyInterceptor(interceptorFactory, InterceptorOrder.ComponentPreDestroy.JNDI_NAMESPACE_INTERCEPTOR);
         configuration.addComponentInterceptor(interceptorFactory, InterceptorOrder.Component.JNDI_NAMESPACE_INTERCEPTOR, false);
+        if(description.isTimerServiceApplicable()) {
+            configuration.addTimeoutInterceptor(interceptorFactory, InterceptorOrder.Component.JNDI_NAMESPACE_INTERCEPTOR);
+        }
         configuration.setNamespaceContextInterceptorFactory(interceptorFactory);
     }
 }

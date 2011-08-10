@@ -30,26 +30,22 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
  */
 public class CommonContainerConfiguration implements ContainerConfiguration {
 
-    private InetAddress bindAddress;
+    private InetAddress managementAddress;
     private int managementPort;
-    private int jmxPort;
-    private int httpPort;
     private long startupTimeout;
 
     public CommonContainerConfiguration() {
-        bindAddress = getInetAddress("127.0.0.1");
+        managementAddress = getInetAddress("127.0.0.1");
         managementPort = 9999;
-        jmxPort = 1090;
-        httpPort = 8080;
         startupTimeout = 30000;
     }
 
-    public InetAddress getBindAddress() {
-        return bindAddress;
+    public InetAddress getManagementAddress() {
+        return managementAddress;
     }
 
-    public void setBindAddress(String host) {
-        this.bindAddress = getInetAddress(host);
+    public void setManagementAddress(String host) {
+        this.managementAddress = getInetAddress(host);
     }
 
     public int getManagementPort() {
@@ -58,22 +54,6 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public void setManagementPort(int managementPort) {
         this.managementPort = managementPort;
-    }
-
-    public int getJmxPort() {
-        return jmxPort;
-    }
-
-    public void setJmxPort(int jmxPort) {
-        this.jmxPort = jmxPort;
-    }
-
-    public int getHttpPort() {
-        return httpPort;
-    }
-
-    public void setHttpPort(int httpPort) {
-        this.httpPort = httpPort;
     }
 
     public long getStartupTimeout() {

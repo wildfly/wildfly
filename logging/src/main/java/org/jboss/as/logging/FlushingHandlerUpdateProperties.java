@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import java.util.logging.Handler;
+import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.ExtHandler;
@@ -39,7 +40,7 @@ public class FlushingHandlerUpdateProperties extends HandlerUpdateProperties {
         }
     }
 
-    protected void updateRuntime(final ModelNode operation, final Handler handler) {
+    protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
         if (operation.hasDefined(AUTOFLUSH)) {
             ExtHandler.class.cast(handler).setAutoFlush(operation.get(AUTOFLUSH).asBoolean());
         }

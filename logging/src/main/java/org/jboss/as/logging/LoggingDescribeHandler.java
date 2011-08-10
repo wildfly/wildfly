@@ -31,7 +31,9 @@ import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
 import static org.jboss.as.logging.CommonAttributes.ASYNC_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.CONSOLE_HANDLER;
+import static org.jboss.as.logging.CommonAttributes.CUSTOM_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILE_HANDLER;
@@ -40,6 +42,7 @@ import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.LOGGER;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
+import static org.jboss.as.logging.CommonAttributes.MODULE;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
@@ -93,6 +96,11 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
         if (model.hasDefined(FILE_HANDLER)) {
             for (Property prop : model.get(FILE_HANDLER).asPropertyList()) {
                 result.add(defineFileHandler(prop.getName(), prop.getValue(), rootAddress));
+            }
+        }
+        if (model.hasDefined(CUSTOM_HANDLER)) {
+            for (Property prop : model.get(CUSTOM_HANDLER).asPropertyList()) {
+                result.add(defineCustomHandler(prop.getName(), prop.getValue(), rootAddress));
             }
         }
         if (model.hasDefined(PERIODIC_ROTATING_FILE_HANDLER)) {
@@ -167,6 +175,32 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
         return add;
     }
 
+
+    private ModelNode defineCustomHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
+        ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(CUSTOM_HANDLER, name)).toModelNode());
+
+        if (handler.hasDefined(ENCODING)) {
+            add.get(ENCODING).set(handler.get(ENCODING));
+        }
+        if (handler.hasDefined(FORMATTER)) {
+            add.get(FORMATTER).set(handler.get(FORMATTER));
+        }
+        if (handler.hasDefined(LEVEL)) {
+            add.get(LEVEL).set(handler.get(LEVEL));
+        }
+        if (handler.hasDefined(QUEUE_LENGTH)) {
+            add.get(QUEUE_LENGTH).set(handler.get(QUEUE_LENGTH));
+        }
+        if (handler.hasDefined(CLASS)) {
+            add.get(CLASS).set(handler.get(CLASS));
+        }
+        if (handler.hasDefined(MODULE)) {
+            add.get(MODULE).set(handler.get(MODULE));
+        }
+
+        return add;
+    }
+
     private ModelNode definePeriodicRotatingFileHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
         ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(PERIODIC_ROTATING_FILE_HANDLER, name)).toModelNode());
 
@@ -193,6 +227,7 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
         }
         return add;
     }
+
 
     private ModelNode defineSizeRotatingFileHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
         ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(SIZE_ROTATING_FILE_HANDLER, name)).toModelNode());

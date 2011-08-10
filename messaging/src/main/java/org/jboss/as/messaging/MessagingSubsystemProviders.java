@@ -38,7 +38,7 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 class MessagingSubsystemProviders {
 
     static final String[] MESSAGING_ROOT_ATTRIBUTES = new String[] { ACCEPTOR, ADDRESS_SETTING,
-        CONNECTION_FACTORY, CONNECTOR_REF, BINDINGS_DIRECTORY, BROADCAST_PERIOD, CONNECTOR,
+        CONNECTION_FACTORY, BINDINGS_DIRECTORY, CONNECTOR,
         GROUPING_HANDLER, JMS_QUEUE, JMS_TOPIC, JOURNAL_DIRECTORY, LARGE_MESSAGES_DIRECTORY,
         PAGING_DIRECTORY, POOLED_CONNECTION_FACTORY, QUEUE, SECURITY_SETTING };
 
@@ -46,21 +46,6 @@ class MessagingSubsystemProviders {
 
         public ModelNode getModelDescription(final Locale locale) {
             return MessagingDescriptions.getRootResource(locale);
-        }
-    };
-
-    static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getSubsystemAdd(locale);
-        }
-    };
-
-    static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            // Private method; description not needed
-            return new ModelNode();
         }
     };
 
@@ -133,6 +118,55 @@ class MessagingSubsystemProviders {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return MessagingDescriptions.getDivertResource(locale);
+        }
+    };
+
+    public static final DescriptionProvider BROADCAST_GROUP_RESOURCE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getBroadcastGroupResource(locale);
+        }
+    };
+
+    public static final DescriptionProvider DISCOVERY_GROUP_RESOURCE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getDiscoveryGroupResource(locale);
+        }
+    };
+
+    public static final DescriptionProvider GROUPING_HANDLER_RESOURCE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getGroupingHandlerResource(locale);
+        }
+    };
+
+    public static final DescriptionProvider BRIDGE_RESOURCE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getBridgeResource(locale);
+        }
+    };
+
+    public static final DescriptionProvider CLUSTER_CONNECTION_RESOURCE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getClusterConnectionResource(locale);
+        }
+    };
+
+    public static final DescriptionProvider CONNECTOR_SERVICE_RESOURCE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getConnectorServiceResource(locale);
+        }
+    };
+
+    public static final DescriptionProvider CONNECTOR_SERVICE_PARAM_RESOURCE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getConnectorServiceParamResource(locale);
         }
     };
 }

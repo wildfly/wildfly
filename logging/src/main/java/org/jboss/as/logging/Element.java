@@ -39,6 +39,7 @@ public enum Element {
     ASYNC_HANDLER(CommonAttributes.ASYNC_HANDLER),
     CHANGE_LEVEL(CommonAttributes.CHANGE_LEVEL),
     CONSOLE_HANDLER(CommonAttributes.CONSOLE_HANDLER),
+    CUSTOM_HANDLER(CommonAttributes.CUSTOM_HANDLER),
     DENY(CommonAttributes.DENY),
     ENCODING(CommonAttributes.ENCODING),
     FILE(CommonAttributes.FILE),

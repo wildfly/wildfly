@@ -22,21 +22,21 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DEPLOYMENT_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.*;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INSTALLED_DRIVERS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SOURCE;
-
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
-import org.jboss.as.connector.pool.PoolMetrics;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -56,6 +56,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.jboss.as.connector.pool.PoolMetrics;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.adapters.jdbc.statistics.JdbcStatisticsPlugin;
@@ -69,7 +74,8 @@ import org.jboss.jca.core.connectionmanager.pool.mcp.ManagedConnectionPoolStatis
 class DataSourcesSubsystemProviders {
 
     static final AttributeDefinition[] DATASOURCE_ATTRIBUTE = new AttributeDefinition[] { AttributeDefinition.CONNECTION_URL,
-            AttributeDefinition.DRIVER_CLASS, AttributeDefinition.JNDINAME, AttributeDefinition.DRIVER,
+            AttributeDefinition.DRIVER_CLASS, AttributeDefinition.DATASOURCE_CLASS, AttributeDefinition.JNDINAME,
+            AttributeDefinition.DRIVER,
             AttributeDefinition.NEW_CONNECTION_SQL, AttributeDefinition.POOLNAME, AttributeDefinition.URL_DELIMITER,
             AttributeDefinition.URL_SELECTOR_STRATEGY_CLASS_NAME, AttributeDefinition.USE_JAVA_CONTEXT,
             AttributeDefinition.ENABLED, AttributeDefinition.JTA, AttributeDefinition.MAX_POOL_SIZE,
@@ -85,7 +91,7 @@ class DataSourcesSubsystemProviders {
             AttributeDefinition.EXCEPTIONSORTERCLASSNAME, AttributeDefinition.EXCEPTIONSORTER_PROPERTIES,
             AttributeDefinition.STALECONNECTIONCHECKERCLASSNAME, AttributeDefinition.STALECONNECTIONCHECKER_PROPERTIES,
             AttributeDefinition.VALIDCONNECTIONCHECKERCLASSNAME, AttributeDefinition.VALIDCONNECTIONCHECKER_PROPERTIES,
-            AttributeDefinition.BACKGROUNDVALIDATIONMINUTES, AttributeDefinition.BACKGROUNDVALIDATION,
+            AttributeDefinition.BACKGROUNDVALIDATIONMILLIS, AttributeDefinition.BACKGROUNDVALIDATION,
             AttributeDefinition.USE_FAST_FAIL, AttributeDefinition.VALIDATEONMATCH, AttributeDefinition.SPY,
             AttributeDefinition.USE_CCM };
 
@@ -108,12 +114,13 @@ class DataSourcesSubsystemProviders {
             AttributeDefinition.EXCEPTIONSORTERCLASSNAME, AttributeDefinition.EXCEPTIONSORTER_PROPERTIES,
             AttributeDefinition.STALECONNECTIONCHECKERCLASSNAME, AttributeDefinition.STALECONNECTIONCHECKER_PROPERTIES,
             AttributeDefinition.VALIDCONNECTIONCHECKERCLASSNAME, AttributeDefinition.VALIDCONNECTIONCHECKER_PROPERTIES,
-            AttributeDefinition.BACKGROUNDVALIDATIONMINUTES, AttributeDefinition.BACKGROUNDVALIDATION,
+            AttributeDefinition.BACKGROUNDVALIDATIONMILLIS, AttributeDefinition.BACKGROUNDVALIDATION,
             AttributeDefinition.USE_FAST_FAIL, AttributeDefinition.VALIDATEONMATCH, AttributeDefinition.XA_RESOURCE_TIMEOUT,
             AttributeDefinition.SPY, AttributeDefinition.USE_CCM, AttributeDefinition.REAUTHPLUGIN_PROPERTIES,
             AttributeDefinition.RECOVERY_USERNAME, AttributeDefinition.RECOVERY_PASSWORD,
             AttributeDefinition.RECOVERY_SECURITY_DOMAIN, AttributeDefinition.RECOVERLUGIN_CLASSNAME,
-            AttributeDefinition.RECOVERLUGIN_PROPERTIES, AttributeDefinition.NO_RECOVERY };
+            AttributeDefinition.RECOVERLUGIN_PROPERTIES, AttributeDefinition.NO_RECOVERY,
+            AttributeDefinition.XADATASOURCE_PROPERTIES };
 
     static final String RESOURCE_NAME = DataSourcesSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -161,6 +168,13 @@ class DataSourcesSubsystemProviders {
                     bundle.getString("installed-drivers.driver-class"));
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_CLASS_NAME, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_CLASS_NAME, REQUIRED).set(true);
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_DATASOURCE_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("installed-drivers.driver-datasource-class-name"));
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_DATASOURCE_CLASS_NAME, TYPE).set(
+                    ModelType.STRING);
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_DATASOURCE_CLASS_NAME, REQUIRED).set(true);
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_DATASOURCE_CLASS_NAME, NILLABLE).set(true);
+
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_XA_DATASOURCE_CLASS_NAME, DESCRIPTION).set(
                     bundle.getString("installed-drivers.driver-xa-datasource-class-name"));
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_XA_DATASOURCE_CLASS_NAME, TYPE).set(
@@ -355,6 +369,7 @@ class DataSourcesSubsystemProviders {
             operation.get(ATTRIBUTES, DEPLOYMENT_NAME, TYPE).set(ModelType.STRING);
             operation.get(ATTRIBUTES, DRIVER_MODULE_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.module-name"));
             operation.get(ATTRIBUTES, DRIVER_MODULE_NAME, TYPE).set(ModelType.STRING);
+            operation.get(ATTRIBUTES, DRIVER_MODULE_NAME, REQUIRED).set(true);
             operation.get(ATTRIBUTES, MODULE_SLOT, DESCRIPTION).set(bundle.getString("installed-drivers.module-slot"));
             operation.get(ATTRIBUTES, MODULE_SLOT, TYPE).set(ModelType.STRING);
             operation.get(ATTRIBUTES, DRIVER_CLASS_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.driver-class"));

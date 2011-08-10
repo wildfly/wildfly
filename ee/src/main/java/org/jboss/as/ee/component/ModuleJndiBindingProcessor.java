@@ -22,14 +22,20 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BindingHandleService;
+import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.HashMap;
@@ -161,28 +167,68 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         final String bindingName = bindingConfiguration.getName().startsWith("java:") ? bindingConfiguration.getName() : "java:module/env/" + bindingConfiguration.getName();
 
         final ServiceVerificationHandler serviceVerificationHandler = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.SERVICE_VERIFICATION_HANDLER);
+
+        InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
+                true,
+                module.getModuleName(),
+                module.getModuleName(),
+                module.getApplicationName()
+        );
+
         // Check to see if this entry should actually be bound into JNDI.
         if (bindingName != null) {
-            if (serviceName == null) {
-                throw new IllegalArgumentException("Invalid context name '" + bindingName + "' for binding");
+            final ServiceName binderServiceName = ContextNames.serviceNameOfEnvEntry(module.getApplicationName(), module.getModuleName(), module.getModuleName(), false, bindingName);
+
+            if (bindingName.startsWith("java:comp") || bindingName.startsWith("java:module") || bindingName.startsWith("java:app")) {
+                //this is a binding that does not need to be shared.
+
+                try {
+                    final BinderService service = new BinderService(bindingName, bindingConfiguration.getSource());
+                    dependencies.add(binderServiceName);
+                    ServiceBuilder<ManagedReferenceFactory> serviceBuilder = phaseContext.getServiceTarget().addService(binderServiceName, service);
+                    bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
+                    serviceBuilder.addDependency(binderServiceName.getParent(), NamingStore.class, service.getNamingStoreInjector());
+                    serviceBuilder.install();
+                } catch (DuplicateServiceException e) {
+                    ServiceController<ManagedReferenceFactory> registered = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(binderServiceName);
+                    if (registered == null)
+                        throw e;
+
+                    BinderService service = (BinderService) registered.getService();
+                    if (!service.getSource().equals(bindingConfiguration.getSource()))
+                        throw new IllegalArgumentException("Incompatible conflicting binding at " + bindingName + " source: " + bindingConfiguration.getSource());
+                }
+
+            } else {
+                ServiceController<ManagedReferenceFactory> controller = null;
+                BinderService service;
+                try {
+                    service = new BinderService(bindingName, bindingConfiguration.getSource());
+                    dependencies.add(binderServiceName);
+                    ServiceBuilder<ManagedReferenceFactory> serviceBuilder = CurrentServiceContainer.getServiceContainer().addService(binderServiceName, service);
+                    bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
+                    serviceBuilder.addDependency(binderServiceName.getParent(), NamingStore.class, service.getNamingStoreInjector());
+                    serviceBuilder.addListener(serviceVerificationHandler);
+                    controller = serviceBuilder.install();
+
+                    service.acquire();
+                } catch (DuplicateServiceException e) {
+                    controller = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(binderServiceName);
+                    if (controller == null)
+                        throw e;
+
+                    service = (BinderService) controller.getService();
+                    if (!service.getSource().equals(bindingConfiguration.getSource())) {
+                        throw new IllegalArgumentException("Incompatible conflicting binding at " + bindingName + " source: " + bindingConfiguration.getSource());
+                    }
+                    service.acquire();
+                }
+                //as these bindings are not child services
+                //we need to add a listener that released the service when the deployment stops
+                ServiceController<?> unitService = CurrentServiceContainer.getServiceContainer().getService(phaseContext.getDeploymentUnit().getServiceName());
+                final BinderService binderService = service;
+                unitService.addListener(new BinderReleaseListener(binderService));
             }
-
-            final BindingHandleService service = new BindingHandleService(bindingName, serviceName, bindingConfiguration.getSource(), serviceName.getParent(), serviceVerificationHandler);
-            final ServiceName handleServiceName = serviceName.append(ownerName).append(String.valueOf(handleCount.value++));
-
-            dependencies.add(serviceName);
-
-            // The service builder for the binding
-            ServiceBuilder<Void> sourceServiceBuilder = phaseContext.getServiceTarget().addService(handleServiceName, service);
-            InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
-                    true,
-                    module.getModuleName(),
-                    module.getModuleName(),
-                    module.getApplicationName()
-            );
-            // The resource value is determined by the reference source, which may add a dependency on the original value to the binding
-            bindingConfiguration.getSource().getResourceValue(resolutionContext, sourceServiceBuilder, phaseContext, service.getManagedObjectInjector());
-            sourceServiceBuilder.install();
 
         } else {
             throw new DeploymentUnitProcessingException("Binding name must not be null: " + bindingConfiguration);
@@ -190,5 +236,30 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
     }
 
     public void undeploy(DeploymentUnit context) {
+    }
+
+    private static class BinderReleaseListener<T> extends AbstractServiceListener<T> {
+
+        private final BinderService binderService;
+
+        public BinderReleaseListener(final BinderService binderService) {
+            this.binderService = binderService;
+        }
+
+        @Override
+        public void listenerAdded(final ServiceController<? extends T> serviceController) {
+            if (serviceController.getState() == ServiceController.State.DOWN || serviceController.getState() == ServiceController.State.STOPPING) {
+                binderService.release();
+                serviceController.removeListener(this);
+            }
+        }
+
+        @Override
+        public void transition(final ServiceController<? extends T> serviceController, final ServiceController.Transition transition) {
+            if (transition.getAfter() == ServiceController.Substate.STOPPING) {
+                binderService.release();
+                serviceController.removeListener(this);
+            }
+        }
     }
 }

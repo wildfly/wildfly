@@ -162,6 +162,12 @@ public class ServerEnvironment implements Serializable {
      */
     public static final String QUALIFIED_HOST_NAME = "jboss.qualified.host.name";
 
+    /**
+     * Constant that holds the name of the system property for specifying the max threads used by bootstrap ServiceContainer
+     * is running on.
+     */
+    public static final String BOOTSTRAP_MAX_THREADS = "org.jboss.server.bootstrap.maxThreads";
+
     private final LaunchType launchType;
     private final String qualifiedHostName;
     private final String hostName;
@@ -403,6 +409,28 @@ public class ServerEnvironment implements Serializable {
 
     public boolean isStandalone() {
         return standalone;
+    }
+
+    /**
+     * Determine the number of threads to use for the bootstrap service container. This reads
+     * the #BOOTSTRAP_MAX_THREADS system property and if not set, defaults to 2*cpus.
+     * @see Runtime#availableProcessors()
+     * @return the maximum number of threads to use for the bootstrap service container.
+     */
+    public static int getBootstrapMaxThreads() {
+        // Base the bootstrap thread on proc count if not specified
+        int cpuCount = Runtime.getRuntime().availableProcessors();
+        int defaultThreads = cpuCount * 2;
+        String maxThreads = SecurityActions.getSystemProperty(BOOTSTRAP_MAX_THREADS);
+        if (maxThreads != null && maxThreads.length() > 0) {
+            try {
+                int max = Integer.decode(maxThreads);
+                defaultThreads = Math.min(max, defaultThreads);
+            } catch(NumberFormatException ex) {
+                log.warnf(ex, "Failed to parse property(%s), value(%s) as an integer", BOOTSTRAP_MAX_THREADS, maxThreads);
+            }
+        }
+        return defaultThreads;
     }
 
     /**

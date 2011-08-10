@@ -28,6 +28,7 @@ import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
@@ -138,7 +139,7 @@ public class BasicComponent implements Component {
         }
 
         // create the component instance
-        BasicComponentInstance basicComponentInstance = this.instantiateComponentInstance(instanceReference, componentInstancePreDestroyInterceptor, interceptorMap);
+        final BasicComponentInstance basicComponentInstance = this.instantiateComponentInstance(instanceReference, componentInstancePreDestroyInterceptor, interceptorMap, context);
 
         // now invoke the postconstruct interceptors
         final InterceptorContext interceptorContext = new InterceptorContext();
@@ -156,6 +157,7 @@ public class BasicComponent implements Component {
         return basicComponentInstance;
     }
 
+
     /**
      * Responsible for instantiating the {@link BasicComponentInstance}. This method is *not* responsible for
      * handling the post construct activities like injection and lifecycle invocation. That is handled by
@@ -164,7 +166,7 @@ public class BasicComponent implements Component {
      *
      * @return
      */
-    protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+    protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
         // create and return the component instance
         return new BasicComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }

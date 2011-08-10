@@ -26,12 +26,14 @@ import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
+import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
@@ -39,15 +41,13 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Jaikiran Pai
  */
 public class EJBComponentCreateService extends BasicComponentCreateService {
 
-    private final ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs;
+    private final Map<MethodTransactionAttributeKey, TransactionAttributeType> txAttrs;
 
     private final TransactionManagementType transactionManagementType;
 
@@ -56,6 +56,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final Map<String, ServiceName> viewServices;
 
     private final EJBSecurityMetaData securityMetaData;
+
+    private final TimerService timerService;
+
 
     /**
      * Construct a new instance.
@@ -66,14 +69,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         super(componentConfiguration);
 
         this.ejbJarConfiguration = ejbJarConfiguration;
-
-        EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
+        final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
         this.transactionManagementType = ejbComponentDescription.getTransactionManagementType();
+
+        this.timerService = ejbComponentDescription.getTimerService();
 
         // CMTTx
         if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
-            // slurp some memory
-            this.txAttrs = new ConcurrentHashMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>>();
+            this.txAttrs = new HashMap<MethodTransactionAttributeKey, TransactionAttributeType>();
         } else {
             this.txAttrs = null;
         }
@@ -94,6 +97,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
                 }
             }
         }
+
         // FIXME: TODO: a temporary measure until EJBTHREE-2120 is fully resolved, let's create tx attribute map
         // for the component methods. Once the issue is resolved, we should get rid of this block and just rely on setting
         // up the tx attributes only for the views exposed by this component
@@ -124,7 +128,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return serviceController.getValue();
     }
 
-    ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> getTxAttrs() {
+    Map<MethodTransactionAttributeKey, TransactionAttributeType> getTxAttrs() {
         return txAttrs;
     }
 
@@ -136,27 +140,19 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return this.ejbJarConfiguration;
     }
 
-    private void processTxAttr(final EJBComponentDescription ejbComponentDescription, final MethodIntf methodIntf, final Method method) {
+    protected void processTxAttr(final EJBComponentDescription ejbComponentDescription, final MethodIntf methodIntf, final Method method) {
         if (this.getTransactionManagementType().equals(TransactionManagementType.BEAN)) {
             // it's a BMT bean
             return;
         }
 
+
         String className = method.getDeclaringClass().getName();
         String methodName = method.getName();
         TransactionAttributeType txAttr = ejbComponentDescription.getTransactionAttribute(methodIntf, className, methodName, toString(method.getParameterTypes()));
-
-        ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>> perMethodIntf = this.txAttrs.get(methodIntf);
-        if (perMethodIntf == null) {
-            perMethodIntf = new ConcurrentHashMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>();
-            this.txAttrs.put(methodIntf, perMethodIntf);
+        if (txAttr != TransactionAttributeType.REQUIRED) {
+            txAttrs.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txAttr);
         }
-        ConcurrentMap<ArrayKey, TransactionAttributeType> perMethod = perMethodIntf.get(methodName);
-        if (perMethod == null) {
-            perMethod = new ConcurrentHashMap<ArrayKey, TransactionAttributeType>();
-            perMethodIntf.put(methodName, perMethod);
-        }
-        perMethod.put(new ArrayKey((Object[]) method.getParameterTypes()), txAttr);
     }
 
     private static String[] toString(Class<?>[] a) {
@@ -173,5 +169,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public EJBSecurityMetaData getSecurityMetaData() {
         return this.securityMetaData;
+    }
+
+    public TimerService getTimerService() {
+        return timerService;
     }
 }

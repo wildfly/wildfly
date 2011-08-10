@@ -34,6 +34,7 @@ import static org.jboss.as.messaging.CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT
 import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
+import static org.jboss.as.messaging.CommonAttributes.COMPRESS_LARGE_MESSAGES;
 import static org.jboss.as.messaging.CommonAttributes.CONFIRMATION_WINDOW_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE;
@@ -52,7 +53,7 @@ import static org.jboss.as.messaging.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.PRE_ACK;
 import static org.jboss.as.messaging.CommonAttributes.PRODUCER_MAX_RATE;
 import static org.jboss.as.messaging.CommonAttributes.PRODUCER_WINDOW_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.RECONNECT_ATTEMPTS;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS;
 import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_BATCH_SIZE;
@@ -122,6 +123,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         if (clientId.isDefined()) {
             config.setClientID(clientId.asString());
         }
+        config.setCompressLargeMessages(COMPRESS_LARGE_MESSAGES.validateResolvedOperation(operation).asBoolean());
         config.setConfirmationWindowSize(CONFIRMATION_WINDOW_SIZE.validateResolvedOperation(operation).asInt());
         config.setConnectionTTL(CONNECTION_TTL.validateResolvedOperation(operation).asLong());
         if (operation.hasDefined(CONNECTOR)) {
@@ -160,13 +162,14 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         config.setPreAcknowledge(PRE_ACK.validateResolvedOperation(operation).asBoolean());
         config.setProducerMaxRate(PRODUCER_MAX_RATE.validateResolvedOperation(operation).asInt());
         config.setProducerWindowSize(PRODUCER_WINDOW_SIZE.validateResolvedOperation(operation).asInt());
-        config.setReconnectAttempts(RECONNECT_ATTEMPTS.validateResolvedOperation(operation).asInt());
+        config.setReconnectAttempts(CONNECTION_FACTORY_RECONNECT_ATTEMPTS.validateResolvedOperation(operation).asInt());
         config.setRetryInterval(RETRY_INTERVAL.validateResolvedOperation(operation).asLong());
         config.setRetryIntervalMultiplier(RETRY_INTERVAL_MULTIPLIER.validateResolvedOperation(operation).asDouble());
         config.setScheduledThreadPoolMaxSize(CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE.validateResolvedOperation(operation).asInt());
         config.setThreadPoolMaxSize(CONNECTION_THREAD_POOL_MAX_SIZE.validateResolvedOperation(operation).asInt());
         config.setTransactionBatchSize(TRANSACTION_BATCH_SIZE.validateResolvedOperation(operation).asInt());
         config.setUseGlobalPools(USE_GLOBAL_POOLS.validateResolvedOperation(operation).asBoolean());
+        config.setLoadBalancingPolicyClassName(LOAD_BALANCING_CLASS_NAME.validateResolvedOperation(operation).asString());
 
         return config;
     }

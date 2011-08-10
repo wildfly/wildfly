@@ -22,16 +22,13 @@
 
 package org.jboss.as.controller;
 
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -49,23 +46,12 @@ public abstract class AttributeDefinition {
     private final boolean allowNull;
     private final boolean allowExpression;
     private final ModelNode defaultValue;
+    private final MeasurementUnit measurementUnit;
     private final ParameterValidator validator;
 
-    public AttributeDefinition(final String name, final ModelType type, final boolean allowNull) {
-        this(name, name, null, type, allowNull, false);
-    }
-
-    public AttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull) {
-        this(name, name, defaultValue, type, allowNull, false);
-    }
-
-    public AttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
-                               final boolean allowNull, final boolean allowExpression) {
-        this(name, xmlName, defaultValue, type, allowNull, allowExpression, new ModelTypeValidator(type, allowNull, allowExpression));
-    }
-
-    public AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
-                               final boolean allowNull, final boolean allowExpression, final ParameterValidator validator) {
+    protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
+                               final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
+                               final ParameterValidator validator) {
         this.name = name;
         this.xmlName = xmlName;
         this.type = type;
@@ -76,6 +62,7 @@ public abstract class AttributeDefinition {
             this.defaultValue.set(defaultValue);
         }
         this.defaultValue.protect();
+        this.measurementUnit = measurementUnit;
         this.validator = validator;
     }
 
@@ -101,6 +88,10 @@ public abstract class AttributeDefinition {
 
     public ModelNode getDefaultValue() {
         return defaultValue.isDefined() ? defaultValue : null;
+    }
+
+    public MeasurementUnit getMeasurementUnit() {
+        return measurementUnit;
     }
 
     public ParameterValidator getValidator() {
@@ -219,6 +210,9 @@ public abstract class AttributeDefinition {
         if (defaultValue != null && defaultValue.isDefined()) {
             attr.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
         }
+        if (measurementUnit != MeasurementUnit.NONE) {
+            attr.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
+        }
         resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
         return attr;
     }
@@ -235,12 +229,15 @@ public abstract class AttributeDefinition {
      */
     public ModelNode addOperationParameterDescription(final ResourceBundle bundle, final String prefix, final ModelNode operationDescription) {
         final ModelNode param = new ModelNode();
-        param.get(ModelDescriptionConstants.TYPE).set(param.getType());
+        param.get(ModelDescriptionConstants.TYPE).set(type);
         param.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
         // TODO enable when this metadata is finalized
 //        param.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());
         param.get(ModelDescriptionConstants.REQUIRED).set(!isAllowNull());
         param.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
+        if (measurementUnit != MeasurementUnit.NONE) {
+            param.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
+        }
         operationDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
         return param;
     }

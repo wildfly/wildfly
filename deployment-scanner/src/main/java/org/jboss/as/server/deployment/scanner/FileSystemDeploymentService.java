@@ -269,6 +269,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     public synchronized void stopScanner() {
         this.scanEnabled = false;
         cancelScan();
+        safeClose(controllerClient);
     }
 
     /** Hook solely for unit test to control how long deployments with no progress can exist without failing */
@@ -848,7 +849,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private void createMarkerFile(final File marker, String deploymentName) {
         FileOutputStream fos = null;
         try {
-            marker.createNewFile();
+            //marker.createNewFile(); - Don't create before the write as there is a potential race condition where
+            //                          the file is deleted between the two calls.
             fos = new FileOutputStream(marker);
             fos.write(deploymentName.getBytes());
         } catch (IOException io) {
@@ -874,7 +876,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
         FileOutputStream fos = null;
         try {
-            failedMarker.createNewFile();
+            //failedMarker.createNewFile();
             fos = new FileOutputStream(failedMarker);
             fos.write(failureDescription.asString().getBytes());
         } catch (IOException io) {
@@ -978,16 +980,16 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 log.warnf("Unable to remove marker file %s", failedMarker);
             }
 
-            // Remove the in-progress marker
-            removeInProgressMarker();
-
             final File deployedMarker = new File(parent, deploymentFile.getName() + DEPLOYED);
             createMarkerFile(deployedMarker, deploymentName);
             deployedMarker.setLastModified(doDeployTimestamp);
             if (deployed.containsKey(deploymentName)) {
                 deployed.remove(deploymentName);
             }
-            deployed.put(deploymentName, new DeploymentMarker(deployedMarker.lastModified(), archive));
+            deployed.put(deploymentName, new DeploymentMarker(doDeployTimestamp, archive));
+
+            // Remove the in-progress marker - save this until the deployment is really complete.
+            removeInProgressMarker();
         }
     }
 

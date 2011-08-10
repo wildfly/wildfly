@@ -111,7 +111,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
                 }
             }
             if (!raFound) {
-                throw new IllegalStateException("Not found RA registered as " + resourceAdapterName);
+                throw new IllegalStateException("No resource adapter registered with resource adapter name " + resourceAdapterName);
             }
             Set<String> ids = getResourceAdapterRepository().getResourceAdapters(messageListenerInterface);
             List<MessageListener> listeners = null;

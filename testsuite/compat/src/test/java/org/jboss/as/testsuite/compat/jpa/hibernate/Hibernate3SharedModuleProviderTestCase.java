@@ -58,11 +58,11 @@ public class Hibernate3SharedModuleProviderTestCase {
             "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
-// set the providerModule to the AS org.hibernate3 module (should be in as/modules/org/hibernate3/main folder
+// set the providerModule to the AS org.hibernate3 module (should be in as/modules/org/hibernate/3 folder
 // Hibernate 3 jars will need to be in the module folder and each jar name
 // should be added to module.xml in same folder.
-// not configuring the org.hibernate3 module will give errors like this: http://pastie.org/2280769
-            "<property name=\"jboss.as.jpa.providerModule\" value=\"org.hibernate3\"/>" +
+// not configuring the org.hibernate:3 module will give errors like this: http://pastie.org/2280769
+            "<property name=\"jboss.as.jpa.providerModule\" value=\"org.hibernate:3\"/>" +
             "</properties>" +
             "  </persistence-unit>" +
             "</persistence>";

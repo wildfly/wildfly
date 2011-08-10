@@ -31,7 +31,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.annotation.Resource;
 import javax.inject.Inject;
+import javax.transaction.UserTransaction;
 
 /**
  * AS7-1269
@@ -54,9 +56,17 @@ public class EjbInjectionIntoCdiBeanTestCase {
     @Inject
     private BusStation bean;
 
+    @Resource(lookup="java:jboss/UserTransaction")
+    private UserTransaction userTransaction;
+
     @Test
     public void testEjbInjection() {
         Assert.assertNotNull(bean.getBus());
         Assert.assertNotNull(bean.getLookupBus());
+    }
+
+    @Test
+    public void testUserTransactionInjection() {
+        Assert.assertNotNull(userTransaction);
     }
 }

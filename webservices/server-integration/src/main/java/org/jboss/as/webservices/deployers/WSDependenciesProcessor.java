@@ -21,7 +21,6 @@
  */
 package org.jboss.as.webservices.deployers;
 
-//import static org.jboss.as.webservices.util.WSAttachmentKeys.DEPLOYMENT_TYPE_KEY;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -29,7 +28,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -42,7 +40,6 @@ import org.jboss.modules.ModuleLoader;
  */
 public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
 
-    private static final Logger LOGGER = Logger.getLogger(WSDependenciesProcessor.class);
     public static final ModuleIdentifier JBOSSWS_API = ModuleIdentifier.create("org.jboss.ws.api");
     public static final ModuleIdentifier JBOSSWS_SPI = ModuleIdentifier.create("org.jboss.ws.spi");
 

@@ -30,6 +30,7 @@ import org.jboss.logging.Logger;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReference;
@@ -108,15 +109,21 @@ public class BasicComponentInstance implements ComponentInstance {
      */
     public void destroy() {
         if (doneUpdater.compareAndSet(this, 0, 1)) try {
-            final InterceptorContext interceptorContext = new InterceptorContext();
-            interceptorContext.putPrivateData(Component.class, component);
-            interceptorContext.putPrivateData(ComponentInstance.class, this);
+            final InterceptorContext interceptorContext = prepareInterceptorContext();
             preDestroy.processInvocation(interceptorContext);
         } catch (Exception e) {
             log.warn("Failed to destroy component instance " + this, e);
         } finally {
             component.finishDestroy();
         }
+    }
+
+    protected InterceptorContext prepareInterceptorContext() {
+        final InterceptorContext interceptorContext = new InterceptorContext();
+        interceptorContext.putPrivateData(Component.class, component);
+        interceptorContext.putPrivateData(ComponentInstance.class, this);
+        interceptorContext.setContextData(new HashMap<String, Object>());
+        return interceptorContext;
     }
 
     protected void finalize() {

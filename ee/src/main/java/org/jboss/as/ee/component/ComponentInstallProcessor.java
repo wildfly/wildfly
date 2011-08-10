@@ -22,18 +22,22 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.ee.naming.RootContextService;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
-import org.jboss.as.naming.service.BindingHandleService;
+import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -50,10 +54,6 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
 
     private static final Logger logger = Logger.getLogger(ComponentInstallProcessor.class);
-
-    private static class IntHolder {
-        private int value;
-    }
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -82,7 +82,6 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
     protected void deployComponent(final DeploymentPhaseContext phaseContext, final ComponentConfiguration configuration, final Set<ServiceName> dependencies, final ServiceName bindingDependencyService) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ServiceVerificationHandler serviceVerificationHandler = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.SERVICE_VERIFICATION_HANDLER);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
         final String applicationName = configuration.getApplicationName();
@@ -92,8 +91,9 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
 
         //create additional injectors
-        final ServiceName createServiceName = baseName.append("CREATE");
-        final ServiceName startServiceName = baseName.append("START");
+
+        final ServiceName createServiceName = configuration.getComponentDescription().getCreateServiceName();
+        final ServiceName startServiceName = configuration.getComponentDescription().getStartServiceName();
         final BasicComponentCreateService createService = configuration.getComponentCreateServiceFactory().constructService(configuration);
         final ServiceBuilder<Component> createBuilder = serviceTarget.addService(createServiceName, createService);
         // inject the DU
@@ -102,8 +102,6 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final ComponentStartService startService = new ComponentStartService();
         final ServiceBuilder<Component> startBuilder = serviceTarget.addService(startServiceName, startService);
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
-
-        final IntHolder i = new IntHolder();
 
         if (moduleConfiguration == null) {
             return;
@@ -124,7 +122,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final ServiceName contextServiceName;
         //set up the naming context if nessesary
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
-            final RootContextService contextService = new RootContextService();
+            final NamingStoreService contextService = new NamingStoreService();
             contextServiceName = ContextNames.contextServiceNameOfComponent(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName());
             serviceTarget.addService(contextServiceName, contextService).install();
         } else {
@@ -151,28 +149,28 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 final String bindingName = bindingConfiguration.getName();
                 final ServiceName binderServiceName = ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, bindingName);
                 final ServiceName namingStoreName = ContextNames.serviceNameOfNamingStore(applicationName, moduleName, componentName, bindingName);
-                final BindingHandleService service = new BindingHandleService(bindingName, binderServiceName, bindingConfiguration.getSource(), namingStoreName, serviceVerificationHandler);
-                final ServiceName handleServiceName = binderServiceName.append(baseName).append(String.valueOf(i.value++));
+                final BinderService service = new BinderService(bindingName, bindingConfiguration.getSource());
 
                 //these bindings should never be merged, if a view binding is duplicated it is an error
                 dependencies.add(binderServiceName);
 
-                ServiceBuilder<Void> serviceBuilder = serviceTarget.addService(handleServiceName, service);
+                ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(binderServiceName, service);
                 bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
+                serviceBuilder.addDependency(namingStoreName, NamingStore.class, service.getNamingStoreInjector());
                 serviceBuilder.install();
             }
         }
 
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             // The bindings for the component
-            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), i, dependencies, serviceVerificationHandler);
+            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), dependencies);
 
 
             // The bindings for the component class
             new ClassDescriptionTraversal(configuration.getModuleClassConfiguration(), applicationDescription) {
                 @Override
                 protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, classConfiguration.getBindingConfigurations(), i, dependencies, serviceVerificationHandler);
+                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), dependencies);
                 }
             }.run();
 
@@ -184,7 +182,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     new ClassDescriptionTraversal(interceptorClass, applicationDescription) {
                         @Override
                         protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, baseName, resolutionContext, classConfiguration.getBindingConfigurations(), i, dependencies, serviceVerificationHandler);
+                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), dependencies);
                         }
                     }.run();
                 }
@@ -195,20 +193,30 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         startBuilder.install();
     }
 
-    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, ServiceName compServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, IntHolder handleCount, final Set<ServiceName> dependencies, final ServiceVerificationHandler serviceVerificationHandler) throws DeploymentUnitProcessingException {
+    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
 
         //we only handle java:comp bindings for components that have their own namespace here, the rest are processed by ModuleJndiBindingProcessor
         for (BindingConfiguration bindingConfiguration : bindings) {
             if (bindingConfiguration.getName().startsWith("java:comp") || !bindingConfiguration.getName().startsWith("java:")) {
                 final String bindingName = bindingConfiguration.getName().startsWith("java:comp") ? bindingConfiguration.getName() : "java:comp/env/" + bindingConfiguration.getName();
                 final ServiceName binderServiceName = ContextNames.serviceNameOfEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName);
-                final BindingHandleService service = new BindingHandleService(bindingName, binderServiceName, bindingConfiguration.getSource(), contextServiceName, serviceVerificationHandler);
-                final ServiceName handleServiceName = binderServiceName.append(compServiceName).append(String.valueOf(handleCount.value++));
 
-                dependencies.add(binderServiceName);
-                ServiceBuilder<Void> serviceBuilder = serviceTarget.addService(handleServiceName, service);
-                bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
-                serviceBuilder.install();
+                try {
+                    final BinderService service = new BinderService(bindingName, bindingConfiguration.getSource());
+                    dependencies.add(binderServiceName);
+                    ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(binderServiceName, service);
+                    bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
+                    serviceBuilder.addDependency(contextServiceName, NamingStore.class, service.getNamingStoreInjector());
+                    serviceBuilder.install();
+                } catch (DuplicateServiceException e) {
+                    ServiceController<ManagedReferenceFactory> registered = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(binderServiceName);
+                    if (registered == null)
+                        throw e;
+
+                    BinderService service = (BinderService) registered.getService();
+                    if (!service.getSource().equals(bindingConfiguration.getSource()))
+                        throw new IllegalArgumentException("Incompatible conflicting binding at " + bindingName + " source: " + bindingConfiguration.getSource());
+                }
             }
         }
     }

@@ -23,23 +23,16 @@ package org.jboss.as.ejb3.component.pool;
 
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
-import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class PooledInstanceInterceptor extends AbstractEJBInterceptor {
-    static final PooledInstanceInterceptor INSTANCE = new PooledInstanceInterceptor();
-    static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(INSTANCE);
+    public static final PooledInstanceInterceptor INSTANCE = new PooledInstanceInterceptor();
 
     private PooledInstanceInterceptor() {
 
-    }
-
-    public static InterceptorFactory pooled() {
-        return FACTORY;
     }
 
     @Override
@@ -49,8 +42,7 @@ public class PooledInstanceInterceptor extends AbstractEJBInterceptor {
         context.putPrivateData(ComponentInstance.class, instance);
         try {
             return context.proceed();
-        }
-        finally {
+        } finally {
             context.putPrivateData(ComponentInstance.class, null);
             component.getPool().release(instance);
         }

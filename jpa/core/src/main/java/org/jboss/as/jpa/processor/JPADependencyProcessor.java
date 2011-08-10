@@ -43,8 +43,10 @@ import org.jboss.modules.ResourceLoaderSpec;
 import org.jboss.modules.ResourceLoaders;
 
 import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -64,12 +66,13 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier JBOSS_AS_JPA_SPI_ID = ModuleIdentifier.create("org.jboss.as.jpa.spi");
     private static final ModuleIdentifier JAVASSIST_ID = ModuleIdentifier.create("org.javassist");
 
-    private static final ModuleIdentifier HIBERNATE_3_PROVIDER = ModuleIdentifier.create("org.jboss.as.jpa.hibernate3");
+    private static final ModuleIdentifier HIBERNATE_3_PROVIDER = ModuleIdentifier.create("org.jboss.as.jpa.hibernate","3");
     private static final String HIBERNATE3_PROVIDER_ADAPTOR = "org.jboss.as.jpa.hibernate3.HibernatePersistenceProviderAdaptor";
 
     // module dependencies for hibernate3
     private static final ModuleIdentifier JBOSS_AS_NAMING_ID = ModuleIdentifier.create("org.jboss.as.naming");
     private static final ModuleIdentifier JBOSS_JANDEX_ID = ModuleIdentifier.create("org.jboss.jandex");
+
     /**
      * Add dependencies for modules required for JPA deployments
      */
@@ -102,12 +105,10 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
     }
 
-
     private void addPersistenceProviderModuleDependencies(DeploymentPhaseContext phaseContext, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) throws
             DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         int defaultProviderCount = 0;
         Set<String> moduleDependencies = new HashSet<String>();
@@ -124,7 +125,8 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
         // add persistence provider dependency
         for (String dependency : moduleDependencies) {
-            addDependency(moduleSpecification, moduleLoader, ModuleIdentifier.create(dependency));
+
+            addDependency(moduleSpecification, moduleLoader, ModuleIdentifier.fromString(dependency));
             log.info("added " + dependency + " dependency to application deployment");
         }
     }
@@ -184,10 +186,13 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
             //use a trick to get to the root of the class loader
             final URL url = module.getClassLoader().getResource(HIBERNATE3_PROVIDER_ADAPTOR.replace('.','/') + ".class");
 
-            final String path = url.getPath();
-            final String baseJarUrl = path.substring(0, path.lastIndexOf("!"));
-            final URL jarUrl = new URL(baseJarUrl);
-            JarFile jarFile = new JarFile(jarUrl.getFile());
+            final URLConnection connection = url.openConnection();
+            if(!(connection  instanceof JarURLConnection)) {
+                throw new RuntimeException("Could not add hibernate 3 integration module to deployment, did not get expected JarUrlConnection, got " + connection);
+            }
+
+            final JarFile jarFile = ((JarURLConnection) connection).getJarFile();
+
             moduleSpecification.addResourceLoader(ResourceLoaderSpec.createResourceLoaderSpec(ResourceLoaders.createJarResourceLoader("hibernate3integration", jarFile)));
 
             // hack in the dependencies which are part of hibernate3integration

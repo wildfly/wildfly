@@ -34,6 +34,7 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.tx.CMTTxInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -49,10 +50,14 @@ import javax.ejb.SessionBean;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -105,11 +110,31 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      */
     private final Set<String> asynchronousViews = new HashSet<String>();
 
-
     /**
      * mapped-name of the session bean
      */
     private String mappedName;
+
+    /**
+     * method identifier of the timeout method
+     */
+    private MethodIdentifier timeoutMethodIdentifier;
+
+    /**
+     * @Schedule method identifiers
+     */
+    private final Map<MethodIdentifier, List<AutoTimer>> scheduleMethodIdentifiers = new HashMap<MethodIdentifier, List<AutoTimer>>();
+
+
+    /**
+     * @Schedule methods
+     */
+    private final Map<Method, List<AutoTimer>> scheduleMethods = new IdentityHashMap<Method, List<AutoTimer>>();
+
+    /**
+     * The actual timeout method
+     */
+    private Method timeoutMethod;
 
     public enum SessionBeanType {
         STATELESS,
@@ -431,6 +456,48 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     @Override
     public boolean isStateless() {
         return getSessionBeanType() == SessionBeanType.STATELESS;
+    }
+
+
+    public MethodIdentifier getTimeoutMethodIdentifier() {
+        return timeoutMethodIdentifier;
+    }
+
+    public void setTimeoutMethodIdentifier(final MethodIdentifier timeoutMethodIdentifier) {
+        this.timeoutMethodIdentifier = timeoutMethodIdentifier;
+    }
+
+    public Method getTimeoutMethod() {
+        return timeoutMethod;
+    }
+
+    public void setTimeoutMethod(final Method timeoutMethod) {
+        this.timeoutMethod = timeoutMethod;
+    }
+
+    public Map<MethodIdentifier, List<AutoTimer>> getScheduleMethodIdentifiers() {
+        return Collections.unmodifiableMap(scheduleMethodIdentifiers);
+    }
+
+    public void addScheduleMethodIdentifier(final MethodIdentifier identifier, final AutoTimer timer) {
+        List<AutoTimer> schedules = scheduleMethodIdentifiers.get(identifier);
+        if(schedules == null) {
+            scheduleMethodIdentifiers.put(identifier, schedules = new ArrayList<AutoTimer>(1));
+        }
+        schedules.add(timer);
+    }
+
+
+    public Map<Method, List<AutoTimer>> getScheduleMethods() {
+        return Collections.unmodifiableMap(scheduleMethods);
+    }
+
+    public void addScheduleMethod(final Method method, final AutoTimer timer) {
+        List<AutoTimer> schedules = scheduleMethods.get(method);
+        if(schedules == null) {
+            scheduleMethods.put(method, schedules = new ArrayList<AutoTimer>(1));
+        }
+        schedules.add(timer);
     }
 
 }

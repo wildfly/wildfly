@@ -28,6 +28,7 @@
 
   <dependencies>
       <module name="org.codehaus.jackson.jackson-core-asl"/>
+      <module name="org.joda.time"/>
       <module name="javax.api" />
   </dependencies>
 </module>

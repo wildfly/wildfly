@@ -23,6 +23,7 @@ package org.jboss.as.testsuite.integration.osgi.ejb3;
 
 import static org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME;
 
+import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
@@ -41,15 +42,18 @@ import org.osgi.framework.ServiceReference;
 @LocalBean
 public class SimpleStatelessSessionBean implements Echo {
 
-    public String echo(String message) {
-        ClassLoader classLoader = Echo.class.getClassLoader();
-        Bundle bundle = ((BundleReference) classLoader).getBundle();
-        if (BUNDLE_SYMBOLICNAME.equals(message))
-            return bundle.getSymbolicName();
+    @Resource
+    BundleContext context;
 
-        BundleContext context = bundle.getBundleContext();
-        ServiceReference sref = context.getServiceReference(Echo.class.getName());
-        Echo service = (Echo) context.getService(sref);
-        return service.echo(message);
+    public String echo(String message) {
+        if (BUNDLE_SYMBOLICNAME.equals(message)) {
+            ClassLoader classLoader = Echo.class.getClassLoader();
+            Bundle bundle = ((BundleReference) classLoader).getBundle();
+            return bundle.getSymbolicName();
+        } else {
+            ServiceReference sref = context.getServiceReference(Echo.class.getName());
+            Echo service = (Echo) context.getService(sref);
+            return service.echo(message);
+        }
     }
 }

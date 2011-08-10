@@ -41,11 +41,12 @@ import java.util.Map;
  */
 public class HibernatePersistenceProviderAdaptor implements PersistenceProviderAdaptor {
 
-    private JtaManager jtaManager;
+
+    private JBossAppServerJtaPlatform appServerJtaPlatform;
 
     @Override
     public void injectJtaManager(JtaManager jtaManager) {
-        this.jtaManager = jtaManager;
+        appServerJtaPlatform = new JBossAppServerJtaPlatform(jtaManager);
     }
 
     @Override
@@ -53,14 +54,26 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         properties.put(Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
         properties.put(org.hibernate.ejb.AvailableSettings.SCANNER, "org.jboss.as.jpa.hibernate4.HibernateAnnotationScanner");
         properties.put(AvailableSettings.APP_CLASSLOADER, pu.getClassLoader());
-        properties.put(AvailableSettings.JTA_PLATFORM, new JBossAppServerJtaPlatform(jtaManager));
+        properties.put(AvailableSettings.JTA_PLATFORM, appServerJtaPlatform);
+        properties.remove(AvailableSettings.TRANSACTION_MANAGER_STRATEGY);  // remove legacy way of specifying TX manager (conflicts with JTA_PLATFORM)
     }
 
     @Override
     public Iterable<ServiceName> getProviderDependencies(PersistenceUnitMetadata pu) {
-        String cacheManager;
-        // AS7-680 Add BinderService dependency for infinispan hibernate 2LC
-        if ((cacheManager = pu.getProperties().getProperty("hibernate.cache.infinispan.cachemanager")) != null) {
+        //
+        String cacheManager = pu.getProperties().getProperty("hibernate.cache.infinispan.cachemanager");
+        String useCache = pu.getProperties().getProperty("hibernate.cache.use_second_level_cache");
+        String regionFactoryClass = pu.getProperties().getProperty("hibernate.cache.region.factory_class");
+        if ((useCache != null && useCache.equalsIgnoreCase("true")) ||
+            cacheManager != null) {
+            if (regionFactoryClass == null) {
+                regionFactoryClass = "org.hibernate.cache.infinispan.JndiInfinispanRegionFactory";
+                pu.getProperties().put("hibernate.cache.region.factory_class", regionFactoryClass);
+            }
+            if (cacheManager == null) {
+                cacheManager = "java:jboss/infinispan/hibernate";
+                pu.getProperties().put("hibernate.cache.infinispan.cachemanager", cacheManager);
+            }
             ArrayList<ServiceName> result = new ArrayList<ServiceName>();
             result.add(adjustJndiName(cacheManager));
             return result;
@@ -70,11 +83,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
     private ServiceName adjustJndiName(String jndiName) {
         jndiName = toJndiName(jndiName).toString();
-        int index = jndiName.indexOf("/");
-        String namespace = (index > 5) ? jndiName.substring(5, index) : null;
-        String binding = (index > 5) ? jndiName.substring(index + 1) : jndiName.substring(5);
-        ServiceName naming = (namespace != null) ? ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(namespace) : ContextNames.JAVA_CONTEXT_SERVICE_NAME;
-        return naming.append(binding);
+        return ContextNames.bindInfoFor(jndiName).getBinderServiceName();
     }
 
     private static JndiName toJndiName(String value) {

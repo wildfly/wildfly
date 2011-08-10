@@ -23,8 +23,7 @@ package org.jboss.as.weld.ejb;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ComponentViewInstance;
-import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.server.CurrentServiceRegistry;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -32,7 +31,10 @@ import org.jboss.weld.ejb.api.SessionObjectReference;
 import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation for non-stateful beans, a new view instance is looked up each time
@@ -46,7 +48,6 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor, ServiceRegistry serviceRegistry) {
         final ServiceName createServiceName = descriptor.getCreateServiceName();
-        final ServiceController<?> controller = serviceRegistry.getRequiredService(createServiceName);
 
         final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
         final Map<String, Class<?>> views = new HashMap<String, Class<?>>();
@@ -57,15 +58,33 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
             views.put(view.getInterface().getName(), view.getInterface());
         }
 
-        for (ViewDescription view : descriptor.getComponentDescription().getViews()) {
-            final Class<?> viewClass = views.get(view.getViewClassName());
+
+        for (Map.Entry<Class<?>, ServiceName> entry : descriptor.getViewServices().entrySet()) {
+            final Class<?> viewClass = entry.getKey();
             if (viewClass != null) {
                 //see WELD-921
                 //this is horrible, but until it is fixed there is not much that can be done
-                Class<?> clazz = viewClass;
-                while (clazz != Object.class && clazz != null) {
-                    viewServices.put(clazz.getName(), view.getServiceName());
-                    clazz = clazz.getSuperclass();
+
+                final Set<Class<?>> seen = new HashSet<Class<?>>();
+                final Set<Class<?>> toProcess = new HashSet<Class<?>>();
+
+                toProcess.add(viewClass);
+
+                while (!toProcess.isEmpty()) {
+                    Iterator<Class<?>> it = toProcess.iterator();
+                    final Class<?> clazz = it.next();
+                    it.remove();
+                    seen.add(clazz);
+                    viewServices.put(clazz.getName(), entry.getValue());
+                    final Class<?> superclass = clazz.getSuperclass();
+                    if(superclass != Object.class && superclass != null && !seen.contains(superclass)) {
+                        toProcess.add(superclass);
+                    }
+                    for(Class<?> iface : clazz.getInterfaces()) {
+                        if(!seen.contains(iface)) {
+                            toProcess.add(iface);
+                        }
+                    }
                 }
             }
         }
@@ -83,7 +102,7 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
         }
         //TODO: this should be cached
         if (viewServices.containsKey(businessInterfaceType.getName())) {
-            final ServiceController<?> serviceController = CurrentServiceRegistry.getServiceRegistry().getRequiredService(viewServices.get(businessInterfaceType.getName()));
+            final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(viewServices.get(businessInterfaceType.getName()));
             final ComponentView view = (ComponentView) serviceController.getValue();
             final ComponentViewInstance instance = view.createInstance();
             return (S) instance.createProxy();

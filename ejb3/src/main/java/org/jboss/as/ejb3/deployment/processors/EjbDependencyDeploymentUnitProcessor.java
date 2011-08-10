@@ -48,6 +48,11 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
      */
     private static ModuleIdentifier JAVAEE_MODULE_IDENTIFIER = ModuleIdentifier.create("javaee.api");
 
+    /**
+     * Needed for timer handle persistence
+     */
+    private static ModuleIdentifier EJB3_TIMERS = ModuleIdentifier.create("org.jboss.ejb3.timerservice");
+
 
     /**
      * Adds Java EE module as a dependency to any deployment unit which is a EJB deployment
@@ -79,6 +84,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.CLASSPATH, false, false, false));
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_MODULE_IDENTIFIER, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB3_TIMERS, false, false, false));
 
     }
 
