@@ -75,7 +75,10 @@ public class SetDefaultMDBPool implements OperationStepHandler, DescriptionProvi
         model.get(EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL).set(poolName);
 
         // now create a runtime operation to update the default MDB pool config service
-        context.addStep(new DefaultMDBPoolConfigServiceUpdateHandler(poolName), OperationContext.Stage.RUNTIME);
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new DefaultMDBPoolConfigServiceUpdateHandler(poolName), OperationContext.Stage.RUNTIME);
+        }
+
         // complete the step
         context.completeStep();
     }
