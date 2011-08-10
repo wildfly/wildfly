@@ -21,11 +21,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:domain:logging:1.0"
-            xmlns="urn:jboss:domain:logging:1.0"
+            targetNamespace="urn:jboss:domain:logging:1.1"
+            xmlns="urn:jboss:domain:logging:1.1"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
-            version="1.0">
+            version="1.1">
 
     <!-- The logging subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>
@@ -46,6 +46,7 @@
             <xs:element name="periodic-rotating-file-handler" type="periodicFileHandlerType"/>
             <xs:element name="size-rotating-file-handler" type="sizeFileHandlerType"/>
             <xs:element name="async-handler" type="asyncHandlerType"/>
+            <xs:element name="custom-logger" type="customHandlerType" />
             <xs:any namespace="##other"/>
         </xs:choice>
     </xs:complexType>
@@ -220,6 +221,24 @@
             <xs:element name="subhandlers" type="handlersType"/>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="customHandlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a custom handler.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all>
+            <xs:element name="level" type="refType" minOccurs="0"/>
+            <xs:element name="encoding" type="valueType" minOccurs="0"/>
+            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="formatter" type="formatterType" minOccurs="1"/>
+            <xs:element name="properties" type="propertiesType" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="module" type="xs:string" use="required"/>
+        <xs:attribute name="class" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="overflowActionType">
