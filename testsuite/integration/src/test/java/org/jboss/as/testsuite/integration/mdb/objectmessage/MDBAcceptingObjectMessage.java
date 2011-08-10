@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.mdb.activationconfig;
+package org.jboss.as.testsuite.integration.mdb.objectmessage;
 
 import org.jboss.as.testsuite.integration.mdb.JMSMessagingUtil;
 import org.jboss.logging.Logger;
@@ -31,22 +31,19 @@ import javax.ejb.MessageDriven;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import java.util.Queue;
+import javax.jms.ObjectMessage;
 
 /**
  * User: jpai
  */
-@MessageDriven (activationConfig = {
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = MDBWithUnknownActivationConfigProperties.QUEUE_JNDI_NAME),
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "foo", propertyValue = "bar") // activation config properties which aren't supported by the resource adapter
+@MessageDriven(activationConfig = {
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = MDBAcceptingObjectMessage.QUEUE_JNDI_NAME)
 })
-public class MDBWithUnknownActivationConfigProperties implements MessageListener {
+public class MDBAcceptingObjectMessage implements MessageListener {
 
+    private static final Logger logger = Logger.getLogger(MDBAcceptingObjectMessage.class);
 
-    private static final Logger logger = Logger.getLogger(MDBWithUnknownActivationConfigProperties.class);
-
-    public static final String QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/unknown-activationconfig-props";
+    public static final String QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/objectmessage-queue";
 
     @EJB
     private JMSMessagingUtil jmsMessagingUtil;
@@ -54,13 +51,20 @@ public class MDBWithUnknownActivationConfigProperties implements MessageListener
     @Override
     public void onMessage(Message message) {
         logger.info("Received message: " + message);
+        if (message instanceof ObjectMessage == false) {
+            throw new RuntimeException(this.getClass().getName() + " only accepts ObjectMessage. " + message + " isn't an ObjectMessage");
+        }
         try {
+            // get the underlying message
+            SimpleMessageInEarLibJar underlyingMessage = (SimpleMessageInEarLibJar) ((ObjectMessage) message).getObject();
             if (message.getJMSReplyTo() != null) {
                 logger.info("Replying to " + message.getJMSReplyTo());
-                this.jmsMessagingUtil.reply(message);
+                // create a ObjectMessage as a reply and send it to the reply queue
+                this.jmsMessagingUtil.sendObjectMessage(underlyingMessage, message.getJMSReplyTo(), null);
             }
         } catch (JMSException jmse) {
             throw new RuntimeException(jmse);
         }
     }
+
 }

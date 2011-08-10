@@ -25,11 +25,13 @@ package org.jboss.as.ejb3.component.messagedriven;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
+import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.value.InjectedValue;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
@@ -41,10 +43,11 @@ import java.util.Properties;
  */
 public class MessageDrivenComponentCreateService extends EJBComponentCreateService {
 
-    private final ServiceName raServiceName;
     private final Class<?> messageListenerInterface;
-    private final String resourceAdapterName;
+    private String resourceAdapterName;
     private final Properties activationProps;
+    private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
+    private final InjectedValue<DefaultResourceAdapterService> defaultRANameService = new InjectedValue<DefaultResourceAdapterService>();
 
     /**
      * Construct a new instance.
@@ -56,7 +59,6 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
         final MessageDrivenComponentDescription componentDescription = (MessageDrivenComponentDescription) componentConfiguration.getComponentDescription();
         this.resourceAdapterName = componentDescription.getResourceAdapterName();
-        this.raServiceName = componentDescription.getResourceAdapterServiceName();
 
         // see MessageDrivenComponentDescription.<init>
         this.messageListenerInterface = componentConfiguration.getViews().get(0).getViewClass();
@@ -66,6 +68,11 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
     @Override
     protected BasicComponent createComponent() {
+        if (this.resourceAdapterName == null) {
+            this.resourceAdapterName = this.getDefaultResourceAdapterName();
+        }
+        final ServiceName raServiceName = this.getResourceAdapterServiceName();
+
         final ActivationSpec activationSpec = getEndpointDeployer().createActivationSpecs(resourceAdapterName, messageListenerInterface, activationProps, getDeploymentClassLoader());
         //final ActivationSpec activationSpec = null;
         final MessageDrivenComponent component = new MessageDrivenComponent(this, messageListenerInterface, activationSpec);
@@ -78,6 +85,26 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
             throw new RuntimeException(e);
         }
         return component;
+    }
+
+    PoolConfig getPoolConfig() {
+        return this.poolConfig.getOptionalValue();
+    }
+
+    public InjectedValue<PoolConfig> getPoolConfigInjector() {
+        return this.poolConfig;
+    }
+
+    public InjectedValue<DefaultResourceAdapterService> getDefaultRANameServiceInjector() {
+        return this.defaultRANameService;
+    }
+
+    String getDefaultResourceAdapterName() {
+        final DefaultResourceAdapterService defaultResourceAdapterService = this.defaultRANameService.getOptionalValue();
+        if (defaultResourceAdapterService != null) {
+            return defaultResourceAdapterService.getDefaultResourceAdapterName();
+        }
+        return "hornetq-ra";
     }
 
     private ClassLoader getDeploymentClassLoader() {
@@ -95,4 +122,16 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     private ServiceRegistry getServiceRegistry() {
         return getDeploymentUnitInjector().getValue().getServiceRegistry();
     }
+
+    ServiceName getResourceAdapterServiceName() {
+        String raDeploymentName = resourceAdapterName;
+        // See RaDeploymentParsingProcessor
+        if (this.resourceAdapterName.endsWith(".rar")) {
+            raDeploymentName = this.resourceAdapterName.substring(0, resourceAdapterName.indexOf(".rar"));
+        }
+        // See ResourceAdapterDeploymentService
+        return ServiceName.of(raDeploymentName);
+    }
+
+
 }

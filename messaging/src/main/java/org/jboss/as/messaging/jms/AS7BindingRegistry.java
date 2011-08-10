@@ -106,6 +106,7 @@ public class AS7BindingRegistry implements BindingRegistry {
         }
         // remove the binding service
         bindingService.setMode(ServiceController.Mode.REMOVE);
+        logger.info("Unbound messaging object from jndi name " + jndiBinding);
     }
 
     @Override

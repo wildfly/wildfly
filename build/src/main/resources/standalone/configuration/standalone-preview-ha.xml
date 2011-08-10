@@ -130,7 +130,37 @@
             <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee:1.0" />
-        <subsystem xmlns="urn:jboss:domain:ejb3:1.0" />
+        <subsystem xmlns="urn:jboss:domain:ejb3:1.1" >
+            <timer-service>
+                <thread-pool core-threads="1" />
+                <data-store path="timer-service-data" relative-to="jboss.server.data.dir" />
+            </timer-service>
+
+            <!-- EJB3 pools -->
+            <pools>
+                <bean-instance-pools>
+                    <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5"
+                                     instance-acquisition-timeout-unit="MINUTES"/>
+
+                    <strict-max-pool name="mdb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5"
+                                     instance-acquisition-timeout-unit="MINUTES"/>
+                </bean-instance-pools>
+            </pools>
+
+            <!-- Default MDB configurations -->
+            <mdb>
+                <resource-adapter-ref resource-adapter-name="hornetq-ra"/>
+                <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
+            </mdb>
+
+            <!-- Session bean configurations -->
+            <session-bean>
+                <stateless>
+                    <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
+                </stateless>
+            </session-bean>
+
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="cluster">
             <cache-container name="cluster" default-cache="default">
                 <alias>ha-partition</alias>

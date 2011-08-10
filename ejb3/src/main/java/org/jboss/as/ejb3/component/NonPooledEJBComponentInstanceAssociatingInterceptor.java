@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,32 +19,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.pool;
+
+package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
 import org.jboss.invocation.InterceptorContext;
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * A {@link ComponentInstance} associating interceptor for EJB components (SLSB and message driven) which
+ * have pooling disabled. Upon each {@link #processInvocation(org.jboss.invocation.InterceptorContext) invocation}
+ * this interceptor creates a new {@link ComponentInstance} and associates it with the invocation. It then
+ * {@link org.jboss.as.ee.component.ComponentInstance#destroy() destroys} the instance upon method completion.
+ * <p/>
+ * User: Jaikiran Pai
  */
-public class PooledInstanceInterceptor extends AbstractEJBInterceptor {
-    public static final PooledInstanceInterceptor INSTANCE = new PooledInstanceInterceptor();
+public class NonPooledEJBComponentInstanceAssociatingInterceptor extends AbstractEJBInterceptor {
 
-    private PooledInstanceInterceptor() {
+    public static final NonPooledEJBComponentInstanceAssociatingInterceptor INSTANCE = new NonPooledEJBComponentInstanceAssociatingInterceptor();
+
+    private NonPooledEJBComponentInstanceAssociatingInterceptor() {
 
     }
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
-        PooledComponent<ComponentInstance> component = getComponent(context, PooledComponent.class);
-        ComponentInstance instance = component.getPool().get();
-        context.putPrivateData(ComponentInstance.class, instance);
+        final EJBComponent component = getComponent(context, EJBComponent.class);
+        // create the instance
+        final ComponentInstance componentInstance = component.createInstance();
+        context.putPrivateData(ComponentInstance.class, componentInstance);
         try {
             return context.proceed();
         } finally {
             context.putPrivateData(ComponentInstance.class, null);
-            component.getPool().release(instance);
+            // destroy the instance
+            componentInstance.destroy();
         }
     }
+
 }

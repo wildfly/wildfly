@@ -30,26 +30,7 @@
     <!-- The ejb3 subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>
 
-    <xs:complexType name="subsystem">
-        <xs:sequence>
-            <xs:element name="timer-service" type="timerServiceType" minOccurs="0" maxOccurs="1"/>
-        </xs:sequence>
-    </xs:complexType>
+    <xs:complexType name="subsystem"/>
 
-    <xs:complexType name="timerServiceType">
-        <xs:sequence>
-            <xs:element name="thread-pool" type="threadPoolType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="data-store" type="dataStoreType" minOccurs="0" maxOccurs="1"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="threadPoolType">
-        <xs:attribute name="core-threads" type="xs:int"/>
-    </xs:complexType>
-
-    <xs:complexType name="dataStoreType">
-        <xs:attribute name="path" type="xs:string" />
-        <xs:attribute name="relative-to" type="xs:string" />
-    </xs:complexType>
 
 </xs:schema>
