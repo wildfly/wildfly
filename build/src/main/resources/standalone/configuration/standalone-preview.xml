@@ -208,7 +208,7 @@
             <jpa default-datasource=""/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:mail:1.0">
-            <mail-session jndi-name="java:/Mail">
+            <mail-session jndi-name="java:/Mail" debug="true">
                 <login name="nobody" password="pass"/>
                 <smtp-server address="localhost" port="9999"/>
                 <pop3-server address="example.com" port="1234"/>

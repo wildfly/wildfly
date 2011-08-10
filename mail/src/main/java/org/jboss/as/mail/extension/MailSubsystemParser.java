@@ -1,6 +1,5 @@
 package org.jboss.as.mail.extension;
 
-import com.sun.xml.internal.messaging.saaj.util.ParseUtil;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -51,7 +50,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
 
             writer.writeAttribute(Attribute.JNDI_NAME.getLocalName(), jndi);
-            if (sessionData.hasDefined(ModelKeys.DEBUG)){
+            if (sessionData.hasDefined(ModelKeys.DEBUG)) {
                 writer.writeAttribute(Attribute.DEBUG.getLocalName(), sessionData.get(ModelKeys.DEBUG).asString());
             }
             writer.writeEmptyElement(Element.LOGIN.getLocalName());
