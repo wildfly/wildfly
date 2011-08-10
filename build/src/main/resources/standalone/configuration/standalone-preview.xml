@@ -211,6 +211,8 @@
             <mail-session jndi-name="java:/Mail">
                 <login name="nobody" password="pass"/>
                 <smtp-server address="localhost" port="9999"/>
+                <pop3-server address="example.com" port="1234"/>
+                <imap-server address="example.com" port="432"/>
            </mail-session>
             <mail-session jndi-name="foo/MyMailServer1">
                 <login name="user" password="pass"/>

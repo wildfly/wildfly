@@ -52,14 +52,25 @@ public class MailSessionService implements Service<Session> {
     private Properties getProperties() {
         Properties props = new Properties();
         props.put("mail.transport.protocol", "smtp");
-        props.put("mail.host", sessionConfig.getSmtpServerAddress());
-        props.put("mail.smtp.host", sessionConfig.getSmtpServerAddress());
-        props.put("mail.smtp.port", sessionConfig.getSmtpServerPort());
+        //props.put("mail.host", sessionConfig.getSmtpServer().getAddress());
+        if (sessionConfig.getSmtpServer() != null) {
+            props.put("mail.smtp.host", sessionConfig.getSmtpServer().getAddress());
+            props.put("mail.smtp.port", sessionConfig.getSmtpServer().getPort());
+        }
+        if (sessionConfig.getImapServer() != null) {
+            props.put("mail.imap.host", sessionConfig.getImapServer().getAddress());
+            props.put("mail.imap.port", sessionConfig.getImapServer().getPort());
+        }
+        if (sessionConfig.getPop3Server() != null) {
+            props.put("mail.pop3.host", sessionConfig.getPop3Server().getAddress());
+            props.put("mail.pop3.port", sessionConfig.getPop3Server().getPort());
+        }
+
         props.put("mail.user", sessionConfig.getUsername());
-        props.put("mail.debug", true);
+        props.put("mail.debug", sessionConfig.isDebug());
         //props.put("mail.from", "nobody@nosuchhost.nosuchdomain.com");
 
-        log.trace("props: "+props);
+        log.trace("props: " + props);
         return props;
     }
 
@@ -68,7 +79,7 @@ public class MailSessionService implements Service<Session> {
     public Session getValue() throws IllegalStateException, IllegalArgumentException {
         //log.info("should return value");
         Session ses = Session.getDefaultInstance(getProperties());
-        log.trace("session is: "+ses);
+        log.trace("session is: " + ses);
 
         return ses;
 
