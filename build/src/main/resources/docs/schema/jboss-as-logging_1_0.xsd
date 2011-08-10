@@ -123,7 +123,7 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
             <xs:element name="filter" type="filterType" minOccurs="0"/>
-            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="formatter" type="formatterType" minOccurs="1"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
             <xs:element name="target" minOccurs="0">
                 <xs:complexType>
@@ -152,7 +152,7 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
             <xs:element name="filter" type="filterType" minOccurs="0"/>
-            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="formatter" type="formatterType" minOccurs="1"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
             <xs:element name="file" type="pathType" minOccurs="1"/>
             <xs:element name="append" type="booleanValueType" minOccurs="0"/>
@@ -172,7 +172,7 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
             <xs:element name="filter" type="filterType" minOccurs="0"/>
-            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="formatter" type="formatterType" minOccurs="1"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
             <xs:element name="file" type="pathType"/>
             <xs:element name="suffix" type="valueType"/>
@@ -193,7 +193,7 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
             <xs:element name="filter" type="filterType" minOccurs="0"/>
-            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="formatter" type="formatterType" minOccurs="1"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
             <xs:element name="file" type="pathType"/>
             <xs:element name="rotate-size" type="sizeType" minOccurs="0"/>

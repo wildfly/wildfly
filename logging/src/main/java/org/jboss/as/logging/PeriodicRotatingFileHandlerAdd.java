@@ -85,7 +85,7 @@ class PeriodicRotatingFileHandlerAdd extends AbstractAddStepHandler {
             if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
             if (operation.hasDefined(SUFFIX)) service.setSuffix(operation.get(SUFFIX).asString());
             if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-            if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+            service.setFormatterSpec(createFormatterSpec(operation));
             serviceBuilder.addListener(verificationHandler);
             serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
             newControllers.add(serviceBuilder.install());
