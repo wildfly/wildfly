@@ -48,7 +48,6 @@ import javax.transaction.UserTransaction;
 import java.beans.IntrospectionException;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -92,17 +91,19 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
 
             if (!raFound) {
                 for (String id : getMdr().getResourceAdapters()) {
-                    if (getMdr().getRoot(id).getName().indexOf(resourceAdapterName) != -1) {
+                    if (id.equals(resourceAdapterName)) {
                         if (!raFound) {
                             ResourceAdapter ra = getMdr().getResourceAdapter(id).getResourceadapter();
                             if (ra instanceof ResourceAdapter1516
                                     && ((ResourceAdapter1516) ra).getInboundResourceadapter() != null) {
                                 String className = ((ResourceAdapter1516) ra).getResourceadapterClass();
-                                if (className.lastIndexOf(".") != -1)
+                                if (className.lastIndexOf(".") != -1) {
                                     packageName = className.substring(0, className.lastIndexOf("."));
-                                else
+                                } else {
                                     packageName = "";
+                                }
                                 raFound = true;
+                                logger.debug("Found resource adapter class: " + className + " for resource-adapter-name: " + resourceAdapterName);
                             }
                         } else {
                             throw new IllegalStateException("found more than one RA registered as " + resourceAdapterName);
