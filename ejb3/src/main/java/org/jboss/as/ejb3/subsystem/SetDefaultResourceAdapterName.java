@@ -73,7 +73,10 @@ public class SetDefaultResourceAdapterName implements OperationStepHandler, Desc
         model.get(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME).set(resourceAdapterName);
 
         // now create a runtime operation to update the default resource adapter name used by the MDBs
-        context.addStep(new DefaultResourceAdapterNameUpdateHandler(resourceAdapterName), OperationContext.Stage.RUNTIME);
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new DefaultResourceAdapterNameUpdateHandler(resourceAdapterName), OperationContext.Stage.RUNTIME);
+        }
+
         // complete the step
         context.completeStep();
     }

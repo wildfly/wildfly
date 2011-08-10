@@ -70,7 +70,10 @@ public class SetDefaultSLSBPool implements OperationStepHandler, DescriptionProv
         model.get(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL).set(poolName);
 
         // now create a runtime operation to update the default slsb pool config service
-        context.addStep(new DefaultSLSBPoolConfigServiceUpdateHandler(poolName), OperationContext.Stage.RUNTIME);
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new DefaultSLSBPoolConfigServiceUpdateHandler(poolName), OperationContext.Stage.RUNTIME);
+        }
+
         // complete the step
         context.completeStep();
     }
