@@ -84,7 +84,7 @@ class FileHandlerAdd extends AbstractAddStepHandler {
             final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
             if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
             if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-            if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
+            service.setFormatterSpec(AbstractFormatterSpec.Factory.create(operation));
             serviceBuilder.addListener(verificationHandler);
             serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
             newControllers.add(serviceBuilder.install());
@@ -92,9 +92,5 @@ class FileHandlerAdd extends AbstractAddStepHandler {
             throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
         }
 
-    }
-
-    static AbstractFormatterSpec createFormatterSpec(final ModelNode operation) {
-        return new PatternFormatterSpec(operation.get(FORMATTER).asString());
     }
 }
