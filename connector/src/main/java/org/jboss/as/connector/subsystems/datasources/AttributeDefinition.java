@@ -57,9 +57,11 @@ public enum AttributeDefinition {
             Constants.STALECONNECTIONCHECKER_PROPERTIES, ModelType.OBJECT, false), VALIDCONNECTIONCHECKERCLASSNAME(
             Constants.VALIDCONNECTIONCHECKERCLASSNAME, ModelType.STRING, false), VALIDCONNECTIONCHECKER_PROPERTIES(
             Constants.VALIDCONNECTIONCHECKER_PROPERTIES, ModelType.OBJECT, false), BACKGROUNDVALIDATIONMILLIS(
-            org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS, ModelType.LONG, false), BACKGROUNDVALIDATION(
+            org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS, ModelType.LONG, false), BACKGROUNDVALIDATIONMINUTES_REMOVE(
+            org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES_REMOVE, ModelType.LONG, false), BACKGROUNDVALIDATION(
             org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION, ModelType.BOOLEAN, false), USE_FAST_FAIL(
-            org.jboss.as.connector.pool.Constants.USE_FAST_FAIL, ModelType.BOOLEAN, false), VALIDATEONMATCH(
+            org.jboss.as.connector.pool.Constants.USE_FAST_FAIL, ModelType.BOOLEAN, false), USE_FAST_FAIL_REMOVE(
+            org.jboss.as.connector.pool.Constants.USE_FAST_FAIL_REMOVE, ModelType.BOOLEAN, false), VALIDATEONMATCH(
             Constants.VALIDATEONMATCH, ModelType.BOOLEAN, false), SPY(Constants.SPY, ModelType.BOOLEAN, false), USE_CCM(
             Constants.USE_CCM, ModelType.BOOLEAN, false), XADATASOURCECLASS(Constants.XADATASOURCECLASS, ModelType.STRING, true), INTERLEAVING(
             Constants.INTERLEAVING, ModelType.BOOLEAN, false), NOTXSEPARATEPOOL(Constants.NOTXSEPARATEPOOL, ModelType.BOOLEAN,
