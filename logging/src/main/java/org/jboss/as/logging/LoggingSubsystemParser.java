@@ -118,7 +118,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         boolean gotRoot = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case LOGGING_1_0: {
+                case LOGGING_1_0:
+                case LOGGING_1_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case LOGGER: {
@@ -209,7 +210,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case LOGGING_1_0: {
+                case LOGGING_1_0:
+                case LOGGING_1_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (!encountered.add(element)) {
                         throw duplicateNamedElement(reader, reader.getLocalName());
@@ -329,7 +331,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case LOGGING_1_0: {
+                case LOGGING_1_0:
+                case LOGGING_1_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (encountered.contains(element)) {
                         throw duplicateNamedElement(reader, reader.getLocalName());
@@ -883,7 +886,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             throw new XMLStreamException("Missing required nested filter element", reader.getLocation());
         }
         switch (Namespace.forUri(reader.getNamespaceURI())) {
-            case LOGGING_1_0: {
+            case LOGGING_1_0:
+            case LOGGING_1_1: {
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
                     case PATTERN_FORMATTER: {
@@ -941,7 +945,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         // Elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case LOGGING_1_0: {
+                case LOGGING_1_0:
+                case LOGGING_1_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case HANDLER: {

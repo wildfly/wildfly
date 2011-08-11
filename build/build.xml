@@ -98,8 +98,6 @@
             <maven-resource group="com.h2database" artifact="h2"/>
         </module-def>
 
-        <module-def name="com.sun.jndi.ldap" />
-
         <module-def name="com.sun.jsf-impl">
             <maven-resource group="com.sun.faces" artifact="jsf-impl"/>
         </module-def>
@@ -107,8 +105,6 @@
         <module-def name="com.sun.jsf-impl" slot="1.2">
             <maven-resource group="javax.faces" artifact="jsf-impl"/>
         </module-def>
-
-        <module-def name="com.sun.security" />
 
         <module-def name="com.sun.xml.bind">
             <maven-resource group="com.sun.xml.bind" artifact="jaxb-impl"/>

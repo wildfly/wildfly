@@ -30,6 +30,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 
@@ -64,7 +65,13 @@ public class TransactionManagementAnnotationProcessor extends AbstractComponentC
             List<AnnotationInstance> annotations = classAnnotations.get(TRANSACTION_MANAGEMENT_ANNOTATION_NAME);
             if (annotations != null) {
                 assert annotations.size() == 1 : "@TransactionManagement can only be on the class itself";
-                componentDescription.setTransactionManagementType(TransactionManagementType.valueOf(annotations.get(0).value().asEnum()));
+                final AnnotationValue annotationValue = annotations.get(0).value();
+                // annotation value can be null if the user specifies @TransactionManagement without any explicit value.
+                // Jandex API doesn't return the "default" value and that's the expected API behaviour
+                // https://issues.jboss.org/browse/AS7-1506
+                final TransactionManagementType txManagementType = annotationValue == null ?
+                        TransactionManagementType.CONTAINER : TransactionManagementType.valueOf(annotationValue.asEnum());
+                componentDescription.setTransactionManagementType(txManagementType);
             }
         }
     }
