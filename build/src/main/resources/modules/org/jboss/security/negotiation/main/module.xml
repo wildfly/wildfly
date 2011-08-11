@@ -28,12 +28,11 @@
     </resources>
 
     <dependencies>
-        <module name="sun.jdk"/>
         <module name="javax.api"/>
         <module name="javax.servlet.api"/>
         <module name="org.jboss.as.web"/>
-        <module name="org.jboss.common-core"/>
         <module name="org.jboss.logging"/>
         <module name="org.picketbox"/>
+        <module name="sun.jdk"/>
     </dependencies>
 </module>
