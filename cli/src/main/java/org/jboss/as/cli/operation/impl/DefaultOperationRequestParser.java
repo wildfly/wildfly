@@ -24,16 +24,6 @@ package org.jboss.as.cli.operation.impl;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestParser;
-import org.jboss.as.cli.operation.parsing.NodeState;
-import org.jboss.as.cli.operation.parsing.OperationNameState;
-import org.jboss.as.cli.operation.parsing.OperationRequestState;
-import org.jboss.as.cli.operation.parsing.OutputTargetState;
-import org.jboss.as.cli.operation.parsing.ParsingContext;
-import org.jboss.as.cli.operation.parsing.ParsingStateCallbackHandler;
-import org.jboss.as.cli.operation.parsing.PropertyListState;
-import org.jboss.as.cli.operation.parsing.PropertyState;
-import org.jboss.as.cli.operation.parsing.PropertyValueState;
-import org.jboss.as.cli.operation.parsing.StateParser;
 import org.jboss.as.cli.parsing.TheParser;
 
 /**
@@ -77,9 +67,8 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
             return;
         }
 
-        TheParser parser = new TheParser();
         try {
-            parser.parseOperationRequest(operationRequest, handler);
+            TheParser.parseOperationRequest(operationRequest, handler);
         } catch (CommandFormatException e) {
             throw new OperationFormatException(e);
         }

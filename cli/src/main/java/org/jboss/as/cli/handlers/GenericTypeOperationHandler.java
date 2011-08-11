@@ -243,9 +243,12 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
                 ParsedArguments args = ctx.getParsedArguments();
 
-                final String theName = name.getValue(args);
-                if(theName == null) {
-                    return staticArgs;
+                try {
+                    if(!name.isValueComplete(args)) {
+                        return staticArgs;
+                    }
+                } catch (CommandFormatException e) {
+                    return Collections.emptyList();
                 }
 
                 final String op = operation.getValue(args);

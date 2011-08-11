@@ -95,6 +95,14 @@ public class TheParser {
         StateParser.parse(commandLine, callbackHandler, OperationRequestState.INSTANCE);
     }
 
+    public static void parseCommandArgs(String commandLine, final OperationRequestParser.CallbackHandler handler) throws CommandFormatException {
+        if(commandLine == null || commandLine.isEmpty()) {
+            return;
+        }
+        final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
+        StateParser.parse(commandLine, callbackHandler, ArgumentListState.INSTANCE);
+    }
+
     protected static ParsingStateCallbackHandler getCallbackHandler(final OperationRequestParser.CallbackHandler handler) {
 
         return new ParsingStateCallbackHandler() {
@@ -107,7 +115,7 @@ public class TheParser {
             public void enteredState(ParsingContext ctx)
                     throws OperationFormatException {
                 final String id = ctx.getState().getId();
-                // System.out.println("entered " + id);
+                //System.out.println("entered " + id);
 
                 if (id.equals(CommandNameState.ID)) {
                     handler.addressOperationSeparator(ctx.getLocation());
@@ -127,18 +135,17 @@ public class TheParser {
                     throws CommandFormatException {
 
                 final String id = ctx.getState().getId();
-                // System.out.println("leaving " + id);
+                //System.out.println("leaving " + id);
 
                 if (id.equals(PropertyListState.ID)) {
-                    if (ctx.getCharacter() == ')') {
+                    if (!ctx.isEndOfContent()) {
                         handler.propertyListEnd(ctx.getLocation());
                     }
                 } else if (ArgumentState.ID.equals(id)) {
                     if (this.name != null) {
                         final String value = buffer.toString().trim();
                         if (value.length() > 0) {
-                            handler.property(this.name, value,
-                                    nameValueSeparator);
+                            handler.property(this.name, value, nameValueSeparator);
                         } else {
                             handler.propertyName(this.name);
                             if (nameValueSeparator != -1) {
@@ -151,9 +158,13 @@ public class TheParser {
                             handler.propertyNameValueSeparator(nameValueSeparator);
                         }
                     }
-                    if (ctx.getCharacter() == ',') {
+//                    if (ctx.getCharacter() == ',') {
+//                        handler.propertySeparator(ctx.getLocation());
+//                    } TODO this is not really an equivalent
+                    if(!ctx.isEndOfContent()) {
                         handler.propertySeparator(ctx.getLocation());
                     }
+
                     buffer.setLength(0);
                     name = null;
                     nameValueSeparator = -1;
@@ -161,6 +172,9 @@ public class TheParser {
                     if (name == null) {
                         handler.property(null, buffer.toString().trim(), -1);
                         buffer.setLength(0);
+                        if(!ctx.isEndOfContent()) {
+                            handler.propertySeparator(ctx.getLocation());
+                        }
                     }
                 } else if (CommandNameState.ID.equals(id)) {
                     handler.operationName(buffer.toString().trim());
@@ -211,10 +225,8 @@ public class TheParser {
             }
 
             @Override
-            public void character(ParsingContext ctx)
-                    throws OperationFormatException {
-                // System.out.println(ctx.getState().getId() + " '" +
-                // ctx.getCharacter() + "'");
+            public void character(ParsingContext ctx) throws OperationFormatException {
+                // System.out.println(ctx.getState().getId() + " '" + ctx.getCharacter() + "'");
                 buffer.append(ctx.getCharacter());
             }
         };
