@@ -26,13 +26,13 @@ import java.util.Collection;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
+import org.jboss.as.cli.operation.ParsedOperationRequest;
 import org.jboss.as.cli.operation.PrefixFormatter;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
@@ -229,7 +229,7 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
-    public ParsedArguments getParsedArguments() {
+    public ParsedOperationRequest getParsedArguments() {
         // TODO Auto-generated method stub
         return null;
     }

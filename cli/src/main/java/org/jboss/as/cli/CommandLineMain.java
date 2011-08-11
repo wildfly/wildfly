@@ -92,15 +92,15 @@ import org.jboss.as.cli.handlers.jms.JmsQueueAddHandler;
 import org.jboss.as.cli.handlers.jms.JmsQueueRemoveHandler;
 import org.jboss.as.cli.handlers.jms.JmsTopicAddHandler;
 import org.jboss.as.cli.handlers.jms.JmsTopicRemoveHandler;
-import org.jboss.as.cli.impl.DefaultParsedCommand;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
+import org.jboss.as.cli.operation.ParsedOperationRequest;
 import org.jboss.as.cli.operation.PrefixFormatter;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
-import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -421,13 +421,11 @@ public class CommandLineMain {
             return; // ignore comments
         }
         if(isOperation(line)) {
-            cmdCtx.resetArgs(line);
 
-            DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(cmdCtx.getPrefix());
             ModelNode request;
             try {
-                cmdCtx.getOperationRequestParser().parse(line, builder);
-                request = builder.buildRequest();
+                cmdCtx.resetArgs(line);
+                request = cmdCtx.parsedCmd.toOperationRequest();
             } catch (CommandFormatException e) {
                 cmdCtx.printLine(e.getLocalizedMessage());
                 return;
@@ -435,7 +433,7 @@ public class CommandLineMain {
 
             if(cmdCtx.isBatchMode()) {
                 StringBuilder op = new StringBuilder();
-                op.append(cmdCtx.getPrefixFormatter().format(builder.getAddress()));
+                op.append(cmdCtx.getPrefixFormatter().format(cmdCtx.parsedCmd.getAddress()));
                 op.append(line.substring(line.indexOf(':')));
                 DefaultBatchedCommand batchedCmd = new DefaultBatchedCommand(op.toString(), request);
                 Batch batch = cmdCtx.getBatchManager().getActiveBatch();
@@ -443,20 +441,17 @@ public class CommandLineMain {
                 cmdCtx.printLine("#" + batch.size() + " " + batchedCmd.getCommand());
             } else {
                 cmdCtx.set("OP_REQ", request);
-                if(builder.getOutputTarget() != null) {
-                    cmdCtx.setOutputTarget(builder.getOutputTarget());
-                }
                 try {
                     cmdCtx.operationHandler.handle(cmdCtx);
                 } finally {
-                    cmdCtx.setOutputTarget(null);
+//                    cmdCtx.setOutputTarget(null);
                     cmdCtx.set("OP_REQ", null);
                 }
             }
 
         } else {
             try {
-                cmdCtx.parseArgs(line);
+                cmdCtx.resetArgs(line);
             } catch (CommandFormatException e1) {
                 cmdCtx.printLine(e1.getLocalizedMessage());
                 return;
@@ -478,19 +473,20 @@ public class CommandLineMain {
                         }
                     }
                 } else {
-                    if(cmdCtx.parsedCmd.getOutputTarget() != null) {
-                        cmdCtx.setOutputTarget(cmdCtx.parsedCmd.getOutputTarget());
-                    }
                     try {
                         handler.handle(cmdCtx);
                     } catch (CommandFormatException e) {
                         cmdCtx.printLine(e.getLocalizedMessage());
-                    } finally {
-                        cmdCtx.setOutputTarget(null);
+//                    } finally {
+//                        cmdCtx.setOutputTarget(null);
                     }
                 }
 
-                cmdCtx.resetArgs(null);
+                // TODO this doesn't make sense
+                try {
+                    cmdCtx.resetArgs(null);
+                } catch (CommandFormatException e) {
+                }
             } else {
                 cmdCtx.printLine("Unexpected command '" + line
                         + "'. Type 'help' for the list of supported commands.");
@@ -549,10 +545,12 @@ public class CommandLineMain {
         /** whether the session should be terminated*/
         private boolean terminate;
 
+        /** current command line */
+        private String cmdLine;
         /** current command */
         private String cmd;
         /** parsed command arguments */
-        private DefaultParsedCommand parsedCmd = new DefaultParsedCommand();
+        private DefaultOperationCallbackHandler parsedCmd = new DefaultOperationCallbackHandler();
 
         /** domain or standalone mode*/
         private boolean domainMode;
@@ -622,15 +620,14 @@ public class CommandLineMain {
 
         @Override
         public String getArgumentsString() {
-            String argsStr = parsedCmd.getArgumentsString();
-            if(argsStr != null && cmd != null) {
-                if(argsStr.length() == cmd.length()) {
-                    argsStr = null;
+            if(cmdLine != null && cmd != null) {
+                if(cmdLine.length() == cmd.length()) {
+                    return null;
                 } else {
-                    argsStr = argsStr.substring(cmd.length() + 1);
+                    return cmdLine.substring(cmd.length() + 1);
                 }
             }
-            return argsStr;
+            return null;
         }
 
         @Override
@@ -859,14 +856,15 @@ public class CommandLineMain {
             return defaultControllerPort;
         }
 
-        private void resetArgs(String cmdLine) {
-            parsedCmd.reset(cmdLine, null);
-            this.cmd = null;
-        }
-
-        private void parseArgs(String cmdLine) throws CommandFormatException {
-            parsedCmd.parse(cmdLine);
-            this.cmd = parsedCmd.getCommandName();
+        private void resetArgs(String cmdLine) throws CommandFormatException {
+            if(cmdLine != null) {
+                parsedCmd.parse(cmdLine);
+                setOutputTarget(parsedCmd.getOutputTarget());
+                this.cmd = parsedCmd.getOperationName();
+            } else {
+                this.cmd = null;
+            }
+            this.cmdLine = cmdLine;
         }
 
         @Override
@@ -891,16 +889,14 @@ public class CommandLineMain {
                 throw new IllegalArgumentException("Null command line.");
             }
 
-            final DefaultParsedCommand originalParsedArguments = this.parsedCmd;
+            final DefaultOperationCallbackHandler originalParsedArguments = this.parsedCmd;
             if(isOperation(line)) {
                 try {
-                    this.parsedCmd = new DefaultParsedCommand();
+                    this.parsedCmd = new DefaultOperationCallbackHandler();
                     resetArgs(line);
-                    DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(getPrefix());
-                    parser.parse(line, builder);
-                    ModelNode request = builder.buildRequest();
+                    ModelNode request = this.parsedCmd.toOperationRequest();
                     StringBuilder op = new StringBuilder();
-                    op.append(prefixFormatter.format(builder.getAddress()));
+                    op.append(prefixFormatter.format(parsedCmd.getAddress()));
                     op.append(line.substring(line.indexOf(':')));
                     return new DefaultBatchedCommand(op.toString(), request);
                 } finally {
@@ -908,6 +904,7 @@ public class CommandLineMain {
                 }
             }
 
+            //TODO this could be just parsed
             String cmd = line;
             String cmdArgs = null;
             for (int i = 0; i < cmd.length(); ++i) {
@@ -927,9 +924,8 @@ public class CommandLineMain {
             }
 
             try {
-                this.parsedCmd = new DefaultParsedCommand();
-                //parseArgs(cmdArgs, handler);
-                parseArgs(cmdArgs);
+                this.parsedCmd = new DefaultOperationCallbackHandler();
+                resetArgs(cmdArgs);
                 ModelNode request = ((OperationCommand)handler).buildRequest(this);
                 return new DefaultBatchedCommand(line, request);
             } finally {
@@ -943,7 +939,7 @@ public class CommandLineMain {
         }
 
         @Override
-        public ParsedArguments getParsedArguments() {
+        public ParsedOperationRequest getParsedArguments() {
             return parsedCmd;
         }
 
