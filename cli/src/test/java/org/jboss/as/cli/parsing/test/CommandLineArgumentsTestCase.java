@@ -77,6 +77,7 @@ public class CommandLineArgumentsTestCase {
         try {
             args.parse(line);
         } catch (CommandFormatException e) {
+            e.printStackTrace();
             org.junit.Assert.fail(e.getLocalizedMessage());
         }
         return args;

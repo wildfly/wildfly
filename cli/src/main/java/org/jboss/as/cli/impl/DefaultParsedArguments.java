@@ -21,44 +21,34 @@
  */
 package org.jboss.as.cli.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
-import org.jboss.as.cli.parsing.CommandLineParser;
+import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.parsing.TheParser;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class DefaultParsedArguments implements ParsedArguments, CommandLineParser.CallbackHandler, OperationRequestParser.CallbackHandler {
+public class DefaultParsedArguments implements ParsedArguments, OperationRequestParser.CallbackHandler, ParsedOperationRequest {
 
     /** current command's arguments */
     private String argsStr;
-    /** named command arguments */
-    private Map<String, String> namedArgs = new HashMap<String, String>();
-    /** other command arguments */
-    private List<String> otherArgs = new ArrayList<String>();
-    /** output target */
-    private String outputTarget;
-
-    private CommandHandler handler;
-
     private boolean parsed;
+
+    protected DefaultOperationCallbackHandler opCallback = new DefaultOperationCallbackHandler();
 
     public void reset(String args, CommandHandler handler) {
         argsStr = args;
-        namedArgs.clear();
-        otherArgs.clear();
-        outputTarget = null;
-        this.handler = handler;
+        opCallback.reset();
         parsed = false;
     }
 
@@ -83,7 +73,7 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
         if(!parsed) {
             parseArgs();
         }
-        return !namedArgs.isEmpty() || !otherArgs.isEmpty();
+        return !opCallback.getPropertyNames().isEmpty() || !opCallback.getOtherArguments().isEmpty();
     }
 
     /* (non-Javadoc)
@@ -94,7 +84,7 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
         if(!parsed) {
             parseArgs();
         }
-        return namedArgs.containsKey(argName);
+        return opCallback.getPropertyNames().contains(argName);
     }
 
     /* (non-Javadoc)
@@ -105,7 +95,7 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
         if(!parsed) {
             parseArgs();
         }
-        return namedArgs.get(argName);
+        return opCallback.getPropertyValue(argName);
     }
 
     /* (non-Javadoc)
@@ -116,7 +106,7 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
         if(!parsed) {
             parseArgs();
         }
-        return namedArgs.keySet();
+        return opCallback.getPropertyNames();
     }
 
     /* (non-Javadoc)
@@ -127,7 +117,7 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
         if(!parsed) {
             parseArgs();
         }
-        return otherArgs;
+        return opCallback.getOtherArguments();
     }
 
     protected void parseArgs() throws CommandFormatException {
@@ -138,139 +128,199 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
     }
 
     protected void callParser(String argsStr) throws CommandFormatException {
-        CommandLineParser.parse(argsStr, this);
-    }
-
-    @Override
-    public void argument(String name, int nameStart, String value, int valueStart, int end) throws CommandFormatException {
-        if(name != null) {
-            if(name.endsWith("-")) {
-                // this might be not the best way to check for an empty name, e.g. '--'.
-                throw new CommandFormatException("Argument name is not complete: '" + name + "'");
-            }
-            if(handler != null && !handler.hasArgument(name)) {
-                throw new CommandFormatException("Unexpected argument name '" + name + "'.");
-            }
-            namedArgs.put(name, value);
-        } else if(value != null) {
-            if(handler != null && !handler.hasArgument(otherArgs.size())) {
-                throw new CommandFormatException("Unexpected argument '" + value + "'.");
-            }
-            otherArgs.add(value);
-        }
+        TheParser.parseCommandArgs(argsStr, this);
     }
 
     @Override
     public void outputTarget(String outputTarget) throws CommandFormatException {
-        this.outputTarget = outputTarget;
+        opCallback.outputTarget(outputTarget);
     }
 
     @Override
     public String getOutputTarget() {
-        return outputTarget;
+        return opCallback.getOutputTarget();
     }
 
     @Override
     public void start(String operationString) {
-        // TODO Auto-generated method stub
-
+        opCallback.start(operationString);
     }
 
     @Override
     public void rootNode() {
-        // TODO Auto-generated method stub
-
+        opCallback.rootNode();
     }
 
     @Override
     public void parentNode() {
-        // TODO Auto-generated method stub
-
+        opCallback.parentNode();
     }
 
     @Override
     public void nodeType() {
-        // TODO Auto-generated method stub
-
+        opCallback.nodeType();
     }
 
     @Override
     public void nodeType(String nodeType) throws OperationFormatException {
-        // TODO Auto-generated method stub
-
+        opCallback.nodeType(nodeType);
     }
 
     @Override
     public void nodeTypeNameSeparator(int index) {
-        // TODO Auto-generated method stub
-
+        opCallback.nodeTypeNameSeparator(index);
     }
 
     @Override
     public void nodeName(String nodeName) throws OperationFormatException {
-        // TODO Auto-generated method stub
-
+        opCallback.nodeName(nodeName);
     }
 
     @Override
     public void nodeSeparator(int index) {
-        // TODO Auto-generated method stub
-
+        opCallback.nodeSeparator(index);
     }
 
     @Override
     public void addressOperationSeparator(int index) {
-        // TODO Auto-generated method stub
-
+        opCallback.addressOperationSeparator(index);
     }
 
     @Override
     public void operationName(String operationName)
             throws CommandFormatException {
-        // TODO Auto-generated method stub
-
+        opCallback.operationName(operationName);
     }
 
     @Override
     public void propertyListStart(int index) {
-        // TODO Auto-generated method stub
-
+        opCallback.propertyListStart(index);
     }
 
     @Override
     public void propertyName(String propertyName)
             throws CommandFormatException {
-        this.argument(propertyName, 0, null, -1, -1);
+        opCallback.propertyName(propertyName);
     }
 
     @Override
     public void propertyNameValueSeparator(int index) {
-        // TODO Auto-generated method stub
-
+        opCallback.propertyNameValueSeparator(index);
     }
 
     @Override
     public void property(String name, String value, int nameValueSeparatorIndex)
             throws CommandFormatException {
-        this.argument(name, 0, value, -1, -1);
+        opCallback.property(name, value, nameValueSeparatorIndex);
     }
 
     @Override
     public void propertySeparator(int index) {
-        // TODO Auto-generated method stub
-
+        opCallback.propertySeparator(index);
     }
 
     @Override
     public void propertyListEnd(int index) {
-        // TODO Auto-generated method stub
-
+        opCallback.propertyListEnd(index);
     }
 
     @Override
     public void nodeTypeOrName(String typeOrName)
             throws OperationFormatException {
-        // TODO Auto-generated method stub
+        opCallback.nodeTypeOrName(typeOrName);
+    }
 
+    @Override
+    public boolean isRequestComplete() {
+        return opCallback.isRequestComplete();
+    }
+
+    @Override
+    public boolean endsOnPropertySeparator() {
+        return opCallback.endsOnPropertySeparator();
+    }
+
+    @Override
+    public boolean endsOnPropertyValueSeparator() {
+        return opCallback.endsOnPropertyValueSeparator();
+    }
+
+    @Override
+    public boolean endsOnPropertyListStart() {
+        return opCallback.endsOnPropertyListStart();
+    }
+
+    @Override
+    public boolean endsOnAddressOperationNameSeparator() {
+        return opCallback.endsOnAddressOperationNameSeparator();
+    }
+
+    @Override
+    public boolean endsOnNodeSeparator() {
+        return opCallback.endsOnNodeSeparator();
+    }
+
+    @Override
+    public boolean endsOnNodeTypeNameSeparator() {
+        return opCallback.endsOnNodeTypeNameSeparator();
+    }
+
+    @Override
+    public boolean hasAddress() {
+        return opCallback.hasAddress();
+    }
+
+    @Override
+    public OperationRequestAddress getAddress() {
+        return opCallback.getAddress();
+    }
+
+    @Override
+    public boolean hasOperationName() {
+        return opCallback.hasOperationName();
+    }
+
+    @Override
+    public String getOperationName() {
+        return opCallback.getOperationName();
+    }
+
+    @Override
+    public boolean hasProperties() {
+        return opCallback.hasProperties();
+    }
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return opCallback.getPropertyNames();
+    }
+
+    @Override
+    public String getPropertyValue(String name) {
+        return opCallback.getPropertyValue(name);
+    }
+
+    @Override
+    public int getLastSeparatorIndex() {
+        return opCallback.getLastSeparatorIndex();
+    }
+
+    public void setParsed() {
+        parsed = true;
+    }
+
+    @Override
+    public String getLastParsedPropertyName() {
+        return opCallback.getLastParsedPropertyName();
+    }
+
+    @Override
+    public String getLastParsedPropertyValue() {
+        return opCallback.getLastParsedPropertyValue();
+    }
+
+    @Override
+    public boolean isValueComplete(String propertyName) {
+        return opCallback.isValueComplete(propertyName);
     }
 }

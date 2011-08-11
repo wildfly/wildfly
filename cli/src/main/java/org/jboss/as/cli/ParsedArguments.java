@@ -24,11 +24,13 @@ package org.jboss.as.cli;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.cli.operation.ParsedOperationRequest;
+
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface ParsedArguments {
+public interface ParsedArguments extends ParsedOperationRequest {
 
     /**
      * Returns the current command's arguments as a string.
