@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.jboss.as.clustering.ClassLoaderProvider;
 import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
 import org.jboss.marshalling.Marshalling;
@@ -37,8 +38,13 @@ import static org.junit.Assert.*;
  * @author Paul Ferraro
  *
  */
-public class SessionAttributeMarshallerTest {
-    private final SessionAttributeMarshaller marshaller = new SessionAttributeMarshallerImpl(new MarshallingContext(Marshalling.getMarshallerFactory("river"), new MarshallingConfiguration()));
+public class SessionAttributeMarshallerTest implements ClassLoaderProvider {
+    private final SessionAttributeMarshaller marshaller = new SessionAttributeMarshallerImpl(new MarshallingContext(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), new MarshallingConfiguration(), this));
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
+    }
 
     @Test
     public void test() throws IOException, ClassNotFoundException {
