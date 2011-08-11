@@ -27,11 +27,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
+import java.security.AccessController;
 import java.util.Arrays;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
+import org.jboss.util.loading.ContextClassLoaderSwitcher;
 
 /**
  * A non-hashable marshalled value, that is lazily serialized, but only deserialized on demand.
@@ -39,6 +41,8 @@ import org.jboss.marshalling.Unmarshaller;
  */
 public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingContext> {
     private static final long serialVersionUID = -8852566958387608376L;
+    @SuppressWarnings("unchecked")
+    private static final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
 
     private transient MarshallingContext context;
     private transient T object;
@@ -58,12 +62,14 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         if (this.object == null) return null;
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         Marshaller marshaller = this.context.createMarshaller();
+        ContextClassLoaderSwitcher.SwitchContext switchContext = switcher.getSwitchContext(context.getClassLoader());
         try {
             marshaller.start(Marshalling.createByteOutput(output));
             marshaller.writeObject(this.object);
             marshaller.finish();
             return output.toByteArray();
         } finally {
+            switchContext.reset();
             marshaller.close();
         }
     }
@@ -79,12 +85,14 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
             this.context = context;
             if (this.bytes != null) {
                 Unmarshaller unmarshaller = context.createUnmarshaller();
+                ContextClassLoaderSwitcher.SwitchContext switchContext = switcher.getSwitchContext(context.getClassLoader());
                 try {
                     unmarshaller.start(Marshalling.createByteInput(ByteBuffer.wrap(this.bytes)));
                     this.object = (T) unmarshaller.readObject();
                     unmarshaller.finish();
                     this.bytes = null;
                 } finally {
+                    switchContext.reset();
                     unmarshaller.close();
                 }
             }
