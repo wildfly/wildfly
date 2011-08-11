@@ -29,7 +29,6 @@
     </resources>
 
     <dependencies>
-        <module name="com.sun.security"/>
         <module name="javax.api"/>
         <module name="javax.security.jacc.api"/>
         <module name="javax.transaction.api"/>
@@ -45,5 +44,6 @@
         <module name="org.jboss.security.negotiation"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.picketbox"/>
+        <module name="sun.jdk"/>
     </dependencies>
 </module>
