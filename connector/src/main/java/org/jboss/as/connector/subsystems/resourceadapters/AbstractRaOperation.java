@@ -7,6 +7,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES_REMOVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUPS;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAPCONTEXT;
@@ -34,6 +35,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECUR
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL_REMOVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 
@@ -144,9 +146,11 @@ public abstract class AbstractRaOperation {
                 boolean application = getBooleanIfSetOrGetDefault(conDefNode, APPLICATION, true);
                 CommonSecurity security = new CommonSecurityImpl(securityDomain, securityDomainAndApplication, application);
 
-                Long backgroundValidationMillis = getLongIfSetOrGetDefault(conDefNode, BACKGROUNDVALIDATIONMILLIS, null);
+                Long backgroundValidationMillis = getLongIfSetOrGetDefault(conDefNode, BACKGROUNDVALIDATIONMINUTES_REMOVE, null);
+                backgroundValidationMillis = getLongIfSetOrGetDefault(conDefNode, BACKGROUNDVALIDATIONMILLIS, null);
                 boolean backgroundValidation = getBooleanIfSetOrGetDefault(conDefNode, BACKGROUNDVALIDATION, false);
-                boolean useFastFail = getBooleanIfSetOrGetDefault(conDefNode, USE_FAST_FAIL, false);
+                boolean useFastFail = getBooleanIfSetOrGetDefault(conDefNode, USE_FAST_FAIL_REMOVE, false);
+                useFastFail = getBooleanIfSetOrGetDefault(conDefNode, USE_FAST_FAIL, false);
                 CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMillis,
                         useFastFail);
                 final String recoveryUsername = getStringIfSetOrGetDefault(conDefNode, RECOVERY_USERNAME, null);

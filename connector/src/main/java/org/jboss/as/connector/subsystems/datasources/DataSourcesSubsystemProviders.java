@@ -91,8 +91,10 @@ class DataSourcesSubsystemProviders {
             AttributeDefinition.EXCEPTIONSORTERCLASSNAME, AttributeDefinition.EXCEPTIONSORTER_PROPERTIES,
             AttributeDefinition.STALECONNECTIONCHECKERCLASSNAME, AttributeDefinition.STALECONNECTIONCHECKER_PROPERTIES,
             AttributeDefinition.VALIDCONNECTIONCHECKERCLASSNAME, AttributeDefinition.VALIDCONNECTIONCHECKER_PROPERTIES,
-            AttributeDefinition.BACKGROUNDVALIDATIONMILLIS, AttributeDefinition.BACKGROUNDVALIDATION,
-            AttributeDefinition.USE_FAST_FAIL, AttributeDefinition.VALIDATEONMATCH, AttributeDefinition.SPY,
+            AttributeDefinition.BACKGROUNDVALIDATIONMILLIS, AttributeDefinition.BACKGROUNDVALIDATIONMINUTES_REMOVE,
+            AttributeDefinition.BACKGROUNDVALIDATION,
+            AttributeDefinition.USE_FAST_FAIL, AttributeDefinition.USE_FAST_FAIL_REMOVE,
+            AttributeDefinition.VALIDATEONMATCH, AttributeDefinition.SPY,
             AttributeDefinition.USE_CCM };
 
     static final AttributeDefinition[] XA_DATASOURCE_ATTRIBUTE = new AttributeDefinition[] {
@@ -114,8 +116,10 @@ class DataSourcesSubsystemProviders {
             AttributeDefinition.EXCEPTIONSORTERCLASSNAME, AttributeDefinition.EXCEPTIONSORTER_PROPERTIES,
             AttributeDefinition.STALECONNECTIONCHECKERCLASSNAME, AttributeDefinition.STALECONNECTIONCHECKER_PROPERTIES,
             AttributeDefinition.VALIDCONNECTIONCHECKERCLASSNAME, AttributeDefinition.VALIDCONNECTIONCHECKER_PROPERTIES,
-            AttributeDefinition.BACKGROUNDVALIDATIONMILLIS, AttributeDefinition.BACKGROUNDVALIDATION,
-            AttributeDefinition.USE_FAST_FAIL, AttributeDefinition.VALIDATEONMATCH, AttributeDefinition.XA_RESOURCE_TIMEOUT,
+            AttributeDefinition.BACKGROUNDVALIDATIONMILLIS, AttributeDefinition.BACKGROUNDVALIDATIONMINUTES_REMOVE,
+            AttributeDefinition.BACKGROUNDVALIDATION,
+            AttributeDefinition.USE_FAST_FAIL, AttributeDefinition.USE_FAST_FAIL_REMOVE,
+            AttributeDefinition.VALIDATEONMATCH, AttributeDefinition.XA_RESOURCE_TIMEOUT,
             AttributeDefinition.SPY, AttributeDefinition.USE_CCM, AttributeDefinition.REAUTHPLUGIN_PROPERTIES,
             AttributeDefinition.RECOVERY_USERNAME, AttributeDefinition.RECOVERY_PASSWORD,
             AttributeDefinition.RECOVERY_SECURITY_DOMAIN, AttributeDefinition.RECOVERLUGIN_CLASSNAME,
