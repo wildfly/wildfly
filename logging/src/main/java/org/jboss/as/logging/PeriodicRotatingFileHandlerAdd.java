@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
@@ -56,6 +57,7 @@ class PeriodicRotatingFileHandlerAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         LoggingValidators.validate(operation);
+        if (operation.hasDefined(APPEND)) model.get(APPEND).set(operation.get(APPEND));
         model.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
         model.get(ENCODING).set(operation.get(ENCODING));
         model.get(FORMATTER).set(operation.get(FORMATTER));
@@ -71,6 +73,7 @@ class PeriodicRotatingFileHandlerAdd extends AbstractAddStepHandler {
         try {
             final PeriodicRotatingFileHandlerService service = new PeriodicRotatingFileHandlerService();
             final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+            if (operation.hasDefined(APPEND)) service.setAppend(operation.get(APPEND).asBoolean());
             if (operation.hasDefined(FILE)) {
                 final HandlerFileService fileService = new HandlerFileService(operation.get(FILE, PATH).asString());
                 final ServiceBuilder<?> fileBuilder = serviceTarget.addService(LogServices.handlerFileName(name), fileService);
