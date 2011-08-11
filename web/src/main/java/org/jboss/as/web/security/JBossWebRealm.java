@@ -160,9 +160,10 @@ public class JBossWebRealm extends RealmBase {
                 @SuppressWarnings("unchecked")
                 CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
                 return new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList, userPrincipal, null,
-                        cm);
+                        credentials, cm, subject);
             } else
-                return new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList, userPrincipal, null);
+                return new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList, userPrincipal, null,
+                        credentials, null, subject);
         }
 
         return super.authenticate(username, credentials);
@@ -217,10 +218,10 @@ public class JBossWebRealm extends RealmBase {
                     @SuppressWarnings("unchecked")
                     CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
                     userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
-                            userPrincipal, null, cm);
+                            userPrincipal, null, certs, cm, subject);
                 } else
                     userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
-                            userPrincipal, null);
+                            userPrincipal, null, certs, null, subject);
             } else {
                 if (log.isTraceEnabled()) {
                     log.trace("User: " + userPrincipal + " is NOT authenticated");

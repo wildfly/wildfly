@@ -22,6 +22,16 @@
 
 package org.jboss.as.web.deployment;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.ServletContext;
+
 import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
@@ -43,6 +53,7 @@ import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.security.JBossWebRealmService;
+import org.jboss.as.web.security.SecurityAssociationService;
 import org.jboss.as.web.session.DistributableSessionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
@@ -59,15 +70,6 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
-
-import javax.servlet.ServletContext;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * {@code DeploymentUnitProcessor} creating the actual deployment services.
@@ -122,17 +124,18 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
         final ClassLoader classLoader = module.getClassLoader();
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final EEModuleDescription moduleDescription = deploymentUnit
+                .getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 
         // Create the context
         final StandardContext webContext = new StandardContext();
         final ContextConfig config = new JBossContextConfig(deploymentUnit);
 
         List<ValveMetaData> valves = metaData.getValves();
-        if(valves == null) {
+        if (valves == null) {
             metaData.setValves(valves = new ArrayList<ValveMetaData>());
         }
-        final ValveMetaData namingValve= new ValveMetaData();
+        final ValveMetaData namingValve = new ValveMetaData();
         namingValve.setModule("org.jboss.as.web");
         namingValve.setValveClass(NamingValve.class.getName());
         namingValve.setId(NamingValve.class.getName());
@@ -204,7 +207,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         try {
-
             final ServiceName deploymentServiceName = WebSubsystemServices.deploymentServiceName(hostName, pathName);
             final ServiceName realmServiceName = deploymentServiceName.append("realm");
 
@@ -215,15 +217,17 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     .install();
 
             WebDeploymentService webDeploymentService = new WebDeploymentService(webContext, injectionContainer);
-            if(moduleDescription != null ) {
-                webDeploymentService.getNamespaceSelector().setValue(new ImmediateValue<NamespaceContextSelector>(moduleDescription.getNamespaceContextSelector()));
+            if (moduleDescription != null) {
+                webDeploymentService.getNamespaceSelector().setValue(
+                        new ImmediateValue<NamespaceContextSelector>(moduleDescription.getNamespaceContextSelector()));
             }
-            builder = serviceTarget.addService(deploymentServiceName, webDeploymentService)
-                        .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class,
-                                    new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames())
-                        .addDependency(realmServiceName, Realm.class, webDeploymentService.getRealm())
-                        .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
-                        .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
+            builder = serviceTarget
+                    .addService(deploymentServiceName, webDeploymentService)
+                    .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class,
+                            new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames())
+                    .addDependency(realmServiceName, Realm.class, webDeploymentService.getRealm())
+                    .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
+                    .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
 
             if (metaData.getDistributable() != null) {
                 final DistributedCacheManagerFactory factory = DistributableSessionManager.getDistributedCacheManagerFactory();
@@ -233,6 +237,11 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             }
 
             builder.install();
+
+            final ServiceName secAssocServiceName = deploymentServiceName.append("securityAssociation");
+            final SecurityAssociationService sas = new SecurityAssociationService(webContext, metaData);
+            serviceTarget.addService(secAssocServiceName, sas).addDependency(deploymentServiceName).setInitialMode(Mode.ACTIVE)
+                    .install();
 
         } catch (ServiceRegistryException e) {
             throw new DeploymentUnitProcessingException("Failed to add JBoss web deployment service", e);
@@ -246,7 +255,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     void processManagement(final DeploymentUnit unit, JBossWebMetaData metaData) {
-        for(final JBossServletMetaData servlet : metaData.getServlets()) {
+        for (final JBossServletMetaData servlet : metaData.getServlets()) {
             try {
                 final String name = servlet.getName().replace(' ', '_');
                 final ModelNode node = unit.createDeploymentSubModel("web", PathElement.pathElement("servlet", name));

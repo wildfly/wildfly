@@ -25,6 +25,8 @@ package org.jboss.as.web.security;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import org.jboss.security.RunAs;
+import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
@@ -118,4 +120,68 @@ class SecurityActions {
             }
         });
     }
+
+    /**
+     * Get the current {@code SecurityContext}
+     *
+     * @return an instance of {@code SecurityContext}
+     */
+    static SecurityContext getSecurityContext() {
+        return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
+            public SecurityContext run() {
+                return SecurityContextAssociation.getSecurityContext();
+            }
+        });
+    }
+
+    /**
+     * Clears current {@code SecurityContext}
+     */
+    static void clearSecurityContext() {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            public Void run() {
+                SecurityContextAssociation.clearSecurityContext();
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Sets the run as identity
+     *
+     * @param principal the identity
+     */
+    static void pushRunAsIdentity(final RunAsIdentity principal) {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+            @Override
+            public Void run() {
+                SecurityContext sc = getSecurityContext();
+                if (sc == null)
+                    throw new IllegalStateException("SecurityContext is null");
+                sc.setOutgoingRunAs(principal);
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Removes the run as identity
+     * @return the identity removed
+     */
+    static RunAs popRunAsIdentity() {
+        return AccessController.doPrivileged(new PrivilegedAction<RunAs>() {
+
+            @Override
+            public RunAs run() {
+                SecurityContext sc = getSecurityContext();
+                if (sc == null)
+                    throw new IllegalStateException("SecurityContext is null");
+                RunAs principal = sc.getOutgoingRunAs();
+                sc.setOutgoingRunAs(null);
+                return principal;
+            }
+        });
+    }
+
 }

@@ -25,6 +25,7 @@ package org.jboss.as.web.security;
 import java.security.Principal;
 import java.util.List;
 
+import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 
 import org.apache.catalina.Realm;
@@ -39,6 +40,10 @@ import org.jboss.security.CacheableManager;
 public class JBossGenericPrincipal extends GenericPrincipal {
 
     private CacheableManager<?, Principal> cm;
+
+    private Subject subject;
+
+    private Object credentials;
 
     /** {@inheritDoc} */
     public JBossGenericPrincipal(Realm realm, String name, String password) {
@@ -62,9 +67,21 @@ public class JBossGenericPrincipal extends GenericPrincipal {
     }
 
     public JBossGenericPrincipal(Realm realm, String name, String password, List<String> roles, Principal userPrincipal,
-            LoginContext loginContext, CacheableManager<?, Principal> cm) {
+            LoginContext loginContext, Object credentials) {
+        this(realm, name, password, roles, userPrincipal, loginContext, credentials, (CacheableManager<?, Principal>) null);
+    }
+
+    public JBossGenericPrincipal(Realm realm, String name, String password, List<String> roles, Principal userPrincipal,
+            LoginContext loginContext, Object credentials, CacheableManager<?, Principal> cm) {
+        this(realm, name, password, roles, userPrincipal, loginContext, credentials, cm, null);
+    }
+
+    public JBossGenericPrincipal(Realm realm, String name, String password, List<String> roles, Principal userPrincipal,
+            LoginContext loginContext, Object credentials, CacheableManager<?, Principal> cm, Subject subject) {
         super(realm, name, password, roles, userPrincipal, loginContext);
+        this.credentials = credentials;
         this.cm = cm;
+        this.subject = subject;
     }
 
     /**
@@ -75,6 +92,14 @@ public class JBossGenericPrincipal extends GenericPrincipal {
         if (cm != null && userPrincipal != null)
             cm.flushCache(userPrincipal);
         super.logout();
+    }
+
+    public Subject getSubject() {
+        return subject;
+    }
+
+    public Object getCredentials() {
+        return credentials;
     }
 
 }
