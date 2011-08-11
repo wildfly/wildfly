@@ -143,9 +143,7 @@ public class SecurityContextAssociationValve extends ValveBase {
         } finally {
             if (trace)
                 log.trace("End invoke, caller=" + caller);
-            if (createdSecurityContext) {
-                SecurityActions.clearSecurityContext();
-            }
+            SecurityActions.clearSecurityContext();
         }
     }
 
