@@ -152,8 +152,8 @@ public class DefaultEmbeddedCacheManagerTest {
         Configuration otherConfig = new Configuration();
         Configuration otherConfigOverride = new Configuration();
 
-        when(this.manager.defineConfiguration("default", defaultConfigOverride)).thenReturn(defaultConfig);
-        when(this.manager.defineConfiguration("other", otherConfigOverride)).thenReturn(otherConfig);
+        when(this.manager.defineConfiguration("default", "default", defaultConfigOverride)).thenReturn(defaultConfig);
+        when(this.manager.defineConfiguration("other", "default", otherConfigOverride)).thenReturn(otherConfig);
 
         Configuration result = this.subject.defineConfiguration("default", defaultConfigOverride);
 
@@ -179,22 +179,72 @@ public class DefaultEmbeddedCacheManagerTest {
         Configuration otherConfig = new Configuration();
         Configuration otherConfigOverride = new Configuration();
 
-        when(this.manager.defineConfiguration("default", "template", defaultConfigOverride)).thenReturn(defaultConfig);
-        when(this.manager.defineConfiguration("other", "template", otherConfigOverride)).thenReturn(otherConfig);
+        when(this.manager.defineConfiguration("default", "template", defaultConfigOverride)).thenReturn(defaultConfigOverride);
+        when(this.manager.defineConfiguration("default", "default", defaultConfigOverride)).thenReturn(defaultConfig);
+        when(this.manager.defineConfiguration("other", "template", otherConfigOverride)).thenReturn(otherConfigOverride);
+        when(this.manager.defineConfiguration("other", "default", otherConfigOverride)).thenReturn(otherConfig);
 
         Configuration result = this.subject.defineConfiguration("default", "template", defaultConfigOverride);
+
+        assertSame(defaultConfigOverride, result);
+
+        result = this.subject.defineConfiguration("default", "default", defaultConfigOverride);
+
+        assertSame(defaultConfig, result);
+
+        result = this.subject.defineConfiguration("default", CacheContainer.DEFAULT_CACHE_NAME, defaultConfigOverride);
+
+        assertSame(defaultConfig, result);
+
+        result = this.subject.defineConfiguration("default", null, defaultConfigOverride);
 
         assertSame(defaultConfig, result);
 
         result = this.subject.defineConfiguration("other", "template", otherConfigOverride);
 
+        assertSame(otherConfigOverride, result);
+
+        result = this.subject.defineConfiguration("other", "default", otherConfigOverride);
+
+        assertSame(otherConfig, result);
+
+        result = this.subject.defineConfiguration("other", CacheContainer.DEFAULT_CACHE_NAME, otherConfigOverride);
+
+        assertSame(otherConfig, result);
+
+        result = this.subject.defineConfiguration("other", null, otherConfigOverride);
+
         assertSame(otherConfig, result);
 
         result = this.subject.defineConfiguration(CacheContainer.DEFAULT_CACHE_NAME, "template", defaultConfigOverride);
 
+        assertSame(defaultConfigOverride, result);
+
+        result = this.subject.defineConfiguration(CacheContainer.DEFAULT_CACHE_NAME, "default", defaultConfigOverride);
+
+        assertSame(defaultConfig, result);
+
+        result = this.subject.defineConfiguration(CacheContainer.DEFAULT_CACHE_NAME, CacheContainer.DEFAULT_CACHE_NAME, defaultConfigOverride);
+
+        assertSame(defaultConfig, result);
+
+        result = this.subject.defineConfiguration(CacheContainer.DEFAULT_CACHE_NAME, null, defaultConfigOverride);
+
         assertSame(defaultConfig, result);
 
         result = this.subject.defineConfiguration(null, "template", defaultConfigOverride);
+
+        assertSame(defaultConfigOverride, result);
+
+        result = this.subject.defineConfiguration(null, "default", defaultConfigOverride);
+
+        assertSame(defaultConfig, result);
+
+        result = this.subject.defineConfiguration(null, CacheContainer.DEFAULT_CACHE_NAME, defaultConfigOverride);
+
+        assertSame(defaultConfig, result);
+
+        result = this.subject.defineConfiguration(null, null, defaultConfigOverride);
 
         assertSame(defaultConfig, result);
     }
