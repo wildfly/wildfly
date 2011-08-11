@@ -32,6 +32,10 @@
             <exports>
                 <include-set>
                     <path name="com/sun/script/javascript"/>
+                    <path name="com/sun/jndi/dns"/>
+                    <path name="com/sun/jndi/ldap"/>
+                    <path name="com/sun/security/auth"/>
+                    <path name="com/sun/security/auth/module"/>
                     <path name="sun/misc"/>
                     <path name="sun/nio"/>
                     <path name="sun/nio/ch"/>

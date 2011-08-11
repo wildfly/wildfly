@@ -28,8 +28,7 @@
     </resources>
 
     <dependencies>
-        <module name="com.sun.jndi.ldap"/>
-        <module name="com.sun.security" export="true"/>
+        <module name="sun.jdk"/>
         <module name="javax.api"/>
         <module name="javax.servlet.api"/>
         <module name="org.jboss.as.web"/>
