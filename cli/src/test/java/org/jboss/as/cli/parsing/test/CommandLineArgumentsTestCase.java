@@ -28,8 +28,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.ParsedArguments;
-import org.jboss.as.cli.impl.DefaultParsedArguments;
+import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.junit.Test;
 
 /**
@@ -41,14 +41,14 @@ public class CommandLineArgumentsTestCase {
     @Test
     public void testDefault() throws Exception {
 
-        ParsedArguments args = parse("../../../../testsuite/smoke/target/deployments/test-deployment.sar --name=my.sar --disabled --runtime-name=myrt.sar --force");
-        assertTrue(args.hasArguments());
-        assertTrue(args.hasArgument("--name"));
-        assertTrue(args.hasArgument("--runtime-name"));
-        assertTrue(args.hasArgument("--disabled"));
-        assertTrue(args.hasArgument("--force"));
+        ParsedOperationRequest args = parse("../../../../testsuite/smoke/target/deployments/test-deployment.sar --name=my.sar --disabled --runtime-name=myrt.sar --force");
+        assertTrue(args.hasProperties());
+        assertTrue(args.hasProperty("--name"));
+        assertTrue(args.hasProperty("--runtime-name"));
+        assertTrue(args.hasProperty("--disabled"));
+        assertTrue(args.hasProperty("--force"));
 
-        List<String> otherArgs = args.getOtherArguments();
+        List<String> otherArgs = args.getOtherProperties();
         assertEquals(1, otherArgs.size());
         assertEquals("../../../../testsuite/smoke/target/deployments/test-deployment.sar", otherArgs.get(0));
 
@@ -58,24 +58,24 @@ public class CommandLineArgumentsTestCase {
     @Test
     public void testOutputTarget() throws Exception {
 
-        ParsedArguments args = parse("--name=value value1 --name1 > output.target");
-        assertTrue(args.hasArguments());
-        assertTrue(args.hasArgument("--name"));
-        assertEquals("value", args.getArgument("--name"));
-        assertTrue(args.hasArgument("--name1"));
-        assertNull(args.getArgument("--name1"));
+        ParsedOperationRequest args = parse("--name=value value1 --name1 > output.target");
+        assertTrue(args.hasProperties());
+        assertTrue(args.hasProperty("--name"));
+        assertEquals("value", args.getPropertyValue("--name"));
+        assertTrue(args.hasProperty("--name1"));
+        assertNull(args.getPropertyValue("--name1"));
 
-        List<String> otherArgs = args.getOtherArguments();
+        List<String> otherArgs = args.getOtherProperties();
         assertEquals(1, otherArgs.size());
         assertEquals("value1", otherArgs.get(0));
 
         assertEquals("output.target", args.getOutputTarget());
     }
 
-    protected ParsedArguments parse(String line) {
-        DefaultParsedArguments args = new DefaultParsedArguments();
+    protected ParsedOperationRequest parse(String line) {
+        DefaultOperationCallbackHandler args = new DefaultOperationCallbackHandler();
         try {
-            args.parse(line);
+            args.parseProperties(line);
         } catch (CommandFormatException e) {
             e.printStackTrace();
             org.junit.Assert.fail(e.getLocalizedMessage());

@@ -28,8 +28,7 @@ import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.impl.DefaultParsedArguments;
-import org.jboss.as.cli.parsing.TheParser;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 
 /**
  *
@@ -51,15 +50,14 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
             ++firstCharIndex;
         }
 
-        final DefaultParsedArguments parsedCmd = (DefaultParsedArguments) ctx.getParsedArguments();
-        parsedCmd.reset(buffer, null);
+        final DefaultOperationCallbackHandler parsedCmd = (DefaultOperationCallbackHandler) ctx.getParsedArguments();
 
         try {
-            TheParser.parseCommandArgs(buffer, parsedCmd);
+            parsedCmd.parseProperties(buffer);
         } catch(Exception e) {
             e.printStackTrace();
         }
-        parsedCmd.setParsed();
+        //parsedCmd.setParsed();
 
         Iterable<CommandArgument> allArgs = getAllArguments(ctx);
         if(!allArgs.iterator().hasNext()) {
@@ -67,7 +65,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
         }
 
         try {
-            if(!parsedCmd.hasArguments()) {
+            if(!parsedCmd.hasProperties()) {
                 for(CommandArgument arg : getAllArguments(ctx)) {
                     if(arg.canAppearNext(ctx)) {
                         if(arg.getIndex() >= 0) {
@@ -108,10 +106,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
                 if(argName != null) {
                     valueCompleter = getValueCompleter(ctx, argName);
                 } else {
-                    try {
-                        valueCompleter = getValueCompleter(ctx, parsedCmd.getOtherArguments().size() - 1);
-                    } catch (CommandFormatException e) {
-                    }
+                    valueCompleter = getValueCompleter(ctx, parsedCmd.getOtherProperties().size() - 1);
                 }
 
                 if(valueCompleter == null) {

@@ -69,8 +69,8 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
         final ModelNode request;
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(prefix);
         try {
-            builder.operationName("read-children-names");
-            builder.property("child-type", prefix.getNodeType(), -1);
+            builder.setOperationName("read-children-names");
+            builder.addProperty("child-type", prefix.getNodeType());
             request = builder.buildRequest();
         } catch (OperationFormatException e1) {
             throw new IllegalStateException("Failed to build operation", e1);
@@ -114,7 +114,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
         ModelNode request;
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(prefix);
         try {
-            builder.operationName("read-operation-names");
+            builder.setOperationName("read-operation-names");
             request = builder.buildRequest();
         } catch (OperationFormatException e1) {
             throw new IllegalStateException("Failed to build operation", e1);
@@ -150,8 +150,8 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
         ModelNode request;
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(address);
         try {
-            builder.operationName("read-operation-description");
-            builder.property("name", operationName, -1);
+            builder.setOperationName("read-operation-description");
+            builder.addProperty("name", operationName);
             request = builder.buildRequest();
         } catch (OperationFormatException e1) {
             throw new IllegalStateException("Failed to build operation", e1);

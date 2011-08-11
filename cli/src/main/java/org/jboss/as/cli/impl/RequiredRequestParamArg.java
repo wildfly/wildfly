@@ -23,8 +23,8 @@ package org.jboss.as.cli.impl;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
+import org.jboss.as.cli.operation.ParsedOperationRequest;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -46,7 +46,7 @@ public class RequiredRequestParamArg extends RequestParamArgWithValue {
     }
 
     @Override
-    public void set(ParsedArguments args, ModelNode request) throws CommandFormatException {
+    public void set(ParsedOperationRequest args, ModelNode request) throws CommandFormatException {
         setValue(request, paramName, getValue(args, true));
     }
 }

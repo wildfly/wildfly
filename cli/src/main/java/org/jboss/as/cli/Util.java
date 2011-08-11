@@ -130,7 +130,7 @@ public class Util {
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         ModelNode request;
         try {
-            builder.operationName("read-children-names");
+            builder.setOperationName("read-children-names");
             builder.addProperty("child-type", "deployment");
             request = builder.buildRequest();
         } catch (OperationFormatException e) {
@@ -185,7 +185,7 @@ public class Util {
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             ModelNode request;
             try {
-                builder.operationName("read-children-names");
+                builder.setOperationName("read-children-names");
                 builder.addNode("server-group", serverGroup);
                 builder.addProperty("child-type", "deployment");
                 request = builder.buildRequest();
@@ -247,7 +247,7 @@ public class Util {
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             ModelNode request;
             try {
-                builder.operationName("read-children-names");
+                builder.setOperationName("read-children-names");
                 builder.addNode("server-group", serverGroup);
                 builder.addProperty("child-type", "deployment");
                 request = builder.buildRequest();
@@ -273,7 +273,7 @@ public class Util {
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
         try {
-            builder.operationName("read-children-names");
+            builder.setOperationName("read-children-names");
             builder.addProperty("child-type", "deployment");
             request = builder.buildRequest();
         } catch (OperationFormatException e) {
@@ -296,7 +296,7 @@ public class Util {
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
         try {
-            builder.operationName("read-children-names");
+            builder.setOperationName("read-children-names");
             builder.addProperty("child-type", "server-group");
             request = builder.buildRequest();
         } catch (OperationFormatException e) {
@@ -326,7 +326,7 @@ public class Util {
         ModelNode request;
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(address);
         try {
-            builder.operationName("read-children-types");
+            builder.setOperationName("read-children-types");
             request = builder.buildRequest();
         } catch (OperationFormatException e1) {
             throw new IllegalStateException("Failed to build operation", e1);
@@ -359,7 +359,7 @@ public class Util {
         final ModelNode request;
         DefaultOperationRequestBuilder builder = address == null ? new DefaultOperationRequestBuilder() : new DefaultOperationRequestBuilder(address);
         try {
-            builder.operationName("read-children-names");
+            builder.setOperationName("read-children-names");
             builder.addProperty("child-type", type);
             request = builder.buildRequest();
         } catch (OperationFormatException e1) {
@@ -390,7 +390,7 @@ public class Util {
                 builder.addNode("profile", profile);
             }
             builder.addNode("subsystem", "messaging");
-            builder.operationName("read-children-names");
+            builder.setOperationName("read-children-names");
             builder.addProperty("child-type", type);
             request = builder.buildRequest();
         } catch (OperationFormatException e) {
@@ -417,7 +417,7 @@ public class Util {
                 builder.addNode("profile", profile);
             }
             builder.addNode("subsystem", "datasources");
-            builder.operationName("read-children-names");
+            builder.setOperationName("read-children-names");
             builder.addProperty("child-type", dsType);
             request = builder.buildRequest();
         } catch (OperationFormatException e) {

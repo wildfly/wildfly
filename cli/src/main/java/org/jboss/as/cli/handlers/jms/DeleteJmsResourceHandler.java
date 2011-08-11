@@ -46,7 +46,7 @@ public class DeleteJmsResourceHandler extends BatchModeCommandHandler {
             throws OperationFormatException {
 
         try {
-            if(!ctx.getParsedArguments().hasArguments()) {
+            if(!ctx.getParsedArguments().hasProperties()) {
                 throw new OperationFormatException("Arguments are missing");
             }
         } catch (CommandFormatException e) {

@@ -23,13 +23,18 @@ package org.jboss.as.cli.operation.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.ParsedOperationRequest;
 import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.OperationRequestAddress.Node;
+import org.jboss.as.cli.parsing.TheParser;
+import org.jboss.dmr.ModelNode;
 
 /**
 *
@@ -65,6 +70,16 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         address = prefix;
     }
 
+    public void parse(String argsStr) throws CommandFormatException {
+        reset();
+        TheParser.parse(argsStr, this);
+    }
+
+    public void parseProperties(String argsStr) throws CommandFormatException {
+        reset();
+        TheParser.parseCommandArgs(argsStr, this);
+    }
+
     public void reset() {
         operationComplete = false;
         operationName = null;
@@ -77,7 +92,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         lastSeparatorIndex = -1;
     }
 
-    public List<String> getOtherArguments() {
+    public List<String> getOtherProperties() {
         return otherArgs;
     }
 
@@ -138,7 +153,12 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
 
     @Override
     public boolean hasProperties() {
-        return !props.isEmpty();
+        return !props.isEmpty() || !otherArgs.isEmpty();
+    }
+
+    @Override
+    public boolean hasProperty(String propertyName) {
+        return props.containsKey(propertyName);
     }
 
     @Override
@@ -353,5 +373,48 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     @Override
     public boolean isValueComplete(String propertyName) {
         return !propertyName.equals(lastPropName) && getPropertyValue(propertyName) != null;
+    }
+
+    public ModelNode toOperationRequest() throws OperationFormatException {
+        ModelNode request = new ModelNode();
+        ModelNode addressNode = request.get("address");
+        if(address.isEmpty()) {
+            addressNode.setEmptyList();
+        } else {
+            Iterator<Node> iterator = address.iterator();
+            while (iterator.hasNext()) {
+                OperationRequestAddress.Node node = iterator.next();
+                if (node.getName() != null) {
+                    addressNode.add(node.getType(), node.getName());
+                } else if (iterator.hasNext()) {
+                    throw new OperationFormatException(
+                            "The node name is not specified for type '"
+                                    + node.getType() + "'");
+                }
+            }
+        }
+
+        if(operationName == null || operationName.isEmpty()) {
+            throw new OperationFormatException("The operation name is missing or the format of the operation request is wrong.");
+        }
+        request.get("operation").set(operationName);
+
+        for(String propName : props.keySet()) {
+            final String value = props.get(propName);
+            if(propName == null || propName.trim().isEmpty())
+                throw new OperationFormatException("The argument name is not specified: '" + propName + "'");
+            if(value == null || value.trim().isEmpty())
+                throw new OperationFormatException("The argument value is not specified for " + propName + ": '" + value + "'");
+            ModelNode toSet = null;
+            try {
+                toSet = ModelNode.fromString(value);
+            } catch (Exception e) {
+                // just use the string
+                toSet = new ModelNode().set(value);
+            }
+            request.get(propName).set(toSet);
+        }
+
+        return request;
     }
 }

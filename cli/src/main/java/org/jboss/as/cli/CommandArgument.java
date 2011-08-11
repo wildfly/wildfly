@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli;
 
+import org.jboss.as.cli.operation.ParsedOperationRequest;
+
 
 /**
  *
@@ -57,7 +59,7 @@ public interface CommandArgument {
      * @return  true if the argument is present, false - otherwise.
      * @throws CommandFormatException
      */
-    boolean isPresent(ParsedArguments args) throws CommandFormatException;
+    boolean isPresent(ParsedOperationRequest args) throws CommandFormatException;
 
     /**
      * Checks whether the argument can appear on the command
@@ -74,7 +76,7 @@ public interface CommandArgument {
      * @param args  parsed arguments.
      * @return  the value of the argument or null if the argument isn't present or is missing value.
      */
-    String getValue(ParsedArguments args) throws CommandFormatException;
+    String getValue(ParsedOperationRequest args) throws CommandFormatException;
 
     /**
      * Returns the value of the argument specified on the command line.
@@ -85,7 +87,7 @@ public interface CommandArgument {
      * @param required  whether the value for this argument is required.
      * @return  the value of the argument or null if the argument isn't present and the value is not required.
      */
-    String getValue(ParsedArguments args, boolean required) throws CommandFormatException;
+    String getValue(ParsedOperationRequest args, boolean required) throws CommandFormatException;
 
     /**
      * Checks whether the value is specified and complete.
@@ -96,7 +98,7 @@ public interface CommandArgument {
      * @return  true if the value of the argument is complete, false otherwise.
      * @throws CommandFormatException
      */
-    boolean isValueComplete(ParsedArguments args) throws CommandFormatException;
+    boolean isValueComplete(ParsedOperationRequest args) throws CommandFormatException;
 
     /**
      * Checks whether the argument accepts value.
