@@ -21,8 +21,9 @@
  */
 package org.jboss.as.cli.operation.impl;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,14 +51,34 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     private boolean operationComplete;
     private String operationName;
     private OperationRequestAddress address;
-    private Map<String, String> props;
+    private Map<String, String> props = new HashMap<String, String>();
+    private List<String> otherArgs = new ArrayList<String>();
     private String outputTarget;
+
+    private String lastPropName;
+    private String lastPropValue;
 
     public DefaultOperationCallbackHandler() {
     }
 
     public DefaultOperationCallbackHandler(OperationRequestAddress prefix) {
         address = prefix;
+    }
+
+    public void reset() {
+        operationComplete = false;
+        operationName = null;
+        address = null;
+        props.clear();
+        otherArgs.clear();
+        outputTarget = null;
+        lastPropName = null;
+        lastPropValue = null;
+        lastSeparatorIndex = -1;
+    }
+
+    public List<String> getOtherArguments() {
+        return otherArgs;
     }
 
     @Override
@@ -117,7 +138,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
 
     @Override
     public boolean hasProperties() {
-        return props != null && !props.isEmpty();
+        return !props.isEmpty();
     }
 
     @Override
@@ -146,15 +167,10 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     public void validatedNodeName(String nodeName) throws OperationFormatException {
 
         if(address == null) {
-            System.out.println("address is null");
             address = new DefaultOperationRequestAddress();
         }
 
         if(!address.endsOnType()) {
-            System.out.println(this + " " + address);
-            for(OperationRequestAddress.Node node : address) {
-                System.out.println(node);
-            }
             throw new OperationFormatException("The prefix should end with the node type before going to a specific node name.");
         }
 
@@ -188,12 +204,12 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public void validatedPropertyName(String argName) throws OperationFormatException {
-
-        if(props == null) {
-            props = new HashMap<String, String>();
-        }
-        props.put(argName, null);
+    //public void validatedPropertyName(String argName) throws OperationFormatException {
+    public void propertyName(String propertyName)
+            throws OperationFormatException {
+        props.put(propertyName, null);
+        lastPropName = propertyName;
+        lastPropValue = null;
         separator = SEPARATOR_NONE;
     }
 
@@ -204,18 +220,23 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public void validatedProperty(String name, String value, int nameValueSeparatorIndex) throws OperationFormatException {
+    //public void validatedProperty(String name, String value, int nameValueSeparatorIndex) throws OperationFormatException {
+    public void property(String name, String value, int nameValueSeparatorIndex)
+            throws OperationFormatException {
 
-        if (value.isEmpty()) {
+/*        if (value.isEmpty()) {
             throw new OperationFormatException(
                     "The argument value is missing or the format is wrong for argument '"
                             + value + "'");
         }
-
-        if(props == null) {
-            props = new HashMap<String, String>();
+*/
+        if(name == null) {
+            otherArgs.add(value);
+        } else {
+            props.put(name, value);
         }
-        props.put(name, value);
+        lastPropName = name;
+        lastPropValue = value;
         separator = SEPARATOR_NONE;
         this.lastSeparatorIndex = nameValueSeparatorIndex;
     }
@@ -224,6 +245,8 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     public void propertySeparator(int index) {
         separator = SEPARATOR_ARG;
         this.lastSeparatorIndex = index;
+        this.lastPropName = null;
+        this.lastPropValue = null;
 
     }
 
@@ -232,6 +255,8 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         separator = SEPARATOR_NONE;
         operationComplete = true;
         this.lastSeparatorIndex = index;
+        this.lastPropName = null;
+        this.lastPropValue = null;
     }
 
     @Override
@@ -279,12 +304,12 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
 
     @Override
     public Set<String> getPropertyNames() {
-        return props == null ? Collections.<String>emptySet() : props.keySet();
+        return props.keySet();
     }
 
     @Override
     public String getPropertyValue(String name) {
-        return props == null ? null : props.get(name);
+        return props.get(name);
     }
 
     @Override
@@ -299,5 +324,34 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
 
     public String getOutputTarget() {
         return outputTarget;
+    }
+
+    @Override
+    protected void validatedProperty(String name, String value,
+            int nameValueSeparatorIndex) throws OperationFormatException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    protected void validatedPropertyName(String propertyName)
+            throws OperationFormatException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public String getLastParsedPropertyName() {
+        return lastPropName;
+    }
+
+    @Override
+    public String getLastParsedPropertyValue() {
+        return lastPropValue;
+    }
+
+    @Override
+    public boolean isValueComplete(String propertyName) {
+        return !propertyName.equals(lastPropName) && getPropertyValue(propertyName) != null;
     }
 }

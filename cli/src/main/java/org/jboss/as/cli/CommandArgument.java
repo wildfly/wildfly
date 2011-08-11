@@ -88,6 +88,17 @@ public interface CommandArgument {
     String getValue(ParsedArguments args, boolean required) throws CommandFormatException;
 
     /**
+     * Checks whether the value is specified and complete.
+     * The value is considered complete only if it is followed by a separator
+     * (argument separator, end of argument list but not end-of-content).
+     *
+     * @param args  the parsed arguments
+     * @return  true if the value of the argument is complete, false otherwise.
+     * @throws CommandFormatException
+     */
+    boolean isValueComplete(ParsedArguments args) throws CommandFormatException;
+
+    /**
      * Checks whether the argument accepts value.
      * @return  true if this argument accepts a value, otherwise false.
      */

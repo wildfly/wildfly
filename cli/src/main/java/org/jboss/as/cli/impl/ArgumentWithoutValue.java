@@ -162,6 +162,26 @@ public class ArgumentWithoutValue implements CommandArgument {
     }
 
     @Override
+    public boolean isValueComplete(ParsedArguments args) throws CommandFormatException {
+        if(!args.hasArguments()) {
+            return false;
+        }
+
+/*        if (index >= 0 && index < args.getOtherArguments().size()) {
+            return true;
+        }
+*/
+        if(args.isValueComplete(fullName)) {
+            return true;
+        }
+
+        if(shortName != null && args.isValueComplete(shortName)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public String getFullName() {
         return fullName;
     }

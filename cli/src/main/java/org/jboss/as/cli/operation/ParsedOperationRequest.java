@@ -59,4 +59,10 @@ public interface ParsedOperationRequest {
     String getPropertyValue(String name);
 
     int getLastSeparatorIndex();
+
+    String getLastParsedPropertyName();
+
+    String getLastParsedPropertyValue();
+
+    boolean isValueComplete(String propertyName);
 }

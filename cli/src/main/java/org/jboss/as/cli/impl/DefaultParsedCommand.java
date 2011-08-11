@@ -23,15 +23,13 @@ package org.jboss.as.cli.impl;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
-import org.jboss.as.cli.parsing.CommandLineParser;
-import org.jboss.as.cli.parsing.CommandLineParser.CommandCallbackHandler;
 import org.jboss.as.cli.parsing.TheParser;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class DefaultParsedCommand extends DefaultParsedArguments implements CommandCallbackHandler {
+public class DefaultParsedCommand extends DefaultParsedArguments {
 
     private String cmd;
 
@@ -41,13 +39,8 @@ public class DefaultParsedCommand extends DefaultParsedArguments implements Comm
     }
 
     @Override
-    public void commandName(String name, int end) throws CommandFormatException {
-        this.cmd = name;
-    }
-
-    @Override
     public void operationName(String name) throws CommandFormatException {
-        commandName(name, -1);
+        this.cmd = name;
     }
 
     public String getCommandName() {
