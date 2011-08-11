@@ -50,13 +50,13 @@ public class TransactionManagerTest {
 
     @Test
     public void testTransactionManagerBoundToJndi() throws NamingException {
-        TransactionManager tm = (TransactionManager)new InitialContext().lookup("java:/jboss/TransactionManager");
+        TransactionManager tm = (TransactionManager)new InitialContext().lookup("java:jboss/TransactionManager");
         Assert.assertNotNull(tm);
     }
 
     @Test
     public void testTransactionSynchronizationRegistryBoundToJndi() throws NamingException {
-        TransactionSynchronizationRegistry tm = (TransactionSynchronizationRegistry)new InitialContext().lookup("java:/jboss/TransactionSynchronizationRegistry");
+        TransactionSynchronizationRegistry tm = (TransactionSynchronizationRegistry)new InitialContext().lookup("java:jboss/TransactionSynchronizationRegistry");
         Assert.assertNotNull(tm);
     }
 }
