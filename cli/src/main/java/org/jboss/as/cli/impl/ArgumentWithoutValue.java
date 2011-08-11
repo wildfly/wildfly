@@ -30,8 +30,8 @@ import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
+import org.jboss.as.cli.operation.ParsedOperationRequest;
 
 
 /**
@@ -119,7 +119,7 @@ public class ArgumentWithoutValue implements CommandArgument {
      * @see org.jboss.as.cli.CommandArgument#getValue(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public String getValue(ParsedArguments args) {
+    public String getValue(ParsedOperationRequest args) {
         try {
             return getValue(args, false);
         } catch (CommandFormatException e) {
@@ -131,7 +131,7 @@ public class ArgumentWithoutValue implements CommandArgument {
      * @see org.jboss.as.cli.CommandArgument#getValue(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public String getValue(ParsedArguments args, boolean required) throws CommandFormatException {
+    public String getValue(ParsedOperationRequest args, boolean required) throws CommandFormatException {
         if(!required) {
             return null;
         }
@@ -142,28 +142,28 @@ public class ArgumentWithoutValue implements CommandArgument {
     }
 
     @Override
-    public boolean isPresent(ParsedArguments args) throws CommandFormatException {
-        if(!args.hasArguments()) {
+    public boolean isPresent(ParsedOperationRequest args) throws CommandFormatException {
+        if(!args.hasProperties()) {
             return false;
         }
 
-        if (index >= 0 && index < args.getOtherArguments().size()) {
+        if (index >= 0 && index < args.getOtherProperties().size()) {
             return true;
         }
 
-        if(args.hasArgument(fullName)) {
+        if(args.hasProperty(fullName)) {
             return true;
         }
 
-        if(shortName != null && args.hasArgument(shortName)) {
+        if(shortName != null && args.hasProperty(shortName)) {
             return true;
         }
         return false;
     }
 
     @Override
-    public boolean isValueComplete(ParsedArguments args) throws CommandFormatException {
-        if(!args.hasArguments()) {
+    public boolean isValueComplete(ParsedOperationRequest args) throws CommandFormatException {
+        if(!args.hasProperties()) {
             return false;
         }
 
@@ -189,9 +189,9 @@ public class ArgumentWithoutValue implements CommandArgument {
     @Override
     public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
 
-        ParsedArguments args = ctx.getParsedArguments();
+        ParsedOperationRequest args = ctx.getParsedArguments();
         if (exclusive) {
-            return !args.hasArguments();
+            return !args.hasProperties();
         }
 
         if (isPresent(args)) {

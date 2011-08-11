@@ -35,7 +35,6 @@ import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
@@ -44,6 +43,7 @@ import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
+import org.jboss.as.cli.operation.ParsedOperationRequest;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
@@ -131,12 +131,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                     }
 
                     if(writeAttribute) {
-                        Set<String> specified;
-                        try {
-                            specified = ctx.getParsedArguments().getArgumentNames();
-                        } catch (CommandFormatException e) {
-                            return Collections.emptyList();
-                        }
+                        Set<String> specified = ctx.getParsedArguments().getPropertyNames();
                         final List<String> theProps = new ArrayList<String>();
                         for(Property prop : getNodeProperties(ctx)) {
                             final String propName = "--" + prop.getName();
@@ -241,7 +236,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             @Override
             protected Iterable<CommandArgument> getAllArguments(CommandContext ctx) {
 
-                ParsedArguments args = ctx.getParsedArguments();
+                ParsedOperationRequest args = ctx.getParsedArguments();
 
                 try {
                     if(!name.isValueComplete(args)) {
@@ -333,7 +328,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         composite.get("address").setEmptyList();
         ModelNode steps = composite.get("steps");
 
-        ParsedArguments args = ctx.getParsedArguments();
+        ParsedOperationRequest args = ctx.getParsedArguments();
 
         final String profile;
         if(ctx.isDomainMode()) {
@@ -345,12 +340,12 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             profile = null;
         }
 
-        for(String argName : args.getArgumentNames()) {
+        for(String argName : args.getPropertyNames()) {
             if(argName.equals("--profile") || this.name.getFullName().equals(argName)) {
                 continue;
             }
 
-            final String valueString = args.getArgument(argName);
+            final String valueString = args.getPropertyValue(argName);
             if(valueString == null) {
                 continue;
             }
@@ -401,7 +396,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
     protected ModelNode buildOperationRequest(CommandContext ctx, final String operation) throws CommandFormatException {
 
-        ParsedArguments args = ctx.getParsedArguments();
+        ParsedOperationRequest args = ctx.getParsedArguments();
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         if(ctx.isDomainMode()) {
@@ -421,12 +416,12 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
         builder.setOperationName(operation);
 
-        for(String argName : args.getArgumentNames()) {
+        for(String argName : args.getPropertyNames()) {
             if(argName.equals("--profile")) {
                 continue;
             }
 
-            final String valueString = args.getArgument(argName);
+            final String valueString = args.getPropertyValue(argName);
             if(valueString == null) {
                 continue;
             }
@@ -464,7 +459,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
     protected void printHelp(CommandContext ctx) {
 
-        ParsedArguments args = ctx.getParsedArguments();
+        ParsedOperationRequest args = ctx.getParsedArguments();
         try {
             if(helpProperties.isPresent(args)) {
                 printAttributes(ctx);

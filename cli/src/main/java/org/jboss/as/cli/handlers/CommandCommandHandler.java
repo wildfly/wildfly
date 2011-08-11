@@ -31,13 +31,13 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandRegistry;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
+import org.jboss.as.cli.operation.ParsedOperationRequest;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.dmr.ModelNode;
@@ -163,7 +163,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             }}), "--command-name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                ParsedArguments args = ctx.getParsedArguments();
+                ParsedOperationRequest args = ctx.getParsedArguments();
                 if(isPresent(args)) {
                     return false;
                 }
@@ -188,7 +188,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
-        final ParsedArguments args = ctx.getParsedArguments();
+        final ParsedOperationRequest args = ctx.getParsedArguments();
         final String action = this.action.getValue(args);
         if(action == null) {
             ctx.printLine("Command is missing.");

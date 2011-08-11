@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.impl.DefaultParsedCommand;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.junit.Test;
 
 /**
@@ -41,32 +41,32 @@ public class CommandTestCase {
     @Test
     public void testCommandOnly() throws Exception {
 
-        DefaultParsedCommand cmd = parse("some-command");
-        assertEquals("some-command", cmd.getCommandName());
-        assertFalse(cmd.hasArguments());
+        DefaultOperationCallbackHandler cmd = parse("some-command");
+        assertEquals("some-command", cmd.getOperationName());
+        assertFalse(cmd.hasProperties());
         assertNull(cmd.getOutputTarget());
     }
 
     @Test
     public void testCommandWithArgsAndOutputTarget() throws Exception {
 
-        DefaultParsedCommand cmd = parse(" some-command --name=value --name1 value1 > command.log");
-        assertEquals("some-command", cmd.getCommandName());
-        assertTrue(cmd.hasArguments());
-        assertTrue(cmd.hasArgument("--name"));
-        assertEquals("value", cmd.getArgument("--name"));
-        assertTrue(cmd.hasArgument("--name1"));
-        assertNull(cmd.getArgument("--name1"));
+        DefaultOperationCallbackHandler cmd = parse(" some-command --name=value --name1 value1 > command.log");
+        assertEquals("some-command", cmd.getOperationName());
+        assertTrue(cmd.hasProperties());
+        assertTrue(cmd.hasProperty("--name"));
+        assertEquals("value", cmd.getPropertyValue("--name"));
+        assertTrue(cmd.hasProperty("--name1"));
+        assertNull(cmd.getPropertyValue("--name1"));
 
-        List<String> otherArgs = cmd.getOtherArguments();
+        List<String> otherArgs = cmd.getOtherProperties();
         assertEquals(1, otherArgs.size());
         assertEquals("value1", otherArgs.get(0));
 
         assertEquals("command.log", cmd.getOutputTarget());
     }
 
-    protected DefaultParsedCommand parse(String line) {
-        DefaultParsedCommand args = new DefaultParsedCommand();
+    protected DefaultOperationCallbackHandler parse(String line) {
+        DefaultOperationCallbackHandler args = new DefaultOperationCallbackHandler();
         try {
             args.parse(line);
         } catch (CommandFormatException e) {

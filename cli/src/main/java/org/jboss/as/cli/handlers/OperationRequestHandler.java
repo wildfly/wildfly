@@ -31,7 +31,7 @@ import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
-import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -96,9 +96,10 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
 
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
-        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(ctx.getPrefix());
-        ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), builder);
-        return builder.buildRequest();
+        //DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(ctx.getPrefix());
+        //ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), builder);
+        //return builder.buildRequest();
+        return ((DefaultOperationCallbackHandler)ctx.getParsedArguments()).toOperationRequest();
     }
 
     @Override
