@@ -54,6 +54,23 @@ public class BeanMetaDataConfig extends AbstractConfigVisitorNode implements Ser
         return JBOSS_MC_POJO.append(name).append(state.name());
     }
 
+    /**
+     * To instances name.
+     *
+     * @param clazz the class
+     * @return unique instance name
+     */
+    public static ServiceName toInstancesName(Class<?> clazz) {
+        String clName;
+        ClassLoader classLoader = clazz.getClassLoader();
+        if (classLoader != null)
+            clName = classLoader.toString();
+        else
+            clName = "SystemClassLoader";
+
+        return JBOSS_MC_POJO.append(clName, clazz.getName());
+    }
+
     private String name;
     private String beanClass;
     private Set<String> aliases;

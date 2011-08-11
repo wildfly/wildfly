@@ -29,6 +29,7 @@ import org.jboss.msc.value.InjectedValue;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Set;
 
 /**
  * Injected value.
@@ -48,6 +49,12 @@ public class InjectedValueConfig extends ValueConfig {
 
     public Object getValue(Class<?> type) {
         Object result = value.getValue();
+        if (result instanceof Set) {
+            Set set = (Set) result;
+            if (set.size() != 1)
+                throw new IllegalArgumentException("Invalid number of type instances match: " + set + ", type: " + type);
+            result = set.iterator().next();
+        }
         if (property != null) {
             Method getter = getBeanInfo(result).getGetter(property, type);
             try {
@@ -85,7 +92,9 @@ public class InjectedValueConfig extends ValueConfig {
                 type = getType(visitor, this);
             if (type == null)
                 throw new IllegalArgumentException("Cannot determine injected type: " + toString());
-            System.out.println("TYPE == " + type);
+
+            ServiceName instancesName = BeanMetaDataConfig.toInstancesName(type);
+            visitor.addDependency(instancesName, value);
         }
     }
 

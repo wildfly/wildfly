@@ -28,6 +28,7 @@ import org.jboss.as.mc.descriptor.FactoryConfig;
 import org.jboss.as.mc.descriptor.ValueConfig;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 
 import java.lang.reflect.Constructor;
@@ -108,11 +109,18 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
                 // set so describe service has its value
                 describedPojoPhase.setBeanInfo(beanInfo);
             }
+            // InstancesService.addInstance(context.getChildTarget(), getBean()); // TODO -- enable this
         } catch (StartException t) {
             throw t;
         } catch (Throwable t) {
             throw new StartException(t);
         }
         super.start(context);
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        // InstancesService.removeInstance(context.getController().getServiceContainer(), getBean()); // TODO -- enable this
+        super.stop(context);
     }
 }
