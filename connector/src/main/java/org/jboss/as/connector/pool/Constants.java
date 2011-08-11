@@ -38,9 +38,13 @@ public class Constants {
 
     public static final String BACKGROUNDVALIDATIONMILLIS = "background-validation-millis";
 
+    public static final String BACKGROUNDVALIDATIONMINUTES_REMOVE = "background-validation-minutes";
+
     public static final String BACKGROUNDVALIDATION = "background-validation";
 
     public static final String USE_FAST_FAIL = "use-fast-fail";
+
+    public static final String USE_FAST_FAIL_REMOVE = "useFastFail";
 
     public static final String BLOCKING_TIMEOUT_WAIT_MILLIS = "blocking-timeout-wait-millis";
 
