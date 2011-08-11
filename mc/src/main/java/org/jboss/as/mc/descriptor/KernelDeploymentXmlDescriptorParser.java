@@ -69,6 +69,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         DESTROY(new QName(NAMESPACE, "destroy")),
         INSTALL(new QName(NAMESPACE, "install")),
         UNINSTALL(new QName(NAMESPACE, "uninstall")),
+        LIST(new QName(NAMESPACE, "list")),
+        SET(new QName(NAMESPACE, "set")),
+        MAP(new QName(NAMESPACE, "map")),
         UNKNOWN(null);
 
         private final QName qName;
@@ -102,6 +105,9 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         SERVICE(new QName("service")),
         PROPERTY(new QName("property")),
         CLASS(new QName("class")),
+        ELEMENT(new QName("elementClass")),
+        KEY_ELEMENT(new QName("keyClass")),
+        VALUE_ELEMENT(new QName("valueClass")),
         METHOD(new QName("method")),
         FACTORY_CLASS(new QName("factory-class")),
         FACTORY_METHOD(new QName("factory-method")),
@@ -381,6 +387,15 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case VALUE_FACTORY:
                             property.setValue(parseValueFactory(reader));
                             break;
+                        case LIST:
+                            property.setValue(parseList(reader));
+                            break;
+                        case SET:
+                            property.setValue(parseSet(reader));
+                            break;
+                        case MAP:
+                            property.setValue(parseMap(reader));
+                            break;
                         default:
                             throw unexpectedElement(reader);
                     }
@@ -544,6 +559,15 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         case VALUE_FACTORY:
                             valueConfig = parseValueFactory(reader);
                             break;
+                        case LIST:
+                            valueConfig = parseList(reader);
+                            break;
+                        case SET:
+                            valueConfig = parseSet(reader);
+                            break;
+                        case MAP:
+                            valueConfig = parseMap(reader);
+                            break;
                         default:
                             throw unexpectedElement(reader);
                     }
@@ -615,6 +639,88 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             }
         }
         throw unexpectedElement(reader);
+    }
+
+    private ValueConfig parseList(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        return parseCollection(reader, new ListConfig());
+    }
+
+    private ValueConfig parseSet(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        return parseCollection(reader, new SetConfig());
+    }
+
+    private ValueConfig parseCollection(final XMLExtendedStreamReader reader, CollectionConfig config) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final String attributeValue = reader.getAttributeValue(i);
+
+            switch (attribute) {
+                case CLASS:
+                    config.setType(attributeValue);
+                    break;
+                case ELEMENT:
+                    config.setElementType(attributeValue);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        while (reader.hasNext()) {
+            switch (reader.next()) {
+                case END_ELEMENT:
+                    return config;
+                case START_ELEMENT:
+                    switch (Element.of(reader.getName())) {
+                        case VALUE:
+                            config.addValue(parseValue(reader));
+                            break;
+                        case INJECT:
+                            config.addValue(parseInject(reader));
+                            break;
+                        case VALUE_FACTORY:
+                            config.addValue(parseValueFactory(reader));
+                            break;
+                        case LIST:
+                            config.addValue(parseList(reader));
+                            break;
+                        case SET:
+                            config.addValue(parseSet(reader));
+                            break;
+                        case MAP:
+                            config.addValue(parseMap(reader));
+                            break;
+                        default:
+                            throw unexpectedElement(reader);
+                    }
+            }
+        }
+        throw unexpectedElement(reader);
+    }
+
+    private ValueConfig parseMap(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        MapConfig mapConfig = new MapConfig();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final String attributeValue = reader.getAttributeValue(i);
+
+            switch (attribute) {
+                case CLASS:
+                    mapConfig.setType(attributeValue);
+                    break;
+                case KEY_ELEMENT:
+                    mapConfig.setKeyType(attributeValue);
+                    break;
+                case VALUE_ELEMENT:
+                    mapConfig.setValueType(attributeValue);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        // TODO
+        return mapConfig;
     }
 
     private ValueFactoryConfig parseValueFactory(final XMLExtendedStreamReader reader) throws XMLStreamException {
