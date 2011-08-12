@@ -22,51 +22,48 @@
 
 package org.jboss.as.testsuite.integration.mc.support;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class TBean {
-    private String msg;
-    private TInjectee injectee;
+public class TCollections {
+    private List<Integer> numbers;
+    private Set<TBean> beans;
+    private Map<String, TInjectee> map;
 
-    public TBean() {
-        this("Hello, ");
+    public List<Integer> getNumbers() {
+        return numbers;
     }
 
-    public TBean(String msg) {
-        this.msg = msg;
+    public void setNumbers(List<Integer> numbers) {
+        this.numbers = numbers;
     }
 
-    public TInjectee getInjectee() {
-        return injectee;
+    public Set<TBean> getBeans() {
+        return beans;
     }
 
-    public void setInjectee(TInjectee injectee) {
-        this.injectee = injectee;
+    public void setBeans(Set<TBean> beans) {
+        this.beans = beans;
     }
 
-    public void create() {
-        if (injectee != null)
-            injectee.sayHello("world!");
+    public Map<String, TInjectee> getMap() {
+        return map;
     }
 
-    public void start(String anotherMsg) {
-        if (injectee != null)
-            injectee.sayHello(anotherMsg);
+    public void setMap(Map<String, TInjectee> map) {
+        this.map = map;
     }
 
-    public void stop(String anotherMsg) {
-        if (injectee != null)
-            injectee.sayHello(anotherMsg);
-    }
-
-    public void destroy() {
-        if (injectee != null)
-            injectee.sayHello("actually bye!");
-    }
-
-    public void install(String msg) {
-        if (injectee != null)
-            injectee.sayHello(this.msg + msg);
+    public void start() {
+        for (Integer n : numbers)
+            System.out.println("n = " + n);
+        for (TBean b : beans)
+            System.out.println("b = " + b);
+        for (Map.Entry entry : map.entrySet())
+            System.out.println("k = " + entry.getKey() + ", v = " + entry.getValue());
     }
 }

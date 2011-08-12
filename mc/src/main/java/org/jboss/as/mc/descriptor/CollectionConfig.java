@@ -71,7 +71,7 @@ public abstract class CollectionConfig extends ValueConfig implements Serializab
     public Object getValue(Class<?> type) {
         Class<?> ct = componentType;
         if (ct == null && type != null)
-            ct = type.getComponentType();
+            ct = getComponentType(type, 0);
 
         Collection<Object> result = createInstance();
         for (ValueConfig vc : values) {

@@ -72,6 +72,8 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         LIST(new QName(NAMESPACE, "list")),
         SET(new QName(NAMESPACE, "set")),
         MAP(new QName(NAMESPACE, "map")),
+        ENTRY(new QName(NAMESPACE, "entry")),
+        KEY(new QName(NAMESPACE, "key")),
         UNKNOWN(null);
 
         private final QName qName;
@@ -719,8 +721,86 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     throw unexpectedAttribute(reader, i);
             }
         }
-        // TODO
-        return mapConfig;
+        while (reader.hasNext()) {
+            switch (reader.next()) {
+                case END_ELEMENT:
+                    return mapConfig;
+                case START_ELEMENT:
+                    switch (Element.of(reader.getName())) {
+                        case ENTRY:
+                            ValueConfig[] entry = parseEntry(reader);
+                            mapConfig.put(entry[0], entry[1]);
+                            break;
+                        default:
+                            throw unexpectedElement(reader);
+                    }
+            }
+        }
+        throw unexpectedElement(reader);
+    }
+
+    private ValueConfig[] parseEntry(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        ValueConfig[] entry = new ValueConfig[2];
+        while (reader.hasNext()) {
+            switch (reader.next()) {
+                case END_ELEMENT:
+                    return entry;
+                case START_ELEMENT:
+                    switch (Element.of(reader.getName())) {
+                        case KEY:
+                            entry[0] = parseValueValue(reader);
+                            break;
+                        case VALUE:
+                            entry[1] = parseValueValue(reader);
+                            break;
+                        default:
+                            throw unexpectedElement(reader);
+                    }
+            }
+        }
+        throw unexpectedElement(reader);
+    }
+
+    private ValueConfig parseValueValue(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        ValueConfig value = null;
+        while (reader.hasNext()) {
+            switch (reader.next()) {
+                case END_ELEMENT:
+                    if (value == null)
+                        throw new IllegalArgumentException("Null value: " + reader.getLocation());
+                    return value;
+                case START_ELEMENT:
+                    switch (Element.of(reader.getName())) {
+                        case VALUE:
+                            value = parseValue(reader);
+                            break;
+                        case INJECT:
+                            value = parseInject(reader);
+                            break;
+                        case VALUE_FACTORY:
+                            value = parseValueFactory(reader);
+                            break;
+                        case LIST:
+                            value = parseList(reader);
+                            break;
+                        case SET:
+                            value = parseSet(reader);
+                            break;
+                        case MAP:
+                            value = parseMap(reader);
+                            break;
+                        default:
+                            throw unexpectedElement(reader);
+                    }
+                    break;
+                case CHARACTERS:
+                    StringValueConfig svc = new StringValueConfig();
+                    svc.setValue(reader.getText());
+                    value = svc;
+                    break;
+            }
+        }
+        throw unexpectedElement(reader);
     }
 
     private ValueFactoryConfig parseValueFactory(final XMLExtendedStreamReader reader) throws XMLStreamException {

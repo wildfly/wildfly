@@ -74,10 +74,10 @@ public class MapConfig extends ValueConfig implements Serializable {
     public Object getValue(Class<?> type) {
         Class<?> kt = keyClass;
         if (kt == null && type != null)
-            kt = null; // TODO
+            kt = getComponentType(type, 0);
         Class<?> vt = valueClass;
         if (vt == null && type != null)
-            vt = null; // TODO
+            vt = getComponentType(type, 1);
 
         Map<Object, Object> result = createInstance();
         for (Map.Entry<ValueConfig, ValueConfig> entry : map.entrySet()) {

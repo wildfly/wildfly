@@ -20,53 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.mc.support;
+package org.jboss.as.testsuite.integration.mc.test;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.testsuite.integration.mc.support.TFactory;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class TBean {
-    private String msg;
-    private TInjectee injectee;
-
-    public TBean() {
-        this("Hello, ");
+@RunWith(Arquillian.class)
+public class CollectionsBeansTestCase {
+    @Deployment(name = "collections-beans")
+    public static JavaArchive getCycleBeansJar() {
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "collections-beans.jar");
+        archive.addPackage(TFactory.class.getPackage());
+        archive.addAsManifestResource("mc/collections-jboss-beans.xml", "collections-jboss-beans.xml");
+        return archive;
     }
 
-    public TBean(String msg) {
-        this.msg = msg;
-    }
-
-    public TInjectee getInjectee() {
-        return injectee;
-    }
-
-    public void setInjectee(TInjectee injectee) {
-        this.injectee = injectee;
-    }
-
-    public void create() {
-        if (injectee != null)
-            injectee.sayHello("world!");
-    }
-
-    public void start(String anotherMsg) {
-        if (injectee != null)
-            injectee.sayHello(anotherMsg);
-    }
-
-    public void stop(String anotherMsg) {
-        if (injectee != null)
-            injectee.sayHello(anotherMsg);
-    }
-
-    public void destroy() {
-        if (injectee != null)
-            injectee.sayHello("actually bye!");
-    }
-
-    public void install(String msg) {
-        if (injectee != null)
-            injectee.sayHello(this.msg + msg);
+    @Test
+    @OperateOnDeployment("collections-beans")
+    public void testCycleBeans() throws Exception {
+        // TODO -- try to get beans?
     }
 }
