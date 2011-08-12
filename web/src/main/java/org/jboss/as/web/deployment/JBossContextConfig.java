@@ -26,7 +26,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.HttpMethodConstraintElement;
@@ -63,6 +65,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.deployment.helpers.VFSDirContext;
 import org.jboss.as.web.session.DistributableSessionManager;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
@@ -879,6 +882,22 @@ public class JBossContextConfig extends ContextConfig {
         if (ok && (metaData != null)) {
             // Resolve run as
             metaData.resolveRunAs();
+            Map<String, RunAsIdentityMetaData> runAs = metaData.getRunAsIdentity();
+            Map<String, RunAsIdentityMetaData> newRunAs = new ConcurrentHashMap<String, RunAsIdentityMetaData>();
+            Map<String, Set<String>> principalVersusRolesMap = metaData.getSecurityRoles().getPrincipalVersusRolesMap();
+            for (Entry<String, RunAsIdentityMetaData> entry : runAs.entrySet()) {
+                String roleName = entry.getValue().getRoleName();
+                if (principalVersusRolesMap.containsKey(roleName)) {
+                    Set<String> principals = principalVersusRolesMap.get(roleName);
+                    // assign the first (and probably only) principal as the run as principal
+                    String runAsPrincipal = principals.iterator().next();
+                    RunAsIdentityMetaData newRunAsIdentity = new RunAsIdentityMetaData(roleName, runAsPrincipal);
+                    newRunAs.put(entry.getKey(), newRunAsIdentity);
+                }
+            }
+            if (!newRunAs.isEmpty()) {
+                metaData.setRunAsIdentity(newRunAs);
+            }
         }
 
         // Configure an authenticator if we need one
