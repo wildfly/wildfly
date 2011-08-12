@@ -80,8 +80,12 @@
 
     <xs:complexType name="property">
         <xs:choice minOccurs="0" maxOccurs="1">
+            <xs:element name="value" type="value"/>
             <xs:element name="inject" type="inject"/>
             <xs:element name="value-factory" type="value-factory"/>
+            <xs:element name="list" type="collection"/>
+            <xs:element name="set" type="collection"/>
+            <xs:element name="map" type="map"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
@@ -102,6 +106,46 @@
         </xs:sequence>
         <xs:attribute name="bean" type="xs:string" use="required"/>
         <xs:attribute name="method" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="collection">
+        <xs:sequence>
+            <xs:element name="value" type="value"/>
+            <xs:element name="inject" type="inject"/>
+            <xs:element name="value-factory" type="value-factory"/>
+            <xs:element name="list" type="collection"/>
+            <xs:element name="set" type="collection"/>
+            <xs:element name="map" type="map"/>
+        </xs:sequence>
+        <xs:attribute name="class" type="xs:string" use="optional"/>
+        <xs:attribute name="elementClass" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="map">
+        <xs:sequence>
+            <xs:element name="entry" type="entry"/>
+        </xs:sequence>
+        <xs:attribute name="class" type="xs:string" use="optional"/>
+        <xs:attribute name="keyClass" type="xs:string" use="optional"/>
+        <xs:attribute name="valueClass" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="entry">
+        <xs:sequence>
+            <xs:element name="key" type="value-value"/>
+            <xs:element name="value" type="value-value"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="value-value" mixed="true">
+        <xs:sequence>
+            <xs:element name="value" type="value"/>
+            <xs:element name="inject" type="inject"/>
+            <xs:element name="value-factory" type="value-factory"/>
+            <xs:element name="list" type="collection"/>
+            <xs:element name="set" type="collection"/>
+            <xs:element name="map" type="map"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="lifecycle">
