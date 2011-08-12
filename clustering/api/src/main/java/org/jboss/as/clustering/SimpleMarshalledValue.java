@@ -22,11 +22,11 @@
 
 package org.jboss.as.clustering;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.nio.ByteBuffer;
 import java.security.AccessController;
 import java.util.Arrays;
 
@@ -44,9 +44,9 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
     @SuppressWarnings("unchecked")
     private static final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
 
-    private transient MarshallingContext context;
-    private transient T object;
-    private transient byte[] bytes;
+    private transient volatile MarshallingContext context;
+    private transient volatile T object;
+    private transient volatile byte[] bytes;
 
     public SimpleMarshalledValue(T object, MarshallingContext context) {
         this.context = context;
@@ -57,8 +57,9 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         return this.object;
     }
 
-    synchronized byte[] getBytes() throws IOException {
-        if (this.bytes != null) return this.bytes;
+    byte[] getBytes() throws IOException {
+        byte[] bytes = this.bytes;
+        if (bytes != null) return bytes;
         if (this.object == null) return null;
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         Marshaller marshaller = this.context.createMarshaller();
@@ -87,10 +88,10 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
                 Unmarshaller unmarshaller = context.createUnmarshaller();
                 ContextClassLoaderSwitcher.SwitchContext switchContext = switcher.getSwitchContext(context.getClassLoader());
                 try {
-                    unmarshaller.start(Marshalling.createByteInput(ByteBuffer.wrap(this.bytes)));
+                    unmarshaller.start(Marshalling.createByteInput(new ByteArrayInputStream(this.bytes)));
                     this.object = (T) unmarshaller.readObject();
                     unmarshaller.finish();
-                    this.bytes = null;
+                    this.bytes = null; // Free up memory
                 } finally {
                     switchContext.reset();
                     unmarshaller.close();
@@ -107,12 +108,12 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
      * @see java.lang.Object#hashCode()
      */
     @Override
-    public synchronized int hashCode() {
+    public int hashCode() {
         return (this.object != null) ? this.object.hashCode() : 0;
     }
 
     @Override
-    public synchronized boolean equals(Object object) {
+    public boolean equals(Object object) {
         if ((object == null) || !(object instanceof SimpleMarshalledValue)) return false;
         @SuppressWarnings("unchecked")
         SimpleMarshalledValue<T> value = (SimpleMarshalledValue<T>) object;
@@ -129,25 +130,29 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
     }
 
     @Override
-    public synchronized String toString() {
-        return (this.object != null) ? this.object.toString() : (this.bytes != null) ? this.bytes.toString() : null;
+    public String toString() {
+        if (this.object != null) return this.object.toString();
+        byte[] bytes = this.bytes;
+        return (bytes != null) ? bytes.toString() : null;
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         int size = in.readInt();
+        byte[] bytes = null;
         if (size > 0) {
-            this.bytes = new byte[size];
-            in.read(this.bytes, 0, size);
+            bytes = new byte[size];
+            in.read(bytes);
         }
+        this.bytes = bytes;
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
-        this.bytes = this.getBytes();
-        if (this.bytes != null) {
-            out.writeInt(this.bytes.length);
-            out.write(this.bytes);
+        byte[] bytes = this.getBytes();
+        if (bytes != null) {
+            out.writeInt(bytes.length);
+            out.write(bytes);
         } else {
             out.writeInt(0);
         }

@@ -63,8 +63,19 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
     public ClassLoaderAwareCache(AdvancedCache<K, V> cache, ClassLoader loader) {
         super(cache);
         this.classLoaderRef = new WeakReference<ClassLoader>(loader);
-        cache.removeInterceptor(ClassLoaderAwareCommandInterceptor.class);
         cache.addInterceptor(new ClassLoaderAwareCommandInterceptor(this), 0);
+    }
+
+    @Override
+    public AdvancedCache<K, V> with(ClassLoader classLoader) {
+        // This ain't gonna work twice...
+        return this;
+    }
+
+    @Override
+    public void addInterceptor(CommandInterceptor interceptor, int position) {
+        // Don't let some other interceptor step in front of the ClassLoaderAwareCommandInterceptor
+        super.addInterceptor(interceptor, (position > 0) ? position : 1);
     }
 
     @Override

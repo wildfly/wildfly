@@ -32,6 +32,7 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.GlobalConfiguration;
+import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -317,7 +318,43 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
 
         @Override
         public AdvancedCache<K, V> with(ClassLoader loader) {
-            return new ClassLoaderAwareCache<K, V>(this.cache, loader);
+            return new ClassLoaderAwareCache<K, V>(this, loader);
+        }
+
+        // ISPN-1333 Workaround
+        @Override
+        public synchronized void addInterceptor(CommandInterceptor i, int position) {
+            this.cache.addInterceptor(i, position);
+        }
+
+        // ISPN-1333 Workaround
+        @Override
+        public synchronized void addInterceptorAfter(CommandInterceptor i, Class<? extends CommandInterceptor> afterInterceptor) {
+            this.cache.addInterceptorAfter(i, afterInterceptor);
+        }
+
+        // ISPN-1333 Workaround
+        @Override
+        public synchronized void addInterceptorBefore(CommandInterceptor i, Class<? extends CommandInterceptor> beforeInterceptor) {
+            this.cache.addInterceptorBefore(i, beforeInterceptor);
+        }
+
+        // ISPN-1333 Workaround
+        @Override
+        public synchronized void removeInterceptor(Class<? extends CommandInterceptor> interceptorType) {
+            this.cache.removeInterceptor(interceptorType);
+        }
+
+        // ISPN-1333 Workaround
+        @Override
+        public synchronized void removeInterceptor(int position) {
+            this.cache.removeInterceptor(position);
+        }
+
+        // ISPN-1333 Workaround
+        @Override
+        public synchronized List<CommandInterceptor> getInterceptorChain() {
+            return this.cache.getInterceptorChain();
         }
 
         @Override
