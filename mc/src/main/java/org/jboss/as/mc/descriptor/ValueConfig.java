@@ -70,7 +70,7 @@ public abstract class ValueConfig extends AbstractConfigVisitorNode implements S
      * @param type the injection point type
      * @return value
      */
-    public abstract Object getClassValue(Class<?> type);
+    protected abstract Object getClassValue(Class<?> type);
 
     public String getType() {
         return type;

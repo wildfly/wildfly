@@ -82,10 +82,10 @@ public abstract class CollectionConfig extends ValueConfig implements Serializab
         return result;
     }
 
-    public Object getClassValue(Class<?> type) {
+    protected Object getClassValue(Class<?> type) {
         Collection<Object> result = createInstance();
         for (ValueConfig vc : values) {
-            result.add(vc.getClassValue(componentType));
+            result.add(vc.getValue(componentType));
         }
         return result;
     }

@@ -88,7 +88,7 @@ public class MapConfig extends ValueConfig implements Serializable {
         return result;
     }
 
-    public Object getClassValue(Class<?> type) {
+    protected Object getClassValue(Class<?> type) {
         Map<Object, Object> result = createInstance();
         for (Map.Entry<ValueConfig, ValueConfig> entry : map.entrySet()) {
             result.put(entry.getKey().getValue(keyClass), entry.getValue().getValue(valueClass));

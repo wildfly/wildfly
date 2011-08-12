@@ -49,7 +49,7 @@ public class StringValueConfig extends ValueConfig {
     }
 
     @Override
-    public Object getClassValue(Class<?> type) {
+    protected Object getClassValue(Class<?> type) {
         if (type == null)
             type = clazz;
         if (type == null)

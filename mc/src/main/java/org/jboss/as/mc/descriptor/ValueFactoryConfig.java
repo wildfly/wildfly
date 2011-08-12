@@ -38,7 +38,7 @@ public class ValueFactoryConfig extends FactoryConfig {
     private String method;
     private ValueConfig[] parameters;
 
-    public Object getClassValue(Class<?> type) {
+    protected Object getClassValue(Class<?> type) {
         try {
             ReflectionJoinpoint joinpoint = new ReflectionJoinpoint(beanInfo.getValue(), method);
             joinpoint.setTarget(value);

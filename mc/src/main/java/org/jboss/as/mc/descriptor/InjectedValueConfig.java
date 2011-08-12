@@ -47,7 +47,7 @@ public class InjectedValueConfig extends ValueConfig {
     private final transient InjectedValue<BeanInfo> beanInfo = new InjectedValue<BeanInfo>();
     private final transient InjectedValue<Object> value = new InjectedValue<Object>();
 
-    public Object getClassValue(Class<?> type) {
+    protected Object getClassValue(Class<?> type) {
         Object result = value.getValue();
         if (result instanceof Set) {
             Set set = (Set) result;
