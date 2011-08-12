@@ -31,7 +31,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -92,6 +94,11 @@ public class EJB3Extension implements Extension {
         // register ADD and REMOVE operations for timer-service
         subsystemRegistration.registerOperationHandler(ADD_TIMER_SERVICE, TimerServiceAdd.INSTANCE, EJB3SubsystemProviders.TIMER_SERVICE_ADD_DESCRIPTION, false);
         timerService.registerOperationHandler(REMOVE, TimerServiceRemove.INSTANCE, EJB3SubsystemProviders.TIMER_SERVICE_REMOVE_DESCRIPTION, false);
+
+        timerService.registerReadWriteAttribute(EJB3SubsystemModel.PATH, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        timerService.registerReadWriteAttribute(EJB3SubsystemModel.RELATIVE_TO, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        timerService.registerReadWriteAttribute(EJB3SubsystemModel.CORE_THREADS, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        timerService.registerReadWriteAttribute(EJB3SubsystemModel.MAX_THREADS, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
 
     }
 
