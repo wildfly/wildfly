@@ -22,34 +22,19 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+
 /**
- * User: jpai
+ * @author Stuart Douglas
  */
-public interface EJB3SubsystemModel {
+public class TimerServiceRemove extends AbstractRemoveStepHandler {
 
-    String NAME = "name";
+    public static final TimerServiceRemove INSTANCE = new TimerServiceRemove();
 
-    String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";
-    String DEFAULT_RESOURCE_ADAPTER_NAME = "default-resource-adapter-name";
-    String DEFAULT_SLSB_INSTANCE_POOL = "default-slsb-instance-pool";
-    String INSTANCE_ACQUISITION_TIMEOUT = "timeout";
-    String INSTANCE_ACQUISITION_TIMEOUT_UNIT = "timeout-unit";
-
-    String MAX_POOL_SIZE = "max-pool-size";
-    String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
-
-
-    String OPERATION_SET_DEFAULT_MDB_INSTANCE_POOL = "set-default-mdb-instance-pool";
-    String OPERATION_SET_DEFAULT_RA_NAME = "set-default-resource-adapter-name";
-    String OPERATION_SET_DEFAULT_SLSB_INSTANCE_POOL = "set-default-slsb-instance-pool";
-
-    String ADD_TIMER_SERVICE = "add-timer-service";
-    String CORE_THREADS = "core-threads";
-    String MAX_THREADS = "max-threads";
-    String RELATIVE_TO = "relative-to";
-    String PATH = "path";
-    String TIMER_SERVICE = "timer-service";
-    String DEFAULT = "default";
-
-
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    }
 }

@@ -45,4 +45,15 @@ public class EJB3SubsystemDescriptions {
         }
     };
 
+    public static final DescriptionProvider TIMER_SERVICE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            // TODO: Use Locale
+            final ModelNode description = new ModelNode();
+            description.get(DESCRIPTION).set("The EJB timer service");
+
+            return description;
+        }
+    };
+
 }
