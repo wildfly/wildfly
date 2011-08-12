@@ -332,7 +332,15 @@ public class DomainModelControllerService extends AbstractControllerService impl
         int securePort = hostControllerInfo.getHttpManagementSecurePort();
         String securityRealm = hostControllerInfo.getHttpManagementSecurityRealm();
 
-        Logger.getLogger("org.jboss.as").infof("creating http management service using network interface (%s) port (%s) securePort (%s)", interfaceName, port, securePort);
+        StringBuilder sb = new StringBuilder();
+        sb.append("creating http management service using network interface (").append(interfaceName).append(")");
+        if (port > -1) {
+            sb.append(" port (").append(port).append(")");
+        }
+        if (securePort > -1) {
+            sb.append(" securePort (").append(securePort).append(")");
+        }
+        Logger.getLogger("org.jboss.as").info(sb.toString());
 
         final ThreadFactory httpMgmtThreads = new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"),
                 Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
@@ -349,6 +357,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
         if (securityRealm != null) {
             builder.addDependency(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), SecurityRealmService.class, service.getSecurityRealmInjector());
+        } else {
+            Logger.getLogger("org.jboss.as").warn("No security realm defined for http management service, all access will be unrestricted.");
         }
         builder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();

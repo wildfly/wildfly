@@ -41,6 +41,7 @@ import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -105,6 +106,8 @@ public class HttpManagementAttributeHandlers {
 
         if (securityRealm != null) {
             builder.addDependency(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), SecurityRealmService.class, service.getSecurityRealmInjector());
+        } else {
+            Logger.getLogger("org.jboss.as").warn("No security realm defined for http management service, all access will be unrestricted.");
         }
         builder.setInitialMode(ServiceController.Mode.ACTIVE)
                .install();
