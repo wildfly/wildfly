@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.client.helpers.domain;
 
+import javax.security.auth.callback.CallbackHandler;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.List;
@@ -126,5 +127,19 @@ public interface DomainClient extends ModelControllerClient {
         public static DomainClient create(final InetAddress address, int port) {
             return new DomainClientImpl(address, port);
         }
+
+
+        /**
+         * Create an {@link org.jboss.as.controller.client.helpers.domain.DomainClient} instance for a remote address and port.
+         *
+         * @param address The remote address to connect to
+         * @param port The remote port
+         * @param handler CallbackHandler to prompt for authentication requirements.
+         * @return A domain client
+         */
+        public static DomainClient create(final InetAddress address, int port, CallbackHandler handler) {
+            return new DomainClientImpl(address, port, handler);
+        }
+
     }
 }

@@ -34,6 +34,7 @@ import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.client.helpers.domain.UndeployDeploymentPlanBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.demos.DemoAuthentication;
 import org.jboss.as.demos.DomainDeploymentUtils;
 import org.jboss.as.demos.fakejndi.FakeJndi;
 import org.jboss.dmr.ModelNode;
@@ -116,7 +117,7 @@ public class ExampleRunner implements Runnable {
 
 
     private ExampleRunner(InetAddress address, int port) {
-        this.client = DomainClient.Factory.create(address, port);
+        this.client = DomainClient.Factory.create(address, port, DemoAuthentication.getCallbackHandler());
         this.stdin = new InputStreamReader(System.in);
     }
 
