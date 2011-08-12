@@ -96,11 +96,10 @@ import javax.transaction.UserTransaction;
 import java.util.List;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_DATA_STORE_LOCATION;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
 
 /**
@@ -127,18 +126,19 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
-                final ModelNode timerServiceModel = model.get(TIMER_SERVICE);
+                final ModelNode timer = model.get(TIMER_SERVICE);
 
                 boolean timerServiceEnabled = false;
 
-                if (timerServiceModel.isDefined()) {
+                if (timer.isDefined() && timer.hasDefined(DEFAULT)) {
 
                     timerServiceEnabled = true;
 
-                    final ModelNode timerDataSource = timerServiceModel.get(TIMER_DATA_STORE_LOCATION);
-                    final ModelNode pathNode = timerDataSource.get(PATH);
+                    ModelNode timerServiceModel = timer.get(DEFAULT);
+
+                    final ModelNode pathNode = timerServiceModel.get(PATH);
                     final String path = pathNode.isDefined() ? pathNode.asString() : null;
-                    final ModelNode relativeToNode = timerDataSource.get(RELATIVE_TO);
+                    final ModelNode relativeToNode = timerServiceModel.get(RELATIVE_TO);
                     final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
 
                     //install the ejb timer service data store path service
@@ -150,8 +150,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                         }
                     }
 
-                    final ModelNode coreThreads = timerServiceModel.get(THREAD_POOL, CORE_THREADS);
-                    final ModelNode maxThreads = timerServiceModel.get(THREAD_POOL, MAX_THREADS);
+                    final ModelNode coreThreads = timerServiceModel.get(CORE_THREADS);
+                    final ModelNode maxThreads = timerServiceModel.get(MAX_THREADS);
                     int coreThreadCount = coreThreads.isDefined() ? coreThreads.asInt() : 0;
                     int maxThreadCount = maxThreads.isDefined() ? maxThreads.asInt() : Runtime.getRuntime().availableProcessors();
 

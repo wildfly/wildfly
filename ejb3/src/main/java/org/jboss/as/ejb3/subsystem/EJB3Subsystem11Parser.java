@@ -54,7 +54,20 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.OPERATION_SET_DEFAULT_MDB_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.OPERATION_SET_DEFAULT_RA_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.OPERATION_SET_DEFAULT_SLSB_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
 
 /**
  * User: Jaikiran Pai
@@ -107,10 +120,10 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
         // timer-service
-        if (model.hasDefined(TIMER_SERVICE)) {
+        if (model.hasDefined(TIMER_SERVICE) && model.get(TIMER_SERVICE).hasDefined(DEFAULT)) {
             // <timer-service>
             writer.writeStartElement(EJB3SubsystemXMLElement.TIMER_SERVICE.getLocalName());
-            final ModelNode timerServiceModel = model.get(TIMER_SERVICE);
+            final ModelNode timerServiceModel = model.get(TIMER_SERVICE).get(DEFAULT);
             this.writeTimerService(writer, timerServiceModel);
             // </timer-service>
             writer.writeEndElement();
@@ -206,8 +219,8 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
     /**
      * Writes out the <session-bean> element and its nested elements
      *
-     * @param writer               XML writer
-     * @param model The <session-bean> element {@link org.jboss.dmr.ModelNode}
+     * @param writer XML writer
+     * @param model  The <session-bean> element {@link org.jboss.dmr.ModelNode}
      * @throws javax.xml.stream.XMLStreamException
      *
      */
@@ -289,43 +302,39 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
 
     private void writeTimerService(final XMLExtendedStreamWriter writer, final ModelNode timerServiceModel) throws XMLStreamException {
 
-        final ModelNode threadPool = timerServiceModel.get(THREAD_POOL);
-        if (threadPool.isDefined()) {
-            // <thread-pool>
-            writer.writeStartElement(EJB3SubsystemXMLElement.THREAD_POOL.getLocalName());
+        // <thread-pool>
+        writer.writeStartElement(EJB3SubsystemXMLElement.THREAD_POOL.getLocalName());
 
-            final ModelNode coreThreads = threadPool.get(CORE_THREADS);
-            if (coreThreads.isDefined()) {
-                // write the core-threads attribute
-                writer.writeAttribute(EJB3SubsystemXMLAttribute.CORE_THREADS.getLocalName(), "" + coreThreads.asInt());
-            }
-            final ModelNode maxThreads = threadPool.get(MAX_THREADS);
-            if (maxThreads.isDefined()) {
-                // write the core-threads attribute
-                writer.writeAttribute(EJB3SubsystemXMLAttribute.MAX_THREADS.getLocalName(), "" + maxThreads.asInt());
-            }
-            // </thread-pool>
-            writer.writeEndElement();
+        final ModelNode coreThreads = timerServiceModel.get(CORE_THREADS);
+        if (coreThreads.isDefined()) {
+            // write the core-threads attribute
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.CORE_THREADS.getLocalName(), "" + coreThreads.asInt());
         }
-        final ModelNode timerDataStore = timerServiceModel.get(TIMER_DATA_STORE_LOCATION);
-        if (timerDataStore.isDefined()) {
-            // <data-store>
-            writer.writeStartElement(EJB3SubsystemXMLElement.DATA_STORE.getLocalName());
-            final ModelNode path = timerDataStore.get(PATH);
-            if (path.isDefined()) {
-                // write the path attribute
-                writer.writeAttribute(EJB3SubsystemXMLAttribute.PATH.getLocalName(), path.asString());
-            }
-            final ModelNode relativeTo = timerDataStore.get(RELATIVE_TO);
-            if (relativeTo.isDefined()) {
-                // write the relative-to attribute
-                writer.writeAttribute(EJB3SubsystemXMLAttribute.RELATIVE_TO.getLocalName(), relativeTo.asString());
-            }
-            // </data-store>
-            writer.writeEndElement();
+        final ModelNode maxThreads = timerServiceModel.get(MAX_THREADS);
+        if (maxThreads.isDefined()) {
+            // write the core-threads attribute
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.MAX_THREADS.getLocalName(), "" + maxThreads.asInt());
         }
+        // </thread-pool>
+        writer.writeEndElement();
+
+        // <data-store>
+        writer.writeStartElement(EJB3SubsystemXMLElement.DATA_STORE.getLocalName());
+        final ModelNode path = timerServiceModel.get(PATH);
+        if (path.isDefined()) {
+            // write the path attribute
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.PATH.getLocalName(), path.asString());
+        }
+        final ModelNode relativeTo = timerServiceModel.get(RELATIVE_TO);
+        if (relativeTo.isDefined()) {
+            // write the relative-to attribute
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.RELATIVE_TO.getLocalName(), relativeTo.asString());
+        }
+        // </data-store>
+        writer.writeEndElement();
 
     }
+
     private ModelNode parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         ModelNode mdbModelNode = new ModelNode();
         // no attributes expected
@@ -470,6 +479,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
 
     private ModelNode parseTimerService(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         final ModelNode timerService = new ModelNode();
+        final ModelNode defaultTimer = timerService.get(DEFAULT);
         requireNoAttributes(reader);
         Integer coreThreads = null;
         Integer maxThreads = null;
@@ -501,10 +511,10 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                         }
                     }
                     if (coreThreads != null) {
-                        timerService.get(THREAD_POOL).get(CORE_THREADS).set(coreThreads.intValue());
+                        defaultTimer.get(CORE_THREADS).set(coreThreads.intValue());
                     }
                     if (maxThreads != null) {
-                        timerService.get(THREAD_POOL).get(MAX_THREADS).set(maxThreads.intValue());
+                        defaultTimer.get(MAX_THREADS).set(maxThreads.intValue());
                     }
                     requireNoContent(reader);
                     break;
@@ -535,9 +545,9 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                     if (dataStorePath == null) {
                         throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.PATH));
                     }
-                    timerService.get(TIMER_DATA_STORE_LOCATION).get(PATH).set(dataStorePath);
-                    if(dataStorePathRelativeTo != null) {
-                        timerService.get(TIMER_DATA_STORE_LOCATION).get(RELATIVE_TO).set(dataStorePathRelativeTo);
+                    defaultTimer.get(PATH).set(dataStorePath);
+                    if (dataStorePathRelativeTo != null) {
+                        defaultTimer.get(RELATIVE_TO).set(dataStorePathRelativeTo);
                     }
                     requireNoContent(reader);
                     break;
@@ -593,8 +603,9 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
      *                           one of the expected attributes, an exception is thrown.
      * @param requiredAttributes an {@code EnumSet} containing all required attributes. If a required attribute is not
      *                           found, an exception is thrown.
-     * @throws javax.xml.stream.XMLStreamException if an error occurs while parsing the XML, if an attribute is not one of the expected
-     *                            attributes or if one of the required attributes is not parsed.
+     * @throws javax.xml.stream.XMLStreamException
+     *          if an error occurs while parsing the XML, if an attribute is not one of the expected
+     *          attributes or if one of the required attributes is not parsed.
      */
     private void parseAttributes(XMLExtendedStreamReader reader, ModelNode node, EnumSet<EJB3SubsystemXMLAttribute> expectedAttributes,
                                  EnumSet<EJB3SubsystemXMLAttribute> requiredAttributes) throws XMLStreamException {

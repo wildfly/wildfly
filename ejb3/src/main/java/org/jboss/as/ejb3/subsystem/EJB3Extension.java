@@ -84,6 +84,15 @@ public class EJB3Extension implements Extension {
         // register ADD and REMOVE operations for strict-max-pool
         strictMaxPoolRegistration.registerOperationHandler(ADD, StrictMaxPoolAdd.INSTANCE, StrictMaxPoolAdd.STRICT_MAX_POOL_ADD_DESCRIPTION, false);
         strictMaxPoolRegistration.registerOperationHandler(REMOVE, StrictMaxPoolRemove.INSTANCE, StrictMaxPoolRemove.STRICT_MAX_POOL_REMOVE_DESCRIPTION, false);
+
+
+        final ManagementResourceRegistration timerService = subsystemRegistration.registerSubModel(
+                PathElement.pathElement(EJB3SubsystemModel.TIMER_SERVICE), EJB3SubsystemDescriptions.TIMER_SERVICE);
+
+        // register ADD and REMOVE operations for timer-service
+        subsystemRegistration.registerOperationHandler(ADD_TIMER_SERVICE, TimerServiceAdd.INSTANCE, EJB3SubsystemProviders.TIMER_SERVICE_ADD_DESCRIPTION, false);
+        timerService.registerOperationHandler(REMOVE, TimerServiceRemove.INSTANCE, EJB3SubsystemProviders.TIMER_SERVICE_REMOVE_DESCRIPTION, false);
+
     }
 
     /**
