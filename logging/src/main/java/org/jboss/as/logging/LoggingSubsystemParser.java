@@ -514,7 +514,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             }
         }
         if (!requiredElem.isEmpty()) {
-            throw missingRequired(reader, required);
+            throw missingRequired(reader, requiredElem);
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
@@ -569,14 +569,12 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         String formatterSpec = null;
 
 
-        final EnumSet<Element> requiredElem = EnumSet.of(Element.FORMATTER);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
-            requiredElem.remove(element);
             switch (element) {
                 case LEVEL: {
                     levelName = readStringAttributeElement(reader, "name");
@@ -594,9 +592,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     throw unexpectedElement(reader);
                 }
             }
-        }
-        if (!requiredElem.isEmpty()) {
-            throw missingRequired(reader, required);
         }
 
         final ModelNode node = new ModelNode();
@@ -687,7 +682,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             }
         }
         if (!requiredElem.isEmpty()) {
-            throw missingRequired(reader, required);
+            throw missingRequired(reader, requiredElem);
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
@@ -788,7 +783,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             }
         }
         if (!requiredElem.isEmpty()) {
-            throw missingRequired(reader, required);
+            throw missingRequired(reader, requiredElem);
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
