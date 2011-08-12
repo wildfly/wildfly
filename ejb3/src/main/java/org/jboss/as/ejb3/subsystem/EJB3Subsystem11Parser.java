@@ -299,6 +299,11 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                 // write the core-threads attribute
                 writer.writeAttribute(EJB3SubsystemXMLAttribute.CORE_THREADS.getLocalName(), "" + coreThreads.asInt());
             }
+            final ModelNode maxThreads = threadPool.get(MAX_THREADS);
+            if (maxThreads.isDefined()) {
+                // write the core-threads attribute
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.MAX_THREADS.getLocalName(), "" + maxThreads.asInt());
+            }
             // </thread-pool>
             writer.writeEndElement();
         }
@@ -457,7 +462,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
         }
         requireNoContent(reader);
         if (poolName == null) {
-            missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
+            throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
         }
         // create and add the operation
         operations.add(this.createAddStrictMaxBeanInstancePoolOperation(poolName, maxPoolSize, timeout, unit));
@@ -467,6 +472,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
         final ModelNode timerService = new ModelNode();
         requireNoAttributes(reader);
         Integer coreThreads = null;
+        Integer maxThreads = null;
         String dataStorePath = null;
         String dataStorePathRelativeTo = null;
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
@@ -484,14 +490,22 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                                 }
                                 coreThreads = Integer.valueOf(value);
                                 break;
+                            case MAX_THREADS:
+                                if (maxThreads != null) {
+                                    throw unexpectedAttribute(reader, i);
+                                }
+                                maxThreads = Integer.valueOf(value);
+                                break;
                             default:
-                                unexpectedAttribute(reader, i);
+                                throw unexpectedAttribute(reader, i);
                         }
                     }
-                    if (coreThreads == null) {
-                        missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.CORE_THREADS));
+                    if (coreThreads != null) {
+                        timerService.get(THREAD_POOL).get(CORE_THREADS).set(coreThreads.intValue());
                     }
-                    timerService.get(THREAD_POOL).get(CORE_THREADS).set(coreThreads.intValue());
+                    if (maxThreads != null) {
+                        timerService.get(THREAD_POOL).get(MAX_THREADS).set(maxThreads.intValue());
+                    }
                     requireNoContent(reader);
                     break;
                 }
@@ -515,11 +529,11 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                                 dataStorePathRelativeTo = value;
                                 break;
                             default:
-                                unexpectedAttribute(reader, i);
+                                throw unexpectedAttribute(reader, i);
                         }
                     }
                     if (dataStorePath == null) {
-                        missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.PATH));
+                        throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.PATH));
                     }
                     timerService.get(TIMER_DATA_STORE_LOCATION).get(PATH).set(dataStorePath);
                     if(dataStorePathRelativeTo != null) {
@@ -529,7 +543,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                     break;
                 }
                 default: {
-                    unexpectedElement(reader);
+                    throw unexpectedElement(reader);
                 }
             }
         }

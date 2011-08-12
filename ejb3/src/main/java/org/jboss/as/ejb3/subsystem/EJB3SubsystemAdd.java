@@ -96,9 +96,9 @@ import javax.transaction.UserTransaction;
 import java.util.List;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_DATA_STORE_LOCATION;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
@@ -151,11 +151,13 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     }
 
                     final ModelNode coreThreads = timerServiceModel.get(THREAD_POOL, CORE_THREADS);
-                    int threadCount = coreThreads.isDefined() ? coreThreads.asInt() : Runtime.getRuntime().availableProcessors();
+                    final ModelNode maxThreads = timerServiceModel.get(THREAD_POOL, MAX_THREADS);
+                    int coreThreadCount = coreThreads.isDefined() ? coreThreads.asInt() : 0;
+                    int maxThreadCount = maxThreads.isDefined() ? maxThreads.asInt() : Runtime.getRuntime().availableProcessors();
 
                     //we only add the timer service DUP's when the timer service in enabled in XML
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_AROUNDTIMEOUT_ANNOTATION, new AroundTimeoutAnnotationParsingProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_SERVICE, new TimerServiceDeploymentProcessor(threadCount, timerServiceEnabled));
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_SERVICE, new TimerServiceDeploymentProcessor(coreThreadCount, maxThreadCount, timerServiceEnabled));
                 }
 
                 //we still parse these annotations even if the timer service is not enabled

@@ -114,7 +114,21 @@
     </xs:complexType>
 
     <xs:complexType name="threadPoolType">
-        <xs:attribute name="core-threads" type="xs:int"/>
+        <xs:attribute name="core-threads" type="xs:int">
+            <xs:annotation>
+                <xs:documentation>
+                    The number of threads that the the thread pool will keep alive. Defaults to 0.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-threads" type="xs:int">
+            <xs:annotation>
+                <xs:documentation>
+                    The maximum number of threads that will be used to run timer service tasks. Defaults to the
+                    number of processes as returned by Runtime.availableProcessors()
+                </xs:documentation>
+            </xs:annotation>          
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="dataStoreType">

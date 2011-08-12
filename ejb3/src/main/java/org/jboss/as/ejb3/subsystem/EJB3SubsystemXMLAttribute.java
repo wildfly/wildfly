@@ -37,6 +37,7 @@ public enum EJB3SubsystemXMLAttribute {
 
 
     MAX_POOL_SIZE("max-pool-size"),
+    MAX_THREADS("max-threads"),
 
     NAME("name"),
 

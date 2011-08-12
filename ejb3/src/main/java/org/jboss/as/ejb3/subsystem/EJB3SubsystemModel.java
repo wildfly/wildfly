@@ -44,6 +44,7 @@ public interface EJB3SubsystemModel {
     String OPERATION_SET_DEFAULT_SLSB_INSTANCE_POOL = "set-default-slsb-instance-pool";
 
     String CORE_THREADS = "core-threads";
+    String MAX_THREADS = "max-threads";
     String TIMER_DATA_STORE_LOCATION = "timer-data-store-location";
     String RELATIVE_TO = "relative-to";
     String PATH = "path";

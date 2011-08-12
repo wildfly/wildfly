@@ -70,12 +70,14 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
     private static final Logger logger = Logger.getLogger(TimerServiceDeploymentProcessor.class);
 
-    private final Integer threadCount;
+    private final int coreThreads;
+    private final int maxThreads;
 
     private final boolean enabled;
 
-    public TimerServiceDeploymentProcessor(final Integer threadCount, boolean enabled) {
-        this.threadCount = threadCount;
+    public TimerServiceDeploymentProcessor(final int coreThreads, final int maxThreads, boolean enabled) {
+        this.coreThreads = coreThreads;
+        this.maxThreads = maxThreads;
         this.enabled = enabled;
     }
 
@@ -183,7 +185,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
             name = deploymentUnit.getParent().getName() + "--" + deploymentUnit.getName();
         }
 
-        final TimerServiceFactoryService factoryService = new TimerServiceFactoryService(threadCount, name, module);
+        final TimerServiceFactoryService factoryService = new TimerServiceFactoryService(coreThreads, maxThreads, name, module);
         final ServiceBuilder<TimerServiceFactory> factoryBuilder = serviceTarget.addService(deploymentUnit.getServiceName().append(TimerServiceFactoryService.SERVICE_NAME), factoryService);
         factoryBuilder.addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, factoryService.getTransactionManagerInjectedValue());
         factoryBuilder.addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, factoryService.getTransactionSynchronizationRegistryInjectedValue());
