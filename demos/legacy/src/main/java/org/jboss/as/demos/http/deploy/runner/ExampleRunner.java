@@ -8,11 +8,13 @@ import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
 
+import org.jboss.as.demos.DemoAuthentication;
 import org.jboss.as.demos.war.archive.SimpleServlet;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ArchivePath;
@@ -33,6 +35,7 @@ public class ExampleRunner {
      * @param args
      */
     public static void main(String[] args) {
+        Authenticator.setDefault(DemoAuthentication.getAuthenticator());
 
         BufferedOutputStream os = null;
         BufferedInputStream is = null;

@@ -47,6 +47,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.demos.DemoAuthentication;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -71,7 +72,7 @@ public class ExampleRunner {
     }
 
     public static void main(String[] args) throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, DemoAuthentication.getCallbackHandler());
         try {
             new ExampleRunner().run(client);
         } finally {
