@@ -86,6 +86,30 @@ class ModClusterSubsystemDescriptions {
         return node;
     }
 
+    static ModelNode getProxyInfoDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("read-proxies-info");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.read-proxies-info"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("modcluster.proxies-info"));
+        node.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
+        return node;
+    }
+
+    static ModelNode getProxyConfigurationDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("read-proxies-configuration");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.read-proxies-configuration"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("modcluster.proxies-configuration"));
+        node.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
+        return node;
+    }
+
     static void AddHostPortDescription(ModelNode node, ResourceBundle bundle) {
         node.get(REQUEST_PROPERTIES, "host", DESCRIPTION).set(bundle.getString("modcluster.proxy-host"));
         node.get(REQUEST_PROPERTIES, "host", TYPE).set(ModelType.STRING);
