@@ -36,7 +36,9 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import java.io.File;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service that manages the lifecycle of a TimerServiceFactory
@@ -58,12 +60,14 @@ public class TimerServiceFactoryService implements Service<TimerServiceFactory> 
     private final InjectedValue<TransactionManager> transactionManagerInjectedValue = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryInjectedValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<String> path = new InjectedValue<String>();
-    private final Integer maxThreads;
+    private final int maxThreads;
+    private final int coreThreads;
     private final String name;
     private final Module module;
 
-    public TimerServiceFactoryService(final Integer maxThreads, final String name, final Module module) {
+    public TimerServiceFactoryService(final int coreThreads, final int maxThreads, final String name, final Module module) {
         this.name = name;
+        this.coreThreads = coreThreads;
         this.maxThreads = maxThreads;
         this.module = module;
     }
@@ -72,11 +76,7 @@ public class TimerServiceFactoryService implements Service<TimerServiceFactory> 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
 
-        if(maxThreads == null) {
-            executorService = Executors.newCachedThreadPool();
-        } else {
-            executorService = Executors.newFixedThreadPool(maxThreads);
-        }
+        executorService = new ThreadPoolExecutor(coreThreads, maxThreads, 1, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>());
         //only start the persistence service if it has been configured
         final String path = this.path.getOptionalValue();
         if (path != null) {
