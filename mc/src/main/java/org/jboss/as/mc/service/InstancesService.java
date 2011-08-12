@@ -23,9 +23,11 @@
 package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
+import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -50,21 +52,21 @@ final class InstancesService implements Service<Set<Object>> {
     private InstancesService() {
     }
 
-    static void addInstance(ServiceTarget target, Object bean) {
-        addInstance(target, bean.getClass(), bean);
+    static void addInstance(ServiceRegistry registry, ServiceTarget target, Object bean) throws StartException {
+        addInstance(registry, target, bean.getClass(), bean);
     }
 
     static void removeInstance(ServiceRegistry registry, Object bean) {
         removeInstance(registry, bean.getClass(), bean);
     }
 
-    private static void addInstance(ServiceTarget target, Class<?> clazz, Object bean) {
+    private static void addInstance(ServiceRegistry registry, ServiceTarget target, Class<?> clazz, Object bean) throws StartException {
         if (clazz == null)
             return;
 
-        ServiceBuilder<Set<Object>> builder = target.addService(BeanMetaDataConfig.toInstancesName(clazz), new InstancesService());
-        ServiceController<Set<Object>> controller = builder.install(); // TODO -- putIfAbsent, DML's REMOVE->ACTIVE+listener
-        InstancesService service = (InstancesService) controller.getService();
+        ServiceName name = BeanMetaDataConfig.toInstancesName(clazz);
+        ServiceBuilder<Set<Object>> builder = target.addService(name, new InstancesService());
+        InstancesService service = putIfAbsent(registry, name, builder);
         service.lock.writeLock().lock();
         try {
             service.instances.add(bean);
@@ -72,10 +74,25 @@ final class InstancesService implements Service<Set<Object>> {
             service.lock.writeLock().unlock();
         }
 
-        addInstance(target, clazz.getSuperclass(), bean);
+        addInstance(registry, target, clazz.getSuperclass(), bean);
         Class<?>[] ifaces = clazz.getInterfaces();
         for (Class<?> iface : ifaces)
-            addInstance(target, iface, bean);
+            addInstance(registry, target, iface, bean);
+    }
+
+    private static InstancesService putIfAbsent(ServiceRegistry registry, ServiceName name, ServiceBuilder builder) throws StartException {
+        for (;;) {
+            try {
+                ServiceController sc = registry.getService(name);
+                if (sc == null) {
+                    sc = builder.install();
+                }
+                return (InstancesService) sc.getService();
+            } catch (DuplicateServiceException ignored) {
+            } catch (Exception e) {
+                throw new StartException(e);
+            }
+        }
     }
 
     private static void removeInstance(ServiceRegistry registry, Class<?> clazz, Object bean) {

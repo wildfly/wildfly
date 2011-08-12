@@ -26,6 +26,7 @@ import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.descriptor.ConstructorConfig;
 import org.jboss.as.mc.descriptor.FactoryConfig;
 import org.jboss.as.mc.descriptor.ValueConfig;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -109,7 +110,8 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
                 // set so describe service has its value
                 describedPojoPhase.setBeanInfo(beanInfo);
             }
-            // InstancesService.addInstance(context.getChildTarget(), getBean()); // TODO -- enable this
+            ServiceRegistry registry = context.getController().getServiceContainer();
+            InstancesService.addInstance(registry, context.getChildTarget(), getBean());
         } catch (StartException t) {
             throw t;
         } catch (Throwable t) {
@@ -120,7 +122,7 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
 
     @Override
     public void stop(StopContext context) {
-        // InstancesService.removeInstance(context.getController().getServiceContainer(), getBean()); // TODO -- enable this
+        InstancesService.removeInstance(context.getController().getServiceContainer(), getBean());
         super.stop(context);
     }
 }
