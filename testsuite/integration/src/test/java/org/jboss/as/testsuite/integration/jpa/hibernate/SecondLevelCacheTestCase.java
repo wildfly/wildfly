@@ -64,6 +64,28 @@ public class SecondLevelCacheTestCase {
             "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
             "</properties>" +
             "  </persistence-unit>" +
+            // second pu with 2lc
+            "  <persistence-unit name=\"SecondPU\">" +
+            "    <description>Persistence Unit." +
+            "    </description>" +
+            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+            " <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>" +
+            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+            "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
+            "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
+            "</properties>" +
+            "  </persistence-unit>" +
+            // 3rd pu with 2lc enabled
+            "  <persistence-unit name=\"ThirdPU\">" +
+            "    <description>Persistence Unit." +
+            "    </description>" +
+            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+            " <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>" +
+            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+            "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
+            "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
+            "</properties>" +
+            "  </persistence-unit>" +
             "</persistence>";
 
     @Deployment
