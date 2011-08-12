@@ -46,9 +46,9 @@ public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
         DeploymentUtils utils = null;
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             utils = new DeploymentUtils();
+            ModelControllerClient client = utils.getClient();
             utils.addWarDeployment("war-example.war", true, SimpleServlet.class.getPackage());
             utils.deploy();
 
@@ -80,7 +80,6 @@ public class ExampleRunner {
         } finally {
             utils.undeploy();
             safeClose(utils);
-            safeClose(client);
         }
 
     }

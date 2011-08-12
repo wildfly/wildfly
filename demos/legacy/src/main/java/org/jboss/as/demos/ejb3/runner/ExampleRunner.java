@@ -21,7 +21,6 @@
  */
 package org.jboss.as.demos.ejb3.runner;
 
-import java.util.concurrent.Future;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.ejb3.archive.AsyncLocal;
 import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;

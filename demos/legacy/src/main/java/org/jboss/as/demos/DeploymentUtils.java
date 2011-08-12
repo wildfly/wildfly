@@ -72,7 +72,7 @@ public class DeploymentUtils implements Closeable {
     private long timeout = DEFAULT_TIMEOUT;
 
     public DeploymentUtils() throws UnknownHostException {
-        client = ModelControllerClient.Factory.create("localhost", 9999);
+        this.client = ModelControllerClient.Factory.create("localhost", 9999, DemoAuthentication.getCallbackHandler());
         manager = ServerDeploymentManager.Factory.create(client);
     }
 
@@ -83,7 +83,7 @@ public class DeploymentUtils implements Closeable {
 
     public DeploymentUtils(Archive<?> archive) throws UnknownHostException {
         this();
-        deployments.add(new ArbitraryDeployment(archive,false));
+        deployments.add(new ArbitraryDeployment(archive, false));
     }
 
     public DeploymentUtils(String archiveName, boolean show, Package... pkgs) throws UnknownHostException {
@@ -152,6 +152,10 @@ public class DeploymentUtils implements Closeable {
 
     public void setTimeout(long timeout) {
         this.timeout = timeout;
+    }
+
+    public ModelControllerClient getClient() {
+        return client;
     }
 
     @Override

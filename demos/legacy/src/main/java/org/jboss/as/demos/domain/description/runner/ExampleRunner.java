@@ -25,6 +25,7 @@ package org.jboss.as.demos.domain.description.runner;
 import java.net.InetAddress;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.demos.DemoAuthentication;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -43,7 +44,7 @@ public class ExampleRunner {
         ModelControllerClient client = null;
         try {
             System.out.println("Connecting");
-            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, DemoAuthentication.getCallbackHandler());
             System.out.println("Connected");
 
             System.out.println("Dumping resource tree\n");
