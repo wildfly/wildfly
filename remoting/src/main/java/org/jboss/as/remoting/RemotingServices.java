@@ -44,6 +44,7 @@ import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFac
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -293,6 +294,8 @@ public final class RemotingServices {
         ServiceBuilder<?> builder = serviceTarget.addService(AUTHENTICATION_PROVIDER, raps);
         if (securityRealmName != null) {
             builder.addDependency(securityRealmName, SecurityRealm.class, raps.getSecurityRealmInjectedValue());
+        } else {
+            Logger.getLogger("org.jboss.as").warn("No security realm defined for native management service, all access will be unrestricted.");
         }
         if (serverCallbackService != null) {
             builder.addDependency(serverCallbackService, CallbackHandler.class, raps.getServerCallbackValue());

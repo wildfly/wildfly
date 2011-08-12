@@ -85,7 +85,15 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler implements 
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        Logger.getLogger("org.jboss.as").infof("creating http management service using network interface (%s) port (%s) securePort (%s)", interfaceName, port, securePort);
+        StringBuilder sb = new StringBuilder();
+        sb.append("creating http management service using network interface (").append(interfaceName).append(")");
+        if (port > -1) {
+            sb.append(" port (").append(port).append(")");
+        }
+        if (securePort > -1) {
+            sb.append(" securePort (").append(securePort).append(")");
+        }
+        Logger.getLogger("org.jboss.as").info(sb.toString());
 
         final HttpManagementService service = new HttpManagementService();
         ServiceBuilder builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
@@ -100,6 +108,8 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler implements 
 
         if (securityRealm != null) {
             builder.addDependency(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), SecurityRealmService.class, service.getSecurityRealmInjector());
+        } else {
+            Logger.getLogger("org.jboss.as").warn("No security realm defined for http management service, all access will be unrestricted.");
         }
 
         newControllers.add(builder.addListener(verificationHandler)
