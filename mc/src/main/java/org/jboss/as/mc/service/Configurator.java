@@ -33,6 +33,8 @@ import java.beans.PropertyEditorManager;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -51,6 +53,23 @@ public class Configurator {
      * No parameter types
      */
     public static final String[] NO_PARAMS_TYPES = new String[0];
+
+    /**
+     * Turn type into class.
+     *
+     * @param type the type
+     * @return class
+     */
+    public static Class<?> toClass(Type type) {
+        if (type instanceof Class) {
+            return (Class) type;
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) type;
+            return toClass(pt.getRawType());
+        } else {
+            throw new IllegalArgumentException("Unknown type: " + type);
+        }
+    }
 
     /**
      * Convert a value

@@ -23,6 +23,8 @@
 package org.jboss.as.mc.descriptor;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,17 +73,25 @@ public class MapConfig extends ValueConfig implements Serializable {
         nodes.addAll(map.values());
     }
 
-    public Object getValue(Class<?> type) {
-        Class<?> kt = keyClass;
+    protected Object getPtValue(ParameterizedType type) {
+        Type kt = keyClass;
         if (kt == null && type != null)
             kt = getComponentType(type, 0);
-        Class<?> vt = valueClass;
+        Type vt = valueClass;
         if (vt == null && type != null)
             vt = getComponentType(type, 1);
 
         Map<Object, Object> result = createInstance();
         for (Map.Entry<ValueConfig, ValueConfig> entry : map.entrySet()) {
             result.put(entry.getKey().getValue(kt), entry.getValue().getValue(vt));
+        }
+        return result;
+    }
+
+    public Object getClassValue(Class<?> type) {
+        Map<Object, Object> result = createInstance();
+        for (Map.Entry<ValueConfig, ValueConfig> entry : map.entrySet()) {
+            result.put(entry.getKey().getValue(keyClass), entry.getValue().getValue(valueClass));
         }
         return result;
     }

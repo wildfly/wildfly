@@ -38,6 +38,6 @@ public class ConstructorJoinpoint extends AbstractJoinpoint {
 
     @Override
     public Object dispatch() throws Throwable {
-        return ctor.newInstance(toObjects(ctor.getParameterTypes()));
+        return ctor.newInstance(toObjects(ctor.getGenericParameterTypes()));
     }
 }

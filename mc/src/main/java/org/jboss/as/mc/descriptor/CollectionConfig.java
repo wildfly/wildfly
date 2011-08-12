@@ -23,6 +23,8 @@
 package org.jboss.as.mc.descriptor;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -68,14 +70,22 @@ public abstract class CollectionConfig extends ValueConfig implements Serializab
         nodes.addAll(values);
     }
 
-    public Object getValue(Class<?> type) {
-        Class<?> ct = componentType;
+    protected Object getPtValue(ParameterizedType type) {
+        Type ct = componentType;
         if (ct == null && type != null)
             ct = getComponentType(type, 0);
 
         Collection<Object> result = createInstance();
         for (ValueConfig vc : values) {
             result.add(vc.getValue(ct));
+        }
+        return result;
+    }
+
+    public Object getClassValue(Class<?> type) {
+        Collection<Object> result = createInstance();
+        for (ValueConfig vc : values) {
+            result.add(vc.getClassValue(componentType));
         }
         return result;
     }

@@ -26,8 +26,8 @@ import org.jboss.as.mc.service.BeanInfo;
 import org.jboss.as.mc.service.DefaultBeanInfo;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
@@ -112,18 +112,16 @@ public abstract class AbstractConfigVisitorNode implements ConfigVisitorNode, Ty
     /**
      * Get component type.
      *
-     * @param clazz the class
+     * @param type the type
      * @param index the component index
      * @return component's clas or null if cannot be determined
      */
-    static Class getComponentType(Class<?> clazz, int index) {
-        TypeVariable<? extends Class<?>>[] tp = clazz.getTypeParameters();
+    static Type getComponentType(ParameterizedType type, int index) {
+        Type[] tp = type.getActualTypeArguments();
         if (index + 1 > tp.length)
             return null;
 
-        TypeVariable tv = tp[index];
-        Type type = tv.getBounds()[0];
-        return (type instanceof Class) ? (Class) type : null;
+        return tp[index];
     }
 
     @Override

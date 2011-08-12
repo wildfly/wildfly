@@ -24,6 +24,8 @@ package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.descriptor.ValueConfig;
 
+import java.lang.reflect.Type;
+
 /**
  * Abstract joinpoint; keep parameters.
  *
@@ -32,7 +34,7 @@ import org.jboss.as.mc.descriptor.ValueConfig;
 public abstract class AbstractJoinpoint implements Joinpoint {
     private ValueConfig[] parameters;
 
-    protected Object[] toObjects(Class[] types) {
+    protected Object[] toObjects(Type[] types) {
         if (parameters == null || parameters.length == 0)
             return new Object[0];
 
@@ -43,7 +45,7 @@ public abstract class AbstractJoinpoint implements Joinpoint {
             Object[] result = new Object[parameters.length];
             for (int i = 0; i < parameters.length; i++) {
                 if (parameters[i] != null)
-                    result[i] = Configurator.convertValue(types[i], parameters[i].getValue(types[i]), true, true);
+                    result[i] = Configurator.convertValue(Configurator.toClass(types[i]), parameters[i].getValue(types[i]), true, true);
             }
 
             return result;

@@ -41,7 +41,7 @@ public class FactoryConfig extends ValueConfig {
     protected final transient InjectedValue<BeanInfo> beanInfo = new InjectedValue<BeanInfo>();
     protected final transient InjectedValue<Object> value = new InjectedValue<Object>();
 
-    public Object getValue(Class<?> type) {
+    public Object getClassValue(Class<?> type) {
         return value.getValue();
     }
 

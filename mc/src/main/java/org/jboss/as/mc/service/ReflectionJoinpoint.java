@@ -52,6 +52,6 @@ public class ReflectionJoinpoint extends TargetJoinpoint {
 
         Object target = getTarget().getValue();
         Method method = beanInfo.findMethod(methodName, pts);
-        return method.invoke(target, toObjects(method.getParameterTypes()));
+        return method.invoke(target, toObjects(method.getGenericParameterTypes()));
     }
 }

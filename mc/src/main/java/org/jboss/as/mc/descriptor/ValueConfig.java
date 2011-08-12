@@ -23,6 +23,8 @@
 package org.jboss.as.mc.descriptor;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
  * Value meta data.
@@ -36,12 +38,39 @@ public abstract class ValueConfig extends AbstractConfigVisitorNode implements S
     private int index = -1;
 
     /**
+     * Get value.
+     *
+     * @param type the type
+     * @return value
+     */
+    public Object getValue(Type type) {
+        if (type == null || (type instanceof Class)) {
+            return getClassValue((Class) type);
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) type;
+            return getPtValue(pt);
+        } else {
+            throw new IllegalArgumentException("Unknown type: " + type);
+        }
+    }
+
+    /**
+     * Get value.
+     *
+     * @param type the parameterized type
+     * @return value
+     */
+    protected Object getPtValue(ParameterizedType type) {
+        return getValue(type.getRawType());
+    }
+
+    /**
      * Get value, use type to narrow down exact value.
      *
      * @param type the injection point type
      * @return value
      */
-    public abstract Object getValue(Class<?> type);
+    public abstract Object getClassValue(Class<?> type);
 
     public String getType() {
         return type;

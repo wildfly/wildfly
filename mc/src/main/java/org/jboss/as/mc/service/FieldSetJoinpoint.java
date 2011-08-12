@@ -23,6 +23,7 @@
 package org.jboss.as.mc.service;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 /**
@@ -37,7 +38,7 @@ public class FieldSetJoinpoint extends FieldJoinpoint {
 
     @Override
     public Object dispatch() throws Throwable {
-        Object[] params = toObjects(new Class[]{getField().getType()});
+        Object[] params = toObjects(new Type[]{getField().getGenericType()});
         if (params == null || params.length != 1)
             throw new IllegalArgumentException("Illegal parameters: " + Arrays.toString(params));
 
