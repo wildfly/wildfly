@@ -417,8 +417,20 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         // Override this method to change how jndiName is build in AS7
         @Override
-        protected String buildJndiName(String jndiName, Boolean javaContext) {
-            return super.buildJndiName(jndiName, javaContext);
+        protected String buildJndiName(String rawJndiName, Boolean javaContext) {
+            final String jndiName;
+            if (!rawJndiName.startsWith("java:")) {
+                if (rawJndiName.startsWith("jboss/")) {
+                    // Bind to java:jboss/ namespace
+                    jndiName = "java:" + rawJndiName;
+                } else {
+                    // Bind to java:/ namespace
+                    jndiName= "java:/" + rawJndiName;
+                }
+            } else {
+                jndiName = rawJndiName;
+            }
+            return jndiName;
         }
 
     }

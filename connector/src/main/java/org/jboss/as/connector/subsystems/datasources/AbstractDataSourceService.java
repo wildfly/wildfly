@@ -490,9 +490,11 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             final String jndiName;
             if (!rawJndiName.startsWith("java:")) {
                 if (rawJndiName.startsWith("jboss/")) {
-                    jndiName = "java:/" + rawJndiName;
-                } else {
+                    // Bind to java:jboss/ namespace
                     jndiName = "java:" + rawJndiName;
+                } else {
+                    // Bind to java:/ namespace
+                    jndiName= "java:/" + rawJndiName;
                 }
             } else {
                 jndiName = rawJndiName;
