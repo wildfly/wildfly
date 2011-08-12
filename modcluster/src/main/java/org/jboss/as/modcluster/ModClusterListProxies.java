@@ -27,8 +27,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -41,8 +41,6 @@ public class ModClusterListProxies implements OperationStepHandler, DescriptionP
 
     static final ModClusterListProxies INSTANCE = new ModClusterListProxies();
 
-    // private final InjectedValue<ModCluster> modcluster = new InjectedValue<ModCluster>();
-
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ModClusterSubsystemDescriptions.getListProxiesDescription(locale);
@@ -53,6 +51,7 @@ public class ModClusterListProxies implements OperationStepHandler, DescriptionP
             throws OperationFailedException {
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
+                @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
                     ModCluster modcluster = (ModCluster) controller.getValue();

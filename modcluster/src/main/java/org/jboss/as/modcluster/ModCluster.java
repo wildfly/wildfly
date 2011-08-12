@@ -5,6 +5,7 @@ import java.util.Map;
 
 public interface ModCluster {
     Map<InetSocketAddress, String> getProxyInfo();
+    Map<InetSocketAddress, String> getProxyConfiguration();
     void refresh();
     boolean enableContext(String webhost, String webcontext);
     boolean disableContext(String webhost, String webcontext);

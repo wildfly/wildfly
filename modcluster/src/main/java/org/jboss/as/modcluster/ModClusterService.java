@@ -405,4 +405,9 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     public void removeProxy(String host, int port) {
         service.removeProxy(host, port);
     }
+
+    @Override
+    public Map<InetSocketAddress, String> getProxyConfiguration() {
+        return service.getProxyConfiguration();
+    }
 }
