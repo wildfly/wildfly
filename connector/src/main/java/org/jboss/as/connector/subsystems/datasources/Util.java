@@ -47,9 +47,11 @@ public class Util {
         final String jndiName;
         if (!rawJndiName.startsWith("java:") && modelNode.hasDefined(USE_JAVA_CONTEXT) && modelNode.get(USE_JAVA_CONTEXT).asBoolean()) {
             if(rawJndiName.startsWith("jboss/")) {
-                jndiName = "java:/" + rawJndiName;
+                // Bind to java:jboss/ namespace
+                jndiName = "java:" + rawJndiName;
             } else {
-                jndiName= "java:" + rawJndiName;
+                // Bind to java:/ namespace
+                jndiName= "java:/" + rawJndiName;
             }
         } else {
             jndiName = rawJndiName;
