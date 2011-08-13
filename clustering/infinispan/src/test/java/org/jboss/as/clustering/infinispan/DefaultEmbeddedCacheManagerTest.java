@@ -22,7 +22,18 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,16 +42,14 @@ import java.util.Set;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
+import org.infinispan.config.ConfigurationException;
 import org.infinispan.config.GlobalConfiguration;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.junit.After;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 /**
  * @author Paul Ferraro
  */
@@ -103,6 +112,18 @@ public class DefaultEmbeddedCacheManagerTest {
         assertNotSame(defaultCache, result);
         assertEquals(result, defaultCache);
         assertSame(this.subject, result.getCacheManager());
+        
+        Cache<Object, Object> cache = result;
+        AdvancedCache<Object, Object> advancedCache = cache.getAdvancedCache();
+        assertSame(cache, advancedCache);
+        AdvancedCache<Object, Object> classLoaderCache = advancedCache.with(Thread.currentThread().getContextClassLoader());
+        verify(defaultCache).addInterceptor(isA(ClassLoaderAwareCache.ClassLoaderAwareCommandInterceptor.class), eq(0));
+        assertNotSame(advancedCache, classLoaderCache);
+        
+        // Subsequent calls to with(...) cause addInterceptor() to fail
+        doThrow(new ConfigurationException("")).when(defaultCache).addInterceptor(isA(ClassLoaderAwareCache.ClassLoaderAwareCommandInterceptor.class), eq(0));
+        AdvancedCache<Object, Object> classLoaderCache2 = advancedCache.with(Thread.currentThread().getContextClassLoader());
+        assertNotSame(advancedCache, classLoaderCache2);
     }
 
     @Test
