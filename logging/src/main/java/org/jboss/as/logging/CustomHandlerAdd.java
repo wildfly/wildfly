@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -38,10 +39,12 @@ import java.util.logging.Level;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.CLASS;
+import static org.jboss.as.logging.CommonAttributes.CUSTOM_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
+import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 
 /**
  * Date: 03.08.2011
@@ -60,6 +63,7 @@ class CustomHandlerAdd extends AbstractAddStepHandler {
         if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(operation.get(LEVEL));
         model.get(MODULE).set(operation.get(MODULE));
         model.get(CLASS).set(operation.get(CLASS));
+        if (operation.hasDefined(PROPERTIES)) model.get(PROPERTIES).set(operation.get(PROPERTIES));
     }
 
     @Override
@@ -78,6 +82,7 @@ class CustomHandlerAdd extends AbstractAddStepHandler {
         } catch (Throwable t) {
             throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
         }
+        if (operation.hasDefined(PROPERTIES)) service.addProperties(operation.get(PROPERTIES).asPropertyList());
         service.setFormatterSpec(AbstractFormatterSpec.Factory.create(operation));
         serviceBuilder.addListener(verificationHandler);
         serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
