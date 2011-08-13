@@ -22,43 +22,55 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.inject.Injectors;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
 import static org.jboss.as.logging.CommonAttributes.CUSTOM_HANDLER;
+import static org.jboss.as.logging.LogHandlerPropertiesConfigurator.setProperties;
 
 /**
+ * Service for custom handlers.
+ * <p/>
  * Date: 03.08.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class CustomHandlerService implements Service<Handler> {
-
+    private static final Logger ROOT_LOGGER = Logger.getLogger(CustomHandlerService.class.getPackage().getName());
     private final String className;
     private final String moduleName;
+    private final List<Property> properties;
 
     private AbstractFormatterSpec formatterSpec;
     private Level level;
     private String encoding;
     private Handler value;
 
+    /**
+     * Creates a new custom handler service.
+     *
+     * @param className  the handler class name.
+     * @param moduleName the module name the handler class is dependent on.
+     */
     public CustomHandlerService(final String className, final String moduleName) {
         this.className = className;
         this.moduleName = moduleName;
+        properties = new ArrayList<Property>();
     }
 
     @Override
@@ -89,6 +101,8 @@ public final class CustomHandlerService implements Service<Handler> {
         } catch (UnsupportedEncodingException e) {
             throw new StartException(e);
         }
+        // Set the properties
+        setProperties(handler, properties);
         value = handler;
     }
 
@@ -96,9 +110,28 @@ public final class CustomHandlerService implements Service<Handler> {
     public synchronized void stop(final StopContext context) {
         final Handler handler = value;
         handler.close();
+        properties.clear();
         value = null;
     }
 
+    public synchronized void addProperty(final Property property) {
+        properties.add(property);
+        final Handler handler = value;
+        if (handler != null) {
+            setProperties(handler, this.properties);
+        }
+    }
+
+
+    public synchronized void addProperties(final Collection<Property> properties) {
+        this.properties.addAll(properties);
+        final Handler handler = value;
+        if (handler != null) {
+            setProperties(handler, this.properties);
+        }
+    }
+
+    @Override
     public synchronized Handler getValue() throws IllegalStateException {
         return value;
     }
@@ -112,6 +145,7 @@ public final class CustomHandlerService implements Service<Handler> {
         final Handler handler = value;
         if (handler != null) handler.setLevel(level);
     }
+
 
     public synchronized AbstractFormatterSpec getFormatterSpec() {
         return formatterSpec;
