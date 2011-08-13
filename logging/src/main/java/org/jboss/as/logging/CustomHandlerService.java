@@ -22,24 +22,34 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.inject.Injectors;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
 import static org.jboss.as.logging.CommonAttributes.CUSTOM_HANDLER;
+import static org.jboss.as.logging.CustomHandlerService.PropertyConfigurator.setProperties;
 
 /**
  * Date: 03.08.2011
@@ -47,9 +57,10 @@ import static org.jboss.as.logging.CommonAttributes.CUSTOM_HANDLER;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class CustomHandlerService implements Service<Handler> {
-
+    private static final Logger ROOT_LOGGER = Logger.getLogger(CustomHandlerService.class.getPackage().getName());
     private final String className;
     private final String moduleName;
+    private final List<Property> properties;
 
     private AbstractFormatterSpec formatterSpec;
     private Level level;
@@ -59,6 +70,7 @@ public final class CustomHandlerService implements Service<Handler> {
     public CustomHandlerService(final String className, final String moduleName) {
         this.className = className;
         this.moduleName = moduleName;
+        properties = Collections.synchronizedList(new ArrayList<Property>());
     }
 
     @Override
@@ -89,6 +101,8 @@ public final class CustomHandlerService implements Service<Handler> {
         } catch (UnsupportedEncodingException e) {
             throw new StartException(e);
         }
+        // Set the properties
+        setProperties(handler, properties);
         value = handler;
     }
 
@@ -96,7 +110,24 @@ public final class CustomHandlerService implements Service<Handler> {
     public synchronized void stop(final StopContext context) {
         final Handler handler = value;
         handler.close();
+        properties.clear();
         value = null;
+    }
+
+    public synchronized void addProperty(final Property property) {
+        properties.add(property);
+        final Handler handler = value;
+        if (handler != null) {
+            setProperties(handler, properties);
+        }
+    }
+
+    public synchronized void addProperties(final Collection<Property> properties) {
+        this.properties.addAll(properties);
+        final Handler handler = value;
+        if (handler != null) {
+            setProperties(handler, this.properties);
+        }
     }
 
     public synchronized Handler getValue() throws IllegalStateException {
@@ -131,5 +162,135 @@ public final class CustomHandlerService implements Service<Handler> {
         final Handler handler = value;
         if (handler != null) handler.setEncoding(encoding);
         this.encoding = encoding;
+    }
+
+    /**
+     * Configurator for the properties.
+     *
+     * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+     */
+    static class PropertyConfigurator {
+        private final Handler handler;
+        private final Map<String, Method> methods;
+
+        private PropertyConfigurator(final Handler handler) {
+            this.handler = handler;
+            this.methods = new HashMap<String, Method>();
+        }
+
+        public static void setProperties(final Handler handler, final List<Property> properties) {
+            final List<Property> props = new ArrayList<Property>(properties);
+            Collections.copy(props, properties);
+            final PropertyConfigurator configurator = new PropertyConfigurator(handler);
+            configurator.init();
+            for (Property property : props) {
+                configurator.setProperty(property);
+            }
+        }
+
+        /**
+         * Initializes the configurator.
+         */
+        private void init() {
+            for (Method method : handler.getClass().getMethods()) {
+                final int modifiers = method.getModifiers();
+                if (Modifier.isStatic(modifiers) || !Modifier.isPublic(modifiers)) {
+                    continue;
+                }
+                if (!method.getName().startsWith("set")) {
+                    continue;
+                }
+                final Class<?>[] parameterTypes = method.getParameterTypes();
+                if (parameterTypes.length != 1) {
+                    continue;
+                }
+                if (method.getReturnType() != void.class) {
+                    continue;
+                }
+                methods.put(method.getName(), method);
+            }
+        }
+
+        /**
+         * Sets the property on the handler.
+         *
+         * @param property the property to set.
+         */
+        private void setProperty(final Property property) {
+            final String setterMethod = setterName(property.getName());
+            try {
+                if (methods.containsKey(setterMethod)) {
+                    final Method method = methods.get(setterMethod);
+                    final Object arg = getArgument(method, property.getName(), property.getValue().asString());
+                    method.invoke(handler, arg);
+                    ROOT_LOGGER.debugf("Set property '%s' with value of '%s' on handler '%s'.", property.getName(), property.getValue().asString(), handler.getClass().getName());
+                } else {
+                    ROOT_LOGGER.warnf("Unknown parameter type for property '%s' on '%s'.", property.getName(), handler.getClass().getName());
+                }
+            } catch (final Throwable t) {
+                ROOT_LOGGER.warnf(t, "An error occurred trying to set the property '%s' on handler '%s'.", property.getName(), handler.getClass().getName());
+            }
+        }
+
+        /**
+         * Creates the argument for the setter method.
+         *
+         * @param method       the method to check the type parameter of.
+         * @param propertyName the property name.
+         * @param propValue    the property value.
+         *
+         * @return the argument for the property.
+         *
+         * @throws IllegalArgumentException if an error occurs.
+         */
+        private Object getArgument(final Method method, final String propertyName, final String propValue) throws IllegalArgumentException {
+            final Class<?> objClass = method.getDeclaringClass();
+            final Object argument;
+            final Class<?> paramType = method.getParameterTypes()[0];
+            if (paramType == String.class) {
+                argument = propValue;
+            } else if (paramType == boolean.class || paramType == Boolean.class) {
+                argument = Boolean.valueOf(propValue);
+            } else if (paramType == byte.class || paramType == Byte.class) {
+                argument = Byte.valueOf(propValue);
+            } else if (paramType == short.class || paramType == Short.class) {
+                argument = Short.valueOf(propValue);
+            } else if (paramType == int.class || paramType == Integer.class) {
+                argument = Integer.valueOf(propValue);
+            } else if (paramType == long.class || paramType == Long.class) {
+                argument = Long.valueOf(propValue);
+            } else if (paramType == float.class || paramType == Float.class) {
+                argument = Float.valueOf(propValue);
+            } else if (paramType == double.class || paramType == Double.class) {
+                argument = Double.valueOf(propValue);
+            } else if (paramType == char.class || paramType == Character.class) {
+                argument = Character.valueOf(propValue.length() > 0 ? propValue.charAt(0) : 0);
+            } else if (paramType == BigDecimal.class) {
+                argument = new BigDecimal(propValue);
+            } else if (paramType == TimeZone.class) {
+                argument = TimeZone.getTimeZone(propValue);
+            } else if (paramType == Charset.class) {
+                argument = Charset.forName(propValue);
+            } else if (paramType.isEnum()) {
+                argument = Enum.valueOf(paramType.asSubclass(Enum.class), propValue);
+            } else {
+                throw new IllegalArgumentException("Unknown parameter type for property " + propertyName + " on " + objClass);
+            }
+            return argument;
+        }
+
+        /**
+         * Create the setter name for the property.
+         *
+         * @param propertyName the property name.
+         *
+         * @return the property name prefixed with set.
+         */
+        private static String setterName(final String propertyName) {
+            final StringBuilder sb = new StringBuilder("set");
+            sb.append(Character.toUpperCase(propertyName.charAt(0)));
+            sb.append(propertyName.substring(1));
+            return sb.toString();
+        }
     }
 }
