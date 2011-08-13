@@ -39,7 +39,6 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.Event;
 import org.jboss.as.clustering.infinispan.ClassLoaderAwareCache.ClassLoaderAwareListener;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -92,15 +91,6 @@ public class ClassLoaderAwareCacheTest {
         }
     }
     
-    @After
-    public void after() {
-        this.cache.stop();
-        
-        verify(this.mockCache).stop();
-        
-        assertNull(this.cache.getClassLoader());
-    }
-    
     @Test
     public void getClassLoader() {
         assertSame(this.loader, this.cache.getClassLoader());
@@ -109,6 +99,11 @@ public class ClassLoaderAwareCacheTest {
     @Test
     public void getAdvancedCache() {
         assertSame(this.cache, this.cache.getAdvancedCache());
+    }
+    
+    @Test
+    public void with() {
+        assertSame(this.cache, this.cache.with(Thread.currentThread().getContextClassLoader()));
     }
     
     @Test

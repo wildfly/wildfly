@@ -35,6 +35,7 @@ import java.util.Map;
 import org.infinispan.AbstractDelegatingAdvancedCache;
 import org.infinispan.AdvancedCache;
 import org.infinispan.commands.VisitableCommand;
+import org.infinispan.config.ConfigurationException;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.notifications.Listener;
@@ -60,10 +61,14 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
 
     final WeakReference<ClassLoader> classLoaderRef;
 
-    public ClassLoaderAwareCache(AdvancedCache<K, V> cache, ClassLoader loader) {
+    public ClassLoaderAwareCache(AdvancedCache<K, V> cache, ClassLoader classLoader) {
         super(cache);
-        this.classLoaderRef = new WeakReference<ClassLoader>(loader);
-        cache.addInterceptor(new ClassLoaderAwareCommandInterceptor(this), 0);
+        this.classLoaderRef = new WeakReference<ClassLoader>(classLoader);
+        try {
+            cache.addInterceptor(new ClassLoaderAwareCommandInterceptor(this), 0);
+        } catch (ConfigurationException e) {
+            // This means the ClassLoaderAwareCommandInterceptor is already in the interceptor chain
+        }
     }
 
     @Override
@@ -89,12 +94,6 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
     }
 
     @Override
-    public void stop() {
-        super.stop();
-        this.classLoaderRef.clear();
-    }
-
-    @Override
     public void addListener(Object listener) {
         super.addListener(new ClassLoaderAwareListener(listener, this));
     }
@@ -106,11 +105,14 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
         }
         @Override
         protected Object handleDefault(InvocationContext ctx, VisitableCommand command) throws Throwable {
-            ContextClassLoaderSwitcher.SwitchContext context = switcher.getSwitchContext(this.cache.getClassLoader());
+            ClassLoader classLoader = this.cache.getClassLoader();
+            ContextClassLoaderSwitcher.SwitchContext context = (classLoader != null) ? switcher.getSwitchContext(classLoader) : null;
             try {
                 return super.handleDefault(ctx, command);
             } finally {
-                context.reset();
+                if (context != null) {
+                    context.reset();
+                }
             }
         }
     }
@@ -163,7 +165,8 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
         public <K, V> void event(Event<K, V> event) throws Throwable {
             List<Method> methods = this.methods.get(event.getType());
             if (methods != null) {
-                ContextClassLoaderSwitcher.SwitchContext context = switcher.getSwitchContext(this.cache.getClassLoader());
+                ClassLoader classLoader = this.cache.getClassLoader();
+                ContextClassLoaderSwitcher.SwitchContext context = (classLoader != null) ? switcher.getSwitchContext(classLoader) : null;
                 try {
                     for (Method method : this.methods.get(event.getType())) {
                         try {
@@ -173,7 +176,9 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
                         }
                     }
                 } finally {
-                    context.reset();
+                    if (context != null) {
+                        context.reset();
+                    }
                 }
             }
         }
