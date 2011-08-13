@@ -49,6 +49,7 @@ import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
 import static org.jboss.as.logging.CommonAttributes.NAME;
+import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
@@ -61,6 +62,8 @@ import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.PATH;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
+import static org.jboss.as.logging.CommonAttributes.VALUE;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -739,6 +742,13 @@ class LoggingSubsystemProviders {
             node.get(ATTRIBUTES, MODULE, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, MODULE, DESCRIPTION).set(bundle.getString("custom.handler.module"));
 
+            node.get(ATTRIBUTES, PROPERTIES, TYPE).set(ModelType.LIST);
+            node.get(ATTRIBUTES, PROPERTIES, DESCRIPTION).set(bundle.getString("custom.handler.properties"));
+            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, NAME, DESCRIPTION).set(bundle.getString("custom.handler.properties.name"));
+            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, NAME, VALUE_TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, VALUE, DESCRIPTION).set(bundle.getString("custom.handler.properties.value"));
+            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, VALUE, VALUE_TYPE).set(ModelType.STRING);
+
             return node;
         }
     };
@@ -761,6 +771,47 @@ class LoggingSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, MODULE, DESCRIPTION).set(bundle.getString("custom.handler.module"));
             operation.get(REQUEST_PROPERTIES, MODULE, REQUIRED).set(true);
 
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, TYPE).set(ModelType.LIST);
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, DESCRIPTION).set(bundle.getString("custom.handler.properties"));
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, DESCRIPTION).set(bundle.getString("custom.handler.properties.name"));
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, VALUE_TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, DESCRIPTION).set(bundle.getString("custom.handler.properties.value"));
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, VALUE_TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, REQUIRED).set(true);
+
+            return operation;
+        }
+    };
+
+    static final DescriptionProvider CUSTOM_HANDLER_UPDATE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(CustomHandlerUpdateProperties.OPERATION_NAME);
+            operation.get(DESCRIPTION).set(bundle.getString("custom.handler.update"));
+
+            addCommonHandlerRequestProperties(operation, bundle);
+
+            operation.get(REQUEST_PROPERTIES, CLASS, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, CLASS, DESCRIPTION).set(bundle.getString("custom.handler.class"));
+            operation.get(REQUEST_PROPERTIES, CLASS, REQUIRED).set(true);
+
+            operation.get(REQUEST_PROPERTIES, MODULE, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, MODULE, DESCRIPTION).set(bundle.getString("custom.handler.module"));
+            operation.get(REQUEST_PROPERTIES, MODULE, REQUIRED).set(true);
+
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, TYPE).set(ModelType.LIST);
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, DESCRIPTION).set(bundle.getString("custom.handler.properties"));
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, DESCRIPTION).set(bundle.getString("custom.handler.properties.name"));
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, VALUE_TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, DESCRIPTION).set(bundle.getString("custom.handler.properties.value"));
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, VALUE_TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, REQUIRED).set(true);
 
             return operation;
         }

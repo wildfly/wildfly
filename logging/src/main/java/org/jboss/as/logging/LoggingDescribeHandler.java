@@ -45,6 +45,7 @@ import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER;
+import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
@@ -196,6 +197,9 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
         }
         if (handler.hasDefined(MODULE)) {
             add.get(MODULE).set(handler.get(MODULE));
+        }
+        if (handler.hasDefined(PROPERTIES)) {
+            add.get(PROPERTIES).set(handler.get(PROPERTIES));
         }
 
         return add;
