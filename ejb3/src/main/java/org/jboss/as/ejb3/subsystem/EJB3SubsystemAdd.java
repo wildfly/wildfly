@@ -87,6 +87,7 @@ import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -97,6 +98,7 @@ import java.util.List;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.LITE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
@@ -109,6 +111,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final EJB3SubsystemAdd INSTANCE = new EJB3SubsystemAdd();
 
+    private static final Logger logger = Logger.getLogger(EJB3SubsystemAdd.class);
+
     private EJB3SubsystemAdd() {
         //
     }
@@ -119,6 +123,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             model.get(TIMER_SERVICE).set(timerService.clone());
         }
 
+        if (operation.hasDefined(LITE)) {
+            model.get(LITE).set(operation.get(LITE));
+        }
     }
 
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
@@ -129,9 +136,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 final ModelNode timer = model.get(TIMER_SERVICE);
 
                 boolean timerServiceEnabled = false;
-
-                if (timer.isDefined() && timer.hasDefined(DEFAULT)) {
-
+                // we skip timerservice processing if strict webprofile is desired
+                boolean lite = model.hasDefined(LITE) && model.get(LITE).asBoolean();
+                if (!lite && timer.isDefined() && timer.hasDefined(DEFAULT)) {
+                    logger.debug("Configuring timers");
                     timerServiceEnabled = true;
 
                     ModelNode timerServiceModel = timer.get(DEFAULT);
@@ -167,10 +175,12 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 // add the metadata parser deployment processor
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SESSION_BEAN_CREATE_COMPONENT_DESCRIPTIONS, new SessionBeanComponentDescriptionFactory());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS, new MessageDrivenComponentDescriptionFactory());
+                // If strict EE webprofile compliance is desired then skip MDB processing
+                if (! lite) {
+                    logger.debug("Add support for MDB");
+                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS, new MessageDrivenComponentDescriptionFactory());
+                }
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SESSION_BEAN_DD, new SessionBeanXmlDescriptorProcessor());
-                //processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ANNOTATION, new EjbAnnotationProcessor());
-                //processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MESSAGE_DRIVEN_ANNOTATION, new MessageDrivenAnnotationProcessor());
                 // Process @DependsOn after the @Singletons have been registered.
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CONTEXT_BINDING, new EjbContextJndiBindingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_TIMERSERVICE_BINDING, new TimerServiceJndiBindingProcessor());

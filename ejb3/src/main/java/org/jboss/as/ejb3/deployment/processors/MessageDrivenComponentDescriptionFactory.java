@@ -23,10 +23,8 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
-import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
@@ -41,7 +39,6 @@ import org.jboss.metadata.ejb.spec.ActivationConfigPropertiesMetaData;
 import org.jboss.metadata.ejb.spec.ActivationConfigPropertyMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.MessageDriven;
@@ -64,22 +61,13 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
 
     @Override
     protected void processAnnotations(DeploymentUnit deploymentUnit, CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
-        if (this.isMessagingAvailable(deploymentUnit)) {
-            processMessageBeans(deploymentUnit, compositeIndex.getAnnotations(MESSAGE_DRIVEN_ANNOTATION_NAME));
-        } else {
-            logger.info("Messaging service is unavailable. EJB3 MDBs (if any) will not be processed in deployment unit: " + deploymentUnit);
-        }
-
+        processMessageBeans(deploymentUnit, compositeIndex.getAnnotations(MESSAGE_DRIVEN_ANNOTATION_NAME));
     }
 
     @Override
     protected void processBeanMetaData(final DeploymentUnit deploymentUnit, final EnterpriseBeanMetaData enterpriseBeanMetaData) throws DeploymentUnitProcessingException {
         if (enterpriseBeanMetaData instanceof MessageDrivenBeanMetaData) {
-            if (this.isMessagingAvailable(deploymentUnit)) {
-                processMessageDrivenBeanMetaData(deploymentUnit, (MessageDrivenBeanMetaData) enterpriseBeanMetaData);
-            } else {
-                logger.info("Messaging service is unavailable. EJB3 MDBs (if any) will not be processed in deployment unit: " + deploymentUnit);
-            }
+            processMessageDrivenBeanMetaData(deploymentUnit, (MessageDrivenBeanMetaData) enterpriseBeanMetaData);
         }
     }
 
@@ -128,14 +116,6 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         }
 
         EjbDeploymentMarker.mark(deploymentUnit);
-    }
-
-    private boolean isMessagingAvailable(final DeploymentUnit deploymentUnit) {
-        final ServiceController messagingService = deploymentUnit.getServiceRegistry().getService(MessagingServices.JBOSS_MESSAGING);
-        if (messagingService == null) {
-            return false;
-        }
-        return true;
     }
 
     private String getMessageListenerInterface(final AnnotationInstance messageBeanAnnotation) throws DeploymentUnitProcessingException {

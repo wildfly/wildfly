@@ -84,6 +84,10 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
         context.startSubsystemElement(EJB3Extension.NAMESPACE_1_1, false);
 
         ModelNode model = context.getModelNode();
+        if (model.hasDefined(EJB3SubsystemModel.LITE))  {
+            writer.writeAttribute(EJB3SubsystemModel.LITE, model.get(EJB3SubsystemModel.LITE).asString());
+        }
+
         // write the mdb element
         if (model.hasDefined(EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME)) {
             // <mdb>
@@ -139,10 +143,15 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
      */
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
-        ParseUtils.requireNoAttributes(reader);
+
+
         final ModelNode ejb3SubsystemAddOperation = new ModelNode();
         ejb3SubsystemAddOperation.get(OP).set(ADD);
         ejb3SubsystemAddOperation.get(OP_ADDR).add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
+        final String liteValue = reader.getAttributeValue(null, EJB3SubsystemModel.LITE);
+        if (liteValue != null) {
+            ejb3SubsystemAddOperation.get(EJB3SubsystemModel.LITE).set(Boolean.parseBoolean(liteValue));
+        }
         operations.add(ejb3SubsystemAddOperation);
         // elements
         final EnumSet<EJB3SubsystemXMLElement> encountered = EnumSet.noneOf(EJB3SubsystemXMLElement.class);

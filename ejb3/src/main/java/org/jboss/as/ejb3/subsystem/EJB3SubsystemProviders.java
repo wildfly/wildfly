@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.LITE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
@@ -60,7 +61,11 @@ class EJB3SubsystemProviders {
             subsystem.get(DESCRIPTION).set(bundle.getString("ejb3"));
             subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
-            subsystem.get(NAMESPACE).set(EJB3Extension.NAMESPACE_1_0);
+            subsystem.get(NAMESPACE).set(EJB3Extension.NAMESPACE_1_1);
+            subsystem.get(LITE, TYPE).set(ModelType.BOOLEAN);
+            subsystem.get(LITE, DESCRIPTION).set(bundle.getString("ejb3.lite"));
+            subsystem.get(LITE, DEFAULT).set(false);
+            subsystem.get(LITE, REQUIRED).set(false);
 
             return subsystem;
         }
@@ -74,6 +79,10 @@ class EJB3SubsystemProviders {
             final ModelNode op = new ModelNode();
             op.get(OPERATION_NAME).set(ADD);
             op.get(DESCRIPTION).set(bundle.getString("ejb3.add"));
+            op.get(LITE, TYPE).set(ModelType.BOOLEAN);
+            op.get(LITE, DESCRIPTION).set(bundle.getString("ejb3.lite"));
+            op.get(LITE, DEFAULT).set(false);
+            op.get(LITE, REQUIRED).set(false);
 
             return op;
         }
