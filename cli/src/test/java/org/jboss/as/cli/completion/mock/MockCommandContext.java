@@ -204,12 +204,6 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
-    public String getCommand() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public BatchManager getBatchManager() {
         // TODO Auto-generated method stub
         return null;

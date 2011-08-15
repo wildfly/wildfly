@@ -51,13 +51,13 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
         }
 
         final DefaultOperationCallbackHandler parsedCmd = (DefaultOperationCallbackHandler) ctx.getParsedArguments();
+        parsedCmd.reset();
 
         try {
             parsedCmd.parseProperties(buffer);
         } catch(Exception e) {
             e.printStackTrace();
         }
-        //parsedCmd.setParsed();
 
         Iterable<CommandArgument> allArgs = getAllArguments(ctx);
         if(!allArgs.iterator().hasNext()) {
@@ -91,17 +91,13 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
 
         int result = buffer.length();
 
-        final String argName;
-        final String argValue;
-        final int argValueStart;
         String chunk = null;
         CommandLineCompleter valueCompleter = null;
         if (!parsedCmd.endsOnPropertySeparator()) {
-            argName = parsedCmd.getLastParsedPropertyName();
-            argValue = parsedCmd.getLastParsedPropertyValue();
+            final String argName = parsedCmd.getLastParsedPropertyName();
+            final String argValue = parsedCmd.getLastParsedPropertyValue();
             if (argValue != null || parsedCmd.endsOnPropertyValueSeparator()) {
-                argValueStart = parsedCmd.getLastSeparatorIndex() + 1;
-                result = argValueStart;
+                result = parsedCmd.getLastSeparatorIndex() + 1;
                 chunk = argValue;
                 if(argName != null) {
                     valueCompleter = getValueCompleter(ctx, argName);
@@ -114,7 +110,6 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
                 }
             } else {
                 chunk = argName;
-                argValueStart = -1;
                 if(firstCharIndex == buffer.length()) {
                     result = firstCharIndex;
                 } else {
@@ -122,9 +117,11 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
                 }
             }
         } else {
-            argName = null;
-            argValue = null;
-            argValueStart = -1;
+            if(parsedCmd.getLastParsedPropertyValue() != null) {
+                chunk = parsedCmd.getLastParsedPropertyValue();
+            } else {
+                chunk = parsedCmd.getLastParsedPropertyName();
+            }
         }
 
         if(valueCompleter != null) {
@@ -138,6 +135,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
 
         for(CommandArgument arg : getAllArguments(ctx)) {
             try {
+                //if(!arg.isValueComplete(parsedCmd)) {
                 if(arg.canAppearNext(ctx)) {
                     if(arg.getIndex() >= 0) {
                         CommandLineCompleter valCompl = arg.getValueCompleter();
@@ -160,6 +158,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
                     }
                 }
             } catch (CommandFormatException e) {
+                e.printStackTrace();
                 return -1;
             }
         }

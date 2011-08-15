@@ -101,7 +101,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             }}, "--node-type") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
+                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedArguments())) {
                     return false;
                 }
                 return "add".equals(action.getValue(ctx.getParsedArguments())) && super.canAppearNext(ctx);
@@ -172,7 +172,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                     return false;
                 }
                 if("add".equals(actionStr)) {
-                    return idProperty.isPresent(args);
+                    return idProperty.isValueComplete(args);
                 }
                 if("remove".equals(actionStr)) {
                     return true;

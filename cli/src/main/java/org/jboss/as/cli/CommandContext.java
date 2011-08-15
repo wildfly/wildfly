@@ -40,12 +40,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 public interface CommandContext {
 
     /**
-     * Returns the current command.
-     * @return the current command.
-     */
-    String getCommand();
-
-    /**
      * Returns the current command's arguments as a string.
      * @return current command's arguments as a string or null if the command was entered w/o arguments.
      */

@@ -101,4 +101,25 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
     public boolean isValueRequired() {
         return true;
     }
+
+    @Override
+    public boolean isValueComplete(ParsedOperationRequest args) throws CommandFormatException {
+
+        if(!isPresent(args)) {
+            return false;
+        }
+
+        if (index >= 0 && index < args.getOtherProperties().size()) {
+            return true;
+        }
+
+        if(fullName.equals(args.getLastParsedPropertyName())) {
+            return false;
+        }
+
+        if(shortName != null && shortName.equals(args.getLastParsedPropertyName())) {
+            return false;
+        }
+        return true;
+    }
 }

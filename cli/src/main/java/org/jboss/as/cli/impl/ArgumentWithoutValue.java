@@ -163,22 +163,16 @@ public class ArgumentWithoutValue implements CommandArgument {
 
     @Override
     public boolean isValueComplete(ParsedOperationRequest args) throws CommandFormatException {
-        if(!args.hasProperties()) {
-            return false;
-        }
 
-/*        if (index >= 0 && index < args.getOtherArguments().size()) {
+/*        if (index >= 0 && index < args.getOtherProperties().size()) {
             return true;
         }
 */
-        if(args.isValueComplete(fullName)) {
+        if(args.hasProperty(fullName)) {
             return true;
         }
 
-        if(shortName != null && args.isValueComplete(shortName)) {
-            return true;
-        }
-        return false;
+        return shortName != null && args.hasProperty(shortName);
     }
 
     @Override
@@ -195,7 +189,7 @@ public class ArgumentWithoutValue implements CommandArgument {
         }
 
         if (isPresent(args)) {
-            return false;
+            return !isValueComplete(args);
         }
 
         for (CommandArgument arg : cantAppearAfter) {

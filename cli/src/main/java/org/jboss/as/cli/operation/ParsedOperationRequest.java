@@ -69,7 +69,5 @@ public interface ParsedOperationRequest {
 
     String getLastParsedPropertyValue();
 
-    boolean isValueComplete(String propertyName);
-
     String getOutputTarget();
 }

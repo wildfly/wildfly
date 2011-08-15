@@ -258,7 +258,9 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         lastPropName = name;
         lastPropValue = value;
         separator = SEPARATOR_NONE;
-        this.lastSeparatorIndex = nameValueSeparatorIndex;
+        if(nameValueSeparatorIndex >= 0) {
+            this.lastSeparatorIndex = nameValueSeparatorIndex;
+        }
     }
 
     @Override
@@ -368,11 +370,6 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     @Override
     public String getLastParsedPropertyValue() {
         return lastPropValue;
-    }
-
-    @Override
-    public boolean isValueComplete(String propertyName) {
-        return !propertyName.equals(lastPropName) && getPropertyValue(propertyName) != null;
     }
 
     public ModelNode toOperationRequest() throws OperationFormatException {

@@ -76,7 +76,7 @@ public class BaseDataSourceAddHandler extends BaseOperationCommand {
         jndiName =  new RequiredRequestParamArg("jndi-name", this, "--jndi-name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
+                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedArguments())) {
                     return false;
                 }
                 return super.canAppearNext(ctx);
