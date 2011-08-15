@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author John Bailey
@@ -38,7 +39,7 @@ import java.util.Set;
 public class EEApplicationDescription {
     private final Map<String, List<ViewInformation>> componentsByViewName = new HashMap<String, List<ViewInformation>>();
     private final Map<String, List<Description>> componentsByName = new HashMap<String, List<Description>>();
-    private final Map<String, EEModuleClassConfiguration> classesByName = new HashMap<String, EEModuleClassConfiguration>();
+    private final Map<String, LazyValue<EEModuleClassConfiguration>> classesByName = new HashMap<String, LazyValue<EEModuleClassConfiguration>>();
 
     /**
      * Add a component to this application.
@@ -169,14 +170,23 @@ public class EEApplicationDescription {
         }
     }
 
-    public void addClass(EEModuleClassConfiguration eeModuleClassDescription) {
-        classesByName.put(eeModuleClassDescription.getModuleClass().getName(), eeModuleClassDescription);
+    public void addClass(final String className, LazyValue<EEModuleClassConfiguration> eeModuleClassDescription) {
+        classesByName.put(className, eeModuleClassDescription);
     }
 
     public EEModuleClassConfiguration getClassConfiguration(String name) {
-        return classesByName.get(name);
+        LazyValue<EEModuleClassConfiguration> result =  classesByName.get(name);
+        if(result == null) {
+            return null;
+        }
+        try {
+            return result.get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
-
 
     private static class ViewInformation {
         private final ViewDescription viewDescription;
