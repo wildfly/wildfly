@@ -589,7 +589,7 @@ public class JBossContextConfig extends ContextConfig {
             return;
         }
         Map<String, TldMetaData> localTlds = tldsMetaData.getTlds();
-        List<TldMetaData> sharedTlds = tldsMetaData.getSharedTlds();
+        List<TldMetaData> sharedTlds = tldsMetaData.getSharedTlds(deploymentUnitContext);
         ArrayList<TagLibraryInfo> tagLibraries = new ArrayList<TagLibraryInfo>();
 
         for (String location : localTlds.keySet()) {

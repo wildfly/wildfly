@@ -21,6 +21,7 @@
  */
 package org.jboss.as.web.deployment.jsf;
 
+import java.util.ArrayList;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -28,15 +29,17 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.JsfVersionMarker;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
-
+import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import java.util.List;
 
 /**
  * @author Stuart Douglas
+ * @author Stan Silvert
  */
 public class JsfVersionProcessor implements DeploymentUnitProcessor {
 
-    public static final String CONTEXT_PARAM = "org.jboss.jbossfaces.JSF_CONFIG_NAME";
+    public static final String JSF_CONFIG_NAME_PARAM = "org.jboss.jbossfaces.JSF_CONFIG_NAME";
+    public static final String WAR_BUNDLES_JSF_IMPL_PARAM = "org.jboss.jbossfaces.WAR_BUNDLES_JSF_IMPL";
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -48,13 +51,16 @@ public class JsfVersionProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        if (metaData.getMergedJBossWebMetaData() == null) {
-            return;
+        List<ParamValueMetaData> contextParams = new ArrayList<ParamValueMetaData>();
+
+        if ((metaData.getWebMetaData() != null) && (metaData.getWebMetaData().getContextParams() != null)) {
+            contextParams.addAll(metaData.getWebMetaData().getContextParams());
         }
 
-        List<ParamValueMetaData> contextParams = metaData.getMergedJBossWebMetaData().getContextParams();
-        if(contextParams == null) {
-            return;
+        if (metaData.getWebFragmentsMetaData() != null) {
+            for (WebFragmentMetaData fragmentMetaData : metaData.getWebFragmentsMetaData().values()) {
+                contextParams.addAll(fragmentMetaData.getContextParams());
+            }
         }
 
         //we need to set the JSF version for the whole deployment
@@ -63,9 +69,15 @@ public class JsfVersionProcessor implements DeploymentUnitProcessor {
         //JSF versions they are going to need to use deployment descriptors
         //to manually sort out the dependencies
         for(final ParamValueMetaData param : contextParams) {
-            if(param.getParamName().equals(CONTEXT_PARAM)) {
+            if ((param.getParamName().equals(WAR_BUNDLES_JSF_IMPL_PARAM) &&
+                (param.getParamValue() != null) &&
+                (param.getParamValue().toLowerCase().equals("true")))) {
+                JsfVersionMarker.setVersion(topLevelDeployment, JsfVersionMarker.WAR_BUNDLES_JSF_IMPL);
+                break; // WAR_BUNDLES_JSF_IMPL always wins
+            }
+
+            if(param.getParamName().equals(JSF_CONFIG_NAME_PARAM)) {
                 JsfVersionMarker.setVersion(topLevelDeployment, param.getParamValue());
-                break;
             }
         }
     }
