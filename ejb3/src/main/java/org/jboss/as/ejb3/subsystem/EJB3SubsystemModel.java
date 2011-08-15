@@ -26,7 +26,7 @@ package org.jboss.as.ejb3.subsystem;
  * User: jpai
  */
 public interface EJB3SubsystemModel {
-
+    String LITE = "lite";
     String NAME = "name";
 
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";

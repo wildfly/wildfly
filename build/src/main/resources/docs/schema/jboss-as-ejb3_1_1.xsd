@@ -42,7 +42,7 @@
             <xs:element name="pools" type="poolsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="timer-service" type="timerServiceType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
-
+        <xs:attribute name="lite" type="xs:boolean" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="mdbType">
