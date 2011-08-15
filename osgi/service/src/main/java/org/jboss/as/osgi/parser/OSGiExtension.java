@@ -62,6 +62,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -95,6 +96,7 @@ public class OSGiExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(OSGiSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, OSGiSubsystemAdd.INSTANCE, OSGiSubsystemAdd.INSTANCE, false);
         registration.registerOperationHandler(DESCRIBE, OSGiSubsystemDescribeHandler.INSTANCE, OSGiSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerReadWriteAttribute(CommonAttributes.ACTIVATION, null, new ActivationWriteHandler(), Storage.CONFIGURATION);
 
         // Configuration Admin Setings
         ManagementResourceRegistration casConfigs = registration.registerSubModel(PathElement.pathElement(CONFIGURATION), OSGiSubsystemProviders.OSGI_CONFIGURATION_RESOURCE);
