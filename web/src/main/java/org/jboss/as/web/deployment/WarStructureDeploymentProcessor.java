@@ -35,8 +35,8 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
+import org.jboss.as.web.SharedTldsMetaDataBuilder;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
@@ -66,9 +66,9 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
     public static final VirtualFileFilter DEFAULT_WEB_INF_LIB_FILTER = new SuffixMatchFilter(".jar", VisitorAttributes.DEFAULT);
 
     private final WebMetaData sharedWebMetaData;
-    private final List<TldMetaData> sharedTldsMetaData;
+    private final SharedTldsMetaDataBuilder sharedTldsMetaData;
 
-    public WarStructureDeploymentProcessor(final WebMetaData sharedWebMetaData, final List<TldMetaData> sharedTldsMetaData) {
+    public WarStructureDeploymentProcessor(final WebMetaData sharedWebMetaData, final SharedTldsMetaDataBuilder sharedTldsMetaData) {
         this.sharedWebMetaData = sharedWebMetaData;
         this.sharedTldsMetaData = sharedTldsMetaData;
     }

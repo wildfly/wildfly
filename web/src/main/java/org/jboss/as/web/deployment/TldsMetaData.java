@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.web.SharedTldsMetaDataBuilder;
 import org.jboss.metadata.web.spec.TldMetaData;
 
 /**
@@ -37,18 +39,18 @@ public class TldsMetaData {
     /**
      * Shared TLDs.
      */
-    private List<TldMetaData> sharedTlds;
+    private SharedTldsMetaDataBuilder sharedTlds;
 
     /**
      * Webapp TLDs.
      */
     private Map<String, TldMetaData> tlds;
 
-    public List<TldMetaData> getSharedTlds() {
-        return sharedTlds;
+    public List<TldMetaData> getSharedTlds(DeploymentUnit deploymentUnit) {
+        return sharedTlds.getSharedTlds(deploymentUnit);
     }
 
-    public void setSharedTlds(List<TldMetaData> sharedTlds) {
+    public void setSharedTlds(SharedTldsMetaDataBuilder sharedTlds) {
         this.sharedTlds = sharedTlds;
     }
 

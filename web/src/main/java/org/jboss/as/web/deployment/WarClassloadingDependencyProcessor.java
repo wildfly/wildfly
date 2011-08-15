@@ -40,6 +40,7 @@ import org.jboss.modules.filter.PathFilters;
  * Module dependencies processor.
  *
  * @author Emanuel Muckenhuber
+ * @author Stan Silvert
  */
 public class WarClassloadingDependencyProcessor implements DeploymentUnitProcessor {
 
@@ -50,6 +51,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
     private static final ModuleIdentifier JSF_1_2_IMPL = ModuleIdentifier.create("com.sun.jsf-impl", "1.2");
     private static final ModuleIdentifier JSF_1_2_API = ModuleIdentifier.create("javax.faces.api", "1.2");
     private static final ModuleIdentifier BEAN_VALIDATION = ModuleIdentifier.create("org.hibernate.validator");
+    private static final ModuleIdentifier JSTL = ModuleIdentifier.create("javax.servlet.jstl.api");
 
     private static final ModuleIdentifier JBOSS_WEB = ModuleIdentifier.create("org.jboss.as.web");
 
@@ -70,40 +72,46 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
-        //we always make the JSF api available
         final String jsfVersion = JsfVersionMarker.getVersion(topLevelDeployment);
 
-        if(jsfVersion.equals(JsfVersionMarker.JSF_1_2)) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSF_1_2_API, false, false, false));
-        } else {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSF_API, false, false, false));
-        }
+        addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);
 
         // Add module dependencies on Java EE apis
-
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false));
 
-        // Add modules for JSF
+        addJSFImpl(jsfVersion, moduleSpecification, moduleLoader);
 
-        if(jsfVersion.equals(JsfVersionMarker.JSF_1_2)) {
-            ModuleDependency jsf = new ModuleDependency(moduleLoader, JSF_1_2_IMPL, false, false, true);
-            jsf.addImportFilter(PathFilters.getMetaInfFilter(), true);
-            moduleSpecification.addSystemDependency(jsf);
-        } else {
-            if(!jsfVersion.equals(JsfVersionMarker.JSF_2_0)) {
-                logger.warn("Ukown JSF version " + jsfVersion + " " + JsfVersionMarker.JSF_2_0 + " will be used instead");
-            }
-            ModuleDependency jsf = new ModuleDependency(moduleLoader, JSF_IMPL, false, false, true);
-            jsf.addImportFilter(PathFilters.getMetaInfFilter(), true);
-            moduleSpecification.addSystemDependency(jsf);
-        }
-
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, BEAN_VALIDATION, false, false, true));
 
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JBOSS_WEB, false, false, true));
 
+    }
+
+    private void addJSFAPI(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
+        if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
+
+        ModuleIdentifier jsfModule = JSF_API;
+        if (jsfVersion.equals(JsfVersionMarker.JSF_1_2)) jsfModule = JSF_1_2_API;
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, jsfModule, false, false, false));
+    }
+
+    private void addJSFImpl(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
+        if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
+
+        ModuleIdentifier jsfModule = null;
+        if (jsfVersion.equals(JsfVersionMarker.JSF_1_2)) jsfModule = JSF_1_2_IMPL;
+        if (jsfVersion.equals(JsfVersionMarker.JSF_2_0)) jsfModule = JSF_IMPL;
+        if (jsfModule == null) {
+            jsfModule = JSF_IMPL;
+            logger.warn("Unkown JSF version " + jsfVersion + " " + JsfVersionMarker.JSF_2_0 + " will be used instead");
+        }
+
+        ModuleDependency jsf = new ModuleDependency(moduleLoader, jsfModule, false, false, false);
+        jsf.addImportFilter(PathFilters.getMetaInfFilter(), true);
+        moduleSpecification.addSystemDependency(jsf);
     }
 
     public void undeploy(final DeploymentUnit context) {
