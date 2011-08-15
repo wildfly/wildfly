@@ -63,7 +63,8 @@ public interface CommandArgument {
 
     /**
      * Checks whether the argument can appear on the command
-     * given the already present arguments. (Used for tab-completion.)
+     * given the already present arguments.
+     * (Used for tab-completion. Although, often isValueComplete(ParsedOperationRequest req) would be more appropriate.)
      * @param args  parsed arguments.
      * @return true if the argument can appear on the command line next, false - otherwise.
      */
