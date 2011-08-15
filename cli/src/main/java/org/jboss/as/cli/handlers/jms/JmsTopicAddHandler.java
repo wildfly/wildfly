@@ -66,7 +66,7 @@ public class JmsTopicAddHandler extends BatchModeCommandHandler {
         name = new ArgumentWithValue(this, /*0,*/ "--name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
+                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedArguments())) {
                     return false;
                 }
                 return super.canAppearNext(ctx);

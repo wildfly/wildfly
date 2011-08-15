@@ -456,7 +456,9 @@ public class CommandLineMain {
                 cmdCtx.printLine(e1.getLocalizedMessage());
                 return;
             }
-            CommandHandler handler = cmdRegistry.getCommandHandler(cmdCtx.cmd.toLowerCase());
+
+            final String cmdName = cmdCtx.parsedCmd.getOperationName();
+            CommandHandler handler = cmdRegistry.getCommandHandler(cmdName.toLowerCase());
             if(handler != null) {
                 if(cmdCtx.isBatchMode() && handler.isBatchMode()) {
                     if(!(handler instanceof OperationCommand)) {
@@ -547,8 +549,6 @@ public class CommandLineMain {
 
         /** current command line */
         private String cmdLine;
-        /** current command */
-        private String cmd;
         /** parsed command arguments */
         private DefaultOperationCallbackHandler parsedCmd = new DefaultOperationCallbackHandler();
 
@@ -620,11 +620,12 @@ public class CommandLineMain {
 
         @Override
         public String getArgumentsString() {
-            if(cmdLine != null && cmd != null) {
-                if(cmdLine.length() == cmd.length()) {
+            if(cmdLine != null && parsedCmd.getOperationName() != null) {
+                int cmdNameLength = parsedCmd.getOperationName().length();
+                if(cmdLine.length() == cmdNameLength) {
                     return null;
                 } else {
-                    return cmdLine.substring(cmd.length() + 1);
+                    return cmdLine.substring(cmdNameLength + 1);
                 }
             }
             return null;
@@ -860,9 +861,6 @@ public class CommandLineMain {
             if(cmdLine != null) {
                 parsedCmd.parse(cmdLine);
                 setOutputTarget(parsedCmd.getOutputTarget());
-                this.cmd = parsedCmd.getOperationName();
-            } else {
-                this.cmd = null;
             }
             this.cmdLine = cmdLine;
         }
@@ -870,11 +868,6 @@ public class CommandLineMain {
         @Override
         public boolean isBatchMode() {
             return batchManager.isBatchActive();
-        }
-
-        @Override
-        public String getCommand() {
-            return cmd;
         }
 
         @Override
