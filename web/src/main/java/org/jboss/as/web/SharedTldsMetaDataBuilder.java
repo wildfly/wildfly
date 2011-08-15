@@ -28,6 +28,8 @@ import java.util.List;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.web.deployment.JsfVersionMarker;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.parser.jsp.TldMetaDataParser;
@@ -42,12 +44,15 @@ import org.jboss.modules.ModuleLoadException;
  * Internal helper creating a shared TLD metadata list based on the domain configuration.
  *
  * @author Emanuel Muckenhuber
+ * @author Stan Silvert
  */
-class SharedTldsMetaDataBuilder {
+public class SharedTldsMetaDataBuilder {
 
     private static final String[] JSF_TAGLIBS = { "html_basic.tld", "jsf_core.tld", "mojarra_ext.tld" };
     private static final String[] JSTL_TAGLIBS = { "c-1_0-rt.tld", "c-1_0.tld", "c.tld", "fmt-1_0-rt.tld", "fmt-1_0.tld", "fmt.tld", "fn.tld", "permittedTaglibs.tld", "scriptfree.tld", "sql-1_0-rt.tld", "sql-1_0.tld", "sql.tld", "x-1_0-rt.tld", "x-1_0.tld", "x.tld" };
-    final List<TldMetaData> tlds = new ArrayList<TldMetaData>();
+
+    private final ArrayList<TldMetaData> jsfTlds = new ArrayList<TldMetaData>();
+    private final ArrayList<TldMetaData> jstlTlds = new ArrayList<TldMetaData>();
 
     // Not used right now due to hardcoding
     /** The common container config. */
@@ -65,7 +70,7 @@ class SharedTldsMetaDataBuilder {
                 InputStream is = jsf.getResourceAsStream("META-INF/" + tld);
                 if (is != null) {
                     TldMetaData tldMetaData = parseTLD(tld, is);
-                    tlds.add(tldMetaData);
+                    jsfTlds.add(tldMetaData);
                 }
             }
         } catch (ModuleLoadException e) {
@@ -79,7 +84,7 @@ class SharedTldsMetaDataBuilder {
                 InputStream is = jstl.getResourceAsStream("META-INF/" + tld);
                 if (is != null) {
                     TldMetaData tldMetaData = parseTLD(tld, is);
-                    tlds.add(tldMetaData);
+                    jstlTlds.add(tldMetaData);
                 }
             }
         } catch (ModuleLoadException e) {
@@ -89,9 +94,14 @@ class SharedTldsMetaDataBuilder {
         }
     }
 
-    List<TldMetaData> create() {
+    public List<TldMetaData> getSharedTlds(DeploymentUnit deploymentUnit) {
         final List<TldMetaData> metadata = new ArrayList<TldMetaData>();
-        metadata.addAll(tlds);
+
+        if (!JsfVersionMarker.getVersion(deploymentUnit).equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
+            metadata.addAll(jsfTlds);
+        }
+
+        metadata.addAll(jstlTlds);
         return metadata;
     }
 
