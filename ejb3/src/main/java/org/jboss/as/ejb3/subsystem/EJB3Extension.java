@@ -27,6 +27,7 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -36,6 +37,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 import java.util.Locale;
@@ -76,7 +78,7 @@ public class EJB3Extension implements Extension {
         // default slsb pool
         subsystemRegistration.registerReadWriteAttribute(DEFAULT_SLSB_INSTANCE_POOL, null, SetDefaultSLSBPool.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         // default MDB pool
-        subsystemRegistration.registerReadWriteAttribute(DEFAULT_MDB_INSTANCE_POOL, SetDefaultMDBPool.INSTANCE, SetDefaultMDBPool.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        subsystemRegistration.registerReadWriteAttribute(DEFAULT_MDB_INSTANCE_POOL, null, SetDefaultMDBPool.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         // default resource adapter name
         subsystemRegistration.registerReadWriteAttribute(DEFAULT_RESOURCE_ADAPTER_NAME, null, SetDefaultResourceAdapterName.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
 
@@ -111,18 +113,30 @@ public class EJB3Extension implements Extension {
         context.setSubsystemXmlMapping(NAMESPACE_1_1, ejb3Subsystem11Parser);
     }
 
-    private static ModelNode createAddSubSystemOperation() {
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
-        return subsystem;
+    private static ModelNode createAddSubSystemOperation(final ModelNode model) {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+        return org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, model);
+    }
+
+    private static ModelNode createAddStrictMaxPoolOperation(final String name, final ModelNode model) {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+        address.add(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL, name);
+        return org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, model);
     }
 
     private static class SubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final SubsystemDescribeHandler INSTANCE = new SubsystemDescribeHandler();
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            context.getResult().add(createAddSubSystemOperation());
+            final ModelNode result = context.getResult();
+            final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
+            result.add(createAddSubSystemOperation(root.getModel()));
+            for (Resource.ResourceEntry pool : root.getChildren(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL)) {
+                result.add(createAddStrictMaxPoolOperation(pool.getName(), pool.getModel()));
+            }
+
             context.completeStep();
         }
 

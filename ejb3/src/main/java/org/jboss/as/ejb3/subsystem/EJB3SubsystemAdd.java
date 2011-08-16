@@ -100,6 +100,9 @@ import java.util.Locale;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.LITE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
@@ -130,9 +133,11 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
             model.get(TIMER_SERVICE).set(timerService.clone());
         }
 
-        if (operation.hasDefined(LITE)) {
-            model.get(LITE).set(operation.get(LITE));
-        }
+        model.get(LITE).set(operation.get(LITE));
+        model.get(DEFAULT_MDB_INSTANCE_POOL).set(operation.get(DEFAULT_MDB_INSTANCE_POOL));
+        model.get(DEFAULT_SLSB_INSTANCE_POOL).set(operation.get(DEFAULT_SLSB_INSTANCE_POOL));
+        model.get(DEFAULT_RESOURCE_ADAPTER_NAME).set(operation.get(DEFAULT_RESOURCE_ADAPTER_NAME));
+
     }
 
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
@@ -241,6 +246,21 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
                 // processorTarget.addDeploymentProcessor(processor, priority);
             }
         }, OperationContext.Stage.RUNTIME);
+
+        if (model.hasDefined(DEFAULT_MDB_INSTANCE_POOL)) {
+            final String poolName = model.get(DEFAULT_MDB_INSTANCE_POOL).asString();
+            context.addStep(new SetDefaultMDBPool.DefaultMDBPoolConfigServiceUpdateHandler(poolName), OperationContext.Stage.RUNTIME);
+        }
+
+        if (model.hasDefined(DEFAULT_SLSB_INSTANCE_POOL)) {
+            final String poolName = model.get(DEFAULT_SLSB_INSTANCE_POOL).asString();
+            context.addStep(new SetDefaultSLSBPool.DefaultSLSBPoolConfigServiceUpdateHandler(poolName), OperationContext.Stage.RUNTIME);
+        }
+
+        if (model.hasDefined(DEFAULT_RESOURCE_ADAPTER_NAME)) {
+            final String raName = model.get(DEFAULT_RESOURCE_ADAPTER_NAME).asString();
+            context.addStep(new SetDefaultResourceAdapterName.DefaultResourceAdapterNameUpdateHandler(raName), OperationContext.Stage.RUNTIME);
+        }
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final EJBUtilities utilities = new EJBUtilities();

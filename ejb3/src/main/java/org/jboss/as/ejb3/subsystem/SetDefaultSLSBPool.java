@@ -64,7 +64,7 @@ public class SetDefaultSLSBPool implements OperationStepHandler {
         context.completeStep();
     }
 
-    private class DefaultSLSBPoolConfigServiceUpdateHandler implements OperationStepHandler {
+    static class DefaultSLSBPoolConfigServiceUpdateHandler implements OperationStepHandler {
 
         private final String poolName;
 

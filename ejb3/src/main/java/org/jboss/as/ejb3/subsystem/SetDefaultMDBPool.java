@@ -59,7 +59,7 @@ public class SetDefaultMDBPool implements OperationStepHandler {
         context.completeStep();
     }
 
-    private class DefaultMDBPoolConfigServiceUpdateHandler implements OperationStepHandler {
+    static class DefaultMDBPoolConfigServiceUpdateHandler implements OperationStepHandler {
 
         private final String poolName;
 
