@@ -68,7 +68,6 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier HIBERNATE_3_PROVIDER = ModuleIdentifier.create("org.jboss.as.jpa.hibernate","3");
     private static final String HIBERNATE3_PROVIDER_ADAPTOR = "org.jboss.as.jpa.hibernate3.HibernatePersistenceProviderAdaptor";
-
     // module dependencies for hibernate3
     private static final ModuleIdentifier JBOSS_AS_NAMING_ID = ModuleIdentifier.create("org.jboss.as.naming");
     private static final ModuleIdentifier JBOSS_JANDEX_ID = ModuleIdentifier.create("org.jboss.jandex");
@@ -90,7 +89,6 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, JBOSS_AS_JPA_ID);
         addDependency(moduleSpecification, moduleLoader, JBOSS_AS_JPA_SPI_ID);  // cover when adapter jar is in app
         addDependency(moduleSpecification, moduleLoader, JAVASSIST_ID);
-
         log.infof("added javax.persistence.api, javaee.api, org.jboss.as.jpa, org.javassist dependencies to %s", deploymentUnit.getName());
         addPersistenceProviderModuleDependencies(phaseContext, moduleSpecification, moduleLoader);
     }

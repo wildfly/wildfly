@@ -25,6 +25,7 @@
 <project>
     <target name="build-jars" description="Build the deployments.">
     <copy file="${org.hibernate:hibernate-core:jar}" tofile="${tests.output.dir}/test-libs/hibernate3-core.jar"/>
+    <copy file="${org.hibernate:hibernate-envers:jar}" tofile="${tests.output.dir}/test-libs/hibernate3-envers.jar"/>
     <copy file="${org.hibernate:hibernate-commons-annotations:jar}" tofile="${tests.output.dir}/test-libs/hibernate3-commons-annotations.jar"/>
     <copy file="${org.hibernate:hibernate-entitymanager:jar}" tofile="${tests.output.dir}/test-libs/hibernate3-entitymanager.jar"/>
     <copy file="${dom4j:dom4j:jar}" tofile="${tests.output.dir}/test-libs/dom4j.jar"/>

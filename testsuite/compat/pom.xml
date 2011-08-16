@@ -34,7 +34,9 @@
 
     <artifactId>jboss-as-testsuite-integration-compat</artifactId>
     <name>JBoss Application Server Test Suite: Compatibility Tests</name>
-
+    <properties>
+            <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
+    </properties>
    <!--
    Compile-time dependencies upon anything  in the AS7 runtime
    are allowed in this section
@@ -44,19 +46,25 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>3.6.5.Final</version>
+            <version>${version.org.hibernate3}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
-            <version>3.6.5.Final</version>
+            <version>${version.org.hibernate3}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-infinispan</artifactId>
-            <version>3.6.5.Final</version>
+            <version>${version.org.hibernate3}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-envers</artifactId>
+            <version>${version.org.hibernate3}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
