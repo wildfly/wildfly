@@ -22,20 +22,34 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.ejb3.deployment.processors.AroundTimeoutAnnotationParsingProcessor;
+import org.jboss.as.ejb3.deployment.processors.TimerServiceDeploymentProcessor;
+import org.jboss.as.ejb3.timerservice.TimerServiceFactoryService;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.services.path.AbsolutePathService;
+import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -43,7 +57,9 @@ import java.util.Locale;
  * <p/>
  * @author Stuart Douglas
  */
-public class TimerServiceAdd implements OperationStepHandler, DescriptionProvider {
+public class TimerServiceAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
+
+    private static final Logger logger = Logger.getLogger(TimerServiceAdd.class);
 
     public static final TimerServiceAdd INSTANCE = new TimerServiceAdd();
 
@@ -85,15 +101,44 @@ public class TimerServiceAdd implements OperationStepHandler, DescriptionProvide
         }
     }
 
+    protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 
-    @Override
-    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final Resource resource = context.createResource(PathAddress.pathAddress(PathElement.pathElement(EJB3SubsystemModel.TIMER_SERVICE, "default")));
-        populateModel(operation, resource.getModel());
-        context.completeStep();
+        // Only take runtime action if EJB3 Lite isn't configured
+        final ModelNode rootResource = context.getRootResource().getChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME)).getModel();
+        final boolean lite = rootResource.hasDefined(EJB3SubsystemModel.LITE) && rootResource.get(EJB3SubsystemModel.LITE).asBoolean();
+        if (!lite) {
+            context.addStep(new AbstractDeploymentChainStep() {
+                protected void execute(DeploymentProcessorTarget processorTarget) {
+                    logger.debug("Configuring timers");
+
+                    ModelNode timerServiceModel = model;
+
+                    final ModelNode pathNode = timerServiceModel.get(PATH);
+                    final String path = pathNode.isDefined() ? pathNode.asString() : null;
+                    final ModelNode relativeToNode = timerServiceModel.get(RELATIVE_TO);
+                    final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
+
+                    //install the ejb timer service data store path service
+                    if (path != null) {
+                        if (relativeTo != null) {
+                            RelativePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path, relativeTo, context.getServiceTarget());
+                        } else {
+                            AbsolutePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path, context.getServiceTarget());
+                        }
+                    }
+
+                    int coreThreadCount = timerServiceModel.get(CORE_THREADS).asInt(0);
+                    int maxThreadCount = timerServiceModel.get(MAX_THREADS).asInt(Runtime.getRuntime().availableProcessors());
+
+                    //we only add the timer service DUP's when the timer service in enabled in XML
+                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_AROUNDTIMEOUT_ANNOTATION, new AroundTimeoutAnnotationParsingProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_SERVICE, new TimerServiceDeploymentProcessor(coreThreadCount, maxThreadCount, true));
+                }
+            }, OperationContext.Stage.RUNTIME);
+        }
     }
 
-    @Override
+            @Override
     public ModelNode getModelDescription(Locale locale) {
         return EJB3SubsystemDescriptions.getTimerServiceAddDescription(locale);
     }

@@ -25,12 +25,12 @@ package org.jboss.as.ejb3.subsystem;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.processors.AccessTimeoutAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationProcessor;
-import org.jboss.as.ejb3.deployment.processors.AroundTimeoutAnnotationParsingProcessor;
 import org.jboss.as.ejb3.deployment.processors.AsynchronousAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.BusinessViewAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.ConcurrencyManagementAnnotationProcessor;
@@ -61,7 +61,6 @@ import org.jboss.as.ejb3.deployment.processors.SessionSynchronizationProcessor;
 import org.jboss.as.ejb3.deployment.processors.StartupAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.StatefulTimeoutAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.TimeoutAnnotationProcessor;
-import org.jboss.as.ejb3.deployment.processors.TimerServiceDeploymentProcessor;
 import org.jboss.as.ejb3.deployment.processors.TimerServiceJndiBindingProcessor;
 import org.jboss.as.ejb3.deployment.processors.TransactionAttributeAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.TransactionManagementAnnotationProcessor;
@@ -76,14 +75,11 @@ import org.jboss.as.ejb3.deployment.processors.dd.SecurityIdentityDDProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.SecurityRoleRefDDProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.SessionBeanXmlDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.TimeoutMethodDeploymentDescriptorProcessor;
-import org.jboss.as.ejb3.timerservice.TimerServiceFactoryService;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.server.services.path.AbsolutePathService;
-import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
@@ -98,18 +94,15 @@ import javax.transaction.UserTransaction;
 import java.util.List;
 import java.util.Locale;
 
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.LITE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
 
 /**
+ * Add operation handler for the EJB3 subsystem.
+ *
  * @author Emanuel Muckenhuber
  */
 class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
@@ -128,16 +121,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
-        final ModelNode timerService = operation.get(EJB3SubsystemModel.TIMER_SERVICE);
-        if (timerService.isDefined()) {
-            model.get(TIMER_SERVICE).set(timerService.clone());
-        }
-
         model.get(LITE).set(operation.get(LITE));
         model.get(DEFAULT_MDB_INSTANCE_POOL).set(operation.get(DEFAULT_MDB_INSTANCE_POOL));
         model.get(DEFAULT_SLSB_INSTANCE_POOL).set(operation.get(DEFAULT_SLSB_INSTANCE_POOL));
         model.get(DEFAULT_RESOURCE_ADAPTER_NAME).set(operation.get(DEFAULT_RESOURCE_ADAPTER_NAME));
-
     }
 
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
@@ -145,39 +132,20 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
-                final ModelNode timer = model.get(TIMER_SERVICE);
-
-                boolean timerServiceEnabled = false;
                 // we skip timerservice processing if strict webprofile is desired
+                // WARNING: This is a bit funky as we are configuring TimeoutAnnotationProcessor in the subsystem
+                // root add handler based on configuration that will be done in a later handler, for a child resource
+                // (TimerServiceAdd). This can work because if this and TimerServiceAdd are run as part of the same
+                // composite op or set of boot operations, this Stage.RUNTIME handler will execute after TimerServiceAdd's
+                // Stage.MODEL handler runs. So the model check that's done in the 'if' test below works. But this
+                // would fail if TimerServiceAdd were run in a separate set of operations.
+                // The reason it's ok is because this and TimerServiceAdd are boot time handlers, so these runtime
+                // changes will only happen as a group as part of the set of boot time ops. But it's fragile.
+                // TODO look into a way to have TimerServiceAdd toggle the state of the TimeoutAnnotationProcessor we add here.
+                boolean timerServiceEnabled = false;
                 boolean lite = model.hasDefined(LITE) && model.get(LITE).asBoolean();
-                if (!lite && timer.isDefined() && timer.hasDefined(DEFAULT)) {
-                    logger.debug("Configuring timers");
+                if (!lite && context.readResource(PathAddress.EMPTY_ADDRESS).hasChild(EJB3SubsystemModel.TIMER_SERVICE_PATH)) {
                     timerServiceEnabled = true;
-
-                    ModelNode timerServiceModel = timer.get(DEFAULT);
-
-                    final ModelNode pathNode = timerServiceModel.get(PATH);
-                    final String path = pathNode.isDefined() ? pathNode.asString() : null;
-                    final ModelNode relativeToNode = timerServiceModel.get(RELATIVE_TO);
-                    final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
-
-                    //install the ejb timer service data store path service
-                    if (path != null) {
-                        if (relativeTo != null) {
-                            RelativePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path, relativeTo, context.getServiceTarget());
-                        } else {
-                            AbsolutePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path, context.getServiceTarget());
-                        }
-                    }
-
-                    final ModelNode coreThreads = timerServiceModel.get(CORE_THREADS);
-                    final ModelNode maxThreads = timerServiceModel.get(MAX_THREADS);
-                    int coreThreadCount = coreThreads.isDefined() ? coreThreads.asInt() : 0;
-                    int maxThreadCount = maxThreads.isDefined() ? maxThreads.asInt() : Runtime.getRuntime().availableProcessors();
-
-                    //we only add the timer service DUP's when the timer service in enabled in XML
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_AROUNDTIMEOUT_ANNOTATION, new AroundTimeoutAnnotationParsingProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_SERVICE, new TimerServiceDeploymentProcessor(coreThreadCount, maxThreadCount, timerServiceEnabled));
                 }
 
                 //we still parse these annotations even if the timer service is not enabled
@@ -239,11 +207,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnAnnotationProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.CLEANUP, Phase.CLEANUP_EJB, new EjbCleanUpProcessor());
-
-
-                // add the real deployment processor
-                // TODO: add the proper deployment processors
-                // processorTarget.addDeploymentProcessor(processor, priority);
             }
         }, OperationContext.Stage.RUNTIME);
 
