@@ -138,13 +138,12 @@ class DeploymentPlanBuilderImpl
 
     @Override
     public AddDeploymentPlanBuilder add(String name, File file) throws IOException {
-        return add(name, file.getName(), file.toURI().toURL());
+        return add(name, name, file.toURI().toURL());
     }
 
     @Override
     public AddDeploymentPlanBuilder add(String name, URL url) throws IOException {
-        String commonName = getName(url);
-        return add(name, commonName, url);
+        return add(name, name, url);
     }
 
     private AddDeploymentPlanBuilder add(String name, String commonName, URL url) throws IOException {
