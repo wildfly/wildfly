@@ -34,6 +34,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.LITE;
@@ -67,6 +70,18 @@ public class EJB3SubsystemDescriptions {
         subsystem.get(ATTRIBUTES, LITE, DESCRIPTION).set(bundle.getString("ejb3.lite"));
         subsystem.get(ATTRIBUTES, LITE, DEFAULT).set(false);
         subsystem.get(ATTRIBUTES, LITE, REQUIRED).set(false);
+
+        subsystem.get(ATTRIBUTES, DEFAULT_MDB_INSTANCE_POOL, DESCRIPTION).set(bundle.getString("ejb3.default-mdb-instance-pool"));
+        subsystem.get(ATTRIBUTES, DEFAULT_MDB_INSTANCE_POOL, TYPE).set(ModelType.STRING);
+        subsystem.get(ATTRIBUTES, DEFAULT_MDB_INSTANCE_POOL, REQUIRED).set(false);
+
+        subsystem.get(ATTRIBUTES, DEFAULT_SLSB_INSTANCE_POOL, DESCRIPTION).set(bundle.getString("ejb3.default-slsb-instance-pool"));
+        subsystem.get(ATTRIBUTES, DEFAULT_SLSB_INSTANCE_POOL, TYPE).set(ModelType.STRING);
+        subsystem.get(ATTRIBUTES, DEFAULT_SLSB_INSTANCE_POOL, REQUIRED).set(false);
+
+        subsystem.get(ATTRIBUTES, DEFAULT_RESOURCE_ADAPTER_NAME, DESCRIPTION).set(bundle.getString("ejb3.default-resource-adapter-name"));
+        subsystem.get(ATTRIBUTES, DEFAULT_RESOURCE_ADAPTER_NAME, TYPE).set(ModelType.STRING);
+        subsystem.get(ATTRIBUTES, DEFAULT_RESOURCE_ADAPTER_NAME, REQUIRED).set(false);
 
         subsystem.get(ATTRIBUTES, TIMER_SERVICE, DESCRIPTION).set(bundle.getString("ejb3.timerservice"));
         subsystem.get(ATTRIBUTES, TIMER_SERVICE, TYPE).set(ModelType.OBJECT);
@@ -106,6 +121,18 @@ public class EJB3SubsystemDescriptions {
         op.get(REQUEST_PROPERTIES, LITE, DESCRIPTION).set(bundle.getString("ejb3.lite"));
         op.get(REQUEST_PROPERTIES, LITE, DEFAULT).set(false);
         op.get(REQUEST_PROPERTIES, LITE, REQUIRED).set(false);
+
+        op.get(REQUEST_PROPERTIES, DEFAULT_MDB_INSTANCE_POOL, DESCRIPTION).set(bundle.getString("ejb3.default-mdb-instance-pool"));
+        op.get(REQUEST_PROPERTIES, DEFAULT_MDB_INSTANCE_POOL, TYPE).set(ModelType.STRING);
+        op.get(REQUEST_PROPERTIES, DEFAULT_MDB_INSTANCE_POOL, REQUIRED).set(false);
+
+        op.get(REQUEST_PROPERTIES, DEFAULT_SLSB_INSTANCE_POOL, DESCRIPTION).set(bundle.getString("ejb3.default-slsb-instance-pool"));
+        op.get(REQUEST_PROPERTIES, DEFAULT_SLSB_INSTANCE_POOL, TYPE).set(ModelType.STRING);
+        op.get(REQUEST_PROPERTIES, DEFAULT_SLSB_INSTANCE_POOL, REQUIRED).set(false);
+
+        op.get(REQUEST_PROPERTIES, DEFAULT_RESOURCE_ADAPTER_NAME, DESCRIPTION).set(bundle.getString("ejb3.default-resource-adapter-name"));
+        op.get(REQUEST_PROPERTIES, DEFAULT_RESOURCE_ADAPTER_NAME, TYPE).set(ModelType.STRING);
+        op.get(REQUEST_PROPERTIES, DEFAULT_RESOURCE_ADAPTER_NAME, REQUIRED).set(false);
 
         op.get(REQUEST_PROPERTIES, TIMER_SERVICE, DESCRIPTION).set(bundle.getString("ejb3.timerservice"));
         op.get(REQUEST_PROPERTIES, TIMER_SERVICE, TYPE).set(ModelType.OBJECT);
