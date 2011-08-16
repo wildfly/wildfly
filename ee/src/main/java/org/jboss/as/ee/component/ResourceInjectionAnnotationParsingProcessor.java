@@ -75,8 +75,8 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         locations.put("javax.ejb.EJBContext", "java:comp/EJBContext");
         locations.put("javax.ejb.SessionContext", "java:comp/EJBContext");
         locations.put("javax.ejb.TimerService", "java:comp/TimerService");
+        locations.put("org.osgi.framework.BundleContext", "java:comp/BundleContext");
         locations.put("org.omg.CORBA.ORB", "java:comp/ORB");
-        locations.put("org.osgi.framework.BundleContext", "java:jboss/BundleContext");
         FIXED_LOCATIONS = Collections.unmodifiableMap(locations);
 
         final Set<String> simpleEntries = new HashSet<String>();
