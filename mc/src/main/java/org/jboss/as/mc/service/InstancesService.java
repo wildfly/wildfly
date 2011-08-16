@@ -94,12 +94,12 @@ final class InstancesService implements Service<Set<Object>> {
      * @param callback the callback
      */
     static void addIncallback(Callback callback) {
-        addCallback(incallbacks, callback);
         try {
             callback.dispatch(); // check all previous
         } catch (Throwable t) {
             log.warn("Error invoking incallback: " + callback, t);
         }
+        addCallback(incallbacks, callback);
     }
 
     /**
@@ -126,12 +126,12 @@ final class InstancesService implements Service<Set<Object>> {
      * @param callback the callback
      */
     static void removeUncallback(Callback callback) {
+        removeCallback(uncallbacks, callback);
         try {
             callback.dispatch(); // remove all existing
         } catch (Throwable t) {
             log.warn("Error invoking uncallback: " + callback, t);
         }
-        removeCallback(uncallbacks, callback);
     }
 
     private static void addCallback(Map<Class<?>, Map<BeanState, List<Callback>>> map, Callback callback) {
