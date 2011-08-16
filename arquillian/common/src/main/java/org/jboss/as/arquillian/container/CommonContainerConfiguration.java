@@ -32,12 +32,10 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     private InetAddress managementAddress;
     private int managementPort;
-    private long startupTimeout;
 
     public CommonContainerConfiguration() {
         managementAddress = getInetAddress("127.0.0.1");
         managementPort = 9999;
-        startupTimeout = 30000;
     }
 
     public InetAddress getManagementAddress() {
@@ -54,14 +52,6 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public void setManagementPort(int managementPort) {
         this.managementPort = managementPort;
-    }
-
-    public long getStartupTimeout() {
-        return startupTimeout;
-    }
-
-    public void setStartupTimeout(long startupTimeout) {
-        this.startupTimeout = startupTimeout;
     }
 
     private InetAddress getInetAddress(String name) {
