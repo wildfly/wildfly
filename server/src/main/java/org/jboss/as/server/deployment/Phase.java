@@ -379,6 +379,7 @@ public enum Phase {
     public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1700;
     public static final int INSTALL_JDBC_DRIVER                         = 0x1800;
     public static final int INSTALL_TRANSACTION_BINDINGS                = 0x1900;
+    public static final int INSTALL_BUNDLE_CONTEXT_BINDING              = 0x1A00;
     public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1B00;
     public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1C00;
     public static final int INSTALL_JNDI_DEPENDENCIES                   = 0x1C01;

@@ -41,7 +41,7 @@ import org.osgi.service.packageadmin.ExportedPackage;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
- * Test the registration on a non OSGi deployement.
+ * Test the registration of a non-OSGi deployement.
  *
  * @author thomas.diesler@jboss.com
  */
