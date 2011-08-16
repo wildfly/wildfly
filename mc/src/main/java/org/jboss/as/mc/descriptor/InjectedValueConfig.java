@@ -93,7 +93,7 @@ public class InjectedValueConfig extends ValueConfig {
             if (type == null)
                 throw new IllegalArgumentException("Cannot determine injected type: " + toString());
 
-            ServiceName instancesName = BeanMetaDataConfig.toInstancesName(type);
+            ServiceName instancesName = BeanMetaDataConfig.toInstancesName(type, state);
             visitor.addDependency(instancesName, value);
         }
     }

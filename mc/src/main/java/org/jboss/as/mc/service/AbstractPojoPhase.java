@@ -24,6 +24,7 @@ package org.jboss.as.mc.service;
 
 import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
+import org.jboss.as.mc.descriptor.CallbackConfig;
 import org.jboss.as.mc.descriptor.ConfigVisitor;
 import org.jboss.as.mc.descriptor.DefaultConfigVisitor;
 import org.jboss.as.mc.descriptor.InstallConfig;
@@ -34,6 +35,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -68,6 +70,15 @@ public abstract class AbstractPojoPhase implements Service<Object> {
     public void start(StartContext context) throws StartException {
         try {
             executeInstalls();
+
+            // only after describe do we have a bean
+            if (getLifecycleState().isAfter(BeanState.DESCRIBED)) {
+                addCallbacks(true);
+                addCallbacks(false);
+
+                ServiceRegistry registry = context.getController().getServiceContainer();
+                InstancesService.addInstance(registry, context.getChildTarget(), getLifecycleState(), getBean());
+            }
 
             final AbstractPojoPhase nextPhase = createNextPhase(); // do we have a next phase
             if (nextPhase != null) {
@@ -108,6 +119,12 @@ public abstract class AbstractPojoPhase implements Service<Object> {
     }
 
     public void stop(StopContext context) {
+        if (getLifecycleState().isAfter(BeanState.DESCRIBED)) {
+            InstancesService.removeInstance(context.getController().getServiceContainer(), getLifecycleState(), getBean());
+
+            removeCallbacks(true);
+            removeCallbacks(false);
+        }
         executeUninstalls();
     }
 
@@ -190,6 +207,36 @@ public abstract class AbstractPojoPhase implements Service<Object> {
 
     protected void executeUninstalls() {
         considerUninstalls(getUninstalls(), Integer.MAX_VALUE);
+    }
+
+    protected void addCallbacks(boolean install) {
+        List<CallbackConfig> configs = (install ? getBeanConfig().getIncallbacks() : getBeanConfig().getUncallbacks());
+        if (configs != null) {
+            for (CallbackConfig cc : configs) {
+                if (cc.getWhenRequired() == getLifecycleState()) {
+                    Callback callback = new Callback(getBeanInfo(), getBean(), cc);
+                    if (install)
+                        InstancesService.addIncallback(callback);
+                    else
+                        InstancesService.addUncallback(callback);
+                }
+            }
+        }
+    }
+
+    protected void removeCallbacks(boolean install) {
+        List<CallbackConfig> configs = (install ? getBeanConfig().getIncallbacks() : getBeanConfig().getUncallbacks());
+        if (configs != null) {
+            for (CallbackConfig cc : configs) {
+                if (cc.getWhenRequired() == getLifecycleState()) {
+                    Callback callback = new Callback(getBeanInfo(), getBean(), cc);
+                    if (install)
+                        InstancesService.removeIncallback(callback);
+                    else
+                        InstancesService.removeUncallback(callback);
+                }
+            }
+        }
     }
 
     protected Module getModule() {

@@ -22,7 +22,9 @@
 
 package org.jboss.as.mc.service;
 
+import org.jboss.as.mc.BeanState;
 import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -34,8 +36,12 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -46,38 +52,154 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 final class InstancesService implements Service<Set<Object>> {
+    private static final Logger log = Logger.getLogger(InstancesService.class);
+
     private final Set<Object> instances = new HashSet<Object>(); // we do own locking
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    private static final ReadWriteLock callbackLock = new ReentrantReadWriteLock();
+    private static Map<Class<?>, Map<BeanState, List<Callback>>> incallbacks = new HashMap<Class<?>, Map<BeanState, List<Callback>>>();
+    private static Map<Class<?>, Map<BeanState, List<Callback>>> uncallbacks = new HashMap<Class<?>, Map<BeanState, List<Callback>>>();
 
     private InstancesService() {
     }
 
-    static void addInstance(ServiceRegistry registry, ServiceTarget target, Object bean) throws StartException {
-        addInstance(registry, target, bean.getClass(), bean);
+    /**
+     * Add bean instance.
+     *
+     * @param registry the service registry
+     * @param target the service target
+     * @param state the bean state
+     * @param bean the bean
+     * @throws StartException for any error
+     */
+    static void addInstance(ServiceRegistry registry, ServiceTarget target, BeanState state, Object bean) throws StartException {
+        addInstance(registry, target, state, bean.getClass(), bean);
     }
 
-    static void removeInstance(ServiceRegistry registry, Object bean) {
-        removeInstance(registry, bean.getClass(), bean);
+    /**
+     * Remove bean instance.
+     *
+     * @param registry the service registry
+     * @param state the bean state
+     * @param bean the bean
+     */
+    static void removeInstance(ServiceRegistry registry, BeanState state, Object bean) {
+        removeInstance(registry, state, bean.getClass(), bean);
     }
 
-    private static void addInstance(ServiceRegistry registry, ServiceTarget target, Class<?> clazz, Object bean) throws StartException {
+    /**
+     * Add incallback.
+     *
+     * @param callback the callback
+     */
+    static void addIncallback(Callback callback) {
+        addCallback(incallbacks, callback);
+    }
+
+    /**
+     * Add uncallback.
+     *
+     * @param callback the callback
+     */
+    static void addUncallback(Callback callback) {
+        addCallback(uncallbacks, callback);
+    }
+
+    /**
+     * Remove incallback.
+     *
+     * @param callback the callback
+     */
+    static void removeIncallback(Callback callback) {
+        removeCallback(incallbacks, callback);
+    }
+
+    /**
+     * Remove uncallback.
+     *
+     * @param callback the callback
+     */
+    static void removeUncallback(Callback callback) {
+        removeCallback(uncallbacks, callback);
+    }
+
+    private static void addCallback(Map<Class<?>, Map<BeanState, List<Callback>>> map, Callback callback) {
+        callbackLock.writeLock().lock();
+        try {
+            Map<BeanState, List<Callback>> states = map.get(callback.getType());
+            if (states == null) {
+                states = new HashMap<BeanState, List<Callback>>();
+                map.put(callback.getType(), states);
+            }
+            List<Callback> callbacks = states.get(callback.getState());
+            if (callbacks == null) {
+                callbacks = new ArrayList<Callback>();
+                states.put(callback.getState(), callbacks);
+            }
+            callbacks.add(callback);
+        } finally {
+            callbackLock.writeLock().unlock();
+        }
+    }
+
+    private static void removeCallback(Map<Class<?>, Map<BeanState, List<Callback>>> map, Callback callback) {
+        callbackLock.writeLock().lock();
+        try {
+            Map<BeanState, List<Callback>> states = map.get(callback.getType());
+            if (states != null) {
+                List<Callback> callbacks = states.get(callback.getState());
+                if (callbacks != null) {
+                    callbacks.remove(callback);
+                    if (callbacks.isEmpty())
+                        states.remove(callback.getState());
+                }
+                if (states.isEmpty())
+                    map.remove(callback.getType());
+            }
+        } finally {
+            callbackLock.writeLock().unlock();
+        }
+    }
+
+    private static void invokeCallbacks(Map<Class<?>, Map<BeanState, List<Callback>>> map, BeanState state, Class<?> clazz, Object bean) {
+        callbackLock.readLock().lock();
+        try {
+            Map<BeanState, List<Callback>> states = map.get(clazz);
+            if (states != null) {
+                List<Callback> callbacks = states.get(state);
+                if (callbacks != null)
+                    for (Callback c : callbacks)
+                        try {
+                            c.dispatch(bean);
+                        } catch (Throwable t) {
+                            log.warn("Error invoking callback: " + c, t);
+                        }
+            }
+        } finally {
+            callbackLock.readLock().unlock();
+        }
+    }
+
+    private static void addInstance(ServiceRegistry registry, ServiceTarget target, BeanState state, Class<?> clazz, Object bean) throws StartException {
         if (clazz == null)
             return;
 
-        ServiceName name = BeanMetaDataConfig.toInstancesName(clazz);
+        ServiceName name = BeanMetaDataConfig.toInstancesName(clazz, state);
         ServiceBuilder<Set<Object>> builder = target.addService(name, new InstancesService());
         InstancesService service = putIfAbsent(registry, name, builder);
         service.lock.writeLock().lock();
         try {
             service.instances.add(bean);
+            invokeCallbacks(incallbacks, state, clazz, bean);
         } finally {
             service.lock.writeLock().unlock();
         }
 
-        addInstance(registry, target, clazz.getSuperclass(), bean);
+        addInstance(registry, target, state, clazz.getSuperclass(), bean);
         Class<?>[] ifaces = clazz.getInterfaces();
         for (Class<?> iface : ifaces)
-            addInstance(registry, target, iface, bean);
+            addInstance(registry, target, state, iface, bean);
     }
 
     private static InstancesService putIfAbsent(ServiceRegistry registry, ServiceName name, ServiceBuilder builder) throws StartException {
@@ -95,16 +217,17 @@ final class InstancesService implements Service<Set<Object>> {
         }
     }
 
-    private static void removeInstance(ServiceRegistry registry, Class<?> clazz, Object bean) {
+    private static void removeInstance(ServiceRegistry registry, BeanState state, Class<?> clazz, Object bean) {
         if (clazz == null)
             return;
 
-        ServiceController controller = registry.getService(BeanMetaDataConfig.toInstancesName(clazz));
+        ServiceController controller = registry.getService(BeanMetaDataConfig.toInstancesName(clazz, state));
         if (controller != null) {
             InstancesService service = (InstancesService) controller.getService();
             service.lock.writeLock().lock();
             try {
                 service.instances.remove(bean);
+                invokeCallbacks(uncallbacks, state, clazz, bean);
                 if (service.instances.isEmpty())
                     controller.setMode(ServiceController.Mode.REMOVE);
             } finally {
@@ -112,10 +235,10 @@ final class InstancesService implements Service<Set<Object>> {
             }
         }
 
-        removeInstance(registry, clazz.getSuperclass(), bean);
+        removeInstance(registry, state, clazz.getSuperclass(), bean);
         Class<?>[] ifaces = clazz.getInterfaces();
         for (Class<?> iface : ifaces)
-            removeInstance(registry, iface, bean);
+            removeInstance(registry, state, iface, bean);
     }
 
     @Override

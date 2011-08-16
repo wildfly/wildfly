@@ -47,6 +47,8 @@
             <xs:element name="destroy" type="lifecycle" minOccurs="0" maxOccurs="1"/>
             <xs:element name="install" type="install" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="uninstall" type="install" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="incallback" type="callback" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="uncallback" type="callback" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="depends" type="depends" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required"/>
@@ -161,6 +163,15 @@
         </xs:sequence>
         <xs:attribute name="bean" type="xs:string" use="optional"/>
         <xs:attribute name="method" type="xs:string" use="required"/>
+        <xs:attribute name="whenRequired" type="xs:string" use="optional"/>
+        <xs:attribute name="state" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="callback">
+        <xs:attribute name="method" type="xs:string" use="required"/>
+        <xs:attribute name="whenRequired" type="xs:string" use="optional"/>
+        <xs:attribute name="state" type="xs:string" use="optional"/>
+        <xs:attribute name="signature" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="value" mixed="true">

@@ -58,9 +58,10 @@ public class BeanMetaDataConfig extends AbstractConfigVisitorNode implements Ser
      * To instances name.
      *
      * @param clazz the class
+     * @param state the bean state
      * @return unique instance name
      */
-    public static ServiceName toInstancesName(Class<?> clazz) {
+    public static ServiceName toInstancesName(Class<?> clazz, BeanState state) {
         String clName;
         ClassLoader classLoader = clazz.getClassLoader();
         if (classLoader != null)
@@ -68,7 +69,10 @@ public class BeanMetaDataConfig extends AbstractConfigVisitorNode implements Ser
         else
             clName = "SystemClassLoader";
 
-        return JBOSS_MC_POJO.append(clName, clazz.getName());
+        if (state == null)
+            state = BeanState.INSTALLED;
+
+        return JBOSS_MC_POJO.append(clName, clazz.getName(), state.name());
     }
 
     private String name;
@@ -84,6 +88,8 @@ public class BeanMetaDataConfig extends AbstractConfigVisitorNode implements Ser
     private LifecycleConfig destroy;
     private List<InstallConfig> installs;
     private List<InstallConfig> uninstalls;
+    private List<CallbackConfig> incallbacks;
+    private List<CallbackConfig> uncallbacks;
     private Set<DependsConfig> depends;
 
     @Override
@@ -113,6 +119,10 @@ public class BeanMetaDataConfig extends AbstractConfigVisitorNode implements Ser
             nodes.addAll(installs);
         if (uninstalls != null)
             nodes.addAll(uninstalls);
+        if (incallbacks != null)
+            nodes.addAll(incallbacks);
+        if (uncallbacks != null)
+            nodes.addAll(uncallbacks);
         if (depends != null)
             nodes.addAll(depends);
     }
@@ -221,6 +231,22 @@ public class BeanMetaDataConfig extends AbstractConfigVisitorNode implements Ser
 
     public void setUninstalls(List<InstallConfig> uninstalls) {
         this.uninstalls = uninstalls;
+    }
+
+    public List<CallbackConfig> getIncallbacks() {
+        return incallbacks;
+    }
+
+    public void setIncallbacks(List<CallbackConfig> incallbacks) {
+        this.incallbacks = incallbacks;
+    }
+
+    public List<CallbackConfig> getUncallbacks() {
+        return uncallbacks;
+    }
+
+    public void setUncallbacks(List<CallbackConfig> uncallbacks) {
+        this.uncallbacks = uncallbacks;
     }
 
     public Set<DependsConfig> getDepends() {

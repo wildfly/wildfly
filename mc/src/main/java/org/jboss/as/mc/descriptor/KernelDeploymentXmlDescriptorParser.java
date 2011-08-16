@@ -69,6 +69,8 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         DESTROY(new QName(NAMESPACE, "destroy")),
         INSTALL(new QName(NAMESPACE, "install")),
         UNINSTALL(new QName(NAMESPACE, "uninstall")),
+        INCALLBACK(new QName(NAMESPACE, "incallback")),
+        UNCALLBACK(new QName(NAMESPACE, "uncallback")),
         LIST(new QName(NAMESPACE, "list")),
         SET(new QName(NAMESPACE, "set")),
         MAP(new QName(NAMESPACE, "map")),
@@ -111,6 +113,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         KEY_ELEMENT(new QName("keyClass")),
         VALUE_ELEMENT(new QName("valueClass")),
         METHOD(new QName("method")),
+        SIGNATURE(new QName("signature")),
         FACTORY_CLASS(new QName("factory-class")),
         FACTORY_METHOD(new QName("factory-method")),
         STATE(new QName("state")),
@@ -248,6 +251,22 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                                 beanConfig.setUninstalls(uninstalls);
                             }
                             uninstalls.add(parseInstall(reader));
+                            break;
+                        case INCALLBACK:
+                            List<CallbackConfig> incallbacks = beanConfig.getIncallbacks();
+                            if (incallbacks == null) {
+                                incallbacks = new ArrayList<CallbackConfig>();
+                                beanConfig.setIncallbacks(incallbacks);
+                            }
+                            incallbacks.add(parseCallback(reader));
+                            break;
+                        case UNCALLBACK:
+                            List<CallbackConfig> uncallbacks = beanConfig.getUncallbacks();
+                            if (uncallbacks == null) {
+                                uncallbacks = new ArrayList<CallbackConfig>();
+                                beanConfig.setUncallbacks(uncallbacks);
+                            }
+                            uncallbacks.add(parseCallback(reader));
                             break;
                         case DEPENDS:
                             Set<DependsConfig> depends = beanConfig.getDepends();
@@ -452,6 +471,44 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                         default:
                             throw unexpectedElement(reader);
                     }
+            }
+        }
+        throw unexpectedElement(reader);
+    }
+
+    private CallbackConfig parseCallback(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final CallbackConfig callbackConfig = new CallbackConfig();
+        final Set<Attribute> required = EnumSet.of(Attribute.METHOD);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            required.remove(attribute);
+            final String attributeValue = reader.getAttributeValue(i);
+
+            switch (attribute) {
+                case STATE:
+                    callbackConfig.setWhenRequired(BeanState.valueOf(attributeValue.toUpperCase()));
+                    break;
+                case TARGET_STATE:
+                    callbackConfig.setState(BeanState.valueOf(attributeValue.toUpperCase()));
+                    break;
+                case METHOD:
+                    callbackConfig.setMethodName(attributeValue);
+                    break;
+                case SIGNATURE:
+                    callbackConfig.setSignature(attributeValue);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (required.isEmpty() == false) {
+            throw missingRequired(reader, required);
+        }
+        while (reader.hasNext()) {
+            switch (reader.next()) {
+                case END_ELEMENT:
+                    return callbackConfig;
             }
         }
         throw unexpectedElement(reader);

@@ -45,4 +45,24 @@ public enum BeanState {
     public BeanState next() {
         return values()[ordinal() + 1];
     }
+
+    /**
+     * Is this instance before state @param.
+     *
+     * @param state the state to check
+     * @return true if before, false otherwise
+     */
+    public boolean isBefore(BeanState state) {
+        return state.ordinal() > ordinal();
+    }
+
+    /**
+     * Is this instance after state @param.
+     *
+     * @param state the state to check
+     * @return true if after, false otherwise
+     */
+    public boolean isAfter(BeanState state) {
+        return state.ordinal() < ordinal();
+    }
 }
