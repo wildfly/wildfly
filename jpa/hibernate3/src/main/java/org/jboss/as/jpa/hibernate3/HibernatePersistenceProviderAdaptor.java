@@ -69,6 +69,10 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
                 cacheManager = "java:jboss/infinispan/hibernate";
                 pu.getProperties().put("hibernate.cache.infinispan.cachemanager", cacheManager);
             }
+            if (pu.getProperties().getProperty("hibernate.cache.region_prefix") == null) {
+                // cache entries for this PU will be identified by scoped pu name + Entity class name
+                pu.getProperties().put("hibernate.cache.region_prefix", pu.getScopedPersistenceUnitName());
+            }
             ArrayList<ServiceName> result = new ArrayList<ServiceName>();
             result.add(ContextNames.bindInfoFor(toJndiName(cacheManager).toString()).getBinderServiceName());
             return result;
