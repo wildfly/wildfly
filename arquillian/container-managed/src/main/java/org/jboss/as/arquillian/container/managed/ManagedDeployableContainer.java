@@ -210,15 +210,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         public void run() {
             final InputStream stream = process.getInputStream();
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-            final boolean writeOutput = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+            final boolean writeOutput = getContainerConfiguration().isOutputToConsole();
 
-                @Override
-                public Boolean run() {
-                    // By default, redirect to stdout unless disabled by this property
-                    String val = System.getProperty("org.jboss.as.writeconsole");
-                    return val == null || !"false".equals(val);
-                }
-            });
             String line = null;
             try {
                 while ((line = reader.readLine()) != null) {
