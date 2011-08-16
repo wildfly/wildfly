@@ -34,20 +34,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 /**
  * User: jpai
  */
-public class StrictMaxPoolRemove extends AbstractRemoveStepHandler {
+public class StrictMaxPoolRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final StrictMaxPoolRemove INSTANCE = new StrictMaxPoolRemove();
 
-    public static DescriptionProvider STRICT_MAX_POOL_REMOVE_DESCRIPTION = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            // TODO: Use Locale
-            final ModelNode description = new ModelNode();
-            // setup the description
-            description.get(DESCRIPTION).set("Removes a specific " + EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL);
-            return description;
-        }
-    };
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return EJB3SubsystemDescriptions.getStrictMaxPoolRemoveDescription(locale);
+    }
 
 
     @Override

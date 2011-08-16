@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -35,12 +36,14 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 
+import java.util.Locale;
+
 /**
  * Adds the timer service
  * <p/>
  * @author Stuart Douglas
  */
-public class TimerServiceAdd implements OperationStepHandler {
+public class TimerServiceAdd implements OperationStepHandler, DescriptionProvider {
 
     public static final TimerServiceAdd INSTANCE = new TimerServiceAdd();
 
@@ -88,5 +91,10 @@ public class TimerServiceAdd implements OperationStepHandler {
         final Resource resource = context.createResource(PathAddress.pathAddress(PathElement.pathElement(EJB3SubsystemModel.TIMER_SERVICE, "default")));
         populateModel(operation, resource.getModel());
         context.completeStep();
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return EJB3SubsystemDescriptions.getTimerServiceAddDescription(locale);
     }
 }

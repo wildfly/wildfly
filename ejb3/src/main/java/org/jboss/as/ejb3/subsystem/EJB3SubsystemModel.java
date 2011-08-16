@@ -38,11 +38,6 @@ public interface EJB3SubsystemModel {
     String MAX_POOL_SIZE = "max-pool-size";
     String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
 
-
-    String OPERATION_SET_DEFAULT_MDB_INSTANCE_POOL = "set-default-mdb-instance-pool";
-    String OPERATION_SET_DEFAULT_RA_NAME = "set-default-resource-adapter-name";
-    String OPERATION_SET_DEFAULT_SLSB_INSTANCE_POOL = "set-default-slsb-instance-pool";
-
     String ADD_TIMER_SERVICE = "add-timer-service";
     String CORE_THREADS = "core-threads";
     String MAX_THREADS = "max-threads";

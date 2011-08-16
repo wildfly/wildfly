@@ -26,47 +26,23 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.component.messagedriven.DefaultResourceAdapterService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 /**
  * User: jpai
  */
-public class SetDefaultResourceAdapterName implements OperationStepHandler, DescriptionProvider {
+public class SetDefaultResourceAdapterName implements OperationStepHandler {
 
     public static final SetDefaultResourceAdapterName INSTANCE = new SetDefaultResourceAdapterName();
 
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        // TODO: Use Locale
-        final ModelNode description = new ModelNode();
-        description.get(DESCRIPTION).set("Sets the default resource adapter name that will be used by MDBs, " +
-                "unless overridden at the deployment or bean level");
-
-        // setup the param descriptions
-        description.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set("The resource adapter name which refers to an already configured resource adapter");
-        description.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        description.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-
-        return description;
-    }
-
-    @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        // get the resource adapter name value from the operation's "name" param
-        final String resourceAdapterName = operation.require(EJB3SubsystemModel.NAME).asString();
+        // get the resource adapter name value from the operation's "value" param
+        final String resourceAdapterName = operation.require(ModelDescriptionConstants.VALUE).asString();
         // update the model
         // first get the ModelNode for the address on which this operation was executed. i.e. /subsystem=ejb3
         ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();

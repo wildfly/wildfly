@@ -1,0 +1,24 @@
+
+        <subsystem xmlns="urn:jboss:domain:ejb3:1.1">
+            <mdb>
+                <resource-adapter-ref resource-adapter-name="someRA"/>
+                <bean-instance-pool-ref pool-name="MDBPool"/>
+            </mdb>
+            <session-bean>
+                <stateless>
+                    <bean-instance-pool-ref pool-name="SLSBPool"/>
+                </stateless>
+            </session-bean>
+            <pools>
+                <bean-instance-pools>
+                    <strict-max-pool name="MDBPool" max-pool-size="5" instance-acquisition-timeout="1" instance-acquisition-timeout-unit="HOURS"/>
+                    <strict-max-pool name="SLSBPool" max-pool-size="20" instance-acquisition-timeout="2"/>
+                    <strict-max-pool name="AnotherPool" max-pool-size="20"/>
+                    <strict-max-pool name="AllDefaultsPool"/>
+                </bean-instance-pools>
+            </pools>
+            <timer-service>
+                <thread-pool core-threads="2" max-threads="10"/>
+                <data-store path="timers" relative-to="jboss.server.data.dir"/>
+            </timer-service>
+        </subsystem>

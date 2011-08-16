@@ -22,17 +22,25 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Stuart Douglas
  */
-public class TimerServiceRemove extends AbstractRemoveStepHandler {
+public class TimerServiceRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final TimerServiceRemove INSTANCE = new TimerServiceRemove();
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return EJB3SubsystemDescriptions.getTimerServiceRemoveDescription(locale);
+    }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
