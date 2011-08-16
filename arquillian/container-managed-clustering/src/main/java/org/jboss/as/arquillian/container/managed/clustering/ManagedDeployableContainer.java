@@ -26,8 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -210,15 +208,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         public void run() {
             final InputStream stream = process.getInputStream();
             final InputStreamReader reader = new InputStreamReader(stream);
-            final boolean writeOutput = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+            final boolean writeOutput = getContainerConfiguration().isOutputToConsole();
 
-                @Override
-                public Boolean run() {
-                    // this needs a better name
-                    String val = System.getProperty("org.jboss.as.writeconsole");
-                    return val != null && "true".equals(val);
-                }
-            });
             final char[] data = new char[100];
             try {
                 for (int read = 0; read != -1; read = reader.read(data)) {
