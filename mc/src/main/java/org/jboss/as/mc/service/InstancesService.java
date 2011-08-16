@@ -43,25 +43,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Available instances per type
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
+@SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter"})
 final class InstancesService implements Service<Set<Object>> {
     private static final Logger log = Logger.getLogger(InstancesService.class);
 
-    private final Set<Object> instances = new HashSet<Object>(); // we do own locking
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final Class<?> type;
+    private final Set<Object> instances = new HashSet<Object>(); // we do own locking, per type (service is also per type)
 
-    private static final ReadWriteLock callbackLock = new ReentrantReadWriteLock();
     private static Map<Class<?>, Map<BeanState, List<Callback>>> incallbacks = new HashMap<Class<?>, Map<BeanState, List<Callback>>>();
     private static Map<Class<?>, Map<BeanState, List<Callback>>> uncallbacks = new HashMap<Class<?>, Map<BeanState, List<Callback>>>();
 
-    private InstancesService() {
+    private InstancesService(Class<?> type) {
+        this.type = type;
     }
 
     /**
@@ -94,11 +93,6 @@ final class InstancesService implements Service<Set<Object>> {
      * @param callback the callback
      */
     static void addIncallback(Callback callback) {
-        try {
-            callback.dispatch(); // check all previous
-        } catch (Throwable t) {
-            log.warn("Error invoking incallback: " + callback, t);
-        }
         addCallback(incallbacks, callback);
     }
 
@@ -127,20 +121,21 @@ final class InstancesService implements Service<Set<Object>> {
      */
     static void removeUncallback(Callback callback) {
         removeCallback(uncallbacks, callback);
-        try {
-            callback.dispatch(); // remove all existing
-        } catch (Throwable t) {
-            log.warn("Error invoking uncallback: " + callback, t);
-        }
     }
 
     private static void addCallback(Map<Class<?>, Map<BeanState, List<Callback>>> map, Callback callback) {
-        callbackLock.writeLock().lock();
-        try {
-            Map<BeanState, List<Callback>> states = map.get(callback.getType());
+        final Class<?> type = callback.getType();
+        synchronized (type) {
+            try {
+                callback.dispatch(); // check all previous
+            } catch (Throwable t) {
+                log.warn("Error invoking incallback: " + callback, t);
+            }
+
+            Map<BeanState, List<Callback>> states = map.get(type);
             if (states == null) {
                 states = new HashMap<BeanState, List<Callback>>();
-                map.put(callback.getType(), states);
+                map.put(type, states);
             }
             List<Callback> callbacks = states.get(callback.getState());
             if (callbacks == null) {
@@ -148,15 +143,13 @@ final class InstancesService implements Service<Set<Object>> {
                 states.put(callback.getState(), callbacks);
             }
             callbacks.add(callback);
-        } finally {
-            callbackLock.writeLock().unlock();
         }
     }
 
     private static void removeCallback(Map<Class<?>, Map<BeanState, List<Callback>>> map, Callback callback) {
-        callbackLock.writeLock().lock();
-        try {
-            Map<BeanState, List<Callback>> states = map.get(callback.getType());
+        final Class<?> type = callback.getType();
+        synchronized (type) {
+            Map<BeanState, List<Callback>> states = map.get(type);
             if (states != null) {
                 List<Callback> callbacks = states.get(callback.getState());
                 if (callbacks != null) {
@@ -165,16 +158,19 @@ final class InstancesService implements Service<Set<Object>> {
                         states.remove(callback.getState());
                 }
                 if (states.isEmpty())
-                    map.remove(callback.getType());
+                    map.remove(type);
             }
-        } finally {
-            callbackLock.writeLock().unlock();
+
+            try {
+                callback.dispatch(); // try all remaining
+            } catch (Throwable t) {
+                log.warn("Error invoking uncallback: " + callback, t);
+            }
         }
     }
 
-    private static void invokeCallbacks(Map<Class<?>, Map<BeanState, List<Callback>>> map, BeanState state, Class<?> clazz, Object bean) {
-        callbackLock.readLock().lock();
-        try {
+    private static void invokeCallbacks(Map<Class<?>, Map<BeanState, List<Callback>>> map, BeanState state, final Class<?> clazz, Object bean) {
+        synchronized (clazz) {
             Map<BeanState, List<Callback>> states = map.get(clazz);
             if (states != null) {
                 List<Callback> callbacks = states.get(state);
@@ -186,24 +182,19 @@ final class InstancesService implements Service<Set<Object>> {
                             log.warn("Error invoking callback: " + c, t);
                         }
             }
-        } finally {
-            callbackLock.readLock().unlock();
         }
     }
 
-    private static void addInstance(ServiceRegistry registry, ServiceTarget target, BeanState state, Class<?> clazz, Object bean) throws StartException {
+    private static void addInstance(ServiceRegistry registry, ServiceTarget target, BeanState state, final Class<?> clazz, Object bean) throws StartException {
         if (clazz == null)
             return;
 
         ServiceName name = BeanMetaDataConfig.toInstancesName(clazz, state);
-        ServiceBuilder<Set<Object>> builder = target.addService(name, new InstancesService());
+        ServiceBuilder<Set<Object>> builder = target.addService(name, new InstancesService(clazz));
         InstancesService service = putIfAbsent(registry, name, builder);
-        service.lock.writeLock().lock();
-        try {
+        synchronized (clazz) {
             service.instances.add(bean);
             invokeCallbacks(incallbacks, state, clazz, bean);
-        } finally {
-            service.lock.writeLock().unlock();
         }
 
         addInstance(registry, target, state, clazz.getSuperclass(), bean);
@@ -227,21 +218,18 @@ final class InstancesService implements Service<Set<Object>> {
         }
     }
 
-    private static void removeInstance(ServiceRegistry registry, BeanState state, Class<?> clazz, Object bean) {
+    private static void removeInstance(ServiceRegistry registry, BeanState state, final Class<?> clazz, Object bean) {
         if (clazz == null)
             return;
 
         ServiceController controller = registry.getService(BeanMetaDataConfig.toInstancesName(clazz, state));
         if (controller != null) {
             InstancesService service = (InstancesService) controller.getService();
-            service.lock.writeLock().lock();
-            try {
+            synchronized (clazz) {
                 service.instances.remove(bean);
                 invokeCallbacks(uncallbacks, state, clazz, bean);
                 if (service.instances.isEmpty())
                     controller.setMode(ServiceController.Mode.REMOVE);
-            } finally {
-                service.lock.writeLock().unlock();
             }
         }
 
@@ -261,11 +249,8 @@ final class InstancesService implements Service<Set<Object>> {
 
     @Override
     public Set<Object> getValue() throws IllegalStateException, IllegalArgumentException {
-        lock.readLock().lock();
-        try {
+        synchronized (type) {
             return Collections.unmodifiableSet(instances);
-        } finally {
-            lock.readLock().unlock();
         }
     }
 }
