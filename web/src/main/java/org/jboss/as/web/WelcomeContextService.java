@@ -78,7 +78,11 @@ class WelcomeContextService implements Service<Context> {
                 context.setInstanceManager(new LocalInstanceManager(httpMS));
 
                 context.setReplaceWelcomeFiles(true);
-                context.addWelcomeFile("index.html");
+                if (httpMS != null) {
+                    context.addWelcomeFile("index.html");
+                } else {
+                    context.addWelcomeFile("index_noconsole.html");
+                }
 
                 Wrapper wrapper = context.createWrapper();
                 wrapper.setName("default");

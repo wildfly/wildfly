@@ -151,6 +151,9 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
         if (subModel.hasDefined(Constants.REWRITE)) {
             operation.get(Constants.REWRITE).set(subModel.get(Constants.REWRITE));
         }
+        if (subModel.hasDefined(Constants.ENABLE_WELCOME_ROOT)) {
+            operation.get(Constants.ENABLE_WELCOME_ROOT).set(subModel.get(Constants.ENABLE_WELCOME_ROOT));
+        }
         return operation;
     }
 
