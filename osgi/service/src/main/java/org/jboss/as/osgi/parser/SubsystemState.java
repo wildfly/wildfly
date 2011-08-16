@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
 import java.util.Set;
 
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
@@ -54,7 +55,7 @@ import org.jboss.osgi.spi.util.UnmodifiableDictionary;
  * @author David Bosschaert
  * @since 13-Oct-2010
  */
-public final class SubsystemState implements Serializable, Service<SubsystemState> {
+public class SubsystemState  extends Observable implements Serializable, Service<SubsystemState> {
     private static final long serialVersionUID = 6268537612248019022L;
 
     public static final ServiceName SERVICE_NAME = FrameworkBootstrapService.FRAMEWORK_BASE_NAME.append("subsystemstate");
@@ -111,14 +112,22 @@ public final class SubsystemState implements Serializable, Service<SubsystemStat
     }
 
     public Dictionary<String, String> putConfiguration(String pid, Dictionary<String, String> props) {
-        synchronized (configurations) {
-            return configurations.put(pid, new UnmodifiableDictionary<String, String>(props));
+        try {
+            synchronized (configurations) {
+                return configurations.put(pid, new UnmodifiableDictionary<String, String>(props));
+            }
+        } finally {
+            notifyObservers(new ChangeEvent(ChangeType.CONFIG, false, pid));
         }
     }
 
     public Dictionary<String, String> removeConfiguration(String pid) {
-        synchronized (configurations) {
-            return configurations.remove(pid);
+        try {
+            synchronized (configurations) {
+                return configurations.remove(pid);
+            }
+        } finally {
+            notifyObservers(new ChangeEvent(ChangeType.CONFIG, true, pid));
         }
     }
 
@@ -131,10 +140,14 @@ public final class SubsystemState implements Serializable, Service<SubsystemStat
     }
 
     Object setProperty(String name, Object value) {
-        if (value == null)
-            return properties.remove(name);
-        else
-            return properties.put(name, value);
+        try {
+            if (value == null)
+                return properties.remove(name);
+            else
+                return properties.put(name, value);
+        } finally {
+            notifyObservers(new ChangeEvent(ChangeType.PROPERTY, value == null, name));
+        }
     }
 
     public List<OSGiModule> getModules() {
@@ -143,6 +156,7 @@ public final class SubsystemState implements Serializable, Service<SubsystemStat
 
     public void addModule(OSGiModule module) {
         modules.add(module);
+        notifyObservers(new ChangeEvent(ChangeType.MODULE, false, module.getIdentifier().toString()));
     }
 
     public OSGiModule removeModule(String id) {
@@ -152,6 +166,7 @@ public final class SubsystemState implements Serializable, Service<SubsystemStat
                 OSGiModule module = it.next();
                 if (module.getIdentifier().equals(identifier)) {
                     it.remove();
+                    notifyObservers(new ChangeEvent(ChangeType.MODULE, true, identifier.toString()));
                     return module;
                 }
             }
@@ -164,11 +179,20 @@ public final class SubsystemState implements Serializable, Service<SubsystemStat
     }
 
     void setActivation(Activation activation) {
-        this.activationPolicy = activation;
+        if (activationPolicy == activation)
+            return;
+
+        try {
+            activationPolicy = activation;
+        } finally {
+            notifyObservers(new ChangeEvent(ChangeType.ACTIVATION, false, activation.name()));
+        }
     }
 
-    boolean isEmpty() {
-        return properties.isEmpty() && modules.isEmpty() && configurations.isEmpty();
+    @Override
+    public void notifyObservers(Object arg) {
+        setChanged();
+        super.notifyObservers(arg);
     }
 
     public static class OSGiModule implements Serializable {
@@ -177,7 +201,7 @@ public final class SubsystemState implements Serializable, Service<SubsystemStat
         private final ModuleIdentifier identifier;
         private final Integer startlevel;
 
-        OSGiModule(ModuleIdentifier identifier, Integer startlevel) {
+        public OSGiModule(ModuleIdentifier identifier, Integer startlevel) {
             this.identifier = identifier;
             this.startlevel = startlevel;
         }
@@ -204,4 +228,30 @@ public final class SubsystemState implements Serializable, Service<SubsystemStat
             return identifier == null ? om.identifier == null : identifier.equals(om.identifier);
         }
     }
+
+    public static class ChangeEvent {
+        private final String id;
+        private final boolean isRemoved;
+        private final ChangeType type;
+
+        public ChangeEvent(ChangeType type, boolean isRemoved, String id) {
+            this.type = type;
+            this.isRemoved = isRemoved;
+            this.id = id;
+        }
+
+        public ChangeType getType() {
+            return type;
+        }
+
+        public boolean isRemoved() {
+            return isRemoved;
+        }
+
+        public String getId() {
+            return id;
+        }
+    }
+
+    public enum ChangeType { ACTIVATION, CONFIG, PROPERTY, MODULE };
 }
