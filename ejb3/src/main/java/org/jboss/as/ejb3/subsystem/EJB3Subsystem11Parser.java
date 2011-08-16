@@ -46,6 +46,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
@@ -56,14 +58,14 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.OPERATION_SET_DEFAULT_MDB_INSTANCE_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.OPERATION_SET_DEFAULT_RA_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.OPERATION_SET_DEFAULT_SLSB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
@@ -444,9 +446,9 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
     private void parseStrictMaxPool(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         String poolName = null;
-        int maxPoolSize = StrictMaxPoolConfig.DEFAULT_MAX_POOL_SIZE;
-        long timeout = StrictMaxPoolConfig.DEFAULT_TIMEOUT;
-        String unit = StrictMaxPoolConfig.DEFAULT_TIMEOUT_UNIT.name();
+        Integer maxPoolSize = null;
+        Long timeout = null;
+        String unit = null;
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
@@ -465,7 +467,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                     if (!isPositiveInt(value.trim())) {
                         throw new XMLStreamException("Illegal value: " + value + " for " + EJB3SubsystemXMLAttribute.INSTANCE_AQUISITION_TIMEOUT.getLocalName(), reader.getLocation());
                     }
-                    timeout = new Integer(value.trim());
+                    timeout = new Long(value.trim());
                     break;
                 case INSTANCE_AQUISITION_TIMEOUT_UNIT:
                     if (!isValidTimeoutUnit(value.trim())) {
@@ -646,42 +648,45 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
     }
 
     private ModelNode createSetDefaultSLSBPoolOperation(final String poolName) {
-        // create /subsystem=ejb3:set-default-slsb-instance-pool(name=poolName) operation
+        // create /subsystem=ejb3:write-attribute(name=default-mdb-instance-pool,value=poolName) operation
         final ModelNode setDefaultSLSBPoolOperation = new ModelNode();
-        setDefaultSLSBPoolOperation.get(OP).set(OPERATION_SET_DEFAULT_SLSB_INSTANCE_POOL);
+        setDefaultSLSBPoolOperation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         // set the address for this operation
         setDefaultSLSBPoolOperation.get(OP_ADDR).set(this.getEJB3SubsystemAddress().toModelNode());
         // set the params for the operation
-        setDefaultSLSBPoolOperation.get(NAME).set(poolName);
+        setDefaultSLSBPoolOperation.get(NAME).set(DEFAULT_SLSB_INSTANCE_POOL);
+        setDefaultSLSBPoolOperation.get(VALUE).set(poolName);
 
         return setDefaultSLSBPoolOperation;
     }
 
     private ModelNode createSetDefaultMDBPoolOperation(final String poolName) {
-        // create /subsystem=ejb3:set-default-mdb-instance-pool(name=poolName) operation
+        // create /subsystem=ejb3:write-attribute(name=default-mdb-instance-pool,value=poolName) operation
         final ModelNode setDefaultMDBPoolOperation = new ModelNode();
-        setDefaultMDBPoolOperation.get(OP).set(OPERATION_SET_DEFAULT_MDB_INSTANCE_POOL);
+        setDefaultMDBPoolOperation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         // set the address for this operation
         setDefaultMDBPoolOperation.get(OP_ADDR).set(this.getEJB3SubsystemAddress().toModelNode());
         // set the params for the operation
-        setDefaultMDBPoolOperation.get(NAME).set(poolName);
+        setDefaultMDBPoolOperation.get(NAME).set(DEFAULT_MDB_INSTANCE_POOL);
+        setDefaultMDBPoolOperation.get(VALUE).set(poolName);
 
         return setDefaultMDBPoolOperation;
     }
 
     private ModelNode createSetDefaultRAOperation(final String resourceAdapterName) {
-        // create /subsystem=ejb3:set-default-resource-adapter-name(name=poolName) operation
+        // create /subsystem=ejb3:write-attribute(name=default-resource-adapter-name,value=poolName) operation
         final ModelNode setDefaultRAName = new ModelNode();
-        setDefaultRAName.get(OP).set(OPERATION_SET_DEFAULT_RA_NAME);
+        setDefaultRAName.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         // set the address for this operation
         setDefaultRAName.get(OP_ADDR).set(this.getEJB3SubsystemAddress().toModelNode());
         // set the params for the operation
-        setDefaultRAName.get(NAME).set(resourceAdapterName);
+        setDefaultRAName.get(NAME).set(DEFAULT_RESOURCE_ADAPTER_NAME);
+        setDefaultRAName.get(VALUE).set(resourceAdapterName);
 
         return setDefaultRAName;
     }
 
-    private ModelNode createAddStrictMaxBeanInstancePoolOperation(final String name, final int maxPoolSize, final long timeout, final String timeoutUnit) {
+    private ModelNode createAddStrictMaxBeanInstancePoolOperation(final String name, final Integer maxPoolSize, final Long timeout, final String timeoutUnit) {
         // create /subsystem=ejb3/strict-max-bean-instance-pool=name:add(...)
         final ModelNode addStrictMaxPoolOperation = new ModelNode();
         addStrictMaxPoolOperation.get(OP).set(ADD);
@@ -689,9 +694,15 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
         final PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(STRICT_MAX_BEAN_INSTANCE_POOL, name));
         addStrictMaxPoolOperation.get(OP_ADDR).set(address.toModelNode());
         // set the params for the operation
-        addStrictMaxPoolOperation.get(MAX_POOL_SIZE).set(maxPoolSize);
-        addStrictMaxPoolOperation.get(INSTANCE_ACQUISITION_TIMEOUT).set(timeout);
-        addStrictMaxPoolOperation.get(INSTANCE_ACQUISITION_TIMEOUT_UNIT).set(timeoutUnit);
+        if (maxPoolSize != null) {
+            addStrictMaxPoolOperation.get(MAX_POOL_SIZE).set(maxPoolSize);
+        }
+        if (timeout != null) {
+            addStrictMaxPoolOperation.get(INSTANCE_ACQUISITION_TIMEOUT).set(timeout);
+        }
+        if (timeoutUnit != null) {
+            addStrictMaxPoolOperation.get(INSTANCE_ACQUISITION_TIMEOUT_UNIT).set(timeoutUnit);
+        }
 
         return addStrictMaxPoolOperation;
     }

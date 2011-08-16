@@ -26,6 +26,7 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.processors.AccessTimeoutAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationProcessor;
@@ -95,6 +96,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 import java.util.List;
+import java.util.Locale;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT;
@@ -107,7 +109,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
 /**
  * @author Emanuel Muckenhuber
  */
-class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
+class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
 
     static final EJB3SubsystemAdd INSTANCE = new EJB3SubsystemAdd();
 
@@ -115,6 +117,11 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private EJB3SubsystemAdd() {
         //
+    }
+
+    @Override
+    public ModelNode getModelDescription(final Locale locale) {
+        return EJB3SubsystemDescriptions.getSubystemAddDescription(locale);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
