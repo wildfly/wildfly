@@ -391,6 +391,7 @@
                                             <exclude>biz.aQute:bnd</exclude>
                                             <exclude>com.fasterxml:classmate</exclude>
                                             <exclude>com.google.gwt.inject:gin</exclude>
+                                            <exclude>com.google.inject:guice</exclude>
                                             <exclude>com.gwtplatform:gwtp-all</exclude>
                                             <exclude>commons-httpclient:commons-httpclient</exclude>
                                             <exclude>commons-logging:commons-logging</exclude>
