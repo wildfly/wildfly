@@ -60,7 +60,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
     private final PersistenceProvider persistenceProvider;
     private final PersistenceUnitMetadata pu;
 
-    private EntityManagerFactory entityManagerFactory;
+    private volatile EntityManagerFactory entityManagerFactory;
 
     public PersistenceUnitService(final PersistenceUnitMetadata pu, final PersistenceProviderAdaptor persistenceProviderAdaptor, final PersistenceProvider persistenceProvider) {
         this.pu = pu;
