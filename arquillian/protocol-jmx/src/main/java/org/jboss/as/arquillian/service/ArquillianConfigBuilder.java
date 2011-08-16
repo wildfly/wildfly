@@ -22,18 +22,22 @@
 
 package org.jboss.as.arquillian.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
-import org.junit.runner.RunWith;
 
 /**
- * Uses the annotation index to check whether there is a class annotated with @RunWith.
+ * Uses the annotation index to check whether there is a class annotated
+ * with JUnit @RunWith, or extending from the TestNG Arquillian runner.
  * In which case an {@link ArquillianConfig} service is created.
  *
  * @author Thomas.Diesler@jboss.com
@@ -41,6 +45,17 @@ import org.junit.runner.RunWith;
 public class ArquillianConfigBuilder {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
+
+    /*
+     * Note: Do not put direct class references on JUnit or TestNG here; this
+     * must be compatible with both without resulting in NCDFE
+     *
+     * AS7-1303
+     */
+
+    private static final String CLASS_NAME_JUNIT_RUNNER = "org.junit.runner.RunWith";
+
+    private static final String CLASS_NAME_TESTNG_RUNNER = "org.jboss.arquillian.testng.Arquillian";
 
     ArquillianConfigBuilder(DeploymentUnit deploymentUnit) {
     }
@@ -53,14 +68,37 @@ public class ArquillianConfigBuilder {
             return null;
         }
 
-        final DotName runWithName = DotName.createSimple(RunWith.class.getName());
+        // Got JUnit?
+        final DotName runWithName = DotName.createSimple(CLASS_NAME_JUNIT_RUNNER);
         final List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
-        if (runWithList.isEmpty()) {
+
+        // Got TestNG?
+        final DotName testNGClassName = DotName.createSimple(CLASS_NAME_TESTNG_RUNNER);
+        final Set<ClassInfo> testNgTests = compositeIndex.getAllKnownSubclasses(testNGClassName);
+
+        // Get Test Class Names
+        final Set<String> testClasses = new HashSet<String>();
+        // JUnit
+        for (AnnotationInstance instance : runWithList) {
+            final AnnotationTarget target = instance.target();
+            if (target instanceof ClassInfo) {
+                final ClassInfo classInfo = (ClassInfo) target;
+                final String testClassName = classInfo.name().toString();
+                testClasses.add(testClassName);
+            }
+        }
+        // TestNG
+        for(final ClassInfo classInfo : testNgTests){
+            testClasses.add(classInfo.name().toString());
+        }
+
+        // No tests found
+        if (testClasses.isEmpty()) {
             return null;
         }
 
         // FIXME: Why do we get another service started event from a deployment INSTALLED service?
-        ArquillianConfig arqConfig = new ArquillianConfig(arqService, depUnit, runWithList);
+        ArquillianConfig arqConfig = new ArquillianConfig(arqService, depUnit, testClasses);
         if (arqService.getServiceContainer().getService(arqConfig.getServiceName()) != null) {
             log.warnf("Arquillian config already registered: %s", arqConfig);
             return null;
