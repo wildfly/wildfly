@@ -259,7 +259,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
             return subregistry.getOperationDescription(iterator, next.getValue(), operationName, inheritance);
         } else {
             final OperationEntry entry = operationsUpdater.get(this, operationName);
-            return entry == null ? null : entry.getDescriptionProvider();
+            return entry == null ? inherited : entry.getDescriptionProvider();
         }
     }
 
