@@ -57,7 +57,7 @@ public class SetDefaultResourceAdapterName implements OperationStepHandler {
         context.completeStep();
     }
 
-    private class DefaultResourceAdapterNameUpdateHandler implements OperationStepHandler {
+    static class DefaultResourceAdapterNameUpdateHandler implements OperationStepHandler {
 
         private final String resourceAdapterName;
 
