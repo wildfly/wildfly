@@ -136,7 +136,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             }
             if (!serverAvailable) {
                 destroyProcess();
-                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", getContainerConfiguration().getStartupTimeout()));
+                throw new TimeoutException(String.format("Managed server was not started within [%d] s", getContainerConfiguration().getStartupTimeoutInSeconds()));
             }
 
         } catch (Exception e) {
