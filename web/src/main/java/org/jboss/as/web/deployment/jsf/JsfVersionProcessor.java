@@ -21,7 +21,6 @@
  */
 package org.jboss.as.web.deployment.jsf;
 
-import java.util.ArrayList;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -30,6 +29,8 @@ import org.jboss.as.web.deployment.JsfVersionMarker;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -59,7 +60,9 @@ public class JsfVersionProcessor implements DeploymentUnitProcessor {
 
         if (metaData.getWebFragmentsMetaData() != null) {
             for (WebFragmentMetaData fragmentMetaData : metaData.getWebFragmentsMetaData().values()) {
-                contextParams.addAll(fragmentMetaData.getContextParams());
+                if (fragmentMetaData.getContextParams() != null) {
+                    contextParams.addAll(fragmentMetaData.getContextParams());
+                }
             }
         }
 
@@ -68,15 +71,15 @@ public class JsfVersionProcessor implements DeploymentUnitProcessor {
         //if the user does have an ear with two wars with two different
         //JSF versions they are going to need to use deployment descriptors
         //to manually sort out the dependencies
-        for(final ParamValueMetaData param : contextParams) {
+        for (final ParamValueMetaData param : contextParams) {
             if ((param.getParamName().equals(WAR_BUNDLES_JSF_IMPL_PARAM) &&
-                (param.getParamValue() != null) &&
-                (param.getParamValue().toLowerCase().equals("true")))) {
+                    (param.getParamValue() != null) &&
+                    (param.getParamValue().toLowerCase().equals("true")))) {
                 JsfVersionMarker.setVersion(topLevelDeployment, JsfVersionMarker.WAR_BUNDLES_JSF_IMPL);
                 break; // WAR_BUNDLES_JSF_IMPL always wins
             }
 
-            if(param.getParamName().equals(JSF_CONFIG_NAME_PARAM)) {
+            if (param.getParamName().equals(JSF_CONFIG_NAME_PARAM)) {
                 JsfVersionMarker.setVersion(topLevelDeployment, param.getParamValue());
             }
         }
