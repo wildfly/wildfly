@@ -31,6 +31,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.domain.http.server.ManagementHttpServer;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -44,7 +45,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Jason T. Greene
  */
-public class HttpManagementService implements Service<HttpManagementService> {
+public class HttpManagementService implements Service<HttpManagement> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http");
 
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
@@ -54,11 +55,22 @@ public class HttpManagementService implements Service<HttpManagementService> {
     private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
     private final InjectedValue<String> tempDirValue = new InjectedValue<String>();
     private final InjectedValue<SecurityRealmService> securityRealmServiceValue = new InjectedValue<SecurityRealmService>();
-    private InetSocketAddress bindAddress;
-    private InetSocketAddress secureBindAddress;
     private ManagementHttpServer serverManagement;
     private ModelControllerClient modelControllerClient;
 
+    private HttpManagement httpManagement = new HttpManagement() {
+        public int getPort() {
+            return portValue.getOptionalValue();
+        }
+
+        public int getSecurePort() {
+            return securePortValue.getOptionalValue();
+        }
+
+        public NetworkInterfaceBinding getNetworkInterfaceBinding() {
+            return interfaceBindingValue.getValue();
+        }
+    };
 
     /**
      * Starts the service.
@@ -73,10 +85,12 @@ public class HttpManagementService implements Service<HttpManagementService> {
         modelControllerClient = modelController.createClient(executorService);
 
         final int port = portValue.getOptionalValue();
+        InetSocketAddress bindAddress = null;
         if (port > 0) {
             bindAddress = new InetSocketAddress(interfaceBinding.getAddress(), port);
         }
         final int securePort = securePortValue.getOptionalValue();
+        InetSocketAddress secureBindAddress = null;
         if (securePort > 0) {
             secureBindAddress = new InetSocketAddress(interfaceBinding.getAddress(), securePort);
         }
@@ -112,8 +126,8 @@ public class HttpManagementService implements Service<HttpManagementService> {
     /**
      * {@inheritDoc}
      */
-    public HttpManagementService getValue() throws IllegalStateException {
-        return this;
+    public HttpManagement getValue() throws IllegalStateException {
+        return httpManagement;
     }
 
     /**
@@ -179,11 +193,4 @@ public class HttpManagementService implements Service<HttpManagementService> {
         return securityRealmServiceValue;
     }
 
-    public InetSocketAddress getBindAddress() {
-        return bindAddress;
-    }
-
-    public InetSocketAddress getSecureBindAddress() {
-        return secureBindAddress;
-    }
 }
