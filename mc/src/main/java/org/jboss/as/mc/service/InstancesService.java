@@ -126,10 +126,12 @@ final class InstancesService implements Service<Set<Object>> {
     private static void addCallback(Map<Class<?>, Map<BeanState, List<Callback>>> map, Callback callback) {
         final Class<?> type = callback.getType();
         synchronized (type) {
-            try {
-                callback.dispatch(); // check all previous
-            } catch (Throwable t) {
-                log.warn("Error invoking incallback: " + callback, t);
+            if (map == incallbacks) {
+                try {
+                    callback.dispatch(); // check all previous
+                } catch (Throwable t) {
+                    log.warn("Error invoking incallback: " + callback, t);
+                }
             }
 
             Map<BeanState, List<Callback>> states = map.get(type);
@@ -161,10 +163,12 @@ final class InstancesService implements Service<Set<Object>> {
                     map.remove(type);
             }
 
-            try {
-                callback.dispatch(); // try all remaining
-            } catch (Throwable t) {
-                log.warn("Error invoking uncallback: " + callback, t);
+            if (map == uncallbacks) {
+                try {
+                    callback.dispatch(); // try all remaining
+                } catch (Throwable t) {
+                    log.warn("Error invoking uncallback: " + callback, t);
+                }
             }
         }
     }
