@@ -96,12 +96,27 @@ public interface ConfigVisitor {
     void addDependency(ServiceName name);
 
     /**
+     * Add optional dependency.
+     *
+     * @param dependency the dependency name
+     */
+    void addOptionalDependency(ServiceName dependency);
+
+    /**
      * Add dependency.
      *
      * @param name     the dependency name
      * @param injector the injector
      */
     void addDependency(ServiceName name, Injector injector);
+
+    /**
+     * Add optional dependency.
+     *
+     * @param name     the dependency name
+     * @param injector the injector
+     */
+    void addOptionalDependency(ServiceName name, Injector injector);
 
     /**
      * Add bean dependency.

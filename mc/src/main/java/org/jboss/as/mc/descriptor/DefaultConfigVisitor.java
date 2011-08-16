@@ -90,8 +90,18 @@ public class DefaultConfigVisitor extends AbstractConfigVisitor {
     }
 
     @Override
+    public void addOptionalDependency(ServiceName dependency) {
+        builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, dependency);
+    }
+
+    @Override
     public void addDependency(ServiceName name, Injector injector) {
         builder.addDependency(name, injector);
+    }
+
+    @Override
+    public void addOptionalDependency(ServiceName dependency, Injector injector) {
+        builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, dependency, injector);
     }
 
     @Override

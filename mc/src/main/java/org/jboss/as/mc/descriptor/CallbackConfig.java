@@ -23,8 +23,13 @@
 package org.jboss.as.mc.descriptor;
 
 import org.jboss.as.mc.BeanState;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Callback meta data.
@@ -39,6 +44,24 @@ public class CallbackConfig extends AbstractConfigVisitorNode implements Seriali
     private BeanState whenRequired = BeanState.INSTALLED;
     private BeanState state = BeanState.INSTALLED;
     private String signature;
+
+    private final InjectedValue<Set<Object>> beans = new InjectedValue<Set<Object>>();
+
+    @Override
+    public void visit(ConfigVisitor visitor) {
+        if (visitor.getState().next() == whenRequired) {
+            Method m = visitor.getBeanInfo().findMethod(methodName, signature);
+            if (m.getParameterTypes().length != 1)
+                throw new IllegalArgumentException("Illegal method parameter length: " + m);
+            ServiceName dependency = BeanMetaDataConfig.toInstancesName(m.getParameterTypes()[0], state);
+            visitor.addOptionalDependency(dependency, beans);
+        }
+    }
+
+    public Set<Object> getBeans() {
+        Set<Object> set = beans.getOptionalValue();
+        return (set != null) ? set : Collections.emptySet();
+    }
 
     public String getMethodName() {
         return methodName;

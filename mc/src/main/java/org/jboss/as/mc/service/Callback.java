@@ -50,7 +50,7 @@ public class Callback {
         if (method == null) {
             final Method m = beanInfo.findMethod(config.getMethodName(), config.getSignature());
             if (m.getParameterTypes().length != 1)
-                throw new IllegalArgumentException("Illegal method parameter length: " + method);
+                throw new IllegalArgumentException("Illegal method parameter length: " + m);
             method = m;
         }
         return method;
@@ -62,6 +62,11 @@ public class Callback {
 
     public BeanState getState() {
         return config.getState();
+    }
+
+    public void dispatch() throws Throwable {
+        for (Object bean : config.getBeans())
+            dispatch(bean);
     }
 
     public void dispatch(final Object dependency) throws Throwable {
