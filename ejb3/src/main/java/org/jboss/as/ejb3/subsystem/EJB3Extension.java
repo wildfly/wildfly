@@ -91,10 +91,10 @@ public class EJB3Extension implements Extension {
 
 
         final ManagementResourceRegistration timerService = subsystemRegistration.registerSubModel(
-                PathElement.pathElement(EJB3SubsystemModel.TIMER_SERVICE), EJB3SubsystemProviders.TIMER_SERVICE);
+                EJB3SubsystemModel.TIMER_SERVICE_PATH, EJB3SubsystemProviders.TIMER_SERVICE);
 
         // register ADD and REMOVE operations for timer-service
-        subsystemRegistration.registerOperationHandler(ADD_TIMER_SERVICE, TimerServiceAdd.INSTANCE, TimerServiceAdd.INSTANCE, false);
+        timerService.registerOperationHandler(ADD, TimerServiceAdd.INSTANCE, TimerServiceAdd.INSTANCE, false);
         timerService.registerOperationHandler(REMOVE, TimerServiceRemove.INSTANCE, TimerServiceRemove.INSTANCE, false);
 
         timerService.registerReadWriteAttribute(EJB3SubsystemModel.PATH, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
@@ -126,6 +126,13 @@ public class EJB3Extension implements Extension {
         return org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, model);
     }
 
+    private static ModelNode createTimerServiceOperation(final ModelNode model) {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+        address.add(EJB3SubsystemModel.SERVICE, EJB3SubsystemModel.TIMER_SERVICE);
+        return org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, model);
+    }
+
     private static class SubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final SubsystemDescribeHandler INSTANCE = new SubsystemDescribeHandler();
 
@@ -135,6 +142,10 @@ public class EJB3Extension implements Extension {
             result.add(createAddSubSystemOperation(root.getModel()));
             for (Resource.ResourceEntry pool : root.getChildren(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL)) {
                 result.add(createAddStrictMaxPoolOperation(pool.getName(), pool.getModel()));
+            }
+            final Resource timerService = root.getChild(EJB3SubsystemModel.TIMER_SERVICE_PATH);
+            if (timerService != null) {
+                result.add(createTimerServiceOperation(timerService.getModel()));
             }
 
             context.completeStep();

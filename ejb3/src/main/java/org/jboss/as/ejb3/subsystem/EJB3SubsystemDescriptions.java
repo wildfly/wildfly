@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.subsystem;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -44,7 +45,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 
 /**
  * Static utilities containing subsystem resource and operation descriptions. Separated from the
@@ -83,30 +84,16 @@ public class EJB3SubsystemDescriptions {
         subsystem.get(ATTRIBUTES, DEFAULT_RESOURCE_ADAPTER_NAME, TYPE).set(ModelType.STRING);
         subsystem.get(ATTRIBUTES, DEFAULT_RESOURCE_ADAPTER_NAME, REQUIRED).set(false);
 
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, DESCRIPTION).set(bundle.getString("ejb3.timerservice"));
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, TYPE).set(ModelType.OBJECT);
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, REQUIRED).set(false);
-
-        // timer-service param complex type description
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, MAX_THREADS, DESCRIPTION).set(bundle.getString("ejb3.timerservice.maxThreads"));
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, MAX_THREADS, TYPE).set(ModelType.INT);
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, MAX_THREADS, REQUIRED).set(false);
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, MAX_THREADS, DEFAULT).set(Runtime.getRuntime().availableProcessors());
-
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, CORE_THREADS, DESCRIPTION).set(bundle.getString("ejb3.timerservice.coreThreads"));
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, CORE_THREADS, TYPE).set(ModelType.INT);
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, CORE_THREADS, REQUIRED).set(false);
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, CORE_THREADS, DEFAULT).set(0);
-
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, PATH, DESCRIPTION).set(bundle.getString("ejb3.timerservice.path"));
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, PATH, TYPE).set(ModelType.STRING);
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, PATH, REQUIRED).set(false);
-
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, RELATIVE_TO, DESCRIPTION).set(bundle.getString("ejb3.timerservice.relativeTo"));
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, RELATIVE_TO, TYPE).set(ModelType.STRING);
-        subsystem.get(ATTRIBUTES, TIMER_SERVICE, VALUE_TYPE, RELATIVE_TO, REQUIRED).set(false);
-
         subsystem.get(OPERATIONS); // placeholder
+
+        subsystem.get(CHILDREN, SERVICE, DESCRIPTION).set(bundle.getString("ejb3.service"));
+        subsystem.get(CHILDREN, SERVICE, MIN_OCCURS).set(0);
+        subsystem.get(CHILDREN, SERVICE, MODEL_DESCRIPTION);
+
+        subsystem.get(CHILDREN, CommonAttributes.BRIDGE, DESCRIPTION).set(bundle.getString("ejb3.strict-max-bean-instance-pool"));
+        subsystem.get(CHILDREN, CommonAttributes.BRIDGE, MIN_OCCURS).set(0);
+        subsystem.get(CHILDREN, CommonAttributes.BRIDGE, MODEL_DESCRIPTION);
+
         return subsystem;
     }
 
@@ -133,29 +120,6 @@ public class EJB3SubsystemDescriptions {
         op.get(REQUEST_PROPERTIES, DEFAULT_RESOURCE_ADAPTER_NAME, DESCRIPTION).set(bundle.getString("ejb3.default-resource-adapter-name"));
         op.get(REQUEST_PROPERTIES, DEFAULT_RESOURCE_ADAPTER_NAME, TYPE).set(ModelType.STRING);
         op.get(REQUEST_PROPERTIES, DEFAULT_RESOURCE_ADAPTER_NAME, REQUIRED).set(false);
-
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, DESCRIPTION).set(bundle.getString("ejb3.timerservice"));
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, TYPE).set(ModelType.OBJECT);
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, REQUIRED).set(false);
-
-        // timer-service param complex type description
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, MAX_THREADS, DESCRIPTION).set(bundle.getString("ejb3.timerservice.maxThreads"));
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, MAX_THREADS, TYPE).set(ModelType.INT);
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, MAX_THREADS, REQUIRED).set(false);
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, MAX_THREADS, DEFAULT).set(Runtime.getRuntime().availableProcessors());
-
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, CORE_THREADS, DESCRIPTION).set(bundle.getString("ejb3.timerservice.coreThreads"));
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, CORE_THREADS, TYPE).set(ModelType.INT);
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, CORE_THREADS, REQUIRED).set(false);
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, CORE_THREADS, DEFAULT).set(0);
-
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, PATH, DESCRIPTION).set(bundle.getString("ejb3.timerservice.path"));
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, PATH, TYPE).set(ModelType.STRING);
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, PATH, REQUIRED).set(false);
-
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, RELATIVE_TO, DESCRIPTION).set(bundle.getString("ejb3.timerservice.relativeTo"));
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, RELATIVE_TO, TYPE).set(ModelType.STRING);
-        op.get(REQUEST_PROPERTIES, TIMER_SERVICE, VALUE_TYPE, RELATIVE_TO, REQUIRED).set(false);
 
         op.get(REPLY_PROPERTIES).setEmptyObject();
 
@@ -188,11 +152,12 @@ public class EJB3SubsystemDescriptions {
         description.get(ATTRIBUTES, RELATIVE_TO, TYPE).set(ModelType.STRING);
         description.get(ATTRIBUTES, RELATIVE_TO, REQUIRED).set(false);
 
-        description.get(REPLY_PROPERTIES).setEmptyObject();
+        description.get(OPERATIONS); // placeholder
+
+        description.get(CHILDREN).setEmptyObject();
 
         return description;
     }
-
 
     /**
      * Description provider for the timer-service add operation
@@ -238,6 +203,32 @@ public class EJB3SubsystemDescriptions {
         final ModelNode description = new ModelNode();
         // setup the description for the strict-max-bean-instance-pool address
         description.get(DESCRIPTION).set(bundle.getString("ejb3.strict-max-bean-instance-pool"));
+
+        // setup the "max-pool-size" param description
+        description.get(ATTRIBUTES, MAX_POOL_SIZE, DESCRIPTION).set(bundle.getString("ejb3.strict-max-bean-instance-pool.max-pool-size"));
+        description.get(ATTRIBUTES, MAX_POOL_SIZE, TYPE).set(ModelType.INT);
+        description.get(ATTRIBUTES, MAX_POOL_SIZE, REQUIRED).set(false);
+        description.get(ATTRIBUTES, MAX_POOL_SIZE, DEFAULT).set(StrictMaxPoolConfig.DEFAULT_MAX_POOL_SIZE);
+
+        // setup the "timeout" param description
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT, DESCRIPTION).set(bundle.getString("ejb3.strict-max-bean-instance-pool.instance-acquisition-timeout"));
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT, TYPE).set(ModelType.INT);
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT, REQUIRED).set(false);
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT, DEFAULT).set(StrictMaxPoolConfig.DEFAULT_TIMEOUT);
+
+        // setup the "timeout-unit" param description
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, DESCRIPTION).set(bundle.getString("ejb3.strict-max-bean-instance-pool.instance-acquisition-timeout-unit"));
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, TYPE).set(ModelType.STRING);
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, REQUIRED).set(false);
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, DEFAULT).set(StrictMaxPoolConfig.DEFAULT_TIMEOUT_UNIT.name());
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, ALLOWED).set(TimeUnit.HOURS.name());
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, ALLOWED).set(TimeUnit.MINUTES.name());
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, ALLOWED).set(TimeUnit.SECONDS.name());
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, ALLOWED).set(TimeUnit.MILLISECONDS.name());
+
+        description.get(OPERATIONS); // placeholder
+
+        description.get(CHILDREN).setEmptyObject();
 
         return description;
     }

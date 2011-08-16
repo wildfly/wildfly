@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.controller.PathElement;
+
 /**
  * User: jpai
  */
@@ -38,13 +40,16 @@ public interface EJB3SubsystemModel {
     String MAX_POOL_SIZE = "max-pool-size";
     String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
 
-    String ADD_TIMER_SERVICE = "add-timer-service";
     String CORE_THREADS = "core-threads";
     String MAX_THREADS = "max-threads";
     String RELATIVE_TO = "relative-to";
     String PATH = "path";
+
+    String SERVICE = "service";
     String TIMER_SERVICE = "timer-service";
     String DEFAULT = "default";
+
+    PathElement TIMER_SERVICE_PATH = PathElement.pathElement(SERVICE, TIMER_SERVICE);
 
 
 }
