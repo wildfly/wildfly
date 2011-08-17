@@ -21,11 +21,6 @@
  */
 package org.jboss.as.osgi.service;
 
-import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
-
-import java.io.InputStream;
-import java.util.concurrent.Future;
-
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
@@ -50,6 +45,11 @@ import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.BundleException;
 
+import java.io.InputStream;
+import java.util.concurrent.Future;
+
+import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
+
 /**
  * A {@link BundleInstallProvider} that delegates to the {@link ServerDeploymentManager}.
  *
@@ -62,7 +62,7 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
 
     private final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
-    private ServerDeploymentManager deploymentManager;
+    private volatile ServerDeploymentManager deploymentManager;
 
     public static ServiceController<?> addService(final ServiceTarget target) {
         BundleInstallProviderIntegration service = new BundleInstallProviderIntegration();

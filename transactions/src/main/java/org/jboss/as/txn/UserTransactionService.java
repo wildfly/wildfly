@@ -22,8 +22,6 @@
 
 package org.jboss.as.txn;
 
-import javax.transaction.UserTransaction;
-
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
@@ -31,6 +29,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+
+import javax.transaction.UserTransaction;
 
 /**
  * Service responsible for getting the {@link UserTransaction}.
@@ -41,7 +41,7 @@ import org.jboss.msc.value.InjectedValue;
 public class UserTransactionService extends AbstractService<UserTransaction> {
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_USER_TRANSACTION;
 
-    private InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
+    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
 
     public static ServiceController<UserTransaction> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
         UserTransactionService service = new UserTransactionService();

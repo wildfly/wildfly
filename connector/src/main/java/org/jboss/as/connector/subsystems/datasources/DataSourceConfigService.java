@@ -37,7 +37,7 @@ public class DataSourceConfigService implements Service<DataSource> {
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source-config");
 
-    private DataSource dataSourceConfig;
+    private final DataSource dataSourceConfig;
 
     public DataSourceConfigService(DataSource dataSourceConfig) {
         super();

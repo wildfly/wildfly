@@ -39,10 +39,10 @@ public class JMSQueueService implements Service<Void> {
 
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
 
-    private String queueName;
-    private String selectorString;
-    private boolean durable;
-    private String[] jndi;
+    private final String queueName;
+    private final String selectorString;
+    private final boolean durable;
+    private final String[] jndi;
 
     public JMSQueueService(final String queueName, String selectorString, boolean durable, String[] jndi) {
         this.queueName = queueName;

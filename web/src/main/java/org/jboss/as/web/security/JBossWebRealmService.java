@@ -22,9 +22,6 @@
 
 package org.jboss.as.web.security;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.catalina.Realm;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.msc.inject.Injector;
@@ -34,6 +31,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Service to install the default {@code Realm} implementation.
  *
@@ -41,7 +41,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class JBossWebRealmService implements Service<Realm> {
 
-    private Realm realm;
+    private volatile Realm realm;
 
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
 

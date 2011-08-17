@@ -22,17 +22,6 @@
 
 package org.jboss.as.osgi.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.net.URL;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.ChangeEvent;
 import org.jboss.as.osgi.parser.SubsystemState.ChangeType;
@@ -65,6 +54,17 @@ import org.jboss.osgi.spi.util.BundleInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.service.startlevel.StartLevel;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.net.URL;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Integration point to auto install bundles at framework startup.
@@ -104,7 +104,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public synchronized void start(StartContext context) throws StartException {
         serviceController = context.getController();
         log.debugf("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
 
@@ -191,7 +191,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
     }
 
     @Override
-    public AutoInstallIntegration getValue() throws IllegalStateException {
+    public synchronized AutoInstallIntegration getValue() throws IllegalStateException {
         return this;
     }
 

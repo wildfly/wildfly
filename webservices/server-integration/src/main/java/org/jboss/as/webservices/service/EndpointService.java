@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.service;
 
-import javax.management.ObjectName;
-
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.webservices.security.SecurityDomainContextAdaptor;
@@ -44,6 +42,8 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
+import javax.management.ObjectName;
+
 /**
  * WS endpoint service; this is meant for setting the lazy deployment time info into the Endpoint (stuff coming from
  * dependencies upon other AS services that are started during the deployment)
@@ -55,7 +55,7 @@ public final class EndpointService implements Service<Endpoint> {
 
     private static final Logger log = Logger.getLogger(EndpointService.class);
     private final Endpoint endpoint;
-    private ServiceName name;
+    private final ServiceName name;
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
 
     private EndpointService(final Endpoint endpoint) {

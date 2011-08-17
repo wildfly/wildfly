@@ -21,11 +21,6 @@
  */
 package org.jboss.as.arquillian.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import org.jboss.arquillian.testenricher.msc.ServiceContainerAssociation;
 import org.jboss.arquillian.testenricher.msc.ServiceTargetAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
@@ -49,6 +44,11 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The ArquillianConfig represents an Arquillian deployment.
@@ -136,20 +136,20 @@ class ArquillianConfig implements Service<ArquillianConfig> {
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public synchronized void start(StartContext context) throws StartException {
         serviceContainer = context.getController().getServiceContainer();
         serviceTarget = context.getChildTarget();
         arqService.registerArquillianConfig(this);
     }
 
     @Override
-    public void stop(StopContext context) {
+    public synchronized void stop(StopContext context) {
         context.getController().setMode(Mode.REMOVE);
         arqService.unregisterArquillianConfig(this);
     }
 
     @Override
-    public ArquillianConfig getValue() {
+    public synchronized ArquillianConfig getValue() {
         return this;
     }
 

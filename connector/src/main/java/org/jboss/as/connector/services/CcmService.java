@@ -1,7 +1,6 @@
 package org.jboss.as.connector.services;
 
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
-import org.jboss.jca.core.api.management.AdminObject;
 import org.jboss.jca.core.connectionmanager.ccm.CachedConnectionManagerImpl;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.logging.Logger;
@@ -18,9 +17,9 @@ public class CcmService implements Service<CachedConnectionManager> {
     private static final Logger log = Logger.getLogger("org.jboss.as.connector");
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connector", "admin-object");
 
-    private InjectedValue<TransactionIntegration> transactionIntegration = new InjectedValue<TransactionIntegration>();
+    private final InjectedValue<TransactionIntegration> transactionIntegration = new InjectedValue<TransactionIntegration>();
 
-    private CachedConnectionManager value;
+    private volatile CachedConnectionManager value;
 
     private final boolean debug;
     private final boolean error;

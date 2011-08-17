@@ -38,7 +38,7 @@ public class HandlerFileService implements Service<String> {
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
     private final String path;
 
-    private String fileName;
+    private volatile String fileName;
 
     public HandlerFileService(String path) {
         this.path = path;

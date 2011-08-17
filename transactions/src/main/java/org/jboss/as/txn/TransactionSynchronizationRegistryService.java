@@ -39,7 +39,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 public class TransactionSynchronizationRegistryService extends AbstractService<TransactionSynchronizationRegistry> {
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY;
 
-    private InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
+    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
 
     public static ServiceController<TransactionSynchronizationRegistry> addService(final ServiceTarget target, ServiceVerificationHandler verificationHandler) {
         TransactionSynchronizationRegistryService service = new TransactionSynchronizationRegistryService();

@@ -64,7 +64,7 @@ public class SubsystemState  extends Observable implements Serializable, Service
     private final Map<String, Dictionary<String, String>> configurations = new LinkedHashMap<String, Dictionary<String, String>>();
     private final Map<String, Object> properties = new LinkedHashMap<String, Object>();
     private final List<OSGiModule> modules = new ArrayList<OSGiModule>();
-    private Activation activationPolicy = Activation.LAZY;
+    private volatile Activation activationPolicy = Activation.LAZY;
 
     public static ServiceController<SubsystemState> addService(ServiceTarget serviceTarget, Activation activation) {
         SubsystemState state = new SubsystemState();

@@ -38,7 +38,7 @@ public final class ResourceAdapterDeploymentRegistryService implements Service<R
 
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector.registry");
 
-    private ResourceAdapterDeploymentRegistry value;
+    private final ResourceAdapterDeploymentRegistry value;
 
     /**
      * Create an instance

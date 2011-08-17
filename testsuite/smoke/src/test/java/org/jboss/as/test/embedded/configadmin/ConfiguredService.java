@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.embedded.configadmin;
 
-import java.util.Dictionary;
-
 import org.jboss.as.osgi.service.ConfigAdminService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
@@ -32,6 +30,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
+
+import java.util.Dictionary;
 
 /**
  * A simple service that reads its configuration from the {@link ConfigAdminService}
@@ -45,7 +45,7 @@ public class ConfiguredService extends AbstractService<ConfiguredService> {
     public static String SERVICE_PID = "org.jboss.as.test.embedded.configadmin";
 
     private final InjectedValue<ConfigAdminService> injectedConfigAdmin = new InjectedValue<ConfigAdminService>();
-    private Dictionary<String, String> config;
+    private volatile Dictionary<String, String> config;
 
     public static void addService(ServiceTarget serviceTarget) {
         ConfiguredService service = new ConfiguredService();

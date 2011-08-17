@@ -34,7 +34,7 @@ import org.jboss.msc.service.StartException;
  */
 public class TxBridgeInboundRecoveryService extends AbstractService<InboundBridgeRecoveryManager> {
 
-    private InboundBridgeRecoveryManager inboundBridgeRecoveryManager;
+    private volatile InboundBridgeRecoveryManager inboundBridgeRecoveryManager;
 
     public TxBridgeInboundRecoveryService() {
 

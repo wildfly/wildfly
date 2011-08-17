@@ -22,8 +22,6 @@
 
 package org.jboss.as.security.service;
 
-import javax.security.auth.login.Configuration;
-
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.security.plugins.DefaultAuthenticationCacheFactory;
@@ -41,6 +39,8 @@ import org.jboss.security.ISecurityManagement;
 import org.jboss.security.JSSESecurityDomain;
 import org.jboss.security.config.ApplicationPolicy;
 import org.jboss.security.config.ApplicationPolicyRegistration;
+
+import javax.security.auth.login.Configuration;
 
 /**
  * Service to install security domains.
@@ -65,7 +65,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
 
     private final JSSESecurityDomain jsseSecurityDomain;
 
-    private SecurityDomainContext securityDomainContext;
+    private volatile SecurityDomainContext securityDomainContext;
 
     private final String cacheType;
 
