@@ -89,12 +89,16 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 ModelNode val = DefaultStaticResources.getDefaultIfUndefined(prop.getName(), prop.getValue());
                 ourStaticResources.get(prop.getName()).set(val);
             }
+            // overwrite with new values
+            ourContainerConfig.get(Constants.STATIC_RESOURCES).set(ourStaticResources);
         }
         if (opConfig.hasDefined(Constants.JSP_CONFIGURATION)) {
             for (Property prop : opConfig.get(Constants.JSP_CONFIGURATION).asPropertyList()) {
-                ModelNode val = DefaultStaticResources.getDefaultIfUndefined(prop.getName(), prop.getValue());
-                ourStaticResources.get(prop.getName()).set(val);
+                ModelNode val = DefaultJspConfig.getDefaultIfUndefined(prop.getName(), prop.getValue());
+                ourJspConfig.get(prop.getName()).set(val);
             }
+            // overwrite with new values
+            ourContainerConfig.get(Constants.JSP_CONFIGURATION).set(ourJspConfig);
         }
         if (opConfig.hasDefined(Constants.MIME_MAPPING)) {
             ourContainerConfig.get(Constants.MIME_MAPPING).set(opConfig.get(Constants.MIME_MAPPING));
