@@ -45,19 +45,18 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
 
 /**
  * Static utilities containing subsystem resource and operation descriptions. Separated from the
  * {@link DescriptionProvider} implementations so the cost of loading this code doesn't
  * get incurred during boot time
- *
+ * <p/>
  * User: jpai
  */
 public class EJB3SubsystemDescriptions {
 
     static final String RESOURCE_NAME = EJB3SubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
-
-    public static final String BRIDGE = "bridge";
 
     static final ModelNode getSubystemDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
@@ -91,9 +90,9 @@ public class EJB3SubsystemDescriptions {
         subsystem.get(CHILDREN, SERVICE, MIN_OCCURS).set(0);
         subsystem.get(CHILDREN, SERVICE, MODEL_DESCRIPTION);
 
-        subsystem.get(CHILDREN, BRIDGE, DESCRIPTION).set(bundle.getString("ejb3.strict-max-bean-instance-pool"));
-        subsystem.get(CHILDREN, BRIDGE, MIN_OCCURS).set(0);
-        subsystem.get(CHILDREN, BRIDGE, MODEL_DESCRIPTION);
+        subsystem.get(CHILDREN, STRICT_MAX_BEAN_INSTANCE_POOL, DESCRIPTION).set(bundle.getString("ejb3.strict-max-bean-instance-pool"));
+        subsystem.get(CHILDREN, STRICT_MAX_BEAN_INSTANCE_POOL, MIN_OCCURS).set(0);
+        subsystem.get(CHILDREN, STRICT_MAX_BEAN_INSTANCE_POOL, MODEL_DESCRIPTION);
 
         return subsystem;
     }
