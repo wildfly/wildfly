@@ -140,7 +140,7 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
      */
     @Override
     public Configuration defineConfiguration(String cacheName, Configuration configurationOverride) {
-        return this.defineConfiguration(cacheName, this.defaultCache, configurationOverride);
+        return this.container.defineConfiguration(this.getCacheName(cacheName), configurationOverride);
     }
 
     /**
