@@ -4,15 +4,8 @@
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">
-    <!-- The security subsystem root element -->
+    <!-- The mail subsystem root element -->
     <xs:element name="subsystem" type="mail-subsystemType"/>
-
-    <!--
-    <mail-session jndi-name="java:/Mail">
-                <login name="nobody" password="pass"/>
-                <smtp-server address="localhost" port="9999"/>
-           </mail-session>
-    -->
     <xs:complexType name="mail-subsystemType">
         <xs:annotation>
             <xs:documentation>
@@ -36,12 +29,6 @@
         <xs:attribute name="debug" use="optional"/>
     </xs:complexType>
 
-    <!--<xs:element name="smtp-server" type="server-type">
-                <xs:complexType mixed="true">
-                    <xs:attribute name="address" use="required"/>
-                    <xs:attribute name="port" use="required"/>
-                </xs:complexType>
-            </xs:element>-->
     <xs:complexType name="login-type" mixed="true">
         <xs:attribute name="name"/>
         <xs:attribute name="password"/>
