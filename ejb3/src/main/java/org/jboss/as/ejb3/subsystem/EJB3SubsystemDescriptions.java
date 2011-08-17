@@ -25,7 +25,6 @@ package org.jboss.as.ejb3.subsystem;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
-import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -57,6 +56,8 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 public class EJB3SubsystemDescriptions {
 
     static final String RESOURCE_NAME = EJB3SubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
+
+    public static final String BRIDGE = "bridge";
 
     static final ModelNode getSubystemDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
@@ -90,9 +91,9 @@ public class EJB3SubsystemDescriptions {
         subsystem.get(CHILDREN, SERVICE, MIN_OCCURS).set(0);
         subsystem.get(CHILDREN, SERVICE, MODEL_DESCRIPTION);
 
-        subsystem.get(CHILDREN, CommonAttributes.BRIDGE, DESCRIPTION).set(bundle.getString("ejb3.strict-max-bean-instance-pool"));
-        subsystem.get(CHILDREN, CommonAttributes.BRIDGE, MIN_OCCURS).set(0);
-        subsystem.get(CHILDREN, CommonAttributes.BRIDGE, MODEL_DESCRIPTION);
+        subsystem.get(CHILDREN, BRIDGE, DESCRIPTION).set(bundle.getString("ejb3.strict-max-bean-instance-pool"));
+        subsystem.get(CHILDREN, BRIDGE, MIN_OCCURS).set(0);
+        subsystem.get(CHILDREN, BRIDGE, MODEL_DESCRIPTION);
 
         return subsystem;
     }

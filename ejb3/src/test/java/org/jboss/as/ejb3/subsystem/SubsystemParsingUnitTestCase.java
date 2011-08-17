@@ -23,8 +23,6 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.messaging.MessagingExtension;
-import org.jboss.as.messaging.MessagingSubsystemParser;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
