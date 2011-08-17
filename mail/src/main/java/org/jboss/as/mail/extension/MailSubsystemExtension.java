@@ -147,13 +147,15 @@ public class MailSubsystemExtension implements Extension {
                     final ModelNode address = rootAddress.toModelNode();
                     address.add(ModelKeys.MAIL_SESSION, session.getName());
                     final ModelNode addOperation = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address);
+
+                    addOperation.get(ModelKeys.JNDI_NAME).set(session.getValue().get(ModelKeys.JNDI_NAME).asString());
+                    addOperation.get(ModelKeys.DEBUG).set(session.getValue().get(ModelKeys.DEBUG).asString());
+                    addOperation.get(ModelKeys.USERNAME).set(session.getValue().get(ModelKeys.USERNAME).asString());
+                    addOperation.get(ModelKeys.PASSWORD).set(session.getValue().get(ModelKeys.PASSWORD).asString());
                     addOperation.get(ModelKeys.SMTP_SERVER).set(session.getValue().get(ModelKeys.SMTP_SERVER));
-                    /*addOperation.get(DRIVER_MODULE_NAME).set(session.getValue().get(DRIVER_MODULE_NAME));
-                    addOperation.get(DRIVER_MAJOR_VERSION).set(session.getValue().get(DRIVER_MAJOR_VERSION));
-                    addOperation.get(DRIVER_MINOR_VERSION).set(session.getValue().get(DRIVER_MINOR_VERSION));
-                    addOperation.get(DRIVER_CLASS_NAME).set(session.getValue().get(DRIVER_CLASS_NAME));
-                    addOperation.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(
-                    session.getValue().get(DRIVER_XA_DATASOURCE_CLASS_NAME));*/
+                    addOperation.get(ModelKeys.IMAP_SERVER).set(session.getValue().get(ModelKeys.IMAP_SERVER));
+                    addOperation.get(ModelKeys.POP3_SERVER).set(session.getValue().get(ModelKeys.POP3_SERVER));
+
                     result.add(addOperation);
                 }
             }

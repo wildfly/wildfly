@@ -42,12 +42,15 @@ class MailSubsystemProviders {
      */
     public static DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
         public ModelNode getModelDescription(Locale locale) {
-            //The locale is passed in so you can internationalize the strings used in the descriptions
+             final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
 
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(DESCRIPTION).set("Adds mail subsystem");
+            operation.get(OPERATION_NAME).set("add");
+            operation.get(DESCRIPTION).set(bundle.getString("mail.add"));
+            operation.get(REQUEST_PROPERTIES).setEmptyObject();
+            operation.get(REPLY_PROPERTIES).setEmptyObject();
 
-            return subsystem;
+            return operation;
         }
     };
 
