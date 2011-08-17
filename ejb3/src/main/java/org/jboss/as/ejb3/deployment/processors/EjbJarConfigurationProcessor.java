@@ -31,7 +31,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 /**
- * Must run before the {@link org.jboss.as.ee.component.ComponentInstallProcessor}
+ * Must run before the {@link org.jboss.as.ee.component.deployers.ComponentInstallProcessor}
  *
  * @author Jaikiran Pai
  */

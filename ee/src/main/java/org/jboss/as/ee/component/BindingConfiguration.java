@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-
 /**
  * A binding into JNDI.  This class contains the mechanism to construct the binding service.  In particular
  * it represents <b>only</b> the description of the binding; it does not represent injection or any other parameters

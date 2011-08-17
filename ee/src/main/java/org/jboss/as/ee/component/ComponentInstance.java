@@ -22,11 +22,11 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.Collection;
 import org.jboss.invocation.Interceptor;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 /**
  * An instance of a Java EE component.

@@ -20,8 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component;
+package org.jboss.as.ee.component.deployers;
 
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ee.component.BasicComponentCreateService;
+import org.jboss.as.ee.component.BindingConfiguration;
+import org.jboss.as.ee.component.ClassDescriptionTraversal;
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentNamingMode;
+import org.jboss.as.ee.component.ComponentStartService;
+import org.jboss.as.ee.component.DependencyConfigurator;
+import org.jboss.as.ee.component.EEApplicationDescription;
+import org.jboss.as.ee.component.EEModuleClassConfiguration;
+import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.ee.component.EEModuleConfiguration;
+import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.component.InterceptorDescription;
+import org.jboss.as.ee.component.ViewConfiguration;
+import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.service.NamingStoreService;
