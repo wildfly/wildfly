@@ -58,7 +58,7 @@ public class SubjectFactoryService implements Service<SubjectFactory> {
 
     /** {@inheritDoc} */
     @Override
-    public void start(StartContext context) throws StartException {
+    public synchronized void start(StartContext context) throws StartException {
         if (log.isDebugEnabled())
             log.debug("Starting SubjectFactoryService");
         final ISecurityManagement injectedSecurityManagement = securityManagementValue.getValue();
@@ -80,13 +80,13 @@ public class SubjectFactoryService implements Service<SubjectFactory> {
 
     /** {@inheritDoc} */
     @Override
-    public void stop(StopContext context) {
+    public synchronized void stop(StopContext context) {
         // nothing to do
     }
 
     /** {@inheritDoc} */
     @Override
-    public SubjectFactory getValue() throws IllegalStateException {
+    public synchronized SubjectFactory getValue() throws IllegalStateException {
         return subjectFactory;
     }
 

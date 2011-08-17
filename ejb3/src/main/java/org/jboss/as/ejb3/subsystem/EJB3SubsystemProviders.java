@@ -23,56 +23,54 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.LITE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 
 /**
+ * {@link DescriptionProvider} implementations for EJB3 subsystem resources.
+ *
  * @author Emanuel Muckenhuber
  */
 class EJB3SubsystemProviders {
-    static final String RESOURCE_NAME = EJB3SubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(DESCRIPTION).set(bundle.getString("ejb3"));
-            subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
-            subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
-            subsystem.get(NAMESPACE).set(EJB3Extension.NAMESPACE_1_0);
-
-            return subsystem;
+            return EJB3SubsystemDescriptions.getSubystemDescription(locale);
         }
     };
 
-    static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode op = new ModelNode();
-            op.get(OPERATION_NAME).set(ADD);
-            op.get(DESCRIPTION).set(bundle.getString("ejb3.add"));
-
-            return op;
+    public static final DescriptionProvider STRICT_MAX_BEAN_INSTANCE_POOL = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return EJB3SubsystemDescriptions.getStrictMaxBeanInstancePoolDescription(locale);
         }
     };
 
-    private static ResourceBundle getResourceBundle(Locale locale) {
-        if (locale == null) {
-            locale = Locale.getDefault();
+    public static final DescriptionProvider TIMER_SERVICE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return EJB3SubsystemDescriptions.getTimerServiceDescription(locale);
         }
-        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
-    }
+    };
 }

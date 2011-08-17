@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PoolConfigService;
 import org.jboss.dmr.ModelNode;
@@ -41,29 +42,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 /**
  * User: jpai
  */
-public class SetDefaultSLSBPool implements OperationStepHandler, DescriptionProvider {
+public class SetDefaultSLSBPool implements OperationStepHandler {
 
     public static final SetDefaultSLSBPool INSTANCE = new SetDefaultSLSBPool();
 
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        // TODO: Use Locale
-        final ModelNode description = new ModelNode();
-        description.get(DESCRIPTION).set("Sets the default stateless bean instance pool, " +
-                "which will be applicable to all stateless EJBs, unless overridden at the deployment or bean level");
-
-        // setup the param descriptions
-        description.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set("The pool name which refers to an already configured bean instance pool");
-        description.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        description.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-
-        return description;
-    }
-
-    @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        // get the pool name value from the operation's "name" param
-        final String poolName = operation.require(EJB3SubsystemModel.NAME).asString();
+        // get the pool name value from the operation's "value" param
+        final String poolName = operation.require(ModelDescriptionConstants.VALUE).asString();
         // update the model
         // first get the ModelNode for the address on which this operation was executed. i.e. /subsystem=ejb3
         ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
@@ -78,7 +64,7 @@ public class SetDefaultSLSBPool implements OperationStepHandler, DescriptionProv
         context.completeStep();
     }
 
-    private class DefaultSLSBPoolConfigServiceUpdateHandler implements OperationStepHandler {
+    static class DefaultSLSBPoolConfigServiceUpdateHandler implements OperationStepHandler {
 
         private final String poolName;
 
@@ -92,7 +78,7 @@ public class SetDefaultSLSBPool implements OperationStepHandler, DescriptionProv
             ServiceController existingDefaultSLSBPoolConfigService = serviceRegistry.getService(PoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME);
             // if a default SLSB pool is already installed, then remove it first
             if (existingDefaultSLSBPoolConfigService != null) {
-                existingDefaultSLSBPoolConfigService.setMode(ServiceController.Mode.REMOVE);
+                context.removeService(existingDefaultSLSBPoolConfigService);
             }
             // now install default slsb pool config service which points to an existing pool config service
             final ValueInjectionService<PoolConfig> newDefaultSLSBPoolConfigService = new ValueInjectionService<PoolConfig>();

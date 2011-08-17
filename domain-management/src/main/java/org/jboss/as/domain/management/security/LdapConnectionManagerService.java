@@ -21,15 +21,6 @@
  */
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_CREDENTIAL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_DN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
-
-import javax.naming.Context;
-import javax.naming.directory.InitialDirContext;
-import java.util.Properties;
-
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -37,6 +28,15 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import javax.naming.Context;
+import javax.naming.directory.InitialDirContext;
+import java.util.Properties;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_CREDENTIAL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_DN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 
 /**
  * The LDAP connection manager to maintain the LDAP connections.
@@ -64,7 +64,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     *  Service Lifecycle Methods
     */
 
-    public void start(StartContext context) throws StartException {
+    public synchronized void start(StartContext context) throws StartException {
         connectionOnlyProperties = new Properties();
 
         connectionOnlyProperties.put(Context.SECURITY_AUTHENTICATION,"simple");
@@ -87,12 +87,12 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         fullProperties.put(Context.SECURITY_CREDENTIALS,searchCredential);
     }
 
-    public void stop(StopContext context) {
+    public synchronized void stop(StopContext context) {
         connectionOnlyProperties = null;
         fullProperties = null;
     }
 
-    public LdapConnectionManagerService getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized LdapConnectionManagerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 

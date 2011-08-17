@@ -74,11 +74,11 @@ public class AS7BindingRegistry implements BindingRegistry {
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
         container.addService(bindInfo.getBinderServiceName(), binderService)
-                 .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class, binderService.getNamingStoreInjector())
-                 .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(obj)))
-                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                 .install();
-        logger.info("Bound messaging object to jndi name " + name);
+                .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class, binderService.getNamingStoreInjector())
+                .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(obj)))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+        logger.info("Bound messaging object to jndi name " + bindInfo.getAbsoluteJndiName());
         return true;
     }
 
@@ -87,18 +87,15 @@ public class AS7BindingRegistry implements BindingRegistry {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Cannot unbind null or empty jndi name");
         }
-        final JndiBinding jndiBinding = JndiBinding.parse(name);
-        if (jndiBinding == null) {
-            throw new IllegalArgumentException("Cannot unbind " + name + " since it belongs to a unknown/unsupported jndi name context");
-        }
-        ServiceController<?> bindingService = container.getService(ContextNames.bindInfoFor(name).getBinderServiceName());
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
+        ServiceController<?> bindingService = container.getService(bindInfo.getBinderServiceName());
         if (bindingService == null) {
             logger.debug("Cannot unbind " + name + " since no binding exists with that name");
             return;
         }
         // remove the binding service
         bindingService.setMode(ServiceController.Mode.REMOVE);
-        logger.info("Unbound messaging object from jndi name " + jndiBinding);
+        logger.info("Unbound messaging object from jndi name " + bindInfo.getAbsoluteJndiName());
     }
 
     @Override

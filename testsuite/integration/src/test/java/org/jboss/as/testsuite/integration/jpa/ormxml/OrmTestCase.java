@@ -22,22 +22,21 @@
 
 package org.jboss.as.testsuite.integration.jpa.ormxml;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.junit.Assert.assertNull;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import static org.junit.Assert.assertNull;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Transaction tests
@@ -68,19 +67,6 @@ public class OrmTestCase {
             "</entity-mappings>"
         ;
 
-
-    private static InitialContext iniCtx;
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        iniCtx = new InitialContext();
-    }
-
-    @AfterClass
-    public static void afterClass() throws NamingException {
-        iniCtx.close();
-    }
-
     @Deployment
     public static Archive<?> deploy() {
 
@@ -95,9 +81,8 @@ public class OrmTestCase {
         return jar;
     }
 
-    protected static <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
-        return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
-    }
+    @ArquillianResource
+    private InitialContext iniCtx;
 
     @Test
     @Ignore
@@ -108,4 +93,8 @@ public class OrmTestCase {
 
     }
 
+
+    protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
+        return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
+    }
 }

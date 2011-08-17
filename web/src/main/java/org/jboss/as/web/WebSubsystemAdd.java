@@ -89,12 +89,16 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 ModelNode val = DefaultStaticResources.getDefaultIfUndefined(prop.getName(), prop.getValue());
                 ourStaticResources.get(prop.getName()).set(val);
             }
+            // overwrite with new values
+            ourContainerConfig.get(Constants.STATIC_RESOURCES).set(ourStaticResources);
         }
         if (opConfig.hasDefined(Constants.JSP_CONFIGURATION)) {
             for (Property prop : opConfig.get(Constants.JSP_CONFIGURATION).asPropertyList()) {
-                ModelNode val = DefaultStaticResources.getDefaultIfUndefined(prop.getName(), prop.getValue());
-                ourStaticResources.get(prop.getName()).set(val);
+                ModelNode val = DefaultJspConfig.getDefaultIfUndefined(prop.getName(), prop.getValue());
+                ourJspConfig.get(prop.getName()).set(val);
             }
+            // overwrite with new values
+            ourContainerConfig.get(Constants.JSP_CONFIGURATION).set(ourJspConfig);
         }
         if (opConfig.hasDefined(Constants.MIME_MAPPING)) {
             ourContainerConfig.get(Constants.MIME_MAPPING).set(opConfig.get(Constants.MIME_MAPPING));
@@ -127,16 +131,16 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 final SharedTldsMetaDataBuilder sharedTldsBuilder = new SharedTldsMetaDataBuilder(config.clone());
 
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR_DEPLOYMENT_INIT, new WarDeploymentInitializingProcessor());
-                processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()));
+                processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_WAR, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder));
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT, new WebParsingDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_DEPLOYMENT_FRAGMENT, new WebFragmentParsingDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JSF_VERSION, new JsfVersionProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JBOSS_WEB_DEPLOYMENT, new JBossWebParsingDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_TLD_DEPLOYMENT, new TldParsingDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ANNOTATION_WAR, new WarAnnotationDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_COMPONENTS, new WebComponentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_CONTEXT_ROOT, new EarContextRootProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_MERGE_METADATA, new WarMetaDataProcessor());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JSF_VERSION, new JsfVersionProcessor());
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE, new WarClassloadingDependencyProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JsfManagedBeanProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JsfManagedBeanProcessor());

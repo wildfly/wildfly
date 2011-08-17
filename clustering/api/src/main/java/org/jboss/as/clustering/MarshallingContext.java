@@ -35,10 +35,16 @@ import org.jboss.marshalling.Unmarshaller;
 public class MarshallingContext {
     private final MarshallerFactory factory;
     private final MarshallingConfiguration configuration;
+    private final ClassLoaderProvider provider;
 
-    public MarshallingContext(MarshallerFactory factory, MarshallingConfiguration configuration) {
+    public MarshallingContext(MarshallerFactory factory, MarshallingConfiguration configuration, ClassLoaderProvider provider) {
         this.factory = factory;
         this.configuration = configuration;
+        this.provider = provider;
+    }
+
+    public ClassLoader getClassLoader() {
+        return this.provider.getClassLoader();
     }
 
     public Unmarshaller createUnmarshaller() throws IOException {

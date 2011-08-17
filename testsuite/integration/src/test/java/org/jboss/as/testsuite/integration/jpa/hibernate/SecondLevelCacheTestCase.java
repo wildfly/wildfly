@@ -32,11 +32,11 @@ import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,14 +64,29 @@ public class SecondLevelCacheTestCase {
             "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
             "</properties>" +
             "  </persistence-unit>" +
+            // second pu with 2lc
+            "  <persistence-unit name=\"SecondPU\">" +
+            "    <description>Persistence Unit." +
+            "    </description>" +
+            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+            " <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>" +
+            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+            "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
+            "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
+            "</properties>" +
+            "  </persistence-unit>" +
+            // 3rd pu with 2lc enabled
+            "  <persistence-unit name=\"ThirdPU\">" +
+            "    <description>Persistence Unit." +
+            "    </description>" +
+            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+            " <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>" +
+            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+            "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
+            "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
+            "</properties>" +
+            "  </persistence-unit>" +
             "</persistence>";
-
-    private static InitialContext iniCtx;
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        iniCtx = new InitialContext();
-    }
 
     @Deployment
     public static Archive<?> deploy() {
@@ -88,11 +103,14 @@ public class SecondLevelCacheTestCase {
         return jar;
     }
 
-    protected static <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
+    @ArquillianResource
+    private InitialContext iniCtx;
+
+    protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
         return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
     }
 
-    protected static <T> T rawLookup(String name, Class<T> interfaceType) throws NamingException {
+    protected <T> T rawLookup(String name, Class<T> interfaceType) throws NamingException {
         return interfaceType.cast(iniCtx.lookup(name));
     }
 

@@ -42,6 +42,7 @@
         <module>container-remote</module>
         <module>protocol-jmx</module>
         <module>testenricher-msc</module>
+        <module>testng-integration</module>
         <module>container-managed-domain</module>
         <module>container-managed-clustering</module>
         <!--

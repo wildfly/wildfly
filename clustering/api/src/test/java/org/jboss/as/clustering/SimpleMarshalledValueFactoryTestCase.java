@@ -39,15 +39,20 @@ import org.junit.Test;
  * 
  * @author Brian Stansberry
  */
-public class SimpleMarshalledValueFactoryTestCase {
+public class SimpleMarshalledValueFactoryTestCase implements ClassLoaderProvider {
     private final MarshallingContext context;
     private final SimpleMarshalledValueFactory factory;
     
     public SimpleMarshalledValueFactoryTestCase() {
-        this.context = new MarshallingContext(Marshalling.getMarshallerFactory("river"), new MarshallingConfiguration());
+        this.context = new MarshallingContext(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), new MarshallingConfiguration(), this);
         this.factory = this.createFactory(this.context);
     }
     
+    @Override
+    public ClassLoader getClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
+    }
+
     SimpleMarshalledValueFactory createFactory(MarshallingContext context) {
         return new SimpleMarshalledValueFactory(context);
     }

@@ -35,7 +35,7 @@ public class DefaultResourceAdapterService implements Service<DefaultResourceAda
 
     public static final ServiceName DEFAULT_RA_NAME_SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("default-resource-adapter-name-service");
 
-    private String defaultResourceAdapterName;
+    private volatile String defaultResourceAdapterName;
 
     public DefaultResourceAdapterService(final String resourceAdapterName) {
         this.defaultResourceAdapterName = resourceAdapterName;

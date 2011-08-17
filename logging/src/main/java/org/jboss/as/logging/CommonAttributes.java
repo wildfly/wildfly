@@ -66,6 +66,7 @@ interface CommonAttributes {
     String PATTERN_FORMATTER ="pattern-formatter";
     String PERIODIC_ROTATING_FILE_HANDLER ="periodic-rotating-file-handler";
     String PROPERTIES ="properties";
+    String PROPERTY = "property";
     String QUEUE_LENGTH ="queue-length";
     String RELATIVE_TO ="relative-to";
     String REPLACE ="replace";

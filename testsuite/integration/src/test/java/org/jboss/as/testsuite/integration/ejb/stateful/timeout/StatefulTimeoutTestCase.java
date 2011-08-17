@@ -30,13 +30,13 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,15 +50,11 @@ public class StatefulTimeoutTestCase {
 
     private static final String ARCHIVE_NAME = "StatefulTimeoutTestCase";
 
-    private static InitialContext iniCtx;
+    @ArquillianResource
+    private InitialContext iniCtx;
 
     @Inject
     private UserTransaction userTransaction;
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        iniCtx = new InitialContext();
-    }
 
     @Deployment
     public static Archive<?> deploy() {
@@ -85,7 +81,7 @@ public class StatefulTimeoutTestCase {
         return jar;
     }
 
-    protected static <T> T lookup(Class<T> beanType) throws NamingException {
+    protected <T> T lookup(Class<T> beanType) throws NamingException {
         return beanType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanType.getSimpleName() + "!" + beanType.getName()));
     }
 

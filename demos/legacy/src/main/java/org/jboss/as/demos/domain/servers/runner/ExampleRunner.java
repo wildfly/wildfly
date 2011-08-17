@@ -43,6 +43,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.demos.DemoAuthentication;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -58,7 +59,7 @@ public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
 
-        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
+        final ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999, DemoAuthentication.getCallbackHandler());
         try {
 
             final ModelNode hostNamesOp = new ModelNode();

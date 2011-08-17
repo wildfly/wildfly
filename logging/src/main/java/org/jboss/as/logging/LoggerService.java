@@ -45,13 +45,13 @@ final class LoggerService extends AbstractLoggerService {
         super(name);
     }
 
-    protected void start(final StartContext context, final Logger logger) throws StartException {
+    protected synchronized void start(final StartContext context, final Logger logger) throws StartException {
         logger.setLevel(level);
         logger.setUseParentHandlers(useParentHandlers);
         saved = logger.clearHandlers();
     }
 
-    protected void stop(final StopContext context, final Logger logger) {
+    protected synchronized void stop(final StopContext context, final Logger logger) {
         logger.setLevel(null);
         logger.setUseParentHandlers(true);
         logger.clearHandlers();

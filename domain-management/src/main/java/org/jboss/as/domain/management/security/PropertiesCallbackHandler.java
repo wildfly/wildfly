@@ -36,6 +36,7 @@ import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import org.jboss.logging.Logger;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -76,6 +77,12 @@ public class PropertiesCallbackHandler implements Service<PropertiesCallbackHand
         File propertiesFile = new File(file);
         try {
             users.load(propertiesFile.toURI().toURL().openStream());
+
+            final String admin = "admin";
+            if (users.contains(admin) && admin.equals(users.get(admin))) {
+                Logger.getLogger("org.jboss.as.domain-management")
+                        .warn("Properties file defined with default user and password, this will be easy to guess.");
+            }
         } catch (MalformedURLException mue) {
             throw new StartException("Unable to load properties", mue);
         } catch (IOException ioe) {

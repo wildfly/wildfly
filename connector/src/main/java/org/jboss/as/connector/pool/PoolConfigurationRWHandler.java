@@ -27,6 +27,7 @@ import java.util.List;
 import org.jboss.as.connector.ConnectorServices;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES_REMOVE;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
@@ -34,6 +35,7 @@ import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL_REMOVE;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
@@ -60,8 +62,8 @@ public class PoolConfigurationRWHandler {
     static final String[] NO_LOCATION = new String[0];
 
     public static final String[] ATTRIBUTES = new String[]{MAX_POOL_SIZE, MIN_POOL_SIZE, BLOCKING_TIMEOUT_WAIT_MILLIS,
-            IDLETIMEOUTMINUTES, BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMILLIS, POOL_PREFILL, POOL_USE_STRICT_MIN,
-            USE_FAST_FAIL};
+            IDLETIMEOUTMINUTES, BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMILLIS, BACKGROUNDVALIDATIONMINUTES_REMOVE,
+            POOL_PREFILL, POOL_USE_STRICT_MIN, USE_FAST_FAIL, USE_FAST_FAIL_REMOVE};
 
     // TODO this seems to just do what the default handler does, so registering it is probably unnecessary
     public static class PoolConfigurationReadHandler implements OperationStepHandler {
@@ -118,7 +120,8 @@ public class PoolConfigurationRWHandler {
             }
 
             return (IDLETIMEOUTMINUTES.equals(parameterName) || BACKGROUNDVALIDATION.equals(parameterName)
-                    || BACKGROUNDVALIDATIONMILLIS.equals(parameterName) || POOL_PREFILL.equals(parameterName));
+                    || BACKGROUNDVALIDATIONMILLIS.equals(parameterName) || BACKGROUNDVALIDATIONMINUTES_REMOVE.equals(parameterName)
+                    || POOL_PREFILL.equals(parameterName));
 
         }
 
@@ -136,10 +139,12 @@ public class PoolConfigurationRWHandler {
                 if (POOL_USE_STRICT_MIN.equals(parameterName)) {
                     pc.setStrictMin(newValue.asBoolean());
                 }
+                if (USE_FAST_FAIL_REMOVE.equals(parameterName)) {
+                    pc.setUseFastFail(newValue.asBoolean());
+                }
                 if (USE_FAST_FAIL.equals(parameterName)) {
                     pc.setUseFastFail(newValue.asBoolean());
                 }
-
             }
         }
 
@@ -216,6 +221,8 @@ public class PoolConfigurationRWHandler {
                 longValidator.validateParameter(parameterName, value);
             } else if (BACKGROUNDVALIDATION.equals(parameterName)) {
                 boolValidator.validateParameter(parameterName, value);
+            } else if (BACKGROUNDVALIDATIONMINUTES_REMOVE.equals(parameterName)) {
+                longValidator.validateParameter(parameterName, value);
             } else if (BACKGROUNDVALIDATIONMILLIS.equals(parameterName)) {
                 longValidator.validateParameter(parameterName, value);
             } else if (POOL_PREFILL.equals(parameterName)) {
@@ -223,6 +230,8 @@ public class PoolConfigurationRWHandler {
             } else if (POOL_USE_STRICT_MIN.equals(parameterName)) {
                 boolValidator.validateParameter(parameterName, value);
             } else if (USE_FAST_FAIL.equals(parameterName)) {
+                boolValidator.validateParameter(parameterName, value);
+            } else if (USE_FAST_FAIL_REMOVE.equals(parameterName)) {
                 boolValidator.validateParameter(parameterName, value);
             } else {
                 throw new OperationFailedException(new ModelNode().set("Wrong parameter name for " + parameterName));

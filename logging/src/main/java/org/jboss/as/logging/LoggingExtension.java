@@ -134,6 +134,7 @@ public class LoggingExtension implements Extension {
         customHandler.registerOperationHandler(ENABLE, HandlerEnable.INSTANCE, LoggingSubsystemProviders.HANDLER_ENABLE, false);
         customHandler.registerOperationHandler(DISABLE, HandlerDisable.INSTANCE, LoggingSubsystemProviders.HANDLER_DISABLE, false);
         customHandler.registerOperationHandler(HandlerLevelChange.OPERATION_NAME, HandlerLevelChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_LEVEL, false);
+        customHandler.registerOperationHandler(CustomHandlerUpdateProperties.OPERATION_NAME, CustomHandlerUpdateProperties.INSTANCE, LoggingSubsystemProviders.CUSTOM_HANDLER_UPDATE, false);
     }
 
     /**
@@ -141,7 +142,8 @@ public class LoggingExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), LoggingSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(Namespace.LOGGING_1_0.getUriString(), LoggingSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(Namespace.LOGGING_1_1.getUriString(), LoggingSubsystemParser.getInstance());
     }
 
 
@@ -153,6 +155,7 @@ public class LoggingExtension implements Extension {
             model.get(CommonAttributes.LOGGER).setEmptyObject();
             model.get(CommonAttributes.ASYNC_HANDLER).setEmptyObject();
             model.get(CommonAttributes.CONSOLE_HANDLER).setEmptyObject();
+            model.get(CommonAttributes.CUSTOM_HANDLER).setEmptyObject();
             model.get(CommonAttributes.FILE_HANDLER).setEmptyObject();
             model.get(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER).setEmptyObject();
             model.get(CommonAttributes.SIZE_ROTATING_FILE_HANDLER).setEmptyObject();

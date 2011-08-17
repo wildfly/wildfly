@@ -22,26 +22,27 @@
 
 package org.jboss.as.testsuite.compat.jpa.hibernate;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+
+import javax.naming.InitialContext;
+import javax.naming.NameClassPair;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import java.io.File;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Scott Marlow
@@ -78,13 +79,6 @@ public class Hibernate3EmbeddedProviderTestCase {
             "</properties>" +
             "  </persistence-unit>" +
             "</persistence>";
-
-    private static InitialContext iniCtx;
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        iniCtx = new InitialContext();
-    }
 
     private static void addHibernate3JarsToEar(EnterpriseArchive ear) {
         final String basedir = System.getProperty("basedir");
@@ -154,7 +148,10 @@ public class Hibernate3EmbeddedProviderTestCase {
         return ear;
     }
 
-    protected static <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
+    @ArquillianResource
+    private InitialContext iniCtx;
+
+    protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
         try {
             return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + "beans/" + beanName + "!" + interfaceType.getName()));
         } catch (NamingException e) {
@@ -164,14 +161,14 @@ public class Hibernate3EmbeddedProviderTestCase {
     }
 
     // TODO: move this logic to a common base class (might be helpful for writing new tests)
-    private static void dumpJndi(String s) {
+    private void dumpJndi(String s) {
         try {
             dumpTreeEntry(iniCtx.list(s), s);
         } catch (NamingException ignore) {
         }
     }
 
-    private static void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
+    private void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
         System.out.println("\ndump " + s);
         while (list.hasMore()) {
             NameClassPair ncp = list.next();

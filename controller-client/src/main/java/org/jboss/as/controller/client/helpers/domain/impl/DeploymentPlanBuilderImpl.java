@@ -80,13 +80,12 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
 
     @Override
     public AddDeploymentPlanBuilder add(String name, File file) throws IOException, DuplicateDeploymentNameException {
-        return add(name, file.getName(), file.toURI().toURL());
+        return add(name, name, file.toURI().toURL());
     }
 
     @Override
     public AddDeploymentPlanBuilder add(String name, URL url) throws IOException, DuplicateDeploymentNameException {
-        String commonName = getName(url);
-        return add(name, commonName, url);
+        return add(name, name, url);
     }
 
     @Override

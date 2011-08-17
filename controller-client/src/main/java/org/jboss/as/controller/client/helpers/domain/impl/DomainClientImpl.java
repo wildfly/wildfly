@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
+import javax.security.auth.callback.CallbackHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -56,6 +57,10 @@ public class DomainClientImpl implements DomainClient {
 
     public DomainClientImpl(InetAddress address, int port) {
         this.delegate = ModelControllerClient.Factory.create(address, port);
+    }
+
+    public DomainClientImpl(InetAddress address, int port, CallbackHandler handler) {
+        this.delegate = ModelControllerClient.Factory.create(address, port, handler);
     }
 
     @Override

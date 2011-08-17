@@ -97,7 +97,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
 
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         final TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
-        final Set<String> classes = getAllComponentClasses(warMetaData, tldsMetaData);
+        final Set<String> classes = getAllComponentClasses(deploymentUnit, warMetaData, tldsMetaData);
         for (String clazz : classes) {
             if (clazz == null || clazz.trim().isEmpty()) {
                 continue;
@@ -144,7 +144,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
      * @param metaData
      * @return
      */
-    private Set<String> getAllComponentClasses(WarMetaData metaData, TldsMetaData tldsMetaData) {
+    private Set<String> getAllComponentClasses(DeploymentUnit deploymentUnit, WarMetaData metaData, TldsMetaData tldsMetaData) {
         final Set<String> classes = new HashSet<String>();
         if (metaData.getAnnotationsMetaData() != null)
             for (Map.Entry<String, WebMetaData> webMetaData : metaData.getAnnotationsMetaData().entrySet()) {
@@ -160,8 +160,8 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
             getAllComponentClasses(metaData.getWebMetaData(), classes);
         if (tldsMetaData == null)
             return classes;
-        if (tldsMetaData.getSharedTlds() != null)
-            for (TldMetaData tldMetaData : tldsMetaData.getSharedTlds()) {
+        if (tldsMetaData.getSharedTlds(deploymentUnit) != null)
+            for (TldMetaData tldMetaData : tldsMetaData.getSharedTlds(deploymentUnit)) {
                 getAllComponentClasses(tldMetaData, classes);
             }
         if (tldsMetaData.getTlds() != null)

@@ -45,13 +45,13 @@ final class RootLoggerService extends AbstractLoggerService {
         super("");
     }
 
-    protected void start(final StartContext context, final Logger logger) throws StartException {
+    protected synchronized void start(final StartContext context, final Logger logger) throws StartException {
         logger.setLevel(level);
         log.info("Removing bootstrap log handlers");
         saved = logger.clearHandlers();
     }
 
-    protected void stop(final StopContext context, final Logger logger) {
+    protected synchronized void stop(final StopContext context, final Logger logger) {
         logger.setLevel(null);
         logger.setUseParentHandlers(true);
         logger.clearHandlers();

@@ -138,8 +138,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.vfs.VirtualFile;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -161,15 +161,15 @@ public class ParseAndMarshalModelsTestCase {
                         }, "META-INF/MANIFEST.MF");
     }
 
-    private static ServiceContainer serviceContainer;
+    private ServiceContainer serviceContainer;
 
-    @BeforeClass
-    public static void setupServiceContainer() {
+    @Before
+    public void setupServiceContainer() {
         serviceContainer = ServiceContainer.Factory.create("test");
     }
 
-    @AfterClass
-    public static void cleanup() throws Exception {
+    @After
+    public void cleanup() throws Exception {
         ManagementFactory.getPlatformMBeanServer().unregisterMBean(new ObjectName("jboss.msc:type=container,name=test"));
     }
 

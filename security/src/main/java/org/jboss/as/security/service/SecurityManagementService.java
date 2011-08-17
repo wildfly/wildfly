@@ -57,7 +57,7 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
 
     private final String mappingManagerClassName;
 
-    private ISecurityManagement securityManagement;
+    private volatile ISecurityManagement securityManagement;
 
     public SecurityManagementService(String authenticationManagerClassName, boolean deepCopySubjectMode,
             String callbackHandlerClassName, String authorizationManagerClassName, String auditManagerClassName,

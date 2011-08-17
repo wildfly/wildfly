@@ -23,6 +23,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES_REMOVE;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
@@ -30,6 +31,7 @@ import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL_REMOVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
@@ -327,7 +329,8 @@ public class ResourceAdaptersExtension implements Extension {
                 streamWriter.writeEndElement();
             }
 
-            if (conDef.has(BACKGROUNDVALIDATION) || conDef.has(BACKGROUNDVALIDATIONMILLIS) || conDef.has(USE_FAST_FAIL)) {
+            if (conDef.has(BACKGROUNDVALIDATION) || conDef.has(BACKGROUNDVALIDATIONMILLIS) || conDef.has(USE_FAST_FAIL) ||
+                conDef.has(BACKGROUNDVALIDATIONMINUTES_REMOVE) || conDef.has(USE_FAST_FAIL_REMOVE)) {
                 streamWriter.writeStartElement(CommonConnDef.Tag.VALIDATION.getLocalName());
                 writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.BACKGROUNDVALIDATION, BACKGROUNDVALIDATION);
                 writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.BACKGROUNDVALIDATIONMILLIS,
@@ -586,9 +589,12 @@ public class ResourceAdaptersExtension implements Extension {
             }
 
             if (conDef.getValidation() != null) {
+                setLongIfNotNull(condefModel, BACKGROUNDVALIDATIONMINUTES_REMOVE, conDef.getValidation()
+                        .getBackgroundValidationMillis());
                 setLongIfNotNull(condefModel, BACKGROUNDVALIDATIONMILLIS, conDef.getValidation()
                         .getBackgroundValidationMillis());
                 setBooleanIfNotNull(condefModel, BACKGROUNDVALIDATION, conDef.getValidation().isBackgroundValidation());
+                setBooleanIfNotNull(condefModel, USE_FAST_FAIL_REMOVE, conDef.getValidation().isUseFastFail());
                 setBooleanIfNotNull(condefModel, USE_FAST_FAIL, conDef.getValidation().isUseFastFail());
             }
 

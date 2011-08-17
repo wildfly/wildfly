@@ -22,11 +22,13 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.controller.PathElement;
+
 /**
  * User: jpai
  */
 public interface EJB3SubsystemModel {
-
+    String LITE = "lite";
     String NAME = "name";
 
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";
@@ -38,17 +40,16 @@ public interface EJB3SubsystemModel {
     String MAX_POOL_SIZE = "max-pool-size";
     String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
 
-
-    String OPERATION_SET_DEFAULT_MDB_INSTANCE_POOL = "set-default-mdb-instance-pool";
-    String OPERATION_SET_DEFAULT_RA_NAME = "set-default-resource-adapter-name";
-    String OPERATION_SET_DEFAULT_SLSB_INSTANCE_POOL = "set-default-slsb-instance-pool";
-
     String CORE_THREADS = "core-threads";
-    String TIMER_DATA_STORE_LOCATION = "timer-data-store-location";
+    String MAX_THREADS = "max-threads";
     String RELATIVE_TO = "relative-to";
     String PATH = "path";
+
+    String SERVICE = "service";
     String TIMER_SERVICE = "timer-service";
-    String THREAD_POOL = "thread-pool";
+    String DEFAULT = "default";
+
+    PathElement TIMER_SERVICE_PATH = PathElement.pathElement(SERVICE, TIMER_SERVICE);
 
 
 }

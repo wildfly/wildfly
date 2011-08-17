@@ -22,9 +22,6 @@
 
 package org.jboss.as.connector.transactionintegration;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.core.tx.jbossts.TransactionIntegrationImpl;
@@ -36,9 +33,11 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.JBossXATerminator;
-import org.jboss.tm.TransactionLocalDelegate;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.jboss.tm.usertx.UserTransactionRegistry;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 /**
  * A WorkManager Service.
@@ -46,7 +45,7 @@ import org.jboss.tm.usertx.UserTransactionRegistry;
  */
 public final class TransactionIntegrationService implements Service<TransactionIntegration> {
 
-    private TransactionIntegration value;
+    private volatile TransactionIntegration value;
 
     private final InjectedValue<TransactionManager> tm = new InjectedValue<TransactionManager>();
 

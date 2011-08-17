@@ -47,7 +47,7 @@ import java.util.concurrent.Executors;
 public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepository, Service<ServerDeploymentRepository> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
-    private TempFileProvider tempFileProvider;
+    private volatile TempFileProvider tempFileProvider;
     private final ContentRepositoryImpl contentRepository;
 
 

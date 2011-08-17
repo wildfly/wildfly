@@ -64,42 +64,23 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
 
         DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 
+        final Set<String> processed = new HashSet<String>();
         if (deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.DEPLOYMENT_TYPE) == DeploymentType.EAR) {
             /*
              * We are an EAR, so we must inspect all of our subdeployments and aggregate all their component views
              * into a single index, so that inter-module resolution will work.
              */
             // Add the application description
-            final Set<String> processed = new HashSet<String>();
             final List<DeploymentUnit> subdeployments = deploymentUnit.getAttachmentList(SUB_DEPLOYMENTS);
             for (DeploymentUnit subdeployment : subdeployments) {
-                processClasses(phaseContext, applicationDescription,  deploymentReflectionIndex, subdeployment, processed);
+                processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, subdeployment, processed);
             }
             processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, deploymentUnit, processed);
         } else if (deploymentUnit.getParent() == null) {
-            /*
-             * We are a top-level EE deployment, or a non-EE deployment.  Our "aggregate" index is just a copy of
-             * our local EE module index.
-             */
-            if (moduleDescription == null) {
-                // Not an EE deployment.
-                return;
-            }
             final Collection<EEModuleClassDescription> classDescriptions = applicationClasses.getClassDescriptions();
             if (classDescriptions != null) {
                 for (EEModuleClassDescription classDescription : classDescriptions) {
-                    Class<?> clazz = null;
-                    try {
-                        clazz = Class.forName(classDescription.getClassName(), false, module.getClassLoader());
-                    } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException("Failed to load class " + classDescription.getClassName(), e);
-                    }
-                    final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz, classDescription, deploymentReflectionIndex);
-                    logger.debug("Configuring EE module class: " + clazz);
-                    for (ClassConfigurator classConfigurator : classDescription.getConfigurators()) {
-                        classConfigurator.configure(phaseContext, classDescription, classConfiguration);
-                    }
-                    applicationDescription.addClass(classConfiguration);
+                    handleClassDescription(phaseContext, applicationDescription, deploymentReflectionIndex, processed, module, classDescription);
                 }
             }
         }
@@ -112,33 +93,61 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
             // Not an EE deployment.
             return;
         }
-        Module subModule = subdeployment.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final Module subModule = subdeployment.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final EEApplicationClasses applicationClasses = subdeployment.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Collection<EEModuleClassDescription> classDescriptions = applicationClasses.getClassDescriptions();
         if (classDescriptions != null) {
-            for (EEModuleClassDescription classDescription : classDescriptions) {
-                if(processed.contains(classDescription.getClassName())) {
-                    continue;
-                }
-                processed.add(classDescription.getClassName());
-                Class<?> clazz = null;
-                try {
-                    clazz = Class.forName(classDescription.getClassName(), false, subModule.getClassLoader());
-                } catch (ClassNotFoundException e) {
-                    classDescription.setInvalid("Failed to load class " + classDescription.getClassName() + e.getMessage());
-                    logger.debug("Failed to load class " + classDescription.getClassName(), e);
-                    continue;
-                }
-                final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz, classDescription, deploymentReflectionIndex);
-                logger.debug("Configuring EE module class: " + clazz);
-                for (ClassConfigurator classConfigurator : classDescription.getConfigurators()) {
-                    classConfigurator.configure(phaseContext, classDescription, classConfiguration);
-                }
-                applicationDescription.addClass(classConfiguration);
+            for (final EEModuleClassDescription classDescription : classDescriptions) {
+
+                handleClassDescription(phaseContext, applicationDescription, deploymentReflectionIndex, processed, subModule, classDescription);
             }
         }
     }
 
+    private void handleClassDescription(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final DeploymentReflectionIndex deploymentReflectionIndex, final Set<String> processed, final Module subModule, final EEModuleClassDescription classDescription) {
+        if (processed.contains(classDescription.getClassName())) {
+            return;
+        }
+        processed.add(classDescription.getClassName());
+        //EEModuleClass's are computed in a lazy manner, as there is no guarantee that they will actually be
+        //needed by a component.
+        LazyValue<EEModuleClassConfiguration> future = new LazyValue<EEModuleClassConfiguration>() {
+
+            @Override
+            protected EEModuleClassConfiguration compute() {
+                Class<?> clazz = null;
+                //we need to make sure we load the class with the correct context class loader
+                ClassLoader oldCl = SecurityActions.getContextClassLoader();
+                try {
+                    SecurityActions.setContextClassLoader(subModule.getClassLoader());
+                    try {
+                        clazz = Class.forName(classDescription.getClassName(), false, subModule.getClassLoader());
+                    } catch (ClassNotFoundException e) {
+                        classDescription.setInvalid("Failed to load class " + classDescription.getClassName() + e.getMessage());
+                        logger.debug("Failed to load class " + classDescription.getClassName(), e);
+                        return null;
+                    }
+                    final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz, classDescription, deploymentReflectionIndex);
+                    logger.debug("Configuring EE module class: " + clazz);
+                    for (ClassConfigurator classConfigurator : classDescription.getConfigurators()) {
+                        try {
+                            classConfigurator.configure(phaseContext, classDescription, classConfiguration);
+                        } catch (DeploymentUnitProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    return classConfiguration;
+                } finally {
+                    SecurityActions.setContextClassLoader(oldCl);
+                }
+
+            }
+        };
+
+        applicationDescription.addClass(classDescription.getClassName(), future);
+    }
+
     public void undeploy(DeploymentUnit context) {
     }
+
 }

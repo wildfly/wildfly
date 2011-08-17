@@ -27,9 +27,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import org.jboss.arquillian.container.test.spi.RemoteLoadableExtension;
 import org.jboss.arquillian.container.test.spi.TestDeployment;
@@ -42,14 +47,17 @@ import org.jboss.as.arquillian.service.JMXProtocolEndpointExtension;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.osgi.framework.Constants;
+import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.asset.UrlAsset;
+import org.jboss.shrinkwrap.api.container.ManifestContainer;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
@@ -64,6 +72,14 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
  * @since 01-Jul-2011
  */
 public class JMXProtocolPackager implements DeploymentPackager {
+
+    private static final List<String> defaultDependencies = new ArrayList<String>();
+
+    static {
+        defaultDependencies.add("deployment.arquillian-service");
+        defaultDependencies.add("org.jboss.modules");
+        defaultDependencies.add("org.jboss.msc");
+    }
 
     private static final Logger log = Logger.getLogger(JMXProtocolPackager.class);
 
@@ -81,6 +97,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
             JavaArchive archive = generateArquillianServiceArchive(auxArchives);
             archiveHolder.setArchive(archive);
         }
+        addModulesManifestDependencies(appArchive);
         archiveHolder.addPreparedDeployment(appArchive);
         return appArchive;
     }
@@ -170,5 +187,50 @@ public class JMXProtocolPackager implements DeploymentPackager {
         log.debugf("Loadable extensions: %s", loadableExtensions);
         log.tracef("Archive content: %s\n%s", archive, archive.toString(true));
         return archive;
+    }
+
+    /**
+     * Adds the Manifest Attribute "Dependencies" with the required dependencies for JBoss Modules to depend on the Arquillian Service.
+     *
+     * @param appArchive The Archive to deploy
+     */
+    private void addModulesManifestDependencies(Archive<?> appArchive) {
+        if (appArchive instanceof ManifestContainer<?> == false)
+            throw new IllegalArgumentException("ManifestContainer expected " + appArchive);
+
+        final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
+
+        // Don't enrich with Modules Dependencies if this is a OSGi bundle
+        if(BundleInfo.isValidBundleManifest(manifest)) {
+            return;
+        }
+        Attributes attributes = manifest.getMainAttributes();
+        if (attributes.getValue(Attributes.Name.MANIFEST_VERSION.toString()) == null) {
+            attributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");
+        }
+        String value = attributes.getValue("Dependencies");
+        StringBuffer moduleDeps = new StringBuffer(value != null && value.trim().length() > 0 ? value : "org.jboss.modules");
+        for (String dep : defaultDependencies) {
+            if (moduleDeps.indexOf(dep) < 0)
+                moduleDeps.append("," + dep);
+        }
+
+        log.debugf("Add dependencies: %s", moduleDeps);
+        attributes.putValue("Dependencies", moduleDeps.toString());
+
+        // Add the manifest to the archive
+        ArchivePath manifestPath = ArchivePaths.create(JarFile.MANIFEST_NAME);
+        appArchive.delete(manifestPath);
+        appArchive.add(new Asset() {
+                    public InputStream openStream() {
+                        try {
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            manifest.write(baos);
+                            return new ByteArrayInputStream(baos.toByteArray());
+                        } catch (IOException ex) {
+                            throw new IllegalStateException("Cannot write manifest", ex);
+                        }
+                    }
+                }, manifestPath);
     }
 }

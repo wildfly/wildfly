@@ -273,11 +273,15 @@ public class ContextNames {
         private final ServiceName parentContextServiceName;
         private final ServiceName binderServiceName;
         private final String bindName;
+        // absolute jndi name inclusive of the namespace
+        private final String absoluteJndiName;
 
         private BindInfo(final ServiceName parentContextServiceName, final String bindName) {
             this.parentContextServiceName = parentContextServiceName;
             this.binderServiceName = parentContextServiceName.append(bindName);
             this.bindName = bindName;
+
+            this.absoluteJndiName = this.generateAbsoluteJndiName();
         }
 
         /**
@@ -307,6 +311,15 @@ public class ContextNames {
             return bindName;
         }
 
+        /**
+         * Returns the absolute jndi name of this {@link BindInfo}. The absolute jndi name is inclusive of the jndi namespace
+         *
+         * @return
+         */
+        public String getAbsoluteJndiName() {
+            return this.absoluteJndiName;
+        }
+
         public String toString() {
             return "BindInfo{" +
                     "parentContextServiceName=" + parentContextServiceName +
@@ -314,6 +327,26 @@ public class ContextNames {
                     ", bindName='" + bindName + '\'' +
                     '}';
         }
+
+        private String generateAbsoluteJndiName() {
+            final StringBuffer sb = new StringBuffer();
+            if (this.parentContextServiceName.equals(ContextNames.JBOSS_CONTEXT_SERVICE_NAME)) {
+                sb.append("java:jboss/");
+            } else if (this.parentContextServiceName.equals(ContextNames.APPLICATION_CONTEXT_NAME)) {
+                sb.append("java:app/");
+            } else if (this.parentContextServiceName.equals(ContextNames.MODULE_CONTEXT_SERVICE_NAME)) {
+                sb.append("java:module/");
+            } else if (this.parentContextServiceName.equals(ContextNames.COMPONENT_CONTEXT_SERVICE_NAME)) {
+                sb.append("java:comp/");
+            } else if (this.parentContextServiceName.equals(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME)) {
+                sb.append("java:global/");
+            } else if (this.parentContextServiceName.equals(ContextNames.JAVA_CONTEXT_SERVICE_NAME)) {
+                sb.append("java:/");
+            }
+            sb.append(this.bindName);
+            return sb.toString();
+        }
+
     }
 
     /**

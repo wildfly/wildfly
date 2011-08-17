@@ -17,23 +17,15 @@
 package org.jboss.as.arquillian.container.managed;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
-import org.jboss.arquillian.core.api.InstanceProducer;
-import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.sasl.JBossSaslProvider;
 
-import javax.management.MBeanServerConnection;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.URI;
-import java.net.UnknownHostException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.Provider;
@@ -53,13 +45,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
     private final Logger log = Logger.getLogger(ManagedDeployableContainer.class.getName());
     private final Provider saslProvider = new JBossSaslProvider();
-    private MBeanServerConnectionProvider provider;
     private Thread shutdownThread;
     private Process process;
-
-    @Inject
-    @ContainerScoped
-    private InstanceProducer<MBeanServerConnection> mbeanServerInst;
 
     @Override
     public Class<ManagedContainerConfiguration> getConfigurationClass() {
@@ -86,10 +73,15 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             });
 
             final String jbossHomeDir = config.getJbossHome();
-            final String modulePath = config.getModulePath();
+            final String modulePath;
+            if(config.getModulePath() != null && !config.getModulePath().isEmpty()) {
+                modulePath = config.getModulePath();
+            } else {
+               modulePath = jbossHomeDir + File.separatorChar + "modules";
+            }
             final String additionalJavaOpts = config.getJavaVmArguments();
 
-            File modulesJar = new File(jbossHomeDir + "/jboss-modules.jar");
+            File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
             if (modulesJar.exists() == false)
                 throw new IllegalStateException("Cannot find: " + modulesJar);
 
@@ -149,11 +141,9 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             }
             if (!serverAvailable) {
                 destroyProcess();
-                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", getContainerConfiguration().getStartupTimeout()));
+                throw new TimeoutException(String.format("Managed server was not started within [%d] s", getContainerConfiguration().getStartupTimeoutInSeconds()));
             }
 
-            provider = getMBeanServerConnectionProvider();
-            mbeanServerInst.set(getMBeanServerConnection(5000));
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);
         }
@@ -174,11 +164,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         } catch (Exception e) {
             throw new LifecycleException("Could not stop container", e);
         }
-    }
-
-    @Override
-    protected MBeanServerConnection getMBeanServerConnection() {
-        return provider.getConnection();
     }
 
     private void verifyNoRunningServer() throws LifecycleException {
@@ -219,17 +204,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         }
     }
 
-    private MBeanServerConnectionProvider getMBeanServerConnectionProvider() {
-        URI jmxSubSystem = getManagementClient().getSubSystemURI("jmx");
-        InetAddress address = null;
-        try {
-            address = InetAddress.getByName(jmxSubSystem.getHost());
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("Could not get jmx subsystems InetAddress: " + jmxSubSystem.getHost(), e);
-        }
-        return new MBeanServerConnectionProvider(address, jmxSubSystem.getPort());
-    }
-
     /**
      * Runnable that consumes the output of the process. If nothing consumes the output the AS will hang on some platforms
      *
@@ -241,15 +215,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         public void run() {
             final InputStream stream = process.getInputStream();
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-            final boolean writeOutput = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+            final boolean writeOutput = getContainerConfiguration().isOutputToConsole();
 
-                @Override
-                public Boolean run() {
-                    // By default, redirect to stdout unless disabled by this property
-                    String val = System.getProperty("org.jboss.as.writeconsole");
-                    return val == null || !"false".equals(val);
-                }
-            });
             String line = null;
             try {
                 while ((line = reader.readLine()) != null) {

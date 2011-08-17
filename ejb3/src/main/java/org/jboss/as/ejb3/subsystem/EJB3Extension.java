@@ -27,13 +27,17 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 import java.util.Locale;
@@ -68,22 +72,36 @@ public class EJB3Extension implements Extension {
 
         // register the operations
         // EJB3 subsystem ADD operation
-        subsystemRegistration.registerOperationHandler(ADD, EJB3SubsystemAdd.INSTANCE, EJB3SubsystemProviders.SUBSYSTEM_ADD, false);
+        subsystemRegistration.registerOperationHandler(ADD, EJB3SubsystemAdd.INSTANCE, EJB3SubsystemAdd.INSTANCE, false);
         // describe operation for the subsystem
         subsystemRegistration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        // set default slsb pool operation
-        subsystemRegistration.registerOperationHandler(OPERATION_SET_DEFAULT_SLSB_INSTANCE_POOL, SetDefaultSLSBPool.INSTANCE, SetDefaultSLSBPool.INSTANCE, false);
-        // set default MDB pool operation
-        subsystemRegistration.registerOperationHandler(OPERATION_SET_DEFAULT_MDB_INSTANCE_POOL, SetDefaultMDBPool.INSTANCE, SetDefaultMDBPool.INSTANCE, false);
-        // default resource adapter name operation
-        subsystemRegistration.registerOperationHandler(OPERATION_SET_DEFAULT_RA_NAME, SetDefaultResourceAdapterName.INSTANCE, SetDefaultResourceAdapterName.INSTANCE, false);
+        // default slsb pool
+        subsystemRegistration.registerReadWriteAttribute(DEFAULT_SLSB_INSTANCE_POOL, null, SetDefaultSLSBPool.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        // default MDB pool
+        subsystemRegistration.registerReadWriteAttribute(DEFAULT_MDB_INSTANCE_POOL, null, SetDefaultMDBPool.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        // default resource adapter name
+        subsystemRegistration.registerReadWriteAttribute(DEFAULT_RESOURCE_ADAPTER_NAME, null, SetDefaultResourceAdapterName.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
 
         // subsystem=ejb3/strict-max-bean-instance-pool=*
         final ManagementResourceRegistration strictMaxPoolRegistration = subsystemRegistration.registerSubModel(
-                PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL), EJB3SubsystemDescriptions.STRICT_MAX_BEAN_INSTANCE_POOL);
+                PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL), EJB3SubsystemProviders.STRICT_MAX_BEAN_INSTANCE_POOL);
         // register ADD and REMOVE operations for strict-max-pool
-        strictMaxPoolRegistration.registerOperationHandler(ADD, StrictMaxPoolAdd.INSTANCE, StrictMaxPoolAdd.STRICT_MAX_POOL_ADD_DESCRIPTION, false);
-        strictMaxPoolRegistration.registerOperationHandler(REMOVE, StrictMaxPoolRemove.INSTANCE, StrictMaxPoolRemove.STRICT_MAX_POOL_REMOVE_DESCRIPTION, false);
+        strictMaxPoolRegistration.registerOperationHandler(ADD, StrictMaxPoolAdd.INSTANCE, StrictMaxPoolAdd.INSTANCE, false);
+        strictMaxPoolRegistration.registerOperationHandler(REMOVE, StrictMaxPoolRemove.INSTANCE, StrictMaxPoolRemove.INSTANCE, false);
+
+
+        final ManagementResourceRegistration timerService = subsystemRegistration.registerSubModel(
+                EJB3SubsystemModel.TIMER_SERVICE_PATH, EJB3SubsystemProviders.TIMER_SERVICE);
+
+        // register ADD and REMOVE operations for timer-service
+        timerService.registerOperationHandler(ADD, TimerServiceAdd.INSTANCE, TimerServiceAdd.INSTANCE, false);
+        timerService.registerOperationHandler(REMOVE, TimerServiceRemove.INSTANCE, TimerServiceRemove.INSTANCE, false);
+
+        timerService.registerReadWriteAttribute(EJB3SubsystemModel.PATH, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        timerService.registerReadWriteAttribute(EJB3SubsystemModel.RELATIVE_TO, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        timerService.registerReadWriteAttribute(EJB3SubsystemModel.CORE_THREADS, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        timerService.registerReadWriteAttribute(EJB3SubsystemModel.MAX_THREADS, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+
     }
 
     /**
@@ -95,18 +113,41 @@ public class EJB3Extension implements Extension {
         context.setSubsystemXmlMapping(NAMESPACE_1_1, ejb3Subsystem11Parser);
     }
 
-    private static ModelNode createAddSubSystemOperation() {
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
-        return subsystem;
+    private static ModelNode createAddSubSystemOperation(final ModelNode model) {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+        return org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, model);
+    }
+
+    private static ModelNode createAddStrictMaxPoolOperation(final String name, final ModelNode model) {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+        address.add(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL, name);
+        return org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, model);
+    }
+
+    private static ModelNode createTimerServiceOperation(final ModelNode model) {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+        address.add(EJB3SubsystemModel.SERVICE, EJB3SubsystemModel.TIMER_SERVICE);
+        return org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, model);
     }
 
     private static class SubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final SubsystemDescribeHandler INSTANCE = new SubsystemDescribeHandler();
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            context.getResult().add(createAddSubSystemOperation());
+            final ModelNode result = context.getResult();
+            final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
+            result.add(createAddSubSystemOperation(root.getModel()));
+            for (Resource.ResourceEntry pool : root.getChildren(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL)) {
+                result.add(createAddStrictMaxPoolOperation(pool.getName(), pool.getModel()));
+            }
+            final Resource timerService = root.getChild(EJB3SubsystemModel.TIMER_SERVICE_PATH);
+            if (timerService != null) {
+                result.add(createTimerServiceOperation(timerService.getModel()));
+            }
+
             context.completeStep();
         }
 

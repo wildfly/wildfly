@@ -30,8 +30,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 public class JsfVersionMarker {
 
     public static final String JSF_1_2 = "Mojarra-1.2";
-
     public static final String JSF_2_0 = "Mojarra-2.0";
+    public static final String WAR_BUNDLES_JSF_IMPL = "WAR_BUNDLES_JSF_IMPL";
 
     private JsfVersionMarker() {
 

@@ -140,7 +140,7 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
     }
 
     @Override
-    public WeldManagedReferenceFactory getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized WeldManagedReferenceFactory getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 

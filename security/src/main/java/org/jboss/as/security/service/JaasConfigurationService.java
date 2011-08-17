@@ -22,8 +22,6 @@
 
 package org.jboss.as.security.service;
 
-import javax.security.auth.login.Configuration;
-
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -31,6 +29,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import javax.security.auth.login.Configuration;
 
 /**
  * Jaas service to install a {@code Configuration}
@@ -43,7 +43,7 @@ public class JaasConfigurationService implements Service<Configuration> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.security");
 
-    private Configuration configuration;
+    private final Configuration configuration;
 
     public JaasConfigurationService(Configuration configuration) {
         this.configuration = configuration;

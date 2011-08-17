@@ -42,7 +42,7 @@ public class TransactionManagerService extends AbstractService<TransactionManage
 
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_TRANSACTION_MANAGER;
 
-    private InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
+    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
 
     public static ServiceController<TransactionManager> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
         TransactionManagerService service = new TransactionManagerService();

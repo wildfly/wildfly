@@ -16,18 +16,8 @@
  */
 package org.jboss.as.arquillian.container.remote;
 
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.UnknownHostException;
-
-import javax.management.MBeanServerConnection;
-
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
-import org.jboss.arquillian.core.api.InstanceProducer;
-import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 
 /**
  * JBossASRemoteContainer
@@ -38,22 +28,8 @@ import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 public final class RemoteDeployableContainer extends
         CommonDeployableContainer<RemoteContainerConfiguration> {
 
-    private MBeanServerConnectionProvider provider;
-
-    @Inject
-    @ContainerScoped
-    private InstanceProducer<MBeanServerConnection> mbeanServerInst;
-
-    @Override
-    public void setup(RemoteContainerConfiguration config) {
-        super.setup(config);
-
-        provider = getMBeanServerConnectionProvider();
-    }
-
     @Override
     protected void startInternal() throws LifecycleException {
-        mbeanServerInst.set(getMBeanServerConnection());
     }
 
     @Override
@@ -63,21 +39,5 @@ public final class RemoteDeployableContainer extends
     @Override
     public Class<RemoteContainerConfiguration> getConfigurationClass() {
         return RemoteContainerConfiguration.class;
-    }
-
-    @Override
-    protected MBeanServerConnection getMBeanServerConnection() {
-        return provider.getConnection();
-    }
-
-    private MBeanServerConnectionProvider getMBeanServerConnectionProvider() {
-        URI jmxSubSystem = getManagementClient().getSubSystemURI("jmx");
-        InetAddress address = null;
-        try {
-            address = InetAddress.getByName(jmxSubSystem.getHost());
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("Could not get jmx subsystems InetAddress: " + jmxSubSystem.getHost(), e);
-        }
-        return new MBeanServerConnectionProvider(address, jmxSubSystem.getPort());
     }
 }

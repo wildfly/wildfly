@@ -140,7 +140,7 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
      */
     @Override
     public Configuration defineConfiguration(String cacheName, Configuration configurationOverride) {
-        return this.container.defineConfiguration(this.getCacheName(cacheName), configurationOverride);
+        return this.defineConfiguration(cacheName, this.defaultCache, configurationOverride);
     }
 
     /**
@@ -149,7 +149,7 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
      */
     @Override
     public Configuration defineConfiguration(String cacheName, String templateCacheName, Configuration configurationOverride) {
-        return this.container.defineConfiguration(this.getCacheName(cacheName), templateCacheName, configurationOverride);
+        return this.container.defineConfiguration(this.getCacheName(cacheName), this.getCacheName(templateCacheName), configurationOverride);
     }
 
     /**
@@ -316,8 +316,8 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
         }
 
         @Override
-        public AdvancedCache<K, V> with(ClassLoader loader) {
-            return new ClassLoaderAwareCache<K, V>(this.cache, loader);
+        public AdvancedCache<K, V> with(ClassLoader classLoader) {
+            return new ClassLoaderAwareCache<K, V>(this, classLoader);
         }
 
         @Override

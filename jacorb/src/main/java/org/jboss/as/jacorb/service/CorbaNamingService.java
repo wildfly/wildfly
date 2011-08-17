@@ -50,13 +50,13 @@ public class CorbaNamingService implements Service<NamingContextExt> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jacorb", "naming-service");
 
-    private InjectedValue<POA> rootPOAInjector = new InjectedValue<POA>();
+    private final InjectedValue<POA> rootPOAInjector = new InjectedValue<POA>();
 
-    private InjectedValue<POA> namingPOAInjector = new InjectedValue<POA>();
+    private final InjectedValue<POA> namingPOAInjector = new InjectedValue<POA>();
 
-    private InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
+    private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
 
-    private NamingContextExt namingService;
+    private volatile NamingContextExt namingService;
 
     @Override
     public void start(StartContext context) throws StartException {

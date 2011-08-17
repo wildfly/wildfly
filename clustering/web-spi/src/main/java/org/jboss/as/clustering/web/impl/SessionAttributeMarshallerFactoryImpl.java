@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.web.impl;
 
+import org.jboss.as.clustering.ClassLoaderProvider;
 import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
@@ -52,15 +53,23 @@ public class SessionAttributeMarshallerFactoryImpl implements SessionAttributeMa
      * @see org.jboss.web.tomcat.service.session.distributedcache.spi.SessionAttributeMarshallerFactory#createMarshaller(org.jboss.web.tomcat.service.session.distributedcache.spi.LocalDistributableSessionManager)
      */
     @Override
-    public SessionAttributeMarshaller createMarshaller(final LocalDistributableSessionManager manager) {
+    public SessionAttributeMarshaller createMarshaller(LocalDistributableSessionManager manager) {
         MarshallingConfiguration configuration = new MarshallingConfiguration();
-        AbstractClassResolver resolver = new AbstractClassResolver() {
-            @Override
-            protected ClassLoader getClassLoader() {
-                return manager.getApplicationClassLoader();
-            }
-        };
+        ApplicationClassResolver resolver = new ApplicationClassResolver(manager);
         configuration.setClassResolver(resolver);
-        return new SessionAttributeMarshallerImpl(new MarshallingContext(this.factory, configuration));
+        return new SessionAttributeMarshallerImpl(new MarshallingContext(this.factory, configuration, resolver));
+    }
+
+    private static class ApplicationClassResolver extends AbstractClassResolver implements ClassLoaderProvider {
+        private final LocalDistributableSessionManager manager;
+
+        ApplicationClassResolver(LocalDistributableSessionManager manager) {
+            this.manager = manager;
+        }
+
+        @Override
+        public ClassLoader getClassLoader() {
+            return manager.getApplicationClassLoader();
+        }
     }
 }

@@ -36,8 +36,8 @@ import org.jboss.msc.service.StartException;
  * @author <a href="mailto:adinn@redhat.com">Andrew Dinn</a>
  */
 public class XTSManagerService extends AbstractService<XTSService> {
-    private String coordinatorURL;
-    private org.jboss.jbossts.XTSService xtsService;
+    private final String coordinatorURL;
+    private volatile org.jboss.jbossts.XTSService xtsService;
 
     public XTSManagerService(String coordinatorURL) {
         this.coordinatorURL = coordinatorURL;

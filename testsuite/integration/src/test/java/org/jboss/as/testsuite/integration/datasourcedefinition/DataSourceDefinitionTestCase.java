@@ -21,22 +21,24 @@
  */
 package org.jboss.as.testsuite.integration.datasourcedefinition;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * Tests that @DataSourceDefinition works, and that the datasource is automatically enlisted in the transaction
@@ -55,16 +57,17 @@ public class DataSourceDefinitionTestCase {
 
     }
 
-    @BeforeClass
-    public static void createTables() throws NamingException, SQLException {
-        InitialContext ctx = new InitialContext();
+    @ArquillianResource
+    private InitialContext ctx;
+    
+    @Before
+    public void createTables() throws NamingException, SQLException {
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
         bean.createTable();
     }
 
     @Test
     public void testDataSourceDefinition() throws NamingException, SQLException {
-        InitialContext ctx = new InitialContext();
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
         DataSource ds = bean.getDataSource();
         ResultSet result = ds.getConnection().createStatement().executeQuery("select 1");
@@ -73,7 +76,6 @@ public class DataSourceDefinitionTestCase {
 
     @Test
     public void testTransactionEnlistment() throws NamingException, SQLException {
-        InitialContext ctx = new InitialContext();
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
         try {
             bean.insert1RolledBack();
@@ -87,7 +89,6 @@ public class DataSourceDefinitionTestCase {
 
     @Test
     public void testTransactionEnlistment2() throws NamingException, SQLException {
-        InitialContext ctx = new InitialContext();
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
         bean.insert2();
         DataSource ds = bean.getDataSource();
@@ -97,7 +98,6 @@ public class DataSourceDefinitionTestCase {
 
     @Test
     public void testResourceInjectionWithSameName() throws NamingException {
-        InitialContext ctx = new InitialContext();
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
         Assert.assertNotNull(bean.getDataSource2());
         Assert.assertNotNull(bean.getDataSource3());

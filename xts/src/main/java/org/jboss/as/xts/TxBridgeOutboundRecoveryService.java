@@ -41,7 +41,7 @@ public class TxBridgeOutboundRecoveryService extends AbstractService<OutboundBri
     }
 
     @Override
-    public OutboundBridgeRecoveryManager getValue() throws IllegalStateException {
+    public synchronized OutboundBridgeRecoveryManager getValue() throws IllegalStateException {
         return outboundBridgeRecoveryManager;
     }
 

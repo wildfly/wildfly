@@ -46,7 +46,7 @@
             <xs:element name="periodic-rotating-file-handler" type="periodicFileHandlerType"/>
             <xs:element name="size-rotating-file-handler" type="sizeFileHandlerType"/>
             <xs:element name="async-handler" type="asyncHandlerType"/>
-            <xs:element name="custom-logger" type="customHandlerType" />
+            <xs:element name="custom-handler" type="customHandlerType" />
             <xs:any namespace="##other"/>
         </xs:choice>
     </xs:complexType>
@@ -233,7 +233,7 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
             <xs:element name="filter" type="filterType" minOccurs="0"/>
-            <xs:element name="formatter" type="formatterType" minOccurs="1"/>
+            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="required"/>

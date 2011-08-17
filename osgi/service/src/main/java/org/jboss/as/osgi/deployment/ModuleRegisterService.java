@@ -57,8 +57,8 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
 
     private final Module module;
     private final OSGiMetaData metadata;
-    private InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
-    private ServiceName installedBundleName;
+    private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
+    private volatile ServiceName installedBundleName;
 
     private ModuleRegisterService(Module module, OSGiMetaData metadata) {
         this.module = module;

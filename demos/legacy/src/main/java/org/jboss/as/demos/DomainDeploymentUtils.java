@@ -70,7 +70,7 @@ public class DomainDeploymentUtils implements Closeable {
     private boolean injectedClient = true;
 
     public DomainDeploymentUtils() throws UnknownHostException {
-        this(ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999));
+        this(ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999, DemoAuthentication.getCallbackHandler()));
         this.injectedClient = false;
     }
 

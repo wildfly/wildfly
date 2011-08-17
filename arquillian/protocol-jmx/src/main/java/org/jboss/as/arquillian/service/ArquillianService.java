@@ -23,7 +23,6 @@
 package org.jboss.as.arquillian.service;
 
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
-import org.jboss.arquillian.test.spi.TestResult;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.server.deployment.Attachments;
@@ -46,7 +45,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.osgi.framework.BundleContext;
 
 import javax.management.MBeanServer;
-import java.io.InputStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
@@ -144,7 +142,7 @@ public class ArquillianService implements Service<ArquillianService> {
     }
 
     @Override
-    public ArquillianService getValue() throws IllegalStateException {
+    public synchronized ArquillianService getValue() throws IllegalStateException {
         return this;
     }
 
@@ -197,24 +195,12 @@ public class ArquillianService implements Service<ArquillianService> {
         }
 
         @Override
-        public TestResult runTestMethodRemote(final String className, final String methodName) {
+        public byte[] runTestMethod(final String className, final String methodName) {
             ArquillianConfig arqConfig = getArquillianConfig(className, 30000L);
             Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY, className);
             ContextManager contextManager = initializeContextManager(arqConfig, properties);
             try {
-                return super.runTestMethodRemote(className, methodName);
-            } finally {
-                contextManager.teardown(properties);
-            }
-        }
-
-        @Override
-        public InputStream runTestMethodEmbedded(final String className, final String methodName) {
-            ArquillianConfig arqConfig = getArquillianConfig(className, 30000L);
-            Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY, className);
-            ContextManager contextManager = initializeContextManager(arqConfig, properties);
-            try {
-                return super.runTestMethodEmbedded(className, methodName);
+                return super.runTestMethod(className, methodName);
             } finally {
                 contextManager.teardown(properties);
             }

@@ -22,19 +22,20 @@
 
 package org.jboss.as.testsuite.integration.jpa.multipleinjections;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * AS7-1118
@@ -46,13 +47,8 @@ import javax.naming.NamingException;
 @RunWith(Arquillian.class)
 public class MultiplePersistenceContextInjectionsTestCase {
 
-
-    private static InitialContext iniCtx;
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        iniCtx = new InitialContext();
-    }
+    @ArquillianResource
+    private InitialContext iniCtx;
 
     @Deployment
     public static Archive<?> deploy() {

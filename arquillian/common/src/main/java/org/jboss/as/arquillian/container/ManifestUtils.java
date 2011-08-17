@@ -32,23 +32,18 @@ import org.jboss.shrinkwrap.api.Node;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ManifestUtils {
+class ManifestUtils {
 
-    public static Manifest getManifest(Archive<?> archive, boolean create) {
-        Manifest manifest = null;
+    public static Manifest getManifest(Archive<?> archive) {
         try {
             Node node = archive.get(JarFile.MANIFEST_NAME);
-            if (node == null) {
-                manifest = new Manifest();
-                Attributes attributes = manifest.getMainAttributes();
-                attributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");
-            } else if (create) {
-                manifest = new Manifest(node.getAsset().openStream());
+            if (node != null && node.getAsset() != null) {
+                return new Manifest(node.getAsset().openStream());
             }
-            return manifest;
         } catch (Exception ex) {
             throw new IllegalStateException("Cannot obtain manifest", ex);
         }
+        return null;
     }
 
     public static Manifest getOrCreateManifest(Archive<?> archive) {
