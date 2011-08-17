@@ -22,6 +22,19 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.Collections;
+import java.util.List;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -40,8 +53,8 @@ import static org.jboss.as.web.Constants.CA_REVOCATION_URL;
 import static org.jboss.as.web.Constants.CERTIFICATE_FILE;
 import static org.jboss.as.web.Constants.CERTIFICATE_KEY_FILE;
 import static org.jboss.as.web.Constants.CIPHER_SUITE;
-import static org.jboss.as.web.Constants.CONNECTOR;
 import static org.jboss.as.web.Constants.CONDITION;
+import static org.jboss.as.web.Constants.CONNECTOR;
 import static org.jboss.as.web.Constants.CONTAINER_CONFIG;
 import static org.jboss.as.web.Constants.DEFAULT_WEB_MODULE;
 import static org.jboss.as.web.Constants.DIRECTORY;
@@ -91,20 +104,6 @@ import static org.jboss.as.web.Constants.VERIFY_DEPTH;
 import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
 import static org.jboss.as.web.Constants.WEBDAV;
 import static org.jboss.as.web.Constants.WELCOME_FILE;
-
-import java.util.Collections;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * The web subsystem parser.
@@ -237,7 +236,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             containerConfigStartWritten = writeStaticResources(writer, config.get(STATIC_RESOURCES));
         }
         if(config.hasDefined(JSP_CONFIGURATION)) {
-            containerConfigStartWritten = containerConfigStartWritten || writeJSPConfiguration(writer, config.get(JSP_CONFIGURATION), containerConfigStartWritten);
+            containerConfigStartWritten = writeJSPConfiguration(writer, config.get(JSP_CONFIGURATION), containerConfigStartWritten) || containerConfigStartWritten ;
         }
         if(config.hasDefined(MIME_MAPPING)) {
             if (!containerConfigStartWritten) {
@@ -269,13 +268,13 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
     private boolean writeStaticResources(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
 
         boolean startWritten = writeStaticResourceAttribute(writer, Attribute.LISTINGS.getLocalName(), config, false);
-        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.SENDFILE.getLocalName(), config, startWritten);
-        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.FILE_ENCONDING.getLocalName(), config, startWritten);
-        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.READ_ONLY.getLocalName(), config, startWritten);
-        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.WEBDAV.getLocalName(), config, startWritten);
-        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.SECRET.getLocalName(), config, startWritten);
-        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.MAX_DEPTH.getLocalName(), config, startWritten);
-        startWritten = startWritten || writeStaticResourceAttribute(writer, Attribute.DISABLED.getLocalName(), config, startWritten);
+        startWritten = writeStaticResourceAttribute(writer, Attribute.SENDFILE.getLocalName(), config, startWritten) || startWritten;
+        startWritten = writeStaticResourceAttribute(writer, Attribute.FILE_ENCONDING.getLocalName(), config, startWritten) || startWritten;
+        startWritten = writeStaticResourceAttribute(writer, Attribute.READ_ONLY.getLocalName(), config, startWritten) || startWritten;
+        startWritten = writeStaticResourceAttribute(writer, Attribute.WEBDAV.getLocalName(), config, startWritten) || startWritten;
+        startWritten = writeStaticResourceAttribute(writer, Attribute.SECRET.getLocalName(), config, startWritten) || startWritten;
+        startWritten = writeStaticResourceAttribute(writer, Attribute.MAX_DEPTH.getLocalName(), config, startWritten) || startWritten;
+        startWritten = writeStaticResourceAttribute(writer, Attribute.DISABLED.getLocalName(), config, startWritten) || startWritten;
 
         if (startWritten) {
             writer.writeEndElement();
@@ -298,24 +297,24 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
     private boolean writeJSPConfiguration(XMLExtendedStreamWriter writer, ModelNode jsp, boolean containerConfigStartWritten) throws XMLStreamException {
 
         boolean startWritten = writeJspConfigAttribute(writer, Attribute.DEVELOPMENT.getLocalName(), jsp, false, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.KEEP_GENERATED.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.TRIM_SPACES.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.TAG_POOLING.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.MAPPED_FILE.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.CHECK_INTERVAL.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.MODIFIFICATION_TEST_INTERVAL.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.RECOMPILE_ON_FAIL.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.SMAP.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.DUMP_SMAP.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.GENERATE_STRINGS_AS_CHAR_ARRAYS.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.SCRATCH_DIR.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.SOURCE_VM.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.TARGET_VM.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.JAVA_ENCODING.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.X_POWERED_BY.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.DISPLAY_SOURCE_FRAGMENT.getLocalName(), jsp, startWritten, containerConfigStartWritten);
-        startWritten = startWritten || writeJspConfigAttribute(writer, Attribute.DISABLED.getLocalName(), jsp, startWritten, containerConfigStartWritten);
+        startWritten = writeJspConfigAttribute(writer, Attribute.KEEP_GENERATED.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.TRIM_SPACES.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.TAG_POOLING.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.MAPPED_FILE.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.CHECK_INTERVAL.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.MODIFIFICATION_TEST_INTERVAL.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.RECOMPILE_ON_FAIL.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.SMAP.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.DUMP_SMAP.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.GENERATE_STRINGS_AS_CHAR_ARRAYS.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.SCRATCH_DIR.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.SOURCE_VM.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.TARGET_VM.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.JAVA_ENCODING.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.X_POWERED_BY.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.DISPLAY_SOURCE_FRAGMENT.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
+        startWritten = writeJspConfigAttribute(writer, Attribute.DISABLED.getLocalName(), jsp, startWritten, containerConfigStartWritten) || startWritten;
 
         if (startWritten) {
             writer.writeEndElement();
