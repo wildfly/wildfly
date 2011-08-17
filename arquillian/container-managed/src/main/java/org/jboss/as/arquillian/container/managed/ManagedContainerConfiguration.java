@@ -33,7 +33,7 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     private String javaHome = System.getenv("JAVA_HOME");
 
-    private String modulePath = System.getProperty("module.path", jbossHome + "/modules");
+    private String modulePath = System.getProperty("module.path");
 
     private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=128m");
 

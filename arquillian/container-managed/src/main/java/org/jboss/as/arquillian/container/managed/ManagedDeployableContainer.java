@@ -16,6 +16,10 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.sasl.JBossSaslProvider;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -30,10 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
-
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.sasl.JBossSaslProvider;
 
 /**
  * JBossAsManagedContainer
@@ -73,10 +73,15 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             });
 
             final String jbossHomeDir = config.getJbossHome();
-            final String modulePath = config.getModulePath();
+            final String modulePath;
+            if(config.getModulePath() != null && !config.getModulePath().isEmpty()) {
+                modulePath = config.getModulePath();
+            } else {
+               modulePath = jbossHomeDir + File.separatorChar + "modules";
+            }
             final String additionalJavaOpts = config.getJavaVmArguments();
 
-            File modulesJar = new File(jbossHomeDir + "/jboss-modules.jar");
+            File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
             if (modulesJar.exists() == false)
                 throw new IllegalStateException("Cannot find: " + modulesJar);
 
