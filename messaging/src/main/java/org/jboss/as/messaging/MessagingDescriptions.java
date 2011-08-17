@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging;
 
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -38,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
@@ -77,9 +79,6 @@ public class MessagingDescriptions {
         node.get(ATTRIBUTES, CommonAttributes.ACCEPTOR, TYPE).set(ModelType.OBJECT);
         node.get(ATTRIBUTES, CommonAttributes.ACCEPTOR, DESCRIPTION).set(bundle.getString("acceptor"));
 
-        node.get(ATTRIBUTES, CommonAttributes.ADDRESS_SETTING, TYPE).set(ModelType.OBJECT);
-        node.get(ATTRIBUTES, CommonAttributes.ADDRESS_SETTING, DESCRIPTION).set(bundle.getString("address-setting"));
-
         node.get(ATTRIBUTES, CommonAttributes.BINDINGS_DIRECTORY).set(getPathDescription("bindings.directory", bundle));
         node.get(ATTRIBUTES, CommonAttributes.JOURNAL_DIRECTORY).set(getPathDescription("journal.directory", bundle));
         node.get(ATTRIBUTES, CommonAttributes.LARGE_MESSAGES_DIRECTORY).set(getPathDescription("large.messages.directory", bundle));
@@ -92,6 +91,10 @@ public class MessagingDescriptions {
         node.get(ATTRIBUTES, CommonAttributes.SECURITY_SETTING, DESCRIPTION).set(bundle.getString("security-setting"));
 
         node.get(OPERATIONS);   // placeholder
+
+        node.get(CHILDREN, CommonAttributes.ADDRESS_SETTING, DESCRIPTION).set(bundle.getString("address-setting"));
+        node.get(CHILDREN, CommonAttributes.ADDRESS_SETTING, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.ADDRESS_SETTING, MODEL_DESCRIPTION);
 
         node.get(CHILDREN, CommonAttributes.BROADCAST_GROUP, DESCRIPTION).set(bundle.getString("broadcast-group"));
         node.get(CHILDREN, CommonAttributes.BROADCAST_GROUP, MIN_OCCURS).set(0);
@@ -163,9 +166,6 @@ public class MessagingDescriptions {
 
         node.get(REQUEST_PROPERTIES, CommonAttributes.ACCEPTOR, TYPE).set(ModelType.OBJECT);
         node.get(REQUEST_PROPERTIES, CommonAttributes.ACCEPTOR, DESCRIPTION).set(bundle.getString("acceptor"));
-
-        node.get(REQUEST_PROPERTIES, CommonAttributes.ADDRESS_SETTING, TYPE).set(ModelType.OBJECT);
-        node.get(REQUEST_PROPERTIES, CommonAttributes.ADDRESS_SETTING, DESCRIPTION).set(bundle.getString("address-setting"));
 
         node.get(REQUEST_PROPERTIES, CommonAttributes.BINDINGS_DIRECTORY).set(getPathDescription("bindings.directory", bundle));
         node.get(REQUEST_PROPERTIES, CommonAttributes.BINDINGS_DIRECTORY, REQUIRED).set(false);
@@ -456,7 +456,7 @@ public class MessagingDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("divert.add"));
         for (AttributeDefinition attr : CommonAttributes.DIVERT_ATTRIBUTES) {
             attr.addOperationParameterDescription(bundle, "divert", op);
@@ -765,6 +765,244 @@ public class MessagingDescriptions {
 
         return node;
     }
+
+    static ModelNode getAcceptor(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("acceptor"));
+        for (AttributeDefinition attr : TransportConfigOperations.GENERIC) {
+            attr.addResourceAttributeDescription(bundle, null, root);
+        }
+        return root;
+    }
+
+    static ModelNode getAcceptorAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(ADD);
+        op.get(DESCRIPTION).set(bundle.getString("acceptor.add"));
+        for (AttributeDefinition attr : TransportConfigOperations.GENERIC) {
+            attr.addOperationParameterDescription(bundle, null, op);
+        }
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getAcceptorRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("acceptor.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getAddressSetting(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("address-setting"));
+        for(SimpleAttributeDefinition def : AddressSettingAdd.ATTRIBUTES) {
+            def.addResourceAttributeDescription(bundle, "address-setting", root);
+        }
+        return root;
+    }
+
+    static ModelNode getAddressSettingAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(ADD);
+        op.get(DESCRIPTION).set(bundle.getString("address-setting.add"));
+        for(SimpleAttributeDefinition def : AddressSettingAdd.ATTRIBUTES) {
+            def.addOperationParameterDescription(bundle, "address-setting", op);
+        }
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getAddressSettingRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("address-setting.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getRemoteAcceptor(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("acceptor.remote"));
+        for (AttributeDefinition attr : TransportConfigOperations.REMOTE) {
+            attr.addResourceAttributeDescription(bundle, null, root);
+        }
+        return root;
+    }
+
+    static ModelNode getRemoteAcceptorAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(ADD);
+        op.get(DESCRIPTION).set(bundle.getString("acceptor.add"));
+        for (AttributeDefinition attr : TransportConfigOperations.REMOTE) {
+            attr.addOperationParameterDescription(bundle, null, op);
+        }
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getInVMAcceptor(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("acceptor.in-vm"));
+        for (AttributeDefinition attr : TransportConfigOperations.IN_VM) {
+            attr.addResourceAttributeDescription(bundle, null, root);
+        }
+        return root;
+    }
+
+    static ModelNode getInVMAcceptorAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(ADD);
+        op.get(DESCRIPTION).set(bundle.getString("acceptor.add"));
+        for (AttributeDefinition attr : TransportConfigOperations.IN_VM) {
+            attr.addOperationParameterDescription(bundle, null, op);
+        }
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getConnector(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("connector"));
+        for (AttributeDefinition attr : TransportConfigOperations.GENERIC) {
+            attr.addResourceAttributeDescription(bundle, null, root);
+        }
+        return root;
+    }
+
+    static ModelNode getConnectorAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(ADD);
+        op.get(DESCRIPTION).set(bundle.getString("connector.add"));
+        for (AttributeDefinition attr : TransportConfigOperations.GENERIC) {
+            attr.addOperationParameterDescription(bundle, null, op);
+        }
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getConnectorRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("connector.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getRemoteConnector(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("connector.remote"));
+        for (AttributeDefinition attr : TransportConfigOperations.REMOTE) {
+            attr.addResourceAttributeDescription(bundle, null, root);
+        }
+        return root;
+    }
+
+    static ModelNode getRemoteConnectorAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(ADD);
+        op.get(DESCRIPTION).set(bundle.getString("connector.add"));
+        for (AttributeDefinition attr : TransportConfigOperations.REMOTE) {
+            attr.addOperationParameterDescription(bundle, null, op);
+        }
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getInVMConnector(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("connector.in-vm"));
+        for (AttributeDefinition attr : TransportConfigOperations.IN_VM) {
+            attr.addResourceAttributeDescription(bundle, null, root);
+        }
+        return root;
+    }
+
+    static ModelNode getInVMConnectorAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(ADD);
+        op.get(DESCRIPTION).set(bundle.getString("connector.add"));
+        for (AttributeDefinition attr : TransportConfigOperations.IN_VM) {
+            attr.addOperationParameterDescription(bundle, null, op);
+        }
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+
+    static ModelNode getParam(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("transport-config.param"));
+
+        root.get(ATTRIBUTES, VALUE, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, VALUE, DESCRIPTION).set(bundle.getString("transport-config.param.value"));
+
+        return root;
+    }
+
+    static ModelNode getParamAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(ADD);
+        op.get(DESCRIPTION).set(bundle.getString("transport-config.param.add"));
+        op.get(REQUEST_PROPERTIES, VALUE, TYPE).set(ModelType.STRING);
+        op.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString("transport-config.param.value"));
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getParamRemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(ADD);
+        op.get(DESCRIPTION).set(bundle.getString("transport-config.param.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {

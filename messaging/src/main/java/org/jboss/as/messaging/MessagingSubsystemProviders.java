@@ -22,14 +22,21 @@
 
 package org.jboss.as.messaging;
 
-import java.util.Locale;
-
+import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
+import static org.jboss.as.messaging.CommonAttributes.GROUPING_HANDLER;
+import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
+import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE;
+import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.messaging.CommonAttributes.*;
-import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
+import java.util.Locale;
 
 /**
  * @author Emanuel Muckenhuber
@@ -37,10 +44,31 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
  */
 class MessagingSubsystemProviders {
 
-    static final String[] MESSAGING_ROOT_ATTRIBUTES = new String[] { ACCEPTOR, ADDRESS_SETTING,
-        CONNECTION_FACTORY, BINDINGS_DIRECTORY, CONNECTOR,
+    static final String[] MESSAGING_ROOT_ATTRIBUTES = new String[] { CommonAttributes.ACCEPTOR,
+        CONNECTION_FACTORY, BINDINGS_DIRECTORY, CommonAttributes.CONNECTOR,
         GROUPING_HANDLER, JMS_QUEUE, JMS_TOPIC, JOURNAL_DIRECTORY, LARGE_MESSAGES_DIRECTORY,
         PAGING_DIRECTORY, POOLED_CONNECTION_FACTORY, QUEUE, SECURITY_SETTING };
+
+    static final DescriptionProvider ADDRESS_SETTING = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getAddressSetting(locale);
+        }
+    };
+
+    static final DescriptionProvider ADDRESS_SETTING_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getAddressSettingAdd(locale);
+        }
+    };
+
+    static final DescriptionProvider ADDRESS_SETTING_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getAddressSettingRemove(locale);
+        }
+    };
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
@@ -90,6 +118,139 @@ class MessagingSubsystemProviders {
 
         public ModelNode getModelDescription(final Locale locale) {
             return MessagingDescriptions.getTopic(locale);
+        }
+    };
+
+    public static final DescriptionProvider JMS_TOPIC_ADD = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getTopicAdd(locale);
+        }
+    };
+
+    public static final DescriptionProvider JMS_TOPIC_REMOVE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return MessagingDescriptions.getTopicRemove(locale);
+        }
+    };
+
+    public static final DescriptionProvider ACCEPTOR = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getAcceptor(locale);
+        }
+    };
+
+    public static final DescriptionProvider ACCEPTOR_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getAcceptorAdd(locale);
+        }
+    };
+
+    public static final DescriptionProvider ACCEPTOR_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getAcceptorRemove(locale);
+        }
+    };
+
+    public static final DescriptionProvider REMOTE_ACCEPTOR = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getRemoteAcceptor(locale);
+        }
+    };
+
+    public static final DescriptionProvider REMOTE_ACCEPTOR_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getRemoteAcceptorAdd(locale);
+        }
+    };
+
+    public static final DescriptionProvider IN_VM_ACCEPTOR = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getInVMAcceptor(locale);
+        }
+    };
+
+    public static final DescriptionProvider IN_VM_ACCEPTOR_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getInVMAcceptorAdd(locale);
+        }
+    };
+
+    public static final DescriptionProvider CONNECTOR = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getConnector(locale);
+        }
+    };
+
+    public static final DescriptionProvider CONNECTOR_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getConnectorAdd(locale);
+        }
+    };
+
+    public static final DescriptionProvider CONNECTOR_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getConnectorRemove(locale);
+        }
+    };
+
+    public static final DescriptionProvider REMOTE_CONNECTOR = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getRemoteConnector(locale);
+        }
+    };
+
+    public static final DescriptionProvider REMOTE_CONNECTOR_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getRemoteConnectorAdd(locale);
+        }
+    };
+
+    public static final DescriptionProvider IN_VM_CONNECTOR = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getInVMConnector(locale);
+        }
+    };
+
+    public static final DescriptionProvider IN_VM_CONNECTOR_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getInVMConnector(locale);
+        }
+    };
+
+    public static final DescriptionProvider PARAM = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getParam(locale);
+        }
+    };
+
+    public static final DescriptionProvider PARAM_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getParamAdd(locale);
+        }
+    };
+
+    public static final DescriptionProvider PARAM_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getParam(locale);
         }
     };
 

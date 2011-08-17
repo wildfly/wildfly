@@ -40,7 +40,7 @@ class HornetQService implements Service<HornetQServer> {
      * The name of the SocketBinding reference to use for HOST/PORT
      * configuration
      */
-    private static final String SOCKET_REF = CommonAttributes.SOCKET_BINDING;
+    private static final String SOCKET_REF = CommonAttributes.SOCKET_BINDING.getName();
 
     private Configuration configuration;
 

@@ -22,9 +22,16 @@
 
 package org.jboss.as.messaging;
 
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import org.jboss.as.controller.registry.Resource;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
@@ -120,13 +127,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
@@ -198,10 +200,10 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler,
                                   final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final ServiceTarget serviceTarget = context.getServiceTarget();
 
         // Create path services
         // TODO move into child resource handlers
+        final ServiceTarget serviceTarget = context.getServiceTarget();
         final ServiceName bindingsPath = createDirectoryService(DEFAULT_BINDINGS_DIR, operation.get(BINDINGS_DIRECTORY), serviceTarget);
         final ServiceName journalPath = createDirectoryService(DEFAULT_JOURNAL_DIR, operation.get(JOURNAL_DIRECTORY), serviceTarget);
         final ServiceName largeMessagePath = createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, operation.get(LARGE_MESSAGES_DIRECTORY), serviceTarget);
@@ -213,15 +215,11 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                // Transform the configuration
+
+                // Transform the configuration based on the recursive model
+                final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+                final ModelNode model = Resource.Tools.readModel(resource);
                 final Configuration configuration = transformConfig(model);
-
-                // Process acceptors and connectors
-                // TODO move into child resource handlers
-                final Set<String> socketBindings = new HashSet<String>();
-                processAcceptors(configuration, operation, socketBindings);
-                processConnectors(configuration, operation, socketBindings);
-
 
                 // Create the HornetQ Service
                 final HornetQService hqService = new HornetQService();
@@ -238,6 +236,15 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                 serviceBuilder.addDependency(journalPath, String.class, hqService.getPathInjector(DEFAULT_JOURNAL_DIR));
                 serviceBuilder.addDependency(largeMessagePath, String.class, hqService.getPathInjector(DEFAULT_LARGE_MESSSAGE_DIR));
                 serviceBuilder.addDependency(pagingPath, String.class, hqService.getPathInjector(DEFAULT_PAGING_DIR));
+
+                // Process acceptors and connectors
+                final Set<String> socketBindings = new HashSet<String>();
+                // TODO make acceptor/connector resources
+                // TransportConfigOperations.processAcceptors(configuration, model, socketBindings);
+                // TransportConfigOperations.processConnectors(configuration, model, socketBindings);
+                processAcceptors(configuration, model, socketBindings);
+                processConnectors(configuration, model, socketBindings);
+
 
                 for (final String socketBinding : socketBindings) {
                     final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
@@ -358,12 +365,29 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
     }
 
     /**
-     * Process the acceptor information.
+     * Process the address settings.
      *
      * @param configuration the hornetQ configuration
      * @param params        the detyped operation parameters
-     * @param bindings      the referenced socket bindings
      */
+    /**
+     * Process the address settings.
+     *
+     * @param configuration the hornetQ configuration
+     * @param params        the detyped operation parameters
+     */
+    static void processAddressSettings(final Configuration configuration, final ModelNode params) {
+        if (params.get(ADDRESS_SETTING).isDefined()) {
+            for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
+                final String match = property.getName();
+                final ModelNode config = property.getValue();
+                final AddressSettings settings = AddressSettingAdd.createSettings(config);
+                configuration.getAddressesSettings().put(match, settings);
+            }
+        }
+    }
+
+    // replace with TransportConfigOperations.processAcceptors(configuration, model, socketBindings);
     static void processAcceptors(final Configuration configuration, final ModelNode params, final Set<String> bindings) {
         if (params.hasDefined(ACCEPTOR)) {
             final Map<String, TransportConfiguration> acceptors = new HashMap<String, TransportConfiguration>();
@@ -376,19 +400,19 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                         parameters.put(parameter.getName(), parameter.getValue().asString());
                     }
                 }
-                final TransportConfigType type = TransportConfigType.valueOf(config.get(TYPE).asString());
+                final MessagingServices.TransportConfigType type = MessagingServices.TransportConfigType.valueOf(config.get(TYPE).asString());
                 final String clazz;
                 switch (type) {
                     case Remote: {
                         clazz = NettyAcceptorFactory.class.getName();
-                        final String binding = config.get(SOCKET_BINDING).asString();
-                        parameters.put(SOCKET_BINDING, binding);
+                        final String binding = config.get(SOCKET_BINDING.getName()).asString();
+                        parameters.put(SOCKET_BINDING.getName(), binding);
                         bindings.add(binding);
                         break;
                     }
                     case InVM: {
                         clazz = InVMAcceptorFactory.class.getName();
-                        parameters.put(SERVER_ID, config.get(SERVER_ID).asInt());
+                        parameters.put(SERVER_ID.getName(), config.get(SERVER_ID.getName()).asInt());
                         break;
                     }
                     case Generic: {
@@ -406,13 +430,7 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
         }
     }
 
-    /**
-     * Process the connector information.
-     *
-     * @param configuration the hornetQ configuration
-     * @param params        the detyped operation parameters
-     * @param bindings      the referenced socket bindings
-     */
+    // replace with TransportConfigOperations.processConnectors(configuration, model, socketBindings);
     static void processConnectors(final Configuration configuration, final ModelNode params, final Set<String> bindings) {
         if (params.hasDefined(CONNECTOR)) {
             final Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
@@ -425,19 +443,19 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                         parameters.put(parameter.getName(), parameter.getValue().asString());
                     }
                 }
-                final TransportConfigType type = TransportConfigType.valueOf(config.get(TYPE).asString());
+                final MessagingServices.TransportConfigType type = MessagingServices.TransportConfigType.valueOf(config.get(TYPE).asString());
                 final String clazz;
                 switch (type) {
                     case Remote: {
                         clazz = NettyConnectorFactory.class.getName();
-                        final String binding = config.get(SOCKET_BINDING).asString();
-                        parameters.put(SOCKET_BINDING, binding);
+                        final String binding = config.get(SOCKET_BINDING.getName()).asString();
+                        parameters.put(SOCKET_BINDING.getName(), binding);
                         bindings.add(binding);
                         break;
                     }
                     case InVM: {
                         clazz = InVMConnectorFactory.class.getName();
-                        parameters.put(SERVER_ID, config.get(SERVER_ID).asInt());
+                        parameters.put(SERVER_ID.getName(), config.get(SERVER_ID.getName()).asInt());
                         break;
                     }
                     case Generic: {
@@ -452,38 +470,6 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                 connectors.put(connectorName, new TransportConfiguration(clazz, parameters, connectorName));
             }
             configuration.setConnectorConfigurations(connectors);
-        }
-    }
-
-    /**
-     * Process the address settings.
-     *
-     * @param configuration the hornetQ configuration
-     * @param params        the detyped operation parameters
-     */
-    static void processAddressSettings(final Configuration configuration, final ModelNode params) {
-        if (params.get(ADDRESS_SETTING).isDefined()) {
-            for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
-                final String match = property.getName();
-                final ModelNode config = property.getValue();
-
-                final AddressSettings settings = new AddressSettings();
-                final AddressFullMessagePolicy addressPolicy = config.hasDefined(ADDRESS_FULL_MESSAGE_POLICY) ?
-                        AddressFullMessagePolicy.valueOf(config.get(ADDRESS_FULL_MESSAGE_POLICY).asString()) : AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY;
-                settings.setAddressFullMessagePolicy(addressPolicy);
-                settings.setDeadLetterAddress(asSimpleString(config.get(DEAD_LETTER_ADDRESS), null));
-                settings.setLastValueQueue(config.get(LVQ).asBoolean(AddressSettings.DEFAULT_LAST_VALUE_QUEUE));
-                settings.setMaxDeliveryAttempts(config.get(MAX_DELIVERY_ATTEMPTS).asInt(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS));
-                settings.setMaxSizeBytes(config.get(MAX_SIZE_BYTES_NODE_NAME).asInt((int) AddressSettings.DEFAULT_MAX_SIZE_BYTES));
-                settings.setMessageCounterHistoryDayLimit(config.get(MESSAGE_COUNTER_HISTORY_DAY_LIMIT).asInt(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT));
-                settings.setExpiryAddress(asSimpleString(config.get(EXPIRY_ADDRESS), null));
-                settings.setRedeliveryDelay(config.get(REDELIVERY_DELAY).asInt((int) AddressSettings.DEFAULT_REDELIVER_DELAY));
-                settings.setRedistributionDelay(config.get(REDISTRIBUTION_DELAY).asInt((int) AddressSettings.DEFAULT_REDISTRIBUTION_DELAY));
-                settings.setPageSizeBytes(config.get(PAGE_SIZE_BYTES_NODE_NAME).asInt((int) AddressSettings.DEFAULT_PAGE_SIZE));
-                settings.setSendToDLAOnNoRoute(config.get(SEND_TO_DLA_ON_NO_ROUTE).asBoolean(AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE));
-
-                configuration.getAddressesSettings().put(match, settings);
-            }
         }
     }
 
