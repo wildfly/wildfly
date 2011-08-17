@@ -40,7 +40,6 @@
         <!-- So we can access its integration API -->
         <module name="org.jboss.as.connector"/>
         <module name="org.jboss.as.ee"/>
-        <module name="org.jboss.as.messaging"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.security"/>
         <module name="org.jboss.as.server"/>
