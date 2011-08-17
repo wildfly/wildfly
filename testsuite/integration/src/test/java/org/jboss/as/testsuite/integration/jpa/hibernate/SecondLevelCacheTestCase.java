@@ -125,10 +125,14 @@ public class SecondLevelCacheTestCase {
 
         DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
         Connection conn = ds.getConnection();
-        int deleted = conn.prepareStatement("delete from Employee").executeUpdate();
+        try {
+            int deleted = conn.prepareStatement("delete from Employee").executeUpdate();
+            // verify that delete worked (or test is invalid)
+            assertTrue("was able to delete added rows.  delete count=" + deleted, deleted > 1);
 
-        // verify that delete worked (or test is invalid)
-        assertTrue("was able to delete added rows.  delete count=" + deleted, deleted > 1);
+        } finally {
+            conn.close();
+        }
 
         // read deleted data from second level cache
         Employee emp = sfsb1.getEmployeeNoTX(10);
