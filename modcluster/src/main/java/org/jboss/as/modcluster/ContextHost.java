@@ -41,6 +41,6 @@ public class ContextHost {
     public static String RemoveQuotes(String string) {
         if (string.endsWith("\"") && string.startsWith("\""))
             return string.substring(1, string.length() -1);
-        return null;
+        return string;
     }
 }
