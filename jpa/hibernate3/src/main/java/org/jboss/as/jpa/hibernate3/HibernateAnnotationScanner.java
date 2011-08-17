@@ -77,7 +77,8 @@ public class HibernateAnnotationScanner implements Scanner {
             }
             Index index = getJarFileIndex(jartoScan, pu);
             if (index == null) {
-                throw new RuntimeException("Missing annotation index to scan entity classes");
+                throw new RuntimeException("Missing annotation index to scan entity classes.  jar '" +
+                    jartoScan.getPath() +"' not found in index '" + pu.getAnnotationIndex().keySet() +"'");
             }
             if (jartoScan == null) {
                 throw new IllegalArgumentException("Null jar to scan url");
