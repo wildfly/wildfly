@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.service;
 
-import java.util.Map;
-
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.webservices.publish.EndpointPublisherImpl;
@@ -40,6 +38,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.wsf.spi.publish.Context;
 
+import java.util.Map;
+
 /**
  * WS endpoint publish service, allows for publishing a WS endpoint on AS 7
  *
@@ -50,7 +50,7 @@ public final class EndpointPublishService implements Service<Context> {
 
     private static final Logger log = Logger.getLogger(EndpointPublishService.class);
     private final ServiceName name;
-    private Context wsctx;
+    private volatile Context wsctx;
 
     private final ClassLoader loader;
     private final String context;

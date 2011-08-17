@@ -22,8 +22,6 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.server.deployment.Services.deploymentUnitName;
-
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.Logger;
@@ -40,6 +38,8 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.Services;
+
+import static org.jboss.as.server.deployment.Services.deploymentUnitName;
 
 /**
  * Service responsible for creating and managing the life-cycle of an OSGi deployment.
@@ -122,7 +122,7 @@ public class BundleInstallService implements Service<BundleInstallService> {
     }
 
     @Override
-    public BundleInstallService getValue() throws IllegalStateException {
+    public synchronized BundleInstallService getValue() throws IllegalStateException {
         return this;
     }
 

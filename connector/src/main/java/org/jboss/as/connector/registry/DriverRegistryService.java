@@ -39,7 +39,7 @@ public final class DriverRegistryService implements Service<DriverRegistry> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector.registry");
 
-    private DriverRegistry value;
+    private final DriverRegistry value;
 
     /**
      * Create an instance

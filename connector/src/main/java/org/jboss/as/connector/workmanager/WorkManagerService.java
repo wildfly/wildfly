@@ -22,8 +22,6 @@
 
 package org.jboss.as.connector.workmanager;
 
-import java.util.concurrent.Executor;
-
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.security.UsersRoles;
@@ -37,6 +35,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
 import org.jboss.tm.JBossXATerminator;
+
+import java.util.concurrent.Executor;
 
 /**
  * A WorkManager Service.
@@ -54,7 +54,7 @@ public final class WorkManagerService implements Service<WorkManager> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.connector");
 
-    private UsersRoles usersRoles;
+    private volatile UsersRoles usersRoles;
 
     /** create an instance **/
     public WorkManagerService(WorkManager value) {

@@ -33,7 +33,7 @@ import org.jboss.msc.service.StopContext;
  */
 public class SimpleService implements Service<SimpleService> {
 
-    public static ServiceName NAME = ServiceName.of("test", "service", "simple");
+    public static final ServiceName NAME = ServiceName.of("test", "service", "simple");
 
     @Override
     public SimpleService getValue() throws IllegalStateException, IllegalArgumentException {

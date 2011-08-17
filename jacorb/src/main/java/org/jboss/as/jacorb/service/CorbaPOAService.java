@@ -58,7 +58,7 @@ public class CorbaPOAService implements Service<POA> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jacorb", "poa-service");
 
-    private POA poa;
+    private volatile POA poa;
 
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
 

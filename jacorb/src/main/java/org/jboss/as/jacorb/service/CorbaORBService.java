@@ -62,7 +62,7 @@ public class CorbaORBService implements Service<ORB> {
 
     private final InjectedValue<SocketBinding> jacORBSSLSocketBindingInjector = new InjectedValue<SocketBinding>();
 
-    private ORB orb;
+    private volatile ORB orb;
 
     /**
      * <p>

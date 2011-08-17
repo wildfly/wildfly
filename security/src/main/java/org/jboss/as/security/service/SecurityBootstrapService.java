@@ -22,13 +22,6 @@
 
 package org.jboss.as.security.service;
 
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.security.jacc.PolicyContext;
-import javax.security.jacc.PolicyContextException;
-
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -39,6 +32,12 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.auth.callback.CallbackHandlerPolicyContextHandler;
 import org.jboss.security.jacc.SubjectPolicyContextHandler;
+
+import javax.security.jacc.PolicyContext;
+import javax.security.jacc.PolicyContextException;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Bootstrap service for the security container
@@ -52,7 +51,7 @@ public class SecurityBootstrapService implements Service<Void> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.security");
 
-    protected Properties securityProperty;
+    protected volatile Properties securityProperty;
 
     public SecurityBootstrapService() {
     }

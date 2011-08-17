@@ -22,17 +22,6 @@
 
 package org.jboss.as.arquillian.service;
 
-import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
-
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.management.MBeanServer;
-
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.jmx.MBeanServerService;
@@ -54,6 +43,16 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.osgi.framework.BundleContext;
+
+import javax.management.MBeanServer;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.
@@ -143,7 +142,7 @@ public class ArquillianService implements Service<ArquillianService> {
     }
 
     @Override
-    public ArquillianService getValue() throws IllegalStateException {
+    public synchronized ArquillianService getValue() throws IllegalStateException {
         return this;
     }
 

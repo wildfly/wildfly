@@ -53,9 +53,9 @@ public class TimerServiceFactoryService implements Service<TimerServiceFactory> 
     public static final ServiceName PATH_SERVICE_NAME = ServiceName.JBOSS.append("as", "ejb", "timerServiceFactory", "dataStorePath");
 
 
-    private TimerServiceFactory timerServiceFactory;
-    private ExecutorService executorService;
-    private FileTimerPersistence timerPersistence;
+    private volatile TimerServiceFactory timerServiceFactory;
+    private volatile ExecutorService executorService;
+    private volatile FileTimerPersistence timerPersistence;
 
     private final InjectedValue<TransactionManager> transactionManagerInjectedValue = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryInjectedValue = new InjectedValue<TransactionSynchronizationRegistry>();
@@ -74,7 +74,7 @@ public class TimerServiceFactoryService implements Service<TimerServiceFactory> 
 
 
     @Override
-    public synchronized void start(final StartContext context) throws StartException {
+    public  void start(final StartContext context) throws StartException {
 
         executorService = new ThreadPoolExecutor(coreThreads, maxThreads, 1, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>());
         //only start the persistence service if it has been configured
@@ -87,7 +87,7 @@ public class TimerServiceFactoryService implements Service<TimerServiceFactory> 
     }
 
     @Override
-    public synchronized void stop(final StopContext context) {
+    public void stop(final StopContext context) {
         executorService.shutdownNow();
         if (path == null) {
             timerPersistence.stop();

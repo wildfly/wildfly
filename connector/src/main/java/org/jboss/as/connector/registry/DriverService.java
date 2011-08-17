@@ -3,14 +3,14 @@
  */
 package org.jboss.as.connector.registry;
 
-import java.sql.Driver;
-
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import java.sql.Driver;
 
 /**
  * Service wrapper for a {@link java.sql.Driver}.
@@ -19,7 +19,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class DriverService implements Service<Driver> {
 
-    private InjectedValue<DriverRegistry> injectedDriverRegistry = new InjectedValue<DriverRegistry>();
+    private final InjectedValue<DriverRegistry> injectedDriverRegistry = new InjectedValue<DriverRegistry>();
 
     private final InstalledDriver driverMetaData;
     private final Driver driver;

@@ -22,6 +22,13 @@
 
 package org.jboss.as.domain.management.security;
 
+import org.jboss.as.domain.management.CallbackHandlerFactory;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.util.Base64;
+
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -29,15 +36,7 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
-
 import java.io.IOException;
-
-import org.jboss.as.domain.management.CallbackHandlerFactory;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.util.Base64;
 
 
 /**
@@ -51,7 +50,7 @@ public class SecretIdentityService implements Service<CallbackHandlerFactory> {
 
     private final char[] password;
 
-    private CallbackHandlerFactory factory;
+    private volatile CallbackHandlerFactory factory;
 
     public SecretIdentityService(final String base64Password) {
         byte[] value = Base64.decode(base64Password);

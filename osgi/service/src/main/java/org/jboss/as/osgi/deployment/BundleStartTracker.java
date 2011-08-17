@@ -22,13 +22,6 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.service.FrameworkBootstrapService.FRAMEWORK_BASE_NAME;
-import static org.osgi.service.packageadmin.PackageAdmin.BUNDLE_TYPE_FRAGMENT;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
@@ -49,6 +42,13 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.service.packageadmin.PackageAdmin;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static org.jboss.as.osgi.service.FrameworkBootstrapService.FRAMEWORK_BASE_NAME;
+import static org.osgi.service.packageadmin.PackageAdmin.BUNDLE_TYPE_FRAGMENT;
+
 /**
  * A service that collects installed bundle services and starts them when all collected bundles were installed in the framework.
  *
@@ -64,7 +64,7 @@ public class BundleStartTracker implements Service<BundleStartTracker> {
     private final InjectedValue<PackageAdmin> injectedPackageAdmin = new InjectedValue<PackageAdmin>();
     private final Map<ServiceName, Tuple> pendingServices = new ConcurrentHashMap<ServiceName, Tuple>();
     private final Map<ServiceName, Tuple> startedServices = new ConcurrentHashMap<ServiceName, Tuple>();
-    private ServiceContainer serviceContainer;
+    private volatile ServiceContainer serviceContainer;
 
     public static final ServiceController<?> addService(ServiceTarget serviceTarget) {
         BundleStartTracker service = new BundleStartTracker();
