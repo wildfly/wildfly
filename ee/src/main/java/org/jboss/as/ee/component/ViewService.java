@@ -48,7 +48,7 @@ import java.util.Set;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ViewService implements Service<ComponentView> {
+public final class ViewService implements Service<ComponentView> {
     private static final Logger logger = Logger.getLogger(ViewService.class);
     private final InjectedValue<Component> componentInjector = new InjectedValue<Component>();
     private final Map<Method, InterceptorFactory> viewInterceptorFactories;
@@ -69,7 +69,7 @@ final class ViewService implements Service<ComponentView> {
         }
     });
 
-    ViewService(final ViewConfiguration viewConfiguration) {
+    public ViewService(final ViewConfiguration viewConfiguration) {
         viewClass = viewConfiguration.getViewClass();
         final ProxyFactory<?> proxyFactory = viewConfiguration.getProxyFactory();
         this.proxyFactory = proxyFactory;

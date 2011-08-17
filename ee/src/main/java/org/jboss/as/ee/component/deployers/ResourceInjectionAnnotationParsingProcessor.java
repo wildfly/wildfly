@@ -20,19 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component;
+package org.jboss.as.ee.component.deployers;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Resource;
-import javax.annotation.Resources;
-import javax.validation.ValidatorFactory;
-
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.BindingConfiguration;
+import org.jboss.as.ee.component.ClassConfigurator;
+import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.component.EEModuleClassConfiguration;
+import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.FieldInjectionTarget;
+import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.component.InjectionTarget;
+import org.jboss.as.ee.component.LazyResourceInjection;
+import org.jboss.as.ee.component.LookupInjectionSource;
+import org.jboss.as.ee.component.MethodInjectionTarget;
+import org.jboss.as.ee.component.ResourceInjectionConfiguration;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -48,8 +51,18 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 
+import javax.annotation.Resource;
+import javax.annotation.Resources;
+import javax.validation.ValidatorFactory;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
- * Deployment processor responsible for analyzing each attached {@link ComponentDescription} instance to configure
+ * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.component.ComponentDescription} instance to configure
  * required resource injection configurations.
  *
  * @author John Bailey

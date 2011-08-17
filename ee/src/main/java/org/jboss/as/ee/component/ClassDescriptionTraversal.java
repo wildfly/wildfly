@@ -33,7 +33,7 @@ public abstract class ClassDescriptionTraversal {
     final EEModuleClassConfiguration classConfiguration;
     final EEApplicationDescription applicationDescription;
 
-    ClassDescriptionTraversal(final EEModuleClassConfiguration classConfiguration, final EEApplicationDescription applicationDescription) {
+    public ClassDescriptionTraversal(final EEModuleClassConfiguration classConfiguration, final EEApplicationDescription applicationDescription) {
         this.classConfiguration = classConfiguration;
         this.applicationDescription = applicationDescription;
     }

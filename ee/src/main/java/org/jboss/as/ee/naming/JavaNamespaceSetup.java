@@ -21,10 +21,10 @@
  */
 package org.jboss.as.ee.naming;
 
-import java.util.Map;
-
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.SetupAction;
+
+import java.util.Map;
 
 /**
  * Sets and restores the <code>java:</code> contexts

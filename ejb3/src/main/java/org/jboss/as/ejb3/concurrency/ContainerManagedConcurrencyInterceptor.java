@@ -31,7 +31,7 @@ import org.jboss.invocation.InterceptorContext;
  */
 public class ContainerManagedConcurrencyInterceptor extends org.jboss.ejb3.concurrency.impl.ContainerManagedConcurrencyInterceptor implements Interceptor {
 
-    private LockableComponent lockableComponent;
+    private final LockableComponent lockableComponent;
 
     public ContainerManagedConcurrencyInterceptor(LockableComponent component) {
         if (component == null) {
