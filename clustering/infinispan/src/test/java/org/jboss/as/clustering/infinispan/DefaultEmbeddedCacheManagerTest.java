@@ -173,8 +173,8 @@ public class DefaultEmbeddedCacheManagerTest {
         Configuration otherConfig = new Configuration();
         Configuration otherConfigOverride = new Configuration();
 
-        when(this.manager.defineConfiguration("default", "default", defaultConfigOverride)).thenReturn(defaultConfig);
-        when(this.manager.defineConfiguration("other", "default", otherConfigOverride)).thenReturn(otherConfig);
+        when(this.manager.defineConfiguration("default", defaultConfigOverride)).thenReturn(defaultConfig);
+        when(this.manager.defineConfiguration("other", otherConfigOverride)).thenReturn(otherConfig);
 
         Configuration result = this.subject.defineConfiguration("default", defaultConfigOverride);
 
