@@ -103,7 +103,7 @@ public class SubsystemParsingTestCase extends AbstractParsingTest {
      * Starts a controller with the given subsystem xml and then checks that a second
      * controller started with the operations from its describe action results in the same model
      */
-    //@Test
+    @Test
     public void testDescribeHandler() throws Exception {
         //Parse the subsystem xml and install into the first controller
         KernelServices servicesA = super.installInController(SUBSYSTEM_XML);
