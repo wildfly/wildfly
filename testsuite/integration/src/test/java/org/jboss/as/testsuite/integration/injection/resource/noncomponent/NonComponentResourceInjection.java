@@ -21,9 +21,9 @@
  */
 package org.jboss.as.testsuite.integration.injection.resource.noncomponent;
 
-import javax.annotation.ManagedBean;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.mail.Session;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
@@ -65,4 +65,15 @@ public class NonComponentResourceInjection {
 
     @WebServiceRef
     private NonComponentResourceInjection nonExitantWebService;
+
+    @Resource(mappedName = "java:/Mail")
+    public Session mailSessionJndiDefault;
+
+
+    @Resource(mappedName = "java:jboss/mail/foo/MyMailServer1")
+    public Session mailSessionJndiCustom;
+
+    @Resource
+    public Session mailSession;
+
 }
