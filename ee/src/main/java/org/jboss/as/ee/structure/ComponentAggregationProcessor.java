@@ -24,8 +24,8 @@ package org.jboss.as.ee.structure;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationDescription;
-import org.jboss.as.ee.component.EEModuleConfigurationProcessor;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.deployers.EEModuleConfigurationProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;

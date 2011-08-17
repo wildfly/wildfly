@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.processor;
 
-import org.jboss.as.ee.component.AbstractDeploymentDescriptorBindingsProcessor;
+import org.jboss.as.ee.component.deployers.AbstractDeploymentDescriptorBindingsProcessor;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;

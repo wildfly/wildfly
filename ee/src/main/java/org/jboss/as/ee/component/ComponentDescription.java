@@ -497,6 +497,10 @@ public class ComponentDescription {
         return configurators;
     }
 
+    private boolean isIntercepted() {
+        return true;
+    }
+
     private static InterceptorFactory weaved(final Collection<InterceptorFactory> interceptorFactories) {
         return new InterceptorFactory() {
             @Override
@@ -760,85 +764,88 @@ public class ComponentDescription {
             final List<InterceptorDescription> classInterceptors = description.getClassInterceptors();
             final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = description.getMethodInterceptors();
 
-            for (final Method method : componentClassConfiguration.getClassMethods()) {
+            if (description.isIntercepted()) {
 
-                //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain
+                for (final Method method : componentClassConfiguration.getClassMethods()) {
 
-                configuration.addComponentInterceptor(method, Interceptors.getInitialInterceptorFactory(), InterceptorOrder.Component.INITIAL_INTERCEPTOR);
-                configuration.addComponentInterceptor(method, new ManagedReferenceMethodInterceptorFactory(instanceKey, method), InterceptorOrder.Component.TERMINAL_INTERCEPTOR);
-                if (description.isTimerServiceApplicable()) {
-                    configuration.addTimeoutInterceptor(method, new ManagedReferenceMethodInterceptorFactory(instanceKey, method), InterceptorOrder.Component.TERMINAL_INTERCEPTOR);
-                }
-                // and also add the tccl interceptor
-                configuration.addComponentInterceptor(method, tcclInterceptor, InterceptorOrder.Component.TCCL_INTERCEPTOR);
-                if (description.isTimerServiceApplicable()) {
-                    configuration.addTimeoutInterceptor(method, tcclInterceptor, InterceptorOrder.Component.TCCL_INTERCEPTOR);
-                }
+                    //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain
+
+                    configuration.addComponentInterceptor(method, Interceptors.getInitialInterceptorFactory(), InterceptorOrder.Component.INITIAL_INTERCEPTOR);
+                    configuration.addComponentInterceptor(method, new ManagedReferenceMethodInterceptorFactory(instanceKey, method), InterceptorOrder.Component.TERMINAL_INTERCEPTOR);
+                    if (description.isTimerServiceApplicable()) {
+                        configuration.addTimeoutInterceptor(method, new ManagedReferenceMethodInterceptorFactory(instanceKey, method), InterceptorOrder.Component.TERMINAL_INTERCEPTOR);
+                    }
+                    // and also add the tccl interceptor
+                    configuration.addComponentInterceptor(method, tcclInterceptor, InterceptorOrder.Component.TCCL_INTERCEPTOR);
+                    if (description.isTimerServiceApplicable()) {
+                        configuration.addTimeoutInterceptor(method, tcclInterceptor, InterceptorOrder.Component.TCCL_INTERCEPTOR);
+                    }
 
 
-                final MethodIdentifier identifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
+                    final MethodIdentifier identifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
 
-                final List<InterceptorFactory> userAroundInvokes = new ArrayList<InterceptorFactory>();
-                final List<InterceptorFactory> userAroundTimeouts = new ArrayList<InterceptorFactory>();
-                // first add the default interceptors (if not excluded) to the deque
-                if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
-                    for (InterceptorDescription interceptorDescription : description.getDefaultInterceptors()) {
-                        String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                        List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                        if (aroundInvokes != null) {
-                            userAroundInvokes.addAll(aroundInvokes);
-                        }
-                        if (description.isTimerServiceApplicable()) {
-                            List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
-                            if (aroundTimeouts != null) {
-                                userAroundTimeouts.addAll(aroundTimeouts);
+                    final List<InterceptorFactory> userAroundInvokes = new ArrayList<InterceptorFactory>();
+                    final List<InterceptorFactory> userAroundTimeouts = new ArrayList<InterceptorFactory>();
+                    // first add the default interceptors (if not excluded) to the deque
+                    if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
+                        for (InterceptorDescription interceptorDescription : description.getDefaultInterceptors()) {
+                            String interceptorClassName = interceptorDescription.getInterceptorClassName();
+                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
+                            if (aroundInvokes != null) {
+                                userAroundInvokes.addAll(aroundInvokes);
+                            }
+                            if (description.isTimerServiceApplicable()) {
+                                List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
+                                if (aroundTimeouts != null) {
+                                    userAroundTimeouts.addAll(aroundTimeouts);
+                                }
                             }
                         }
                     }
-                }
 
-                // now add class level interceptors (if not excluded) to the deque
-                if (!description.isExcludeClassInterceptors(identifier)) {
-                    for (InterceptorDescription interceptorDescription : classInterceptors) {
-                        String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                        List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                        if (aroundInvokes != null) {
-                            userAroundInvokes.addAll(aroundInvokes);
-                        }
-                        if (description.isTimerServiceApplicable()) {
-                            List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
-                            if (aroundTimeouts != null) {
-                                userAroundTimeouts.addAll(aroundTimeouts);
+                    // now add class level interceptors (if not excluded) to the deque
+                    if (!description.isExcludeClassInterceptors(identifier)) {
+                        for (InterceptorDescription interceptorDescription : classInterceptors) {
+                            String interceptorClassName = interceptorDescription.getInterceptorClassName();
+                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
+                            if (aroundInvokes != null) {
+                                userAroundInvokes.addAll(aroundInvokes);
+                            }
+                            if (description.isTimerServiceApplicable()) {
+                                List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
+                                if (aroundTimeouts != null) {
+                                    userAroundTimeouts.addAll(aroundTimeouts);
+                                }
                             }
                         }
                     }
-                }
 
-                // now add method level interceptors for to the deque so that they are triggered after the class interceptors
-                List<InterceptorDescription> methodLevelInterceptors = methodInterceptors.get(identifier);
-                if (methodLevelInterceptors != null) {
-                    for (InterceptorDescription methodLevelInterceptor : methodLevelInterceptors) {
-                        String interceptorClassName = methodLevelInterceptor.getInterceptorClassName();
-                        List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                        if (aroundInvokes != null) {
-                            userAroundInvokes.addAll(aroundInvokes);
-                        }
-                        if (description.isTimerServiceApplicable()) {
-                            List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
-                            if (aroundTimeouts != null) {
-                                userAroundTimeouts.addAll(aroundTimeouts);
+                    // now add method level interceptors for to the deque so that they are triggered after the class interceptors
+                    List<InterceptorDescription> methodLevelInterceptors = methodInterceptors.get(identifier);
+                    if (methodLevelInterceptors != null) {
+                        for (InterceptorDescription methodLevelInterceptor : methodLevelInterceptors) {
+                            String interceptorClassName = methodLevelInterceptor.getInterceptorClassName();
+                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
+                            if (aroundInvokes != null) {
+                                userAroundInvokes.addAll(aroundInvokes);
+                            }
+                            if (description.isTimerServiceApplicable()) {
+                                List<InterceptorFactory> aroundTimeouts = userAroundTimeoutsByInterceptorClass.get(interceptorClassName);
+                                if (aroundTimeouts != null) {
+                                    userAroundTimeouts.addAll(aroundTimeouts);
+                                }
                             }
                         }
                     }
-                }
 
-                // finally add the component level around invoke to the deque so that it's triggered last
-                userAroundInvokes.addAll(componentUserAroundInvoke);
+                    // finally add the component level around invoke to the deque so that it's triggered last
+                    userAroundInvokes.addAll(componentUserAroundInvoke);
 
-                configuration.addComponentInterceptor(method, weaved(userAroundInvokes), InterceptorOrder.Component.USER_INTERCEPTORS);
-                if (description.isTimerServiceApplicable()) {
-                    userAroundTimeouts.addAll(componentUserAroundTimeout);
-                    configuration.addTimeoutInterceptor(method, weaved(userAroundTimeouts), InterceptorOrder.Component.USER_INTERCEPTORS);
+                    configuration.addComponentInterceptor(method, weaved(userAroundInvokes), InterceptorOrder.Component.USER_INTERCEPTORS);
+                    if (description.isTimerServiceApplicable()) {
+                        userAroundTimeouts.addAll(componentUserAroundTimeout);
+                        configuration.addTimeoutInterceptor(method, weaved(userAroundTimeouts), InterceptorOrder.Component.USER_INTERCEPTORS);
+                    }
                 }
             }
 

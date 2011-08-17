@@ -56,7 +56,7 @@ public abstract class InjectionSource {
         private final String moduleName;
         private final String applicationName;
 
-        ResolutionContext(final boolean compUsesModule, final String componentName, final String moduleName, final String applicationName) {
+        public ResolutionContext(final boolean compUsesModule, final String componentName, final String moduleName, final String applicationName) {
             this.compUsesModule = compUsesModule;
             this.componentName = componentName;
             this.moduleName = moduleName;

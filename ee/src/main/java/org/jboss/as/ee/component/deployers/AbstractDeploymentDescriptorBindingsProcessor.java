@@ -19,8 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ee.component;
+package org.jboss.as.ee.component.deployers;
 
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.BindingConfiguration;
+import org.jboss.as.ee.component.ClassConfigurator;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
+import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.component.EEModuleClassConfiguration;
+import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.ee.component.EEModuleConfiguration;
+import org.jboss.as.ee.component.EEModuleConfigurator;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.FieldInjectionTarget;
+import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.component.InjectionTarget;
+import org.jboss.as.ee.component.LazyResourceInjection;
+import org.jboss.as.ee.component.MethodInjectionTarget;
+import org.jboss.as.ee.component.ResourceInjectionConfiguration;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;

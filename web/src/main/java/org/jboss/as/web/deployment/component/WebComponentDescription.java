@@ -37,4 +37,9 @@ public final class WebComponentDescription extends ComponentDescription {
         super(componentName, componentClassName, moduleDescription, applicationClassesDescription.getOrAddClassByName(componentClassName), deploymentUnitServiceName, applicationClassesDescription);
         setExcludeDefaultInterceptors(true);
     }
+
+
+    private boolean isIntercepted() {
+        return false;
+    }
 }

@@ -44,7 +44,7 @@ public final class EEModuleConfiguration {
     // Module Bindings
     private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
 
-    EEModuleConfiguration(EEModuleDescription description, DeploymentPhaseContext context, final Module module) throws DeploymentUnitProcessingException {
+    public EEModuleConfiguration(EEModuleDescription description, DeploymentPhaseContext context, final Module module) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = context.getDeploymentUnit();
         ModuleClassLoader classLoader = module.getClassLoader();
         applicationName = description.getApplicationName();

@@ -20,8 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component;
+package org.jboss.as.ee.component.deployers;
 
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfigurator;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEApplicationDescription;
+import org.jboss.as.ee.component.EEModuleConfiguration;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -32,7 +39,7 @@ import org.jboss.modules.Module;
 import java.util.Collection;
 
 /**
- * Deployment processor responsible for creating a {@link EEModuleConfiguration} from a {@link EEModuleDescription} and
+ * Deployment processor responsible for creating a {@link org.jboss.as.ee.component.EEModuleConfiguration} from a {@link org.jboss.as.ee.component.EEModuleDescription} and
  * populating it with component and class configurations
  *
  * @author John Bailey

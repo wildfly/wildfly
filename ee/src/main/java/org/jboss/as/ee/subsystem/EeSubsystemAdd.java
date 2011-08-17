@@ -26,19 +26,19 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
-import org.jboss.as.ee.component.AroundInvokeAnnotationParsingProcessor;
-import org.jboss.as.ee.component.ComponentInstallProcessor;
-import org.jboss.as.ee.component.DefaultEarSubDeploymentsIsolationProcessor;
-import org.jboss.as.ee.component.EEClassConfigurationProcessor;
-import org.jboss.as.ee.component.EECleanUpProcessor;
-import org.jboss.as.ee.component.EEModuleConfigurationProcessor;
-import org.jboss.as.ee.component.EEModuleInitialProcessor;
-import org.jboss.as.ee.component.EEModuleNameProcessor;
-import org.jboss.as.ee.component.InterceptorsAnnotationParsingProcessor;
-import org.jboss.as.ee.component.LifecycleAnnotationParsingProcessor;
-import org.jboss.as.ee.component.ModuleJndiBindingProcessor;
-import org.jboss.as.ee.component.ResourceInjectionAnnotationParsingProcessor;
-import org.jboss.as.ee.component.ResourceReferenceProcessor;
+import org.jboss.as.ee.component.deployers.AroundInvokeAnnotationParsingProcessor;
+import org.jboss.as.ee.component.deployers.ComponentInstallProcessor;
+import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
+import org.jboss.as.ee.component.deployers.EEClassConfigurationProcessor;
+import org.jboss.as.ee.component.deployers.EECleanUpProcessor;
+import org.jboss.as.ee.component.deployers.EEModuleConfigurationProcessor;
+import org.jboss.as.ee.component.deployers.EEModuleInitialProcessor;
+import org.jboss.as.ee.component.deployers.EEModuleNameProcessor;
+import org.jboss.as.ee.component.deployers.InterceptorsAnnotationParsingProcessor;
+import org.jboss.as.ee.component.deployers.LifecycleAnnotationParsingProcessor;
+import org.jboss.as.ee.component.deployers.ModuleJndiBindingProcessor;
+import org.jboss.as.ee.component.deployers.ResourceInjectionAnnotationParsingProcessor;
+import org.jboss.as.ee.component.deployers.ResourceReferenceProcessor;
 import org.jboss.as.ee.datasource.DataSourceDefinitionAnnotationParser;
 import org.jboss.as.ee.datasource.DataSourceDefinitionDeploymentDescriptorParser;
 import org.jboss.as.ee.managedbean.processors.JavaEEDependencyProcessor;
@@ -102,8 +102,8 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 // see if the ear subdeployment isolation flag is set. By default, we don't isolate subdeployments, so that
                 // they can see each other's classes.
                 final Boolean earSubDeploymentsIsolated = operation.hasDefined(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName())
-                    ? operation.get(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName()).asBoolean()
-                    : Boolean.FALSE;
+                        ? operation.get(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName()).asBoolean()
+                        : Boolean.FALSE;
 
                 logger.info("Activating EE subsystem");
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());

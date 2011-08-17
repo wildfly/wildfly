@@ -22,26 +22,25 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.EEModuleConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.timerservice.TimerServiceBindingSource;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
+import org.jboss.as.ejb3.timerservice.TimerServiceBindingSource;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Deployment processor responsible for detecting EJB components and adding a {@link BindingConfiguration} for the
  * java:comp/TimerService entry.
- *
+ * <p/>
  * Note that the java:comp/TimerService *isn't* added for Stateful session beans, since TimerService isn't supported for
  * stateful session EJBs.
  * <p/>

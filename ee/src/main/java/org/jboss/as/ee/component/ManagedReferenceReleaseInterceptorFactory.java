@@ -22,11 +22,12 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An interceptor factory which produces interceptors which release a managed reference.

@@ -20,17 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component;
+package org.jboss.as.ee.component.deployers;
 
-import java.util.Collection;
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 
+import java.util.Collection;
+
 /**
- * Abstract deployment unit processors used to process {@link ComponentDescription} instances.
+ * Abstract deployment unit processors used to process {@link org.jboss.as.ee.component.ComponentDescription} instances.
  *
  * @author John Bailey
  */

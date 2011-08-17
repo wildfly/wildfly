@@ -22,9 +22,10 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.invocation.Interceptor;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
-import org.jboss.invocation.Interceptor;
 
 /**
  * A client entry point for a component.  Used to send method invocations to a component.

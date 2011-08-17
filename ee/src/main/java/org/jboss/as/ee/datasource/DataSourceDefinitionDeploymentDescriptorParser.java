@@ -22,12 +22,12 @@
 
 package org.jboss.as.ee.datasource;
 
-import org.jboss.as.ee.component.AbstractDeploymentDescriptorBindingsProcessor;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.deployers.AbstractDeploymentDescriptorBindingsProcessor;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;

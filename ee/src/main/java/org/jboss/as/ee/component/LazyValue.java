@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Stuart Douglas
  */
-abstract class LazyValue<T> {
+public abstract class LazyValue<T> {
 
     private volatile T value = null;
     private volatile boolean run = false;

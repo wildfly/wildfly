@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component;
+package org.jboss.as.ee.component.deployers;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
