@@ -39,6 +39,8 @@
                     <path name="sun/misc"/>
                     <path name="sun/nio"/>
                     <path name="sun/nio/ch"/>
+                    <path name="sun/util"/>
+                    <path name="sun/util/calendar"/>
                     <path name="META-INF/services"/>
                 </include-set>
             </exports>
