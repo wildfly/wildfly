@@ -69,58 +69,21 @@ public class Util {
     /**
      * Extracts the raw JNDI_NAME value from the given model node, and depending on the value and
      * the value of any USE_JAVA_CONTEXT child node, converts the raw name into a compliant jndi name.
-     * <p/>
-     * copied from {@link org.jboss.as.connector.subsystems.datasources.Util} but should be placed somewhere that is commons place
      *
-     * @param modelNode the model node; either an operation or the model behind a datasource resource
+     * @param modelNode the model node; either an operation or the model behind a mail session resource
      * @return the compliant jndi name
      */
     public static String getJndiName(final ModelNode modelNode) {
         final String rawJndiName = modelNode.require(JNDI_NAME).asString();
         final String jndiName;
         if (!rawJndiName.startsWith("java:")) {
-            if (rawJndiName.startsWith("jboss/")) {
-                jndiName = "java:/" + rawJndiName;
-            } else {
                 jndiName = "java:jboss/mail/" + rawJndiName;
-            }
         } else {
             jndiName = rawJndiName;
         }
         return jndiName;
     }
 
-    /**
-     * Gets the appropriate ServiceName to use for the BinderService associated with the given {@code jndiName}
-     *
-     * @param jndiName the jndi name
-     * @return the service name of the binder service
-     *         * copied from {@link org.jboss.as.connector.subsystems.datasources.Util} but should be placed somewhere that is commons place
-     */
-    public static ServiceName getBinderServiceName(final String jndiName) {
-
-        String bindName = cleanupJavaContext(jndiName);
-        final ServiceName parentContextName;
-        if (bindName.startsWith("jboss/")) {
-            parentContextName = ContextNames.JBOSS_CONTEXT_SERVICE_NAME;
-            bindName = bindName.substring(6);
-        } else {
-            parentContextName = ContextNames.JAVA_CONTEXT_SERVICE_NAME;
-        }
-        return parentContextName.append(bindName);
-    }
-
-    static String cleanupJavaContext(String jndiName) {
-        String bindName;
-        if (jndiName.startsWith("java:/")) {
-            bindName = jndiName.substring(6);
-        } else if (jndiName.startsWith("java:")) {
-            bindName = jndiName.substring(5);
-        } else {
-            bindName = jndiName;
-        }
-        return bindName;
-    }
 
 
 }

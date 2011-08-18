@@ -16,8 +16,8 @@ import java.util.Properties;
  */
 public class MailSessionService implements Service<Session> {
     private static final Logger log = Logger.getLogger(MailSessionService.class);
-
-    private MailSessionConfig sessionConfig;
+    private Session session;
+    private final MailSessionConfig sessionConfig;
 
     public MailSessionService(MailSessionConfig sessionConfig) {
         log.trace("service constructed with config: " + sessionConfig);
@@ -27,7 +27,8 @@ public class MailSessionService implements Service<Session> {
     @Override
     public void start(StartContext startContext) throws StartException {
         log.trace("start...");
-
+        session = Session.getDefaultInstance(getProperties());
+        log.trace("session is: " + session);
     }
 
     @Override
@@ -52,7 +53,6 @@ public class MailSessionService implements Service<Session> {
     private Properties getProperties() {
         Properties props = new Properties();
         props.put("mail.transport.protocol", "smtp");
-        //props.put("mail.host", sessionConfig.getSmtpServer().getAddress());
         if (sessionConfig.getSmtpServer() != null) {
             props.put("mail.smtp.host", sessionConfig.getSmtpServer().getAddress());
             props.put("mail.smtp.port", sessionConfig.getSmtpServer().getPort());
@@ -68,7 +68,7 @@ public class MailSessionService implements Service<Session> {
 
         props.put("mail.user", sessionConfig.getUsername());
         props.put("mail.debug", sessionConfig.isDebug());
-        //props.put("mail.from", "nobody@nosuchhost.nosuchdomain.com");
+        //todo maybe add mail.from
 
         log.trace("props: " + props);
         return props;
@@ -77,11 +77,7 @@ public class MailSessionService implements Service<Session> {
 
     @Override
     public Session getValue() throws IllegalStateException, IllegalArgumentException {
-        //log.info("should return value");
-        Session ses = Session.getDefaultInstance(getProperties());
-        log.trace("session is: " + ses);
-
-        return ses;
+        return session;
 
     }
 }
