@@ -33,11 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 public class MailSubsystemExtension implements Extension {
 
     /**
-     * The name space used for the {@code substystem} element
-     */
-    //public static final String NAMESPACE =
-
-    /**
      * The name of our subsystem within the model.
      */
     public static final String SUBSYSTEM_NAME = "mail";
@@ -61,64 +56,12 @@ public class MailSubsystemExtension implements Extension {
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(MailSubsystemProviders.SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, MailSubsystemAdd.INSTANCE, MailSubsystemProviders.SUBSYSTEM_ADD, false);
         subsystem.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        //subsystem.registerOperationHandler(DESCRIBE, DataSourcesSubsystemDescribeHandler.INSTANCE, DataSourcesSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         final ManagementResourceRegistration mailSessions = subsystem.registerSubModel(PathElement.pathElement(ModelKeys.MAIL_SESSION), MailSubsystemProviders.MAIL_SESSION_DESC);
         mailSessions.registerOperationHandler(ADD, MailSessionAdd.INSTANCE, MailSubsystemProviders.ADD_MAIL_SESSION_DESC, false);
 
-        mailSessions.registerReadWriteAttribute(
-                ModelKeys.SMTP_SERVER,
-                MailSessionReadHandler.INSTANCE,
-                MailSessionWriteHandler.INSTANCE,
-                AttributeAccess.Storage.CONFIGURATION
-        );
-
-        //dataSources.registerOperationHandler(REMOVE, MailSessionAdd.INSTANCE, REMOVE_DATA_SOURCE_DESC, false);
-
-
-
-
     }
 
-    public static class MailSessionReadHandler implements OperationStepHandler {
-        public static MailSessionReadHandler INSTANCE = new MailSessionReadHandler();
-
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final String parameterName = operation.require(NAME).asString();
-
-            final ModelNode submodel = context.readModel(PathAddress.EMPTY_ADDRESS);
-            final ModelNode currentValue = submodel.hasDefined(parameterName) ? submodel.get(parameterName).clone() : new ModelNode();
-
-            context.getResult().set(currentValue);
-
-            context.completeStep();
-        }
-    }
-     public static class MailSessionWriteHandler extends ServerWriteAttributeOperationHandler {
-        public static MailSessionWriteHandler INSTANCE = new MailSessionWriteHandler();
-
-
-         /**
-          * Hook to allow subclasses to make runtime changes to effect the attribute value change. Runtime changes
-          * should be implemented by calling {@link org.jboss.as.controller.OperationContext#addStep(org.jboss.as.controller.OperationStepHandler, org.jboss.as.controller.OperationContext.Stage) adding a new step}
-          * with {@link org.jboss.as.controller.OperationContext.Stage#RUNTIME}.
-          * <p>
-          * This default implementation simply returns {@code false}.
-          * </p>
-          *
-          * @param context       the context of the operation
-          * @param operation     the operation
-          * @param attributeName the name of the attribute being modified
-          * @param newValue      the new value for the attribute
-          * @param currentValue  the existing value for the attribute
-          * @return {@code true} if the server requires restart to effect the attribute
-          *         value change; {@code false} if not
-          */
-         @Override
-         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
-             return super.applyUpdateToRuntime(context, operation, attributeName, newValue, currentValue);
-         }
-     }
 
     /**
      * Recreate the steps to put the subsystem in the same state it was in.
@@ -131,8 +74,7 @@ public class MailSubsystemExtension implements Extension {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             //context.getResult().add(createAddSubsystemOperation());
             final ModelNode result = context.getResult();
-            final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR))
-                    .getLastElement());
+            final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
             final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 
             final ModelNode subsystemAdd = new ModelNode();
