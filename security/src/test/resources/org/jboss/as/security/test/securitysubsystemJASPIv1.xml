@@ -1,0 +1,34 @@
+<subsystem xmlns="urn:jboss:domain:security:1.0">
+	<security-domains>
+		<security-domain name="other">
+			<authentication-jaspi>
+				<auth-module code="MyAuthModule">
+                  <module-option name="a" value="b"/>
+                </auth-module>
+			</authentication-jaspi>
+			<authorization>
+			   <policy-module code="DenyAll" flag="required">
+                 <module-option name="a" value="c"/>
+               </policy-module>
+			</authorization>
+			<mapping>
+			  <mapping-module code="SimpleRoles" type="role">
+                 <module-option name="d" value="e"/>
+              </mapping-module>
+            </mapping>
+            <audit>
+                 <provider-module code="customModule">
+                   <module-option name="d" value="r"/>
+                 </provider-module>
+            </audit> 
+			<jsse truststore-url="../standalone/configuration/keystores/tomcat.keystore"
+                  truststore-password="rmi+ssl"
+                  keystore-url="../standalone/configuration/keystores/clientcert.jks"
+                  keystore-password="changeit"/> 
+		</security-domain>
+	</security-domains>
+	<security-properties>
+	  <property name="a" value="b" />
+	  <property name="c" value="d" />
+	</security-properties>
+</subsystem>
