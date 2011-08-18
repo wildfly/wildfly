@@ -342,14 +342,47 @@ class SecuritySubsystemDescriptions {
             op.get(REQUEST_PROPERTIES, CACHE_TYPE, DESCRIPTION).set(bundle.getString("cache-type"));
             op.get(REQUEST_PROPERTIES, CACHE_TYPE, TYPE).set(ModelType.STRING);
             op.get(REQUEST_PROPERTIES, CACHE_TYPE, REQUIRED).set(false);
-            op.get(CHILDREN, AUTHENTICATION).set(getAuthenticationAdd(locale));
+
+            op.get(REQUEST_PROPERTIES, AUTHENTICATION, DESCRIPTION).set(bundle.getString("authentication"));
+            op.get(REQUEST_PROPERTIES, AUTHENTICATION, TYPE).set(ModelType.OBJECT);
+            op.get(REQUEST_PROPERTIES, AUTHENTICATION, REQUIRED).set(false);
+
+            op.get(REQUEST_PROPERTIES, AUTHENTICATION_JASPI, DESCRIPTION).set(bundle.getString("authentication-jaspi"));
+            op.get(REQUEST_PROPERTIES, AUTHENTICATION_JASPI, TYPE).set(ModelType.OBJECT);
+            op.get(REQUEST_PROPERTIES, AUTHENTICATION_JASPI, REQUIRED).set(false);
+
+            op.get(REQUEST_PROPERTIES, AUTHORIZATION, DESCRIPTION).set(bundle.getString("authorization"));
+            op.get(REQUEST_PROPERTIES, AUTHORIZATION, TYPE).set(ModelType.OBJECT);
+            op.get(REQUEST_PROPERTIES, AUTHORIZATION, REQUIRED).set(false);
+
+            op.get(REQUEST_PROPERTIES, ACL, DESCRIPTION).set(bundle.getString("acl"));
+            op.get(REQUEST_PROPERTIES, ACL, TYPE).set(ModelType.OBJECT);
+            op.get(REQUEST_PROPERTIES, ACL, REQUIRED).set(false);
+
+            op.get(REQUEST_PROPERTIES, AUDIT, DESCRIPTION).set(bundle.getString("audit"));
+            op.get(REQUEST_PROPERTIES, AUDIT, TYPE).set(ModelType.OBJECT);
+            op.get(REQUEST_PROPERTIES, AUDIT, REQUIRED).set(false);
+
+            op.get(REQUEST_PROPERTIES, IDENTITY_TRUST, DESCRIPTION).set(bundle.getString("identity-trust"));
+            op.get(REQUEST_PROPERTIES, IDENTITY_TRUST, TYPE).set(ModelType.OBJECT);
+            op.get(REQUEST_PROPERTIES, IDENTITY_TRUST, REQUIRED).set(false);
+
+            op.get(REQUEST_PROPERTIES, MAPPING, DESCRIPTION).set(bundle.getString("mapping"));
+            op.get(REQUEST_PROPERTIES, MAPPING, TYPE).set(ModelType.OBJECT);
+            op.get(REQUEST_PROPERTIES, MAPPING, REQUIRED).set(false);
+
+            op.get(REQUEST_PROPERTIES, JSSE, DESCRIPTION).set(bundle.getString("jsse"));
+            op.get(REQUEST_PROPERTIES, JSSE, TYPE).set(ModelType.OBJECT);
+            op.get(REQUEST_PROPERTIES, JSSE, REQUIRED).set(false);
+
+           /* op.get(CHILDREN, AUTHENTICATION).set(getAuthenticationAdd(locale));
             op.get(CHILDREN, AUTHENTICATION_JASPI).set(getAuthenticationJaspiAdd(locale));
             op.get(CHILDREN, AUTHORIZATION).set(getAuthorizationAdd(locale));
             op.get(CHILDREN, ACL).set(getAclAdd(locale));
             op.get(CHILDREN, AUDIT).set(getAuditAdd(locale));
             op.get(CHILDREN, IDENTITY_TRUST).set(getIdentityTrustAdd(locale));
             op.get(CHILDREN, MAPPING).set(getMappingAdd(locale));
-            op.get(CHILDREN, JSSE).set(getJSSEAdd(locale));
+            op.get(CHILDREN, JSSE).set(getJSSEAdd(locale));*/
             return op;
         }
 
