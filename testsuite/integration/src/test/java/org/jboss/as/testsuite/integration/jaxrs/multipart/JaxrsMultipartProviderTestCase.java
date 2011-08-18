@@ -70,15 +70,10 @@ public class JaxrsMultipartProviderTestCase {
         String result = performCall("myjaxrs/form");
         DataSource mimeData = new ByteArrayDataSource(result.getBytes(),"multipart/related");
         MimeMultipart mime = new MimeMultipart(mimeData);
-        InputStream stream = (InputStream)mime.getBodyPart(0).getContent();
-        byte[] bytes = new byte[100];
-        int length = stream.read(bytes);
-        String string = new String(bytes, 0, length);
+        String string  = (String)mime.getBodyPart(0).getContent();
         Assert.assertEquals("Hello", string);
 
-        stream = (InputStream)mime.getBodyPart(1).getContent();
-        length = stream.read(bytes);
-        string = new String(bytes, 0, length);
+        string = (String)mime.getBodyPart(1).getContent();
         Assert.assertEquals("World", string);
     }
 
