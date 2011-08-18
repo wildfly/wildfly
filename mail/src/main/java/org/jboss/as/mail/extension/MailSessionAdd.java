@@ -6,6 +6,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.dmr.ModelNode;
@@ -15,6 +16,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.Values;
 
 import javax.mail.Session;
 import java.util.List;
@@ -87,17 +89,12 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         final ServiceName serviceName = SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder<?> mailSessionBuilder = serviceTarget.addService(serviceName, service);
 
-        final MailSessionReferenceFactoryService referenceFactoryService = new MailSessionReferenceFactoryService();
-        final ServiceName referenceFactoryServiceName = MailSessionReferenceFactoryService.SERVICE_NAME_BASE.append(jndiName);
-        final ServiceBuilder<?> referenceBuilder = serviceTarget.addService(referenceFactoryServiceName,
-                referenceFactoryService).addDependency(serviceName, Session.class,
-                referenceFactoryService.getDataSourceInjector());
-
+        ValueManagedReferenceFactory valueManagedReferenceFactory = new ValueManagedReferenceFactory(service);
         final ServiceName binderServiceName =  ContextNames.serviceNameOfGlobalEntry(jndiName);
         final BinderService binderService = new BinderService(binderServiceName.getSimpleName());
         final ServiceBuilder<?> binderBuilder = serviceTarget
                 .addService(binderServiceName, binderService)
-                .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class, binderService.getManagedObjectInjector())
+                .addInjection(binderService.getManagedObjectInjector(), valueManagedReferenceFactory)
                 .addDependency(binderServiceName.getParent(), NamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
                     public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                         switch (transition) {
@@ -119,12 +116,9 @@ public class MailSessionAdd extends AbstractAddStepHandler {
 
         mailSessionBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler);
-        referenceBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(verificationHandler);
         binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler);
         controllers.add(mailSessionBuilder.install());
-        controllers.add(referenceBuilder.install());
         controllers.add(binderBuilder.install());
 
 
