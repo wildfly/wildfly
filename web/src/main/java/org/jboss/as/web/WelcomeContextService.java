@@ -36,6 +36,7 @@ import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.server.mgmt.HttpManagementService;
+import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.deployment.WebCtxLoader;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -57,7 +58,7 @@ class WelcomeContextService implements Service<Context> {
     private final StandardContext context;
     private final InjectedValue<String> pathInjector = new InjectedValue<String>();
     private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
-    private final InjectedValue<HttpManagementService> httpMSInjector = new InjectedValue<HttpManagementService>();
+    private final InjectedValue<HttpManagement> httpManagementInjector = new InjectedValue<HttpManagement>();
 
     public WelcomeContextService() {
         this.context = new StandardContext();
@@ -65,7 +66,7 @@ class WelcomeContextService implements Service<Context> {
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext startContext) throws StartException {
-        HttpManagementService httpMS = httpMSInjector.getOptionalValue();
+        HttpManagement httpManagement = httpManagementInjector.getOptionalValue();
             try {
                 context.setPath("");
                 context.addLifecycleListener(new ContextConfig());
@@ -75,10 +76,14 @@ class WelcomeContextService implements Service<Context> {
                 Host host = hostInjector.getValue().getHost();
                 loader.setContainer(host);
                 context.setLoader(loader);
-                context.setInstanceManager(new LocalInstanceManager(httpMS));
+                context.setInstanceManager(new LocalInstanceManager(httpManagement));
 
                 context.setReplaceWelcomeFiles(true);
-                context.addWelcomeFile("index.html");
+                if (httpManagement != null) {
+                    context.addWelcomeFile("index.html");
+                } else {
+                    context.addWelcomeFile("index_noconsole.html");
+                }
 
                 Wrapper wrapper = context.createWrapper();
                 wrapper.setName("default");
@@ -90,7 +95,7 @@ class WelcomeContextService implements Service<Context> {
                 context.addMimeMapping("jpg", "image/jpeg");
 
                 // Add the WelcomeContextConsoleServlet
-                WelcomeContextConsoleServlet wccs = new WelcomeContextConsoleServlet(httpMS);
+                WelcomeContextConsoleServlet wccs = new WelcomeContextConsoleServlet(httpManagement);
                 Wrapper wccsWrapper = context.createWrapper();
                 wccsWrapper.setName("WelcomeContextConsoleServlet");
                 wccsWrapper.setServlet(wccs);
@@ -143,21 +148,21 @@ class WelcomeContextService implements Service<Context> {
         return hostInjector;
     }
 
-    public Injector<HttpManagementService> getHttpMSInjector() {
-        return httpMSInjector;
+    public Injector<HttpManagement> getHttpManagementInjector() {
+        return httpManagementInjector;
     }
 
     private static class LocalInstanceManager implements InstanceManager {
-        private final HttpManagementService httpMS;
-        LocalInstanceManager(HttpManagementService httpMS) {
-            this.httpMS = httpMS;
+        private final HttpManagement httpManagement;
+        LocalInstanceManager(HttpManagement httpManagement) {
+            this.httpManagement = httpManagement;
         }
         @Override
         public Object newInstance(String className) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException, ClassNotFoundException {
             if(className.equals(WelcomeContextConsoleServlet.class.getName()) == false) {
                 return Class.forName(className).newInstance();
             }
-            WelcomeContextConsoleServlet wccs = new WelcomeContextConsoleServlet(httpMS);
+            WelcomeContextConsoleServlet wccs = new WelcomeContextConsoleServlet(httpManagement);
             return wccs;
         }
 
