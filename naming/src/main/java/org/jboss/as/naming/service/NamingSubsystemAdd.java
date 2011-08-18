@@ -33,6 +33,7 @@ import org.jboss.as.naming.InitialContextFactoryService;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingEventCoordinator;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
@@ -73,7 +74,7 @@ public class NamingSubsystemAdd extends AbstractAddStepHandler {
 
         NamingContext.initializeNamingManager();
 
-        final NamingStore namingStore = new InMemoryNamingStore(new NamingEventCoordinator());
+        final ServiceBasedNamingStore namingStore = new ServiceBasedNamingStore(context.getServiceRegistry(false), ContextNames.JAVA_CONTEXT_SERVICE_NAME);
 
         // Create the Naming Service
         final ServiceTarget target = context.getServiceTarget();
@@ -84,14 +85,14 @@ public class NamingSubsystemAdd extends AbstractAddStepHandler {
                 .install());
 
         // Create the java:global namespace
-        final NamingStore globalNamingStore = new InMemoryNamingStore();
+        final ServiceBasedNamingStore globalNamingStore = new ServiceBasedNamingStore(context.getServiceRegistry(false), ContextNames.GLOBAL_CONTEXT_SERVICE_NAME);
         newControllers.add(target.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new NamingStoreService(globalNamingStore))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler)
                 .install());
 
         // Create the java:jboss vendor namespace
-        final NamingStore jbossNamingStore = new InMemoryNamingStore();
+        final ServiceBasedNamingStore jbossNamingStore = new ServiceBasedNamingStore(context.getServiceRegistry(false), ContextNames.JBOSS_CONTEXT_SERVICE_NAME);
         newControllers.add(target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, new NamingStoreService(jbossNamingStore))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler)

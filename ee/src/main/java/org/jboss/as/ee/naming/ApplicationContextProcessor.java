@@ -23,7 +23,7 @@
 package org.jboss.as.ee.naming;
 
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -64,7 +64,7 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
 
         final BinderService applicationNameBinder = new BinderService("AppName");
         serviceTarget.addService(applicationContextServiceName.append("AppName"), applicationNameBinder)
-                .addDependency(applicationContextServiceName, NamingStore.class, applicationNameBinder.getNamingStoreInjector())
+                .addDependency(applicationContextServiceName, ServiceBasedNamingStore.class, applicationNameBinder.getNamingStoreInjector())
                 .addInjection(applicationNameBinder.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(moduleDescription.getApplicationName())))
                 .install();
 

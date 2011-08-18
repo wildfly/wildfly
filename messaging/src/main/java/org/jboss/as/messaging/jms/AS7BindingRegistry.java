@@ -23,7 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import org.hornetq.spi.core.naming.BindingRegistry;
-import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -74,7 +74,7 @@ public class AS7BindingRegistry implements BindingRegistry {
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
         container.addService(bindInfo.getBinderServiceName(), binderService)
-                .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class, binderService.getNamingStoreInjector())
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                 .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(obj)))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
@@ -191,7 +191,7 @@ public class AS7BindingRegistry implements BindingRegistry {
             final StringBuffer sb = new StringBuffer();
             if (this.jndiContextServiceName.equals(ContextNames.JBOSS_CONTEXT_SERVICE_NAME)) {
                 sb.append("java:jboss/");
-            } else if (this.jndiContextServiceName.equals(ContextNames.APPLICATION_CONTEXT_NAME)) {
+            } else if (this.jndiContextServiceName.equals(ContextNames.APPLICATION_CONTEXT_SERVICE_NAME)) {
                 sb.append("java:app/");
             } else if (this.jndiContextServiceName.equals(ContextNames.MODULE_CONTEXT_SERVICE_NAME)) {
                 sb.append("java:module/");

@@ -23,7 +23,7 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
@@ -147,16 +147,15 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             // The bindings for the view
             for (BindingConfiguration bindingConfiguration : viewConfiguration.getBindingConfigurations()) {
                 final String bindingName = bindingConfiguration.getName();
-                final ServiceName binderServiceName = ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, bindingName);
-                final ServiceName namingStoreName = ContextNames.serviceNameOfNamingStore(applicationName, moduleName, componentName, bindingName);
-                final BinderService service = new BinderService(bindingName, bindingConfiguration.getSource());
+                final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(applicationName, moduleName, componentName, bindingName);
+                final BinderService service = new BinderService(bindInfo.getBindName(), bindingConfiguration.getSource());
 
                 //these bindings should never be merged, if a view binding is duplicated it is an error
-                dependencies.add(binderServiceName);
+                dependencies.add(bindInfo.getBinderServiceName());
 
-                ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(binderServiceName, service);
+                ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), service);
                 bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
-                serviceBuilder.addDependency(namingStoreName, NamingStore.class, service.getNamingStoreInjector());
+                serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
                 serviceBuilder.install();
             }
         }
@@ -199,17 +198,17 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         for (BindingConfiguration bindingConfiguration : bindings) {
             if (bindingConfiguration.getName().startsWith("java:comp") || !bindingConfiguration.getName().startsWith("java:")) {
                 final String bindingName = bindingConfiguration.getName().startsWith("java:comp") ? bindingConfiguration.getName() : "java:comp/env/" + bindingConfiguration.getName();
-                final ServiceName binderServiceName = ContextNames.serviceNameOfEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName);
+                final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName);
 
                 try {
-                    final BinderService service = new BinderService(bindingName, bindingConfiguration.getSource());
-                    dependencies.add(binderServiceName);
-                    ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(binderServiceName, service);
+                    final BinderService service = new BinderService(bindInfo.getBindName(), bindingConfiguration.getSource());
+                    dependencies.add(bindInfo.getBinderServiceName());
+                    ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), service);
                     bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
-                    serviceBuilder.addDependency(contextServiceName, NamingStore.class, service.getNamingStoreInjector());
+                    serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
                     serviceBuilder.install();
                 } catch (DuplicateServiceException e) {
-                    ServiceController<ManagedReferenceFactory> registered = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(binderServiceName);
+                    ServiceController<ManagedReferenceFactory> registered = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(bindInfo.getBinderServiceName());
                     if (registered == null)
                         throw e;
 
