@@ -41,4 +41,32 @@ public class SecurityDomainModelv1UnitTestCase extends AbstractSubsystemTest {
         //Make sure the models from the two controllers are identical
         super.compare(modelA, modelB);
     }
+    
+    @Test
+    public void testParseAndMarshalModelWithJASPI() throws Exception {
+        //Parse the subsystem xml and install into the first controller
+        String subsystemXml = readResource("securitysubsystemJASPIv1.xml");
+
+        AdditionalInitialization additionalInit = new AdditionalInitialization(){
+            @Override
+            protected OperationContext.Type getType() {
+                return OperationContext.Type.MANAGEMENT;
+            }
+        };
+
+        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        //Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        String marshalled = servicesA.getPersistedSubsystemXml();
+        servicesA.shutdown();
+
+        System.out.println(marshalled);
+
+        //Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = super.installInController(additionalInit, marshalled);
+        ModelNode modelB = servicesB.readWholeModel();
+
+        //Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
+    }
 }
