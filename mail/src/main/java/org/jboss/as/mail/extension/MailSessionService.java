@@ -16,7 +16,7 @@ import java.util.Properties;
  */
 public class MailSessionService implements Service<Session> {
     private static final Logger log = Logger.getLogger(MailSessionService.class);
-    private Session session;
+    private volatile Session session;
     private final MailSessionConfig sessionConfig;
 
     public MailSessionService(MailSessionConfig sessionConfig) {
