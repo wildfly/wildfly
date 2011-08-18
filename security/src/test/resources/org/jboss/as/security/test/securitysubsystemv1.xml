@@ -4,6 +4,14 @@
 			<authentication>
 				<login-module code="UsersRoles" flag="required" />
 			</authentication>
+			<jsse truststore-url="../standalone/configuration/keystores/tomcat.keystore"
+                  truststore-password="rmi+ssl"
+                  keystore-url="../standalone/configuration/keystores/clientcert.jks"
+                  keystore-password="changeit"/> 
 		</security-domain>
 	</security-domains>
+	<security-properties>
+	  <property name="a" value="b" />
+	  <property name="c" value="d" />
+	</security-properties>
 </subsystem>

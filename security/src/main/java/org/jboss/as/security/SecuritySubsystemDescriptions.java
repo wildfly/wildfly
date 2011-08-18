@@ -155,6 +155,30 @@ class SecuritySubsystemDescriptions {
         }
     };
 
+    static final DescriptionProvider SECURITY_PROPERTIES_DESC = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return Descriptions.getProperties(locale);
+        }
+    };
+
+    static final DescriptionProvider SECURITY_PROPERTIES_ADD = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return Descriptions.getPropertiesAdd(locale);
+        }
+    };
+
+    static final DescriptionProvider SECURITY_PROPERTIES_REMOVE = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return Descriptions.getPropertiesRemove(locale);
+        }
+    };
+
     static final DescriptionProvider LIST_CACHED_PRINCIPALS = new DescriptionProvider() {
 
         @Override
@@ -297,6 +321,11 @@ class SecuritySubsystemDescriptions {
             op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
             op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, REQUIRED).set(false);
             op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, DEFAULT).set("default");
+
+            op.get(REQUEST_PROPERTIES, SECURITY_PROPERTIES, DESCRIPTION).set(
+                    bundle.getString("security-properties"));
+            op.get(REQUEST_PROPERTIES, SECURITY_PROPERTIES, TYPE).set(ModelType.OBJECT);
+            op.get(REQUEST_PROPERTIES, SECURITY_PROPERTIES, REQUIRED).set(false);
 
             op.get(SECURITY_PROPERTIES).set(getPropertiesAdd(locale));
 
@@ -462,6 +491,16 @@ class SecuritySubsystemDescriptions {
             node.get(REQUEST_PROPERTIES, VALUE, REQUIRED).set(true);
 
             return node;
+        }
+
+        static ModelNode getPropertiesRemove(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(REMOVE);
+            op.get(DESCRIPTION).set(bundle.getString("security-properties.remove"));
+
+            return op;
         }
 
         static ModelNode getAuthentication(Locale locale) {
