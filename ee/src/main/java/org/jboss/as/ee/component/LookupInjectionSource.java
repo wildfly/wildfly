@@ -66,8 +66,8 @@ public final class LookupInjectionSource extends InjectionSource {
         } else {
             lookupName = this.lookupName;
         }
-        final ServiceName serviceName = ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, lookupName);
-        serviceBuilder.addDependency(serviceName, ManagedReferenceFactory.class, injector);
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(applicationName, moduleName, componentName, lookupName);
+        serviceBuilder.addDependency(bindInfo.getBinderServiceName(), ManagedReferenceFactory.class, injector);
     }
 
 

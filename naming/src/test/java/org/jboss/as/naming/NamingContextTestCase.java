@@ -52,7 +52,7 @@ import static org.junit.Assert.fail;
  */
 public class NamingContextTestCase {
 
-    private NamingStore namingStore;
+    private WritableNamingStore namingStore;
     private NamingContext namingContext;
 
     @BeforeClass

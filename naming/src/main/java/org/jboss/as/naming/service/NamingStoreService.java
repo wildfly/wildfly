@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,6 +26,7 @@ import javax.naming.NamingException;
 
 import org.jboss.as.naming.InMemoryNamingStore;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -39,13 +40,13 @@ import org.jboss.msc.service.StopContext;
  * @author John E. Bailey
  * @author Stuart Douglas
  */
-public class NamingStoreService implements Service<NamingStore> {
-    private NamingStore store;
+public class NamingStoreService implements Service<ServiceBasedNamingStore> {
+    private ServiceBasedNamingStore store;
 
     public NamingStoreService() {
     }
 
-    public NamingStoreService(NamingStore store) {
+    public NamingStoreService(ServiceBasedNamingStore store) {
         this.store = store;
     }
 
@@ -57,7 +58,7 @@ public class NamingStoreService implements Service<NamingStore> {
      */
     public synchronized void start(final StartContext context) throws StartException {
         if(store == null) {
-            store = new InMemoryNamingStore();
+            store = new ServiceBasedNamingStore(context.getController().getServiceContainer(), context.getController().getName());
         }
     }
 
@@ -81,7 +82,7 @@ public class NamingStoreService implements Service<NamingStore> {
      * @return The naming store
      * @throws IllegalStateException
      */
-    public synchronized NamingStore getValue() throws IllegalStateException {
+    public synchronized ServiceBasedNamingStore getValue() throws IllegalStateException {
         return store;
     }
 }

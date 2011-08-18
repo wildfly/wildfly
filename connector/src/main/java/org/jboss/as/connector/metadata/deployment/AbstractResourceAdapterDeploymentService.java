@@ -28,11 +28,10 @@ import org.jboss.as.connector.services.AdminObjectReferenceFactoryService;
 import org.jboss.as.connector.services.AdminObjectService;
 import org.jboss.as.connector.services.ConnectionFactoryReferenceFactoryService;
 import org.jboss.as.connector.services.ConnectionFactoryService;
-import org.jboss.as.connector.subsystems.datasources.Util;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
@@ -244,7 +243,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     .addService(bindInfo.getBinderServiceName(), binderService)
                     .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
                             binderService.getManagedObjectInjector())
-                    .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class,
+                    .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class,
                             binderService.getNamingStoreInjector())
                     .addDependency(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(deploymentName))
                     .addListener(new AbstractServiceListener<Object>() {
@@ -296,7 +295,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     .addService(binderServiceName, binderService)
                     .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
                             binderService.getManagedObjectInjector())
-                    .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class,
+                    .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class,
                             binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
 
                         public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {

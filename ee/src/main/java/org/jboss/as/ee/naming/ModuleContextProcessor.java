@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -72,7 +73,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
 
         serviceTarget.addService(moduleContextServiceName.append("ModuleName"), moduleNameBinder)
                 .addInjection(moduleNameBinder.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(moduleDescription.getModuleName())))
-                .addDependency(moduleContextServiceName, NamingStore.class, moduleNameBinder.getNamingStoreInjector())
+                .addDependency(moduleContextServiceName, ServiceBasedNamingStore.class, moduleNameBinder.getNamingStoreInjector())
                 .install();
 
         deploymentUnit.putAttachment(MODULE_CONTEXT_CONFIG, moduleContextServiceName);

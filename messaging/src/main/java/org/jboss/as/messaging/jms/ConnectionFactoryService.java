@@ -25,7 +25,7 @@ package org.jboss.as.messaging.jms;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.jboss.as.naming.MockContext;
-import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -74,7 +74,7 @@ class ConnectionFactoryService implements Service<Void> {
                     final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(binding.getKey());
                     final BinderService binderService = new BinderService(bindInfo.getBindName());
                     target.addService(bindInfo.getBinderServiceName(), binderService)
-                        .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class, binderService.getNamingStoreInjector())
+                        .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                         .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(binding.getValue())))
                         .setInitialMode(ServiceController.Mode.ACTIVE)
                         .install();

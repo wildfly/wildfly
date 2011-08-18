@@ -55,7 +55,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.naming.ManagedReferenceInjector;
-import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.naming.service.BinderService;
@@ -154,7 +154,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
         newControllers.add(target.addService(bindInfo.getBinderServiceName(), binder)
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
                 .addDependency(serviceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
-                .addDependency(bindInfo.getParentContextServiceName(), NamingStore.class, binder.getNamingStoreInjector())
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
         boolean requiresTransport = false;

@@ -33,23 +33,16 @@ public class ContextNames {
      * Parent ServiceName for all naming services.
      */
     public static final ServiceName NAMING = ServiceName.JBOSS.append("naming");
+
     /**
      * ServiceName for java: namespace
      */
     public static final ServiceName JAVA_CONTEXT_SERVICE_NAME = NAMING.append("context", "java");
+
     /**
      * Parent ServiceName for java:comp namespace
      */
     public static final ServiceName COMPONENT_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("comp");
-    /**
-     * Jndi name for java: namespace
-     */
-    private static final JndiName JAVA_CONTEXT_NAME = JndiName.of("java:");
-
-    /**
-     * Jndi name for java:jboss namespace
-     */
-    public static final JndiName JBOSS_CONTEXT_NAME = JndiName.of("java:jboss");
 
     /**
      * ServiceName for java:jboss namespace
@@ -57,19 +50,9 @@ public class ContextNames {
     public static final ServiceName JBOSS_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("jboss");
 
     /**
-     * Jndi name for java:global namespace
-     */
-    public static final JndiName GLOBAL_CONTEXT_NAME = JndiName.of("java:global");
-
-    /**
      * ServiceName for java:global namespace
      */
     public static final ServiceName GLOBAL_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("global");
-
-    /**
-     * Jndi name for java:app namespace
-     */
-    public static final JndiName APPLICATION_CONTEXT_NAME = JndiName.of("java:app");
 
     /**
      * Parent ServiceName for java:app namespace
@@ -77,19 +60,9 @@ public class ContextNames {
     public static final ServiceName APPLICATION_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("app");
 
     /**
-     * Jndi name for java:module namespace
-     */
-    public static final JndiName MODULE_CONTEXT_NAME = JndiName.of("java:module");
-
-    /**
-     * Parent ServiceName for java:module namespace
+     * Parent ServiceName for java:module namespacef
      */
     public static final ServiceName MODULE_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("module");
-
-    /**
-     * Jndi name for java:comp namespace
-     */
-    public static final JndiName COMPONENT_CONTEXT_NAME = JndiName.of("java:comp");
 
     /**
      * Get the base service name of a component's JNDI namespace.
@@ -131,9 +104,9 @@ public class ContextNames {
      * @param module  the module name
      * @param comp    the component name
      * @param context the context to check
-     * @return the service name or {@code null} if there is no service
+     * @return the BindInfo
      */
-    public static ServiceName serviceNameOfContext(String app, String module, String comp, String context) {
+    public static BindInfo bindInfoFor(String app, String module, String comp, String context) {
         if (context.startsWith("java:")) {
             final String namespace;
             final int i = context.indexOf('/');
@@ -141,98 +114,23 @@ public class ContextNames {
                 namespace = context.substring(5);
             } else if (i == 5) {
                 // Absolute path
-                return JAVA_CONTEXT_SERVICE_NAME.append(context.substring(6));
+                return new BindInfo(JAVA_CONTEXT_SERVICE_NAME, context.substring(6));
             } else {
                 namespace = context.substring(5, i);
             }
 
             if (namespace.equals("global")) {
-                return GLOBAL_CONTEXT_SERVICE_NAME.append(context.substring(12));
+                return new BindInfo(GLOBAL_CONTEXT_SERVICE_NAME, context.substring(12));
             } else if (namespace.equals("jboss")) {
-                return JBOSS_CONTEXT_SERVICE_NAME.append(context.substring(11));
+                return new BindInfo(JBOSS_CONTEXT_SERVICE_NAME, context.substring(11));
             } else if (namespace.equals("app")) {
-                return contextServiceNameOfApplication(app).append(context.substring(9));
+                return new BindInfo(contextServiceNameOfApplication(app), context.substring(9));
             } else if (namespace.equals("module")) {
-                return contextServiceNameOfModule(app, module).append(context.substring(12));
+                return new BindInfo(contextServiceNameOfModule(app, module), context.substring(12));
             } else if (namespace.equals("comp")) {
-                return contextServiceNameOfComponent(app, module, comp).append(context.substring(10));
+                return new BindInfo(contextServiceNameOfComponent(app, module, comp), context.substring(10));
             } else {
-                return JBOSS_CONTEXT_SERVICE_NAME.append(context);
-            }
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Get the service name of a globally accessible context, or {@code null} if there is no service mapping for the context name.
-     * <p/>
-     * This will throw an exception if a non-globally accessible context is passed in.
-     *
-     * @param context the context to check
-     * @return the service name or {@code null} if there is no service
-     */
-    public static ServiceName serviceNameOfGlobalEntry(String context) {
-        if (context.startsWith("java:")) {
-            final String namespace;
-            final int i = context.indexOf('/');
-            if (i == -1) {
-                namespace = context.substring(5);
-            } else if (i == 5) {
-                // Absolute path
-                return JAVA_CONTEXT_SERVICE_NAME.append(context.substring(6));
-            } else {
-                namespace = context.substring(5, i);
-            }
-
-            if (namespace.equals("global")) {
-                return GLOBAL_CONTEXT_SERVICE_NAME.append(context.substring(12));
-            } else if (namespace.equals("jboss")) {
-                return JBOSS_CONTEXT_SERVICE_NAME.append(context.substring(11));
-            } else if (namespace.equals("app")) {
-                throw new RuntimeException("No java:app namespace is available for jndi entry " + context);
-            } else if (namespace.equals("module")) {
-                throw new RuntimeException("No java:module namespace is available for jndi entry " + context);
-            } else if (namespace.equals("comp")) {
-                throw new RuntimeException("No java:comp namespace is available for jndi entry " + context);
-            } else {
-                return JAVA_CONTEXT_SERVICE_NAME.append(context);
-            }
-        } else {
-            return JAVA_CONTEXT_SERVICE_NAME.append(context);
-        }
-    }
-
-    /**
-     * Get the service name of a NamingStore
-     *
-     * @param app     the application name
-     * @param module  the module name
-     * @param comp    the component name
-     * @param context the context to check
-     * @return the service name or {@code null} if there is no service
-     */
-    public static ServiceName serviceNameOfNamingStore(String app, String module, String comp, String context) {
-        if (context.startsWith("java:")) {
-            final String namespace;
-            final int i = context.indexOf('/');
-            if (i == -1) {
-                namespace = context.substring(5);
-            } else {
-                namespace = context.substring(5, i);
-            }
-            if (namespace.equals("global")) {
-                return GLOBAL_CONTEXT_SERVICE_NAME;
-            } else if (namespace.equals("jboss")) {
-                return JBOSS_CONTEXT_SERVICE_NAME;
-            } else if (namespace.equals("app")) {
-                return contextServiceNameOfApplication(app);
-            } else if (namespace.equals("module")) {
-                return contextServiceNameOfModule(app, module);
-            } else if (namespace.equals("comp")) {
-                return contextServiceNameOfComponent(app, module, comp);
-            } else {
-                return JBOSS_CONTEXT_SERVICE_NAME;
+                return new BindInfo(JBOSS_CONTEXT_SERVICE_NAME, context);
             }
         } else {
             return null;
@@ -249,24 +147,28 @@ public class ContextNames {
      * @param envEntryName     The env entry name
      * @return the service name or {@code null} if there is no service
      */
-    public static ServiceName serviceNameOfEnvEntry(String app, String module, String comp, boolean useCompNamespace, final String envEntryName) {
+    public static BindInfo bindInfoForEnvEntry(String app, String module, String comp, boolean useCompNamespace, final String envEntryName) {
         if (envEntryName.startsWith("java:")) {
             if (useCompNamespace) {
-                return serviceNameOfContext(app, module, comp, envEntryName);
+                return bindInfoFor(app, module, comp, envEntryName);
             } else {
                 if (envEntryName.startsWith("java:comp")) {
-                    return serviceNameOfContext(app, module, module, "java:module" + envEntryName.substring("java:comp".length()));
+                    return bindInfoFor(app, module, module, "java:module" + envEntryName.substring("java:comp".length()));
                 } else {
-                    return serviceNameOfContext(app, module, module, envEntryName);
+                    return bindInfoFor(app, module, module, envEntryName);
                 }
             }
         } else {
             if (useCompNamespace) {
-                return serviceNameOfContext(app, module, comp, "java:comp/env/" + envEntryName);
+                return bindInfoFor(app, module, comp, "java:comp/env/" + envEntryName);
             } else {
-                return serviceNameOfContext(app, module, module, "java:module/env/" + envEntryName);
+                return bindInfoFor(app, module, module, "java:module/env/" + envEntryName);
             }
         }
+    }
+
+    public static ServiceName buildServiceName(final ServiceName parentName, final String relativeName) {
+        return parentName.append(relativeName.split("/"));
     }
 
     public static class BindInfo {
@@ -278,7 +180,7 @@ public class ContextNames {
 
         private BindInfo(final ServiceName parentContextServiceName, final String bindName) {
             this.parentContextServiceName = parentContextServiceName;
-            this.binderServiceName = parentContextServiceName.append(bindName);
+            this.binderServiceName = buildServiceName(parentContextServiceName, bindName);
             this.bindName = bindName;
 
             this.absoluteJndiName = this.generateAbsoluteJndiName();
@@ -332,7 +234,7 @@ public class ContextNames {
             final StringBuffer sb = new StringBuffer();
             if (this.parentContextServiceName.equals(ContextNames.JBOSS_CONTEXT_SERVICE_NAME)) {
                 sb.append("java:jboss/");
-            } else if (this.parentContextServiceName.equals(ContextNames.APPLICATION_CONTEXT_NAME)) {
+            } else if (this.parentContextServiceName.equals(ContextNames.APPLICATION_CONTEXT_SERVICE_NAME)) {
                 sb.append("java:app/");
             } else if (this.parentContextServiceName.equals(ContextNames.MODULE_CONTEXT_SERVICE_NAME)) {
                 sb.append("java:module/");
@@ -360,7 +262,7 @@ public class ContextNames {
         String bindName;
         if (jndiName.startsWith("java:")) {
             bindName = jndiName.substring(5);
-        } else if (!jndiName.startsWith("/")) {
+        } else if (!jndiName.startsWith("jboss") && !jndiName.startsWith("global") && !jndiName.startsWith("/")) {
             bindName = "/" + jndiName;
         } else {
             bindName = jndiName;
