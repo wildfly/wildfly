@@ -24,6 +24,9 @@ package org.jboss.as.weld.deployment.processors;
 import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.service.PersistenceUnitService;
+import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.deployment.Attachments;
@@ -31,6 +34,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -98,6 +102,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceName weldServiceName = parent.getServiceName().append(WeldService.SERVICE_NAME);
         deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, weldServiceName);
 
+        final Set<ServiceName> jpaServices = new HashSet<ServiceName>();
+
 
         // we only start weld on top level deployments
         if (deploymentUnit.getParent() != null) {
@@ -130,7 +136,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final Set<ClassLoader> subDeploymentLoaders = new HashSet<ClassLoader>();
 
+        getJpaDependencies(deploymentUnit, jpaServices);
+
         for (DeploymentUnit subDeployment : subDeployments) {
+            getJpaDependencies(deploymentUnit, jpaServices);
             final Module subDeploymentModule = subDeployment.getAttachment(Attachments.MODULE);
             if (subDeploymentModule == null) {
                 continue;
@@ -197,8 +206,22 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         installSecurityService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
         installTransactionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
 
+        weldServiceBuilder.addDependencies(jpaServices);
         weldServiceBuilder.install();
 
+    }
+
+    private void getJpaDependencies(final DeploymentUnit deploymentUnit, final Set<ServiceName> jpaServices) {
+        for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
+
+            final PersistenceUnitMetadataHolder persistenceUnits = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
+            if (persistenceUnits != null && persistenceUnits.getPersistenceUnits() != null) {
+                for (final PersistenceUnitMetadata pu : persistenceUnits.getPersistenceUnits()) {
+                    final ServiceName serviceName = PersistenceUnitService.getPUServiceName(pu);
+                    jpaServices.add(serviceName);
+                }
+            }
+        }
     }
 
 
