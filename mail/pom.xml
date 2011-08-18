@@ -29,11 +29,6 @@
         <version>7.1.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <!-- parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
-    </parent -->
-
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-mail</artifactId>
     <version>7.1.0.Alpha1-SNAPSHOT</version>
@@ -41,14 +36,6 @@
     <name>JBoss Application Server: Mail subsystem</name>
 
     <packaging>jar</packaging>
-
-    <properties>
-        <module.name>org.jboss.as.mail</module.name>
-    </properties>
-
-
-
-
 
     <dependencies>
         <dependency>

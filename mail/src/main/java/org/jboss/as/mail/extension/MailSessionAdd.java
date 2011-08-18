@@ -6,6 +6,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -37,12 +38,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode existingModel, ModelNode newModel) throws OperationFailedException {
-        log.info("Populating the model");
-        //model.setEmptyObject();
-        //for (Property property : existingModel.asPropertyList()) {
-        //copyModel(existingModel, newModel, ModelKeys.JNDI_NAME, ModelKeys.PASSWORD, ModelKeys.USERNAME, ModelKeys.SERVER_ADDRESS, ModelKeys.SERVER_PORT);
-        copyModel(existingModel, newModel, ModelKeys.JNDI_NAME, ModelKeys.PASSWORD, ModelKeys.USERNAME,ModelKeys.DEBUG);
-        //  }
+        copyModel(existingModel, newModel, ModelKeys.JNDI_NAME, ModelKeys.PASSWORD, ModelKeys.USERNAME, ModelKeys.DEBUG);
         if (existingModel.hasDefined(ModelKeys.SMTP_SERVER)) {
             newModel.get(ModelKeys.SMTP_SERVER).set(existingModel.get(ModelKeys.SMTP_SERVER));
         }
@@ -52,9 +48,6 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         if (existingModel.hasDefined(ModelKeys.IMAP_SERVER)) {
             newModel.get(ModelKeys.IMAP_SERVER).set(existingModel.get(ModelKeys.IMAP_SERVER));
         }
-        /* model.get(ModelKeys.SMTP_SERVER).set(operation.get())
-
-     populateAddModel(operation, model, CONNECTION_PROPERTIES, DATASOURCE_ATTRIBUTE);*/
 
     }
 
@@ -66,11 +59,9 @@ public class MailSessionAdd extends AbstractAddStepHandler {
 
 
     /**
-     * Make any runtime changes necessary to effect the changes indicated by the given {@code operation}. Executes
-     * after {@link #populateModel(org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode)}, so the given {@code model}
-     * parameter will reflect any changes made in that method.
+     * Make any runtime changes necessary to effect the changes indicated by the given {@code operation}. E
      * <p>
-     * This default implementation does nothing.
+     * It constructs a MailSessionService that provides mail session and registers it to Naming service.
      * </p>
      *
      * @param context             the operation context
@@ -89,23 +80,12 @@ public class MailSessionAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> controllers) throws OperationFailedException {
-        //super.performRuntime(context, operation, model, verificationHandler, newControllers);
-
-        log.trace("operation: " + operation);
-
         final String jndiName = Util.getJndiName(operation);
-
         final ServiceTarget serviceTarget = context.getServiceTarget();
-
 
         MailSessionService service = createMailSessionService(operation);
         final ServiceName serviceName = SERVICE_NAME_BASE.append(jndiName);
-        final ServiceBuilder<?> mailSessionBuilder = serviceTarget
-                .addService(serviceName, service);
-
-
-        //controllers.add(startConfigAndAddDependency(dataSourceServiceBuilder, service, jndiName, serviceTarget, operation));
-
+        final ServiceBuilder<?> mailSessionBuilder = serviceTarget.addService(serviceName, service);
 
         final MailSessionReferenceFactoryService referenceFactoryService = new MailSessionReferenceFactoryService();
         final ServiceName referenceFactoryServiceName = MailSessionReferenceFactoryService.SERVICE_NAME_BASE.append(jndiName);
@@ -113,7 +93,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
                 referenceFactoryService).addDependency(serviceName, Session.class,
                 referenceFactoryService.getDataSourceInjector());
 
-        final ServiceName binderServiceName = Util.getBinderServiceName(jndiName);
+        final ServiceName binderServiceName =  ContextNames.serviceNameOfGlobalEntry(jndiName);
         final BinderService binderService = new BinderService(binderServiceName.getSimpleName());
         final ServiceBuilder<?> binderBuilder = serviceTarget
                 .addService(binderServiceName, binderService)
@@ -151,24 +131,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
     }
 
     protected MailSessionService createMailSessionService(final ModelNode operation) throws OperationFailedException {
-
         final MailSessionConfig config = Util.from(operation);
-        MailSessionService service = new MailSessionService(config);
-        return service;
+        return new MailSessionService(config);
     }
-/*
-      protected ServiceController<?> startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
-            MailSessionService mailSessionService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation)
-            throws OperationFailedException {
-        final MailSessionConfig config = Util.from(operation);
-        final ServiceName dataSourceCongServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
-        final DataSourceConfigService configService = new DataSourceConfigService(dataSourceConfig);
-
-        ServiceController<?> svcController = serviceTarget.addService(config, configService).setInitialMode(ServiceController.Mode.ACTIVE).install();
-
-        dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, DataSource.class,
-                ((LocalDataSourceService) mailSessionService).getDataSourceConfigInjector());
-
-        return svcController;
-    }*/
 }

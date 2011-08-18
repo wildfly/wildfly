@@ -32,7 +32,6 @@ class MailSubsystemProviders {
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
             subsystem.get(NAMESPACE).set(Namespace.CURRENT.getUriString());
 
-            //subsystem.get(CHILDREN,
             return subsystem;
         }
     };
@@ -42,7 +41,7 @@ class MailSubsystemProviders {
      */
     public static DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
         public ModelNode getModelDescription(Locale locale) {
-             final ResourceBundle bundle = getResourceBundle(locale);
+            final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
 
             operation.get(OPERATION_NAME).set("add");
@@ -65,10 +64,22 @@ class MailSubsystemProviders {
             node.get(HEAD_COMMENT_ALLOWED).set(true);
             node.get(TAIL_COMMENT_ALLOWED).set(true);
 
-            node.get(ATTRIBUTES, "jndi-name", DESCRIPTION).set("jndi-name.description");
-            node.get(ATTRIBUTES, "jndi-name", TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, "jndi-name", REQUIRED).set(true);
-            //todo add debug, from, to
+            node.get(ATTRIBUTES, ModelKeys.JNDI_NAME, DESCRIPTION).set(bundle.getString("jndi-name.description"));
+            node.get(ATTRIBUTES, ModelKeys.JNDI_NAME, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ModelKeys.JNDI_NAME, REQUIRED).set(true);
+
+            node.get(ATTRIBUTES, ModelKeys.DEBUG, DESCRIPTION).set(bundle.getString("debug.description"));
+            node.get(ATTRIBUTES, ModelKeys.DEBUG, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ModelKeys.DEBUG, REQUIRED).set(false);
+
+            node.get(CHILDREN, ModelKeys.SMTP_SERVER, DESCRIPTION).set(bundle.getString("smtp-server"));
+            node.get(CHILDREN, ModelKeys.SMTP_SERVER, REQUIRED).set(false);
+
+            node.get(CHILDREN, ModelKeys.IMAP_SERVER, DESCRIPTION).set(bundle.getString("imap-server"));
+            node.get(CHILDREN, ModelKeys.IMAP_SERVER, REQUIRED).set(false);
+
+            node.get(CHILDREN, ModelKeys.POP3_SERVER, DESCRIPTION).set(bundle.getString("pop3-server"));
+            node.get(CHILDREN, ModelKeys.POP3_SERVER, REQUIRED).set(false);
 
 
             return node;
@@ -84,10 +95,13 @@ class MailSubsystemProviders {
             operation.get(OPERATION_NAME).set(ADD);
             operation.get(DESCRIPTION).set(bundle.getString("mail-session.add"));
 
-            operation.get(REQUEST_PROPERTIES, "jndi-name", DESCRIPTION).set("jndi-name.description");
-            operation.get(REQUEST_PROPERTIES, "jndi-name", TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, "jndi-name", REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, ModelKeys.JNDI_NAME, DESCRIPTION).set(bundle.getString("jndi-name.description"));
+            operation.get(REQUEST_PROPERTIES, ModelKeys.JNDI_NAME, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, ModelKeys.JNDI_NAME, REQUIRED).set(true);
 
+            operation.get(REQUEST_PROPERTIES, ModelKeys.DEBUG, DESCRIPTION).set(bundle.getString("debug.description"));
+            operation.get(REQUEST_PROPERTIES, ModelKeys.DEBUG, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, ModelKeys.DEBUG, REQUIRED).set(false);
 
             return operation;
         }

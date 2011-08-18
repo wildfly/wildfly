@@ -1,15 +1,12 @@
 package org.jboss.as.mail.extension;
 
 /**
-* @author Tomaz Cerar
-* @created 10.8.11 22:50
-*/
+ * @author Tomaz Cerar
+ * @created 10.8.11 22:50
+ */
 public class MailSessionServer {
-    private String address;
-    private String port;
-
-    public MailSessionServer() {
-    }
+    private final String address;
+    private final String port;
 
     public MailSessionServer(String address, String port) {
         this.address = address;
@@ -20,15 +17,10 @@ public class MailSessionServer {
         return address;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
 
     public String getPort() {
         return port;
     }
 
-    public void setPort(String port) {
-        this.port = port;
-    }
+
 }
