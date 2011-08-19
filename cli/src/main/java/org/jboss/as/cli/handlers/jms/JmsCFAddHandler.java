@@ -31,7 +31,7 @@ import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.dmr.ModelNode;
 
@@ -97,7 +97,7 @@ public class JmsCFAddHandler extends BatchModeCommandHandler {
         name = new ArgumentWithValue(this, /*0, */"--name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedArguments())) {
+                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedCommandLine())) {
                     return false;
                 }
                 return super.canAppearNext(ctx);
@@ -120,7 +120,7 @@ public class JmsCFAddHandler extends BatchModeCommandHandler {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 
-        ParsedOperationRequest args = ctx.getParsedArguments();
+        ParsedCommandLine args = ctx.getParsedCommandLine();
 
         if(ctx.isDomainMode()) {
             String profile = this.profile.getValue(args);

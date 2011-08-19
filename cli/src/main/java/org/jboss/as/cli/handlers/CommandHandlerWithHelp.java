@@ -71,7 +71,7 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
     @Override
     public void handle(CommandContext ctx) throws CommandFormatException {
 
-        if(helpArg.isPresent(ctx.getParsedArguments())) {
+        if(helpArg.isPresent(ctx.getParsedCommandLine())) {
             printHelp(ctx);
             return;
         }

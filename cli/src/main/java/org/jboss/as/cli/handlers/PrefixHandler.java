@@ -49,7 +49,7 @@ public class PrefixHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        final String nodePath = this.nodePath.getValue(ctx.getParsedArguments());
+        final String nodePath = this.nodePath.getValue(ctx.getParsedCommandLine());
 
         OperationRequestAddress prefix = ctx.getPrefix();
 

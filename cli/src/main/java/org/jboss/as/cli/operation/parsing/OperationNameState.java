@@ -33,7 +33,7 @@ public final class OperationNameState extends DefaultParsingState {
 
     public OperationNameState() {
         super(ID);
-        //setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
         setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
         putHandler('(', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler(OutputTargetState.OUTPUT_REDIRECT_CHAR, GlobalCharacterHandlers.LEAVE_STATE_HANDLER);

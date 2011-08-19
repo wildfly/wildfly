@@ -29,6 +29,8 @@ import org.jboss.as.cli.CommandFormatException;
  */
 public interface ParsingContext {
 
+    String getInput();
+
     ParsingState getState();
 
     void enterState(ParsingState state) throws CommandFormatException;

@@ -28,7 +28,8 @@ import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.ParsedCommandLine;
+
 
 /**
  *
@@ -50,14 +51,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
             ++firstCharIndex;
         }
 
-        final DefaultOperationCallbackHandler parsedCmd = (DefaultOperationCallbackHandler) ctx.getParsedArguments();
-        parsedCmd.reset();
-
-        try {
-            parsedCmd.parseProperties(buffer);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
 
         Iterable<CommandArgument> allArgs = getAllArguments(ctx);
         if(!allArgs.iterator().hasNext()) {
@@ -69,7 +63,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
                 for(CommandArgument arg : getAllArguments(ctx)) {
                     if(arg.canAppearNext(ctx)) {
                         if(arg.getIndex() >= 0) {
-                            CommandLineCompleter valCompl = arg.getValueCompleter();
+                            final CommandLineCompleter valCompl = arg.getValueCompleter();
                             if(valCompl != null) {
                                 valCompl.complete(ctx, "", cursor, candidates);
                             }
@@ -82,14 +76,13 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
                         }
                     }
                 }
-                return buffer.length();
+                return cursor + buffer.length();
             }
         } catch (CommandFormatException e) {
-            e.printStackTrace();
             return -1;
         }
 
-        int result = buffer.length();
+        int result = cursor + buffer.length();
 
         String chunk = null;
         CommandLineCompleter valueCompleter = null;
@@ -97,7 +90,10 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
             final String argName = parsedCmd.getLastParsedPropertyName();
             final String argValue = parsedCmd.getLastParsedPropertyValue();
             if (argValue != null || parsedCmd.endsOnPropertyValueSeparator()) {
-                result = parsedCmd.getLastSeparatorIndex() + 1;
+                result = parsedCmd.getLastChunkIndex();//.getLastSeparatorIndex() + 1;
+                if(parsedCmd.endsOnPropertyValueSeparator()) {
+                    ++result;// it enters on '='
+                }
                 chunk = argValue;
                 if(argName != null) {
                     valueCompleter = getValueCompleter(ctx, argName);
@@ -111,9 +107,9 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
             } else {
                 chunk = argName;
                 if(firstCharIndex == buffer.length()) {
-                    result = firstCharIndex;
+                    result = cursor + firstCharIndex;
                 } else {
-                    result = parsedCmd.getLastSeparatorIndex() + 1;
+                    result = parsedCmd.getLastChunkIndex();
                 }
             }
         } else {
@@ -135,7 +131,6 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
 
         for(CommandArgument arg : getAllArguments(ctx)) {
             try {
-                //if(!arg.isValueComplete(parsedCmd)) {
                 if(arg.canAppearNext(ctx)) {
                     if(arg.getIndex() >= 0) {
                         CommandLineCompleter valCompl = arg.getValueCompleter();

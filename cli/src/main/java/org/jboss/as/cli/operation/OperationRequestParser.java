@@ -34,27 +34,27 @@ public interface OperationRequestParser {
 
         void start(String operationString);
 
-        void rootNode();
+        void rootNode(int index);
 
-        void parentNode();
+        void parentNode(int index);
 
-        void nodeType();
+        void nodeType(int index);
 
-        void nodeType(String nodeType) throws OperationFormatException;
+        void nodeType(int index, String nodeType) throws OperationFormatException;
 
         void nodeTypeNameSeparator(int index);
 
-        void nodeName(String nodeName) throws OperationFormatException;
+        void nodeName(int index, String nodeName) throws OperationFormatException;
 
         void nodeSeparator(int index);
 
         void addressOperationSeparator(int index);
 
-        void operationName(String operationName) throws CommandFormatException;
+        void operationName(int index, String operationName) throws CommandFormatException;
 
         void propertyListStart(int index);
 
-        void propertyName(String propertyName) throws CommandFormatException;
+        void propertyName(int index, String propertyName) throws CommandFormatException;
 
         void propertyNameValueSeparator(int index);
 
@@ -65,9 +65,9 @@ public interface OperationRequestParser {
         void propertyListEnd(int index);
 
         // TODO this is not good
-        void nodeTypeOrName(String typeOrName) throws OperationFormatException;
+        void nodeTypeOrName(int index, String typeOrName) throws OperationFormatException;
 
-        void outputTarget(String outputTarget) throws CommandFormatException;
+        void outputTarget(int index, String outputTarget) throws CommandFormatException;
     }
 
     void parse(String operationRequest, CallbackHandler handler) throws OperationFormatException;

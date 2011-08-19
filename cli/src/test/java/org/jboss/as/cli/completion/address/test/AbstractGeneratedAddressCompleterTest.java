@@ -38,7 +38,7 @@ import org.junit.Test;
 public abstract class AbstractGeneratedAddressCompleterTest extends AbstractAddressCompleterTest {
 
     protected AbstractGeneratedAddressCompleterTest() {
-        init();
+        super();
     }
 
     protected void init() {

@@ -22,8 +22,10 @@
 package org.jboss.as.cli.completion.address.test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.completion.mock.MockCommandContext;
 import org.jboss.as.cli.completion.mock.MockNode;
 import org.jboss.as.cli.completion.mock.MockOperationCandidatesProvider;
@@ -52,6 +54,13 @@ public class AbstractAddressCompleterTest {
 
     protected List<String> fetchCandidates(String buffer) {
         List<String> candidates = new ArrayList<String>();
+        try {
+            ctx.parseCommandLine(buffer);
+        } catch (CommandFormatException e) {
+//            System.out.println(ctx.getPrefixFormatter().format(ctx.getPrefix()) + ", '" + buffer + "'");
+//            e.printStackTrace();
+            return Collections.emptyList();
+        }
         completer.complete(buffer, 0, candidates);
         return candidates;
     }

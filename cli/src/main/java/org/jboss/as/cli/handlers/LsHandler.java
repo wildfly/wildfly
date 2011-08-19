@@ -56,7 +56,7 @@ public class LsHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
-        final String nodePath = this.nodePath.getValue(ctx.getParsedArguments());
+        final String nodePath = this.nodePath.getValue(ctx.getParsedCommandLine());
 
         final OperationRequestAddress address;
         if (nodePath != null) {
@@ -80,6 +80,6 @@ public class LsHandler extends CommandHandlerWithHelp {
             names = Util.getNodeTypes(ctx.getModelControllerClient(), address);
         }
 
-        printList(ctx, names, l.isPresent(ctx.getParsedArguments()));
+        printList(ctx, names, l.isPresent(ctx.getParsedCommandLine()));
     }
 }

@@ -29,8 +29,6 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.EscapeSelector;
 import org.jboss.as.cli.Util;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
-import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 
 import jline.Completor;
 
@@ -80,15 +78,7 @@ public class OperationRequestCompleter implements CommandLineCompleter, Completo
             return 0;
         }
 
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(new DefaultOperationRequestAddress(ctx.getPrefix()));
-
-        try {
-            ctx.getOperationRequestParser().parse(buffer, handler);
-        } catch (OperationFormatException e1) {
-            if(!handler.endsOnAddressOperationNameSeparator() || handler.getLastSeparatorIndex() != buffer.length() - 1) {
-                return -1;
-            }
-        }
+        final ParsedCommandLine handler = ctx.getParsedCommandLine();
 
         if(handler.isRequestComplete()) {
             return -1;
@@ -119,8 +109,7 @@ public class OperationRequestCompleter implements CommandLineCompleter, Completo
                     candidates.addAll(propertyNames);
                     Collections.sort(candidates);
                 }
-                //return handler.getLastSeparatorIndex() + 1;
-                return buffer.length();
+                return handler.getLastSeparatorIndex() + 1;
             }
 
             Set<String> specifiedNames = handler.getPropertyNames();
@@ -147,7 +136,6 @@ public class OperationRequestCompleter implements CommandLineCompleter, Completo
                     candidates.add(")");
                 }
                 return buffer.length();
-                //return handler.getLastSeparatorIndex() + 1;
             }
 
             for(String candidate : propertyNames) {
@@ -161,7 +149,7 @@ public class OperationRequestCompleter implements CommandLineCompleter, Completo
             } else {
                 Collections.sort(candidates);
             }
-            return handler.getLastSeparatorIndex() + 1;
+            return handler.endsOnSeparator() ? handler.getLastSeparatorIndex() + 1 : handler.getLastChunkIndex();
         }
 
         if(handler.hasOperationName() || handler.endsOnAddressOperationNameSeparator()) {
@@ -187,7 +175,7 @@ public class OperationRequestCompleter implements CommandLineCompleter, Completo
             }
 
             Collections.sort(candidates);
-            return handler.getLastSeparatorIndex() + 1;
+            return handler.endsOnSeparator() ? handler.getLastSeparatorIndex() + 1 : handler.getLastChunkIndex();
         }
 
         final OperationRequestAddress address = handler.getAddress();
@@ -252,6 +240,6 @@ public class OperationRequestCompleter implements CommandLineCompleter, Completo
             Util.sortAndEscape(candidates, ESCAPE_SELECTOR);
         }
 
-        return handler.getLastSeparatorIndex() + 1;
+        return handler.endsOnSeparator() ? handler.getLastSeparatorIndex() + 1 : handler.getLastChunkIndex();
     }
 }
