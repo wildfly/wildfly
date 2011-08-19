@@ -97,6 +97,7 @@ public class ModelDescriptionConstants {
     public static final String INCLUDE = "include";
     public static final String INCLUDES = "includes";
     public static final String INCLUDE_RUNTIME = "include-runtime";
+    public static final String INCLUDE_DEFAULTS = "include-defaults";
     public static final String INET_ADDRESS = "inet-address";
     public static final String INHERITED = "inherited";
     public static final String INITIAL_CONTEXT_FACTORY = "initial-context-factory";

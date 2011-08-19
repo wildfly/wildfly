@@ -22,12 +22,17 @@
 package org.jboss.as.controller.descriptions.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCALE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROXIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
@@ -75,6 +80,10 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, DESCRIPTION).set(bundle.getString("global.read-resource.include-runtime"));
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DESCRIPTION).set(bundle.getString("global.read-resource.include-defaults"));
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, NILLABLE).set(false);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DEFAULT).set(true);
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
         //TODO value type
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-resource.reply"));
@@ -93,6 +102,10 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("global.read-attribute.name"));
         node.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DESCRIPTION).set(bundle.getString("global.read-attribute.include-defaults"));
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DEFAULT).set(true);
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
         node.get(REPLY_PROPERTIES, VALUE_TYPE).set(bundle.getString("global.read-attribute.reply.type"));
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-attribute.reply"));
@@ -173,6 +186,10 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, DESCRIPTION).set(bundle.getString("global.read-children-resources.include-runtime"));
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DESCRIPTION).set(bundle.getString("global.read-children-resources.include-defaults"));
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, NILLABLE).set(false);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DEFAULT).set(true);
 
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-children-resources.reply"));
