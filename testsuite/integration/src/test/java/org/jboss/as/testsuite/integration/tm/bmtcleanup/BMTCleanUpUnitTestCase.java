@@ -19,18 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.tm.test;
+package org.jboss.as.testsuite.integration.tm.bmtcleanup;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
-
-import org.jboss.as.testsuite.integration.tm.ejb.BMTCleanUpBean;
 
 /**
  * Tests for BMT CleanUp
@@ -41,26 +41,28 @@ import org.jboss.as.testsuite.integration.tm.ejb.BMTCleanUpBean;
 @RunWith(Arquillian.class)
 public class BMTCleanUpUnitTestCase
 {
-    public static final String ARCHIVE_NAME = "bmtcleanuptest"
+    public static final String ARCHIVE_NAME = "bmtcleanuptest";
+
     @Inject
-    BMTCleanUpBean bmtCleanUpBean;
+    private BMTCleanUpBean bean;
 
     @Deployment
     public static JavaArchive deploy() {
         return ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar")
-                .addClasses(BMTCleanUpBean.class);
+                .addPackage(BMTCleanUpUnitTestCase.class.getPackage())
+                .addAsManifestResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
     }
 
     @Test
     public void testIncomplete() throws Exception
     {
-        bmtCleanUpBean.testIncomplete();
+        bean.testIncomplete();
     }
 
     @Test
     public void testTxTimeout() throws Exception
     {
-        bmtCleanUpBean.testTxTimeout();
+        bean.testTxTimeout();
     }
 
 }

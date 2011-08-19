@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.tm.ejb;
+package org.jboss.as.testsuite.integration.tm.bmtcleanup;
 
 import javax.annotation.Resource;
 import javax.ejb.EJBException;
@@ -63,8 +63,6 @@ public class BMTCleanUpBean
 
     public void testIncomplete()
     {
-        // FIXME
-        // BMTCleanUp remote = (BMTCleanUp) sessionCtx.getEJBObject();
         BMTCleanUpBean remote = getBean();
         try
         {
@@ -93,8 +91,6 @@ public class BMTCleanUpBean
 
     public void testTxTimeout()
     {
-        // FIXME
-        // BMTCleanUp remote = (BMTCleanUp) sessionCtx.getEJBObject();
         BMTCleanUpBean remote = getBean();
         try
         {
@@ -149,7 +145,7 @@ public class BMTCleanUpBean
     {
         try
         {
-            // java:app/bmtcleanuptest/BMTCleanUpBean
+            // java:global/bmtcleanuptest/BMTCleanUpBean
             return (BMTCleanUpBean) new InitialContext().lookup("java:global/" + BMTCleanUpUnitTestCase.ARCHIVE_NAME + "/" + BMTCleanUpBean.class.getSimpleName());
         }
         catch (NamingException e)

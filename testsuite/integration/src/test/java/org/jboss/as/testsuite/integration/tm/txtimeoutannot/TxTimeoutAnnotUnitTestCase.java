@@ -19,24 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.tm.test;
+package org.jboss.as.testsuite.integration.tm.txtimeoutannot;
 
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.jboss.as.testsuite.integration.tm.ejb.TxTimeoutAnnotBean;
-
 /**
  * Tests for transaction timeout annotation
  * EJB3 version of TxTimeoutUnitTestCase
- *
+ * <p/>
  * JBAS-4011, the arjuna transaction manager does not allow the
  * setting of the global default tx timeout after the tx manager
  * is started, so we won't test the default timeout setting (300secs).
@@ -46,15 +47,18 @@ import org.jboss.as.testsuite.integration.tm.ejb.TxTimeoutAnnotBean;
  * @author istudens@redhat.com
  */
 @RunWith(Arquillian.class)
-public class TxTimeoutAnnotUnitTestCase
-{
+public class TxTimeoutAnnotUnitTestCase {
+    public static final String ARCHIVE_NAME = "txtimeoutannottest";
+
     @Inject
     TxTimeoutAnnotBean bean;
 
     @Deployment
     public static JavaArchive deploy() {
-        return ShrinkWrap.create(JavaArchive.class, "txtimeoutannottest.jar")
-                .addClasses(TxTimeoutAnnotBean.class);
+        return ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar")
+                .addPackage(TxTimeoutAnnotUnitTestCase.class.getPackage())
+                .addAsManifestResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"))
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.jboss-transaction-spi\n"),"MANIFEST.MF");
     }
 
     /**
@@ -64,8 +68,7 @@ public class TxTimeoutAnnotUnitTestCase
      * @throws Exception
      */
     @Test(expected = EJBTransactionRolledbackException.class)
-    public void testOverriddenTimeoutExpires() throws Exception
-    {
+    public void testOverriddenTimeoutExpires() throws Exception {
         bean.testOverriddenTimeoutExpires();
     }
 
@@ -73,12 +76,10 @@ public class TxTimeoutAnnotUnitTestCase
      * Tests whether @TransactionTimeout expires greater that wait time of doesn't make transaction to roll back
      * or stay in different status that STATUS_ACTIVE.
      *
-     *
      * @throws Exception
      */
     @Test
-    public void testOverriddenTimeoutDoesNotExpire() throws Exception
-    {
+    public void testOverriddenTimeoutDoesNotExpire() throws Exception {
         bean.testOverriddenTimeoutDoesNotExpire();
     }
 
