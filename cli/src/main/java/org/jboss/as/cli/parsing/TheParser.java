@@ -249,7 +249,7 @@ public class TheParser {
         //final String line = "cmd ../../../../my\\ dir/ > ../../../../my\\ dir/cli.log";
         //final String line = "/a=b/../c=d/.type/e:op(p1=v1,p2=v2)";
         //final String line = "cmd --p1=v1 --p2=v2 --p3 v3";
-        final String line = "/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/ExampleDS";
+        final String line = "s";
         System.out.println(line);
         TheParser.parse(line,
                 new OperationRequestParser.CallbackHandler(){

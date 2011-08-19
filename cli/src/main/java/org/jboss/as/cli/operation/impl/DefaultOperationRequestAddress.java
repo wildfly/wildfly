@@ -61,7 +61,7 @@ public class DefaultOperationRequestAddress implements OperationRequestAddress {
     public void toNode(String nodeName) {
 
         if(nodes.isEmpty())
-            throw new IllegalStateException("The prefix should end with the node type before going to a specific node name.");
+            throw new IllegalStateException("Node name '" + nodeName + "' should follow a node type.");
 
         nodes.get(nodes.size() - 1).name = nodeName;
     }

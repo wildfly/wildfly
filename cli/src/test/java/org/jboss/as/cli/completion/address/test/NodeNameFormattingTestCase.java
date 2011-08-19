@@ -93,7 +93,8 @@ public class NodeNameFormattingTestCase extends AbstractAddressCompleterTest {
 
     @Test
     public void testH2DS() {
-        assertEquals(Arrays.asList("data-source=java\\:\\/H2DS1", "data-source=java\\:\\/H2DS2"), fetchCandidates("/root=datasources/"));
+        assertEquals(Arrays.asList("data-source="), fetchCandidates("/root=datasources/"));
+        assertEquals(Arrays.asList("java\\:\\/H2DS1", "java\\:\\/H2DS2"), fetchCandidates("/root=datasources/data-source=j"));
     }
 
 }
