@@ -27,7 +27,7 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 
 /**
  *
@@ -59,7 +59,7 @@ public class HistoryHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
-        ParsedOperationRequest args = ctx.getParsedArguments();
+        ParsedCommandLine args = ctx.getParsedCommandLine();
         if(!args.hasProperties()) {
             printHistory(ctx);
             return;

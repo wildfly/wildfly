@@ -22,9 +22,12 @@
 package org.jboss.as.cli.parsing;
 
 
+import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.operation.parsing.CharacterHandler;
 import org.jboss.as.cli.operation.parsing.DefaultParsingState;
 import org.jboss.as.cli.operation.parsing.EnterStateCharacterHandler;
 import org.jboss.as.cli.operation.parsing.OutputTargetState;
+import org.jboss.as.cli.operation.parsing.ParsingContext;
 
 
 /**
@@ -37,14 +40,24 @@ public class CommandState extends DefaultParsingState {
     public static final String ID = "CMD";
 
     CommandState() {
-        this(CommandNameState.INSTANCE, ArgumentState.INSTANCE, ArgumentValueState.INSTANCE, OutputTargetState.INSTANCE);
+        this(CommandNameState.INSTANCE, ArgumentListState.INSTANCE, OutputTargetState.INSTANCE);
     }
 
-    CommandState(CommandNameState cmdName, ArgumentState arg, ArgumentValueState argValue, OutputTargetState outputRedirect) {
+    CommandState(CommandNameState cmdName, ArgumentListState argList, OutputTargetState outputRedirect) {
         super(ID);
         setEnterHandler(new EnterStateCharacterHandler(cmdName));
+        setDefaultHandler(new EnterStateCharacterHandler(argList));
+        this.setReturnHandler(new CharacterHandler() {
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(ctx.isEndOfContent()) {
+                    return;
+                }
+                final CharacterHandler handler = enterStateHandlers.getHandler(ctx.getCharacter());
+                if(handler != null) {
+                    handler.handle(ctx);
+                }
+            }});
         enterState(OutputTargetState.OUTPUT_REDIRECT_CHAR, outputRedirect);
-        enterState('-', arg);
-        setDefaultHandler(new EnterStateCharacterHandler(argValue));
     }
 }

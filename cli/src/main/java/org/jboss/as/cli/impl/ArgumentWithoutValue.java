@@ -31,7 +31,7 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 
 
 /**
@@ -119,7 +119,7 @@ public class ArgumentWithoutValue implements CommandArgument {
      * @see org.jboss.as.cli.CommandArgument#getValue(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public String getValue(ParsedOperationRequest args) {
+    public String getValue(ParsedCommandLine args) {
         try {
             return getValue(args, false);
         } catch (CommandFormatException e) {
@@ -131,7 +131,7 @@ public class ArgumentWithoutValue implements CommandArgument {
      * @see org.jboss.as.cli.CommandArgument#getValue(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public String getValue(ParsedOperationRequest args, boolean required) throws CommandFormatException {
+    public String getValue(ParsedCommandLine args, boolean required) throws CommandFormatException {
         if(!required) {
             return null;
         }
@@ -142,7 +142,7 @@ public class ArgumentWithoutValue implements CommandArgument {
     }
 
     @Override
-    public boolean isPresent(ParsedOperationRequest args) throws CommandFormatException {
+    public boolean isPresent(ParsedCommandLine args) throws CommandFormatException {
         if(!args.hasProperties()) {
             return false;
         }
@@ -162,7 +162,7 @@ public class ArgumentWithoutValue implements CommandArgument {
     }
 
     @Override
-    public boolean isValueComplete(ParsedOperationRequest args) throws CommandFormatException {
+    public boolean isValueComplete(ParsedCommandLine args) throws CommandFormatException {
 
 /*        if (index >= 0 && index < args.getOtherProperties().size()) {
             return true;
@@ -183,7 +183,7 @@ public class ArgumentWithoutValue implements CommandArgument {
     @Override
     public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
 
-        ParsedOperationRequest args = ctx.getParsedArguments();
+        ParsedCommandLine args = ctx.getParsedCommandLine();
         if (exclusive) {
             return !args.hasProperties();
         }

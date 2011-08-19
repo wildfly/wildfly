@@ -28,7 +28,7 @@ import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.PrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
 
@@ -49,7 +49,7 @@ public interface CommandContext {
      * Parsed command line arguments.
      * @return  parsed command line arguments.
      */
-    ParsedOperationRequest getParsedArguments();
+    ParsedCommandLine getParsedCommandLine();
 
     /**
      * Prints a string to the CLI's output.

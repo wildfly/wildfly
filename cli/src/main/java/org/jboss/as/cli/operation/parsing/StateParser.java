@@ -63,6 +63,7 @@ public class StateParser {
         ParsingContextImpl ctx = new ParsingContextImpl();
         ctx.initialState = initialState;
         ctx.callbackHandler = callbackHandler;
+        ctx.input = str;
 
         ctx.ch = str.charAt(i);
         ctx.location = i;
@@ -94,6 +95,7 @@ public class StateParser {
 
         private final Deque<ParsingState> stack = new ArrayDeque<ParsingState>();
 
+        String input;
         int location;
         char ch;
         ParsingStateCallbackHandler callbackHandler;
@@ -152,6 +154,11 @@ public class StateParser {
         @Override
         public boolean isEndOfContent() {
             return endOfContent;
+        }
+
+        @Override
+        public String getInput() {
+            return input;
         }
     }
 }

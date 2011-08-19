@@ -99,7 +99,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
         //DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(ctx.getPrefix());
         //ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), builder);
         //return builder.buildRequest();
-        return ((DefaultOperationCallbackHandler)ctx.getParsedArguments()).toOperationRequest();
+        return ((DefaultOperationCallbackHandler)ctx.getParsedCommandLine()).toOperationRequest();
     }
 
     @Override
