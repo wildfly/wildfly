@@ -44,6 +44,7 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 
@@ -112,10 +113,9 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                     ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(connectorXmlDescriptor,
                             raxml, module, deployment);
                     // Create the service
-                    serviceTarget
-                            .addService(
-                                    ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(connectorXmlDescriptor
-                                            .getDeploymentName()), service)
+                    ServiceName serviceName = ConnectorServices.getNextValidResourceAdapterXmlServiceName(connectorXmlDescriptor.getDeploymentName());
+                     serviceTarget
+                            .addService(serviceName, service)
                             .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, service.getMdrInjector())
                             .addDependency(ConnectorServices.RA_REPOSISTORY_SERVICE, ResourceAdapterRepository.class,
                                     service.getRaRepositoryInjector())
