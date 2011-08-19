@@ -21,24 +21,14 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.timerservice.AutoTimer;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.AnnotationValue;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.MethodInfo;
-import org.jboss.logging.Logger;
+import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
+import org.jboss.as.ee.metadata.AbstractEEAnnotationProcessor;
+import org.jboss.as.ejb3.deployment.processors.annotation.ScheduleAnnotationInformationFactory;
+import org.jboss.as.ejb3.deployment.processors.annotation.TimeoutAnnotationInformationFactory;
 
-import javax.ejb.Schedule;
-import javax.ejb.Schedules;
-import javax.ejb.Timeout;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Processes the @Timeout annotation on an EJB, and adds the configurator that is responsible for loading the method from the reflection index.
@@ -47,218 +37,20 @@ import java.util.Map;
  *
  * @author Stuart Douglas
  */
-public class TimeoutAnnotationProcessor extends AbstractAnnotationEJBProcessor<SessionBeanComponentDescription> {
+public class TimeoutAnnotationProcessor extends AbstractEEAnnotationProcessor {
 
-    private static final DotName TIMEOUT_ANNOTATION = DotName.createSimple(Timeout.class.getName());
-    private static final DotName SCHEDULE_ANNOTATION = DotName.createSimple(Schedule.class.getName());
-    private static final DotName SCHEDULES_ANNOTATION = DotName.createSimple(Schedules.class.getName());
+    final List<ClassAnnotationInformationFactory> factories;
 
-    private static final Logger logger = Logger.getLogger(TimeoutAnnotationProcessor.class);
-
-    private final boolean enabled;
-
-    public TimeoutAnnotationProcessor(final boolean timerServiceEnabled) {
-        enabled = timerServiceEnabled;
-    }
-
-    protected Class<SessionBeanComponentDescription> getComponentDescriptionType() {
-        return SessionBeanComponentDescription.class;
-    }
-
-    protected void processAnnotations(final ClassInfo beanClass, final CompositeIndex compositeIndex, final SessionBeanComponentDescription componentDescription) throws DeploymentUnitProcessingException {
-
-        processTimeoutAnnotation(beanClass, compositeIndex, componentDescription);
-        processScheduleAnnotation(beanClass, compositeIndex, componentDescription);
+    public TimeoutAnnotationProcessor() {
+        List<ClassAnnotationInformationFactory> factories = new ArrayList<ClassAnnotationInformationFactory>();
+        factories.add(new TimeoutAnnotationInformationFactory());
+        factories.add(new ScheduleAnnotationInformationFactory());
+        this.factories = Collections.unmodifiableList(factories);
     }
 
 
-    private void processTimeoutAnnotation(final ClassInfo beanClass, final CompositeIndex compositeIndex, final SessionBeanComponentDescription componentDescription) throws DeploymentUnitProcessingException {
-
-        final Map<DotName, List<AnnotationInstance>> classAnnotations = beanClass.annotations();
-        if (classAnnotations != null) {
-            List<AnnotationInstance> annotations = classAnnotations.get(TIMEOUT_ANNOTATION);
-            if (annotations != null) {
-                for (AnnotationInstance annotationInstance : annotations) {
-                    AnnotationTarget target = annotationInstance.target();
-                    if (target instanceof MethodInfo) {
-                        componentDescription.setTimeoutMethodIdentifier(getMethodIdentifier(target));
-                        return;
-                    }
-                }
-            }
-        }
-        //if not found look to the super class
-        final DotName superName = beanClass.superName();
-        if (superName != null) {
-            ClassInfo superClass = compositeIndex.getClassByName(superName);
-            if (superClass != null) {
-                processTimeoutAnnotation(superClass, compositeIndex, componentDescription);
-            }
-        }
-    }
-
-    private void processScheduleAnnotation(final ClassInfo beanClass, final CompositeIndex compositeIndex, final SessionBeanComponentDescription componentDescription) throws DeploymentUnitProcessingException {
-
-        final Map<DotName, List<AnnotationInstance>> classAnnotations = beanClass.annotations();
-        if (classAnnotations != null) {
-            List<AnnotationInstance> annotations = classAnnotations.get(SCHEDULE_ANNOTATION);
-            if (annotations != null) {
-                for (AnnotationInstance annotationInstance : annotations) {
-                    if (enabled) {
-                        AnnotationTarget target = annotationInstance.target();
-                        if (target instanceof MethodInfo) {
-                            final MethodIdentifier identifier = getMethodIdentifier(target);
-                            final AutoTimer timer = new AutoTimer();
-                            for (ScheduleValues schedulePart : ScheduleValues.values()) {
-                                schedulePart.set(timer, annotationInstance);
-                            }
-                            componentDescription.addScheduleMethodIdentifier(identifier, timer);
-                        }
-                    } else {
-                        logger.warn("@Schedule annotation found on " + annotationInstance.target() + " but timer service is not enabled");
-                    }
-                }
-            }
-            List<AnnotationInstance> schedules = classAnnotations.get(SCHEDULES_ANNOTATION);
-            if (schedules != null) {
-                for (AnnotationInstance annotationInstance : schedules) {
-                    AnnotationTarget target = annotationInstance.target();
-                    if (enabled) {
-                        if (target instanceof MethodInfo) {
-
-                            final MethodIdentifier identifier = getMethodIdentifier(target);
-                            final AnnotationInstance[] values = annotationInstance.value().asNestedArray();
-                            for (AnnotationInstance schedule : values) {
-
-                                final AutoTimer timer = new AutoTimer();
-                                for (ScheduleValues schedulePart : ScheduleValues.values()) {
-                                    schedulePart.set(timer, schedule);
-                                }
-                                componentDescription.addScheduleMethodIdentifier(identifier, timer);
-                            }
-                        }
-                    } else {
-                        logger.warn("@Schedules annotation found on " + annotationInstance.target() + " but timer service is not enabled");
-                    }
-                }
-            }
-        }
-        //not the super class
-        //TODO: the spec does not really seem to say how to deal with overriden methods
-        final DotName superName = beanClass.superName();
-        if (superName != null) {
-            ClassInfo superClass = compositeIndex.getClassByName(superName);
-            if (superClass != null) {
-                processScheduleAnnotation(superClass, compositeIndex, componentDescription);
-            }
-        }
-    }
-
-    private MethodIdentifier getMethodIdentifier(final AnnotationTarget target) {
-        final MethodInfo methodInfo = MethodInfo.class.cast(target);
-        final String[] args = new String[methodInfo.args().length];
-        for (int i = 0; i < methodInfo.args().length; i++) {
-            args[i] = methodInfo.args()[i].name().toString();
-        }
-        return MethodIdentifier.getIdentifier(methodInfo.returnType().name().toString(), methodInfo.name(), args);
-    }
-
-
-    enum ScheduleValues {
-        DAY_OF_MONTH("dayOfMonth", "*") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().dayOfMonth(value);
-            }
-        },
-
-        DAY_OF_WEEK("dayOfWeek", "*") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().dayOfWeek(value);
-            }
-        },
-        HOUR("hour", "0") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().hour(value);
-            }
-        },
-        INFO("info", null) {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getTimerConfig().setInfo(value);
-            }
-        },
-        MINUTE("minute", "0") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().minute(value);
-            }
-        },
-        MONTH("month", "*") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().month(value);
-            }
-        },
-        PERSISTENT("persistent", true) {
-            protected void setBoolean(final AutoTimer timer, final boolean value) {
-                timer.getTimerConfig().setPersistent(value);
-            }
-        },
-        SECOND("second", "0") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().second(value);
-            }
-        },
-        TIMEZONE("timezone", "") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().timezone(value);
-            }
-        },
-        YEAR("year", "*") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().year(value);
-            }
-        },;
-
-        private final String name;
-        private final String defaultStringValue;
-        private final boolean defaultBooleanValue;
-        private final boolean booleanValue;
-
-        ScheduleValues(final String name, final String defaultStringValue) {
-            this.name = name;
-            this.defaultStringValue = defaultStringValue;
-            this.defaultBooleanValue = false;
-            this.booleanValue = false;
-        }
-
-        ScheduleValues(final String name, final boolean defaultBooleanValue) {
-            this.name = name;
-            this.defaultStringValue = null;
-            this.defaultBooleanValue = defaultBooleanValue;
-            this.booleanValue = true;
-        }
-
-        public void set(final AutoTimer timer, final AnnotationInstance annotationInstance) {
-            final AnnotationValue value = annotationInstance.value(name);
-            if (booleanValue) {
-                if (value == null) {
-                    setBoolean(timer, defaultBooleanValue);
-                } else {
-                    setBoolean(timer, value.asBoolean());
-                }
-            } else {
-                if (value == null) {
-                    setString(timer, defaultStringValue);
-                } else {
-                    setString(timer, value.asString());
-                }
-            }
-        }
-
-        protected void setString(final AutoTimer expression, final String value) {
-            throw new IllegalStateException("Should be overridden");
-        }
-
-        protected void setBoolean(final AutoTimer expression, final boolean value) {
-            throw new IllegalStateException("Should be overridden");
-        }
+    @Override
+    protected List<ClassAnnotationInformationFactory> annotationInformationFactories() {
+        return factories;
     }
 }
