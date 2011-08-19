@@ -27,8 +27,10 @@ import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionInvocationContextInterceptor;
@@ -46,19 +48,21 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.txn.TransactionManagerService;
 import org.jboss.as.txn.TransactionSynchronizationRegistryService;
 import org.jboss.ejb3.timerservice.spi.TimerServiceFactory;
-import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
+import javax.ejb.Schedule;
 import javax.ejb.TimedObject;
+import javax.ejb.Timeout;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -83,7 +87,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(!enabled) {
+        if (!enabled) {
             return;
         }
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -102,7 +106,19 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                         final SessionBeanComponentDescription ejbComponentDescription = (SessionBeanComponentDescription) description;
 
-                        final DeploymentReflectionIndex deploymentReflectionIndex = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+                        final DeploymentReflectionIndex deploymentReflectionIndex = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+                        final EEApplicationClasses applicationClasses = phaseContext.getDeploymentUnit().getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+
+                        final Map<Method, List<AutoTimer>> scheduleAnnotationData = MethodAnnotationAggregator.runtimeAnnotationInformation(configuration.getComponentClass(), applicationClasses, deploymentReflectionIndex, Schedule.class);
+                        final Set<Method> timerAnnotationData = MethodAnnotationAggregator.runtimeAnnotationPresent(configuration.getComponentClass(), applicationClasses, deploymentReflectionIndex, Timeout.class);
+                        final Method timeoutMethod;
+                        if(timerAnnotationData.size() > 1) {
+                            throw new DeploymentUnitProcessingException("Component class " + configuration.getComponentClass() + " has multiple @Timeout annotations");
+                        } else if(timerAnnotationData.size() == 1) {
+                            timeoutMethod = timerAnnotationData.iterator().next();
+                        } else {
+                            timeoutMethod = null;
+                        }
 
                         //First resolve the timer method and auto timer
                         Class<?> c = configuration.getComponentClass();
@@ -112,8 +128,8 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                             Method method = null;
                             if (TimedObject.class.isAssignableFrom(configuration.getComponentClass())) {
                                 method = index.getMethod(Void.TYPE, "ejbTimeout", javax.ejb.Timer.class);
-                            } else if (ejbComponentDescription.getTimeoutMethod() == null && ejbComponentDescription.getTimeoutMethodIdentifier() != null) {
-                                method = index.getMethod(ejbComponentDescription.getTimeoutMethodIdentifier());
+                            } else if (ejbComponentDescription.getTimeoutMethod() == null && timeoutMethod != null) {
+                                method = timeoutMethod;
                             } else {
                                 break;
                             }
@@ -124,18 +140,10 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                             c = c.getSuperclass();
                         }
                         //now for the schedule methods
-                        for (Map.Entry<MethodIdentifier, List<AutoTimer>> entry : ejbComponentDescription.getScheduleMethodIdentifiers().entrySet()) {
-                            c = configuration.getComponentClass();
-                            while (c != null && c != Object.class) {
-                                final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(c);
-                                final Method method = index.getMethod(entry.getKey());
-                                if (method != null) {
-                                    for (AutoTimer timer : entry.getValue()) {
-                                        ejbComponentDescription.addScheduleMethod(method, timer);
-                                    }
-                                    break;
-                                }
-                                c = c.getSuperclass();
+                        for (Map.Entry<Method, List<AutoTimer>> entry : scheduleAnnotationData.entrySet()) {
+
+                            for (AutoTimer timer : entry.getValue()) {
+                                ejbComponentDescription.addScheduleMethod(entry.getKey(), timer);
                             }
                         }
 
@@ -179,7 +187,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
 
         final String name;
-        if(deploymentUnit.getParent() == null) {
+        if (deploymentUnit.getParent() == null) {
             name = deploymentUnit.getName();
         } else {
             name = deploymentUnit.getParent().getName() + "--" + deploymentUnit.getName();

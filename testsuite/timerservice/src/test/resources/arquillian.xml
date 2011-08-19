@@ -5,6 +5,9 @@
 	<container qualifier="jboss" default="true">
 		<configuration>
 			<property name="jbossHome">target/jbossas</property>
+
+			<property
+			name="allowConnectingToRunningServer">true</property>
 		</configuration>
         <protocol type="jmx-as7">
             <property name="executionType">REMOTE</property>

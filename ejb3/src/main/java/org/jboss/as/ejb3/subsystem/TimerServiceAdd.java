@@ -25,15 +25,14 @@ package org.jboss.as.ejb3.subsystem;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.deployment.processors.AroundTimeoutAnnotationParsingProcessor;
+import org.jboss.as.ejb3.deployment.processors.TimeoutAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.TimerServiceDeploymentProcessor;
+import org.jboss.as.ejb3.deployment.processors.dd.TimeoutMethodDeploymentDescriptorProcessor;
 import org.jboss.as.ejb3.timerservice.TimerServiceFactoryService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -44,17 +43,18 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.List;
+import java.util.Locale;
+
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 
-import java.util.List;
-import java.util.Locale;
-
 /**
  * Adds the timer service
  * <p/>
+ *
  * @author Stuart Douglas
  */
 public class TimerServiceAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
@@ -67,9 +67,10 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler implements D
     /**
      * Populate the <code>timerService</code> from the <code>operation</code>
      *
-     * @param operation          the operation
+     * @param operation         the operation
      * @param timerServiceModel strict-max-pool ModelNode
      * @throws org.jboss.as.controller.OperationFailedException
+     *
      */
 
     protected void populateModel(ModelNode operation, ModelNode timerServiceModel) throws OperationFailedException {
@@ -131,14 +132,16 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler implements D
                     int maxThreadCount = timerServiceModel.get(MAX_THREADS).asInt(Runtime.getRuntime().availableProcessors());
 
                     //we only add the timer service DUP's when the timer service in enabled in XML
+                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_TIMEOUT_ANNOTATION, new TimeoutAnnotationProcessor());
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_AROUNDTIMEOUT_ANNOTATION, new AroundTimeoutAnnotationParsingProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_METADATA_MERGE, new TimeoutMethodDeploymentDescriptorProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_SERVICE, new TimerServiceDeploymentProcessor(coreThreadCount, maxThreadCount, true));
                 }
             }, OperationContext.Stage.RUNTIME);
         }
     }
 
-            @Override
+    @Override
     public ModelNode getModelDescription(Locale locale) {
         return EJB3SubsystemDescriptions.getTimerServiceAddDescription(locale);
     }
