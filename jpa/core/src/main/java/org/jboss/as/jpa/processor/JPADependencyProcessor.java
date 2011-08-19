@@ -68,6 +68,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier HIBERNATE_3_PROVIDER = ModuleIdentifier.create("org.jboss.as.jpa.hibernate","3");
     private static final String HIBERNATE3_PROVIDER_ADAPTOR = "org.jboss.as.jpa.hibernate3.HibernatePersistenceProviderAdaptor";
+    private static final ModuleIdentifier HIBERNATE_ENVERS_ID = ModuleIdentifier.create( "org.hibernate.envers" );
     // module dependencies for hibernate3
     private static final ModuleIdentifier JBOSS_AS_NAMING_ID = ModuleIdentifier.create("org.jboss.as.naming");
     private static final ModuleIdentifier JBOSS_JANDEX_ID = ModuleIdentifier.create("org.jboss.jandex");
@@ -119,6 +120,8 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
             moduleDependencies.add(Configuration.PROVIDER_MODULE_DEFAULT);
             log.info("added (default provider) " + Configuration.PROVIDER_MODULE_DEFAULT +
                     " dependency to application deployment (since " + defaultProviderCount + " PU(s) didn't specify " + Configuration.PROVIDER_MODULE + ")");
+            //only inject envers module as long as org.hibernate is injected.
+            addDependency( moduleSpecification, moduleLoader, HIBERNATE_ENVERS_ID );
         }
 
         // add persistence provider dependency
