@@ -320,7 +320,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_PERMIT_ALL_ANNOTATION       = 0x0503;
     public static final int POST_MODULE_EJB_EXCLUDE_LIST_DD             = 0x0504;
     public static final int POST_MODULE_EJB_METHOD_PERMISSION_DD        = 0x0505;
-    public static final int POST_MODULE_EJB_DD_TIMEOUT_METHOD           = 0x0506;
+    public static final int POST_MODULE_EJB_TIMER_METADATA_MERGE = 0x0506;
     public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0600;
     public static final int POST_MODULE_EJB_DD_CONCURRENCY              = 0x0601;
     public static final int POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION = 0x0700;

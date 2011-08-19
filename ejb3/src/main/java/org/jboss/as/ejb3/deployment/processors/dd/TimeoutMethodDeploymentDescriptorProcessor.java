@@ -39,7 +39,7 @@ import org.jboss.modules.Module;
 import javax.ejb.ScheduleExpression;
 
 /**
- * DUP that adds the timeout method defined in the deployment descriptor
+ * Deployment unit processor that merges the annotation information with the information in the deployment descriptor
  *
  * @author Stuart Douglas
  */
@@ -56,7 +56,6 @@ public class TimeoutMethodDeploymentDescriptorProcessor extends AbstractEjbXmlDe
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final SessionBeanComponentDescription sessionBean = (SessionBeanComponentDescription) moduleDescription.getComponentByName(beanMetaData.getEjbName());
-        final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (module == null) {
             return;

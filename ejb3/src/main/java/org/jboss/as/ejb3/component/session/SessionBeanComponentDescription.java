@@ -116,17 +116,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private String mappedName;
 
     /**
-     * method identifier of the timeout method
-     */
-    private MethodIdentifier timeoutMethodIdentifier;
-
-    /**
-     * @Schedule method identifiers
-     */
-    private final Map<MethodIdentifier, List<AutoTimer>> scheduleMethodIdentifiers = new HashMap<MethodIdentifier, List<AutoTimer>>();
-
-
-    /**
      * @Schedule methods
      */
     private final Map<Method, List<AutoTimer>> scheduleMethods = new IdentityHashMap<Method, List<AutoTimer>>();
@@ -458,15 +447,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         return getSessionBeanType() == SessionBeanType.STATELESS;
     }
 
-
-    public MethodIdentifier getTimeoutMethodIdentifier() {
-        return timeoutMethodIdentifier;
-    }
-
-    public void setTimeoutMethodIdentifier(final MethodIdentifier timeoutMethodIdentifier) {
-        this.timeoutMethodIdentifier = timeoutMethodIdentifier;
-    }
-
     public Method getTimeoutMethod() {
         return timeoutMethod;
     }
@@ -474,19 +454,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public void setTimeoutMethod(final Method timeoutMethod) {
         this.timeoutMethod = timeoutMethod;
     }
-
-    public Map<MethodIdentifier, List<AutoTimer>> getScheduleMethodIdentifiers() {
-        return Collections.unmodifiableMap(scheduleMethodIdentifiers);
-    }
-
-    public void addScheduleMethodIdentifier(final MethodIdentifier identifier, final AutoTimer timer) {
-        List<AutoTimer> schedules = scheduleMethodIdentifiers.get(identifier);
-        if(schedules == null) {
-            scheduleMethodIdentifiers.put(identifier, schedules = new ArrayList<AutoTimer>(1));
-        }
-        schedules.add(timer);
-    }
-
 
     public Map<Method, List<AutoTimer>> getScheduleMethods() {
         return Collections.unmodifiableMap(scheduleMethods);

@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -31,9 +32,12 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.Value;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
@@ -57,6 +61,7 @@ public final class EEModuleClassDescription {
     private MethodIdentifier aroundTimeoutMethod;
     private boolean invalid;
     private StringBuilder invalidMessageBuilder;
+    private final Map<Class<? extends Annotation>, ClassAnnotationInformation<?,?>> annotationInformation = Collections.synchronizedMap(new HashMap<Class<? extends Annotation>, ClassAnnotationInformation<?, ?>>());
 
     public EEModuleClassDescription(final String className) {
         this.className = className;
@@ -151,6 +156,14 @@ public final class EEModuleClassDescription {
      */
     public Deque<ClassConfigurator> getConfigurators() {
         return configurators;
+    }
+
+    public void addAnnotationInformation(ClassAnnotationInformation annotationInformation) {
+        this.annotationInformation.put(annotationInformation.getAnnotationType(), annotationInformation);
+    }
+
+    public ClassAnnotationInformation getAnnotationInformation(Class<? extends Annotation> annotationType) {
+        return this.annotationInformation.get(annotationType);
     }
 
     private static class DefaultConfigurator implements ClassConfigurator {
