@@ -24,6 +24,11 @@ package org.jboss.as.connector;
 
 import org.jboss.msc.service.ServiceName;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * A ConnectorServices.
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
@@ -31,6 +36,10 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public final class ConnectorServices {
+
+    private static Map<String, Set<ServiceName>> resourceAdapterXmlServiceNames = new ConcurrentHashMap<String, Set<ServiceName>>();
+
+    private static Map<String, Set<ServiceName>> resourceAdapterServiceNames = new ConcurrentHashMap<String, Set<ServiceName>>();
 
     public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
 
@@ -79,5 +88,43 @@ public final class ConnectorServices {
         if (value == null)
             throw new IllegalStateException("Service not started");
         return value;
+    }
+
+    public static synchronized ServiceName getNextValidResourceAdapterXmlServiceName(String raName) {
+        ServiceName serviceName = null;
+       if(resourceAdapterXmlServiceNames.get(raName) == null) {
+           serviceName =  RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append( raName + "_1");
+           Set<ServiceName> serviceNames = new HashSet<ServiceName>(1);
+           serviceNames.add(serviceName);
+           resourceAdapterXmlServiceNames.put(raName,serviceNames);
+       } else {
+           serviceName =  RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append( raName + "_" + String.valueOf(resourceAdapterXmlServiceNames.get(raName).size() +1));
+           resourceAdapterXmlServiceNames.get(raName).add(serviceName);
+       }
+       return serviceName;
+    }
+
+    public static Set<ServiceName> getResourceAdapterXmlServiceName(String raName) {
+        return resourceAdapterXmlServiceNames.get(raName);
+
+    }
+
+    public static synchronized ServiceName getNextValidResourceAdapterServiceName(String raName) {
+        ServiceName serviceName = null;
+       if(resourceAdapterServiceNames.get(raName) == null) {
+           serviceName =  RESOURCE_ADAPTER_SERVICE_PREFIX.append( raName + "_1");
+           Set<ServiceName> serviceNames = new HashSet<ServiceName>(1);
+           serviceNames.add(serviceName);
+           resourceAdapterServiceNames.put(raName,serviceNames);
+       } else {
+           serviceName =  RESOURCE_ADAPTER_SERVICE_PREFIX.append( raName + "_" + String.valueOf(resourceAdapterXmlServiceNames.get(raName).size() +1));
+           resourceAdapterServiceNames.get(raName).add(serviceName);
+       }
+       return serviceName;
+    }
+
+    public static Set<ServiceName> getResourceAdapteServiceName(String raName) {
+        return resourceAdapterServiceNames.get(raName);
+
     }
 }

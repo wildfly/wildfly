@@ -93,15 +93,18 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         }
 
         value = new ResourceAdapterDeployment(raDeployment);
-        registry.getValue().registerResourceAdapterDeployment(value);
         managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
-        log.debugf("Starting sevice %s",
-                ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
 
-        context.getChildTarget()
-                .addService(ServiceName.of(value.getDeployment().getDeploymentName()),
-                        new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
-                .install();
+        if (raDeployment.getResourceAdapter() != null) {
+            registry.getValue().registerResourceAdapterDeployment(value);
+            log.debugf("Starting sevice %s",
+                    ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+
+            context.getChildTarget()
+                    .addService(ServiceName.of(value.getDeployment().getDeploymentName()),
+                            new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
+                    .install();
+        }
 
     }
 
