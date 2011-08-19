@@ -31,6 +31,7 @@ import org.jboss.as.cli.completion.mock.MockNode;
 import org.jboss.as.cli.completion.mock.MockOperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 
+
 /**
 *
 * @author Alexey Loubyansky
@@ -49,7 +50,7 @@ public class AbstractAddressCompleterTest {
     protected void init() {
         ctx = new MockCommandContext();
         ctx.setOperationCandidatesProvider(new MockOperationCandidatesProvider(root));
-        completer = new OperationRequestCompleter(ctx);
+        completer = new OperationRequestCompleter();
     }
 
     protected List<String> fetchCandidates(String buffer) {
@@ -61,7 +62,7 @@ public class AbstractAddressCompleterTest {
 //            e.printStackTrace();
             return Collections.emptyList();
         }
-        completer.complete(buffer, 0, candidates);
+        completer.complete(ctx, buffer, 0, candidates);
         return candidates;
     }
 
