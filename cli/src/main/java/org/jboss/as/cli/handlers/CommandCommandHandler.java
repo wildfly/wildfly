@@ -37,7 +37,7 @@ import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.dmr.ModelNode;
@@ -73,7 +73,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                 if(!ctx.isDomainMode()) {
                     return false;
                 }
-                final String actionName = action.getValue(ctx.getParsedArguments());
+                final String actionName = action.getValue(ctx.getParsedCommandLine());
                 if(actionName == null || !"add".equals(actionName)) {
                     return false;
                 }
@@ -87,7 +87,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
                 int offset = 0;
                 if(ctx.isDomainMode()) {
-                    final String profileName = profile.getValue(ctx.getParsedArguments());
+                    final String profileName = profile.getValue(ctx.getParsedCommandLine());
                     if(profileName == null) {
                         return -1;
                     }
@@ -101,10 +101,10 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             }}, "--node-type") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedArguments())) {
+                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedCommandLine())) {
                     return false;
                 }
-                return "add".equals(action.getValue(ctx.getParsedArguments())) && super.canAppearNext(ctx);
+                return "add".equals(action.getValue(ctx.getParsedCommandLine())) && super.canAppearNext(ctx);
             }
         };
 
@@ -131,13 +131,13 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             @Override
             public List<String> getAllCandidates(CommandContext ctx) {
 
-                final String actionName = action.getValue(ctx.getParsedArguments());
+                final String actionName = action.getValue(ctx.getParsedCommandLine());
                 if(actionName == null) {
                     return Collections.emptyList();
                 }
 
                 if (actionName.equals("add")) {
-                   final String thePath = nodePath.getValue(ctx.getParsedArguments());
+                   final String thePath = nodePath.getValue(ctx.getParsedCommandLine());
                    if (thePath == null) {
                       return Collections.emptyList();
                    }
@@ -163,7 +163,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             }}), "--command-name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                ParsedOperationRequest args = ctx.getParsedArguments();
+                ParsedCommandLine args = ctx.getParsedCommandLine();
                 if(isPresent(args)) {
                     return false;
                 }
@@ -188,7 +188,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
-        final ParsedOperationRequest args = ctx.getParsedArguments();
+        final ParsedCommandLine args = ctx.getParsedCommandLine();
         final String action = this.action.getValue(args);
         if(action == null) {
             ctx.printLine("Command is missing.");
@@ -270,7 +270,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         ModelNode address = request.get("address");
 
         if(ctx.isDomainMode()) {
-            final String profileName = profile.getValue(ctx.getParsedArguments());
+            final String profileName = profile.getValue(ctx.getParsedCommandLine());
             if(profile == null) {
                 ctx.printLine("--profile argument is required to get the node description.");
                 return null;
@@ -278,7 +278,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             address.add("profile", profileName);
         }
 
-        final String type = nodePath.getValue(ctx.getParsedArguments());
+        final String type = nodePath.getValue(ctx.getParsedCommandLine());
         DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
         try {
             DefaultOperationRequestParser.INSTANCE.parse(type, handler);

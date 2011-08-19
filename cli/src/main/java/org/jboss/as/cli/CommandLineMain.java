@@ -96,7 +96,7 @@ import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.PrefixFormatter;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
@@ -859,7 +859,7 @@ public class CommandLineMain {
 
         private void resetArgs(String cmdLine) throws CommandFormatException {
             if(cmdLine != null) {
-                parsedCmd.parse(cmdLine);
+                parsedCmd.parse(prefix, cmdLine);
                 setOutputTarget(parsedCmd.getOutputTarget());
             }
             this.cmdLine = cmdLine;
@@ -932,7 +932,7 @@ public class CommandLineMain {
         }
 
         @Override
-        public ParsedOperationRequest getParsedArguments() {
+        public ParsedCommandLine getParsedCommandLine() {
             return parsedCmd;
         }
 

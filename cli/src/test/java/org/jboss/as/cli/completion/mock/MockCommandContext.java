@@ -24,6 +24,7 @@ package org.jboss.as.cli.completion.mock;
 import java.util.Collection;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.batch.BatchManager;
@@ -32,8 +33,9 @@ import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.PrefixFormatter;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
@@ -51,6 +53,18 @@ public class MockCommandContext implements CommandContext {
     private OperationRequestAddress prefix;
     private PrefixFormatter prefixFormatter;
     private OperationCandidatesProvider operationCandidatesProvider;
+
+    private DefaultOperationCallbackHandler parsedCmd = new DefaultOperationCallbackHandler();
+
+    public void parseCommandLine(String buffer) throws CommandFormatException {
+        try {
+            parsedCmd.parse(prefix, buffer);
+        } catch (CommandFormatException e) {
+            if(!parsedCmd.endsOnAddressOperationNameSeparator() || !parsedCmd.endsOnSeparator()) {
+               throw e;
+            }
+        }
+    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.CommandContext#getCommandArguments()
@@ -223,9 +237,8 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
-    public ParsedOperationRequest getParsedArguments() {
-        // TODO Auto-generated method stub
-        return null;
+    public ParsedCommandLine getParsedCommandLine() {
+        return parsedCmd;
     }
 
     @Override

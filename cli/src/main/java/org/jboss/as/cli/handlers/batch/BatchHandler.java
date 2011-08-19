@@ -89,7 +89,7 @@ public class BatchHandler extends CommandHandlerWithHelp {
 
         BatchManager batchManager = ctx.getBatchManager();
 
-        if(l.isPresent(ctx.getParsedArguments())) {
+        if(l.isPresent(ctx.getParsedCommandLine())) {
             Set<String> heldbackNames = batchManager.getHeldbackNames();
             if(!heldbackNames.isEmpty()) {
                 List<String> names = new ArrayList<String>(heldbackNames.size());
@@ -109,7 +109,7 @@ public class BatchHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        final String name = this.name.getValue(ctx.getParsedArguments());
+        final String name = this.name.getValue(ctx.getParsedCommandLine());
 
         boolean activated;
         if(batchManager.isHeldback(name)) {

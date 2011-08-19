@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.junit.Test;
 
@@ -41,7 +41,7 @@ public class CommandLineArgumentsTestCase {
     @Test
     public void testDefault() throws Exception {
 
-        ParsedOperationRequest args = parse("../../../../testsuite/smoke/target/deployments/test-deployment.sar --name=my.sar --disabled --runtime-name=myrt.sar --force");
+        ParsedCommandLine args = parse("deploy ../../../../testsuite/smoke/target/deployments/test-deployment.sar --name=my.sar --disabled --runtime-name=myrt.sar --force");
         assertTrue(args.hasProperties());
         assertTrue(args.hasProperty("--name"));
         assertTrue(args.hasProperty("--runtime-name"));
@@ -58,7 +58,7 @@ public class CommandLineArgumentsTestCase {
     @Test
     public void testOutputTarget() throws Exception {
 
-        ParsedOperationRequest args = parse("--name=value value1 --name1 > output.target");
+        ParsedCommandLine args = parse("cmd --name=value value1 --name1 > output.target");
         assertTrue(args.hasProperties());
         assertTrue(args.hasProperty("--name"));
         assertEquals("value", args.getPropertyValue("--name"));
@@ -72,10 +72,10 @@ public class CommandLineArgumentsTestCase {
         assertEquals("output.target", args.getOutputTarget());
     }
 
-    protected ParsedOperationRequest parse(String line) {
+    protected ParsedCommandLine parse(String line) {
         DefaultOperationCallbackHandler args = new DefaultOperationCallbackHandler();
         try {
-            args.parseProperties(line);
+            args.parse(null, line);
         } catch (CommandFormatException e) {
             e.printStackTrace();
             org.junit.Assert.fail(e.getLocalizedMessage());

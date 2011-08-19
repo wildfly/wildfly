@@ -110,6 +110,8 @@ public class TheParser {
             private int nameValueSeparator = -1;
             private String name;
             final StringBuilder buffer = new StringBuilder();
+            int bufferStartIndex = 0;
+            boolean inValue;
 
             @Override
             public void enteredState(ParsingContext ctx)
@@ -117,15 +119,23 @@ public class TheParser {
                 final String id = ctx.getState().getId();
                 //System.out.println("entered " + id);
 
-                if (id.equals(CommandNameState.ID)) {
-                    handler.addressOperationSeparator(ctx.getLocation());
-                } else if (id.equals(PropertyListState.ID)) {
+                if(!inValue) {
+                    bufferStartIndex = ctx.getLocation();
+                }
+
+                if (id.equals(PropertyListState.ID)) {
                     handler.propertyListStart(ctx.getLocation());
                 } else if (ArgumentValueState.ID.equals(id)) {
+                    inValue = true;
+                } else if ("ADDR_OP_SEP".equals(id)) {
+                    handler.addressOperationSeparator(ctx.getLocation());
+                } else if (NodeState.ID.equals(id)) {
+                    inValue = true;
+                } else if ("NAME_VALUE_SEPARATOR".equals(id)) {
+                    nameValueSeparator = ctx.getLocation();
                     if (buffer.length() > 0) {
                         name = buffer.toString().trim();
                         buffer.setLength(0);
-                        nameValueSeparator = ctx.getLocation();
                     }
                 }
             }
@@ -145,15 +155,15 @@ public class TheParser {
                     if (this.name != null) {
                         final String value = buffer.toString().trim();
                         if (value.length() > 0) {
-                            handler.property(this.name, value, nameValueSeparator);
+                            handler.property(this.name, value, bufferStartIndex/*nameValueSeparator*/);
                         } else {
-                            handler.propertyName(this.name);
+                            handler.propertyName(bufferStartIndex, this.name);
                             if (nameValueSeparator != -1) {
                                 handler.propertyNameValueSeparator(nameValueSeparator);
                             }
                         }
                     } else {
-                        handler.propertyName(buffer.toString().trim());
+                        handler.propertyName(bufferStartIndex, buffer.toString().trim());
                         if (nameValueSeparator != -1) {
                             handler.propertyNameValueSeparator(nameValueSeparator);
                         }
@@ -170,45 +180,46 @@ public class TheParser {
                     nameValueSeparator = -1;
                 } else if (ArgumentValueState.ID.equals(id)) {
                     if (name == null) {
-                        handler.property(null, buffer.toString().trim(), -1);
+                        handler.property(null, buffer.toString().trim(), bufferStartIndex);
                         buffer.setLength(0);
                         if(!ctx.isEndOfContent()) {
                             handler.propertySeparator(ctx.getLocation());
                         }
                     }
+                    inValue = false;
                 } else if (CommandNameState.ID.equals(id)) {
-                    handler.operationName(buffer.toString().trim());
+                    handler.operationName(bufferStartIndex, buffer.toString().trim());
                     buffer.setLength(0);
                 } else if (NodeState.ID.equals(id)) {
                     char ch = ctx.getCharacter();
                     if (buffer.length() == 0) {
                         if (ch == '/') {
-                            handler.rootNode();
+                            handler.rootNode(bufferStartIndex);
                             handler.nodeSeparator(ctx.getLocation());
                         }
                     } else {
+                        final String value = buffer.toString().trim();
                         if (ch == '=') {
-                            handler.nodeType(buffer.toString().trim());
+                            handler.nodeType(bufferStartIndex, value);
                             handler.nodeTypeNameSeparator(ctx.getLocation());
                         } else if (ch == ':') {
-                            handler.nodeName(buffer.toString().trim());
+                            handler.nodeName(bufferStartIndex, value);
                         } else {
-                            final String value = buffer.toString().trim();
                             if (".".equals(value)) {
                                 // stay at the current address
                             } else if ("..".equals(value)) {
-                                handler.parentNode();
+                                handler.parentNode(ctx.getLocation() - 2);
                             } else if (".type".equals(value)) {
-                                handler.nodeType();
+                                handler.nodeType(ctx.getLocation() - 5);
                             } else {
                                 if (ch == '/') {
                                     if ("".equals(value)) {
-                                        handler.rootNode();
+                                        handler.rootNode(ctx.getLocation());
                                     } else {
-                                        handler.nodeName(value);
+                                        handler.nodeName(bufferStartIndex, value);
                                     }
                                 } else {
-                                    handler.nodeTypeOrName(value);
+                                    handler.nodeTypeOrName(bufferStartIndex, value);
                                 }
                             }
 
@@ -218,15 +229,16 @@ public class TheParser {
                         }
                     }
                     buffer.setLength(0);
+                    inValue = false;
                 } else if (OutputTargetState.ID.equals(id)) {
-                    handler.outputTarget(buffer.toString().trim());
+                    handler.outputTarget(bufferStartIndex, buffer.toString().trim());
                     buffer.setLength(0);
                 }
             }
 
             @Override
             public void character(ParsingContext ctx) throws OperationFormatException {
-                // System.out.println(ctx.getState().getId() + " '" + ctx.getCharacter() + "'");
+                //System.out.println(ctx.getState().getId() + " '" + ctx.getCharacter() + "'");
                 buffer.append(ctx.getCharacter());
             }
         };
@@ -237,7 +249,7 @@ public class TheParser {
         //final String line = "cmd ../../../../my\\ dir/ > ../../../../my\\ dir/cli.log";
         //final String line = "/a=b/../c=d/.type/e:op(p1=v1,p2=v2)";
         //final String line = "cmd --p1=v1 --p2=v2 --p3 v3";
-        final String line = "connect";
+        final String line = "/subsystem=datasources/data-source=java\\:jboss\\/datasources\\/ExampleDS";
         System.out.println(line);
         TheParser.parse(line,
                 new OperationRequestParser.CallbackHandler(){
@@ -255,12 +267,12 @@ public class TheParser {
                     }
 
                     @Override
-                    public void operationName(String name) throws CommandFormatException {
+                    public void operationName(int index, String name) throws CommandFormatException {
                         System.out.println("command: '" + name + "'");
                     }
 
                     @Override
-                    public void outputTarget(String outputTarget) throws CommandFormatException {
+                    public void outputTarget(int index, String outputTarget) throws CommandFormatException {
                         System.out.println("output: '" + outputTarget + "'");
                     }
 
@@ -271,22 +283,22 @@ public class TheParser {
                     }
 
                     @Override
-                    public void rootNode() {
-                        System.out.println("rootNode");
+                    public void rootNode(int index) {
+                        System.out.println("rootNode " + index);
                     }
 
                     @Override
-                    public void parentNode() {
+                    public void parentNode(int index) {
                         System.out.println("parentNode");
                     }
 
                     @Override
-                    public void nodeType() {
+                    public void nodeType(int index) {
                         System.out.println("nodeType");
                     }
 
                     @Override
-                    public void nodeType(String nodeType)
+                    public void nodeType(int index, String nodeType)
                             throws OperationFormatException {
                         System.out.println("nodeType: '" + nodeType + "'");
                     }
@@ -298,7 +310,7 @@ public class TheParser {
                     }
 
                     @Override
-                    public void nodeName(String nodeName)
+                    public void nodeName(int index, String nodeName)
                             throws OperationFormatException {
                         System.out.println("nodeName: '" + nodeName + "'");
                     }
@@ -322,10 +334,10 @@ public class TheParser {
                     }
 
                     @Override
-                    public void propertyName(String propertyName)
+                    public void propertyName(int index, String propertyName)
                             throws OperationFormatException {
                         // TODO Auto-generated method stub
-
+                        System.out.println("propertyName: " + propertyName);
                     }
 
                     @Override
@@ -347,7 +359,7 @@ public class TheParser {
                     }
 
                     @Override
-                    public void nodeTypeOrName(String typeOrName)
+                    public void nodeTypeOrName(int index, String typeOrName)
                             throws OperationFormatException {
                         // TODO Auto-generated method stub
 

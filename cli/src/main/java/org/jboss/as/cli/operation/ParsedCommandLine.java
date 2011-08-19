@@ -29,7 +29,7 @@ import java.util.Set;
 *
 * @author Alexey Loubyansky
 */
-public interface ParsedOperationRequest {
+public interface ParsedCommandLine {
 
     boolean isRequestComplete();
 
@@ -44,6 +44,8 @@ public interface ParsedOperationRequest {
     boolean endsOnNodeSeparator();
 
     boolean endsOnNodeTypeNameSeparator();
+
+    boolean endsOnSeparator();
 
     boolean hasAddress();
 
@@ -64,6 +66,8 @@ public interface ParsedOperationRequest {
     List<String> getOtherProperties();
 
     int getLastSeparatorIndex();
+
+    int getLastChunkIndex();
 
     String getLastParsedPropertyName();
 

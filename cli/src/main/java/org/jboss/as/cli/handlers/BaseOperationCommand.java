@@ -167,7 +167,7 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
 
     protected void setParams(CommandContext ctx, ModelNode request) throws CommandFormatException {
         for(RequestParameterArgument arg : params) {
-            arg.set(ctx.getParsedArguments(), request);
+            arg.set(ctx.getParsedCommandLine(), request);
         }
     }
 }

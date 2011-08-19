@@ -68,7 +68,7 @@ public class CommandTestCase {
     protected DefaultOperationCallbackHandler parse(String line) {
         DefaultOperationCallbackHandler args = new DefaultOperationCallbackHandler();
         try {
-            args.parse(line);
+            args.parse(null, line);
         } catch (CommandFormatException e) {
             e.printStackTrace();
             org.junit.Assert.fail(e.getLocalizedMessage());

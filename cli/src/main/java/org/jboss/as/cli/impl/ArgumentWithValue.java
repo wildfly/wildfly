@@ -26,7 +26,7 @@ import java.util.List;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 
 /**
  *
@@ -70,7 +70,7 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
      * @see org.jboss.as.cli.CommandArgument#getValue(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public String getValue(ParsedOperationRequest args, boolean required) throws CommandFormatException {
+    public String getValue(ParsedCommandLine args, boolean required) throws CommandFormatException {
 
         String value = null;
         if(args.hasProperties()) {
@@ -103,7 +103,7 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
     }
 
     @Override
-    public boolean isValueComplete(ParsedOperationRequest args) throws CommandFormatException {
+    public boolean isValueComplete(ParsedCommandLine args) throws CommandFormatException {
 
         if(!isPresent(args)) {
             return false;

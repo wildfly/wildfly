@@ -30,7 +30,7 @@ import java.util.Set;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationFormatException;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 import org.jboss.as.cli.parsing.TheParser;
@@ -40,7 +40,7 @@ import org.jboss.dmr.ModelNode;
 *
 * @author Alexey Loubyansky
 */
-public class DefaultOperationCallbackHandler extends ValidatingOperationCallbackHandler implements ParsedOperationRequest {
+public class DefaultOperationCallbackHandler extends ValidatingOperationCallbackHandler implements ParsedCommandLine {
 
     private static final int SEPARATOR_NONE = 0;
     private static final int SEPARATOR_NODE_TYPE_NAME = 1;
@@ -50,8 +50,11 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     private static final int SEPARATOR_ARG_NAME_VALUE = 5;
     private static final int SEPARATOR_ARG = 6;
 
+    private static final DefaultOperationRequestAddress EMPTY_ADDRESS = new DefaultOperationRequestAddress();
+
     private int separator = SEPARATOR_NONE;
     private int lastSeparatorIndex = -1;
+    private int lastChunkIndex = -1;
 
     private boolean operationComplete;
     private String operationName;
@@ -70,8 +73,11 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         address = prefix;
     }
 
-    public void parse(String argsStr) throws CommandFormatException {
+    public void parse(OperationRequestAddress initialAddress, String argsStr) throws CommandFormatException {
         reset();
+        if(initialAddress != null) {
+            address = new DefaultOperationRequestAddress(initialAddress);
+        }
         TheParser.parse(argsStr, this);
     }
 
@@ -90,6 +96,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         lastPropName = null;
         lastPropValue = null;
         lastSeparatorIndex = -1;
+        lastChunkIndex = -1;
     }
 
     public List<String> getOtherProperties() {
@@ -132,13 +139,18 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
+    public boolean endsOnSeparator() {
+        return separator != SEPARATOR_NONE;
+    }
+
+    @Override
     public boolean hasAddress() {
         return address != null;
     }
 
     @Override
     public OperationRequestAddress getAddress() {
-        return address;
+        return address == null ? EMPTY_ADDRESS : address;
     }
 
     @Override
@@ -162,7 +174,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public void validatedNodeType(String nodeType) throws OperationFormatException {
+    public void validatedNodeType(int index, String nodeType) throws OperationFormatException {
 
         if(address == null) {
             address = new DefaultOperationRequestAddress();
@@ -175,6 +187,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
 
         address.toNodeType(nodeType);
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
@@ -184,7 +197,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public void validatedNodeName(String nodeName) throws OperationFormatException {
+    public void validatedNodeName(int index, String nodeName) throws OperationFormatException {
 
         if(address == null) {
             address = new DefaultOperationRequestAddress();
@@ -196,6 +209,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
 
         address.toNode(nodeName);
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
@@ -211,10 +225,11 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public void validatedOperationName(String operationName) throws OperationFormatException {
+    public void validatedOperationName(int index, String operationName) throws OperationFormatException {
 
         this.operationName = operationName;
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
@@ -225,12 +240,13 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
 
     @Override
     //public void validatedPropertyName(String argName) throws OperationFormatException {
-    public void propertyName(String propertyName)
+    public void propertyName(int index, String propertyName)
             throws OperationFormatException {
         props.put(propertyName, null);
         lastPropName = propertyName;
         lastPropValue = null;
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
@@ -261,6 +277,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         if(nameValueSeparatorIndex >= 0) {
             this.lastSeparatorIndex = nameValueSeparatorIndex;
         }
+        lastChunkIndex = nameValueSeparatorIndex;
     }
 
     @Override
@@ -282,44 +299,47 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public void rootNode() {
+    public void rootNode(int index) {
         if(address == null) {
             address = new DefaultOperationRequestAddress();
         } else {
             address.reset();
         }
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
-    public void parentNode() {
+    public void parentNode(int index) {
         if(address == null) {
             throw new IllegalStateException("The address hasn't been initialized yet.");
         }
         address.toParentNode();
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
-    public void nodeType() {
+    public void nodeType(int index) {
         if(address == null) {
             throw new IllegalStateException("The address hasn't been initialized yet.");
         }
         address.toNodeType();
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
-    public void nodeTypeOrName(String typeOrName) throws OperationFormatException {
+    public void nodeTypeOrName(int index, String typeOrName) throws OperationFormatException {
 
         if(address == null) {
             address = new DefaultOperationRequestAddress();
         }
 
         if(address.endsOnType()) {
-            nodeName(typeOrName);
+            nodeName(index, typeOrName);
         } else {
-            nodeType(typeOrName);
+            nodeType(index, typeOrName);
         }
         separator = SEPARATOR_NONE;
     }
@@ -340,8 +360,14 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public void outputTarget(String outputTarget) {
+    public int getLastChunkIndex() {
+        return lastChunkIndex;
+    }
+
+    @Override
+    public void outputTarget(int index, String outputTarget) {
         this.outputTarget = outputTarget;
+        lastChunkIndex = index;
     }
 
     public String getOutputTarget() {
@@ -356,7 +382,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    protected void validatedPropertyName(String propertyName)
+    protected void validatedPropertyName(int index, String propertyName)
             throws OperationFormatException {
         // TODO Auto-generated method stub
 

@@ -47,54 +47,54 @@ public abstract class ValidatingOperationCallbackHandler implements CallbackHand
      * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#nodeType(java.lang.String)
      */
     @Override
-    public void nodeType(String nodeType) throws OperationFormatException {
+    public void nodeType(int index, String nodeType) throws OperationFormatException {
 
         assertValidType(nodeType);
-        validatedNodeType(nodeType);
+        validatedNodeType(index, nodeType);
     }
 
-    protected abstract void validatedNodeType(String nodeType) throws OperationFormatException;
+    protected abstract void validatedNodeType(int index, String nodeType) throws OperationFormatException;
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#nodeName(java.lang.String)
      */
     @Override
-    public void nodeName(String nodeName) throws OperationFormatException {
+    public void nodeName(int index, String nodeName) throws OperationFormatException {
 
         assertValidNodeName(nodeName);
-        validatedNodeName(nodeName);
+        validatedNodeName(index, nodeName);
     }
 
-    protected abstract void validatedNodeName(String nodeName) throws OperationFormatException;
+    protected abstract void validatedNodeName(int index, String nodeName) throws OperationFormatException;
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#operationName(java.lang.String)
      */
     @Override
-    public void operationName(String operationName)
+    public void operationName(int index, String operationName)
             throws OperationFormatException {
 
         if (operationName == null || !ALPHANUMERICS_PATTERN.matcher(operationName).matches()) {
             throw new OperationFormatException("'" + operationName + "' is not a valid operation name.");
         }
 
-        validatedOperationName(operationName);
+        validatedOperationName(index, operationName);
     }
 
-    protected abstract void validatedOperationName(String operationName) throws OperationFormatException;
+    protected abstract void validatedOperationName(int index, String operationName) throws OperationFormatException;
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#propertyName(java.lang.String)
      */
     @Override
-    public void propertyName(String propertyName)
+    public void propertyName(int index, String propertyName)
             throws OperationFormatException {
 
         assertValidParameterName(propertyName);
-        validatedPropertyName(propertyName);
+        validatedPropertyName(index, propertyName);
     }
 
-    protected abstract void validatedPropertyName(String propertyName) throws OperationFormatException;
+    protected abstract void validatedPropertyName(int index, String propertyName) throws OperationFormatException;
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#property(java.lang.String, java.lang.String, int)

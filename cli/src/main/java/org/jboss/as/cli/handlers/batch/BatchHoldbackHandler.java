@@ -25,7 +25,7 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 
 /**
  *
@@ -58,7 +58,7 @@ public class BatchHoldbackHandler extends CommandHandlerWithHelp {
         }
 
         String name = null;
-        ParsedOperationRequest args = ctx.getParsedArguments();
+        ParsedCommandLine args = ctx.getParsedCommandLine();
         if(args.hasProperties()) {
             name = args.getOtherProperties().get(0);
         }

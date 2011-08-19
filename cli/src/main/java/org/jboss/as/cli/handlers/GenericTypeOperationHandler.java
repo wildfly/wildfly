@@ -43,7 +43,7 @@ import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
@@ -125,13 +125,13 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
                     final boolean writeAttribute;
                     try {
-                        writeAttribute = name.isPresent(ctx.getParsedArguments());
+                        writeAttribute = name.isPresent(ctx.getParsedCommandLine());
                     } catch (CommandFormatException e) {
                         return Collections.emptyList();
                     }
 
                     if(writeAttribute) {
-                        Set<String> specified = ctx.getParsedArguments().getPropertyNames();
+                        Set<String> specified = ctx.getParsedCommandLine().getPropertyNames();
                         final List<String> theProps = new ArrayList<String>();
                         for(Property prop : getNodeProperties(ctx)) {
                             final String propName = "--" + prop.getName();
@@ -145,7 +145,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
                     DefaultOperationRequestAddress address = new DefaultOperationRequestAddress();
                     if(ctx.isDomainMode()) {
-                        final String profileName = profile.getValue(ctx.getParsedArguments());
+                        final String profileName = profile.getValue(ctx.getParsedCommandLine());
                         if(profileName == null) {
                             return Collections.emptyList();
                         }
@@ -162,7 +162,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 }}), 0, "--operation") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedArguments())) {
+                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedCommandLine())) {
                     return false;
                 }
                 return super.canAppearNext(ctx);
@@ -180,7 +180,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
                 DefaultOperationRequestAddress address = new DefaultOperationRequestAddress();
                 if(ctx.isDomainMode()) {
-                    final String profileName = profile.getValue(ctx.getParsedArguments());
+                    final String profileName = profile.getValue(ctx.getParsedCommandLine());
                     if(profile == null) {
                         return Collections.emptyList();
                     }
@@ -196,7 +196,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             }), "--" + idProperty) {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedArguments())) {
+                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedCommandLine())) {
                     return false;
                 }
                 return super.canAppearNext(ctx);
@@ -236,7 +236,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             @Override
             protected Iterable<CommandArgument> getAllArguments(CommandContext ctx) {
 
-                ParsedOperationRequest args = ctx.getParsedArguments();
+                ParsedCommandLine args = ctx.getParsedCommandLine();
 
                 try {
                     if(!name.isValueComplete(args)) {
@@ -312,7 +312,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
-        final String operation = this.operation.getValue(ctx.getParsedArguments());
+        final String operation = this.operation.getValue(ctx.getParsedCommandLine());
         if(operation == null) {
             return buildWritePropertyRequest(ctx);
         }
@@ -321,14 +321,14 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
     protected ModelNode buildWritePropertyRequest(CommandContext ctx) throws CommandFormatException {
 
-        final String name = this.name.getValue(ctx.getParsedArguments(), true);
+        final String name = this.name.getValue(ctx.getParsedCommandLine(), true);
 
         ModelNode composite = new ModelNode();
         composite.get("operation").set("composite");
         composite.get("address").setEmptyList();
         ModelNode steps = composite.get("steps");
 
-        ParsedOperationRequest args = ctx.getParsedArguments();
+        ParsedCommandLine args = ctx.getParsedCommandLine();
 
         final String profile;
         if(ctx.isDomainMode()) {
@@ -396,7 +396,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
     protected ModelNode buildOperationRequest(CommandContext ctx, final String operation) throws CommandFormatException {
 
-        ParsedOperationRequest args = ctx.getParsedArguments();
+        ParsedCommandLine args = ctx.getParsedCommandLine();
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         if(ctx.isDomainMode()) {
@@ -407,7 +407,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             builder.addNode("profile", profile);
         }
 
-        final String name = this.name.getValue(ctx.getParsedArguments(), true);
+        final String name = this.name.getValue(ctx.getParsedCommandLine(), true);
 
         for(OperationRequestAddress.Node node : nodePath) {
             builder.addNode(node.getType(), node.getName());
@@ -459,7 +459,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
     protected void printHelp(CommandContext ctx) {
 
-        ParsedOperationRequest args = ctx.getParsedArguments();
+        ParsedCommandLine args = ctx.getParsedCommandLine();
         try {
             if(helpProperties.isPresent(args)) {
                 printAttributes(ctx);
@@ -698,7 +698,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         ModelNode request = new ModelNode();
         ModelNode address = request.get("address");
         if(ctx.isDomainMode()) {
-            final String profileName = profile.getValue(ctx.getParsedArguments());
+            final String profileName = profile.getValue(ctx.getParsedCommandLine());
             if(profile == null) {
                 ctx.printLine("--profile argument is required to get the node description.");
                 return null;
