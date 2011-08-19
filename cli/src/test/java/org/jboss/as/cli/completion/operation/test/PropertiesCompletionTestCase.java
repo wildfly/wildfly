@@ -58,7 +58,7 @@ public class PropertiesCompletionTestCase {
 
         ctx = new MockCommandContext();
         ctx.setOperationCandidatesProvider(new MockOperationCandidatesProvider(root));
-        completer = new OperationRequestCompleter(ctx);
+        completer = new OperationRequestCompleter();
     }
 
     @Test
@@ -179,7 +179,7 @@ public class PropertiesCompletionTestCase {
         } catch (CommandFormatException e) {
             return Collections.emptyList();
         }
-        completer.complete(buffer, 0, candidates);
+        completer.complete(ctx, buffer, 0, candidates);
         return candidates;
     }
 }

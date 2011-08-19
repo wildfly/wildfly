@@ -81,9 +81,12 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         TheParser.parse(argsStr, this);
     }
 
-    public void parseProperties(String argsStr) throws CommandFormatException {
+    public void parseOperation(OperationRequestAddress prefix, String argsStr) throws CommandFormatException {
         reset();
-        TheParser.parseCommandArgs(argsStr, this);
+        if(prefix != null) {
+            address = new DefaultOperationRequestAddress(prefix);
+        }
+        TheParser.parseOperationRequest(argsStr, this);
     }
 
     public void reset() {
@@ -204,7 +207,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         }
 
         if(!address.endsOnType()) {
-            throw new OperationFormatException("The prefix should end with the node type before going to a specific node name.");
+            throw new OperationFormatException("Node path format is wrong around '" + nodeName + "' (index=" + index + ").");
         }
 
         address.toNode(nodeName);
