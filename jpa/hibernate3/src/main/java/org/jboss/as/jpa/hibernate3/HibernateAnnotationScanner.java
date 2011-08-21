@@ -75,13 +75,14 @@ public class HibernateAnnotationScanner implements Scanner {
             if (pu == null) {
                 throw new RuntimeException("Missing PersistenceUnitMetadataImpl (thread local wasn't set)");
             }
-            Index index = getJarFileIndex(jartoScan, pu);
-            if (index == null) {
-                throw new RuntimeException("Missing annotation index to scan entity classes.  jar '" +
-                    jartoScan.getPath() +"' not found in index '" + pu.getAnnotationIndex().keySet() +"'");
-            }
             if (jartoScan == null) {
                 throw new IllegalArgumentException("Null jar to scan url");
+            }
+            Index index = getJarFileIndex(jartoScan, pu);
+            if (index == null) {
+                log.tracef("No classes to scan for annotations in jar '%s'"
+                     +" (jars with classes '%s')", jartoScan.getPath(), pu.getAnnotationIndex().keySet());
+                return new HashSet<Package>();
             }
             Collection<ClassInfo> allClasses = index.getKnownClasses();
             for (ClassInfo classInfo : allClasses) {
@@ -119,12 +120,14 @@ public class HibernateAnnotationScanner implements Scanner {
         if (pu == null) {
             throw new RuntimeException("Missing PersistenceUnitMetadataImpl (thread local wasn't set)");
         }
-        Index index = getJarFileIndex(jartoScan, pu);
-        if (index == null) {
-            throw new RuntimeException("Missing annotation index to scan entity classes");
-        }
         if (jartoScan == null) {
             throw new IllegalArgumentException("Null jar to scan url");
+        }
+        Index index = getJarFileIndex(jartoScan, pu);
+        if (index == null) {
+            log.tracef("No classes to scan for annotations in jar '%s'"
+                 +" (jars with classes '%s')", jartoScan.getPath(), pu.getAnnotationIndex().keySet());
+            return new HashSet<Class<?>>();
         }
         if (annotationsToLookFor == null) {
             throw new IllegalArgumentException("Null annotations to look for");
