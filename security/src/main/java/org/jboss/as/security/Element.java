@@ -57,7 +57,9 @@ enum Element {
     SECURITY_MANAGEMENT("security-management"),
     SECURITY_PROPERTIES("security-properties"),
     SUBJECT_FACTORY("subject-factory"),
-    TRUST_MODULE("trust-module");
+    TRUST_MODULE("trust-module"),
+    VAULT("vault"),
+    VAULT_OPTION("vault-option");
 
     private final String name;
 

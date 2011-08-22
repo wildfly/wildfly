@@ -133,33 +133,53 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         List<ModelNode> securityDomainsUpdates = null;
         final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (!visited.add(element)) {
+            Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
+            final Element element = Element.forName(reader.getLocalName());
+            if (!visited.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case SECURITY_MANAGEMENT: {
+                    parseSecurityManagement(reader, subsystem);
+                    break;
+                }
+                case SUBJECT_FACTORY: {
+                    parseSubjectFactory(reader, subsystem);
+                    break;
+                }
+                case SECURITY_DOMAINS: {
+                    securityDomainsUpdates = parseSecurityDomains(reader, address);
+                    break;
+                }
+                case SECURITY_PROPERTIES: {
+                    parseSecurityProperties(reader, subsystem);
+                    break;
+                }
+                case VAULT: {
+                    if(schemaVer == Namespace.SECURITY_1_0)
                         throw unexpectedElement(reader);
+                    final int count = reader.getAttributeCount();
+                    ModelNode vault = subsystem.get(Constants.VAULT);
+                    if(count > 1) {
+                        throw unexpectedAttribute(reader, count);
                     }
-                    switch (element) {
-                        case SECURITY_MANAGEMENT: {
-                            parseSecurityManagement(reader, subsystem);
-                            break;
-                        }
-                        case SUBJECT_FACTORY: {
-                            parseSubjectFactory(reader, subsystem);
-                            break;
-                        }
-                        case SECURITY_DOMAINS: {
-                            securityDomainsUpdates = parseSecurityDomains(reader, address);
-                            break;
-                        }
-                        case SECURITY_PROPERTIES: {
-                            parseSecurityProperties(reader, subsystem);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
+
+                    for (int i = 0; i < count; i++) {
+                        requireNoNamespaceAttribute(reader, i);
+                        final String value = reader.getAttributeValue(i);
+                        final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                            case CODE: {
+                                String code = value;
+                                vault.get(CODE).set(code);
+                                break;
+                            }
+                            default:
+                                throw unexpectedAttribute(reader, i);
                         }
                     }
+                    parseVault(reader, vault);
+                    subsystem.get(Constants.VAULT).set(vault);
                     break;
                 }
                 default: {
@@ -239,6 +259,23 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             ModelNode properties = node.get(SECURITY_PROPERTIES);
             for (Property prop : properties.asPropertyList()) {
                 writer.writeEmptyElement(Element.PROPERTY.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), prop.getValue().asString());
+            }
+            writer.writeEndElement();
+        }
+
+        if(node.hasDefined(Constants.VAULT)){
+            ModelNode vault = node.get(Constants.VAULT);
+            writer.writeStartElement(Element.VAULT.getLocalName());
+            String code = vault.get(CODE).asString();
+            if(code != null && !code.isEmpty()){
+                writer.writeAttribute(Attribute.CODE.getLocalName(), code);
+            }
+
+            ModelNode properties = vault.get(Constants.VAULT_OPTION);
+            for (Property prop : properties.asPropertyList()) {
+                writer.writeEmptyElement(Element.VAULT_OPTION.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
                 writer.writeAttribute(Attribute.VALUE.getLocalName(), prop.getValue().asString());
             }
@@ -583,20 +620,33 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         }
     }
 
+    private void parseVault(final XMLExtendedStreamReader reader, final ModelNode vault)
+            throws XMLStreamException {
+
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case VAULT_OPTION: {
+                    parseModuleOption(reader, vault.get(Constants.VAULT_OPTION));
+                    break;
+                }
+            }
+        }
+    }
+
     private void parseSecurityProperties(final XMLExtendedStreamReader reader, final ModelNode operation)
             throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case PROPERTY: {
-                            parseModuleOption(reader, operation.get(SECURITY_PROPERTIES));
-                            break;
-                        }
-
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTY: {
+                    parseModuleOption(reader, operation.get(SECURITY_PROPERTIES));
+                    break;
                 }
+
             }
         }
     }
@@ -607,18 +657,10 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
         List<ModelNode> list = new ArrayList<ModelNode>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case SECURITY_DOMAIN: {
-                            list.add(parseSecurityDomain(reader, parentAddress));
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SECURITY_DOMAIN: {
+                    list.add(parseSecurityDomain(reader, parentAddress));
                     break;
                 }
                 default: {
@@ -665,58 +707,51 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         }
 
         final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (!visited.add(element)) {
-                        throw unexpectedElement(reader);
-                    }
-                    switch (element) {
-                        case AUTHENTICATION: {
-                            if (visited.contains(Element.AUTHENTICATION_JASPI))
-                                throw new XMLStreamException(
-                                        "A security domain can have either an <authentication> or <authentication-jaspi> element, not both",
-                                        reader.getLocation());
-                            parseAuthentication(reader, op.get(AUTHENTICATION), true);
-                            break;
-                        }
-                        case AUTHORIZATION: {
-                            parseAuthorization(reader, op.get(AUTHORIZATION));
-                            break;
-                        }
-                        case ACL: {
-                            parseACL(reader, op.get(ACL));
-                            break;
-                        }
-                        case AUDIT: {
-                            parseAudit(reader, op.get(AUDIT));
-                            break;
-                        }
-                        case IDENTITY_TRUST: {
-                            parseIdentityTrust(reader, op.get(IDENTITY_TRUST));
-                            break;
-                        }
-                        case MAPPING: {
-                            parseMapping(reader, op.get(MAPPING));
-                            break;
-                        }
-                        case AUTHENTICATION_JASPI: {
-                            if (visited.contains(Element.AUTHENTICATION))
-                                throw new XMLStreamException(
-                                        "A security domain can have either an <authentication> or <authentication-jaspi> element, not both",
-                                        reader.getLocation());
-                            parseAuthenticationJaspi(reader, op.get(AUTHENTICATION_JASPI));
-                            break;
-                        }
-                        case JSSE: {
-                            parseJSSE(reader, op.get(JSSE));
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            if (!visited.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case AUTHENTICATION: {
+                    if (visited.contains(Element.AUTHENTICATION_JASPI))
+                        throw new XMLStreamException(
+                                "A security domain can have either an <authentication> or <authentication-jaspi> element, not both",
+                                reader.getLocation());
+                    parseAuthentication(reader, op.get(AUTHENTICATION), true);
+                    break;
+                }
+                case AUTHORIZATION: {
+                    parseAuthorization(reader, op.get(AUTHORIZATION));
+                    break;
+                }
+                case ACL: {
+                    parseACL(reader, op.get(ACL));
+                    break;
+                }
+                case AUDIT: {
+                    parseAudit(reader, op.get(AUDIT));
+                    break;
+                }
+                case IDENTITY_TRUST: {
+                    parseIdentityTrust(reader, op.get(IDENTITY_TRUST));
+                    break;
+                }
+                case MAPPING: {
+                    parseMapping(reader, op.get(MAPPING));
+                    break;
+                }
+                case AUTHENTICATION_JASPI: {
+                    if (visited.contains(Element.AUTHENTICATION))
+                        throw new XMLStreamException(
+                                "A security domain can have either an <authentication> or <authentication-jaspi> element, not both",
+                                reader.getLocation());
+                    parseAuthenticationJaspi(reader, op.get(AUTHENTICATION_JASPI));
+                    break;
+                }
+                case JSSE: {
+                    parseJSSE(reader, op.get(JSSE));
                     break;
                 }
                 default: {
@@ -733,20 +768,12 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         if (requireNoAttributes)
             requireNoAttributes(reader);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case LOGIN_MODULE: {
-                            EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
-                            EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
-                            parseCommonModule(reader, op.add(), required, notAllowed);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case LOGIN_MODULE: {
+                    EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
+                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
+                    parseCommonModule(reader, op.add(), required, notAllowed);
                     break;
                 }
                 default: {
@@ -759,20 +786,12 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void parseAuthorization(XMLExtendedStreamReader reader, ModelNode op) throws XMLStreamException {
         requireNoAttributes(reader);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case POLICY_MODULE: {
-                            EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
-                            EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
-                            parseCommonModule(reader, op.add(), required, notAllowed);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case POLICY_MODULE: {
+                    EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
+                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
+                    parseCommonModule(reader, op.add(), required, notAllowed);
                     break;
                 }
                 default: {
@@ -785,20 +804,12 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void parseACL(XMLExtendedStreamReader reader, ModelNode op) throws XMLStreamException {
         requireNoAttributes(reader);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case ACL_MODULE: {
-                            EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
-                            EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
-                            parseCommonModule(reader, op.add(), required, notAllowed);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ACL_MODULE: {
+                    EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
+                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
+                    parseCommonModule(reader, op.add(), required, notAllowed);
                     break;
                 }
                 default: {
@@ -811,46 +822,31 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void parseAudit(XMLExtendedStreamReader reader, ModelNode op) throws XMLStreamException {
         requireNoAttributes(reader);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case PROVIDER_MODULE: {
-                            EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
-                            EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG);
-                            parseCommonModule(reader, op.add(), required, notAllowed);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                    case PROVIDER_MODULE: {
+                        EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
+                        EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG);
+                        parseCommonModule(reader, op.add(), required, notAllowed);
+                        break;
                     }
-                    break;
+                    default: {
+                        throw unexpectedElement(reader);
+                    }
                 }
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
         }
+
     }
 
     private void parseIdentityTrust(XMLExtendedStreamReader reader, ModelNode op) throws XMLStreamException {
         requireNoAttributes(reader);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case TRUST_MODULE: {
-                            EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
-                            EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
-                            parseCommonModule(reader, op.add(), required, notAllowed);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case TRUST_MODULE: {
+                    EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
+                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
+                    parseCommonModule(reader, op.add(), required, notAllowed);
                     break;
                 }
                 default: {
@@ -863,20 +859,12 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void parseMapping(XMLExtendedStreamReader reader, ModelNode op) throws XMLStreamException {
         requireNoAttributes(reader);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case MAPPING_MODULE: {
-                            EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
-                            EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.FLAG);
-                            parseCommonModule(reader, op.add(), required, notAllowed);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case MAPPING_MODULE: {
+                    EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
+                    EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.FLAG);
+                    parseCommonModule(reader, op.add(), required, notAllowed);
                     break;
                 }
                 default: {
@@ -922,18 +910,10 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         }
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case MODULE_OPTION: {
-                            parseModuleOption(reader, node.get(MODULE_OPTIONS));
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case MODULE_OPTION: {
+                    parseModuleOption(reader, node.get(MODULE_OPTIONS));
                     break;
                 }
                 default: {
@@ -946,24 +926,16 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void parseAuthenticationJaspi(XMLExtendedStreamReader reader, ModelNode op) throws XMLStreamException {
         requireNoAttributes(reader);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case LOGIN_MODULE_STACK: {
-                            ModelNode node = op.get(LOGIN_MODULE_STACK);
-                            parseLoginModuleStack(reader, node.add());
-                            break;
-                        }
-                        case AUTH_MODULE: {
-                            ModelNode node = op.get(AUTH_MODULE);
-                            parseAuthModule(reader, node.add());
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case LOGIN_MODULE_STACK: {
+                    ModelNode node = op.get(LOGIN_MODULE_STACK);
+                    parseLoginModuleStack(reader, node.add());
+                    break;
+                }
+                case AUTH_MODULE: {
+                    ModelNode node = op.get(AUTH_MODULE);
+                    parseAuthModule(reader, node.add());
                     break;
                 }
                 default: {
@@ -1024,18 +996,10 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         }
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case MODULE_OPTION: {
-                            parseModuleOption(reader, op.get(MODULE_OPTIONS));
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case MODULE_OPTION: {
+                    parseModuleOption(reader, op.get(MODULE_OPTIONS));
                     break;
                 }
                 default: {
@@ -1188,19 +1152,11 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         }
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case SECURITY_1_0: {
-                    requireNoAttributes(reader);
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case ADDITIONAL_PROPERTIES: {
-                            op.get(ADDITIONAL_PROPERTIES).set(reader.getElementText().trim());
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            requireNoAttributes(reader);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ADDITIONAL_PROPERTIES: {
+                    op.get(ADDITIONAL_PROPERTIES).set(reader.getElementText().trim());
                     break;
                 }
                 default: {

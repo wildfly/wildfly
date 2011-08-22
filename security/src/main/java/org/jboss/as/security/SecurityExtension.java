@@ -94,12 +94,14 @@ public class SecurityExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(Namespace.SECURITY_1_0.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(Namespace.SECURITY_1_1.getUriString(), PARSER);
     }
 
     private static class SecurityDescribeHandler implements OperationStepHandler {
         static final SecurityDescribeHandler INSTANCE = new SecurityDescribeHandler();
 
+        @SuppressWarnings("deprecation")
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
@@ -133,6 +135,9 @@ public class SecurityExtension implements Extension {
             }
             if (model.hasDefined(SECURITY_PROPERTIES)) {
                 subsystem.get(SECURITY_PROPERTIES).set(model.get(SECURITY_PROPERTIES));
+            }
+            if (model.hasDefined(Constants.VAULT)) {
+                subsystem.get(Constants.VAULT).set(model.get(Constants.VAULT));
             }
 
             ModelNode result = context.getResult();
