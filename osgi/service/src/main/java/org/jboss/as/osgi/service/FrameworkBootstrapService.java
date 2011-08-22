@@ -22,6 +22,7 @@
 
 package org.jboss.as.osgi.service;
 
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
 import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
 

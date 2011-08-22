@@ -42,7 +42,7 @@ import org.junit.Test;
  * @author John Bailey
  */
 public class ObjectFactoryTestCase {
-    private NamingStore namingStore;
+    private WritableNamingStore namingStore;
     private NamingContext namingContext;
 
     @BeforeClass

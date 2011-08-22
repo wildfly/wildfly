@@ -24,11 +24,11 @@ package org.jboss.as.ee.beanvalidation;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.ManagedReference;
@@ -80,7 +80,7 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
         //if this is a war we need to bind to the modules comp namespace
         if(DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
-            bindServices(factory, serviceTarget,moduleDescription, moduleDescription.getModuleName(), moduleContextServiceName);
+            bindServices(factory, serviceTarget, moduleDescription, moduleDescription.getModuleName(), moduleContextServiceName);
         }
 
         for(ComponentDescription component : moduleDescription.getComponentDescriptions()) {
@@ -100,18 +100,16 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
      */
     private void bindServices(LazyValidatorFactory factory, ServiceTarget serviceTarget, EEModuleDescription description, String componentName, ServiceName contextServiceName) {
 
-        final ServiceName validatorFactoryServiceName = ContextNames.serviceNameOfContext(description.getApplicationName(),description.getModuleName(),componentName,"java:comp/ValidatorFactory");
         BinderService validatorFactoryBindingService = new BinderService("ValidatorFactory");
         validatorFactoryBindingService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(factory)));
-        serviceTarget.addService(validatorFactoryServiceName, validatorFactoryBindingService)
-            .addDependency(contextServiceName, NamingStore.class, validatorFactoryBindingService.getNamingStoreInjector())
+        serviceTarget.addService(contextServiceName.append("ValidatorFactory"), validatorFactoryBindingService)
+            .addDependency(contextServiceName, ServiceBasedNamingStore.class, validatorFactoryBindingService.getNamingStoreInjector())
             .install();
 
-        final ServiceName validatorServiceName = ContextNames.serviceNameOfContext(description.getApplicationName(), description.getModuleName(), componentName, "java:comp/Validator");
         BinderService validatorBindingService = new BinderService("Validator");
         validatorBindingService.getManagedObjectInjector().inject(new ValidatorJndiInjectable(factory));
-        serviceTarget.addService(validatorServiceName, validatorBindingService)
-            .addDependency(contextServiceName, NamingStore.class, validatorBindingService.getNamingStoreInjector())
+        serviceTarget.addService(contextServiceName.append("Validator"), validatorBindingService)
+            .addDependency(contextServiceName, ServiceBasedNamingStore.class, validatorBindingService.getNamingStoreInjector())
             .install();
 
     }

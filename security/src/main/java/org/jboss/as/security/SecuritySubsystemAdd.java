@@ -23,6 +23,7 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
@@ -42,7 +43,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.security.context.SecurityDomainJndiInjectable;
@@ -255,7 +255,7 @@ class SecuritySubsystemAdd implements OperationStepHandler {
                         final BinderService binderService = new BinderService("jaas");
                         target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("jaas"), binderService)
                                 .addInjection(binderService.getManagedObjectInjector(), securityDomainJndiInjectable)
-                                .addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class,
+                                .addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class,
                                         binderService.getNamingStoreInjector())
                                 .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
                                         securityDomainJndiInjectable.getSecurityManagementInjector())

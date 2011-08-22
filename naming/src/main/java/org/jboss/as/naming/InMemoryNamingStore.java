@@ -59,7 +59,7 @@ import static org.jboss.as.naming.util.NamingUtils.notAContextException;
  *
  * @author John E. Bailey
  */
-public class InMemoryNamingStore implements NamingStore {
+public class InMemoryNamingStore implements WritableNamingStore {
 
     /* The root node of the tree.  Represents a JNDI name of "" */
     private final ContextNode root = new ContextNode(null, null, new CompositeName(), new NamingContext(this, null));

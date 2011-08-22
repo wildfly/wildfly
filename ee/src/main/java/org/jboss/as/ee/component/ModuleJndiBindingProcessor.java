@@ -23,7 +23,7 @@ package org.jboss.as.ee.component;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -82,10 +82,10 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         final ServiceName moduleOwnerName = deploymentUnit.getServiceName().append("module").append(moduleConfiguration.getApplicationName()).append(moduleConfiguration.getModuleName());
         for (BindingConfiguration binding : bindingConfigurations) {
 
-            final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
+            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
-            deploymentDescriptorBindings.put(serviceName, binding);
-            addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, moduleOwnerName, moduleCount, dependencies);
+            deploymentDescriptorBindings.put(bindInfo.getBinderServiceName(), binding);
+            addJndiBinding(moduleConfiguration, binding, phaseContext, bindInfo.getBinderServiceName(), moduleOwnerName, moduleCount, dependencies);
         }
 
         //now we process all component level bindings, for components that do not have their own java:comp namespace.
@@ -101,9 +101,9 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     continue;
                 }
 
-                final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
-                deploymentDescriptorBindings.put(serviceName, binding);
-                addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, moduleOwnerName, moduleCount, dependencies);
+                final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
+                deploymentDescriptorBindings.put(bindInfo.getBinderServiceName(), binding);
+                addJndiBinding(moduleConfiguration, binding, phaseContext, bindInfo.getBinderServiceName(), moduleOwnerName, moduleCount, dependencies);
             }
         }
 
@@ -147,14 +147,14 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                             //components with their own comp context do their own binding
                             continue;
                         }
-                        final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
+                        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
-                        logger.tracef("Binding %s using service %s", binding.getName(), serviceName);
+                        logger.tracef("Binding %s using service %s", binding.getName(), bindInfo.getBinderServiceName());
 
-                        if (deploymentDescriptorBindings.containsKey(serviceName)) {
+                        if (deploymentDescriptorBindings.containsKey(bindInfo.getBinderServiceName())) {
                             continue; //this has been overridden by a DD binding
                         }
-                        addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName, ownerName, handleCount, dependencies);
+                        addJndiBinding(moduleConfiguration, binding, phaseContext, bindInfo.getBinderServiceName(), ownerName, handleCount, dependencies);
                     }
                 }
             }.run();
@@ -177,20 +177,20 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
         // Check to see if this entry should actually be bound into JNDI.
         if (bindingName != null) {
-            final ServiceName binderServiceName = ContextNames.serviceNameOfEnvEntry(module.getApplicationName(), module.getModuleName(), module.getModuleName(), false, bindingName);
+            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(module.getApplicationName(), module.getModuleName(), module.getModuleName(), false, bindingName);
 
             if (bindingName.startsWith("java:comp") || bindingName.startsWith("java:module") || bindingName.startsWith("java:app")) {
                 //this is a binding that does not need to be shared.
 
                 try {
-                    final BinderService service = new BinderService(bindingName, bindingConfiguration.getSource());
-                    dependencies.add(binderServiceName);
-                    ServiceBuilder<ManagedReferenceFactory> serviceBuilder = phaseContext.getServiceTarget().addService(binderServiceName, service);
+                    final BinderService service = new BinderService(bindInfo.getBindName(), bindingConfiguration.getSource());
+                    dependencies.add(bindInfo.getBinderServiceName());
+                    ServiceBuilder<ManagedReferenceFactory> serviceBuilder = phaseContext.getServiceTarget().addService(bindInfo.getBinderServiceName(), service);
                     bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
-                    serviceBuilder.addDependency(binderServiceName.getParent(), NamingStore.class, service.getNamingStoreInjector());
+                    serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
                     serviceBuilder.install();
                 } catch (DuplicateServiceException e) {
-                    ServiceController<ManagedReferenceFactory> registered = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(binderServiceName);
+                    ServiceController<ManagedReferenceFactory> registered = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(bindInfo.getBinderServiceName());
                     if (registered == null)
                         throw e;
 
@@ -203,17 +203,17 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                 ServiceController<ManagedReferenceFactory> controller = null;
                 BinderService service;
                 try {
-                    service = new BinderService(bindingName, bindingConfiguration.getSource());
-                    dependencies.add(binderServiceName);
-                    ServiceBuilder<ManagedReferenceFactory> serviceBuilder = CurrentServiceContainer.getServiceContainer().addService(binderServiceName, service);
+                    service = new BinderService(bindInfo.getBindName(), bindingConfiguration.getSource());
+                    dependencies.add(bindInfo.getBinderServiceName());
+                    ServiceBuilder<ManagedReferenceFactory> serviceBuilder = CurrentServiceContainer.getServiceContainer().addService(bindInfo.getBinderServiceName(), service);
                     bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
-                    serviceBuilder.addDependency(binderServiceName.getParent(), NamingStore.class, service.getNamingStoreInjector());
+                    serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
                     serviceBuilder.addListener(serviceVerificationHandler);
                     controller = serviceBuilder.install();
 
                     service.acquire();
                 } catch (DuplicateServiceException e) {
-                    controller = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(binderServiceName);
+                    controller = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(bindInfo.getBinderServiceName());
                     if (controller == null)
                         throw e;
 
