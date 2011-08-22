@@ -54,7 +54,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
 
     private int separator = SEPARATOR_NONE;
     private int lastSeparatorIndex = -1;
-    private int lastChunkIndex = -1;
+    private int lastChunkIndex = 0;
 
     private boolean operationComplete;
     private String operationName;
@@ -99,7 +99,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         lastPropName = null;
         lastPropValue = null;
         lastSeparatorIndex = -1;
-        lastChunkIndex = -1;
+        lastChunkIndex = 0;
     }
 
     public List<String> getOtherProperties() {
@@ -289,7 +289,6 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         this.lastSeparatorIndex = index;
         this.lastPropName = null;
         this.lastPropValue = null;
-
     }
 
     @Override

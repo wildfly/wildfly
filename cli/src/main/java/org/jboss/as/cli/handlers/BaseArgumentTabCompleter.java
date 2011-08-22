@@ -90,7 +90,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
             final String argName = parsedCmd.getLastParsedPropertyName();
             final String argValue = parsedCmd.getLastParsedPropertyValue();
             if (argValue != null || parsedCmd.endsOnPropertyValueSeparator()) {
-                result = parsedCmd.getLastChunkIndex();//.getLastSeparatorIndex() + 1;
+                result = parsedCmd.getLastChunkIndex();
                 if(parsedCmd.endsOnPropertyValueSeparator()) {
                     ++result;// it enters on '='
                 }

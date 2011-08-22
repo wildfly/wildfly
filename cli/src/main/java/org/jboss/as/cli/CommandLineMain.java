@@ -330,6 +330,8 @@ public class CommandLineMain {
                         processLine(cmdCtx, line.trim());
                     }
                 }
+            } catch(Throwable t) {
+                t.printStackTrace();
             } finally {
                 cmdCtx.disconnectController();
             }
@@ -364,6 +366,8 @@ public class CommandLineMain {
             for (int i = 0; i < commands.length && !cmdCtx.terminate; ++i) {
                 processLine(cmdCtx, commands[i]);
             }
+        } catch(Throwable t) {
+            t.printStackTrace();
         } finally {
             if (!cmdCtx.terminate) {
                 cmdCtx.terminateSession();
@@ -401,7 +405,7 @@ public class CommandLineMain {
                 processLine(cmdCtx, line.trim());
                 line = reader.readLine();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             cmdCtx.printLine("Failed to process file '" + file.getAbsolutePath() + "'");
             e.printStackTrace();
         } finally {
@@ -444,7 +448,6 @@ public class CommandLineMain {
                 try {
                     cmdCtx.operationHandler.handle(cmdCtx);
                 } finally {
-//                    cmdCtx.setOutputTarget(null);
                     cmdCtx.set("OP_REQ", null);
                 }
             }
@@ -479,8 +482,6 @@ public class CommandLineMain {
                         handler.handle(cmdCtx);
                     } catch (CommandFormatException e) {
                         cmdCtx.printLine(e.getLocalizedMessage());
-//                    } finally {
-//                        cmdCtx.setOutputTarget(null);
                     }
                 }
 
