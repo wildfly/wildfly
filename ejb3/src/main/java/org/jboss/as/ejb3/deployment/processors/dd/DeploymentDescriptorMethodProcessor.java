@@ -37,6 +37,7 @@ import org.jboss.modules.Module;
 
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * Deployment descriptor that resolves interceptor methods definined in ejb-jar.xml that could not be resolved at
@@ -59,17 +60,17 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
                 if (!ejb.getAroundInvokeDDMethods().isEmpty() || !ejb.getPostConstructDDMethods().isEmpty() || !ejb.getPreDestroyDDMethods().isEmpty()) {
                     try {
                         final Class<?> clazz = module.getClassLoader().loadClass(ejb.getComponentClassName());
-                        for (String aroundInvoke : ejb.getAroundInvokeDDMethods()) {
+                        for (String aroundInvoke : (List<String>)ejb.getAroundInvokeDDMethods()) {
                             final MethodIdentifier aroundInvokeIdentifier = MethodIdentifier.getIdentifier(Object.class, aroundInvoke, InvocationContext.class);
                             Method method = ClassReflectionIndexUtil.findRequiredMethod(index, index.getClassIndex(clazz), aroundInvokeIdentifier);
                             applicationClassesDescription.getOrAddClassByName(method.getDeclaringClass().getName()).setAroundInvokeMethod(aroundInvokeIdentifier);
                         }
-                        for (String preDestroy : ejb.getPreDestroyDDMethods()) {
+                        for (String preDestroy : (List<String>)ejb.getPreDestroyDDMethods()) {
                             final MethodIdentifier preDestroyIdentifier = MethodIdentifier.getIdentifier(void.class, preDestroy);
                             final Method method = ClassReflectionIndexUtil.findRequiredMethod(index, index.getClassIndex(clazz), preDestroyIdentifier);
                             applicationClassesDescription.getOrAddClassByName(method.getDeclaringClass().getName()).setPreDestroyMethod(preDestroyIdentifier);
                         }
-                        for (String postConstruct : ejb.getPostConstructDDMethods()) {
+                        for (String postConstruct : (List<String>)ejb.getPostConstructDDMethods()) {
                             final MethodIdentifier postConstructIdentifier = MethodIdentifier.getIdentifier(void.class, postConstruct);
                             final Method method = ClassReflectionIndexUtil.findRequiredMethod(index, index.getClassIndex(clazz), postConstructIdentifier);
                             applicationClassesDescription.getOrAddClassByName(method.getDeclaringClass().getName()).setPostConstructMethod(postConstructIdentifier);

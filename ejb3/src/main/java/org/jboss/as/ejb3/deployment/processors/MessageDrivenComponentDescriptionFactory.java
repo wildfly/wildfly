@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -179,10 +182,17 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
 
     private void processMessageDrivenBeanMetaData(final DeploymentUnit deploymentUnit, final MessageDrivenBeanMetaData mdb) throws DeploymentUnitProcessingException {
         final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
 
         final String beanName = mdb.getName();
         // the important bit is to skip already processed EJBs via annotations
         if (ejbJarDescription.hasComponent(beanName)) {
+           final ComponentDescription description = eeModuleDescription.getComponentByName(beanName);
+            if(description instanceof MessageDrivenComponentDescription) {
+                ((MessageDrivenComponentDescription)description).setDescriptorData(mdb);
+            } else {
+                throw new DeploymentUnitProcessingException("MDB with name " + beanName + " referenced in ejb-jar.xml could not be created, as existing non MDB component with same name already exists: " + description);
+            }
             return;
         }
 
@@ -196,6 +206,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         final MessageDrivenComponentDescription mdbComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), messageListenerInterface, activationConfigProps);
         // add it to the ejb jar description
         ejbJarDescription.getEEModuleDescription().addComponent(mdbComponentDescription);
+        mdbComponentDescription.setDescriptorData(mdb);
     }
 
     private Properties getActivationConfigProperties(final AnnotationInstance messageBeanAnnotation) {

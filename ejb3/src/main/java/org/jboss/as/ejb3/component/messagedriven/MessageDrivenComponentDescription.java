@@ -39,6 +39,7 @@ import org.jboss.as.ejb3.component.pool.PoolConfigService;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -48,7 +49,7 @@ import java.util.Properties;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class MessageDrivenComponentDescription extends EJBComponentDescription {
+public class MessageDrivenComponentDescription extends EJBComponentDescription<MessageDrivenBeanMetaData> {
     private final Properties activationProps;
     private String resourceAdapterName;
 

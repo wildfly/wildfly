@@ -43,37 +43,54 @@ import java.util.Set;
  */
 public class MethodAnnotationAggregator {
 
-    public static <A extends Annotation, T> Map<Method, List<T>> runtimeAnnotationInformation(final Class<?> componentClass, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex index, final Class<A> annotationType) {
+    public static <A extends Annotation, T> RuntimeAnnotationInformation<T> runtimeAnnotationInformation(final Class<?> componentClass, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex index, final Class<A> annotationType) {
         final HashSet<MethodIdentifier> methodIdentifiers = new HashSet<MethodIdentifier>();
-        final Map<Method, List<T>> ret = new HashMap<Method, List<T>>();
+        final Map<Method, List<T>> methods = new HashMap<Method, List<T>>();
+        final Map<String, List<T>> classAnnotations = new HashMap<String, List<T>>();
+
         Class<?> c = componentClass;
         while (c != null && c != Object.class) {
-            final EEModuleClassDescription description = applicationClasses.getClassByName(c.getName());
-            ClassAnnotationInformation<A, T> annotationData = description.getAnnotationInformation(annotationType);
-            if (annotationData != null) {
-                final ClassReflectionIndex<?> classIndex = index.getClassIndex(c);
 
-                for (Map.Entry<MethodIdentifier, List<T>> entry : annotationData.getMethodLevelAnnotations().entrySet()) {
-                    if (!methodIdentifiers.contains(entry.getKey())) {
-                        Method method = classIndex.getMethod(entry.getKey());
-                        //we do not have to worry about private methods being overriden
-                        if (!Modifier.isPrivate(method.getModifiers())) {
-                            methodIdentifiers.add(entry.getKey());
+            final ClassReflectionIndex<?> classIndex = index.getClassIndex(c);
+
+            final EEModuleClassDescription description = applicationClasses.getClassByName(c.getName());
+            if (description != null) {
+                ClassAnnotationInformation<A, T> annotationData = description.getAnnotationInformation(annotationType);
+                if (annotationData != null) {
+
+                    if (!annotationData.getClassLevelAnnotations().isEmpty()) {
+                        classAnnotations.put(c.getName(), annotationData.getClassLevelAnnotations());
+                    }
+
+
+                    for (Map.Entry<MethodIdentifier, List<T>> entry : annotationData.getMethodLevelAnnotations().entrySet()) {
+                        if (!methodIdentifiers.contains(entry.getKey())) {
+                            Method method = classIndex.getMethod(entry.getKey());
+
+                            methods.put(method, entry.getValue());
                         }
-                        ret.put(method, entry.getValue());
                     }
                 }
-
             }
+
+            //we store all the method identifiers
+            //so we can check if a method is overriden
+            for (Method method : classIndex.getMethods()) {
+                //we do not have to worry about private methods being overriden
+                if (!Modifier.isPrivate(method.getModifiers())) {
+                    methodIdentifiers.add(MethodIdentifier.getIdentifierForMethod(method));
+                }
+            }
+
             c = c.getSuperclass();
         }
-        return ret;
-    }
-    public static <A extends Annotation, T> Set<Method> runtimeAnnotationPresent(final Class<?> componentClass, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex index, final Class<A> annotationType) {
-        Map<Method, List<Object>> result  = runtimeAnnotationInformation(componentClass, applicationClasses, index, annotationType);
-        return  new HashSet<Method>(result.keySet());
+        return new RuntimeAnnotationInformation<T>(classAnnotations, methods);
     }
 
+    public static <A extends Annotation, T> Set<Method> runtimeAnnotationPresent(final Class<?> componentClass, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex index, final Class<A> annotationType) {
+        RuntimeAnnotationInformation<Object> result = runtimeAnnotationInformation(componentClass, applicationClasses, index, annotationType);
+        return new HashSet<Method>(result.getMethodAnnotations().keySet());
+    }
 
 
 }

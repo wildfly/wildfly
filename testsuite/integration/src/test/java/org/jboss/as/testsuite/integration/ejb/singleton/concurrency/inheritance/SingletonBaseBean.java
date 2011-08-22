@@ -26,7 +26,7 @@ import javax.ejb.AccessTimeout;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import java.util.concurrent.CountDownLatch;
-
+import java.util.concurrent.TimeUnit;
 
 
 public class SingletonBaseBean {
@@ -36,7 +36,9 @@ public class SingletonBaseBean {
     public void writeLockOverriddenByParent(CountDownLatch cont, CountDownLatch entered) throws InterruptedException {
         entered.countDown();
         cont.countDown();
-        cont.await();
+        if (!cont.await(2, TimeUnit.SECONDS)) {
+            throw new RuntimeException("Could not acquire lock within 2 seconds");
+        }
     }
 
     @Lock(LockType.READ)
@@ -44,7 +46,9 @@ public class SingletonBaseBean {
     public void readLockOverriddenByParent(CountDownLatch cont, CountDownLatch entered) throws InterruptedException {
         entered.countDown();
         cont.countDown();
-        cont.await();
+        if (!cont.await(2, TimeUnit.SECONDS)) {
+            throw new RuntimeException("Could not acquire lock within 2 seconds");
+        }
     }
 
     @Lock(LockType.WRITE)
@@ -52,7 +56,9 @@ public class SingletonBaseBean {
     public void writeLock(CountDownLatch cont, CountDownLatch entered) throws InterruptedException {
         entered.countDown();
         cont.countDown();
-        cont.await();
+        if (!cont.await(2, TimeUnit.SECONDS)) {
+            throw new RuntimeException("Could not acquire lock within 2 seconds");
+        }
     }
 
     @Lock(LockType.READ)
@@ -60,14 +66,18 @@ public class SingletonBaseBean {
     public void readLock(CountDownLatch cont, CountDownLatch entered) throws InterruptedException {
         entered.countDown();
         cont.countDown();
-        cont.await();
+        if (!cont.await(2, TimeUnit.SECONDS)) {
+            throw new RuntimeException("Could not acquire lock within 2 seconds");
+        }
     }
 
     @AccessTimeout(value = 0)
     public void impliedWriteLock(CountDownLatch cont, CountDownLatch entered) throws InterruptedException {
         entered.countDown();
         cont.countDown();
-        cont.await();
+        if (!cont.await(2, TimeUnit.SECONDS)) {
+            throw new RuntimeException("Could not acquire lock within 2 seconds");
+        }
     }
 
 }
