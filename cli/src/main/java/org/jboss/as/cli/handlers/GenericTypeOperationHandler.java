@@ -84,7 +84,16 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
         super("generic-type-operation", true);
 
-        helpArg.setExclusive(false);
+        helpArg = new ArgumentWithoutValue(this, "--help", "-h") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedCommandLine())) {
+                    return false;
+                }
+                return super.canAppearNext(ctx);
+            }
+        };
+
         nodePath = new DefaultOperationRequestAddress();
         OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(nodePath);
         try {
@@ -117,7 +126,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
-        profile.addCantAppearAfter(helpArg);
+        //profile.addCantAppearAfter(helpArg);
 
         operation = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
                 @Override

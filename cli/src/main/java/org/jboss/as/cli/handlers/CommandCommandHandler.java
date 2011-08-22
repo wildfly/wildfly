@@ -97,7 +97,12 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                     buf.append(buffer);
                     buffer = buf.toString();
                 }
-                return OperationRequestCompleter.INSTANCE.complete(ctx, buffer, cursor + offset, candidates) - offset;
+
+                int result = OperationRequestCompleter.ARG_VALUE_COMPLETER.complete(ctx, buffer, cursor + offset, candidates) - offset;
+                if(result < 0) {
+                    return result;
+                }
+                return result;
             }}, "--node-type") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
