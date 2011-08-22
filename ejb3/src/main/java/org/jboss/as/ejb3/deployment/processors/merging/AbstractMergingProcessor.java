@@ -26,8 +26,8 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -44,7 +44,13 @@ import java.util.Collection;
  *
  * @author Stuart Douglas
  */
-public abstract class AbstractMergingProcessor implements DeploymentUnitProcessor {
+public abstract class AbstractMergingProcessor<T extends EJBComponentDescription> implements DeploymentUnitProcessor {
+
+    private final Class<T> typeParam;
+
+    public AbstractMergingProcessor(final Class<T> typeParam) {
+        this.typeParam = typeParam;
+    }
 
 
     @Override
@@ -62,13 +68,13 @@ public abstract class AbstractMergingProcessor implements DeploymentUnitProcesso
         }
 
         for (ComponentDescription componentConfiguration : componentConfigurations) {
-            if (componentConfiguration instanceof SessionBeanComponentDescription) {
-                processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentConfiguration);
+            if (typeParam.isAssignableFrom(componentConfiguration.getClass())) {
+                    processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (T) componentConfiguration);
             }
         }
     }
 
-    private void processComponentConfig(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+    private void processComponentConfig(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final T componentConfiguration) throws DeploymentUnitProcessingException {
 
         final Class<?> componentClass;
         try {
@@ -76,7 +82,7 @@ public abstract class AbstractMergingProcessor implements DeploymentUnitProcesso
         } catch (ClassNotFoundException e) {
             throw new DeploymentUnitProcessingException("Could not load EJB class " + componentConfiguration.getEJBClassName(), e);
         }
-        if(!MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
+        if (!MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
             handleAnnotations(deploymentUnit, applicationClasses, deploymentReflectionIndex, componentClass, componentConfiguration);
         }
         handleDeploymentDescriptor(deploymentUnit, deploymentReflectionIndex, componentClass, componentConfiguration);
@@ -85,13 +91,12 @@ public abstract class AbstractMergingProcessor implements DeploymentUnitProcesso
     /**
      * Handle annotations relating to the component that have been found in the deployment. Will not be called if the deployment is metadata complete.
      */
-    protected abstract void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException;
+    protected abstract void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final T description) throws DeploymentUnitProcessingException;
 
     /**
      * Handle the deployment descriptor
      */
-    protected abstract void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException;
-
+    protected abstract void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final T description) throws DeploymentUnitProcessingException;
 
 
     protected MethodIntf getMethodIntf(MethodInterfaceType viewType) {
