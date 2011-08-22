@@ -1,0 +1,129 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.jboss.as.ejb3.deployment.processors.merging;
+
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
+import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
+import org.jboss.modules.Module;
+
+import java.util.Collection;
+
+/**
+ * Superclass for the EJB metadata merging processors
+ *
+ * @author Stuart Douglas
+ */
+public abstract class AbstractMergingProcessor implements DeploymentUnitProcessor {
+
+
+    @Override
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final Collection<ComponentDescription> componentConfigurations = eeModuleDescription.getComponentDescriptions();
+        final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+
+
+        if (componentConfigurations == null || componentConfigurations.isEmpty()) {
+            return;
+        }
+
+        for (ComponentDescription componentConfiguration : componentConfigurations) {
+            if (componentConfiguration instanceof SessionBeanComponentDescription) {
+                processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentConfiguration);
+            }
+        }
+    }
+
+    private void processComponentConfig(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+
+        final Class<?> componentClass;
+        try {
+            componentClass = module.getClassLoader().loadClass(componentConfiguration.getEJBClassName());
+        } catch (ClassNotFoundException e) {
+            throw new DeploymentUnitProcessingException("Could not load EJB class " + componentConfiguration.getEJBClassName(), e);
+        }
+        if(!MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
+            handleAnnotations(deploymentUnit, applicationClasses, deploymentReflectionIndex, componentClass, componentConfiguration);
+        }
+        handleDeploymentDescriptor(deploymentUnit, deploymentReflectionIndex, componentClass, componentConfiguration);
+    }
+
+    /**
+     * Handle annotations relating to the component that have been found in the deployment. Will not be called if the deployment is metadata complete.
+     */
+    protected abstract void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException;
+
+    /**
+     * Handle the deployment descriptor
+     */
+    protected abstract void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException;
+
+
+
+    protected MethodIntf getMethodIntf(MethodInterfaceType viewType) {
+        if (viewType == null) {
+            return MethodIntf.BEAN;
+        }
+        switch (viewType) {
+            case Home:
+                return MethodIntf.HOME;
+            case LocalHome:
+                return MethodIntf.LOCAL_HOME;
+            case ServiceEndpoint:
+                return MethodIntf.SERVICE_ENDPOINT;
+            case Local:
+                return MethodIntf.LOCAL;
+            case Remote:
+                return MethodIntf.REMOTE;
+            // TODO: Need to handle more recent ones (like timer, mdb)
+        }
+        return MethodIntf.BEAN;
+    }
+
+
+    protected String[] getMethodParams(MethodParametersMetaData methodParametersMetaData) {
+        if (methodParametersMetaData == null) {
+            return null;
+        }
+        return methodParametersMetaData.toArray(new String[0]);
+    }
+
+    @Override
+    public void undeploy(final DeploymentUnit context) {
+
+    }
+}

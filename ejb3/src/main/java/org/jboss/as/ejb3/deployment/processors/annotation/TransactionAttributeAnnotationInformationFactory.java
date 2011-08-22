@@ -25,27 +25,26 @@ import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 
-import javax.ejb.Lock;
-import javax.ejb.LockType;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 /**
- * Processes the {@link javax.ejb.Lock} annotation on a session bean, which allows concurrent access (like @Singleton and @Stateful beans),
- * and its methods and updates the {@link org.jboss.as.ejb3.component.session.SessionBeanComponentDescription} accordingly.
- *
+ * Processes the {@link javax.ejb.TransactionAttribute} annotation on a session bean
  * @author Stuart Douglas
  */
-public class LockAnnotationInformationFactory extends ClassAnnotationInformationFactory<Lock, LockType> {
+public class TransactionAttributeAnnotationInformationFactory extends ClassAnnotationInformationFactory<TransactionAttribute, TransactionAttributeType> {
 
-    protected LockAnnotationInformationFactory() {
-        super(Lock.class, null);
+    protected TransactionAttributeAnnotationInformationFactory() {
+        super(TransactionAttribute.class, null);
     }
 
     @Override
-    protected LockType fromAnnotation(final AnnotationInstance annotationInstance) {
-        AnnotationValue value = annotationInstance.value();
+    protected TransactionAttributeType fromAnnotation(final AnnotationInstance annotationInstance) {
+
+        final AnnotationValue value = annotationInstance.value();
         if(value == null) {
-            return LockType.WRITE;
+            return TransactionAttributeType.REQUIRED;
         }
-        return LockType.valueOf(annotationInstance.value().asEnum());
+        return TransactionAttributeType.valueOf(value.asEnum());
     }
 }

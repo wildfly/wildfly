@@ -21,18 +21,12 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
-import org.jboss.as.ee.component.Attachments;
-import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
@@ -42,7 +36,6 @@ import org.jboss.metadata.ejb.spec.ConcurrentMethodsMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
-import org.jboss.modules.Module;
 
 import javax.ejb.AccessTimeout;
 import javax.ejb.Lock;
@@ -59,45 +52,11 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Stuart Douglas
  */
-public class EjbConcurrencyMergingProcessor implements DeploymentUnitProcessor {
+public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor {
 
 
-    @Override
-    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final Collection<ComponentDescription> componentConfigurations = eeModuleDescription.getComponentDescriptions();
-        final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
 
-
-        if (componentConfigurations == null || componentConfigurations.isEmpty()) {
-            return;
-        }
-
-        for (ComponentDescription componentConfiguration : componentConfigurations) {
-            if (componentConfiguration instanceof SessionBeanComponentDescription) {
-                processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentConfiguration);
-            }
-        }
-    }
-
-    private void processComponentConfig(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
-
-        final Class<?> componentClass;
-        try {
-            componentClass = module.getClassLoader().loadClass(componentConfiguration.getEJBClassName());
-        } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Could not load EJB class " + componentConfiguration.getEJBClassName(), e);
-        }
-        if(!MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
-            handleAnnotations(applicationClasses, deploymentReflectionIndex, componentClass, componentConfiguration);
-        }
-        handleDeploymentDescriptor(deploymentReflectionIndex, componentClass, componentConfiguration);
-    }
-
-    private void handleAnnotations(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) {
+    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) {
 
         //handle lock annotations
 
@@ -127,7 +86,7 @@ public class EjbConcurrencyMergingProcessor implements DeploymentUnitProcessor {
 
     }
 
-    private void handleDeploymentDescriptor(final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
         if (componentConfiguration.getDescriptorData() == null) {
             return;
         }
