@@ -41,6 +41,7 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
     public EjbAnnotationProcessor() {
         List<ClassAnnotationInformationFactory> factories = new ArrayList<ClassAnnotationInformationFactory>();
         factories.add(new LockAnnotationInformationFactory());
+        factories.add(new ConcurrencyManagementAnnotationInformationFactory());
         factories.add(new AccessTimeoutAnnotationInformationFactory());
         factories.add(new TransactionAttributeAnnotationInformationFactory());
         factories.add(new TransactionManagementAnnotationInformationFactory());

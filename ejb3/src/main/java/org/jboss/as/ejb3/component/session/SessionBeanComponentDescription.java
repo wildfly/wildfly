@@ -297,30 +297,8 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         return this.concurrencyManagementType;
     }
 
-    /**
-     * Marks the bean for bean managed concurrency.
-     *
-     * @throws IllegalStateException If the bean has already been marked for a different concurrency management type
-     */
-    public void beanManagedConcurrency() {
-        if (this.concurrencyManagementType != null && this.concurrencyManagementType != ConcurrencyManagementType.BEAN) {
-            throw new IllegalStateException(this.getEJBName() + " bean has been marked for " + this.concurrencyManagementType + " cannot change it now!");
-        }
-        this.concurrencyManagementType = ConcurrencyManagementType.BEAN;
-    }
-
-
-    /**
-     * Marks this bean for container managed concurrency.
-     *
-     * @throws IllegalStateException If the bean has already been marked for a different concurrency management type
-     */
-    public void containerManagedConcurrency() {
-        if (this.concurrencyManagementType != null && this.concurrencyManagementType != ConcurrencyManagementType.CONTAINER) {
-            throw new IllegalStateException(this.getEJBName() + " bean has been marked for " + this.concurrencyManagementType + " cannot change it now!");
-        }
-        this.concurrencyManagementType = ConcurrencyManagementType.CONTAINER;
-
+    public void setConcurrencyManagementType(final ConcurrencyManagementType concurrencyManagementType) {
+        this.concurrencyManagementType = concurrencyManagementType;
     }
 
     /**
