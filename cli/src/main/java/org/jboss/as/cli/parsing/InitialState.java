@@ -19,34 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.impl;
+package org.jboss.as.cli.parsing;
 
-import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
-import org.jboss.as.cli.operation.ParsedCommandLine;
-import org.jboss.dmr.ModelNode;
+
+import org.jboss.as.cli.operation.parsing.DefaultParsingState;
+import org.jboss.as.cli.operation.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.operation.parsing.OperationRequestState;
+
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class RequiredRequestParamArg extends RequestParamArgWithValue {
+public class InitialState extends DefaultParsingState {
 
-    public RequiredRequestParamArg(String paramName, CommandHandlerWithArguments handler, CommandLineCompleter valueCompleter) {
-        super(paramName, handler, valueCompleter);
+    public static final InitialState INSTANCE;
+    static {
+        OperationRequestState opState = new OperationRequestState();
+        opState.setHandleEntrance(true);
+        INSTANCE = new InitialState(opState, CommandState.INSTANCE);
+    }
+    public static final String ID = "INITIAL";
+
+    InitialState() {
+        this(OperationRequestState.INSTANCE, CommandState.INSTANCE);
     }
 
-    public RequiredRequestParamArg(String paramName, CommandHandlerWithArguments handler) {
-        super(paramName, handler);
-    }
-
-    public RequiredRequestParamArg(String paramName, CommandHandlerWithArguments handler, String fullArgName) {
-        super(paramName, handler, fullArgName);
-    }
-
-    @Override
-    public void set(ParsedCommandLine args, ModelNode request) throws CommandFormatException {
-        setValue(request, paramName, getValue(args, true));
+    InitialState(OperationRequestState opState, CommandState cmdState) {
+        super(ID);
+        enterState('.', opState);
+        enterState(':', opState);
+        enterState('/', opState);
+        setDefaultHandler(new EnterStateCharacterHandler(cmdState));
     }
 }

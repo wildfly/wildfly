@@ -53,7 +53,7 @@ public class NoArgDataSourceOperationHandler extends BatchModeCommandHandler {
                 if (!ctx.isDomainMode()) {
                     profileArg = null;
                 } else {
-                    profileArg = profile.getValue(ctx.getParsedArguments());
+                    profileArg = profile.getValue(ctx.getParsedCommandLine());
                     if (profileArg == null) {
                         return Collections.emptyList();
                         }
@@ -64,7 +64,7 @@ public class NoArgDataSourceOperationHandler extends BatchModeCommandHandler {
             }), 0, "--name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
+                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedCommandLine())) {
                     return false;
                 }
                 return super.canAppearNext(ctx);
@@ -78,14 +78,14 @@ public class NoArgDataSourceOperationHandler extends BatchModeCommandHandler {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         if(ctx.isDomainMode()) {
-            final String profile = this.profile.getValue(ctx.getParsedArguments());
+            final String profile = this.profile.getValue(ctx.getParsedCommandLine());
             if(profile == null) {
                 throw new OperationFormatException("Required argument --profile is missing.");
             }
             builder.addNode("profile", profile);
         }
 
-        final String name = this.name.getValue(ctx.getParsedArguments(), true);
+        final String name = this.name.getValue(ctx.getParsedCommandLine(), true);
 
         builder.addNode("subsystem", "datasources");
         builder.addNode(dsType, name);

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli.operation.parsing;
 
+import org.jboss.as.cli.CommandFormatException;
+
 /**
  *
  * @author Alexey Loubyansky
@@ -32,6 +34,11 @@ public class PropertyValueState extends DefaultParsingState {
 
     PropertyValueState() {
         super(ID);
+        this.setEnterHandler(new CharacterHandler() {
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                getHandler(ctx.getCharacter()).handle(ctx);
+            }});
         putHandler(',', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler(')', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         enterState('"', QuotesState.QUOTES_INCLUDED);

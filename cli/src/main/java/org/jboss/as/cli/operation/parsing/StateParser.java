@@ -63,6 +63,11 @@ public class StateParser {
         ParsingContextImpl ctx = new ParsingContextImpl();
         ctx.initialState = initialState;
         ctx.callbackHandler = callbackHandler;
+        ctx.input = str;
+
+        ctx.ch = str.charAt(i);
+        ctx.location = i;
+        initialState.getEnterHandler().handle(ctx);
 
         while (i < str.length()) {
             char ch = str.charAt(i);
@@ -76,22 +81,26 @@ public class StateParser {
         }
 
         ctx.location = i;
+        ctx.endOfContent = true;
         ParsingState state = ctx.getState();
         while(state != ctx.initialState) {
             state.getEndContentHandler().handle(ctx);
             ctx.leaveState();
             state = ctx.getState();
         }
+        initialState.getLeaveHandler().handle(ctx);
     }
 
     static class ParsingContextImpl implements ParsingContext {
 
         private final Deque<ParsingState> stack = new ArrayDeque<ParsingState>();
 
+        String input;
         int location;
         char ch;
         ParsingStateCallbackHandler callbackHandler;
         ParsingState initialState;
+        boolean endOfContent;
 
         @Override
         public ParsingState getState() {
@@ -112,6 +121,8 @@ public class StateParser {
             ParsingState pop = stack.pop();
             if(!stack.isEmpty()) {
                 stack.peek().getReturnHandler().handle(this);
+            } else {
+                initialState.getReturnHandler().handle(this);
             }
             return pop;
         }
@@ -138,6 +149,16 @@ public class StateParser {
             state.getLeaveHandler().handle(this);
             callbackHandler.enteredState(this);
             state.getEnterHandler().handle(this);
+        }
+
+        @Override
+        public boolean isEndOfContent() {
+            return endOfContent;
+        }
+
+        @Override
+        public String getInput() {
+            return input;
         }
     }
 }

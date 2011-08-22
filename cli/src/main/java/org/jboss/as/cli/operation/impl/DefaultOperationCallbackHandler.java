@@ -21,20 +21,26 @@
  */
 package org.jboss.as.cli.operation.impl;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationFormatException;
-import org.jboss.as.cli.operation.ParsedOperationRequest;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.OperationRequestAddress.Node;
+import org.jboss.as.cli.parsing.TheParser;
+import org.jboss.dmr.ModelNode;
 
 /**
 *
 * @author Alexey Loubyansky
 */
-public class DefaultOperationCallbackHandler extends ValidatingOperationCallbackHandler implements ParsedOperationRequest {
+public class DefaultOperationCallbackHandler extends ValidatingOperationCallbackHandler implements ParsedCommandLine {
 
     private static final int SEPARATOR_NONE = 0;
     private static final int SEPARATOR_NODE_TYPE_NAME = 1;
@@ -44,19 +50,60 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     private static final int SEPARATOR_ARG_NAME_VALUE = 5;
     private static final int SEPARATOR_ARG = 6;
 
+    private static final DefaultOperationRequestAddress EMPTY_ADDRESS = new DefaultOperationRequestAddress();
+
     private int separator = SEPARATOR_NONE;
     private int lastSeparatorIndex = -1;
+    private int lastChunkIndex = -1;
 
     private boolean operationComplete;
     private String operationName;
     private OperationRequestAddress address;
-    private Map<String, String> props;
+    private Map<String, String> props = new HashMap<String, String>();
+    private List<String> otherArgs = new ArrayList<String>();
+    private String outputTarget;
+
+    private String lastPropName;
+    private String lastPropValue;
 
     public DefaultOperationCallbackHandler() {
     }
 
     public DefaultOperationCallbackHandler(OperationRequestAddress prefix) {
         address = prefix;
+    }
+
+    public void parse(OperationRequestAddress initialAddress, String argsStr) throws CommandFormatException {
+        reset();
+        if(initialAddress != null) {
+            address = new DefaultOperationRequestAddress(initialAddress);
+        }
+        TheParser.parse(argsStr, this);
+    }
+
+    public void parseOperation(OperationRequestAddress prefix, String argsStr) throws CommandFormatException {
+        reset();
+        if(prefix != null) {
+            address = new DefaultOperationRequestAddress(prefix);
+        }
+        TheParser.parseOperationRequest(argsStr, this);
+    }
+
+    public void reset() {
+        operationComplete = false;
+        operationName = null;
+        address = null;
+        props.clear();
+        otherArgs.clear();
+        outputTarget = null;
+        lastPropName = null;
+        lastPropValue = null;
+        lastSeparatorIndex = -1;
+        lastChunkIndex = -1;
+    }
+
+    public List<String> getOtherProperties() {
+        return otherArgs;
     }
 
     @Override
@@ -95,13 +142,18 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
+    public boolean endsOnSeparator() {
+        return separator != SEPARATOR_NONE;
+    }
+
+    @Override
     public boolean hasAddress() {
         return address != null;
     }
 
     @Override
     public OperationRequestAddress getAddress() {
-        return address;
+        return address == null ? EMPTY_ADDRESS : address;
     }
 
     @Override
@@ -116,11 +168,16 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
 
     @Override
     public boolean hasProperties() {
-        return props != null && !props.isEmpty();
+        return !props.isEmpty() || !otherArgs.isEmpty();
     }
 
     @Override
-    public void validatedNodeType(String nodeType) throws OperationFormatException {
+    public boolean hasProperty(String propertyName) {
+        return props.containsKey(propertyName);
+    }
+
+    @Override
+    public void validatedNodeType(int index, String nodeType) throws OperationFormatException {
 
         if(address == null) {
             address = new DefaultOperationRequestAddress();
@@ -133,6 +190,7 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
 
         address.toNodeType(nodeType);
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
@@ -142,18 +200,19 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public void validatedNodeName(String nodeName) throws OperationFormatException {
+    public void validatedNodeName(int index, String nodeName) throws OperationFormatException {
 
         if(address == null) {
             address = new DefaultOperationRequestAddress();
         }
 
         if(!address.endsOnType()) {
-            throw new OperationFormatException("The prefix should end with the node type before going to a specific node name.");
+            throw new OperationFormatException("Node path format is wrong around '" + nodeName + "' (index=" + index + ").");
         }
 
         address.toNode(nodeName);
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
@@ -169,10 +228,11 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public void validatedOperationName(String operationName) throws OperationFormatException {
+    public void validatedOperationName(int index, String operationName) throws OperationFormatException {
 
         this.operationName = operationName;
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
@@ -182,13 +242,14 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public void validatedPropertyName(String argName) throws OperationFormatException {
-
-        if(props == null) {
-            props = new HashMap<String, String>();
-        }
-        props.put(argName, null);
+    //public void validatedPropertyName(String argName) throws OperationFormatException {
+    public void propertyName(int index, String propertyName)
+            throws OperationFormatException {
+        props.put(propertyName, null);
+        lastPropName = propertyName;
+        lastPropValue = null;
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
@@ -198,26 +259,36 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
     }
 
     @Override
-    public void validatedProperty(String name, String value, int nameValueSeparatorIndex) throws OperationFormatException {
+    //public void validatedProperty(String name, String value, int nameValueSeparatorIndex) throws OperationFormatException {
+    public void property(String name, String value, int nameValueSeparatorIndex)
+            throws OperationFormatException {
 
-        if (value.isEmpty()) {
+/*        if (value.isEmpty()) {
             throw new OperationFormatException(
                     "The argument value is missing or the format is wrong for argument '"
                             + value + "'");
         }
-
-        if(props == null) {
-            props = new HashMap<String, String>();
+*/
+        if(name == null) {
+            otherArgs.add(value);
+        } else {
+            props.put(name, value);
         }
-        props.put(name, value);
+        lastPropName = name;
+        lastPropValue = value;
         separator = SEPARATOR_NONE;
-        this.lastSeparatorIndex = nameValueSeparatorIndex;
+        if(nameValueSeparatorIndex >= 0) {
+            this.lastSeparatorIndex = nameValueSeparatorIndex;
+        }
+        lastChunkIndex = nameValueSeparatorIndex;
     }
 
     @Override
     public void propertySeparator(int index) {
         separator = SEPARATOR_ARG;
         this.lastSeparatorIndex = index;
+        this.lastPropName = null;
+        this.lastPropValue = null;
 
     }
 
@@ -226,63 +297,150 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         separator = SEPARATOR_NONE;
         operationComplete = true;
         this.lastSeparatorIndex = index;
+        this.lastPropName = null;
+        this.lastPropValue = null;
     }
 
     @Override
-    public void rootNode() {
+    public void rootNode(int index) {
         if(address == null) {
             address = new DefaultOperationRequestAddress();
         } else {
             address.reset();
         }
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
-    public void parentNode() {
+    public void parentNode(int index) {
         if(address == null) {
             throw new IllegalStateException("The address hasn't been initialized yet.");
         }
         address.toParentNode();
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
-    public void nodeType() {
+    public void nodeType(int index) {
         if(address == null) {
             throw new IllegalStateException("The address hasn't been initialized yet.");
         }
         address.toNodeType();
         separator = SEPARATOR_NONE;
+        lastChunkIndex = index;
     }
 
     @Override
-    public void nodeTypeOrName(String typeOrName) throws OperationFormatException {
+    public void nodeTypeOrName(int index, String typeOrName) throws OperationFormatException {
 
         if(address == null) {
             address = new DefaultOperationRequestAddress();
         }
 
         if(address.endsOnType()) {
-            nodeName(typeOrName);
+            nodeName(index, typeOrName);
         } else {
-            nodeType(typeOrName);
+            nodeType(index, typeOrName);
         }
         separator = SEPARATOR_NONE;
     }
 
     @Override
     public Set<String> getPropertyNames() {
-        return props == null ? Collections.<String>emptySet() : props.keySet();
+        return props.keySet();
     }
 
     @Override
     public String getPropertyValue(String name) {
-        return props == null ? null : props.get(name);
+        return props.get(name);
     }
 
     @Override
     public int getLastSeparatorIndex() {
         return lastSeparatorIndex;
+    }
+
+    @Override
+    public int getLastChunkIndex() {
+        return lastChunkIndex;
+    }
+
+    @Override
+    public void outputTarget(int index, String outputTarget) {
+        this.outputTarget = outputTarget;
+        lastChunkIndex = index;
+    }
+
+    public String getOutputTarget() {
+        return outputTarget;
+    }
+
+    @Override
+    protected void validatedProperty(String name, String value,
+            int nameValueSeparatorIndex) throws OperationFormatException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    protected void validatedPropertyName(int index, String propertyName)
+            throws OperationFormatException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public String getLastParsedPropertyName() {
+        return lastPropName;
+    }
+
+    @Override
+    public String getLastParsedPropertyValue() {
+        return lastPropValue;
+    }
+
+    public ModelNode toOperationRequest() throws OperationFormatException {
+        ModelNode request = new ModelNode();
+        ModelNode addressNode = request.get("address");
+        if(address.isEmpty()) {
+            addressNode.setEmptyList();
+        } else {
+            Iterator<Node> iterator = address.iterator();
+            while (iterator.hasNext()) {
+                OperationRequestAddress.Node node = iterator.next();
+                if (node.getName() != null) {
+                    addressNode.add(node.getType(), node.getName());
+                } else if (iterator.hasNext()) {
+                    throw new OperationFormatException(
+                            "The node name is not specified for type '"
+                                    + node.getType() + "'");
+                }
+            }
+        }
+
+        if(operationName == null || operationName.isEmpty()) {
+            throw new OperationFormatException("The operation name is missing or the format of the operation request is wrong.");
+        }
+        request.get("operation").set(operationName);
+
+        for(String propName : props.keySet()) {
+            final String value = props.get(propName);
+            if(propName == null || propName.trim().isEmpty())
+                throw new OperationFormatException("The argument name is not specified: '" + propName + "'");
+            if(value == null || value.trim().isEmpty())
+                throw new OperationFormatException("The argument value is not specified for " + propName + ": '" + value + "'");
+            ModelNode toSet = null;
+            try {
+                toSet = ModelNode.fromString(value);
+            } catch (Exception e) {
+                // just use the string
+                toSet = new ModelNode().set(value);
+            }
+            request.get(propName).set(toSet);
+        }
+
+        return request;
     }
 }

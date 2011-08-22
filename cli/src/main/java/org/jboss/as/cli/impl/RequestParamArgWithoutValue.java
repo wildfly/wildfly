@@ -22,9 +22,9 @@
 package org.jboss.as.cli.impl;
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,7 +41,7 @@ public class RequestParamArgWithoutValue extends ArgumentWithoutValue implements
     }
 
     @Override
-    public void set(ParsedArguments args, ModelNode request) throws CommandFormatException {
+    public void set(ParsedCommandLine args, ModelNode request) throws CommandFormatException {
         if(isPresent(args)) {
             Util.setRequestProperty(request, paramName, "true");
         }

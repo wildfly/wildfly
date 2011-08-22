@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.handlers.BaseOperationCommand;
 import org.jboss.as.cli.handlers.SimpleTabCompleter;
@@ -40,6 +39,7 @@ import org.jboss.as.cli.impl.RequestParamPropertiesArg;
 import org.jboss.as.cli.impl.RequiredRequestParamArg;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.dmr.ModelNode;
@@ -76,7 +76,7 @@ public class BaseDataSourceAddHandler extends BaseOperationCommand {
         jndiName =  new RequiredRequestParamArg("jndi-name", this, "--jndi-name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
+                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedCommandLine())) {
                     return false;
                 }
                 return super.canAppearNext(ctx);
@@ -94,7 +94,7 @@ public class BaseDataSourceAddHandler extends BaseOperationCommand {
     public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-        ParsedArguments args = ctx.getParsedArguments();
+        ParsedCommandLine args = ctx.getParsedCommandLine();
 
         if(ctx.isDomainMode()) {
             String profile = this.profile.getValue(args);
@@ -137,7 +137,7 @@ public class BaseDataSourceAddHandler extends BaseOperationCommand {
                     public List<String> getAllCandidates(CommandContext ctx) {
                         final String profileName;
                         if (ctx.isDomainMode()) {
-                            profileName = profile.getValue(ctx.getParsedArguments());
+                            profileName = profile.getValue(ctx.getParsedCommandLine());
                             if (profileName == null) {
                                 return Collections.emptyList();
                             }
@@ -185,7 +185,7 @@ public class BaseDataSourceAddHandler extends BaseOperationCommand {
                 return false;
             }
             @Override
-            public void set(ParsedArguments args, ModelNode request) throws CommandFormatException {
+            public void set(ParsedCommandLine args, ModelNode request) throws CommandFormatException {
                 if(isPresent(args)) {
                     setValue(request, "enabled", "false");
                 }

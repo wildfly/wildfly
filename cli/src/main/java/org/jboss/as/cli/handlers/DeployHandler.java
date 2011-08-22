@@ -31,11 +31,11 @@ import java.util.List;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -66,7 +66,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         final FilenameTabCompleter pathCompleter = Util.isWindows() ? WindowsFilenameTabCompleter.INSTANCE : DefaultFilenameTabCompleter.INSTANCE;
         path = new ArgumentWithValue(this, pathCompleter, 0, "--path") {
             @Override
-            public String getValue(ParsedArguments args) {
+            public String getValue(ParsedCommandLine args) {
                 String value = super.getValue(args);
                 if(value != null) {
                     if(value.length() >= 0 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
@@ -86,7 +86,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
-                ParsedArguments args = ctx.getParsedArguments();
+                ParsedCommandLine args = ctx.getParsedCommandLine();
                 try {
                     if(path.isPresent(args)) {
                         return -1;
@@ -210,9 +210,9 @@ public class DeployHandler extends BatchModeCommandHandler {
 
         ModelControllerClient client = ctx.getModelControllerClient();
 
-        ParsedArguments args = ctx.getParsedArguments();
+        ParsedCommandLine args = ctx.getParsedCommandLine();
         boolean l = this.l.isPresent(args);
-        if (!args.hasArguments() || l) {
+        if (!args.hasProperties() || l) {
             printList(ctx, Util.getDeployments(client), l);
             return;
         }
@@ -386,8 +386,8 @@ public class DeployHandler extends BatchModeCommandHandler {
 
     public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
 
-        ParsedArguments args = ctx.getParsedArguments();
-        if (!args.hasArguments()) {
+        ParsedCommandLine args = ctx.getParsedCommandLine();
+        if (!args.hasProperties()) {
             throw new OperationFormatException("Required arguments are missing.");
         }
 

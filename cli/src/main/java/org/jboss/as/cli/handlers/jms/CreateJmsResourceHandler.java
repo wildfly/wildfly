@@ -48,7 +48,7 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
     public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
 
         try {
-            if(!ctx.getParsedArguments().hasArguments()) {
+            if(!ctx.getParsedCommandLine().hasProperties()) {
                 throw new OperationFormatException("Arguments are missing");
             }
         } catch (CommandFormatException e) {

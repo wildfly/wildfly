@@ -33,7 +33,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackHandler implements OperationRequestBuilder {
+public class DefaultOperationRequestBuilder implements OperationRequestBuilder {
 
     private ModelNode request = new ModelNode();
     private OperationRequestAddress prefix;
@@ -51,122 +51,6 @@ public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackH
 
     public OperationRequestAddress getAddress() {
         return prefix;
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#rootNode()
-     */
-    @Override
-    public void rootNode() {
-        prefix.reset();
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#parentNode()
-     */
-    @Override
-    public void parentNode() {
-        prefix.toParentNode();
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#nodeType()
-     */
-    @Override
-    public void nodeType() {
-        prefix.toNodeType();
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#nodeTypeNameSeparator(int)
-     */
-    @Override
-    public void nodeTypeNameSeparator(int index) {
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#nodeSeparator(int)
-     */
-    @Override
-    public void nodeSeparator(int index) {
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#addressOperationSeparator(int)
-     */
-    @Override
-    public void addressOperationSeparator(int index) {
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#operationName(java.lang.String)
-     */
-    @Override
-    public void validatedOperationName(String operationName) {
-        this.setOperationName(operationName);
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#propertyListStart(int)
-     */
-    @Override
-    public void propertyListStart(int index) {
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#propertyNameValueSeparator(int)
-     */
-    @Override
-    public void propertyNameValueSeparator(int index) {
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#propertySeparator(int)
-     */
-    @Override
-    public void propertySeparator(int index) {
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#propertyListEnd(int)
-     */
-    @Override
-    public void propertyListEnd(int index) {
-    }
-
-    @Override
-    protected void validatedNodeType(String nodeType)
-            throws OperationFormatException {
-        this.addNodeType(nodeType);
-    }
-
-    @Override
-    protected void validatedNodeName(String nodeName)
-            throws OperationFormatException {
-        this.addNodeName(nodeName);
-    }
-
-    @Override
-    protected void validatedPropertyName(String propertyName)
-            throws OperationFormatException {
-        throw new OperationFormatException("Property '" + propertyName + "' is missing the value.");
-    }
-
-    @Override
-    protected void validatedProperty(String name, String value,
-            int nameValueSeparatorIndex) throws OperationFormatException {
-        this.addProperty(name, value);
-    }
-
-    @Override
-    public void nodeTypeOrName(String typeOrName)
-            throws OperationFormatException {
-
-        if(prefix.endsOnType()) {
-            this.addNodeName(typeOrName);
-        } else {
-            this.addNodeType(typeOrName);
-        }
     }
 
     /**

@@ -32,11 +32,11 @@ import java.util.List;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -177,14 +177,14 @@ public class UndeployHandler extends BatchModeCommandHandler {
     protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
         ModelControllerClient client = ctx.getModelControllerClient();
-        ParsedArguments args = ctx.getParsedArguments();
+        ParsedCommandLine args = ctx.getParsedCommandLine();
         boolean l = this.l.isPresent(args);
-        if(!args.hasArguments() || l) {
+        if(!args.hasProperties() || l) {
             printList(ctx, Util.getDeployments(client), l);
             return;
         }
 
-        final String name = this.name.getValue(ctx.getParsedArguments());
+        final String name = this.name.getValue(ctx.getParsedCommandLine());
         if (name == null) {
             printList(ctx, Util.getDeployments(client), l);
             return;
@@ -221,7 +221,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
         composite.get("address").setEmptyList();
         ModelNode steps = composite.get("steps");
 
-        final ParsedArguments args = ctx.getParsedArguments();
+        final ParsedCommandLine args = ctx.getParsedCommandLine();
         final String name = this.name.getValue(args);
         if(name == null) {
             throw new OperationFormatException("Required argument name are missing.");

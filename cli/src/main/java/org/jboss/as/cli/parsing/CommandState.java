@@ -21,45 +21,43 @@
  */
 package org.jboss.as.cli.parsing;
 
+
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.parsing.CharacterHandler;
 import org.jboss.as.cli.operation.parsing.DefaultParsingState;
-import org.jboss.as.cli.operation.parsing.DefaultStateWithEndCharacter;
-import org.jboss.as.cli.operation.parsing.EscapeCharacterState;
-import org.jboss.as.cli.operation.parsing.GlobalCharacterHandlers;
+import org.jboss.as.cli.operation.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.operation.parsing.OutputTargetState;
 import org.jboss.as.cli.operation.parsing.ParsingContext;
-import org.jboss.as.cli.operation.parsing.QuotesState;
+
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class ArgumentValueState extends DefaultParsingState {
+public class CommandState extends DefaultParsingState {
 
-    public static final ArgumentValueState INSTANCE = new ArgumentValueState();
-    public static final String ID = "PROP_VALUE";
+    public static final CommandState INSTANCE = new CommandState();
+    public static final String ID = "CMD";
 
-    ArgumentValueState() {
+    CommandState() {
+        this(CommandNameState.INSTANCE, ArgumentListState.INSTANCE, OutputTargetState.INSTANCE);
+    }
+
+    CommandState(CommandNameState cmdName, ArgumentListState argList, OutputTargetState outputRedirect) {
         super(ID);
-        this.setEnterHandler(new CharacterHandler() {
+        setEnterHandler(new EnterStateCharacterHandler(cmdName));
+        setDefaultHandler(new EnterStateCharacterHandler(argList));
+        this.setReturnHandler(new CharacterHandler() {
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
-                if(ctx.getCharacter() != '=') {
-                    getHandler(ctx.getCharacter()).handle(ctx);
+                if(ctx.isEndOfContent()) {
+                    return;
+                }
+                final CharacterHandler handler = enterStateHandlers.getHandler(ctx.getCharacter());
+                if(handler != null) {
+                    handler.handle(ctx);
                 }
             }});
-        putHandler(' ', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        enterState('[', new DefaultStateWithEndCharacter("BRACKETS", ']', false, true, enterStateHandlers));
-        enterState('(', new DefaultStateWithEndCharacter("PARENTHESIS", ')', false, true, enterStateHandlers));
-        enterState('{', new DefaultStateWithEndCharacter("BRACES", '}', false, true, enterStateHandlers));
-        if(!Util.isWindows()) {
-            // on windows we don't escape, this would mess up file system paths for example.
-            enterState('\\', EscapeCharacterState.INSTANCE);
-            enterState('"', QuotesState.QUOTES_INCLUDED);
-        } else {
-            enterState('"', new QuotesState(true, false));
-        }
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        enterState(OutputTargetState.OUTPUT_REDIRECT_CHAR, outputRedirect);
     }
 }

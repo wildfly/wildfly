@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.handlers.BaseOperationCommand;
 import org.jboss.as.cli.impl.ArgumentWithValue;
@@ -36,6 +35,7 @@ import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.impl.RequestParamArgWithValue;
 import org.jboss.as.cli.impl.RequestParameterArgument;
 import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -73,11 +73,11 @@ public class BaseDataSourceModifyHandler extends BaseOperationCommand {
         jndiName =  new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
             public List<String> getAllCandidates(CommandContext ctx) {
-                return Util.getDatasources(ctx.getModelControllerClient(), profile.getValue(ctx.getParsedArguments()), dsType);
+                return Util.getDatasources(ctx.getModelControllerClient(), profile.getValue(ctx.getParsedCommandLine()), dsType);
             }}), "--jndi-name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
+                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedCommandLine())) {
                     return false;
                 }
                 return super.canAppearNext(ctx);
@@ -107,7 +107,7 @@ public class BaseDataSourceModifyHandler extends BaseOperationCommand {
     @Override
     protected void setParams(CommandContext ctx, ModelNode request) throws CommandFormatException {
 
-        ParsedArguments args = ctx.getParsedArguments();
+        ParsedCommandLine args = ctx.getParsedCommandLine();
 
         final String profile;
         if(ctx.isDomainMode()) {
@@ -199,7 +199,7 @@ public class BaseDataSourceModifyHandler extends BaseOperationCommand {
 
                     DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
                     if (ctx.isDomainMode()) {
-                        final String profileName = profile.getValue(ctx.getParsedArguments());
+                        final String profileName = profile.getValue(ctx.getParsedCommandLine());
                         if (profileName == null) {
                             return Collections.emptyList();
                         }
@@ -207,7 +207,7 @@ public class BaseDataSourceModifyHandler extends BaseOperationCommand {
                     }
                     builder.addNode("subsystem", "datasources");
 
-                    final String dsName = jndiName.getValue(ctx.getParsedArguments());
+                    final String dsName = jndiName.getValue(ctx.getParsedCommandLine());
                     if(dsName == null) {
                         return Collections.emptyList();
                     }

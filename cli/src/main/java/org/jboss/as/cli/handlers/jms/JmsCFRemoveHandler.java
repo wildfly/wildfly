@@ -74,7 +74,7 @@ public class JmsCFRemoveHandler extends BatchModeCommandHandler {
                 if (!ctx.isDomainMode()) {
                     profileArg = null;
                 } else {
-                    profileArg = profile.getValue(ctx.getParsedArguments());
+                    profileArg = profile.getValue(ctx.getParsedCommandLine());
                     if (profileArg == null) {
                         return Collections.emptyList();
                         }
@@ -85,7 +85,7 @@ public class JmsCFRemoveHandler extends BatchModeCommandHandler {
             }), 0, "--name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
+                if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedCommandLine())) {
                     return false;
                 }
                 return super.canAppearNext(ctx);
@@ -97,11 +97,11 @@ public class JmsCFRemoveHandler extends BatchModeCommandHandler {
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
 
-        final String name = this.name.getValue(ctx.getParsedArguments(), true);
+        final String name = this.name.getValue(ctx.getParsedCommandLine(), true);
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         if(ctx.isDomainMode()) {
-            final String profile = this.profile.getValue(ctx.getParsedArguments());
+            final String profile = this.profile.getValue(ctx.getParsedCommandLine());
             if(profile == null) {
                 throw new OperationFormatException("Required argument --profile is missing.");
             }

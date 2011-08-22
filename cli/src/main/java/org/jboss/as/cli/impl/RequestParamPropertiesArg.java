@@ -24,8 +24,8 @@ package org.jboss.as.cli.impl;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -51,7 +51,7 @@ public class RequestParamPropertiesArg extends RequestParamArgWithValue {
         super(paramName, handler);
     }
 
-    public void set(ParsedArguments args, ModelNode request) throws CommandFormatException {
+    public void set(ParsedCommandLine args, ModelNode request) throws CommandFormatException {
         final String value = getValue(args);
         if(value != null) {
             setPropertyMapValue(request, paramName, value);

@@ -43,13 +43,13 @@ public class PrefixHandler extends CommandHandlerWithHelp {
 
     public PrefixHandler(String command) {
         super(command, true);
-        nodePath = new ArgumentWithValue(this, OperationRequestCompleter.INSTANCE, 0, "--node-path");
+        nodePath = new ArgumentWithValue(this, OperationRequestCompleter.ARG_VALUE_COMPLETER, 0, "--node-path");
     }
 
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        final String nodePath = this.nodePath.getValue(ctx.getParsedArguments());
+        final String nodePath = this.nodePath.getValue(ctx.getParsedCommandLine());
 
         OperationRequestAddress prefix = ctx.getPrefix();
 

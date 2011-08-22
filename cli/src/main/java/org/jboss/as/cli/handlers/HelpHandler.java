@@ -56,7 +56,7 @@ public class HelpHandler extends CommandHandlerWithHelp {
     public void handle(CommandContext ctx) {
         boolean printCommands;
         try {
-            printCommands = commands.isPresent(ctx.getParsedArguments());
+            printCommands = commands.isPresent(ctx.getParsedCommandLine());
         } catch (CommandFormatException e) {
             ctx.printLine(e.getLocalizedMessage());
             return;

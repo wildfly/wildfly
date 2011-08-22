@@ -34,7 +34,7 @@ import org.jboss.as.cli.operation.parsing.GlobalCharacterHandlers;
 public class ArgumentState extends DefaultParsingState {
 
     public static final ArgumentState INSTANCE = new ArgumentState();
-    public static final String ID = "ARG";
+    public static final String ID = "PROP";
 
     ArgumentState() {
         this(ArgumentValueState.INSTANCE);
@@ -44,8 +44,17 @@ public class ArgumentState extends DefaultParsingState {
         super(ID);
         setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
         putHandler(' ', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler('=', new EnterStateCharacterHandler(valueState));
+        //putHandler('=', new EnterStateCharacterHandler(valueState));
+        enterState('=', new NameValueSeparatorState(valueState));
         setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
         setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }
+
+    private static class NameValueSeparatorState extends DefaultParsingState {
+        NameValueSeparatorState(ArgumentValueState valueState) {
+            super("NAME_VALUE_SEPARATOR");
+            setDefaultHandler(new EnterStateCharacterHandler(valueState));
+            setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        }
+    };
 }

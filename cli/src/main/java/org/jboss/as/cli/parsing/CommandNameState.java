@@ -19,38 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.operation.parsing;
+package org.jboss.as.cli.parsing;
+
+
+import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.operation.parsing.CharacterHandler;
+import org.jboss.as.cli.operation.parsing.DefaultParsingState;
+import org.jboss.as.cli.operation.parsing.GlobalCharacterHandlers;
+import org.jboss.as.cli.operation.parsing.OutputTargetState;
+import org.jboss.as.cli.operation.parsing.ParsingContext;
 
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class PropertyState extends DefaultParsingState {
+public class CommandNameState extends DefaultParsingState {
 
-    public static final PropertyState INSTANCE = new PropertyState();
-    public static final String ID = "PROP";
+    public static final CommandNameState INSTANCE = new CommandNameState();
+    public static final String ID = "OP_NAME";
 
-    PropertyState() {
-        this(PropertyValueState.INSTANCE);
-    }
-
-    PropertyState(PropertyValueState valueState) {
+    CommandNameState() {
         super(ID);
         setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        putHandler(',', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler(')', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        //putHandler('=', new EnterStateCharacterHandler(valueState));
-        enterState('=', new NameValueSeparatorState(valueState));
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        setDefaultHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(Character.isWhitespace(ctx.getCharacter())) {
+                    ctx.leaveState();
+                } else {
+                    GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER.handle(ctx);
+                }
+            }});
+        putHandler(OutputTargetState.OUTPUT_REDIRECT_CHAR, GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }
-
-    private static class NameValueSeparatorState extends DefaultParsingState {
-        NameValueSeparatorState(PropertyValueState valueState) {
-            super("NAME_VALUE_SEPARATOR");
-            setDefaultHandler(new EnterStateCharacterHandler(valueState));
-            setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        }
-    };
 }

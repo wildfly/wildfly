@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.operation.OperationRequestCompleter;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 
 import jline.Completor;
 
@@ -73,6 +74,15 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
             return cmdFirstIndex;
         }
 
+        final DefaultOperationCallbackHandler parsedCmd = (DefaultOperationCallbackHandler) ctx.getParsedCommandLine();
+        try {
+            parsedCmd.parse(ctx.getPrefix(), buffer);
+        } catch(CommandFormatException e) {
+            if(!parsedCmd.endsOnAddressOperationNameSeparator() || !parsedCmd.endsOnSeparator()) {
+                return -1;
+            }
+        }
+
         char firstChar = buffer.charAt(cmdFirstIndex);
         if(firstChar == '.' || firstChar == ':' || firstChar == '/') {
             return OperationRequestCompleter.INSTANCE.complete(ctx, buffer, cursor, candidates);
@@ -83,7 +93,7 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
             ++cmdLastIndex;
         }
 
-        String cmd = buffer.substring(cmdFirstIndex, cmdLastIndex);
+        final String cmd = parsedCmd.getOperationName();
         if(cmdLastIndex < buffer.length()) {
             CommandHandler handler = cmdRegistry.getCommandHandler(cmd);
             if (handler != null) {
@@ -98,20 +108,11 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
                         ++nextCharIndex;
                     }
 
-                    String cmdBuffer = buffer.substring(nextCharIndex);
-                    int result = argsCompleter.complete(ctx, cmdBuffer, cursor - nextCharIndex, candidates);
-                    if (result >= 0) {
-                        return nextCharIndex + result;
-                    } else {
-                        return result;
-                    }
+                    return argsCompleter.complete(ctx, buffer.substring(nextCharIndex), nextCharIndex, candidates);
                 }
             }
         }
 
-        if(cmdLastIndex < buffer.length()) {
-            cmd = buffer.substring(cmdFirstIndex);
-        }
         for(String command : cmdRegistry.getTabCompletionCommands()) {
             if (!command.startsWith(cmd)) {
                 continue;

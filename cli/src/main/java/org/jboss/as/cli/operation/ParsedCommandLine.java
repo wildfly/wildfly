@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.operation;
 
+import java.util.List;
 import java.util.Set;
 
 
@@ -28,7 +29,7 @@ import java.util.Set;
 *
 * @author Alexey Loubyansky
 */
-public interface ParsedOperationRequest {
+public interface ParsedCommandLine {
 
     boolean isRequestComplete();
 
@@ -44,6 +45,8 @@ public interface ParsedOperationRequest {
 
     boolean endsOnNodeTypeNameSeparator();
 
+    boolean endsOnSeparator();
+
     boolean hasAddress();
 
     OperationRequestAddress getAddress();
@@ -54,9 +57,21 @@ public interface ParsedOperationRequest {
 
     boolean hasProperties();
 
+    boolean hasProperty(String propertyName);
+
     Set<String> getPropertyNames();
 
     String getPropertyValue(String name);
 
+    List<String> getOtherProperties();
+
     int getLastSeparatorIndex();
+
+    int getLastChunkIndex();
+
+    String getLastParsedPropertyName();
+
+    String getLastParsedPropertyValue();
+
+    String getOutputTarget();
 }

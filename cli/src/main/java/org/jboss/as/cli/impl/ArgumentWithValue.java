@@ -25,8 +25,8 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 
 /**
  *
@@ -70,20 +70,20 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
      * @see org.jboss.as.cli.CommandArgument#getValue(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public String getValue(ParsedArguments args, boolean required) throws CommandFormatException {
+    public String getValue(ParsedCommandLine args, boolean required) throws CommandFormatException {
 
         String value = null;
-        if(args.hasArguments()) {
+        if(args.hasProperties()) {
             if(index >= 0) {
-                List<String> others = args.getOtherArguments();
+                List<String> others = args.getOtherProperties();
                 if(others.size() > index) {
                     return others.get(index);
                 }
             }
 
-            value = args.getArgument(fullName);
+            value = args.getPropertyValue(fullName);
             if(value == null && shortName != null) {
-                value = args.getArgument(shortName);
+                value = args.getPropertyValue(shortName);
             }
         }
 
@@ -99,6 +99,27 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
 
     @Override
     public boolean isValueRequired() {
+        return true;
+    }
+
+    @Override
+    public boolean isValueComplete(ParsedCommandLine args) throws CommandFormatException {
+
+        if(!isPresent(args)) {
+            return false;
+        }
+
+        if (index >= 0 && index < args.getOtherProperties().size()) {
+            return true;
+        }
+
+        if(fullName.equals(args.getLastParsedPropertyName())) {
+            return false;
+        }
+
+        if(shortName != null && shortName.equals(args.getLastParsedPropertyName())) {
+            return false;
+        }
         return true;
     }
 }

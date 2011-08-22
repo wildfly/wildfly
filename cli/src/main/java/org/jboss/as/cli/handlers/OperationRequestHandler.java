@@ -26,13 +26,12 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.CancellationException;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
-import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -62,14 +61,17 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
             return;
         }
 
-        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(ctx.getPrefix());
+        ModelNode request = (ModelNode) ctx.get("OP_REQ");
+        if(request == null) {
+            ctx.printLine("Parsed request isn't available.");
+            return;
+        }
+        //DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(ctx.getPrefix());
         try {
-            ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), builder);
-            ModelNode request = builder.buildRequest();
+            //ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), builder);
+            //ModelNode request = builder.buildRequest();
             ModelNode result = client.execute(request);
             ctx.printLine(result.toString());
-        } catch(CommandFormatException e) {
-            ctx.printLine(e.getLocalizedMessage());
         } catch(NoSuchElementException e) {
             ctx.printLine("ModelNode request is incomplete: " + e.getMessage());
         } catch (CancellationException e) {
@@ -94,9 +96,10 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
 
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
-        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(ctx.getPrefix());
-        ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), builder);
-        return builder.buildRequest();
+        //DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(ctx.getPrefix());
+        //ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), builder);
+        //return builder.buildRequest();
+        return ((DefaultOperationCallbackHandler)ctx.getParsedCommandLine()).toOperationRequest();
     }
 
     @Override

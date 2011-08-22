@@ -23,7 +23,7 @@ package org.jboss.as.cli.impl;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.ParsedArguments;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelNode;
  */
 public interface RequestParameterArgument extends CommandArgument {
 
-    void set(ParsedArguments args, ModelNode request) throws CommandFormatException;
+    void set(ParsedCommandLine args, ModelNode request) throws CommandFormatException;
 
     String getPropertyName();
 }

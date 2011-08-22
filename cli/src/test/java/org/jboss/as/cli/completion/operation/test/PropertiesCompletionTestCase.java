@@ -25,8 +25,10 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.completion.mock.MockCommandContext;
 import org.jboss.as.cli.completion.mock.MockNode;
 import org.jboss.as.cli.completion.mock.MockOperation;
@@ -56,7 +58,7 @@ public class PropertiesCompletionTestCase {
 
         ctx = new MockCommandContext();
         ctx.setOperationCandidatesProvider(new MockOperationCandidatesProvider(root));
-        completer = new OperationRequestCompleter(ctx);
+        completer = new OperationRequestCompleter();
     }
 
     @Test
@@ -172,7 +174,12 @@ public class PropertiesCompletionTestCase {
 
     protected List<String> fetchCandidates(String buffer) {
         ArrayList<String> candidates = new ArrayList<String>();
-        completer.complete(buffer, 0, candidates);
+        try {
+            ctx.parseCommandLine(buffer);
+        } catch (CommandFormatException e) {
+            return Collections.emptyList();
+        }
+        completer.complete(ctx, buffer, 0, candidates);
         return candidates;
     }
 }

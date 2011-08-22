@@ -21,30 +21,19 @@
  */
 package org.jboss.as.cli.operation.parsing;
 
-import org.jboss.as.cli.CommandFormatException;
-
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class OperationState extends DefaultParsingState {
+public class OutputTargetState extends DefaultParsingState {
 
-    public static final OperationState INSTANCE = new OperationState();
-    public static final String ID = "OP";
+    public static final String ID = "OUT_REDIRECT";
+    public static final OutputTargetState INSTANCE = new OutputTargetState();
+    public static final char OUTPUT_REDIRECT_CHAR = '>';
 
-    public OperationState() {
-        this(OperationNameState.INSTANCE);
-    }
-
-    public OperationState(final OperationNameState opNameState) {
+    public OutputTargetState() {
         super(ID);
-        setDefaultHandler(new CharacterHandler(){
-            @Override
-            public void handle(ParsingContext ctx)
-                    throws CommandFormatException {
-                ctx.enterState(opNameState);
-            }});
-        setIgnoreWhitespaces(true);
+        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
     }
 }

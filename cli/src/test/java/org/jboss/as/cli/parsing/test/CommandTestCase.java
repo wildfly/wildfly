@@ -22,13 +22,13 @@
 package org.jboss.as.cli.parsing.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.junit.Test;
 
@@ -36,43 +36,36 @@ import org.junit.Test;
  *
  * @author Alexey Loubyansky
  */
-public class CommandLineArgumentsTestCase {
+public class CommandTestCase {
 
     @Test
-    public void testDefault() throws Exception {
+    public void testCommandOnly() throws Exception {
 
-        ParsedCommandLine args = parse("deploy ../../../../testsuite/smoke/target/deployments/test-deployment.sar --name=my.sar --disabled --runtime-name=myrt.sar --force");
-        assertTrue(args.hasProperties());
-        assertTrue(args.hasProperty("--name"));
-        assertTrue(args.hasProperty("--runtime-name"));
-        assertTrue(args.hasProperty("--disabled"));
-        assertTrue(args.hasProperty("--force"));
-
-        List<String> otherArgs = args.getOtherProperties();
-        assertEquals(1, otherArgs.size());
-        assertEquals("../../../../testsuite/smoke/target/deployments/test-deployment.sar", otherArgs.get(0));
-
-        assertNull(args.getOutputTarget());
+        DefaultOperationCallbackHandler cmd = parse("some-command");
+        assertEquals("some-command", cmd.getOperationName());
+        assertFalse(cmd.hasProperties());
+        assertNull(cmd.getOutputTarget());
     }
 
     @Test
-    public void testOutputTarget() throws Exception {
+    public void testCommandWithArgsAndOutputTarget() throws Exception {
 
-        ParsedCommandLine args = parse("cmd --name=value value1 --name1 > output.target");
-        assertTrue(args.hasProperties());
-        assertTrue(args.hasProperty("--name"));
-        assertEquals("value", args.getPropertyValue("--name"));
-        assertTrue(args.hasProperty("--name1"));
-        assertNull(args.getPropertyValue("--name1"));
+        DefaultOperationCallbackHandler cmd = parse(" some-command --name=value --name1 value1 > command.log");
+        assertEquals("some-command", cmd.getOperationName());
+        assertTrue(cmd.hasProperties());
+        assertTrue(cmd.hasProperty("--name"));
+        assertEquals("value", cmd.getPropertyValue("--name"));
+        assertTrue(cmd.hasProperty("--name1"));
+        assertNull(cmd.getPropertyValue("--name1"));
 
-        List<String> otherArgs = args.getOtherProperties();
+        List<String> otherArgs = cmd.getOtherProperties();
         assertEquals(1, otherArgs.size());
         assertEquals("value1", otherArgs.get(0));
 
-        assertEquals("output.target", args.getOutputTarget());
+        assertEquals("command.log", cmd.getOutputTarget());
     }
 
-    protected ParsedCommandLine parse(String line) {
+    protected DefaultOperationCallbackHandler parse(String line) {
         DefaultOperationCallbackHandler args = new DefaultOperationCallbackHandler();
         try {
             args.parse(null, line);

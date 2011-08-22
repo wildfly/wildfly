@@ -24,16 +24,7 @@ package org.jboss.as.cli.operation.impl;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestParser;
-import org.jboss.as.cli.operation.parsing.NodeState;
-import org.jboss.as.cli.operation.parsing.OperationNameState;
-import org.jboss.as.cli.operation.parsing.OperationRequestState;
-import org.jboss.as.cli.operation.parsing.OperationState;
-import org.jboss.as.cli.operation.parsing.ParsingContext;
-import org.jboss.as.cli.operation.parsing.ParsingStateCallbackHandler;
-import org.jboss.as.cli.operation.parsing.PropertyListState;
-import org.jboss.as.cli.operation.parsing.PropertyState;
-import org.jboss.as.cli.operation.parsing.PropertyValueState;
-import org.jboss.as.cli.operation.parsing.StateParser;
+import org.jboss.as.cli.parsing.TheParser;
 
 /**
  * Default implementation of CommandParser which expects the following command format:
@@ -76,7 +67,12 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
             return;
         }
 
-        ParsingStateCallbackHandler stateCallbackHandler = new ParsingStateCallbackHandler() {
+        try {
+            TheParser.parseOperationRequest(operationRequest, handler);
+        } catch (CommandFormatException e) {
+            throw new OperationFormatException(e);
+        }
+/*        ParsingStateCallbackHandler stateCallbackHandler = new ParsingStateCallbackHandler() {
 
             StringBuilder buffer = new StringBuilder();
 
@@ -90,7 +86,7 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                 String stateId = ctx.getState().getId();
                 //System.out.println("entered " + stateId + " '" + ctx.getCharacter() + "'");
 
-                if(stateId.equals(OperationState.ID)) {
+                if(stateId.equals(OperationNameState.ID)) {
                     handler.addressOperationSeparator(ctx.getLocation());
                 } else if (stateId.equals(PropertyListState.ID)) {
                     handler.propertyListStart(ctx.getLocation());
@@ -111,7 +107,7 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
             }
 
             @Override
-            public void leavingState(ParsingContext ctx) throws OperationFormatException {
+            public void leavingState(ParsingContext ctx) throws CommandFormatException {
 
                 String stateId = ctx.getState().getId();
                 //System.out.println("leaving " + stateId + " '" + ctx.getCharacter() + "'");
@@ -178,6 +174,8 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                         }
                     }
                     propValueContent = false;
+                } else if(stateId.equals(OutputTargetState.ID)) {
+                    handler.outputTarget(buffer.toString().trim());
                 }
             }
 
@@ -201,6 +199,6 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
         } catch (CommandFormatException e) {
             throw new OperationFormatException("Failed to parse operation request '" + operationRequest + "'", e);
         }
-    }
+*/    }
 
 }

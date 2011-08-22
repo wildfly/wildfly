@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli.operation;
 
+import org.jboss.as.cli.CommandFormatException;
+
 
 /**
  *
@@ -32,38 +34,40 @@ public interface OperationRequestParser {
 
         void start(String operationString);
 
-        void rootNode();
+        void rootNode(int index);
 
-        void parentNode();
+        void parentNode(int index);
 
-        void nodeType();
+        void nodeType(int index);
 
-        void nodeType(String nodeType) throws OperationFormatException;
+        void nodeType(int index, String nodeType) throws OperationFormatException;
 
         void nodeTypeNameSeparator(int index);
 
-        void nodeName(String nodeName) throws OperationFormatException;
+        void nodeName(int index, String nodeName) throws OperationFormatException;
 
         void nodeSeparator(int index);
 
         void addressOperationSeparator(int index);
 
-        void operationName(String operationName) throws OperationFormatException;
+        void operationName(int index, String operationName) throws CommandFormatException;
 
         void propertyListStart(int index);
 
-        void propertyName(String propertyName) throws OperationFormatException;
+        void propertyName(int index, String propertyName) throws CommandFormatException;
 
         void propertyNameValueSeparator(int index);
 
-        void property(String name, String value, int nameValueSeparatorIndex) throws OperationFormatException;
+        void property(String name, String value, int nameValueSeparatorIndex) throws CommandFormatException;
 
         void propertySeparator(int index);
 
         void propertyListEnd(int index);
 
         // TODO this is not good
-        void nodeTypeOrName(String typeOrName) throws OperationFormatException;
+        void nodeTypeOrName(int index, String typeOrName) throws OperationFormatException;
+
+        void outputTarget(int index, String outputTarget) throws CommandFormatException;
     }
 
     void parse(String operationRequest, CallbackHandler handler) throws OperationFormatException;

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli;
 
+import org.jboss.as.cli.operation.ParsedCommandLine;
+
 
 /**
  *
@@ -57,11 +59,12 @@ public interface CommandArgument {
      * @return  true if the argument is present, false - otherwise.
      * @throws CommandFormatException
      */
-    boolean isPresent(ParsedArguments args) throws CommandFormatException;
+    boolean isPresent(ParsedCommandLine args) throws CommandFormatException;
 
     /**
      * Checks whether the argument can appear on the command
-     * given the already present arguments. (Used for tab-completion.)
+     * given the already present arguments.
+     * (Used for tab-completion. Although, often isValueComplete(ParsedOperationRequest req) would be more appropriate.)
      * @param args  parsed arguments.
      * @return true if the argument can appear on the command line next, false - otherwise.
      */
@@ -74,7 +77,7 @@ public interface CommandArgument {
      * @param args  parsed arguments.
      * @return  the value of the argument or null if the argument isn't present or is missing value.
      */
-    String getValue(ParsedArguments args) throws CommandFormatException;
+    String getValue(ParsedCommandLine args) throws CommandFormatException;
 
     /**
      * Returns the value of the argument specified on the command line.
@@ -85,7 +88,18 @@ public interface CommandArgument {
      * @param required  whether the value for this argument is required.
      * @return  the value of the argument or null if the argument isn't present and the value is not required.
      */
-    String getValue(ParsedArguments args, boolean required) throws CommandFormatException;
+    String getValue(ParsedCommandLine args, boolean required) throws CommandFormatException;
+
+    /**
+     * Checks whether the value is specified and complete.
+     * The value is considered complete only if it is followed by a separator
+     * (argument separator, end of argument list but not end-of-content).
+     *
+     * @param args  the parsed arguments
+     * @return  true if the value of the argument is complete, false otherwise.
+     * @throws CommandFormatException
+     */
+    boolean isValueComplete(ParsedCommandLine args) throws CommandFormatException;
 
     /**
      * Checks whether the argument accepts value.
