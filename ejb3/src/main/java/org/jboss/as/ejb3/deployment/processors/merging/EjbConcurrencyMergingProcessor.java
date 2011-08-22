@@ -25,6 +25,7 @@ import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -77,12 +78,12 @@ public class EjbConcurrencyMergingProcessor implements DeploymentUnitProcessor {
 
         for (ComponentDescription componentConfiguration : componentConfigurations) {
             if (componentConfiguration instanceof SessionBeanComponentDescription) {
-                processComponentConfig(applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentConfiguration);
+                processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentConfiguration);
             }
         }
     }
 
-    private void processComponentConfig(final EEApplicationClasses applicationClasses, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+    private void processComponentConfig(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
 
         final Class<?> componentClass;
         try {
@@ -90,8 +91,9 @@ public class EjbConcurrencyMergingProcessor implements DeploymentUnitProcessor {
         } catch (ClassNotFoundException e) {
             throw new DeploymentUnitProcessingException("Could not load EJB class " + componentConfiguration.getEJBClassName(), e);
         }
-
-        handleAnnotations(applicationClasses, deploymentReflectionIndex, componentClass, componentConfiguration);
+        if(!MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
+            handleAnnotations(applicationClasses, deploymentReflectionIndex, componentClass, componentConfiguration);
+        }
         handleDeploymentDescriptor(deploymentReflectionIndex, componentClass, componentConfiguration);
     }
 
