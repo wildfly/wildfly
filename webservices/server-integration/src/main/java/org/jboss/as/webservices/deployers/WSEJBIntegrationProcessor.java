@@ -24,7 +24,6 @@ package org.jboss.as.webservices.deployers;
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +31,7 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -41,6 +41,8 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.metadata.javaee.spec.EnvironmentEntriesMetaData;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.as.webservices.metadata.WebServiceDeclaration;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
 
@@ -80,14 +82,35 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
            final List<ComponentDescription> componentDescriptions = moduleDescription.getComponentsByClassName(beanClassName);
 
            final List<SessionBeanComponentDescription> sessionBeans = getSessionBeans(componentDescriptions);
-           for(SessionBeanComponentDescription sessionBean : sessionBeans) {
+           for(final SessionBeanComponentDescription sessionBean : sessionBeans) {
                if (sessionBean.isStateless() || sessionBean.isSingleton()) {
                    final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
                    final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
-                   endpoints.add(new WebServiceDeclarationAdapter(sessionBean, webServiceClassInfo, ejbViewName));
+                   final String compContextServiceName = getCompContextServiceName(sessionBean);
+                   final EnvironmentEntriesMetaData envEntriesMD = getEnvironmentEntriesMetaData(sessionBean);
+                   endpoints.add(new WebServiceDeclarationAdapter(sessionBean, webServiceClassInfo, ejbViewName, compContextServiceName, envEntriesMD));
                }
            }
        }
+   }
+
+   private static EnvironmentEntriesMetaData getEnvironmentEntriesMetaData(final SessionBeanComponentDescription sessionBean) {
+       if (sessionBean.getDeploymentDescriptorEnvironment() != null) {
+           if (sessionBean.getDeploymentDescriptorEnvironment().getEnvironment() != null) {
+               return sessionBean.getDeploymentDescriptorEnvironment().getEnvironment().getEnvironmentEntries();
+           }
+       }
+
+       return null;
+   }
+
+   private static String getCompContextServiceName(final SessionBeanComponentDescription componentDescription) {
+       final String applicationName = componentDescription.getApplicationName();
+       final String moduleName = componentDescription.getModuleName();
+       final String compName = componentDescription.getComponentName();
+       final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(applicationName, moduleName, compName);
+
+       return compContextServiceName.getCanonicalName();
    }
 
    private static List<SessionBeanComponentDescription> getSessionBeans(final List<ComponentDescription> componentDescriptions) {
@@ -110,16 +133,20 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
       private final SessionBeanComponentDescription ejbMD;
       private final ClassInfo webServiceClassInfo; // TODO: propagate just annotations?
       private final String containerName;
+      private final String compContextServiceName;
+      private final EnvironmentEntriesMetaData envEntriesMD;
 
       /**
        * Constructor.
        *
        * @param ejbMD EJB metadata
        */
-      private WebServiceDeclarationAdapter(final SessionBeanComponentDescription ejbMD, final ClassInfo webServiceClassInfo, final String containerName) {
+      private WebServiceDeclarationAdapter(final SessionBeanComponentDescription ejbMD, final ClassInfo webServiceClassInfo, final String containerName, final String compContextServiceName, final EnvironmentEntriesMetaData envEntriesMD) {
          this.ejbMD = ejbMD;
          this.webServiceClassInfo = webServiceClassInfo;
          this.containerName = containerName;
+         this.compContextServiceName = compContextServiceName;
+         this.envEntriesMD = envEntriesMD;
       }
 
       /**
@@ -129,6 +156,14 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
        */
       public String getContainerName() {
          return containerName;
+      }
+
+      public String compContextServiceName() {
+          return compContextServiceName;
+      }
+
+      public EnvironmentEntriesMetaData getEnvironmentEntriesMetaData() {
+          return envEntriesMD;
       }
 
       /**

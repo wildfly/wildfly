@@ -62,6 +62,7 @@ public final class ASHelper {
      * EJB invocation property.
      */
     public static final String CONTAINER_NAME = "org.jboss.wsf.spi.invocation.ContainerName";
+    public static final String COMP_SERVICE_NAME = "org.jboss.wsf.spi.invocation.CompServiceName";
 
     /** Logger. */
     private static final Logger LOGGER = Logger.getLogger(ASHelper.class);

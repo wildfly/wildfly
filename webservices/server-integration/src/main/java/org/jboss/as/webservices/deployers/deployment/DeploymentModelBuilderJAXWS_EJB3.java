@@ -63,6 +63,7 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
 
             final Endpoint ep = this.newHttpEndpoint(ejbClass, ejbName, dep);
             ep.setProperty(ASHelper.CONTAINER_NAME, container.getContainerName());
+            ep.setProperty(ASHelper.COMP_SERVICE_NAME, container.compContextServiceName());
         }
     }
 }

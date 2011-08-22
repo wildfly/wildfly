@@ -27,11 +27,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.annotation.Resource;
-import javax.ejb.EJB;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.metadata.WebServiceDeclaration;
@@ -39,8 +37,6 @@ import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 //import org.jboss.ejb3.ejbref.resolver.spi.EjbReferenceResolver; TODO: replace
-import org.jboss.metadata.ejb.jboss.JBossEnterpriseBeansMetaData;
-import org.jboss.metadata.ejb.jboss.JBossMetaData;
 import org.jboss.metadata.javaee.spec.EnvironmentEntriesMetaData;
 import org.jboss.metadata.javaee.spec.EnvironmentEntryMetaData;
 import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
@@ -128,34 +124,19 @@ public final class InjectionMetaDataDeploymentAspect extends AbstractDeploymentA
 
             // iterate through all EJB3 endpoints
             for (final WebServiceDeclaration container : webServiceDeployment.getServiceEndpoints()) {
-                /*
-                 * TODO: uncomment final String ejbName = container.getComponentName(); final Endpoint endpoint =
-                 * service.getEndpointByName(ejbName); if (endpoint != null && ASHelper.isWebServiceBean(container)) { // build
-                 * EJB 3 injections meta data final EnvironmentEntriesMetaData ejbEnvEntries =
-                 * this.getEnvironmentEntries(ejbName, unit); final InjectionsMetaData injectionsMD =
-                 * this.buildInjectionsMetaData(ejbEnvEntries, resolvers);
-                 *
-                 * // associate injections meta data with EJB 3 endpoint endpoint.addAttachment(InjectionsMetaData.class,
-                 * injectionsMD); }
-                 */
+                final String ejbName = container.getComponentName();
+                final Endpoint endpoint = service.getEndpointByName(ejbName);
+                if (endpoint != null) {
+                   // build EJB 3 injections meta data
+                   final EnvironmentEntriesMetaData ejbEnvEntries = container.getEnvironmentEntriesMetaData();
+                   final InjectionsMetaData injectionsMD = this.buildInjectionsMetaData(ejbEnvEntries, resolvers);
+
+                   // associate injections meta data with EJB 3 endpoint
+                   endpoint.addAttachment(InjectionsMetaData.class, injectionsMD);
+                }
             }
         }
     }
-
-    /**
-     * Returns environment entries meta data associated with specified EJB 3 bean.
-     *
-     * @param ejbName EJB 3 bean to lookup environment entries for
-     * @param unit deployment unit
-     * @return environment entries meta data
-     */
-    /*
-     * TODO: uncomment private EnvironmentEntriesMetaData getEnvironmentEntries(final String ejbName, final DeploymentUnit unit)
-     * { final JBossMetaData jbossMD = ASHelper.getRequiredAttachment(unit, JBossMetaData.class); final
-     * JBossEnterpriseBeansMetaData enterpriseBeansMDs = jbossMD.getEnterpriseBeans();
-     *
-     * return enterpriseBeansMDs.get(ejbName).getEnvironmentEntries(); }
-     */
 
     /**
      * Returns reference resolvers container.
