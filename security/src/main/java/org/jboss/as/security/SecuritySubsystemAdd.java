@@ -141,6 +141,10 @@ class SecuritySubsystemAdd implements OperationStepHandler {
             }
         }
 
+        if(operation.hasDefined(Constants.VAULT)) {
+            subModel.get(Constants.VAULT).set(operation.get(Constants.VAULT));
+        }
+
         if (operation.hasDefined(AUTHENTICATION_MANAGER_CLASS_NAME)) {
             authenticationManagerClassName = operation.get(AUTHENTICATION_MANAGER_CLASS_NAME).asString();
             subModel.get(AUTHENTICATION_MANAGER_CLASS_NAME).set(authenticationManagerClassName);

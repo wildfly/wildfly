@@ -266,6 +266,14 @@ class SecuritySubsystemDescriptions {
             subsystem.get(CHILDREN, Constants.SECURITY_DOMAIN, MAX_OCCURS).set(Integer.MAX_VALUE);
             subsystem.get(CHILDREN, Constants.SECURITY_DOMAIN, MODEL_DESCRIPTION).setEmptyObject();
 
+            subsystem.get(Constants.VAULT).set(getVault(locale));
+
+            subsystem.get(CHILDREN, Constants.VAULT_OPTION, DESCRIPTION).set(bundle.getString("vault.option"));
+            subsystem.get(CHILDREN, Constants.VAULT_OPTION, REQUIRED).set(false);
+            subsystem.get(CHILDREN, Constants.VAULT_OPTION, MIN_OCCURS).set(0);
+            subsystem.get(CHILDREN, Constants.VAULT_OPTION, MAX_OCCURS).set(Integer.MAX_VALUE);
+            subsystem.get(CHILDREN, Constants.VAULT_OPTION, MODEL_DESCRIPTION).setEmptyObject();
+
             return subsystem;
         }
 
@@ -328,6 +336,11 @@ class SecuritySubsystemDescriptions {
             op.get(REQUEST_PROPERTIES, SECURITY_PROPERTIES, REQUIRED).set(false);
 
             op.get(SECURITY_PROPERTIES).set(getPropertiesAdd(locale));
+
+            op.get(REQUEST_PROPERTIES, Constants.VAULT, DESCRIPTION).set(
+                    bundle.getString("vault"));
+            op.get(REQUEST_PROPERTIES, Constants.VAULT, TYPE).set(ModelType.OBJECT);
+            op.get(REQUEST_PROPERTIES, Constants.VAULT, REQUIRED).set(false);
 
             op.get(REPLY_PROPERTIES).setEmptyObject();
 
@@ -501,6 +514,19 @@ class SecuritySubsystemDescriptions {
             op.get(DESCRIPTION).set(bundle.getString("security-properties.remove"));
 
             return op;
+        }
+
+        static ModelNode getVault(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            node.get(TYPE).set(ModelType.LIST);
+            node.get(DESCRIPTION).set(bundle.getString("vault"));
+            node.get(REQUIRED).set(false);
+            node.get(ATTRIBUTES, CODE, DESCRIPTION).set(bundle.getString("vault.code"));
+            node.get(ATTRIBUTES, CODE, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, NAME, REQUIRED).set(false);
+            return node;
         }
 
         static ModelNode getAuthentication(Locale locale) {

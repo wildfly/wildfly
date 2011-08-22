@@ -81,4 +81,6 @@ public interface Constants {
     String TRUSTSTORE_URL = "truststore-url";
     String TYPE = "type";
     String VALUE = "value";
+    String VAULT = "vault";
+    String VAULT_OPTION = "vault-option";
 }
