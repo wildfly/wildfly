@@ -1,0 +1,43 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.pojo.service;
+
+import java.lang.reflect.Method;
+
+/**
+ * Method joinpoint.
+ *
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ */
+public class MethodJoinpoint extends TargetJoinpoint {
+    private final Method method;
+
+    public MethodJoinpoint(Method method) {
+        this.method = method;
+    }
+
+    @Override
+    public Object dispatch() throws Throwable {
+        return method.invoke(getTarget().getValue(), toObjects(method.getGenericParameterTypes()));
+    }
+}
