@@ -58,8 +58,6 @@ import org.jboss.as.ejb3.deployment.processors.SessionSynchronizationProcessor;
 import org.jboss.as.ejb3.deployment.processors.StartupAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.StatefulTimeoutAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.TimerServiceJndiBindingProcessor;
-import org.jboss.as.ejb3.deployment.processors.TransactionAttributeAnnotationProcessor;
-import org.jboss.as.ejb3.deployment.processors.TransactionManagementAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.annotation.EjbAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.AssemblyDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.DeploymentDescriptorInterceptorBindingsProcessor;
@@ -71,6 +69,8 @@ import org.jboss.as.ejb3.deployment.processors.dd.SecurityIdentityDDProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.SecurityRoleRefDDProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.SessionBeanXmlDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.EjbConcurrencyMergingProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.TransactionAttributeMergingProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.TransactionManagementMergingProcessor;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -145,14 +145,12 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
                 // Process @DependsOn after the @Singletons have been registered.
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CONTEXT_BINDING, new EjbContextJndiBindingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_TIMERSERVICE_BINDING, new TimerServiceJndiBindingProcessor());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_TRANSACTION_MANAGEMENT, new TransactionManagementAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_INJECTION_ANNOTATION, new EjbResourceInjectionAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_STARTUP_ANNOTATION, new StartupAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION, new ConcurrencyManagementAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DECLARE_ROLES_ANNOTATION, new DeclareRolesProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_RUN_AS_ANNOTATION, new RunAsProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_STATEFUL_TIMEOUT_ANNOTATION, new StatefulTimeoutAnnotationProcessor());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_TRANSACTION_ATTR_ANNOTATION, new TransactionAttributeAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SESSION_SYNCHRONIZATION, new SessionSynchronizationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION, new ResourceAdapterAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ASYNCHRONOUS_ANNOTATION, new AsynchronousAnnotationProcessor());
@@ -179,7 +177,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_EXCLUDE_LIST_DD, new ExcludeListDDProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_METHOD_PERMISSION_DD, new MethodPermissionDDProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_REF, new EjbRefProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TRANSACTION_MANAGEMENT, new TransactionManagementMergingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_LOCK_MERGE, new EjbConcurrencyMergingProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TX_ATTR_MERGE, new TransactionAttributeMergingProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RESOLVE_EJB_INJECTIONS, new EjbInjectionResolutionProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnAnnotationProcessor());
