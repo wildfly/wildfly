@@ -162,8 +162,8 @@ public final class EEModuleClassDescription {
         this.annotationInformation.put(annotationInformation.getAnnotationType(), annotationInformation);
     }
 
-    public ClassAnnotationInformation getAnnotationInformation(Class<? extends Annotation> annotationType) {
-        return this.annotationInformation.get(annotationType);
+    public <A extends Annotation, T> ClassAnnotationInformation<A, T> getAnnotationInformation(Class<A> annotationType) {
+        return (ClassAnnotationInformation<A, T>) this.annotationInformation.get(annotationType);
     }
 
     private static class DefaultConfigurator implements ClassConfigurator {

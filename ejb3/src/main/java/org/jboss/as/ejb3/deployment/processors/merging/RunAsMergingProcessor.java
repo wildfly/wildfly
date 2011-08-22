@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -38,10 +38,14 @@ import javax.annotation.security.RunAs;
  *
  * @author Stuart DouglasrunAs
  */
-public class RunAsMergingProcessor extends AbstractMergingProcessor {
+public class RunAsMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
+
+    public RunAsMergingProcessor() {
+        super(EJBComponentDescription.class);
+    }
 
     @Override
-    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
         final EEModuleClassDescription clazz = applicationClasses.getClassByName(componentClass.getName());
         //we only care about annotations on the bean class itself
         if (clazz == null) {
@@ -57,7 +61,7 @@ public class RunAsMergingProcessor extends AbstractMergingProcessor {
     }
 
     @Override
-    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
         if(componentConfiguration.getDescriptorData() == null) {
             return;
         }
