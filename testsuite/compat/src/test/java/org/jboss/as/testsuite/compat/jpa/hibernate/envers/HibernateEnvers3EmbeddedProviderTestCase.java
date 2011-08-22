@@ -20,8 +20,6 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import java.io.File;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Strong Liu
@@ -50,25 +48,6 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
             "  </persistence-unit>" +
             "</persistence>";
 
-    private static final String web_persistence_xml =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-            "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"web_mypc\">" +
-            "    <description>Persistence Unit." +
-            "    </description>" +
-            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-            "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
-            "<property name=\"jboss.as.jpa.providerModule\" value=\"hibernate3-bundled\"/>" +
-            "<property name=\"hibernate.ejb.event.post-insert\" value=\"org.hibernate.ejb.event.EJB3PostInsertEventListener,org.hibernate.envers.event.AuditEventListener\"/>"+
-            "<property name=\"hibernate.ejb.event.post-update\" value=\"org.hibernate.ejb.event.EJB3PostUpdateEventListener,org.hibernate.envers.event.AuditEventListener\"/>"+
-            "<property name=\"hibernate.ejb.event.post-delete\" value=\"org.hibernate.ejb.event.EJB3PostDeleteEventListener,org.hibernate.envers.event.AuditEventListener\"/>"+
-            "<property name=\"hibernate.ejb.event.pre-collection-update\" value=\"org.hibernate.envers.event.AuditEventListener\"/>"+
-            "<property name=\"hibernate.ejb.event.pre-collection-remove\" value=\"org.hibernate.envers.event.AuditEventListener\"/>"+
-            "<property name=\"hibernate.ejb.event.post-collection-recreate\" value=\"org.hibernate.envers.event.AuditEventListener\"/>"+
-            "</properties>" +
-            "  </persistence-unit>" +
-            "</persistence>";
     @ArquillianResource
     private static InitialContext iniCtx;
 
@@ -110,7 +89,7 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
         addHibernate3JarsToEar(ear);
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
-        lib.addClasses(SLSBPU.class, HttpRequest.class);
+        lib.addClasses(SLSBPU.class);
         ear.addAsModule(lib);
 
         lib = ShrinkWrap.create(JavaArchive.class, "entities.jar");
@@ -122,27 +101,8 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
         main.addClasses(HibernateEnvers3EmbeddedProviderTestCase.class);
         ear.addAsModule(main);
 
-        // add war that contains its own pu
-        WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
-        war.addClasses(SimpleServlet.class, Person.class, Address.class);
-        war.addAsResource(new StringAsset(web_persistence_xml), "META-INF/persistence.xml");
 
-        war.addAsWebInfResource(
-            new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "\n" +
-                "<web-app version=\"3.0\"\n" +
-                "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
-                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
-                "         metadata-complete=\"false\">\n" +
-                "<servlet-mapping>\n" +
-                "        <servlet-name>SimpleServlet</servlet-name>\n" +
-                "        <url-pattern>/simple/*</url-pattern>\n" +
-                "    </servlet-mapping>\n" +
-                "</web-app>"),
-            "web.xml");
 
-        ear.addAsModule(war);
 
         return ear;
     }
@@ -193,12 +153,5 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
 		Assert.assertEquals( 1, size );
     }
 
-    @Test
-    public void testServletSubDeploymentRead() throws Exception {
-        String result = HttpRequest.get("http://localhost:8080/hibernate3_test/simple?type=query", 10, SECONDS);
-        assertEquals("2", result);
 
-        result = HttpRequest.get("http://localhost:8080/hibernate3_test/simple?type=revision", 10, SECONDS);
-        assertEquals("1", result);
-    }
 }
