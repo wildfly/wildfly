@@ -20,7 +20,6 @@
     </xs:complexType>
     <xs:complexType name="mail-sessionType">
         <xs:sequence>
-            <xs:element name="login" type="login-type" maxOccurs="1" minOccurs="1"/>
             <xs:element name="smtp-server" type="server-type" maxOccurs="1" minOccurs="0"/>
             <xs:element name="pop3-server" type="server-type" maxOccurs="1" minOccurs="0"/>
             <xs:element name="imap-server" type="server-type" maxOccurs="1" minOccurs="0"/>
@@ -35,6 +34,9 @@
     </xs:complexType>
 
     <xs:complexType name="server-type" mixed="true">
+        <xs:sequence>
+            <xs:element name="login" type="login-type" maxOccurs="1" minOccurs="0"/>
+        </xs:sequence>
         <xs:attribute name="address" use="required"/>
         <xs:attribute name="port" use="required"/>
     </xs:complexType>

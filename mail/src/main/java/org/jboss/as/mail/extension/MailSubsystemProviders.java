@@ -10,8 +10,7 @@ import java.util.ResourceBundle;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
- * Contains the description providers. The description providers are what print out the
- * information when you execute the {@code read-resource-description} operation.
+ * Contains the mail system description providers.
  *
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
@@ -55,7 +54,7 @@ class MailSubsystemProviders {
 
     static DescriptionProvider MAIL_SESSION_DESC = new DescriptionProvider() {
 
-        @Override
+
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
@@ -88,7 +87,7 @@ class MailSubsystemProviders {
 
     static DescriptionProvider ADD_MAIL_SESSION_DESC = new DescriptionProvider() {
 
-        @Override
+
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();

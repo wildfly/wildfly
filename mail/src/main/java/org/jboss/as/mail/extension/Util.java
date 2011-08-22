@@ -1,18 +1,8 @@
 package org.jboss.as.mail.extension;
 
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.mail.extension.ModelKeys.DEBUG;
-import static org.jboss.as.mail.extension.ModelKeys.IMAP_SERVER;
-import static org.jboss.as.mail.extension.ModelKeys.JNDI_NAME;
-import static org.jboss.as.mail.extension.ModelKeys.PASSWORD;
-import static org.jboss.as.mail.extension.ModelKeys.POP3_SERVER;
-import static org.jboss.as.mail.extension.ModelKeys.SERVER_ADDRESS;
-import static org.jboss.as.mail.extension.ModelKeys.SERVER_PORT;
-import static org.jboss.as.mail.extension.ModelKeys.SMTP_SERVER;
-import static org.jboss.as.mail.extension.ModelKeys.USERNAME;
+import static org.jboss.as.mail.extension.ModelKeys.*;
 
 /**
  * @author Tomaz Cerar
@@ -22,45 +12,64 @@ public class Util {
 
     static void fillFrom(final ModelNode model, final MailSessionConfig sessionConfig) {
         model.get(JNDI_NAME).set(sessionConfig.getJndiName());
-        model.get(USERNAME).set(sessionConfig.getUsername());
-        model.get(PASSWORD).set(sessionConfig.getPassword());
+
         model.get(DEBUG).set(sessionConfig.isDebug());
         if (sessionConfig.getSmtpServer() != null) {
-            model.get(SMTP_SERVER).get(SERVER_ADDRESS).set(sessionConfig.getSmtpServer().getAddress());
-            model.get(SMTP_SERVER).get(SERVER_PORT).set(sessionConfig.getSmtpServer().getPort());
+            writeServerConfig(model, sessionConfig.getSmtpServer(), SMTP_SERVER);
         }
-
         if (sessionConfig.getPop3Server() != null) {
-            model.get(POP3_SERVER).get(SERVER_ADDRESS).set(sessionConfig.getPop3Server().getAddress());
-            model.get(POP3_SERVER).get(SERVER_PORT).set(sessionConfig.getPop3Server().getPort());
+            writeServerConfig(model, sessionConfig.getPop3Server(), POP3_SERVER);
         }
         if (sessionConfig.getImapServer() != null) {
-            model.get(IMAP_SERVER).get(SERVER_ADDRESS).set(sessionConfig.getImapServer().getAddress());
-            model.get(IMAP_SERVER).get(SERVER_PORT).set(sessionConfig.getImapServer().getPort());
+            writeServerConfig(model, sessionConfig.getImapServer(), IMAP_SERVER);
         }
+    }
 
+    private static void writeServerConfig(final ModelNode model, final MailSessionServer server, final String name) {
+        model.get(name).get(SERVER_ADDRESS).set(server.getAddress());
+        model.get(name).get(SERVER_PORT).set(server.getPort());
+        writeCredentials(model.get(name), server.getCredentials());
+    }
+
+    private static MailSessionServer readServerConfig(final ModelNode model) {
+        final String address = model.require(SERVER_ADDRESS).asString();
+        final int port = model.require(SERVER_PORT).asInt();
+        final Credentials credentials = readCredentials(model);
+        return new MailSessionServer(address, port, credentials);
+    }
+
+    private static void writeCredentials(final ModelNode model, final Credentials credentials) {
+        if (credentials != null) {
+            model.get(CREDENTIALS).get(USERNAME).set(credentials.getUsername());
+            model.get(CREDENTIALS).get(PASSWORD).set(credentials.getPassword());
+        }
+    }
+
+    private static Credentials readCredentials(final ModelNode model) {
+        if (model.has(CREDENTIALS)) {
+            String un = model.get(CREDENTIALS).get(USERNAME).asString();
+            String pw = model.get(CREDENTIALS).get(PASSWORD).asString();
+            return new Credentials(un, pw);
+        }
+        return null;
     }
 
     static MailSessionConfig from(final ModelNode model) {
         MailSessionConfig cfg = new MailSessionConfig();
         cfg.setJndiName(model.require(JNDI_NAME).asString());
-        cfg.setUsername(model.require(USERNAME).asString());
-        cfg.setPassword(model.require(PASSWORD).asString());
         cfg.setDebug(model.get(DEBUG).asBoolean(false));
 
 
-        ModelNode server = model.get(SMTP_SERVER);
-        cfg.setSmtpServer(new MailSessionServer(server.require(SERVER_ADDRESS).asString(), server.require(SERVER_PORT).asString()));
-
-        if (server.hasDefined(POP3_SERVER)) {
-            server = model.get(POP3_SERVER);
-            cfg.setPop3Server(new MailSessionServer(server.require(SERVER_ADDRESS).asString(), server.require(SERVER_PORT).asString()));
+        if (model.hasDefined(SMTP_SERVER)) {
+            cfg.setSmtpServer(readServerConfig(model.get(SMTP_SERVER)));
         }
 
+        if (model.hasDefined(POP3_SERVER)) {
+            cfg.setPop3Server(readServerConfig(model.get(POP3_SERVER)));
+        }
 
-        if (server.hasDefined(IMAP_SERVER)) {
-            server = model.get(IMAP_SERVER);
-            cfg.setImapServer(new MailSessionServer(server.require(SERVER_ADDRESS).asString(), server.require(SERVER_PORT).asString()));
+        if (model.hasDefined(IMAP_SERVER)) {
+            cfg.setPop3Server(readServerConfig(model.get(IMAP_SERVER)));
         }
 
         return cfg;
@@ -77,13 +86,12 @@ public class Util {
         final String rawJndiName = modelNode.require(JNDI_NAME).asString();
         final String jndiName;
         if (!rawJndiName.startsWith("java:")) {
-                jndiName = "java:jboss/mail/" + rawJndiName;
+            jndiName = "java:jboss/mail/" + rawJndiName;
         } else {
             jndiName = rawJndiName;
         }
         return jndiName;
     }
-
 
 
 }

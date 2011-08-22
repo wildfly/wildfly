@@ -208,15 +208,8 @@
             <jpa default-datasource=""/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:mail:1.0">
-            <mail-session jndi-name="java:/Mail" >
-                <login name="nobody" password="pass"/>
-                <smtp-server address="localhost" port="9999"/>
-                <pop3-server address="example.com" port="1234"/>
-                <imap-server address="example.com" port="432"/>
-           </mail-session>
-            <mail-session jndi-name="foo/MyMailServer1" debug="true">
-                <login name="user" password="pass"/>
-                <smtp-server address="remote" port="25"/>
+           <mail-session jndi-name="java:jboss/mail/Default" >
+                <smtp-server address="localhost" port="25"/>
            </mail-session>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">

@@ -14,10 +14,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
  * @created 25.7.11 15:48
  */
 public class MailSessionConfig {
-    private static final Logger log = Logger.getLogger(MailSessionConfig.class);
     private String jndiName;
-    private String username;
-    private String password;
     private boolean debug = false;
 
     private MailSessionServer smtpServer;
@@ -44,21 +41,6 @@ public class MailSessionConfig {
 
     public void setDebug(boolean debug) {
         this.debug = debug;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public MailSessionServer getImapServer() {
@@ -90,8 +72,6 @@ public class MailSessionConfig {
         return "MailSessionConfig{" +
                 "imapServer=" + imapServer +
                 ", jndiName='" + jndiName + '\'' +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
                 ", smtpServer=" + smtpServer +
                 ", pop3Server=" + pop3Server +
                 '}';
