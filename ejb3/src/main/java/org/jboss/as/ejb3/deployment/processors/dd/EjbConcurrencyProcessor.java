@@ -146,12 +146,8 @@ public class EjbConcurrencyProcessor implements DeploymentUnitProcessor {
         ConcurrentMethodsMetaData concurrentMethods = singletonBeanMetaData.getConcurrentMethods();
         if (concurrentMethods != null) {
             for (ConcurrentMethodMetaData concurrentMethod : concurrentMethods) {
-                LockType methodLockType = concurrentMethod.getLockType();
                 Method method = resolveMethod(reflectionIndex, (Class<Object>) componentClass, concurrentMethod.getMethod());
                 final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
-                if(methodLockType != null) {
-                    singletonComponentDescription.setLockType(methodLockType, methodIdentifier);
-                }
                 final AccessTimeoutMetaData accessTimeout = concurrentMethod.getAccessTimeout();
                 if(accessTimeout != null) {
                     singletonComponentDescription.setAccessTimeout(new AccessTimeout() {

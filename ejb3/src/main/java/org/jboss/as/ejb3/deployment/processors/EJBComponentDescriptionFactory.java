@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
@@ -60,7 +61,13 @@ public abstract class EJBComponentDescriptionFactory implements DeploymentUnitPr
                 logger.trace("Skipping EJB annotation processing since no composite annotation index found in unit: " + deploymentUnit);
             }
         } else {
-            processAnnotations(deploymentUnit, compositeIndex);
+            if (MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Skipping EJB annotation processing due to deployment being metadata-complete. ");
+                }
+            } else {
+                processAnnotations(deploymentUnit, compositeIndex);
+            }
         }
         processDeploymentDescriptor(deploymentUnit);
     }

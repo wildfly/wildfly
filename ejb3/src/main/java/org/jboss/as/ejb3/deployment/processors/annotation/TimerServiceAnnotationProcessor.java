@@ -19,29 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.deployment.processors;
+package org.jboss.as.ejb3.deployment.processors.annotation;
 
-import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.as.ee.metadata.AbstractEEAnnotationProcessor;
-import org.jboss.as.ejb3.deployment.processors.annotation.ScheduleAnnotationInformationFactory;
-import org.jboss.as.ejb3.deployment.processors.annotation.TimeoutAnnotationInformationFactory;
+import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Processes the @Timeout annotation on an EJB, and adds the configurator that is responsible for loading the method from the reflection index.
- * <p/>
- * The processor also handles auto timers (the @Schedule annotation)
+ * Processes EJB annotations and attaches them to the {@link org.jboss.as.ee.component.EEModuleClassDescription}
  *
  * @author Stuart Douglas
  */
-public class TimeoutAnnotationProcessor extends AbstractEEAnnotationProcessor {
+public class TimerServiceAnnotationProcessor extends AbstractEEAnnotationProcessor {
 
     final List<ClassAnnotationInformationFactory> factories;
 
-    public TimeoutAnnotationProcessor() {
+    public TimerServiceAnnotationProcessor() {
         List<ClassAnnotationInformationFactory> factories = new ArrayList<ClassAnnotationInformationFactory>();
         factories.add(new TimeoutAnnotationInformationFactory());
         factories.add(new ScheduleAnnotationInformationFactory());
