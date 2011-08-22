@@ -158,6 +158,8 @@
                     <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
                 </stateless>
             </session-bean>
+            <!-- TODO: Fixme before merging to upstream -->
+            <remote connector="dummy"/>
 
             <default-stateful-access-timeout>5000</default-stateful-access-timeout>
             <default-singleton-access-timeout>5000</default-singleton-access-timeout>
