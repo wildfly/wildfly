@@ -37,7 +37,7 @@ import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
-import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -128,7 +128,7 @@ public class BundleContextJndiBindingProcessor implements DeploymentUnitProcesso
         BinderService bindingService = new BinderService("BundleContext");
         ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(serviceName, bindingService);
         builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, new ManagedReferenceInjector<BundleContext>(bindingService.getManagedObjectInjector()));
-        builder.addDependency(contextServiceName, NamingStore.class, bindingService.getNamingStoreInjector());
+        builder.addDependency(contextServiceName, ServiceBasedNamingStore.class, bindingService.getNamingStoreInjector());
         builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
         builder.install();
     }
