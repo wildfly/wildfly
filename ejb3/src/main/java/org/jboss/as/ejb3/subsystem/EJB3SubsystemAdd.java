@@ -31,7 +31,6 @@ import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.AsynchronousAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.BusinessViewAnnotationProcessor;
-import org.jboss.as.ejb3.deployment.processors.DeclareRolesProcessor;
 import org.jboss.as.ejb3.deployment.processors.DenyAllProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbCleanUpProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbContextJndiBindingProcessor;
@@ -60,6 +59,7 @@ import org.jboss.as.ejb3.deployment.processors.dd.ExcludeListDDProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.InterceptorClassDeploymentDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.SecurityRoleRefDDProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.SessionBeanXmlDescriptorProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.DeclareRolesMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.EjbConcurrencyMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.RemoveMethodMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.ResourceAdaptorMergingProcessor;
@@ -143,7 +143,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CONTEXT_BINDING, new EjbContextJndiBindingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_TIMERSERVICE_BINDING, new TimerServiceJndiBindingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_INJECTION_ANNOTATION, new EjbResourceInjectionAnnotationProcessor());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DECLARE_ROLES_ANNOTATION, new DeclareRolesProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_STATEFUL_TIMEOUT_ANNOTATION, new StatefulTimeoutAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SESSION_SYNCHRONIZATION, new SessionSynchronizationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ASYNCHRONOUS_ANNOTATION, new AsynchronousAnnotationProcessor());
@@ -175,6 +174,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_REMOVE_METHOD, new RemoveMethodMergingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_STARTUP_MERGE, new StartupMergingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SECURITY_DOMAIN, new SecurityDomainMergingProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_ROLES, new DeclareRolesMergingProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RESOLVE_EJB_INJECTIONS, new EjbInjectionResolutionProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnAnnotationProcessor());
