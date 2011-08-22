@@ -235,8 +235,6 @@ public enum Phase {
     public static final int PARSE_EJB_RUN_AS_ANNOTATION                 = 0x1904;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_STATEFUL_TIMEOUT_ANNOTATION       = 0x1A01;
-    // should be after ConcurrencyManagement annotation processor
-    public static final int PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION         = 0x1B00;
     // should be after all views are known
     public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x1C00;
     public static final int PARSE_EJB_SESSION_SYNCHRONIZATION           = 0x1C50;
@@ -313,7 +311,6 @@ public enum Phase {
     public static final int POST_MODULE_EJB_METHOD_PERMISSION_DD        = 0x0505;
     public static final int POST_MODULE_EJB_TIMER_METADATA_MERGE = 0x0506;
     public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0600;
-    public static final int POST_MODULE_EJB_DD_CONCURRENCY              = 0x0601;
     public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0A00;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0B00;

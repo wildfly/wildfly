@@ -35,6 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.metadata.ejb.spec.AccessTimeoutMetaData;
 import org.jboss.metadata.ejb.spec.ConcurrentMethodMetaData;
 import org.jboss.metadata.ejb.spec.ConcurrentMethodsMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
@@ -42,19 +43,22 @@ import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.modules.Module;
 
+import javax.ejb.AccessTimeout;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Class that can merge {@link javax.ejb.Lock} metadata
+ * Class that can merge {@link javax.ejb.Lock} and {@link javax.ejb.AccessTimeout} metadata
  *
  * @author Stuart Douglas
  */
-public class EjbLockMergingProcessor implements DeploymentUnitProcessor {
+public class EjbConcurrencyMergingProcessor implements DeploymentUnitProcessor {
 
 
     @Override
@@ -92,17 +96,33 @@ public class EjbLockMergingProcessor implements DeploymentUnitProcessor {
     }
 
     private void handleAnnotations(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) {
-        final RuntimeAnnotationInformation<LockType> annotationData = MethodAnnotationAggregator.<Lock, LockType>runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, Lock.class);
-        for (Map.Entry<String, List<LockType>> entry : annotationData.getClassAnnotations().entrySet()) {
+
+        //handle lock annotations
+
+        final RuntimeAnnotationInformation<LockType> lockData = MethodAnnotationAggregator.<Lock, LockType>runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, Lock.class);
+        for (Map.Entry<String, List<LockType>> entry : lockData.getClassAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
                 componentConfiguration.setBeanLevelLockType(entry.getKey(), entry.getValue().get(0));
             }
         }
-        for (Map.Entry<Method, List<LockType>> entry : annotationData.getMethodAnnotations().entrySet()) {
+        for (Map.Entry<Method, List<LockType>> entry : lockData.getMethodAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
                 componentConfiguration.setLockType(entry.getValue().get(0), MethodIdentifier.getIdentifierForMethod(entry.getKey()));
             }
         }
+
+        final RuntimeAnnotationInformation<AccessTimeout> accessTimeout = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, AccessTimeout.class);
+        for (Map.Entry<String, List<AccessTimeout>> entry : accessTimeout.getClassAnnotations().entrySet()) {
+            if (!entry.getValue().isEmpty()) {
+                componentConfiguration.setBeanLevelAccessTimeout(entry.getKey(), entry.getValue().get(0));
+            }
+        }
+        for (Map.Entry<Method, List<AccessTimeout>> entry : accessTimeout.getMethodAnnotations().entrySet()) {
+            if (!entry.getValue().isEmpty()) {
+                componentConfiguration.setAccessTimeout(entry.getValue().get(0), MethodIdentifier.getIdentifierForMethod(entry.getKey()));
+            }
+        }
+
     }
 
     private void handleDeploymentDescriptor(final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
@@ -113,21 +133,52 @@ public class EjbLockMergingProcessor implements DeploymentUnitProcessor {
         if (sessionBeanMetaData instanceof SessionBean31MetaData) {
             SessionBean31MetaData descriptor = (SessionBean31MetaData) sessionBeanMetaData;
 
+            //handle lock
             if (descriptor.getLockType() != null) {
                 componentConfiguration.setBeanLevelLockType(componentConfiguration.getEJBClassName(), descriptor.getLockType());
+            }
+
+            //handle access timeout
+            if (descriptor.getAccessTimeout() != null) {
+                componentConfiguration.setBeanLevelAccessTimeout(componentConfiguration.getEJBClassName(), getAccessTimeout(descriptor.getAccessTimeout()));
             }
 
             final ConcurrentMethodsMetaData methods = descriptor.getConcurrentMethods();
             if (methods != null) {
                 for (final ConcurrentMethodMetaData method : methods) {
+                    final Method realMethod = resolveMethod(deploymentReflectionIndex, componentClass, method.getMethod());
+                    final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(realMethod);
                     if (method.getLockType() != null) {
-                        final Method realMethod = resolveMethod(deploymentReflectionIndex, componentClass, method.getMethod());
-                        componentConfiguration.setLockType(method.getLockType(), MethodIdentifier.getIdentifierForMethod(realMethod));
+                        componentConfiguration.setLockType(method.getLockType(), methodIdentifier);
+                    }
+                    if (method.getAccessTimeout() != null) {
+                        componentConfiguration.setAccessTimeout(getAccessTimeout(method.getAccessTimeout()), methodIdentifier);
                     }
 
                 }
             }
+
+
         }
+    }
+
+    private AccessTimeout getAccessTimeout(final AccessTimeoutMetaData accessTimeout) {
+        return new AccessTimeout() {
+            @Override
+            public long value() {
+                return accessTimeout.getTimeout();
+            }
+
+            @Override
+            public TimeUnit unit() {
+                return accessTimeout.getUnit();
+            }
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return AccessTimeout.class;
+            }
+        };
     }
 
 
