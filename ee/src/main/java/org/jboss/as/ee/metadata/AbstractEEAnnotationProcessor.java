@@ -45,7 +45,7 @@ public abstract class AbstractEEAnnotationProcessor implements DeploymentUnitPro
 
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
-        if (index == null || applicationClasses == null || !shouldRun(deploymentUnit)) {
+        if (index == null || applicationClasses == null) {
             return;
         }
 
@@ -67,17 +67,6 @@ public abstract class AbstractEEAnnotationProcessor implements DeploymentUnitPro
      * @param deploymentUnit The deployment unit
      */
     protected void afterAnnotationsProcessed(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit) {
-    }
-
-    /**
-     * Method should return true if this processor should process this deployment.
-     *
-     * @param deploymentUnit
-     * @return
-     */
-    protected boolean shouldRun(final DeploymentUnit deploymentUnit) {
-        //we don't process annotations if the deployment is metadata complete
-        return !MetadataCompleteMarker.isMetadataComplete(deploymentUnit);
     }
 
     /**
