@@ -199,10 +199,6 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
     }
 
     private void processSingletonBean(SessionBean31MetaData singletonBeanMetaData, SingletonComponentDescription singletonComponentDescription) {
-        Boolean initOnStartup = singletonBeanMetaData.isInitOnStartup();
-        if (initOnStartup != null && initOnStartup) {
-            singletonComponentDescription.initOnStartup();
-        }
 
         // bean level access timeout
         // TODO: This should apply to other bean types too (JBoss specific feature) and not just singleton beans
